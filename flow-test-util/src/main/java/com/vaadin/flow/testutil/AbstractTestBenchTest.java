@@ -178,6 +178,13 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
     }
 
+    protected void waitForWebComponentsBootstrap() {
+        waitUntil(driver -> driver.findElement(By.cssSelector(
+                "script[src*='web-component/web-component-bootstrap.js']")),
+                // longer timeout to prevent failures during dev-bundle creation
+                60);
+    }
+
     /**
      * Returns the URL to be used for the test.
      *
