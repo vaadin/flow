@@ -55,4 +55,114 @@ public class NavigationIT extends ChromeBrowserTest {
                 $(SpanElement.class).first().getText());
     }
 
+    @Test
+    public void testNavigationPostpone_anchor() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.POSTPONE_ID).click();
+
+        Assert.assertEquals("PostponeView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(PostponeView.NAVIGATION_ID).click();
+
+        Assert.assertEquals("Navigation should have postponed", "PostponeView",
+                $(SpanElement.class).first().getText());
+
+        Assert.assertEquals(2, $(NativeButtonElement.class).all().size());
+        Assert.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.CONTINUE_ID).isDisplayed());
+        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
+
+        $(NativeButtonElement.class).id(PostponeView.STAY_ID).click();
+
+        Assert.assertEquals(0, $(NativeButtonElement.class).all().size());
+
+        Assert.assertTrue("Url should not have changed",
+                getDriver().getCurrentUrl().endsWith("PostponeView"));
+
+        $(AnchorElement.class).id(PostponeView.NAVIGATION_ID).click();
+
+        Assert.assertEquals(
+                "Navigation should have fired and be postponed again",
+                "PostponeView", $(SpanElement.class).first().getText());
+
+        Assert.assertEquals(2, $(NativeButtonElement.class).all().size());
+        Assert.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.CONTINUE_ID).isDisplayed());
+        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
+
+        $(NativeButtonElement.class).id(PostponeView.CONTINUE_ID).click();
+
+        Assert.assertEquals(
+                "Navigation should have continued to NavigationView",
+                "NavigationView", $(SpanElement.class).first().getText());
+
+        Assert.assertTrue(
+                "Url should have updated to NavigationView was : "
+                        + getDriver().getCurrentUrl(),
+                getDriver().getCurrentUrl().endsWith("NavigationView"));
+    }
+
+    @Test
+    public void testNavigationPostpone_routerLink() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.POSTPONE_ID).click();
+
+        Assert.assertEquals("PostponeView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(PostponeView.NAVIGATION_ROUTER_LINK_ID)
+                .click();
+
+        Assert.assertEquals("Navigation should have postponed", "PostponeView",
+                $(SpanElement.class).first().getText());
+
+        Assert.assertEquals(2, $(NativeButtonElement.class).all().size());
+        Assert.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.CONTINUE_ID).isDisplayed());
+        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
+
+        $(NativeButtonElement.class).id(PostponeView.STAY_ID).click();
+
+        Assert.assertEquals(0, $(NativeButtonElement.class).all().size());
+
+        Assert.assertTrue("Url should not have changed",
+                getDriver().getCurrentUrl().endsWith("PostponeView"));
+
+        $(AnchorElement.class).id(PostponeView.NAVIGATION_ROUTER_LINK_ID)
+                .click();
+
+        Assert.assertEquals(
+                "Navigation should have fired and be postponed again",
+                "PostponeView", $(SpanElement.class).first().getText());
+
+        Assert.assertEquals(2, $(NativeButtonElement.class).all().size());
+        Assert.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.CONTINUE_ID).isDisplayed());
+        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
+
+        $(NativeButtonElement.class).id(PostponeView.CONTINUE_ID).click();
+
+        Assert.assertEquals(
+                "Navigation should have continued to NavigationView",
+                "NavigationView", $(SpanElement.class).first().getText());
+
+        Assert.assertTrue(
+                "Url should have updated to NavigationView was : "
+                        + getDriver().getCurrentUrl(),
+                getDriver().getCurrentUrl().endsWith("NavigationView"));
+    }
+
 }

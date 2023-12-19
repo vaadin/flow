@@ -29,6 +29,7 @@ public class NavigationView extends Div {
     public static final String SERVER_ID = "server-navigation";
     public static final String ANCHOR_ID = "anchor-navigation";
     public static final String ROUTER_LINK_ID = "router-link-navigation";
+    public static final String POSTPONE_ID = "postpone-view-link";
 
     public NavigationView() {
         Anchor anchorNavigation = new Anchor("com.vaadin.flow.AnchorView",
@@ -42,8 +43,12 @@ public class NavigationView extends Div {
         RouterLink link = new RouterLink("RouterView", RouterView.class);
         link.setId(ROUTER_LINK_ID);
 
+        RouterLink postponeView = new RouterLink("PostponeView",
+                PostponeView.class);
+        postponeView.setId(POSTPONE_ID);
+
         add(new Span("NavigationView"), new Div(), anchorNavigation, new Div(),
-                serverNavigation, new Div(), link);
+                serverNavigation, new Div(), link, new Div(), postponeView);
     }
 
 }
