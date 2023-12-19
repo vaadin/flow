@@ -208,6 +208,7 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(request.getServletPath()).thenReturn("/");
+        Mockito.when(request.getMethod()).thenReturn("GET");
         VaadinResponse response = getMockResponse(null);
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -242,6 +243,7 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(request.getServletPath()).thenReturn("/");
+        Mockito.when(request.getMethod()).thenReturn("GET");
         VaadinResponse response = getMockResponse(null);
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
