@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.data.provider;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -95,13 +96,13 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      */
     @SuppressWarnings("unchecked")
     @Override
-    public Integer getItemIndex(T item) {
+    public Optional<Integer> getItemIndex(T item) {
         if (getItemIndexProvider() == null) {
             throw new UnsupportedOperationException(
                     "getItemIndex method in the LazyDataView requires a callback to fetch the index. Set it with setItemIndexProvider.");
         }
-        return getItemIndexProvider().apply(item,
-                getFilteredQueryForAllItems());
+        return Optional.ofNullable(getItemIndexProvider().apply(item,
+                getFilteredQueryForAllItems()));
     }
 
     @SuppressWarnings("unchecked")

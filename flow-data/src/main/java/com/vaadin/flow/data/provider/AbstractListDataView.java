@@ -87,9 +87,9 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public Integer getItemIndex(T item) {
+    public Optional<Integer> getItemIndex(T item) {
         int index = getItemIndex(item, getItems());
-        return index >= 0 ? index : null;
+        return index >= 0 ? Optional.of(index) : Optional.empty();
     }
 
     @SuppressWarnings("unchecked")
@@ -100,7 +100,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public Optional<T> getNextItem(T item) {
-        int index = getItemIndex(item);
+        int index = getItemIndex(item).orElse(-1);
         if (index < 0) {
             return Optional.empty();
         }
@@ -109,7 +109,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public Optional<T> getPreviousItem(T item) {
-        int index = getItemIndex(item);
+        int index = getItemIndex(item).orElse(-1);
         if (index <= 0) {
             return Optional.empty();
         }

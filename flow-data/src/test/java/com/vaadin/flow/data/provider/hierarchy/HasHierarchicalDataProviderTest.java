@@ -213,8 +213,8 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public Integer getItemIndex(String item) {
-            return 0;
+        public Optional<Integer> getItemIndex(String item) {
+            return Optional.of(0);
         }
 
         @Override

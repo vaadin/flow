@@ -907,13 +907,13 @@ public class AbstractListDataViewTest {
 
     @Test
     public void getItemIndex_itemPresentedInDataSet_indexFound() {
-        Assert.assertEquals("Wrong index returned for item", Integer.valueOf(1),
+        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
                 dataView.getItemIndex("middle"));
     }
 
     @Test
     public void getItemIndex_itemNotPresentedInDataSet_indexNotFound() {
-        Assert.assertNull("Wrong index returned for item",
+        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
                 dataView.getItemIndex("notPresent"));
     }
 
@@ -921,14 +921,14 @@ public class AbstractListDataViewTest {
     public void getItemIndex_filteringApplied_indexFound() {
         dataProvider
                 .setFilter(item -> "first".equals(item) || "last".equals(item));
-        Assert.assertEquals("Wrong index returned for item", Integer.valueOf(1),
+        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
                 dataView.getItemIndex("last"));
     }
 
     @Test
     public void getItemIndex_sortingApplied_indexFound() {
         dataProvider.setSortOrder(item -> item, SortDirection.DESCENDING);
-        Assert.assertEquals("Wrong index returned for item", Integer.valueOf(0),
+        Assert.assertEquals("Wrong index returned for item", Optional.of(0),
                 dataView.getItemIndex("middle"));
     }
 
@@ -936,7 +936,7 @@ public class AbstractListDataViewTest {
     public void getItemIndex_itemNotPresentedInDataSet_filteringApplied_indexNotFound() {
         dataProvider
                 .setFilter(item -> "first".equals(item) || "last".equals(item));
-        Assert.assertNull("Wrong index returned for item",
+        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
                 dataView.getItemIndex("middle"));
     }
 

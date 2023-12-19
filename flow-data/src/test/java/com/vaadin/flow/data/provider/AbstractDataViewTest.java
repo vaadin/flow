@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -266,8 +267,8 @@ public class AbstractDataViewTest {
         }
 
         @Override
-        public Integer getItemIndex(Item item) {
-            return 0;
+        public Optional<Integer> getItemIndex(Item item) {
+            return Optional.of(0);
         }
     }
 
