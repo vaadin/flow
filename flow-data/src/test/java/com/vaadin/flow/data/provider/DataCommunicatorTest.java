@@ -47,10 +47,12 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -1805,7 +1807,15 @@ public class DataCommunicatorTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                session = new AlwaysLockedVaadinSession(null);
+                VaadinService service = Mockito.mock(VaadinService.class);
+                DeploymentConfiguration conf = Mockito
+                        .mock(DeploymentConfiguration.class);
+                Mockito.when(conf.isProductionMode()).thenReturn(true);
+                Mockito.when(conf.getSessionLockCheckStrategy())
+                        .thenReturn(SessionLockCheckStrategy.ASSERT);
+                Mockito.when(service.getDeploymentConfiguration())
+                        .thenReturn(conf);
+                session = new AlwaysLockedVaadinSession(service);
                 VaadinSession.setCurrent(session);
             }
             return session;
