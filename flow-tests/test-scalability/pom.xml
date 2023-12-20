@@ -15,7 +15,7 @@
         <!-- Skip scalability tests by default, explicitly enabled on build
             server -->
         <gatling.skip>true</gatling.skip>
-        <gatling.version>3.10.1</gatling.version>
+        <gatling.version>3.10.2</gatling.version>
         <scala-maven-plugin.version>4.8.0</scala-maven-plugin.version>
     </properties>
 
