@@ -65,7 +65,7 @@ public class PlatformTest {
         if (hillaVersion != null) {
             final Path hillaJar = temporary.newFolder().toPath();
             final Path pomProperties = hillaJar
-                    .resolve("META-INF/maven/dev.hilla/hilla/pom.properties");
+                    .resolve("META-INF/maven/com.vaadin.hilla/hilla/pom.properties");
             Files.createDirectories(pomProperties.getParent());
             Files.writeString(pomProperties, "version=" + hillaVersion);
             classPath.add(hillaJar.toUri().toURL());
