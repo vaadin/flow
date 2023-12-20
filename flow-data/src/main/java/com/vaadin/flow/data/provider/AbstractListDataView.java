@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -84,12 +83,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     public T getItem(int index) {
         validateItemIndex(index);
         return getItems().skip(index).findFirst().orElse(null);
-    }
-
-    @Override
-    public Optional<Integer> getItemIndex(T item) {
-        int index = getItemIndex(item, getItems());
-        return index >= 0 ? Optional.of(index) : Optional.empty();
     }
 
     @SuppressWarnings("unchecked")
@@ -311,19 +304,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                     "Given index %d is outside of the accepted range '0 - %d'",
                     itemIndex, dataSize - 1));
         }
-    }
-
-    private int getItemIndex(T item, Stream<T> stream) {
-        Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
-        AtomicInteger index = new AtomicInteger(-1);
-        //@formatter:off
-        if (!stream.peek(nextItem -> index.incrementAndGet())
-                .filter(nextItem -> equals(item, nextItem))
-                .findFirst().isPresent()) {
-            return -1;
-        }
-        //@formatter:on
-        return index.get();
     }
 
     private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider) {
