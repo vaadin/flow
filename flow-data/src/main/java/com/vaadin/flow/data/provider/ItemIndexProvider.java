@@ -46,6 +46,10 @@ public interface ItemIndexProvider<T, F>
      * There will be inconsistent index if the data set for the returned index
      * is different from the component's data set. Changing the data set of
      * either side during this call may cause inconsistent index as a result.
+     * <p>
+     * The query parameter provides a filter object being set with 
+     * {@link ConfigurableFilterDataProvider} or provided by a component, 
+     * e.g. a string filter in ComboBox.
      *
      * @param item
      *            Target item to get the index for
