@@ -17,6 +17,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -326,6 +327,28 @@ public class AbstractLazyDataViewTest {
 
         fakeClientCommunication();
         dataView.getItem(3);
+    }
+
+    @Test
+    public void getItemIndex_withoutItemIndexProvider_throwUnsupportedOperationException() {
+        Assert.assertThrows(UnsupportedOperationException.class,
+                () -> dataView.getItemIndex("bar"));
+    }
+
+    @Test
+    public void getItemIndex_itemPresentedInDataSet_indexFound() {
+        dataView.setItemIndexProvider(
+                (item, query) -> "bar".equals(item) ? 1 : null);
+        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
+                dataView.getItemIndex("bar"));
+    }
+
+    @Test
+    public void getItemIndex_itemNotPresentedInDataSet_indexNotFound() {
+        dataView.setItemIndexProvider(
+                (item, query) -> "bar".equals(item) ? 1 : null);
+        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
+                dataView.getItemIndex("notPresent"));
     }
 
     @Test
