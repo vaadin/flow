@@ -16,6 +16,8 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -142,6 +144,12 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
+    public Optional<Integer> getItemIndex(T item) {
+        int index = getItemIndex(item, getItems());
+        return index >= 0 ? Optional.of(index) : Optional.empty();
+    }
+
+    @Override
     public Stream<T> getItems() {
         return dataProviderSupplier.get().fetch(new Query<>());
     }
@@ -213,6 +221,28 @@ public abstract class AbstractDataView<T> implements DataView<T> {
                         NULL_IDENTIFIER_ERROR_MESSAGE),
                 Objects.requireNonNull(getIdentifierProvider().apply(compareTo),
                         NULL_IDENTIFIER_ERROR_MESSAGE));
+    }
+
+    /**
+     * Gets item index from the given stream.
+     *
+     * @param item
+     *            the item to get index for
+     * @param stream
+     *            the stream to get index from
+     * @return the index of the item in the stream, or -1 if not found
+     */
+    protected int getItemIndex(T item, Stream<T> stream) {
+        Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
+        AtomicInteger index = new AtomicInteger(-1);
+        //@formatter:off
+        if (!stream.peek(nextItem -> index.incrementAndGet())
+                .filter(nextItem -> equals(item, nextItem))
+                .findFirst().isPresent()) {
+            return -1;
+        }
+        //@formatter:on
+        return index.get();
     }
 
     private boolean isDataProviderInitialized(Class<?> dataProviderType) {
