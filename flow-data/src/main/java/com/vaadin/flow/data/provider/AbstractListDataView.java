@@ -46,8 +46,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     private static final String NULL_COLLECTION_ERROR_MESSAGE = "Items collection cannot be null";
 
-    private static final String NULL_ITEM_ERROR_MESSAGE = "Item cannot be null";
-
     private final SerializableBiConsumer<SerializablePredicate<T>, SerializableComparator<T>> filterOrSortingChangedCallback;
 
     /**
