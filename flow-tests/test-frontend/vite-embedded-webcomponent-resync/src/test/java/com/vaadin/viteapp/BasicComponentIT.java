@@ -15,11 +15,15 @@
  */
 package com.vaadin.viteapp;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
+
 import java.io.File;
 
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,10 +33,6 @@ import org.openqa.selenium.StaleElementReferenceException;
 
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
-
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionEvent;
-import jakarta.servlet.http.HttpSessionListener;
 
 public class BasicComponentIT extends ChromeDeviceTest {
 
@@ -86,7 +86,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
     }
 
     private void clickButton() {
-        $("login-form").first().$("button").first().click();
+        waitUntil(d -> $("login-form").first().$("button").first()).click();
     }
 
     private String getAuthenticationResult() {
