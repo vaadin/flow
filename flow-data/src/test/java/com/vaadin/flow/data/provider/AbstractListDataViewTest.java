@@ -906,6 +906,41 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void getItemIndex_itemPresentedInDataSet_indexFound() {
+        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
+                dataView.getItemIndex("middle"));
+    }
+
+    @Test
+    public void getItemIndex_itemNotPresentedInDataSet_indexNotFound() {
+        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
+                dataView.getItemIndex("notPresent"));
+    }
+
+    @Test
+    public void getItemIndex_filteringApplied_indexFound() {
+        dataProvider
+                .setFilter(item -> "first".equals(item) || "last".equals(item));
+        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
+                dataView.getItemIndex("last"));
+    }
+
+    @Test
+    public void getItemIndex_sortingApplied_indexFound() {
+        dataProvider.setSortOrder(item -> item, SortDirection.DESCENDING);
+        Assert.assertEquals("Wrong index returned for item", Optional.of(0),
+                dataView.getItemIndex("middle"));
+    }
+
+    @Test
+    public void getItemIndex_itemNotPresentedInDataSet_filteringApplied_indexNotFound() {
+        dataProvider
+                .setFilter(item -> "first".equals(item) || "last".equals(item));
+        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
+                dataView.getItemIndex("middle"));
+    }
+
+    @Test
     public void dataViewCreatedAndAPIUsed_beforeSettingDataProvider_verificationPassed() {
         // Data provider verification should pass even if the developer
         // hasn't setup any data provider to a component. In the example

@@ -17,6 +17,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.ComponentEventListener;
@@ -44,6 +45,16 @@ public interface DataView<T> extends Serializable {
      *             set
      */
     T getItem(int index);
+
+    /**
+     * Gets the index of the given item from the data available to the
+     * component. Data is filtered and sorted the same way as in the component.
+     *
+     * @param item
+     *            item to get index for
+     * @return index of the item or empty optional if the item is not found
+     */
+    Optional<Integer> getItemIndex(T item);
 
     /**
      * Get the full data available to the component. Data is filtered and sorted
