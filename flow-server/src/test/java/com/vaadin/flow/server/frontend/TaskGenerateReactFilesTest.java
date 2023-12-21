@@ -138,4 +138,80 @@ public class TaskGenerateReactFilesTest {
         Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
                 routesTsx.getPath()), exception.getMessage());
     }
+
+    @Test
+    public void routesContainsRoutesExport_noExpectionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { lazy } from 'react';
+                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+                        import {protectRoutes} from "@hilla/react-auth";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+
+                                export const routes: RouteObject[] = protectRoutes([
+                                        {
+                                                element: <MainLayout />,
+                                        handle: { title: 'Main' },
+                                children: [
+                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                                { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                              ...serverSideRoutes
+                            ],
+                          },
+                                { path: '/login', element: <LoginView />},
+                        ]);
+
+                        export default createBrowserRouter(routes);
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
+    public void routesexportMissing_expectionThrown() throws IOException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { lazy } from 'react';
+                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+                        import {protectRoutes} from "@hilla/react-auth";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+
+                                const routes: RouteObject[] = protectRoutes([
+                                        {
+                                                element: <MainLayout />,
+                                        handle: { title: 'Main' },
+                                children: [
+                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                                { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                              ...serverSideRoutes
+                            ],
+                          },
+                                { path: '/login', element: <LoginView />},
+                        ]);
+
+                        export default createBrowserRouter(routes);
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
+                exception.getMessage());
+    }
 }

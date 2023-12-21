@@ -332,6 +332,7 @@
                 <module>test-custom-frontend-directory</module>
 
                 <module>vaadin-spring-tests</module>
+                <module>test-react-router</module>
             </modules>
         </profile>
         <profile>

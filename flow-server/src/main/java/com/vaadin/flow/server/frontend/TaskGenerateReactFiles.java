@@ -79,6 +79,12 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                   },
                 ] as RouteObject[];
             """;
+    protected static String MISSING_ROUTES_EXPORT = """
+            Routes need to be exported as 'routes' for server navigation handling.
+            routes.tsx should at least contain
+            'export const routes = [...serverSideRoutes] as RouteObject[];'
+            but can have react routes also defined.
+            """;
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -113,6 +119,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 if (!serverImport.matcher(routesContent).find()) {
                     throw new ExecutionFailedException(
                             String.format(NO_IMPORT, routesTsx.getPath()));
+                }
+                if (!routesContent.contains("export const routes")) {
+                    throw new ExecutionFailedException(MISSING_ROUTES_EXPORT);
                 }
             }
         } catch (IOException e) {
