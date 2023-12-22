@@ -50,6 +50,9 @@
                         <phase>compile</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <cleanFrontendFiles>false</cleanFrontendFiles>
+                </configuration>
             </plugin>
             <!-- This module is mapped to default web context -->
             <plugin>
