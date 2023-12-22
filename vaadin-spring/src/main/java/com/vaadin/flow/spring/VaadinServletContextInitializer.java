@@ -142,7 +142,7 @@ public class VaadinServletContextInitializer
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
                     "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap",
-                    "dev.hilla")
+                    "com.vaadin.hilla")
             .collect(Collectors.toList());
 
     /**
@@ -882,7 +882,7 @@ public class VaadinServletContextInitializer
     private List<String> getLookupPackages() {
         return Stream
                 .concat(getDefaultPackages().stream(),
-                        Stream.of("dev.hilla.frontend",
+                        Stream.of("com.vaadin.hilla.frontend",
                                 "com.vaadin.flow.component.polymertemplate.rpc",
                                 "com.vaadin.base.devserver"))
                 .collect(Collectors.toList());
