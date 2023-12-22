@@ -244,4 +244,9 @@ public class InitParameters implements Serializable {
      * Configuration name for forcing optimized production bundle build.
      */
     public static final String COMPRESS_BUNDLE = "vaadin.compress.bundle";
+
+    /**
+     * Configuration name for cleaning or leaving frontend files in build.
+     */
+    public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";
 }

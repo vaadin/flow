@@ -333,6 +333,7 @@
 
                 <module>vaadin-spring-tests</module>
                 <module>test-react-router</module>
+                <module>test-react-router/pom-production.xml</module>
             </modules>
         </profile>
         <profile>
