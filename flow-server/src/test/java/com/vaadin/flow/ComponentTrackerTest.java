@@ -47,21 +47,20 @@ public class ComponentTrackerTest {
         }
     }
 
-    private Object previousProdMode;
-    private Field prodModeField;
+    private Object previousDisabled;
+    private Field disabledField;
 
     @Before
     public void setup() throws Exception {
-        prodModeField = ComponentTracker.class
-                .getDeclaredField("productionMode");
-        prodModeField.setAccessible(true);
-        previousProdMode = prodModeField.get(null);
-        prodModeField.set(null, false);
+        disabledField = ComponentTracker.class.getDeclaredField("disabled");
+        disabledField.setAccessible(true);
+        previousDisabled = disabledField.get(null);
+        disabledField.set(null, false);
     }
 
     @After
     public void teardown() throws Exception {
-        prodModeField.set(null, previousProdMode);
+        disabledField.set(null, previousDisabled);
     }
 
     @Test

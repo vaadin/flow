@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.server.AbstractConfiguration;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -45,7 +46,7 @@ public class ComponentTracker {
     private static Map<Component, Location> attachLocation = Collections
             .synchronizedMap(new WeakHashMap<>());
 
-    private static Boolean productionMode = null;
+    private static Boolean disabled = null;
     private static String[] prefixesToSkip = new String[] {
             "com.vaadin.flow.component.", "com.vaadin.flow.di.",
             "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
@@ -159,7 +160,7 @@ public class ComponentTracker {
      *            the component to track
      */
     public static void trackCreate(Component component) {
-        if (isProductionMode()) {
+        if (isDisabled()) {
             return;
         }
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
@@ -192,7 +193,7 @@ public class ComponentTracker {
      *            the component to track
      */
     public static void trackAttach(Component component) {
-        if (isProductionMode()) {
+        if (isDisabled()) {
             return;
         }
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
@@ -270,7 +271,12 @@ public class ComponentTracker {
     }
 
     /**
-     * Checks if the application is running in production mode.
+     * Checks if the component tracking is disabled.
+     *
+     * Tracking is disabled when application is running in production mode or if
+     * the configuration property
+     * {@literal vaadin.devmode.componentTracker.enabled} is set to
+     * {@literal false}.
      *
      * When unsure, reports that production mode is true so tracking does not
      * take place in production.
@@ -278,9 +284,9 @@ public class ComponentTracker {
      * @return true if in production mode or the mode is unclear, false if in
      *         development mode
      **/
-    private static boolean isProductionMode() {
-        if (productionMode != null) {
-            return productionMode;
+    private static boolean isDisabled() {
+        if (disabled != null) {
+            return disabled;
         }
 
         VaadinService service = VaadinService.getCurrent();
@@ -300,8 +306,11 @@ public class ComponentTracker {
             return true;
         }
 
-        productionMode = applicationConfiguration.isProductionMode();
-        return productionMode;
+        disabled = applicationConfiguration.isProductionMode()
+                || !applicationConfiguration.getBooleanProperty(
+                        InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER,
+                        true);
+        return disabled;
     }
 
     private static Location toLocation(StackTraceElement stackTraceElement) {
