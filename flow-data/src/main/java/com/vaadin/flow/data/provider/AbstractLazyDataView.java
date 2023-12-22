@@ -16,9 +16,11 @@
 
 package com.vaadin.flow.data.provider;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.function.SerializableConsumer;
 
 /**
@@ -55,7 +57,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * @return the data communicator
      */
     protected DataCommunicator<T> getDataCommunicator() {
-        verifyDataProviderType(dataCommunicator.getDataProvider().getClass());
+        verifyDataProviderType(dataCommunicator.getDataProvider());
         return dataCommunicator;
     }
 
@@ -81,18 +83,34 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         return getDataCommunicator().getItem(index);
     }
 
+    /**
+     * Gets the index of the given item by the item index provider set with
+     * {@link #setItemIndexProvider(ItemIndexProvider)}.
+     *
+     * @param item
+     *            item to get index for
+     * @return index of the item or null if the item is not found
+     * @throws UnsupportedOperationException
+     *             if the item index provider is not set with
+     *             {@link #setItemIndexProvider(ItemIndexProvider)}
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public Optional<Integer> getItemIndex(T item) {
+        if (getItemIndexProvider() == null) {
+            throw new UnsupportedOperationException(
+                    "getItemIndex method in the LazyDataView requires a callback to fetch the index. Set it with setItemIndexProvider.");
+        }
+        return Optional.ofNullable(getItemIndexProvider().apply(item,
+                getFilteredQueryForAllItems()));
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Stream<T> getItems() {
         DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
-        if (verifiedDataCommunicator.isDefinedSize()) {
-            return verifiedDataCommunicator.getDataProvider()
-                    .fetch(verifiedDataCommunicator.buildQuery(0,
-                            verifiedDataCommunicator.getItemCount()));
-        } else {
-            return verifiedDataCommunicator.getDataProvider().fetch(
-                    verifiedDataCommunicator.buildQuery(0, Integer.MAX_VALUE));
-        }
+        return verifiedDataCommunicator.getDataProvider()
+                .fetch(getQueryForAllItems());
     }
 
     @Override
@@ -129,6 +147,46 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
     @Override
     public void setItemCountUnknown() {
         getDataCommunicator().setDefinedSize(false);
+    }
+
+    @Override
+    public void setItemIndexProvider(
+            ItemIndexProvider<T, ?> itemIndexProvider) {
+        ComponentUtil.setData(component, ItemIndexProvider.class,
+                itemIndexProvider);
+    }
+
+    /**
+     * Gets the item index provider for this data view's component.
+     *
+     * @return the item index provider. May be null.
+     */
+    @SuppressWarnings("unchecked")
+    protected ItemIndexProvider<T, ?> getItemIndexProvider() {
+        return (ItemIndexProvider<T, ?>) ComponentUtil.getData(component,
+                ItemIndexProvider.class);
+    }
+
+    private Query getQueryForAllItems() {
+        DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
+        if (verifiedDataCommunicator.isDefinedSize()) {
+            return verifiedDataCommunicator.buildQuery(0,
+                    verifiedDataCommunicator.getItemCount());
+        }
+        return verifiedDataCommunicator.buildQuery(0, Integer.MAX_VALUE);
+    }
+
+    private Query getFilteredQueryForAllItems() {
+        Query baseQuery = getQueryForAllItems();
+        if (DataProviderWrapper.class.isAssignableFrom(
+                dataCommunicator.getDataProvider().getClass())) {
+            DataProviderWrapper<T, ?, ?> wrapper = (DataProviderWrapper<T, ?, ?>) dataCommunicator
+                    .getDataProvider();
+            return new Query(baseQuery.getOffset(), baseQuery.getLimit(),
+                    baseQuery.getSortOrders(), baseQuery.getInMemorySorting(),
+                    wrapper.getFilter(baseQuery));
+        }
+        return baseQuery;
     }
 
 }

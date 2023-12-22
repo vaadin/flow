@@ -146,6 +146,8 @@ function navigateEventHandler(event) {
     // @ts-ignore
     let matched = matchRoutes(routes, event.detail.pathname);
 
+    // if navigation event route targets a flow view do beforeEnter for the
+    // target path. Server will then handle updates and postpone as needed.
     if(matched?.length == 1 && matched[0].route.path === "/*") {
         if (mountedContainer?.onBeforeEnter) {
             mountedContainer.onBeforeEnter(
@@ -158,7 +160,6 @@ function navigateEventHandler(event) {
                     },
                     // @ts-ignore
                     redirect: (path) => {
-                        // window.history.pushState({}, "", path);
                         navigation(path, {replace: false});
                     }
                 },
@@ -166,11 +167,14 @@ function navigateEventHandler(event) {
             );
         }
     } else {
+        // Navigating to a non flow view. If beforeLeave set call that before
+        // navigation. If not postponed clear + navigate will be executed.
         if (mountedContainer?.onBeforeLeave) {
             mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
                 prevent() {},
             }, router);
         } else {
+            // Navigate to a non flow view. Clean nodes and undefine container.
             mountedContainer?.parentNode?.removeChild(mountedContainer);
             mountedContainer = undefined;
             navigation(event.detail.pathname, {replace: false});

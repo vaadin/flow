@@ -748,8 +748,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       {
         name: 'vaadin:force-remove-html-middleware',
         transformIndexHtml: {
-          enforce: 'pre',
-          transform(_html, { server }) {
+          order: 'pre',
+          handler(_html, { server }) {
             if (server && !spaMiddlewareForceRemoved) {
               server.middlewares.stack = server.middlewares.stack.filter((mw) => {
                 const handleName = '' + mw.handle;
@@ -763,8 +763,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       hasExportedWebComponents && {
         name: 'vaadin:inject-entrypoints-to-web-component-html',
         transformIndexHtml: {
-          enforce: 'pre',
-          transform(_html, { path, server }) {
+          order: 'pre',
+          handler(_html, { path, server }) {
             if (path !== '/web-component.html') {
               return;
             }
@@ -782,8 +782,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       {
         name: 'vaadin:inject-entrypoints-to-index-html',
         transformIndexHtml: {
-          enforce: 'pre',
-          transform(_html, { path, server }) {
+          order: 'pre',
+          handler(_html, { path, server }) {
             if (path !== '/index.html') {
               return;
             }

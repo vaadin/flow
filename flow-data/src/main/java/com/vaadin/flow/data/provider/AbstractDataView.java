@@ -16,6 +16,8 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -71,7 +73,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
          * the data provider.
          */
         if (isDataProviderInitialized(dataProviderType)) {
-            verifyDataProviderType(dataProviderType);
+            verifyDataProviderType(dataProviderSupplier.get());
         }
     }
 
@@ -113,6 +115,38 @@ public abstract class AbstractDataView<T> implements DataView<T> {
                     dataProviderType.getSuperclass().getSimpleName());
             throw new IllegalStateException(message);
         }
+    }
+
+    /**
+     * Verifies an obtained {@link DataProvider} type is appropriate for current
+     * Data View type. If the data provider is a wrapper, then the wrapped data
+     * provider is verified too.
+     *
+     * @param dataProvider
+     *            data provider to be verified
+     * @throws IllegalStateException
+     *             if data provider type is incompatible with data view type
+     */
+    protected final void verifyDataProviderType(
+            DataProvider<T, ?> dataProvider) {
+        try {
+            verifyDataProviderType(dataProvider.getClass());
+        } catch (IllegalStateException e) {
+            if (DataProviderWrapper.class
+                    .isAssignableFrom(dataProvider.getClass())) {
+                verifyDataProviderType(
+                        ((DataProviderWrapper<T, ?, ?>) dataProvider)
+                                .getWrappedDataProvider());
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public Optional<Integer> getItemIndex(T item) {
+        int index = getItemIndex(item, getItems());
+        return index >= 0 ? Optional.of(index) : Optional.empty();
     }
 
     @Override
@@ -187,6 +221,28 @@ public abstract class AbstractDataView<T> implements DataView<T> {
                         NULL_IDENTIFIER_ERROR_MESSAGE),
                 Objects.requireNonNull(getIdentifierProvider().apply(compareTo),
                         NULL_IDENTIFIER_ERROR_MESSAGE));
+    }
+
+    /**
+     * Gets item index from the given stream.
+     *
+     * @param item
+     *            the item to get index for
+     * @param stream
+     *            the stream to get index from
+     * @return the index of the item in the stream, or -1 if not found
+     */
+    protected int getItemIndex(T item, Stream<T> stream) {
+        Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
+        AtomicInteger index = new AtomicInteger(-1);
+        //@formatter:off
+        if (!stream.peek(nextItem -> index.incrementAndGet())
+                .filter(nextItem -> equals(item, nextItem))
+                .findFirst().isPresent()) {
+            return -1;
+        }
+        //@formatter:on
+        return index.get();
     }
 
     private boolean isDataProviderInitialized(Class<?> dataProviderType) {

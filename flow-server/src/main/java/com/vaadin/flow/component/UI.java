@@ -1868,7 +1868,14 @@ public class UI extends Component
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
-            getInternals().clearLastHandledNavigation();
+            if (getInternals().getSession().getConfiguration()
+                    .isReactRouterEnabled()
+                    && getInternals().getContinueNavigationAction() != null) {
+                getInternals().clearLastHandledNavigation();
+            } else {
+                getInternals().clearLastHandledNavigation();
+            }
+
         }
     }
 
