@@ -119,7 +119,7 @@ public class TestEndpointGeneratorTaskFactory
         @Override
         public void execute() {
             writeFile(new File(options.getBuildDirectory(),
-                    "classes/dev/hilla/openapi.json"), "{}");
+                    "classes/com/vaadin/hilla/openapi.json"), "{}");
         }
     }
 
