@@ -338,7 +338,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, TARGET, "classes/dev/hilla/openapi.json")
+                .get(baseDir, TARGET, "classes/com/vaadin/hilla/openapi.json")
                 .toFile();
         try {
             originalJavaSourceFolder = System
@@ -374,7 +374,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         String originalJavaSourceFolder = null;
         File generatedOpenApiJson = Paths
-                .get(baseDir, TARGET, "classes/dev/hilla/openapi.json")
+                .get(baseDir, TARGET, "classes/com/vaadin/hilla/openapi.json")
                 .toFile();
         try {
             originalJavaSourceFolder = System

@@ -278,14 +278,15 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void createInitParameters_valuesFromContextAreIgnored_valuesAreTakenFromservletConfig()
-            throws Exception {
+    public void createInitParameters_valuesFromContextAreIgnored_valuesAreTakenFromservletConfig() {
         DeploymentConfigurationFactory factory = new DeploymentConfigurationFactory();
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
 
         Mockito.when(config.getVaadinContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(Lookup.class))
+                .thenReturn(Mockito.mock(Lookup.class));
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
@@ -339,6 +340,12 @@ public class DeploymentConfigurationFactoryTest {
                 .equals(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE));
         Mockito.when(config.getConfigParameterNames())
                 .thenReturn(Collections.enumeration(allParamsList));
+
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+
+        Mockito.when(config.getVaadinContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(Lookup.class))
+                .thenReturn(Mockito.mock(Lookup.class));
 
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
@@ -422,6 +429,12 @@ public class DeploymentConfigurationFactoryTest {
         VaadinConfig config = mockTokenFileViaContextParam(
                 "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}");
 
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+
+        Mockito.when(config.getVaadinContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(Lookup.class))
+                .thenReturn(Mockito.mock(Lookup.class));
+
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
@@ -439,6 +452,12 @@ public class DeploymentConfigurationFactoryTest {
         VaadinConfig config = mockTokenFileViaContextParam(
                 "{ 'externalStatsFile': true}");
 
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+
+        Mockito.when(config.getVaadinContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(Lookup.class))
+                .thenReturn(Mockito.mock(Lookup.class));
+
         Properties parameters = factory.createInitParameters(Object.class,
                 config);
 
@@ -453,6 +472,12 @@ public class DeploymentConfigurationFactoryTest {
 
         VaadinConfig config = mockTokenFileViaContextParam(
                 "{ '" + SERVLET_PARAMETER_PRODUCTION_MODE + "': true}");
+
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+
+        Mockito.when(config.getVaadinContext()).thenReturn(context);
+        Mockito.when(context.getAttribute(Lookup.class))
+                .thenReturn(Mockito.mock(Lookup.class));
 
         Properties parameters = factory.createInitParameters(Object.class,
                 config);

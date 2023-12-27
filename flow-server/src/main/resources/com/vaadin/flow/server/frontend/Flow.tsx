@@ -15,7 +15,8 @@
  */
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import { useEffect, useRef } from "react";
-import { NavigateFunction, useLocation, useNavigate } from "react-router-dom";
+import { matchPath, matchRoutes, NavigateFunction, useLocation, useNavigate } from "react-router-dom";
+import { routes } from "Frontend/routes.js";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -132,20 +133,54 @@ function vaadinRouterGlobalClickHandler(event) {
 // We can't initiate useNavigate() from outside React component so we store it here for use in the navigateEvent.
 let navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
 let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>> | undefined = undefined;
+let lastNavigation: String;
 
 // @ts-ignore
 function navigateEventHandler(event) {
     if (event && event.preventDefault) {
         event.preventDefault();
     }
-
-    if (mountedContainer?.onBeforeLeave) {
-        mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
-            prevent() {},
-        }, router);
-    } else {
-        navigation(event.detail.pathname, {replace: false})
+    if(matchPath(event.detail.pathname, window.location.pathname)) {
+        return;
     }
+    // @ts-ignore
+    let matched = matchRoutes(routes, event.detail.pathname);
+
+    // if navigation event route targets a flow view do beforeEnter for the
+    // target path. Server will then handle updates and postpone as needed.
+    if(matched?.length == 1 && matched[0].route.path === "/*") {
+        if (mountedContainer?.onBeforeEnter) {
+            mountedContainer.onBeforeEnter(
+                {
+                    pathname: event.detail.pathname,
+                    search: event.detail.search
+                },
+                {
+                    prevent() {
+                    },
+                    // @ts-ignore
+                    redirect: (path) => {
+                        navigation(path, {replace: false});
+                    }
+                },
+                router,
+            );
+        }
+    } else {
+        // Navigating to a non flow view. If beforeLeave set call that before
+        // navigation. If not postponed clear + navigate will be executed.
+        if (mountedContainer?.onBeforeLeave) {
+            mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
+                prevent() {},
+            }, router);
+        } else {
+            // Navigate to a non flow view. Clean nodes and undefine container.
+            mountedContainer?.parentNode?.removeChild(mountedContainer);
+            mountedContainer = undefined;
+            navigation(event.detail.pathname, {replace: false});
+        }
+    }
+    lastNavigation = event.detail.pathname;
 }
 
 export default function Flow() {
@@ -156,6 +191,9 @@ export default function Flow() {
     useEffect(() => {
         window.document.addEventListener('click', vaadinRouterGlobalClickHandler);
         window.addEventListener('vaadin-router-go', navigateEventHandler);
+        if(lastNavigation === pathname) {
+            return;
+        }
         flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
@@ -174,13 +212,6 @@ export default function Flow() {
             }
         });
         return () => {
-            if (mountedContainer?.onBeforeLeave) {
-                mountedContainer?.onBeforeLeave({pathname, search}, {
-                    prevent() {},
-                }, router);
-            }
-            mountedContainer?.parentNode?.removeChild(mountedContainer);
-            mountedContainer = undefined;
             window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
             window.removeEventListener('vaadin-router-go', navigateEventHandler);
         };

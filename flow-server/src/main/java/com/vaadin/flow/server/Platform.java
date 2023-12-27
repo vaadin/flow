@@ -91,14 +91,14 @@ public class Platform implements Serializable {
         if (hillaVersion == null) {
             try (final InputStream hillaPomProperties = Thread.currentThread()
                     .getContextClassLoader().getResourceAsStream(
-                            "META-INF/maven/dev.hilla/hilla/pom.properties")) {
+                            "META-INF/maven/com.vaadin.hilla/hilla/pom.properties")) {
                 if (hillaPomProperties != null) {
                     final Properties properties = new Properties();
                     properties.load(hillaPomProperties);
                     hillaVersion = properties.getProperty("version", "");
                 } else {
                     LOGGER.info("Unable to determine Hilla version. "
-                            + "No META-INF/maven/dev.hilla/hilla/pom.properties found");
+                            + "No META-INF/maven/com.vaadin.hilla/hilla/pom.properties found");
                     hillaVersion = "";
                 }
             } catch (Exception e) {

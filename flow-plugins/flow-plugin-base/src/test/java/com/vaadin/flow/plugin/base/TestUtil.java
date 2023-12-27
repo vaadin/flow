@@ -52,7 +52,7 @@ public class TestUtil {
                 .thenReturn(new File(baseDir, "src/main/resources"));
         Mockito.when(adapter.openApiJsonFile())
                 .thenReturn(new File(new File(baseDir, Constants.TARGET),
-                        "classes/dev/hilla/openapi.json"));
+                        "classes/com/vaadin/hilla/openapi.json"));
         Mockito.when(adapter.getClassFinder())
                 .thenReturn(new ClassFinder.DefaultClassFinder(
                         TestUtil.class.getClassLoader()));

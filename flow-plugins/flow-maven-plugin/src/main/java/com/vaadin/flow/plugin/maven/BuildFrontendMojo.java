@@ -119,6 +119,15 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(property = InitParameters.FORCE_PRODUCTION_BUILD, defaultValue = "false")
     private boolean forceProductionBuild;
 
+    /**
+     * Control cleaning of generated frontend files when executing
+     * 'build-frontend'.
+     *
+     * Mainly this is wanted to be true which it is by default.
+     */
+    @Parameter(property = InitParameters.CLEAN_BUILD_FRONTEND_FILES, defaultValue = "true")
+    private boolean cleanFrontendFiles;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
@@ -167,7 +176,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * @return {@code true} to remove created files, {@code false} to keep files
      */
     protected boolean cleanFrontendFiles() {
-        return true;
+        return cleanFrontendFiles;
     }
 
     @Override
