@@ -59,11 +59,11 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
             ************************************************************************
             *  TypeScript type declaration file 'types.d.ts' have been customized  *
-            *  customized, but is seems to contain the configuration required by   *
-            *  Vaadin. Please make sure the following configuration is present     *
-            *  in the 'types.d.ts' file exactly as show below. As an alternative   *
-            *  you can rename the 'types.d.ts', make Vaadin re-generate it, and    *
-            *  then update it with your custom contents.                           *
+            *  but is seems to contain the configuration required by Vaadin.       *
+            *  Please make sure the following configuration is present in the      *
+            *  'types.d.ts' file exactly as show below. As an alternative you can  *
+            *  rename the 'types.d.ts', make Vaadin re-generate it, and then       *
+            *  update it with your custom contents.                                *
             *  ------------------------------------------------------------------  *
             %s
             *  ------------------------------------------------------------------  *
