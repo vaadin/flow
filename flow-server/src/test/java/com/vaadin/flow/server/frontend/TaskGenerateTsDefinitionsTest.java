@@ -195,6 +195,34 @@ public class TaskGenerateTsDefinitionsTest {
     }
 
     @Test
+    public void customTsDefinition_windowsEOL_flowContents_tsDefinitionNotUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        Files.writeString(typesTSfile,
+                """
+                        import type { SchemaObject } from "../../types";
+                        export type SchemaObjectMap = {
+                            [Ref in string]?: SchemaObject;
+                        };
+                        declare module '*.css?inline' {
+                          import { CSSResultGroup } from 'lit';
+                          const content: CSSResultGroup;
+                          export default content;
+                        }
+                        export declare const jtdForms: readonly ["elements", "values", "discriminator", "properties", "optionalProperties", "enum", "type", "ref"];
+                        export type JTDForm = typeof jtdForms[number];
+                        }"""
+                        .replace("\n", "\r\n"));
+        FileTime lastModifiedTime = Files.getLastModifiedTime(typesTSfile);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        Assert.assertEquals("types.d.ts should not have been updated",
+                lastModifiedTime, Files.getLastModifiedTime(typesTSfile));
+    }
+
+    @Test
     public void customTsDefinition_flowContentsNotMatching_tsDefinitionNotUpdated()
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();

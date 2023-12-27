@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
@@ -134,8 +135,9 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
             String uncommentedDefaultContent = COMMENT_LINE
                     .matcher(defaultContent).replaceAll("");
-            if (content.equals(defaultContent)
-                    || content.contains(uncommentedDefaultContent)) {
+            if (compareIgnoringEOL(content, defaultContent, String::equals)
+                    || compareIgnoringEOL(content, uncommentedDefaultContent,
+                            String::contains)) {
                 log().debug("{} is up-to-date", TS_DEFINITIONS);
             } else if (content.contains(DECLARE_CSS_MODULE)) {
                 log().debug(
@@ -185,12 +187,19 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     private boolean hasCustomContent(String content)
             throws ExecutionFailedException {
         try {
-            return !content.equals(getTemplateContent(".v1"));
+            return !compareIgnoringEOL(content, getTemplateContent(".v1"),
+                    String::equals);
         } catch (IOException ex) {
             throw new ExecutionFailedException(
                     "Cannot read default " + TS_DEFINITIONS + ".v1 contents",
                     ex);
         }
+    }
+
+    private static boolean compareIgnoringEOL(String content1, String content2,
+            BiPredicate<String, String> compareFn) {
+        return compareFn.test(content1.replace("\r\n", "\n"),
+                content2.replace("\r\n", "\n"));
     }
 
     private String getTemplateContent(String suffix) throws IOException {
