@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -270,6 +272,11 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
+        } else if (ui.getInternals().getSession().getConfiguration()
+                .isReactRouterEnabled()) {
+            if (shouldPushHistoryState(event)) {
+                pushHistoryState(event);
+            }
         }
     }
 

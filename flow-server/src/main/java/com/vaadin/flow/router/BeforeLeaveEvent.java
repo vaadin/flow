@@ -88,7 +88,9 @@ public class BeforeLeaveEvent extends BeforeEvent {
                 // updated/added by router when we continue for a Router_link.
                 // If the server updates the url also we will get 2 history
                 // changes instead of 1.
-                if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+                if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
+                        && !event.getUI().getSession().getConfiguration()
+                                .isReactRouterEnabled()) {
                     event = new NavigationEvent(event.getSource(),
                             event.getLocation(), event.getUI(),
                             NavigationTrigger.PROGRAMMATIC);

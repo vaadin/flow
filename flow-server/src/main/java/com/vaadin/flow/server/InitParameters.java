@@ -65,6 +65,7 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String NODE_VERSION = "node.version";
     public static final String NODE_DOWNLOAD_ROOT = "node.download.root";
+    public static final String REACT_ROUTER_ENABLED = "enable.react.router";
 
     /**
      * Configuration name for the parameter that determines whether Brotli
@@ -243,4 +244,9 @@ public class InitParameters implements Serializable {
      * Configuration name for forcing optimized production bundle build.
      */
     public static final String COMPRESS_BUNDLE = "vaadin.compress.bundle";
+
+    /**
+     * Configuration name for cleaning or leaving frontend files in build.
+     */
+    public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";
 }

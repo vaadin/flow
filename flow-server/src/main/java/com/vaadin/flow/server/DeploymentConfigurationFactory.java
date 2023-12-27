@@ -21,13 +21,16 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.AbstractConfigurationFactory;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.server.InitParameters.REACT_ROUTER_ENABLED;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -105,7 +108,6 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
     private void readBuildInfo(Properties initParameters,
             VaadinContext context) {
         String json = getTokenFileContent(initParameters::getProperty);
-
         // Read the json and set the appropriate system properties if not
         // already set.
         if (json != null) {
@@ -118,6 +120,18 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
                     initParameters.put(entry.getKey(), entry.getValue());
                 }
             }
+        }
+
+        if (!initParameters.containsKey(REACT_ROUTER_ENABLED)) {
+            // TODO: When not a feature flag remember to synchronize with
+            // NodeTasks!!
+            // This is set immediately, but a marking in the token file may
+            // override this.
+            // But mainly this is now dictated by the feature flag setting.
+            initParameters.put(REACT_ROUTER_ENABLED,
+                    String.valueOf(
+                            new FeatureFlags(context.getAttribute(Lookup.class))
+                                    .isEnabled(FeatureFlags.REACT_ROUTER)));
         }
     }
 

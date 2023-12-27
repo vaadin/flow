@@ -59,7 +59,7 @@ public interface EndpointRequestUtil extends Serializable {
      */
     static boolean isHillaAvailable() {
         try {
-            Class.forName("dev.hilla.EndpointController");
+            Class.forName("com.vaadin.hilla.EndpointController");
             return true;
         } catch (ClassNotFoundException e) {
             return false;
