@@ -133,6 +133,7 @@ function vaadinRouterGlobalClickHandler(event) {
 // We can't initiate useNavigate() from outside React component so we store it here for use in the navigateEvent.
 let navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
 let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>> | undefined = undefined;
+let lastNavigation: String;
 
 // @ts-ignore
 function navigateEventHandler(event) {
@@ -179,6 +180,7 @@ function navigateEventHandler(event) {
             navigation(event.detail.pathname, {replace: false});
         }
     }
+    lastNavigation = event.detail.pathname;
 }
 
 export default function Flow() {
@@ -189,6 +191,9 @@ export default function Flow() {
     useEffect(() => {
         window.document.addEventListener('click', vaadinRouterGlobalClickHandler);
         window.addEventListener('vaadin-router-go', navigateEventHandler);
+        if(lastNavigation === pathname) {
+            return;
+        }
         flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
