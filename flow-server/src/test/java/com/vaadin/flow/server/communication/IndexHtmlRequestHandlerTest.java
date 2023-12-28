@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +29,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -708,6 +709,33 @@ public class IndexHtmlRequestHandlerTest {
         htmlContent = htmlContent.replace("\r", "");
         htmlContent = htmlContent.replace("\n", " ");
         assertEquals(StringUtil.normaliseWhitespace(expected), htmlContent);
+    }
+
+    @Test
+    public void devTools_disable_stubPushFunctionRegistered()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        TestUtil.createIndexHtmlStub(projectRootFolder);
+        TestUtil.createStatsJsonStub(projectRootFolder);
+        deploymentConfiguration.setDevToolsEnabled(false);
+        deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertTrue(
+                "Expected devToolsPlugins.push function when dev-tools are disabled",
+                document.head().getElementsByTag("script").stream()
+                        .map(Element::html)
+                        .anyMatch(script -> script
+                                .contains("window.Vaadin.devToolsPlugins = {")
+                                && script
+                                        .contains("push: function(plugin) {")));
+
     }
 
     @Test
