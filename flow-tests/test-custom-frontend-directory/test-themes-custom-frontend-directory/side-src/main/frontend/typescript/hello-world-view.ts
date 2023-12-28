@@ -1,7 +1,6 @@
 import '@vaadin/text-field';
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
-// @ts-ignore
 import styles from './hello-world-view.css?inline';
 
 
