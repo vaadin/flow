@@ -84,13 +84,13 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>3.2.0</spring.boot.version>
+        <spring.boot.version>3.2.1</spring.boot.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.9</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.16.0</jackson.version>
-        <jackson.databind.version>2.16.0</jackson.databind.version>
+        <jackson.databind.version>${jackson.version}</jackson.databind.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
         <jaxb.version>4.0.4</jaxb.version>
@@ -240,7 +240,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.14.10</version>
+                <version>1.14.11</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>
@@ -326,7 +326,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.12.0</version>
+                <version>3.12.1</version>
             </plugin>
 
             <plugin>

@@ -111,6 +111,12 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * used to make sure that value synchronization of input fields is not
      * blocked for the shortcut key (e.g. Enter key). To change this behavior,
      * call {@link ShortcutRegistration#setBrowserDefaultAllowed(boolean)}.
+     * <p>
+     * {@link ShortcutRegistration#resetFocusOnActiveElement()} resets focus on
+     * active element before triggering click event handler. It ensures that
+     * value synchronization of input fields with a ValueChangeMode.ON_CHANGE is
+     * done before click event handler is executed (e.g. when Enter key saves a
+     * form).
      *
      * @param key
      *            primary {@link Key} used to trigger the shortcut. Cannot be

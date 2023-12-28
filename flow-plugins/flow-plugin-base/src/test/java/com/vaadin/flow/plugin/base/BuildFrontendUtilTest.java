@@ -90,7 +90,7 @@ public class BuildFrontendUtilTest {
         setupPluginAdapterDefaults();
 
         File openApiJsonFile = new File(new File(baseDir, Constants.TARGET),
-                "classes/dev/hilla/openapi.json");
+                "classes/com/vaadin/hilla/openapi.json");
         Mockito.when(adapter.openApiJsonFile()).thenReturn(openApiJsonFile);
 
         BuildFrontendUtil.prepareFrontend(adapter);
@@ -225,7 +225,7 @@ public class BuildFrontendUtilTest {
                 .thenReturn(javaResourceFolder);
         Mockito.when(adapter.openApiJsonFile())
                 .thenReturn(new File(new File(baseDir, Constants.TARGET),
-                        "classes/dev/hilla/openapi.json"));
+                        "classes/com/vaadin/hilla/openapi.json"));
         Mockito.when(adapter.getClassFinder())
                 .thenReturn(new ClassFinder.DefaultClassFinder(
                         this.getClass().getClassLoader()));

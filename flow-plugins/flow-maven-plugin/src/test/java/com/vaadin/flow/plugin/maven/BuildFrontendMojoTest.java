@@ -147,7 +147,7 @@ public class BuildFrontendMojoTest {
 
         defaultJavaSource = new File(".", "src/test/java");
         openApiJsonFile = new File(npmFolder,
-                "target/classes/dev/hilla/openapi.json");
+                "target/classes/com/vaadin/hilla/openapi.json");
         generatedTsFolder = new File(npmFolder, "frontend/generated");
 
         Assert.assertTrue("Failed to create a test project resources",
