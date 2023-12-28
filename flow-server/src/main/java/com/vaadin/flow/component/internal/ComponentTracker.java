@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +58,8 @@ public class ComponentTracker {
      * Represents a location in the source code.
      */
     public static class Location implements Serializable {
+        private static final Pattern MAYBE_INNER_CLASS = Pattern
+                .compile("(.*\\.[^$.]+)\\$[^.]+$");
         private final String className;
         private final String filename;
         private final String methodName;
@@ -122,10 +126,19 @@ public class ComponentTracker {
          */
         public File findJavaFile(AbstractConfiguration configuration) {
             String cls = className();
-            String filename = filename();
-            if (!cls.endsWith(filename.replace(".java", ""))) {
+            String filenameNoExt = filename().replace(".java", "");
+
+            if (!cls.endsWith(filenameNoExt)) {
+                // Check for inner class
+                Matcher matcher = MAYBE_INNER_CLASS.matcher(cls);
+                if (matcher.find()) {
+                    cls = matcher.group(1);
+                }
+            }
+            if (!cls.endsWith(filenameNoExt)) {
                 return null;
             }
+
             File src = configuration.getJavaSourceFolder();
             File javaFile = new File(src,
                     cls.replace(".", File.separator) + ".java");
