@@ -1956,11 +1956,10 @@ public class ComponentTest {
     }
 
     private void resetComponentTrackerProductionMode() throws Exception {
-        Field productionMode = ComponentTracker.class
-                .getDeclaredField("productionMode");
-        productionMode.setAccessible(true);
-        productionMode.set(null, null);
-        productionMode.setAccessible(false);
+        Field disabled = ComponentTracker.class.getDeclaredField("disabled");
+        disabled.setAccessible(true);
+        disabled.set(null, null);
+        disabled.setAccessible(false);
     }
 
 }

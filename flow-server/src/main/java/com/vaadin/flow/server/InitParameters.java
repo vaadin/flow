@@ -163,6 +163,14 @@ public class InitParameters implements Serializable {
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
 
     /**
+     * Configuration parameter name for enabling component tracking in
+     * development mode. If not set, tracking is enabled by default.
+     *
+     * @since
+     */
+    public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
+
+    /**
      * I18N provider property.
      */
     public static final String I18N_PROVIDER = "i18n.provider";
