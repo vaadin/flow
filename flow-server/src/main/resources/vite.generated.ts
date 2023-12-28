@@ -348,8 +348,8 @@ function statsExtracterPlugin(): PluginOption {
       let frontendFolderAlias = "Frontend";
       generatedImports
         .filter((line: string) => line.startsWith(frontendFolderAlias + '/'))
-        .filter((line: string) => !line.includes('/generated/'))
-        .filter((line: string) => !line.includes('/themes/'))
+        .filter((line: string) => !line.startsWith(frontendFolderAlias + '/generated/'))
+        .filter((line: string) => !line.startsWith(frontendFolderAlias + '/themes/'))
         .map((line) => line.substring(frontendFolderAlias.length + 1))
         .filter((line: string) => !frontendFiles[line])
         .forEach((line: string) => {
