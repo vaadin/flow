@@ -172,6 +172,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             catchErrorsInDevMode(indexDocument);
 
             addLicenseChecker(indexDocument);
+        } else if (!config.isProductionMode()) {
+            // If a dev-tools plugin tries to register itself with disabled
+            // dev-tools, the application completely breaks with a JS error
+            addScript(indexDocument,
+                    """
+                            window.Vaadin = window.Vaadin || {};
+                            window.Vaadin.devToolsPlugins = {
+                                push: function(plugin) {
+                                    window.console.debug("Vaadin Dev Tools disabled. Plugin cannot be registered.", plugin);
+                                }
+                            };
+                            """);
         }
 
         // this invokes any custom listeners and should be run when the whole
