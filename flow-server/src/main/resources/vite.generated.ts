@@ -343,6 +343,22 @@ function statsExtracterPlugin(): PluginOption {
           const fileKey = line.substring(line.indexOf('jar-resources/') + 14);
           frontendFiles[fileKey] = hash;
         });
+      // collects and hash rest of the Frontend resources excluding files in /generated/ and /themes/ 
+      // and files already in frontendFiles.
+      let frontendFolderAlias = "Frontend";
+      generatedImports
+        .filter((line: string) => line.startsWith(frontendFolderAlias + '/'))
+        .filter((line: string) => !line.startsWith(frontendFolderAlias + '/generated/'))
+        .filter((line: string) => !line.startsWith(frontendFolderAlias + '/themes/'))
+        .map((line) => line.substring(frontendFolderAlias.length + 1))
+        .filter((line: string) => !frontendFiles[line])
+        .forEach((line: string) => {
+          const filePath = path.resolve(frontendFolder, line);
+          if (projectFileExtensions.includes(path.extname(filePath)) && existsSync(filePath)) {
+            const fileBuffer = readFileSync(filePath, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
+            frontendFiles[line] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
+          }
+        });        
       // If a index.ts exists hash it to be able to see if it changes.
       if (existsSync(path.resolve(frontendFolder, 'index.ts'))) {
         const fileBuffer = readFileSync(path.resolve(frontendFolder, 'index.ts'), { encoding: 'utf-8' }).replace(
