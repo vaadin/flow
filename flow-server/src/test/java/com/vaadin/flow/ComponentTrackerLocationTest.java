@@ -121,11 +121,4 @@ public class ComponentTrackerLocationTest {
         Assert.assertEquals(expectedFile, javaFile);
     }
 
-    static class A {
-        static class B {
-            static class C {
-
-            }
-        }
-    }
 }
