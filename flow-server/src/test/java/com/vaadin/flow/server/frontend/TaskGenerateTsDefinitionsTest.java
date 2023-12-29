@@ -122,7 +122,7 @@ public class TaskGenerateTsDefinitionsTest {
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         Files.writeString(typesTSfile,
-                readPreviousContent().replaceFirst("\n$", ""));
+                readPreviousContent().replaceFirst("\r?\n$", ""));
         taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
