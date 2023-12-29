@@ -300,13 +300,23 @@ function statsExtracterPlugin(): PluginOption {
           id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
               && id.match(/.*\/jar-resources\/themes\/[^\/]+\/components\//);
 
+      const isGeneratedWebComponentResource = (id: string) =>
+          id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
+              && id.match(/.*\/flow\/web-components\//);
+
+      const isFrontendResourceCollected = (id: string) =>
+          !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
+          || isThemeComponentsResource(id) 
+          || isGeneratedWebComponentResource(id);
+
       // collects project's frontend resources in frontend folder, excluding
       // 'generated' sub-folder, except for legacy shadow DOM stylesheets
-      // packaged in `theme/components/` folder.
+      // packaged in `theme/components/` folder
+      // and generated web component resources in `flow/web-components` folder.
       modules
         .map((id) => id.replace(/\\/g, '/'))
         .filter((id) => id.startsWith(frontendFolder.replace(/\\/g, '/')))
-        .filter((id) => !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/')) || isThemeComponentsResource(id))
+        .filter(isFrontendResourceCollected)
         .map((id) => id.substring(frontendFolder.length + 1))
         .map((line: string) => (line.includes('?') ? line.substring(0, line.lastIndexOf('?')) : line))
         .forEach((line: string) => {
