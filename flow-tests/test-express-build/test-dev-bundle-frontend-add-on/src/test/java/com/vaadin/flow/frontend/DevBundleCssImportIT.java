@@ -93,7 +93,7 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
         Assert.assertTrue("Addon import is expected", found);
     }
 
-    private static JsonObject getFrontendHashes() throws IOException {
+    public static JsonObject getFrontendHashes() throws IOException {
         JsonObject statsJson = getStatsJson();
         JsonObject frontendHashes = statsJson.getObject("frontendHashes");
         Assert.assertNotNull("Frontend hashes are expected in the stats.json",
