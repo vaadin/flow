@@ -118,6 +118,21 @@ public class TaskGenerateTsDefinitionsTest {
     }
 
     @Test
+    public void tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        Files.writeString(typesTSfile,
+                readPreviousContent().replaceFirst("\r?\n$", ""));
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        Assert.assertEquals("types.d.ts should have been replaced",
+                updatedContent, readExpectedContent(false));
+    }
+
+    @Test
     public void customTsDefinition_missingFlowContents_tsDefinitionUpdatedAndExceptionThrown()
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
