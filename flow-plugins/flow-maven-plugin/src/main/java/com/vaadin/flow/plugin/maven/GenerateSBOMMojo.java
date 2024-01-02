@@ -151,21 +151,32 @@ public class GenerateSBOMMojo extends AbstractMojo {
         Properties properties = new Properties();
         properties.setProperty(PROJECT_TYPE, projectType);
         properties.setProperty(SCHEMA_VERSION, schemaVersion);
-        properties.setProperty(INCLUDE_BOM_SERIAL_NUMBER, String.valueOf(includeBomSerialNumber));
-        properties.setProperty(INCLUDE_COMPILE_SCOPE, String.valueOf(includeCompileScope));
-        properties.setProperty(INCLUDE_PROVIDED_SCOPE, String.valueOf(includeProvidedScope));
-        properties.setProperty(INCLUDE_RUNTIME_SCOPE, String.valueOf(includeRuntimeScope));
-        properties.setProperty(INCLUDE_TEST_SCOPE, String.valueOf(includeTestScope));
-        properties.setProperty(INCLUDE_SYSTEM_SCOPE, String.valueOf(includeSystemScope));
-        properties.setProperty(INCLUDE_LICENSE_TEXT, String.valueOf(includeLicenseText));
-        properties.setProperty(OUTPUT_REACTOR_PROJECTS, String.valueOf(outputReactorProjects));
+        properties.setProperty(INCLUDE_BOM_SERIAL_NUMBER,
+                String.valueOf(includeBomSerialNumber));
+        properties.setProperty(INCLUDE_COMPILE_SCOPE,
+                String.valueOf(includeCompileScope));
+        properties.setProperty(INCLUDE_PROVIDED_SCOPE,
+                String.valueOf(includeProvidedScope));
+        properties.setProperty(INCLUDE_RUNTIME_SCOPE,
+                String.valueOf(includeRuntimeScope));
+        properties.setProperty(INCLUDE_TEST_SCOPE,
+                String.valueOf(includeTestScope));
+        properties.setProperty(INCLUDE_SYSTEM_SCOPE,
+                String.valueOf(includeSystemScope));
+        properties.setProperty(INCLUDE_LICENSE_TEXT,
+                String.valueOf(includeLicenseText));
+        properties.setProperty(OUTPUT_REACTOR_PROJECTS,
+                String.valueOf(outputReactorProjects));
         properties.setProperty(OUTPUT_FORMAT, outputFormat);
         properties.setProperty(OUTPUT_NAME, outputName);
         properties.setProperty(OUTPUT_DIRECTORY, outputDirectory);
         properties.setProperty(EXCLUDE_TYPES, String.join(",", excludeTypes));
-        properties.setProperty(EXCLUDE_ARTIFACT_ID, String.join(",", excludeArtifactId));
-        properties.setProperty(EXCLUDE_GROUP_ID, String.join(",", excludeGroupId));
-        properties.setProperty(EXCLUDE_TEST_PROJECT, String.valueOf(excludeTestProject));
+        properties.setProperty(EXCLUDE_ARTIFACT_ID,
+                String.join(",", excludeArtifactId));
+        properties.setProperty(EXCLUDE_GROUP_ID,
+                String.join(",", excludeGroupId));
+        properties.setProperty(EXCLUDE_TEST_PROJECT,
+                String.valueOf(excludeTestProject));
         properties.setProperty(CYCLONEDX_VERBOSE, String.valueOf(verbose));
         request.setProperties(properties);
 

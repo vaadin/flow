@@ -39,19 +39,31 @@ public class GenerateSBOMMojoTest {
                 .getAbsolutePath();
 
         // set Mojo properties
-        ReflectionUtils.setVariableValueInObject(mojo, "projectType", "library");
+        ReflectionUtils.setVariableValueInObject(mojo, "projectType",
+                "library");
         ReflectionUtils.setVariableValueInObject(mojo, "schemaVersion", "1.4");
-        ReflectionUtils.setVariableValueInObject(mojo, "includeBomSerialNumber", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeCompileScope", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeProvidedScope", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeRuntimeScope", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeTestScope", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeSystemScope", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeLicenseText", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "outputReactorProjects", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "excludeTypes", new String[0]);
-        ReflectionUtils.setVariableValueInObject(mojo, "excludeArtifactId", new String[0]);
-        ReflectionUtils.setVariableValueInObject(mojo, "excludeGroupId", new String[0]);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeBomSerialNumber",
+                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeCompileScope",
+                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeProvidedScope",
+                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeRuntimeScope",
+                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeTestScope",
+                false);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeSystemScope",
+                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeLicenseText",
+                false);
+        ReflectionUtils.setVariableValueInObject(mojo, "outputReactorProjects",
+                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "excludeTypes",
+                new String[0]);
+        ReflectionUtils.setVariableValueInObject(mojo, "excludeArtifactId",
+                new String[0]);
+        ReflectionUtils.setVariableValueInObject(mojo, "excludeGroupId",
+                new String[0]);
         ReflectionUtils.setVariableValueInObject(mojo, "outputFormat", "json");
         ReflectionUtils.setVariableValueInObject(mojo, "outputName", "bom");
         ReflectionUtils.setVariableValueInObject(mojo, "outputDirectory",
