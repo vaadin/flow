@@ -122,17 +122,6 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
             }
         }
 
-        if (!initParameters.containsKey(REACT_ROUTER_ENABLED)) {
-            // TODO: When not a feature flag remember to synchronize with
-            // NodeTasks!!
-            // This is set immediately, but a marking in the token file may
-            // override this.
-            // But mainly this is now dictated by the feature flag setting.
-            initParameters.put(REACT_ROUTER_ENABLED,
-                    String.valueOf(
-                            new FeatureFlags(context.getAttribute(Lookup.class))
-                                    .isEnabled(FeatureFlags.REACT_ROUTER)));
-        }
     }
 
     private static void readUiFromEnclosingClass(

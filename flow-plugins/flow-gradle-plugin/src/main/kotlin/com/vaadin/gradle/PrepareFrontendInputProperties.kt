@@ -151,7 +151,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
 
     @Input
     @Optional
-    public fun getPnpmExecutablePath(): Provider<String> = config.pnpmEnable.map { pnpmEnable ->
+    public fun getPnpmExecutablePath(): Provider<String> = config.pnpmEnable.map { pnpmEnable: Boolean ->
         if (!pnpmEnable) {
             return@map ""
         }
@@ -159,7 +159,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
         pnpmExecutable.joinToString(" ")
     }
 
-    private fun initialiseFrontendToolsSettings(): Provider<FrontendTools> = config.npmFolder.map { npmFolder ->
+    private fun initialiseFrontendToolsSettings(): Provider<FrontendTools> = config.npmFolder.map { npmFolder: File ->
         val settings = FrontendToolsSettings(npmFolder.absolutePath) {
             FrontendUtils.getVaadinHomeDirectory()
                 .absolutePath

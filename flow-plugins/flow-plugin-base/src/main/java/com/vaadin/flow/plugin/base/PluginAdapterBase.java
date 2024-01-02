@@ -302,4 +302,10 @@ public interface PluginAdapterBase {
      */
     boolean isPrepareFrontendCacheDisabled();
 
+    /**
+     * Set react router as enabled or disabled.
+     *
+     * @return {@code true} for react router and {@code false} for vaadin-router
+     */
+    boolean isReactRouterEnabled();
 }

@@ -161,6 +161,9 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
 
+    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "true")
+    private boolean reactRouterEnabled;
+
     @Override
     public void execute() throws MojoFailureException {
         long start = System.nanoTime();
@@ -429,6 +432,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isPrepareFrontendCacheDisabled() {
         return false;
+    }
+
+    @Override
+    public boolean isReactRouterEnabled() {
+        return reactRouterEnabled;
     }
 
 }
