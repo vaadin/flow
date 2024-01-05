@@ -81,6 +81,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.REACT_ROUTER_ENABLED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
@@ -287,7 +288,9 @@ public class DevModeInitializer implements Serializable {
                         Arrays.asList(additionalPostinstallPackages))
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
-                .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE);
+                .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)
+                .withReactRouter(
+                        config.getBooleanProperty(REACT_ROUTER_ENABLED, true));
 
         NodeTasks tasks = new NodeTasks(options);
 
