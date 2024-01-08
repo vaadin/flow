@@ -45,6 +45,7 @@ public class GenerateFrontendBOMMojoTest {
                 bomFilename);
         ReflectionUtils.setVariableValueInObject(mojo, "packageManifest",
                 manifestFilePath);
+        ReflectionUtils.setVariableValueInObject(mojo, "specVersion", "1.4");
     }
 
     @Test

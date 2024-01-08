@@ -40,6 +40,7 @@ public class GenerateFrontendBOMMojo extends AbstractMojo {
     private static final String OUTPUT_FORMAT = "outputFormat";
     private static final String OUTPUT_FILE_PATH = "outputDirectory";
     private static final String PACKAGE_MANIFEST = "packageManifest";
+    private static final String SPEC_VERSION = "specVersion";
 
     private static final String GROUP = "org.codehaus.mojo";
     private static final String ARTIFACT = "exec-maven-plugin";
@@ -65,6 +66,9 @@ public class GenerateFrontendBOMMojo extends AbstractMojo {
     @Parameter(property = PACKAGE_MANIFEST, defaultValue = "./package.json")
     private String packageManifest;
 
+    @Parameter(property = SPEC_VERSION, defaultValue = "1.4")
+    private String specVersion;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         InvocationRequestBuilder requestBuilder = new InvocationRequestBuilder();
@@ -75,7 +79,8 @@ public class GenerateFrontendBOMMojo extends AbstractMojo {
         Properties properties = new Properties();
         properties.setProperty("exec.executable", "npx");
         properties.setProperty("exec.args",
-                "@cyclonedx/cyclonedx-npm --output-file " + outputFilePath
+                "@cyclonedx/cyclonedx-npm --spec-version " + specVersion
+                        + " --output-file " + outputFilePath
                         + " --output-format " + outputFormat + " -- "
                         + packageManifest);
         request.setProperties(properties);
