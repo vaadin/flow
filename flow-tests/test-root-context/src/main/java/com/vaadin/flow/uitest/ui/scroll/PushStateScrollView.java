@@ -27,7 +27,7 @@ import com.vaadin.flow.router.Route;
 
 import elemental.json.JsonValue;
 
-@Route(value = "com.vaadin.flow.uitest.ui.scroll.PushStateScrollView", layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.scroll.PushStateScrollView/:param?", layout = ViewTestLayout.class)
 public class PushStateScrollView extends AbstractDivView {
     public PushStateScrollView() {
         Element filler = ElementFactory.createDiv(
