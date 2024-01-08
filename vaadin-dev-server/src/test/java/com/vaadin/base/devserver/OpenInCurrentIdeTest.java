@@ -602,4 +602,20 @@ public class OpenInCurrentIdeTest {
 
         return info;
     }
+
+    @Test
+    public void runThrowsExceptionOnFailure() throws InterruptedException {
+        try {
+            OpenInCurrentIde.run("/bin/sh", "-c",
+                    "echo 'output1'; echo 'output2'; exit 123");
+            Assert.fail("Should have thrown exception");
+        } catch (IOException e) {
+            Assert.assertTrue("Exit code should have been reported",
+                    e.getMessage().contains("terminated with exit code 123"));
+            Assert.assertTrue("Output should have been included",
+                    e.getMessage().contains("output1"));
+            Assert.assertTrue("Output should have been included",
+                    e.getMessage().contains("output2"));
+        }
+    }
 }
