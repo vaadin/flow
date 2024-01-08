@@ -16,7 +16,9 @@
 package com.vaadin.base.devserver;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ProcessHandle.Info;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,13 +141,22 @@ public final class OpenInCurrentIde {
 
     }
 
-    private static void run(String command, String... arguments)
-            throws Exception {
+    static void run(String command, String... arguments)
+            throws IOException, InterruptedException {
         List<String> cmd = new ArrayList<>();
         cmd.add(command);
         cmd.addAll(Arrays.asList(arguments));
         ProcessBuilder pb = new ProcessBuilder().command(cmd);
-        pb.start().waitFor();
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            String output = IOUtils.toString(process.getInputStream(),
+                    StandardCharsets.UTF_8);
+            throw new IOException(
+                    "Command " + cmd + " terminated with exit code " + exitCode
+                            + ".\nOutput:\n" + output);
+        }
     }
 
     private static List<Info> getProcessTree() {
