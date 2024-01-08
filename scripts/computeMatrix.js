@@ -94,6 +94,8 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-helpers': { pos: 4, weight: 1 },
   'flow-tests/vaadin-spring-tests/test-spring': { pos: 5, weight: 20 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-webicons': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-webicons-urlmapping': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-methodsecurity': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 3 },
