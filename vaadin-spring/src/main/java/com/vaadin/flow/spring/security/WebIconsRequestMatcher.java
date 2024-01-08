@@ -17,15 +17,10 @@
 package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
-
-import org.slf4j.LoggerFactory;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatchers;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Inline;
@@ -36,17 +31,21 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatchers;
 
 /**
  * Matches request for custom PWA icons and Favicon paths.
- *
+ * <p>
  * PWA icon paths are computed by analyzing the {@link PWA} annotation on the
  * {@link AppShellConfigurator} implementor class. The favicon is detected by
  * invoking the {@link AppShellConfigurator#configurePage(AppShellSettings)}
  * method and tracking potential calls to
  * {@link AppShellSettings#addFavIcon(String, String, String)} and
  * {@link AppShellSettings#addFavIcon(String, String, String)} methods.
- *
+ * <p>
  * Default paths ({@link PwaConfiguration#DEFAULT_ICON} and
  * {@literal /favicon.ico}) are not considered.
  */
@@ -85,7 +84,8 @@ public class WebIconsRequestMatcher implements RequestMatcher {
         appendFavIconPath(paths, appShellClass, service, urlMapper);
         appendPwaIconPaths(paths, appShellClass, service, urlMapper);
         return RequestMatchers
-                .anyOf(RequestUtil.antMatchers(paths.toArray(String[]::new)));
+                .anyOf(paths.stream().map(AntPathRequestMatcher::new)
+                        .toArray(RequestMatcher[]::new));
     }
 
     private static void appendFavIconPath(Set<String> paths,
