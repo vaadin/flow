@@ -323,6 +323,8 @@
                 <module>test-mvc-without-endpoints</module>
 
                 <module>test-spring-security-flow</module>
+                <module>test-spring-security-webicons</module>
+                <module>test-spring-security-webicons-urlmapping</module>
                 <module>test-spring-security-flow-contextpath</module>
                 <module>test-spring-security-flow-urlmapping</module>
                 <module>test-spring-security-flow-reverseproxy</module>
