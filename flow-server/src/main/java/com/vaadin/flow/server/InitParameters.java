@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -161,6 +161,14 @@ public class InitParameters implements Serializable {
      * @since
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
+
+    /**
+     * Configuration parameter name for enabling component tracking in
+     * development mode. If not set, tracking is enabled by default.
+     *
+     * @since
+     */
+    public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
 
     /**
      * I18N provider property.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -179,6 +179,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             catchErrorsInDevMode(indexDocument);
 
             addLicenseChecker(indexDocument);
+        } else if (!config.isProductionMode()) {
+            // If a dev-tools plugin tries to register itself with disabled
+            // dev-tools, the application completely breaks with a JS error
+            addScript(indexDocument,
+                    """
+                            window.Vaadin = window.Vaadin || {};
+                            window.Vaadin.devToolsPlugins = {
+                                push: function(plugin) {
+                                    window.console.debug("Vaadin Dev Tools disabled. Plugin cannot be registered.", plugin);
+                                }
+                            };
+                            """);
         }
 
         // this invokes any custom listeners and should be run when the whole

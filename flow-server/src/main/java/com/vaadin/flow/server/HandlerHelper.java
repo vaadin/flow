@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -477,7 +478,14 @@ public class HandlerHelper implements Serializable {
         return publicResourcesRoot;
     }
 
-    private static List<String> getIconVariants(String iconPath) {
+    /**
+     * Gets the paths of the PWA icon variants for the given base icon.
+     *
+     * @param iconPath
+     *            path of the base icon.
+     * @return list of paths of icon variants.
+     */
+    public static List<String> getIconVariants(String iconPath) {
         return PwaRegistry.getIconTemplates(iconPath).stream()
                 .map(PwaIcon::getRelHref).collect(Collectors.toList());
     }

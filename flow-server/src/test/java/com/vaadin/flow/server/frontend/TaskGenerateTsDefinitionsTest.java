@@ -1,5 +1,5 @@
 /*
-  * Copyright 2000-2023 Vaadin Ltd.
+  * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -108,6 +108,21 @@ public class TaskGenerateTsDefinitionsTest {
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         Files.writeString(typesTSfile, readPreviousContent());
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        Assert.assertEquals("types.d.ts should have been replaced",
+                updatedContent, readExpectedContent(false));
+    }
+
+    @Test
+    public void tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        Files.writeString(typesTSfile,
+                readPreviousContent().replaceFirst("\r?\n$", ""));
         taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",

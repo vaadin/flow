@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1956,11 +1956,10 @@ public class ComponentTest {
     }
 
     private void resetComponentTrackerProductionMode() throws Exception {
-        Field productionMode = ComponentTracker.class
-                .getDeclaredField("productionMode");
-        productionMode.setAccessible(true);
-        productionMode.set(null, null);
-        productionMode.setAccessible(false);
+        Field disabled = ComponentTracker.class.getDeclaredField("disabled");
+        disabled.setAccessible(true);
+        disabled.set(null, null);
+        disabled.setAccessible(false);
     }
 
 }

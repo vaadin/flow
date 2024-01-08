@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -196,10 +196,12 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
         }
     }
 
+    // Normalize EOL and removes potential EOL at the end of the FILE
     private static boolean compareIgnoringEOL(String content1, String content2,
             BiPredicate<String, String> compareFn) {
-        return compareFn.test(content1.replace("\r\n", "\n"),
-                content2.replace("\r\n", "\n"));
+        return compareFn.test(
+                content1.replace("\r\n", "\n").replaceFirst("\n$", ""),
+                content2.replace("\r\n", "\n").replaceFirst("\n$", ""));
     }
 
     private String getTemplateContent(String suffix) throws IOException {

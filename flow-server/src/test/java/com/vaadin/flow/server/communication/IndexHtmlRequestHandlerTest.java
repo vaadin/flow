@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +31,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -725,6 +726,33 @@ public class IndexHtmlRequestHandlerTest {
     //
     // assertFalse(isTokenPresent(indexHtml));
     // }
+
+    @Test
+    public void devTools_disable_stubPushFunctionRegistered()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        TestUtil.createIndexHtmlStub(projectRootFolder);
+        TestUtil.createStatsJsonStub(projectRootFolder);
+        deploymentConfiguration.setDevToolsEnabled(false);
+        deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertTrue(
+                "Expected devToolsPlugins.push function when dev-tools are disabled",
+                document.head().getElementsByTag("script").stream()
+                        .map(Element::html)
+                        .anyMatch(script -> script
+                                .contains("window.Vaadin.devToolsPlugins = {")
+                                && script
+                                        .contains("push: function(plugin) {")));
+
+    }
 
     @Test
     public void should_NOT_export_usage_statistics_in_production_mode()
