@@ -40,7 +40,7 @@ public class GenerateSBOMMojoTest {
 
         // set Mojo properties
         ReflectionUtils.setVariableValueInObject(mojo, "projectType",
-                "library");
+                "application");
         ReflectionUtils.setVariableValueInObject(mojo, "schemaVersion", "1.4");
         ReflectionUtils.setVariableValueInObject(mojo, "includeBomSerialNumber",
                 true);

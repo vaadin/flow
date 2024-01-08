@@ -65,7 +65,7 @@ public class GenerateSBOMMojo extends AbstractMojo {
      * "https://cyclonedx.org/docs/1.4/json/#metadata_component_type">CycloneDX
      * reference</a> for supported values.
      */
-    @Parameter(property = PROJECT_TYPE, defaultValue = "library")
+    @Parameter(property = PROJECT_TYPE, defaultValue = "application")
     private String projectType;
     /**
      * The CycloneDX schema version the BOM will comply with.
