@@ -109,6 +109,8 @@ function vaadinRouterGlobalClickHandler(event) {
 
     // ignore the click if the target URL is a fragment on the current page
     if (anchor.pathname === window.location.pathname && anchor.hash !== '') {
+        window.location.hash = anchor.hash;
+        lastNavigation = anchor.pathname;
         return;
     }
 
@@ -187,6 +189,7 @@ export default function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const {pathname, search, hash} = useLocation();
     const navigate = useNavigate();
+
     navigation = navigate;
     useEffect(() => {
         window.document.addEventListener('click', vaadinRouterGlobalClickHandler);
