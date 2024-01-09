@@ -33,7 +33,9 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      * @param themeDefinition
      *            the theme used by the application
      */
-    void modify(List<String> bootstrapTypeScript, boolean productionMode,
-            ThemeDefinition themeDefinition);
+    default void modify(List<String> bootstrapTypeScript,
+            boolean productionMode, ThemeDefinition themeDefinition) {
+        modify(bootstrapTypeScript, productionMode);
+    }
 
 }
