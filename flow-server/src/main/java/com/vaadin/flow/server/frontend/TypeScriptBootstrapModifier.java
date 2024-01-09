@@ -21,7 +21,10 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      * @deprecated use {@link #modify(List, boolean, ThemeDefinition)} instead
      */
     @Deprecated
-    void modify(List<String> bootstrapTypeScript, boolean productionMode);
+    default void modify(List<String> bootstrapTypeScript,
+            boolean productionMode) {
+
+    }
 
     /**
      * Modifies the bootstrap typescript by mutating the parameter.
