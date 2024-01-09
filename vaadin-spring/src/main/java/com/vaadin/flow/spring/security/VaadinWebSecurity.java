@@ -201,10 +201,12 @@ public abstract class VaadinWebSecurity {
                     .permitAll();
             urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
                     requestUtil.getUrlMapping())).permitAll();
-
             // matcher for Vaadin static (public) resources
             urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(
                     requestUtil.getUrlMapping())).permitAll();
+            // matcher for custom PWA icons and favicon
+            urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
+                    .permitAll();
 
             // all other requests require authentication
             urlRegistry.anyRequest().authenticated();
