@@ -330,6 +330,21 @@ public class DataCommunicator<T> implements Serializable {
      *            the end of the requested range
      */
     public void setRequestedRange(int start, int length) {
+        requestedRange = computeRequestedRange(start, length);
+        requestFlush();
+    }
+
+    /**
+     * Computes the requested range, limiting the number of requested items to a
+     * given threshold of ten pages.
+     *
+     * @param start
+     *            the start of the requested range
+     * @param length
+     *            the end of the requested range
+     * @return
+     */
+    protected final Range computeRequestedRange(int start, int length) {
         final int maximumAllowedItems = getMaximumAllowedItems();
         if (length > maximumAllowedItems) {
             getLogger().warn(String.format(
@@ -338,10 +353,7 @@ public class DataCommunicator<T> implements Serializable {
                             + "items allowed '%d'.",
                     length, maximumAllowedItems));
         }
-        requestedRange = Range.withLength(start,
-                Math.min(length, maximumAllowedItems));
-
-        requestFlush();
+        return Range.withLength(start, Math.min(length, maximumAllowedItems));
     }
 
     /**
