@@ -180,7 +180,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     public void setParentRequestedRange(int start, int length, T parentItem) {
         String parentKey = getKeyMapper().key(parentItem);
-
         HierarchicalCommunicationController<T> controller = dataControllers
                 .computeIfAbsent(parentKey,
                         key -> new HierarchicalCommunicationController<>(
@@ -191,7 +190,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                                 (pkey, range) -> mapper.fetchChildItems(
                                         getKeyMapper().get(pkey), range)));
 
-        controller.setRequestRange(start, length);
+        Range range = computeRequestedRange(start, length);
+        controller.setRequestRange(range.getStart(), range.length());
         requestFlush(controller);
     }
 

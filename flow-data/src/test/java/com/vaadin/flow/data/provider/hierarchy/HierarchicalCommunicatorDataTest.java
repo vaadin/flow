@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import com.vaadin.flow.function.SerializablePredicate;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +24,7 @@ import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataCommunicatorTest;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -269,6 +269,37 @@ public class HierarchicalCommunicatorDataTest {
         assertKeyItemPairIsPresentInKeyMapper(initialKey, itemToTest);
 
         communicator.reset();
+    }
+
+    @Test
+    public void expandItem_tooMuchItemsRequested_maxItemsAllowedRequested() {
+        int startingChildId = 10000;
+        int children = 1000;
+        int maxAllowedItems = 500;
+        treeData.clear();
+        treeData.addItems(null, ROOT);
+        treeData.addItems(ROOT, IntStream.range(0, children).mapToObj(
+                i -> new Item(startingChildId + i, "ROOT CHILD " + i)));
+
+        communicator.expand(ROOT);
+        fakeClientCommunication();
+
+        communicator.setParentRequestedRange(0, children, ROOT);
+        fakeClientCommunication();
+
+        IntStream.range(0, children).forEach(i -> {
+            String treeItemId = Integer.toString(startingChildId + i);
+            if (i < maxAllowedItems) {
+                Assert.assertNotNull(
+                        "Expecting item " + treeItemId
+                                + " to be fetched, but was not",
+                        communicator.getKeyMapper().get(treeItemId));
+            } else {
+                Assert.assertNull("Expecting item " + treeItemId
+                        + " not to be fetched because of max allowed items rule, but it was fetched",
+                        communicator.getKeyMapper().get(treeItemId));
+            }
+        });
     }
 
     private void assertKeyItemPairIsPresentInKeyMapper(String key, Item item) {
