@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -206,10 +206,12 @@ public abstract class VaadinWebSecurity {
                     .permitAll();
             urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
                     requestUtil.getUrlMapping())).permitAll();
-
             // matcher for Vaadin static (public) resources
             urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(
                     requestUtil.getUrlMapping())).permitAll();
+            // matcher for custom PWA icons and favicon
+            urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
+                    .permitAll();
 
             // all other requests require authentication
             urlRegistry.anyRequest().authenticated();

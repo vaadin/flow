@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -65,9 +65,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             The server route definition is missing from the '%1$s' file
 
             To have working Flow routes add the following to the '%1$s' file:
-            - import line 'import {serverSideRoutes} from 'Frontend/generated/flow/Flow';'
-            - route '...serverSideRoutes' into the routes definition
-            Hybrid example with client main layout wrapper:
+            - import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+            - route '...serverSideRoutes' into the routes definition as shown below:
 
                 export const routes = [
                   {
