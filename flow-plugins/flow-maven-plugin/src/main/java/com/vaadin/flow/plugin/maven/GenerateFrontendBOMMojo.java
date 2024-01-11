@@ -37,11 +37,6 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
 @Mojo(name = "generate-npm-sbom", requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class GenerateFrontendBOMMojo extends AbstractMojo {
 
-    private static final String OUTPUT_FORMAT = "outputFormat";
-    private static final String OUTPUT_FILE_PATH = "outputDirectory";
-    private static final String PACKAGE_MANIFEST = "packageManifest";
-    private static final String SPEC_VERSION = "specVersion";
-
     private static final String GROUP = "org.codehaus.mojo";
     private static final String ARTIFACT = "exec-maven-plugin";
     private static final String VERSION = "1.3.2";
@@ -51,22 +46,22 @@ public class GenerateFrontendBOMMojo extends AbstractMojo {
      * The CycloneDX output format that should be generated (<code>xml</code>,
      * <code>json</code> or <code>all</code>).
      */
-    @Parameter(property = OUTPUT_FORMAT, defaultValue = "json")
+    @Parameter(defaultValue = "json")
     private String outputFormat;
 
     /**
      * The path to the file to be generated.
      */
-    @Parameter(property = OUTPUT_FILE_PATH, defaultValue = "${project.build.outputDirectory}/resources/bom-npm.json")
+    @Parameter(defaultValue = "${project.build.outputDirectory}/resources/bom-npm.json")
     private String outputFilePath;
 
     /**
      * The path to the package.json file to read.
      */
-    @Parameter(property = PACKAGE_MANIFEST, defaultValue = "./package.json")
+    @Parameter(defaultValue = "./package.json")
     private String packageManifest;
 
-    @Parameter(property = SPEC_VERSION, defaultValue = "1.4")
+    @Parameter(defaultValue = "1.4")
     private String specVersion;
 
     @Override

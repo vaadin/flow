@@ -17,6 +17,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Objects;
 
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.InvocationRequest;
@@ -55,31 +56,13 @@ class InvocationRequestBuilder {
     }
 
     InvocationRequest createInvocationRequest() {
-        if (groupId == null) {
-            throw new IllegalStateException(
-                    "Cannot create invocation request without a groupId");
-        }
-        if (artifactId == null) {
-            throw new IllegalStateException(
-                    "Cannot create invocation request without a artifactId");
-        }
-        if (version == null) {
-            throw new IllegalStateException(
-                    "Cannot create invocation request without a version");
-        }
-        if (goal == null) {
-            throw new IllegalStateException(
-                    "Cannot create invocation request without a goal");
-        }
-        InvocationRequest request = new DefaultInvocationRequest();
-        // needed for tests
-        String mavenHome = System.getenv("MAVEN_HOME");
-        if (mavenHome != null) {
-            request.setMavenHome(new File(mavenHome));
-        }
-        request.setGoals(Collections.singletonList(String.format("%s:%s:%s:%s",
-                groupId, artifactId, version, goal)));
-        return request;
+        Objects.requireNonNull(groupId, "groupId is required");
+        Objects.requireNonNull(artifactId, "artifactId is required");
+        Objects.requireNonNull(version, "version is required");
+        Objects.requireNonNull(goal, "goal is required");
+        return new DefaultInvocationRequest()
+                .setGoals(Collections.singletonList(String.format("%s:%s:%s:%s",
+                        groupId, artifactId, version, goal)));
     }
 
 }

@@ -199,7 +199,8 @@ public class GenerateSBOMMojo extends AbstractMojo {
         try {
             InvocationResult result = invoker.execute(request);
             if (result.getExitCode() != 0) {
-                throw new RuntimeException("Maven SBOM generation failed.");
+                throw new RuntimeException("Maven SBOM generation failed.",
+                        result.getExecutionException());
             }
         } catch (MavenInvocationException e) {
             throw new RuntimeException("Error during Maven SBOM generation", e);
