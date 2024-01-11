@@ -15,7 +15,13 @@
  */
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import { useEffect, useRef } from "react";
-import { matchPath, matchRoutes, NavigateFunction, useLocation, useNavigate } from "react-router-dom";
+import {
+    matchPath,
+    matchRoutes,
+    NavigateFunction,
+    useLocation,
+    useNavigate
+} from "react-router-dom";
 import { routes } from "Frontend/routes.js";
 
 const flow = new _Flow({
@@ -142,9 +148,6 @@ function navigateEventHandler(event) {
     if (event && event.preventDefault) {
         event.preventDefault();
     }
-    if(matchPath(event.detail.pathname, window.location.pathname)) {
-        return;
-    }
     // @ts-ignore
     let matched = matchRoutes(routes, event.detail.pathname);
 
@@ -185,22 +188,45 @@ function navigateEventHandler(event) {
     lastNavigation = event.detail.pathname;
 }
 
+function popstateHandler(event: PopStateEvent) {
+    if (event.state === 'vaadin-router-ignore') {
+        return;
+    }
+    const {pathname, search, hash} = window.location;
+    // @ts-ignore
+    window.dispatchEvent(new CustomEvent('vaadin-router-go', {
+        cancelable: true,
+        detail: {pathname, search, hash}
+    }));
+}
+
 export default function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const {pathname, search, hash} = useLocation();
     const navigate = useNavigate();
-
+    let popstateListener: { type: any, listener: EventListener, useCapture: boolean };
     navigation = navigate;
     useEffect(() => {
+
         window.document.addEventListener('click', vaadinRouterGlobalClickHandler);
         window.addEventListener('vaadin-router-go', navigateEventHandler);
+        // @ts-ignore
+        let popstateListeners = window.getEventListeners('popstate');
+        for (let i = 0; i < popstateListeners.length; i++) {
+            if (popstateListeners[i].listener.name === 'handlePop') {
+                popstateListener = popstateListeners[i];
+                window.removeEventListener(popstateListener.type, popstateListener.listener, popstateListener.useCapture);
+                window.addEventListener(popstateListener.type, popstateHandler);
+                break;
+            }
+        }
         if(lastNavigation === pathname) {
             return;
         }
         flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
-                outlet.insertBefore(container, ref.current);
+                outlet.append(container);
             }
             mountedContainer = container;
             if (container.onBeforeEnter) {
@@ -217,6 +243,10 @@ export default function Flow() {
         return () => {
             window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
             window.removeEventListener('vaadin-router-go', navigateEventHandler);
+            if (popstateListener) {
+                window.removeEventListener('popstate', popstateHandler);
+                window.addEventListener('popstate', popstateListener.listener);
+            }
         };
     }, [pathname, search, hash]);
     return <output ref={ref} />;
@@ -225,3 +255,101 @@ export default function Flow() {
 export const serverSideRoutes = [
     { path: '/*', element: <Flow/> },
 ];
+
+export function listenerCollector() {
+    "use strict";
+    // save the original methods before overwriting them
+    [Document, Window, Element].forEach((cst) => {
+        if (typeof cst === "function") {
+            // @ts-ignore
+            cst.prototype._addEventListener = cst.prototype.addEventListener;
+            // @ts-ignore
+            cst.prototype._removeEventListener = cst.prototype.removeEventListener;
+
+            /**
+             * [addEventListener description]
+             * @param {[type]}  type       [description]
+             * @param {[type]}  listener   [description]
+             * @param {Boolean} useCapture [description]
+             */
+            // @ts-ignore
+            cst.prototype.addEventListener = function (type, listener,
+                                                       useCapture = false
+            ) {
+                // declare listener
+                // @ts-ignore
+                this._addEventListener(type, listener, useCapture);
+
+                // @ts-ignore
+                if (!this.eventListenerList) this.eventListenerList = {};
+                // @ts-ignore
+                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
+
+                // add listener to  event tracking list
+                // @ts-ignore
+                this.eventListenerList[type].push({ type, listener, useCapture });
+            };
+
+            /**
+             * [removeEventListener description]
+             * @param  {[type]}  type       [description]
+             * @param  {[type]}  listener   [description]
+             * @param  {Boolean} useCapture [description]
+             * @return {[type]}             [description]
+             */
+            // @ts-ignore
+            cst.prototype.removeEventListener = function (type, listener,
+                                                          useCapture = false
+            ) {
+                // remove listener
+                // @ts-ignore
+                this._removeEventListener(type, listener, useCapture);
+
+                // @ts-ignore
+                if (!this.eventListenerList) this.eventListenerList = {};
+                // @ts-ignore
+                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
+
+                // Find the event in the list, If a listener is registered twice, one
+                // with capture and one without, remove each one separately. Removal of
+                // a capturing listener does not affect a non-capturing version of the
+                // same listener, and vice versa.
+                // @ts-ignore
+                for (let i = 0; i < this.eventListenerList[type].length; i++) {
+                    if (
+                        // @ts-ignore
+                        this.eventListenerList[type][i].listener === listener &&
+                        // @ts-ignore
+                        this.eventListenerList[type][i].useCapture === useCapture
+                    ) {
+                        // @ts-ignore
+                        this.eventListenerList[type].splice(i, 1);
+                        break;
+                    }
+                }
+                // if no more events of the removed event type are left,remove the group
+                // @ts-ignore
+                if (this.eventListenerList[type].length == 0)
+                    // @ts-ignore
+                    delete this.eventListenerList[type];
+            };
+
+            /**
+             * [getEventListeners description]
+             * @param  {[type]} type [description]
+             * @return {[type]}      [description]
+             */
+            // @ts-ignore
+            cst.prototype.getEventListeners = function (type) {
+                // @ts-ignore
+                if (!this.eventListenerList) this.eventListenerList = {};
+
+                // return reqested listeners type or all them
+                // @ts-ignore
+                if (type === undefined) return this.eventListenerList;
+                // @ts-ignore
+                return this.eventListenerList[type];
+            };
+        }
+    });
+};

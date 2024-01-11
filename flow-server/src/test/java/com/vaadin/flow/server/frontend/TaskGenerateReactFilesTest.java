@@ -73,7 +73,7 @@ public class TaskGenerateReactFilesTest {
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
                         import { createBrowserRouter, RouteObject } from 'react-router-dom';
-                        import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+                        import {serverSideRoutes,listenerCollector} from "Frontend/generated/flow/Flow";
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -147,7 +147,7 @@ public class TaskGenerateReactFilesTest {
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
                         import { createBrowserRouter, RouteObject } from 'react-router-dom';
-                        import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+                        import {serverSideRoutes,listenerCollector} from "Frontend/generated/flow/Flow";
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -183,7 +183,7 @@ public class TaskGenerateReactFilesTest {
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
                         import { createBrowserRouter, RouteObject } from 'react-router-dom';
-                        import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+                        import {serverSideRoutes,listenerCollector} from "Frontend/generated/flow/Flow";
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 

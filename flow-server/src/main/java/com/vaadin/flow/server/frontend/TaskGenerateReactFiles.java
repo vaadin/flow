@@ -65,7 +65,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             The server route definition is missing from the '%1$s' file
 
             To have working Flow routes add the following to the '%1$s' file:
-            - import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+            - import { serverSideRoutes, listenerCollector } from "Frontend/generated/flow/Flow";
             - route '...serverSideRoutes' into the routes definition as shown below:
 
                 export const routes = [
@@ -115,7 +115,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
                 Pattern serverImport = Pattern.compile(
-                        "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
+                        "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?,[\\s\\S]?listenerCollector[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
                 if (!serverImport.matcher(routesContent).find()) {
                     throw new ExecutionFailedException(
                             String.format(NO_IMPORT, routesTsx.getPath()));
