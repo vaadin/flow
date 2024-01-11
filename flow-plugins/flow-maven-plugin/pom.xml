@@ -75,6 +75,7 @@
                     <version>3.11.0</version>
                     <configuration>
                         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                        <goalPrefix>flow</goalPrefix>
                     </configuration>
                     <executions>
                         <execution>
