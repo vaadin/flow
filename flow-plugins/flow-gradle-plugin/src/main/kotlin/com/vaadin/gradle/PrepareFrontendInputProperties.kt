@@ -15,20 +15,15 @@
  */
 package com.vaadin.gradle
 
+import com.vaadin.experimental.FeatureFlags
 import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import java.io.File
-import java.net.URI
-import com.vaadin.experimental.FeatureFlags
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.*
+import java.io.File
+import java.net.URI
 
 /**
  * Declaratively defines the inputs of the [VaadinPrepareFrontendTask]:
@@ -44,15 +39,16 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
 
     @Input
     @Optional
-    public fun getWebpackOutputDirectory(): Provider<String> = config.webpackOutputDirectory
-        .filterExists()
-        .absolutePath
+    public fun getWebpackOutputDirectory(): Provider<String> = config.projectRelative(
+        config.webpackOutputDirectory
+            .filterExists()
+    )
 
     @Input
-    public fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
+    public fun getNpmFolder(): Provider<String> = config.projectRelative(config.npmFolder)
 
     @Input
-    public fun getFrontendDirectory(): Provider<String> = config.frontendDirectory.absolutePath
+    public fun getFrontendDirectory(): Provider<String> = config.projectRelative(config.frontendDirectory)
 
     @Input
     public fun getGenerateBundle(): Provider<Boolean> = config.generateBundle
@@ -65,7 +61,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
 
     @InputDirectory
     @Optional
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.RELATIVE)
     public fun getFrontendResourcesDirectory(): Provider<File> = config.frontendResourcesDirectory.filterExists()
 
     @Input
@@ -90,24 +86,24 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
 
     @InputFile
     @Optional
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.RELATIVE)
     public fun getOpenApiJsonFile(): Provider<File> = config.openApiJsonFile.filterExists()
 
     @InputFile
     @Optional
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.RELATIVE)
     public fun getFeatureFlagsFile(): Provider<File> = config.javaResourceFolder
         .map { it.resolve(FeatureFlags.PROPERTIES_FILENAME) }
         .filterExists()
 
     @Input
-    public fun getJavaSourceFolder(): Provider<String> = config.javaSourceFolder.absolutePath
+    public fun getJavaSourceFolder(): Provider<String> = config.projectRelative(config.javaSourceFolder)
 
     @Input
-    public fun getJavaResourceFolder(): Provider<String> = config.javaResourceFolder.absolutePath
+    public fun getJavaResourceFolder(): Provider<String> = config.projectRelative(config.javaResourceFolder)
 
     @Input
-    public fun getGeneratedTsFolder(): Provider<String> = config.generatedTsFolder.absolutePath
+    public fun getGeneratedTsFolder(): Provider<String> = config.projectRelative(config.generatedTsFolder)
 
     @Input
     public fun getNodeVersion(): Provider<String> = config.nodeVersion
@@ -119,7 +115,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     public fun getNodeAutoUpdate(): Provider<Boolean> = config.nodeAutoUpdate
 
     @Input
-    public fun getProjectBuildDir(): Provider<String> = config.projectBuildDir
+    public fun getProjectBuildDir(): Provider<String> = config.projectRelative(config.projectBuildDir.map { File(it) })
 
     @Input
     public fun getPostInstallPackages(): ListProperty<String> = config.postinstallPackages

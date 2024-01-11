@@ -411,6 +411,10 @@ internal class PluginEffectiveConfiguration(
     val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
         .convention(false)
 
+    fun projectRelative(fileProperty: Provider<File>) : Provider<String> {
+        return fileProperty.map { it.toRelativeString(project.projectDir) }
+    }
+
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
      *

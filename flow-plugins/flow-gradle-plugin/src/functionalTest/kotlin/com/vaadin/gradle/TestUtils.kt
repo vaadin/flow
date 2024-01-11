@@ -251,6 +251,12 @@ class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVers
         }
     }
 
+    fun clean() {
+        File(dir, "build").deleteRecursively()
+        File(dir, "frontend/generated").deleteRecursively()
+        File(dir, ".gradle").deleteRecursively()
+    }
+
     /**
      * Creates a new [folder] in the project folder. Does nothing if the folder
      * already exists.

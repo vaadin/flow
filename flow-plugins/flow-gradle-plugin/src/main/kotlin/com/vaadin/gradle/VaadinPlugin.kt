@@ -15,11 +15,14 @@
  */
 package com.vaadin.gradle
 
+import com.vaadin.flow.server.Constants
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.internal.execution.BuildOutputCleanupRegistry
 import org.gradle.util.GradleVersion
 
 /**
@@ -45,7 +48,14 @@ public class VaadinPlugin : Plugin<Project> {
 
         project.tasks.apply {
             register("vaadinClean", VaadinCleanTask::class.java)
-            register("vaadinPrepareFrontend", VaadinPrepareFrontendTask::class.java)
+            register("vaadinPrepareFrontend", VaadinPrepareFrontendTask::class.java) {
+                val buildOutputCleanupRegistry = (project as ProjectInternal).services.get(
+                    BuildOutputCleanupRegistry::class.java
+                )
+                // Register files usually produced by the task but that might have been pushed in a VCS
+                // TODO: refactor
+                buildOutputCleanupRegistry.registerOutputs(project.file(Constants.PACKAGE_JSON))
+            }
             register("vaadinBuildFrontend", VaadinBuildFrontendTask::class.java)
             register("vaadinConvertPolymer", VaadinConvertPolymerTask::class.java)
         }

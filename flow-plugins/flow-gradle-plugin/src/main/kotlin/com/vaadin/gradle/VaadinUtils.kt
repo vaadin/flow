@@ -16,23 +16,16 @@
 package com.vaadin.gradle
 
 
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.file.FileCollection
-import com.vaadin.flow.function.SerializableSupplier
-import com.vaadin.flow.server.frontend.FrontendTools
-import com.vaadin.flow.server.frontend.FrontendToolsSettings
-import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.Directory
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.provider.Providers
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import java.io.File
-import java.net.URI
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 /**
  * Finds the value of a boolean property. It searches in gradle and system properties.

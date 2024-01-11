@@ -16,9 +16,7 @@
 package com.vaadin.gradle
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
-import groovy.lang.Closure
 import org.gradle.api.DefaultTask
-import org.gradle.api.Task
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
