@@ -63,6 +63,7 @@
                     <configuration>
                         <skipErrorNoDescriptorsFound>true
                         </skipErrorNoDescriptorsFound>
+                        <goalPrefix>test-flow</goalPrefix>
                     </configuration>
                     <executions>
                         <execution>
