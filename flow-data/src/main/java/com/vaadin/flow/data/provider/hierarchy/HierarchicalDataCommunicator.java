@@ -143,16 +143,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
             Collection<T> expandedItems = getHierarchyMapperExpandedItems();
             if (!expandedItems.isEmpty()) {
-                update.enqueue("$connector.expandItems",
-                        expandedItems
-                                .stream()
-                                .map(getKeyMapper()::key)
-                                .map(key -> {
-                                    JsonObject json = Json.createObject();
-                                    json.put("key", key);
-                                    return json;
-                                }).collect(
-                                JsonUtils.asArray()));
+                update.enqueue("$connector.expandItems", expandedItems.stream()
+                        .map(getKeyMapper()::key).map(key -> {
+                            JsonObject json = Json.createObject();
+                            json.put("key", key);
+                            return json;
+                        }).collect(JsonUtils.asArray()));
             }
 
             requestFlush(update);
@@ -160,16 +156,19 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @Override
-    protected void handleDataRefreshEvent(DataChangeEvent.DataRefreshEvent<T> event) {
+    protected void handleDataRefreshEvent(
+            DataChangeEvent.DataRefreshEvent<T> event) {
         if (event.isRefreshChildren()) {
             T item = event.getItem();
             if (isExpanded(item)) {
                 String parentKey = getKeyMapper().key(item);
 
                 if (!dataControllers.containsKey(parentKey)) {
-                    setParentRequestedRange(0, mapper.countChildItems(item), item);
+                    setParentRequestedRange(0, mapper.countChildItems(item),
+                            item);
                 }
-                HierarchicalCommunicationController<T> dataController = dataControllers.get(parentKey);
+                HierarchicalCommunicationController<T> dataController = dataControllers
+                        .get(parentKey);
                 if (dataController != null) {
                     dataController.setResendEntireRange(true);
                     requestFlush(dataController);
@@ -188,7 +187,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     public void setParentRequestedRange(int start, int length, T parentItem) {
         String parentKey = getKeyMapper().key(parentItem);
-
         HierarchicalCommunicationController<T> controller = dataControllers
                 .computeIfAbsent(parentKey,
                         key -> new HierarchicalCommunicationController<>(
@@ -199,7 +197,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                                 (pkey, range) -> mapper.fetchChildItems(
                                         getKeyMapper().get(pkey), range)));
 
-        controller.setRequestRange(start, length);
+        Range range = computeRequestedRange(start, length);
+        controller.setRequestRange(range.getStart(), range.length());
         requestFlush(controller);
     }
 
@@ -602,8 +601,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (hierarchyMapper.isExpanded(parent)) {
             expandedItems.add(parent);
         }
-        hierarchyMapper.fetchChildItems(parent, null)
-                .forEach(child -> expandedItems.addAll(getExpandedItems(child)));
+        hierarchyMapper.fetchChildItems(parent, null).forEach(
+                child -> expandedItems.addAll(getExpandedItems(child)));
         return expandedItems;
     }
 }
