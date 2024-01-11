@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -477,7 +478,14 @@ public class HandlerHelper implements Serializable {
         return publicResourcesRoot;
     }
 
-    private static List<String> getIconVariants(String iconPath) {
+    /**
+     * Gets the paths of the PWA icon variants for the given base icon.
+     *
+     * @param iconPath
+     *            path of the base icon.
+     * @return list of paths of icon variants.
+     */
+    public static List<String> getIconVariants(String iconPath) {
         return PwaRegistry.getIconTemplates(iconPath).stream()
                 .map(PwaIcon::getRelHref).collect(Collectors.toList());
     }

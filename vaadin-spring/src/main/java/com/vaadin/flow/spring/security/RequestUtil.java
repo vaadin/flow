@@ -52,6 +52,8 @@ public class RequestUtil {
     @Autowired
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
 
+    private WebIconsRequestMatcher webIconsRequestMatcher;
+
     /**
      * Checks whether the request is an internal request.
      *
@@ -124,6 +126,23 @@ public class RequestUtil {
         // this matcher should be considered only once, since for alias check
         // we are interested only in the other matchers
         return false;
+    }
+
+    /**
+     * Checks whether the request targets a custom PWA icon or Favicon path.
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting a custom PWA icon or a
+     *         custom favicon path, {@code false} otherwise
+     */
+    public boolean isCustomWebIcon(HttpServletRequest request) {
+        if (webIconsRequestMatcher == null) {
+            webIconsRequestMatcher = new WebIconsRequestMatcher(
+                    springServletRegistration.getServlet().getService(),
+                    configurationProperties.getUrlMapping());
+        }
+        return webIconsRequestMatcher.matches(request);
     }
 
     /**
