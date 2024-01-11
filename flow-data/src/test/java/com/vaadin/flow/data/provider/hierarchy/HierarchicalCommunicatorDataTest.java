@@ -292,8 +292,8 @@ public class HierarchicalCommunicatorDataTest {
     @Test
     public void expandItem_tooMuchItemsRequested_maxItemsAllowedRequested() {
         int startingChildId = 10000;
-        int children = 1000;
-        int maxAllowedItems = 500;
+        int children = 3000;
+        int maxAllowedItems = 1000;
         treeData.clear();
         treeData.addItems(null, ROOT);
         treeData.addItems(ROOT, IntStream.range(0, children).mapToObj(
