@@ -54,7 +54,9 @@ public class VaadinPlugin : Plugin<Project> {
                 )
                 // Register files usually produced by the task but that might have been pushed in a VCS
                 // TODO: refactor
-                buildOutputCleanupRegistry.registerOutputs(project.file(Constants.PACKAGE_JSON))
+                if (project.gradle.startParameter.isBuildCacheEnabled) {
+                    buildOutputCleanupRegistry.registerOutputs(project.file(Constants.PACKAGE_JSON))
+                }
             }
             register("vaadinBuildFrontend", VaadinBuildFrontendTask::class.java)
             register("vaadinConvertPolymer", VaadinConvertPolymerTask::class.java)
