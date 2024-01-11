@@ -164,6 +164,20 @@ public class DataCommunicator<T> implements Serializable {
      * @param length the end of the requested range
      */
     public void setRequestedRange(int start, int length) {
+        requestedRange = computeRequestedRange(start, length);
+        requestFlush();
+    }
+
+    /**
+     * Computes the requested range, limiting the number of requested items to a
+     * given threshold of ten pages.
+     *
+     * @param start
+     *            the start of the requested range
+     * @param length
+     *            the end of the requested range
+     */
+    protected final Range computeRequestedRange(int start, int length) {
         if (length > MAXIMUM_ALLOWED_ITEMS) {
             getLogger().warn(
                     "Attempted to fetch more items from server than allowed "
@@ -171,10 +185,7 @@ public class DataCommunicator<T> implements Serializable {
                             + "items allowed '{}'.",
                     length, MAXIMUM_ALLOWED_ITEMS);
         }
-        requestedRange = Range.withLength(start,
-                Math.min(length, MAXIMUM_ALLOWED_ITEMS));
-
-        requestFlush();
+        return Range.withLength(start, Math.min(length, MAXIMUM_ALLOWED_ITEMS));
     }
 
     /**

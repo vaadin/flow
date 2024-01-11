@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import com.vaadin.flow.function.SerializablePredicate;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +31,7 @@ import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataCommunicatorTest;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -204,8 +204,9 @@ public class HierarchicalCommunicatorDataTest {
         fakeClientCommunication();
 
         Arrays.asList("ROOT", "FOLDER", "LEAF")
-                .forEach(key -> Assert.assertNotNull("Expected key '" + key
-                        + "' to be generated when unique key provider used",
+                .forEach(key -> Assert.assertNotNull(
+                        "Expected key '" + key
+                                + "' to be generated when unique key provider used",
                         communicator.getKeyMapper().get(key)));
     }
 
@@ -225,8 +226,9 @@ public class HierarchicalCommunicatorDataTest {
 
         // key mapper should generate keys 1,2,3
         IntStream.range(1, 4).mapToObj(String::valueOf)
-                .forEach(i -> Assert.assertNotNull("Expected key '" + i
-                        + "' to be generated when unique key provider is not set",
+                .forEach(i -> Assert.assertNotNull(
+                        "Expected key '" + i
+                                + "' to be generated when unique key provider is not set",
                         communicator.getKeyMapper().get(i)));
     }
 
@@ -285,6 +287,38 @@ public class HierarchicalCommunicatorDataTest {
         assertKeyItemPairIsPresentInKeyMapper(initialKey, itemToTest);
 
         communicator.reset();
+    }
+
+    @Test
+    public void expandItem_tooMuchItemsRequested_maxItemsAllowedRequested() {
+        int startingChildId = 10000;
+        int children = 3000;
+        int maxAllowedItems = 1000;
+        treeData.clear();
+        treeData.addItems(null, ROOT);
+        treeData.addItems(ROOT, IntStream.range(0, children).mapToObj(
+                i -> new Item(startingChildId + i, "ROOT CHILD " + i)));
+
+        communicator.expand(ROOT);
+        fakeClientCommunication();
+
+        communicator.setParentRequestedRange(0, children, ROOT);
+        fakeClientCommunication();
+
+        IntStream.range(0, children).forEach(i -> {
+            String treeItemId = Integer.toString(startingChildId + i);
+            if (i < maxAllowedItems) {
+                Assert.assertNotNull(
+                        "Expecting item " + treeItemId
+                                + " to be fetched, but was not",
+                        communicator.getKeyMapper().get(treeItemId));
+            } else {
+                Assert.assertNull(
+                        "Expecting item " + treeItemId
+                                + " not to be fetched because of max allowed items rule, but it was fetched",
+                        communicator.getKeyMapper().get(treeItemId));
+            }
+        });
     }
 
     private void assertKeyItemPairIsPresentInKeyMapper(String key, Item item) {
