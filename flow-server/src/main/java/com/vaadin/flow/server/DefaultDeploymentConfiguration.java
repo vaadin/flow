@@ -44,7 +44,8 @@ public class DefaultDeploymentConfiguration
     public static final String WARNING_COMPATIBILITY_MODE = "Running in Vaadin 13 (Flow 1) compatibility mode.\n\n"
             + "This mode uses webjars/Bower for client side dependency management and HTML imports for dependency loading.\n\n"
             + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
-            + "See http://vaadin.com/docs for more information.";
+            + "See http://vaadin.com/docs for more information.\n\n"
+            + "Note: WebJars/Bower support has been deprecated and will be removed in the near future.";
 
     public static final String WARNING_LIVERELOAD_DISABLED_AND_NEW_LICENSE_CHECKER = "Server-side and offline new license checking features are enabled "
             + "while the development mode live reload is not available.\n"

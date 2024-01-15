@@ -52,7 +52,8 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * NOTE: compatibility mode will be unsupported in future versions.
      *
-     * @deprecated use {@link #isCompatibilityMode()}
+     * @deprecated Bower WebJars are being deprecated, so compatibility
+     * mode should no longer be used and will be removed in near future.
      *
      * @return true if in compatibility mode, false otherwise.
      */
@@ -62,10 +63,12 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
      *
-     * NOTE: compatibility mode will be unsupported in future versions.
+     * @deprecated Bower WebJars are being deprecated, so compatibility
+     * mode should no longer be used and will be removed in near future.
      *
      * @return true if in compatibility mode, false otherwise.
      */
+    @Deprecated
     default boolean isCompatibilityMode() {
         return isBowerMode();
     }
