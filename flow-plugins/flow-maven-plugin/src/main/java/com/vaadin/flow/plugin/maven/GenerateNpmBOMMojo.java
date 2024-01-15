@@ -35,7 +35,7 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
  * Goal that generates a CycloneDX SBOM file focused on frontend dependencies.
  */
 @Mojo(name = "generate-npm-sbom", requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
-public class GenerateFrontendBOMMojo extends AbstractMojo {
+public class GenerateNpmBOMMojo extends AbstractMojo {
 
     private static final String GROUP = "org.codehaus.mojo";
     private static final String ARTIFACT = "exec-maven-plugin";

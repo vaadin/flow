@@ -15,7 +15,7 @@ import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
-public class GenerateSBOMMojoTest {
+public class GenerateMavenMojoTest {
 
     private String bomFilename;
 
@@ -24,11 +24,11 @@ public class GenerateSBOMMojoTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private GenerateSBOMMojo mojo;
+    private GenerateMavenMojo mojo;
 
     @Before
     public void setUp() throws Exception {
-        this.mojo = new GenerateSBOMMojo();
+        this.mojo = new GenerateMavenMojo();
 
         MavenProject project = Mockito.mock(MavenProject.class);
         File projectBase = temporaryFolder.getRoot();
