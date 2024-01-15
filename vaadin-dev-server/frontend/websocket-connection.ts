@@ -15,6 +15,7 @@ export class WebSocketConnection extends Connection {
 
     const config = {
       transport: 'websocket',
+      fallbackTransport: 'websocket',
       url,
       contentType: 'application/json; charset=UTF-8',
       reconnectInterval: 5000,
