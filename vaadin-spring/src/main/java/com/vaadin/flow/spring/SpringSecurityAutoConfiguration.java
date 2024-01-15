@@ -119,7 +119,7 @@ public class SpringSecurityAutoConfiguration {
      */
     @Bean
     public AnnotatedViewAccessChecker annotatedViewAccessChecker(
-            @Lazy AccessAnnotationChecker accessAnnotationChecker) {
+            AccessAnnotationChecker accessAnnotationChecker) {
         return new AnnotatedViewAccessChecker(accessAnnotationChecker);
     }
 
@@ -133,7 +133,7 @@ public class SpringSecurityAutoConfiguration {
      */
     @Bean
     public RoutePathAccessChecker routePathAccessChecker(
-            @Lazy AccessPathChecker accessPathChecker) {
+            AccessPathChecker accessPathChecker) {
         return new RoutePathAccessChecker(accessPathChecker);
     }
 
