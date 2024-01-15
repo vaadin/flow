@@ -140,7 +140,7 @@ public class NpmTemplateParser implements TemplateParser {
                 + "definition of the element with tag '%s' "
                 + "in any template file declared using '@%s' annotations. "
                 + "In a Spring Boot project, please ensure that the template's "
-                + "groupId is added to the vaadin.whitelisted-packages "
+                + "groupId is added to the vaadin.allowed-packages "
                 + "property. Otherwise, please Check the availability of the "
                 + "template files in your WAR file or provide alternative "
                 + "implementation of the method getTemplateContent() which "
