@@ -32,6 +32,7 @@ import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -379,6 +380,65 @@ public final class JsonUtils {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(
                     "Error converting JsonObject to " + tClass.getName(), e);
+        }
+    }
+
+    /**
+     * Converts JsonValue into Java object of given type.
+     *
+     * @param jsonValue
+     *            JSON value to convert, not {@code null}
+     * @param tClass
+     *            class of converted object instance
+     * @return converted object instance
+     * @param <T>
+     *            type of result instance
+     */
+    public static <T> T readValue(JsonValue jsonValue, Class<T> tClass) {
+        Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
+        try {
+            return objectMapper.readValue(jsonValue.toJson(), tClass);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(
+                    "Error converting JsonValue to " + tClass.getName(), e);
+        }
+    }
+
+    /**
+     * Converts JsonValue into Java object of given type.
+     *
+     * @param jsonValue
+     *            JSON value to convert, not {@code null}
+     * @param typeReference
+     *            type reference of converted object instance
+     * @return converted object instance
+     * @param <T>
+     *            type of result instance
+     */
+    public static <T> T readValue(JsonValue jsonValue,
+            TypeReference<T> typeReference) {
+        Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
+        try {
+            return objectMapper.readValue(jsonValue.toJson(), typeReference);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting JsonValue to "
+                    + typeReference.getType().getTypeName(), e);
+        }
+    }
+
+    /**
+     * Converts Java object into JsonValue.
+     *
+     * @param object
+     *            Java object to convert
+     * @return converted JSON value
+     */
+    public static JsonValue writeValue(Object object) {
+        try {
+            return Json.instance()
+                    .parse(objectMapper.writeValueAsString(object));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting to JSON", e);
         }
     }
 }
