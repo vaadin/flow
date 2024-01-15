@@ -138,7 +138,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
                 + "definition of the element with tag '{}' "
                 + "in any lit template file declared using '@{}' annotations. "
                 + "In a Spring Boot project, please ensure that the template's "
-                + "groupId is added to the vaadin.whitelisted-packages "
+                + "groupId is added to the vaadin.allowed-packages "
                 + "property. Otherwise, please Check the availability of the "
                 + "template files in your WAR file or provide alternative "
                 + "implementation of the method "
