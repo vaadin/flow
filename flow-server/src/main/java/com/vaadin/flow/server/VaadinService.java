@@ -275,6 +275,7 @@ public abstract class VaadinService implements Serializable {
         if (getDeploymentConfiguration().isBunEnabled()) {
             UsageStatistics.markAsUsed("flow/bun", null);
         }
+
         initialized = true;
     }
 

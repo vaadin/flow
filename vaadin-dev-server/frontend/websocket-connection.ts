@@ -39,6 +39,7 @@ export class WebSocketConnection extends Connection {
       this.socket = atmosphere.subscribe(config);
     });
   }
+
   onReload() {
     // Intentionally empty
   }
