@@ -99,18 +99,24 @@ public class TaskRunNpmInstall implements FallibleCommand {
     /**
      * Create an instance of the command.
      *
-     * @param packageUpdater      package-updater instance used for checking if previous
-     *                            execution modified the package.json file
-     * @param enablePnpm          whether PNPM should be used instead of NPM
-     * @param requireHomeNodeExec whether vaadin home node executable has to be used
-     * @param nodeVersion         The node.js version to be used when node.js is installed
-     *                            automatically by Vaadin, for example <code>"v14.15.4"</code>.
-     *                            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
-     * @param nodeDownloadRoot    Download node.js from this URL. Handy in heavily firewalled
-     *                            corporate environments where the node.js download can be
-     *                            provided from an intranet mirror. Use
-     *                            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
-     * @param ciBuild             whether CI build for npm/pnpm should be enabled
+     * @param packageUpdater
+     *            package-updater instance used for checking if previous
+     *            execution modified the package.json file
+     * @param enablePnpm
+     *            whether PNPM should be used instead of NPM
+     * @param requireHomeNodeExec
+     *            whether vaadin home node executable has to be used
+     * @param nodeVersion
+     *            The node.js version to be used when node.js is installed
+     *            automatically by Vaadin, for example <code>"v14.15.4"</code>.
+     *            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot
+     *            Download node.js from this URL. Handy in heavily firewalled
+     *            corporate environments where the node.js download can be
+     *            provided from an intranet mirror. Use
+     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     * @param ciBuild
+     *            whether CI build for npm/pnpm should be enabled
      */
     TaskRunNpmInstall(ClassFinder classFinder, NodeUpdater packageUpdater,
             boolean enablePnpm, boolean requireHomeNodeExec, String nodeVersion,
@@ -189,7 +195,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * Generate versions json file for pnpm.
      *
      * @return generated versions json file path
-     * @throws IOException when file IO fails
+     * @throws IOException
+     *             when file IO fails
      */
     protected String generateVersionsJson() throws IOException {
         assert enablePnpm;
@@ -224,7 +231,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * defined packages.
      *
      * @return versions Json based on package.json
-     * @throws IOException If reading package.json fails
+     * @throws IOException
+     *             If reading package.json fails
      */
     private JsonObject generateVersionsFromPackageJson() throws IOException {
         JsonObject versionsJson = Json.createObject();
@@ -400,11 +408,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 // Echo the stdout from pnpm/npm to error level log
                 packageUpdater.log().error("Command `{}` failed:\n{}",
                         commandString, toolOutput);
-                packageUpdater
-                        .log().error(
-                                ">>> Dependency ERROR. Check that all required dependencies are "
-                                        + "deployed in {} repositories.",
-                                toolName);
+                packageUpdater.log().error(
+                        ">>> Dependency ERROR. Check that all required dependencies are "
+                                + "deployed in {} repositories.",
+                        toolName);
                 throw new ExecutionFailedException(
                         SharedUtil.capitalize(toolName)
                                 + " install has exited with non zero status. "
@@ -484,7 +491,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             if (!enablePnpm && hasModulesYaml) {
                 deleteNodeModules(packageUpdater.nodeModulesFolder);
             } else if (enablePnpm && !hasModulesYaml) {
-                // presence of .staging dir with a "pnpm-*" folder means that pnpm
+                // presence of .staging dir with a "pnpm-*" folder means that
+                // pnpm
                 // download is in progress, don't remove anything in this case
                 File staging = new File(packageUpdater.nodeModulesFolder,
                         ".staging");

@@ -57,7 +57,8 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
     @Test
     public void splashMessageShownOnAutoReloadAndClosedOnBodyClick() {
         open();
-        waitForElementPresent(By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
+        waitForElementPresent(
+                By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         WebElement liveReloadTrigger = findElement(
                 By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         liveReloadTrigger.click();
@@ -66,8 +67,7 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         Assert.assertNotNull(liveReload);
         WebElement gizmo1 = liveReload.$("*")
                 .attributeContains("class", "gizmo").first();
-        Assert.assertTrue(
-                gizmo1.getAttribute("class").contains("active"));
+        Assert.assertTrue(gizmo1.getAttribute("class").contains("active"));
 
         findElement(By.tagName("body")).click();
 
@@ -75,8 +75,7 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         Assert.assertNotNull(liveReload2);
         WebElement gizmo2 = liveReload2.$("*")
                 .attributeContains("class", "gizmo").first();
-        Assert.assertFalse(
-                gizmo2.getAttribute("class").contains("active"));
+        Assert.assertFalse(gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
 
@@ -104,8 +103,7 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         TestBenchElement liveReload2 = $("vaadin-devmode-gizmo").first();
         WebElement gizmo2 = liveReload2.$("*")
                 .attributeContains("class", "gizmo").first();
-        Assert.assertFalse(
-                gizmo2.getAttribute("class").contains("active"));
+        Assert.assertFalse(gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
 
@@ -116,7 +114,8 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         final String initialViewId = findElement(
                 By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
 
-        waitForElementPresent(By.id(LiveReloadView.WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON));
+        waitForElementPresent(
+                By.id(LiveReloadView.WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON));
         WebElement liveReloadTrigger = findElement(
                 By.id(LiveReloadView.WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON));
         liveReloadTrigger.click();

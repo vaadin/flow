@@ -37,7 +37,8 @@ public abstract class ClassPathIntrospector implements Serializable {
     /**
      * Creates a new instance of class.
      *
-     * @param finder the ClassFinder instance to use for class searches.
+     * @param finder
+     *            the ClassFinder instance to use for class searches.
      */
     protected ClassPathIntrospector(ClassFinder finder) {
         this.finder = finder;
@@ -86,8 +87,8 @@ public abstract class ClassPathIntrospector implements Serializable {
      */
     protected Stream<Class<?>> getSubtypes(Class<?> type) {
         return finder
-            .getSubTypesOf(loadClassInProjectClassLoader(type.getName()))
-            .stream();
+                .getSubTypesOf(loadClassInProjectClassLoader(type.getName()))
+                .stream();
     }
 
     /**
@@ -115,8 +116,8 @@ public abstract class ClassPathIntrospector implements Serializable {
     }
 
     /**
-     * Get the value of the method {@code methodName} from the
-     * {@code target} annotation.
+     * Get the value of the method {@code methodName} from the {@code target}
+     * annotation.
      *
      * @param target
      *            the target annotation
@@ -125,7 +126,8 @@ public abstract class ClassPathIntrospector implements Serializable {
      * @return the Value of the execution result
      */
     @SuppressWarnings("unchecked")
-    protected <T> T invokeAnnotationMethod(Annotation target, String methodName) {
+    protected <T> T invokeAnnotationMethod(Annotation target,
+            String methodName) {
         return (T) doInvokeAnnotationMethod(target, methodName);
     }
 

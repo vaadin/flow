@@ -20,7 +20,7 @@ import org.osgi.service.component.annotations.Component;
 import com.vaadin.flow.di.Lookup;
 
 /**
- * 
+ *
  * Implementation of {@link OSGiMarker} : presence of {@link OSGiMarker} service
  * in {@link Lookup} means the app is executed in OSGi env because standard
  * Lookup doesn't know anything about {@link OSGiMarker}.

@@ -308,11 +308,10 @@ class BootstrapUtils {
                 .getResourceAsStream(file);
 
         if (stream == null) {
-            throw new IllegalStateException(
-                    String.format(
-                            "File '%s' for inline resource is not available through "
-                                    + "the servlet context class loader.",
-                            file));
+            throw new IllegalStateException(String.format(
+                    "File '%s' for inline resource is not available through "
+                            + "the servlet context class loader.",
+                    file));
         }
         return stream;
     }
@@ -360,13 +359,12 @@ class BootstrapUtils {
             builder.insert(0, inlineContent.toString());
         }
 
-        builder.insert(0,
-                "function _inlineHeader(tag, content){\n"
-                        + "var customStyle = document.createElement(tag);\n"
-                        + "customStyle.innerHTML= content;\n"
-                        + "var firstScript=document.head.querySelector('script');\n"
-                        + "document.head.insertBefore(customStyle,firstScript);\n"
-                        + "}\n");
+        builder.insert(0, "function _inlineHeader(tag, content){\n"
+                + "var customStyle = document.createElement(tag);\n"
+                + "customStyle.innerHTML= content;\n"
+                + "var firstScript=document.head.querySelector('script');\n"
+                + "document.head.insertBefore(customStyle,firstScript);\n"
+                + "}\n");
         builder.insert(0, "<script id='_theme-header-injection'>\n");
         builder.append(
                 "var script = document.getElementById('_theme-header-injection');"
@@ -467,21 +465,21 @@ class BootstrapUtils {
         // found" target
         return resolveRouteNotFoundNavigationTarget(
                 ui.getSession().getService().getContext())
-                        .map(errorNavigationTarget -> {
-                            /*
-                             * {@code resolveTopParentLayout} is theoretically
-                             * the correct way to get the parent layout. But in
-                             * fact it does work for non route targets.
-                             */
-                            List<Class<? extends RouterLayout>> layouts = RouteUtil
-                                    .getParentLayoutsForNonRouteTarget(
-                                            errorNavigationTarget);
-                            if (layouts.isEmpty()) {
-                                return errorNavigationTarget;
-                            } else {
-                                return layouts.get(layouts.size() - 1);
-                            }
-                        });
+                .map(errorNavigationTarget -> {
+                    /*
+                     * {@code resolveTopParentLayout} is theoretically the
+                     * correct way to get the parent layout. But in fact it does
+                     * work for non route targets.
+                     */
+                    List<Class<? extends RouterLayout>> layouts = RouteUtil
+                            .getParentLayoutsForNonRouteTarget(
+                                    errorNavigationTarget);
+                    if (layouts.isEmpty()) {
+                        return errorNavigationTarget;
+                    } else {
+                        return layouts.get(layouts.size() - 1);
+                    }
+                });
     }
 
     /*

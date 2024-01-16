@@ -86,7 +86,7 @@ public class HierarchyMapper<T, F> implements Serializable {
 
     /**
      * Returns the size of root level.
-     * 
+     *
      * @return the amount of available root data
      */
     public int getRootSize() {
@@ -221,7 +221,6 @@ public class HierarchyMapper<T, F> implements Serializable {
         }
         return removedRows;
     }
-
 
     /**
      * Gets the current in-memory sorting.
@@ -371,10 +370,10 @@ public class HierarchyMapper<T, F> implements Serializable {
         Range actualRange = (range == null)
                 ? Range.withLength(0, Integer.MAX_VALUE)
                 : range;
-        return getDataProvider().fetchChildren(new HierarchicalQuery(
-                actualRange.getStart(), actualRange.length(),
-                getBackEndSorting(),
-                getInMemorySorting(), getFilter(), parent));
+        return getDataProvider()
+                .fetchChildren(new HierarchicalQuery(actualRange.getStart(),
+                        actualRange.length(), getBackEndSorting(),
+                        getInMemorySorting(), getFilter(), parent));
     }
 
     /**
@@ -391,7 +390,7 @@ public class HierarchyMapper<T, F> implements Serializable {
 
     /**
      * Returns depth of item in the tree starting from zero representing a root.
-     * 
+     *
      * @param item
      *            Target item
      * @return depth of item in the tree or -1 if item is null
@@ -570,11 +569,9 @@ public class HierarchyMapper<T, F> implements Serializable {
                 registerChildren(parent, childList);
             }
         }
-        return combineParentAndChildStreams(parent,
-                childList.stream(),
+        return combineParentAndChildStreams(parent, childList.stream(),
                 includeParent);
     }
-
 
     /**
      * Register parent and children items into inner structures. May be
@@ -621,7 +618,7 @@ public class HierarchyMapper<T, F> implements Serializable {
 
     /**
      * Returns true if there is any expanded items.
-     * 
+     *
      * @return {@code true} if there is any expanded items.
      */
     public boolean hasExpandedItems() {

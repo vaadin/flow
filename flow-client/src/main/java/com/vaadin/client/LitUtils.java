@@ -19,7 +19,8 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
- * Utils class, intended to ease working with LitElement related code on client side.
+ * Utils class, intended to ease working with LitElement related code on client
+ * side.
  *
  * @author Vaadin Ltd
  */

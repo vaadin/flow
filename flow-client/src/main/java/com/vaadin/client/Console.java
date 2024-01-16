@@ -30,7 +30,7 @@ import elemental.client.Browser;
  */
 public final class Console {
     private static boolean shouldLogToBrowserConsole;
-    
+
     @FunctionalInterface
     // Runnable that can throw
     private interface DeferWithoutEntryTask {

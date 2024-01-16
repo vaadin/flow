@@ -183,7 +183,8 @@ public class JsCollections {
                     "This is not a JUnit compilation even though compiler.stackMode check has the expected value");
         }
 
-        assert !isNativeMapConstructor() : "ES6 collection cannot be created before gwtSetUp has set up the polyfill";
+        assert !isNativeMapConstructor()
+                : "ES6 collection cannot be created before gwtSetUp has set up the polyfill";
     }
 
     private static native boolean isNativeMapConstructor()

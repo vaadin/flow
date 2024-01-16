@@ -134,16 +134,14 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         String developmentPrefix = Constants.FRONTEND_URL_DEV_DEFAULT;
-        assertThat(
-                String.format(
-                        "In development mode, both es5 and es6 prefixes should be equal to '%s'",
-                        developmentPrefix),
-                config.getEs5FrontendPrefix(), is(developmentPrefix));
-        assertThat(
-                String.format(
-                        "In development mode, both es5 and es6 prefixes should be equal to '%s'",
-                        developmentPrefix),
-                config.getEs6FrontendPrefix(), is(developmentPrefix));
+        assertThat(String.format(
+                "In development mode, both es5 and es6 prefixes should be equal to '%s'",
+                developmentPrefix), config.getEs5FrontendPrefix(),
+                is(developmentPrefix));
+        assertThat(String.format(
+                "In development mode, both es5 and es6 prefixes should be equal to '%s'",
+                developmentPrefix), config.getEs6FrontendPrefix(),
+                is(developmentPrefix));
     }
 
     @Test
@@ -160,16 +158,14 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
 
-        assertThat(
-                String.format(
-                        "In production mode, es5 prefix should be equal to '%s' parameter value",
-                        Constants.FRONTEND_URL_ES5),
-                config.getEs5FrontendPrefix(), is(es5Prefix));
-        assertThat(
-                String.format(
-                        "In production mode, es6 prefix should be equal to '%s' parameter value",
-                        Constants.FRONTEND_URL_ES6),
-                config.getEs6FrontendPrefix(), is(es6Prefix));
+        assertThat(String.format(
+                "In production mode, es5 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES5), config.getEs5FrontendPrefix(),
+                is(es5Prefix));
+        assertThat(String.format(
+                "In production mode, es6 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES6), config.getEs6FrontendPrefix(),
+                is(es6Prefix));
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(

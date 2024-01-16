@@ -457,7 +457,7 @@ public class FrontendTools {
     protected String installNode(String nodeVersion, URI downloadRoot) {
         NodeInstaller nodeInstaller = new NodeInstaller(
                 new File(getAlternativeDir()), getProxies())
-                        .setNodeVersion(nodeVersion);
+                .setNodeVersion(nodeVersion);
         if (downloadRoot != null) {
             nodeInstaller.setNodeDownloadRoot(downloadRoot);
         }

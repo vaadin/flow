@@ -36,8 +36,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
 /**
- * Task for generating the theme.js file for importing application
- * theme.
+ * Task for generating the theme.js file for importing application theme.
  * <p>
  * Generated file is generated into <code>./frontend/generated</code>
  *
@@ -77,19 +76,17 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         verifyThemeDirectoryExistence();
 
         if (!themeImportFile.getParentFile().mkdirs()) {
-            LoggerFactory.getLogger(getClass())
-                    .debug("Didn't create folders as they probably already exist. "
+            LoggerFactory.getLogger(getClass()).debug(
+                    "Didn't create folders as they probably already exist. "
                             + "If there is a problem check access rights for folder {}",
-                            themeImportFile.getParentFile().getAbsolutePath());
+                    themeImportFile.getParentFile().getAbsolutePath());
         }
 
         try {
-            FileUtils.write(themeImportFile,
-                    String.format(
-                            "import {applyTheme as _applyTheme} from 'generated/theme-%s.generated.js';%n"
-                                    + "export const applyTheme = _applyTheme;%n",
-                            theme.getName()),
-                    StandardCharsets.UTF_8);
+            FileUtils.write(themeImportFile, String.format(
+                    "import {applyTheme as _applyTheme} from 'generated/theme-%s.generated.js';%n"
+                            + "export const applyTheme = _applyTheme;%n",
+                    theme.getName()), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new ExecutionFailedException(
                     "Unable to write theme import file", e);

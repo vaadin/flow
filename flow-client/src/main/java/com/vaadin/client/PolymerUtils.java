@@ -145,7 +145,8 @@ public final class PolymerUtils {
                         node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
                                 .getProperty(NodeProperties.VALUE));
             }
-            assert feature != null : "Don't know how to convert node without map or list features";
+            assert feature != null
+                    : "Don't know how to convert node without map or list features";
 
             JsonValue convert = feature.convert(PolymerUtils::createModelTree);
             if (convert instanceof JsonObject
@@ -175,21 +176,22 @@ public final class PolymerUtils {
 
         JsArray<EventRemover> registrations = JsCollections.array();
         if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
-            assert feature instanceof NodeMap : "Received an inconsistent NodeFeature for a node that has a ELEMENT_PROPERTIES feature. It should be NodeMap, but it is: "
-                    + feature;
+            assert feature instanceof NodeMap
+                    : "Received an inconsistent NodeFeature for a node that has a ELEMENT_PROPERTIES feature. It should be NodeMap, but it is: "
+                            + feature;
             NodeMap map = (NodeMap) feature;
-            registerPropertyChangeHandlers(value, registrations,
-                    map);
+            registerPropertyChangeHandlers(value, registrations, map);
             registerPropertyAddHandler(value, registrations, map);
         } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-            assert feature instanceof NodeList : "Received an inconsistent NodeFeature for a node that has a TEMPLATE_MODELLIST feature. It should be NodeList, but it is: "
-                    + feature;
+            assert feature instanceof NodeList
+                    : "Received an inconsistent NodeFeature for a node that has a TEMPLATE_MODELLIST feature. It should be NodeList, but it is: "
+                            + feature;
             NodeList list = (NodeList) feature;
             registrations.push(list.addSpliceListener(
                     event -> handleListChange(event, value)));
         }
-        assert !registrations
-                .isEmpty() : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
+        assert !registrations.isEmpty()
+                : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
 
         registrations.push(node.addUnregisterListener(
                 event -> registrations.forEach(EventRemover::remove)));
@@ -205,8 +207,8 @@ public final class PolymerUtils {
         }));
     }
 
-    private static void registerPropertyChangeHandlers(
-            JsonValue value, JsArray<EventRemover> registrations, NodeMap map) {
+    private static void registerPropertyChangeHandlers(JsonValue value,
+            JsArray<EventRemover> registrations, NodeMap map) {
         map.forEachProperty((property, propertyName) -> registrations
                 .push(property.addChangeListener(
                         event -> handlePropertyChange(property, value))));
@@ -354,7 +356,7 @@ public final class PolymerUtils {
 
     /**
      * Gets the first parent node that also has a DOM Node attached to it.
-     * 
+     *
      * @param node
      *            the node
      * @return the first parent node with a DOM Node, or <code>null</code> if
@@ -394,7 +396,7 @@ public final class PolymerUtils {
      *            HTML element to check
      * @return {@code true} if the {@code htmlNode} can become a polymer 2
      *         element
-     * 
+     *
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
@@ -414,7 +416,7 @@ public final class PolymerUtils {
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM">https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM</a>
-     * 
+     *
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
@@ -435,7 +437,7 @@ public final class PolymerUtils {
      *
      * @see <a href=
      *      "http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html">http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html</a>
-     * 
+     *
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
@@ -488,7 +490,7 @@ public final class PolymerUtils {
      * @param tag
      *            the required tag name
      * @return {@code true} if the node has required tag name
-     * 
+     *
      * @deprecated Use the generic {@link ElementUtil#hasTag(Node, String)}
      *             instead
      */
@@ -616,9 +618,10 @@ public final class PolymerUtils {
         int filteredIndex = -1;
         for (int i = 0; i < children.getLength(); i++) {
             Node next = children.item(i);
-            assert next instanceof Element : "Unexpected element type in the collection of children. "
-                    + "DomElement::getChildren is supposed to return Element chidren only, but got "
-                    + next.getClass();
+            assert next instanceof Element
+                    : "Unexpected element type in the collection of children. "
+                            + "DomElement::getChildren is supposed to return Element chidren only, but got "
+                            + next.getClass();
             Element element = (Element) next;
             if (!"style".equalsIgnoreCase(element.getTagName())) {
                 filteredIndex++;
@@ -632,7 +635,7 @@ public final class PolymerUtils {
 
     /**
      * Sets a property to an element by using the Polymer {@code set} method.
-     * 
+     *
      * @param element
      *            the element to set the property to
      * @param path
@@ -648,7 +651,7 @@ public final class PolymerUtils {
 
     /**
      * Returns true if and only if the element has a shadow root ancestor.
-     * 
+     *
      * @param element
      *            the element to test
      * @return whether the element is in a shadow root

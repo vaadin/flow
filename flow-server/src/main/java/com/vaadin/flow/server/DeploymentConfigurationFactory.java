@@ -288,9 +288,10 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
 
         if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER)) {
-            initParameters.setProperty(SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER,
-                    String.valueOf(buildInfo.
-                            getBoolean(SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER)));
+            initParameters.setProperty(
+                    SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER,
+                    String.valueOf(buildInfo.getBoolean(
+                            SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER)));
         }
 
         setDevModePropertiesUsingTokenData(initParameters, buildInfo);
@@ -393,8 +394,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
 
-        assert !resources
-                .isEmpty() : "Possible jar resource requires resources to be available.";
+        assert !resources.isEmpty()
+                : "Possible jar resource requires resources to be available.";
 
         URL webpackGenerated = resourceProvider.getApplicationResource(context,
                 FrontendUtils.WEBPACK_GENERATED);
@@ -420,9 +421,10 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     firstResource.getPath(), resources.size());
             logger.warn(warningMessage);
         } else {
-            String debugMessage = String
-                    .format("Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'", firstResource.getPath());
+            String debugMessage = String.format(
+                    "Unable to fully determine correct flow-build-info.%n"
+                            + "Accepting file '%s'",
+                    firstResource.getPath());
             logger.debug(debugMessage);
         }
         return FrontendUtils.streamToString(firstResource.openStream());
@@ -541,7 +543,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
             VaadinServletConfiguration.InitParameterName name = method
                     .getAnnotation(
                             VaadinServletConfiguration.InitParameterName.class);
-            assert name != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
+            assert name != null
+                    : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
 
             try {
                 Object value = method.invoke(configuration);

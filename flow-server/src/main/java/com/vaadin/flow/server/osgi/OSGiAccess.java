@@ -84,13 +84,16 @@ public final class OSGiAccess {
     private static final OSGiAccess INSTANCE = new OSGiAccess();
 
     private final ServletContext context = LazyOSGiDetector.IS_IN_OSGI
-            ? createOSGiServletContext() : null;
+            ? createOSGiServletContext()
+            : null;
 
     private final AtomicReference<Collection<Class<? extends ServletContainerInitializer>>> initializerClasses = LazyOSGiDetector.IS_IN_OSGI
-            ? new AtomicReference<>() : null;
+            ? new AtomicReference<>()
+            : null;
 
     private final Map<Long, Collection<Class<?>>> cachedClasses = LazyOSGiDetector.IS_IN_OSGI
-            ? new ConcurrentHashMap<>() : null;
+            ? new ConcurrentHashMap<>()
+            : null;
 
     private static final ResourceProvider RESOURCE_PROVIDER = new OSGiResourceProvider();
 
@@ -183,8 +186,9 @@ public final class OSGiAccess {
             } catch (InvalidSyntaxException e) {
                 LoggerFactory.getLogger(OsgiLookupImpl.class)
                         .error("Unexpected invalid filter expression", e);
-                assert false : "Implementation error: Unexpected invalid filter exception is "
-                        + "thrown even though the service filter is null. Check the exception and update the impl";
+                assert false
+                        : "Implementation error: Unexpected invalid filter exception is "
+                                + "thrown even though the service filter is null. Check the exception and update the impl";
             }
 
             return Collections.emptyList();
@@ -343,7 +347,7 @@ public final class OSGiAccess {
          * exclude dev mode initializer (at least for now) because it doesn't
          * work in its current state anyway (so it's no-op) but its initial
          * calls breaks assumptions about Servlet registration in OSGi.
-         * 
+         *
          * Lookup is set immediately in the context, so no need to initialize it
          */
         initializerClasses.get().stream().filter(
@@ -475,8 +479,8 @@ public final class OSGiAccess {
             } catch (Throwable throwable) {
                 // just eat it so that any failure in the version detection
                 // doesn't break OSGi usage
-                LoggerFactory.getLogger(OSGiAccess.class)
-                        .info("Unable to detect used OSGi framework version due to "
+                LoggerFactory.getLogger(OSGiAccess.class).info(
+                        "Unable to detect used OSGi framework version due to "
                                 + throwable.getMessage());
             }
             return null;

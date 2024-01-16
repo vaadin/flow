@@ -21,7 +21,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.UUID;
 
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -828,5 +827,5 @@ public class BinderInstanceFieldTest {
                 "Expecting incomplete binding to be ignored by Binder, but field was bound",
                 binder.getBinding("firstName").isPresent());
     }
-    
+
 }

@@ -284,8 +284,8 @@ public class WebComponentUI extends UI {
     }
 
     /**
-     * Always returns <code>null</code>, since WebComponentUI doesn't
-     * support navigation.
+     * Always returns <code>null</code>, since WebComponentUI doesn't support
+     * navigation.
      *
      * @return <code>null</code>
      *

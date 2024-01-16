@@ -73,7 +73,7 @@ public class Location implements Serializable {
      * A possible "/" prefix of the location is ignored and a <code>null</code>
      * location is interpreted as <code>""</code>
      *
-     * 
+     *
      * @param location
      *            the relative location or <code>null</code> which is
      *            interpreted as <code>""</code>
@@ -194,8 +194,8 @@ public class Location implements Serializable {
      */
     public String getPathWithQueryParameters() {
         String basePath = getPath();
-        assert !basePath.contains(
-                QUERY_SEPARATOR) : "Base path can not contain query separator="
+        assert !basePath.contains(QUERY_SEPARATOR)
+                : "Base path can not contain query separator="
                         + QUERY_SEPARATOR;
         assert !basePath.contains("#") : "Base path can not contain fragment #";
 

@@ -376,8 +376,8 @@ public class FrontendUtils {
     /**
      * Gets the content of the <code>stats.json</code> file produced by webpack.
      *
-     * Note: Caches the <code>stats.json</code> when external stats is enabled or
-     * <code>stats.json</code> is provided from the class path. To clear the
+     * Note: Caches the <code>stats.json</code> when external stats is enabled
+     * or <code>stats.json</code> is provided from the class path. To clear the
      * cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
@@ -405,7 +405,8 @@ public class FrontendUtils {
                 content = getStatsFromClassPath(service);
             }
             return content != null
-                    ? IOUtils.toString(content, StandardCharsets.UTF_8) : null;
+                    ? IOUtils.toString(content, StandardCharsets.UTF_8)
+                    : null;
         } finally {
             IOUtils.closeQuietly(content);
         }
@@ -444,7 +445,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Clears the <code>stats.json</code> cache within this {@link VaadinContext}.
+     * Clears the <code>stats.json</code> cache within this
+     * {@link VaadinContext}.
      *
      * @param service
      *            the vaadin service.
@@ -564,9 +566,9 @@ public class FrontendUtils {
      * file until we have reached the assetsByChunkName json and return that as
      * a json object string.
      *
-     * Note: The <code>stats.json</code> is cached when external stats is enabled
-     * or <code>stats.json</code> is provided from the class path. To clear the
-     * cache use {@link #clearCachedStatsContent(VaadinService)}.
+     * Note: The <code>stats.json</code> is cached when external stats is
+     * enabled or <code>stats.json</code> is provided from the class path. To
+     * clear the cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
      *            the Vaadin service.
@@ -1074,9 +1076,8 @@ public class FrontendUtils {
     }
 
     /**
-    
-    /**
-     * Intentionally send to console instead to log, useful when executing
+     *
+     * /** Intentionally send to console instead to log, useful when executing
      * external processes.
      *
      * @param format

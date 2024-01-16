@@ -62,7 +62,8 @@ public class RouteConfigurationTest {
     /**
      * Get registry by handing the session lock correctly.
      *
-     * @param session target vaadin session
+     * @param session
+     *            target vaadin session
      * @return session route registry for session if exists or new.
      */
     private SessionRouteRegistry getRegistry(VaadinSession session) {
@@ -264,14 +265,16 @@ public class RouteConfigurationTest {
                                 new RouteParam("path",
                                         "com/vaadin/flow/button"))));
 
-        // url produced by @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+        // url produced by @RouteAlias(value =
+        // ":tab(overview|samples|links|reviews|discussions)")
         Assert.assertEquals("component/button/reviews",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
                                 new RouteParam("tab", "reviews"))));
 
-        // url produced by @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+        // url produced by @RouteAlias(value =
+        // ":tab(overview|samples|links|reviews|discussions)")
         Assert.assertEquals("component/button/overview",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(

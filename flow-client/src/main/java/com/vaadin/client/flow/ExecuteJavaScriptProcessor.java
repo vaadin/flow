@@ -227,7 +227,7 @@ public class ExecuteJavaScriptProcessor {
           object.stopApplication = $entry(function(){
               stopApplication.@java.lang.Runnable::run(*)();
           });
-    
+
         return object;
     }-*/;
 }

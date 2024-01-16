@@ -144,7 +144,8 @@ class RouteFormat implements Serializable {
         }
 
         final Optional<String> regex = formatRegex
-                ? formatSegmentRegex(segment, format) : Optional.empty();
+                ? formatSegmentRegex(segment, format)
+                : Optional.empty();
         if (regex.isPresent()) {
             if (wrapRegex) {
                 result.append("(");

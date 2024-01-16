@@ -261,10 +261,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void assertFileRemoved(String fileName, File directory) {
-        assertTrue(
-                String.format(
-                        "File `%s` was not removed from, or does not exist in, `%s`",
-                        fileName, directory),
+        assertTrue(String.format(
+                "File `%s` was not removed from, or does not exist in, `%s`",
+                fileName, directory),
                 resolveImportFile(directory, directory, fileName).delete());
     }
 
@@ -272,16 +271,14 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             Set<String> resourcesNotFound) {
         String prefix = "Failed to find the following files: ";
 
-        String suffix = String.format(
-                "%n  Locations searched were:"
-                        + "%n      - `%s` in this project"
-                        + "%n      - `%s` in included JARs"
-                        + "%n      - `%s` in included JARs"
-                        + "%n%n  Please, double check that those files exist. If you use a custom directory "
-                        + "for your resource files instead of default "
-                        + "`frontend` folder then make sure you it's correctly configured "
-                        + "(e.g. set '%s' property)",
-                frontendDirectory.getPath(),
+        String suffix = String.format("%n  Locations searched were:"
+                + "%n      - `%s` in this project"
+                + "%n      - `%s` in included JARs"
+                + "%n      - `%s` in included JARs"
+                + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                + "for your resource files instead of default "
+                + "`frontend` folder then make sure you it's correctly configured "
+                + "(e.g. set '%s' property)", frontendDirectory.getPath(),
                 Constants.RESOURCES_FRONTEND_DEFAULT,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                 FrontendUtils.PARAM_FRONTEND_DIR);

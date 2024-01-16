@@ -232,8 +232,7 @@ public interface InMemoryDataProvider<T> extends
      * @param comparator
      *            a comparator to add, not <code>null</code>
      */
-    default void addSortComparator(
-            SerializableComparator<T> comparator) {
+    default void addSortComparator(SerializableComparator<T> comparator) {
         Objects.requireNonNull(comparator, "Comparator to add cannot be null");
         SerializableComparator<T> originalComparator = getSortComparator();
         if (originalComparator == null) {
@@ -319,7 +318,7 @@ public interface InMemoryDataProvider<T> extends
      *            not <code>null</code>
      * @param <Q>
      *            the filter type
-     * 
+     *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
     default <Q> DataProvider<T, Q> filteringBy(
@@ -351,7 +350,7 @@ public interface InMemoryDataProvider<T> extends
      *            the provided value type
      * @param <Q>
      *            the filter type
-     * 
+     *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
     default <V, Q> DataProvider<T, Q> filteringBy(
@@ -402,8 +401,7 @@ public interface InMemoryDataProvider<T> extends
             ValueProvider<T, String> valueProvider, Locale locale) {
         Objects.requireNonNull(locale, "Locale cannot be null");
         return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
-                this, valueProvider,
-                String::contains, () -> locale);
+                this, valueProvider, String::contains, () -> locale);
     }
 
     /**
@@ -444,8 +442,8 @@ public interface InMemoryDataProvider<T> extends
      */
     default DataProvider<T, String> filteringByPrefix(
             ValueProvider<T, String> valueProvider, Locale locale) {
-        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider,
-                String::startsWith, () -> locale);
+        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
+                this, valueProvider, String::startsWith, () -> locale);
     }
 
     /**
@@ -464,7 +462,8 @@ public interface InMemoryDataProvider<T> extends
      */
     default DataProvider<T, String> filteringByPrefix(
             ValueProvider<T, String> valueProvider) {
-        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider,
-                String::startsWith, InMemoryDataProviderHelpers.CURRENT_LOCALE_SUPPLIER);
+        return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
+                this, valueProvider, String::startsWith,
+                InMemoryDataProviderHelpers.CURRENT_LOCALE_SUPPLIER);
     }
 }

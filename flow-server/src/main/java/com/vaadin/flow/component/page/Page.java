@@ -692,7 +692,7 @@ public class Page implements Serializable {
      * <p>
      * <em>NOTE: </em> the URL is not escaped, use {@link URL#toURI()} to escape
      * it.
-     * 
+     *
      * @param callback
      *            to be notified when the url is resolved.
      */

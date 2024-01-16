@@ -125,7 +125,8 @@ public class InjectableLitElementInitializerTest {
     public void initializeElement_disabled_exceptionIsThrown() {
 
         expectedEx.expect(IllegalAttributeException.class);
-        expectedEx.expectMessage(Matchers.containsString("element 'div' with id 'labelId'"));
+        expectedEx.expectMessage(
+                Matchers.containsString("element 'div' with id 'labelId'"));
 
         Map<String, String> attributes = new HashMap<>();
         attributes.put("disabled", Boolean.TRUE.toString());

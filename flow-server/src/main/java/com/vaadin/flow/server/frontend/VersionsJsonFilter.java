@@ -140,7 +140,7 @@ class VersionsJsonFilter {
 
     /**
      * Get the Vaadin dependency.
-     * 
+     *
      * @param packageJson
      *            main package.json
      * @return Vaadin dependencies or empty object

@@ -257,8 +257,6 @@ public class TreeChangeProcessorTest {
         Assert.assertEquals(node, updatedNode);
     }
 
-
-
     @Test
     public void testPutNodeGetsParent() {
         StateNode child = new StateNode(2, tree);
@@ -282,13 +280,13 @@ public class TreeChangeProcessorTest {
         StateNode child = new StateNode(2, tree);
         tree.registerNode(child);
 
-
         StateNode subChild = new StateNode(3, tree);
         tree.registerNode(subChild);
         child.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, child);
 
         JsonObject change = putNodeChange(rootId, ns, myKey, child.getId());
-        JsonObject subChange = putNodeChange(child.getId(), ns, myKey, subChild.getId());
+        JsonObject subChange = putNodeChange(child.getId(), ns, myKey,
+                subChild.getId());
 
         StateNode node = TreeChangeProcessor.processChange(tree, change);
         Assert.assertEquals(tree.getRootNode(), node);
@@ -306,7 +304,6 @@ public class TreeChangeProcessorTest {
         Assert.assertEquals(child, subChild.getParent());
     }
 
-
     @Test
     public void testNodeDetachRemovesParent() {
         StateNode child = new StateNode(2, tree);
@@ -322,7 +319,6 @@ public class TreeChangeProcessorTest {
 
         Assert.assertSame(child, value);
         Assert.assertEquals(node, child.getParent());
-
 
         change = detachChange(child.getId());
 

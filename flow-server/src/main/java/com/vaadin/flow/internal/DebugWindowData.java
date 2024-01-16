@@ -25,6 +25,7 @@ import java.io.Serializable;
 public interface DebugWindowData extends Serializable {
     /**
      * Converts data object to a JSON string.
+     *
      * @return JSON representation if the debug window data.
      */
     String toJson();

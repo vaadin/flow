@@ -29,12 +29,12 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Acts as a proxy to the web component root onto which the exporter {@link
- * Component} is added. Allows updating web component properties and firing
- * custom events on the client-side.
+ * Acts as a proxy to the web component root onto which the exporter
+ * {@link Component} is added. Allows updating web component properties and
+ * firing custom events on the client-side.
  *
  * @param <C>
- *         type of the {@code component} exported as web component
+ *            type of the {@code component} exported as web component
  * @author Vaadin Ltd.
  * @since 2.0
  */
@@ -59,16 +59,16 @@ public final class WebComponent<C extends Component> implements Serializable {
     /**
      * Constructs a {@link WebComponent}. {@link WebComponentBinding} provides
      * the instance of the {@link Component} exported as a web component. {@code
-     * Binding} also defines the properties the web component has. {@link
-     * Element} is the host element which contains the exported {@code
+     * Binding} also defines the properties the web component has.
+     * {@link Element} is the host element which contains the exported {@code
      * component} instance (provided by the {@code binding}).
      *
      * @param binding
-     *         binds web component configuration to {@code component X}
+     *            binds web component configuration to {@code component X}
      * @param componentHost
-     *         host {@code component X} on the embedding page
-     * @see com.vaadin.flow.component.webcomponent.WebComponentWrapper for
-     *         the web component host
+     *            host {@code component X} on the embedding page
+     * @see com.vaadin.flow.component.webcomponent.WebComponentWrapper for the
+     *      web component host
      */
     public WebComponent(WebComponentBinding binding, Element componentHost) {
         Objects.requireNonNull(binding,
@@ -84,9 +84,8 @@ public final class WebComponent<C extends Component> implements Serializable {
      * component. This event does not bubble in the DOM hierarchy.
      *
      * @param eventName
-     *         name of the event, not null
-     * @see #fireEvent(String, JsonValue, EventOptions) for full set of
-     *         options
+     *            name of the event, not null
+     * @see #fireEvent(String, JsonValue, EventOptions) for full set of options
      */
     public void fireEvent(String eventName) {
         fireEvent(eventName, Json.createNull(), BASIC_OPTIONS);
@@ -98,12 +97,11 @@ public final class WebComponent<C extends Component> implements Serializable {
      * hierarchy.
      *
      * @param eventName
-     *         name of the event, not null
+     *            name of the event, not null
      * @param objectData
-     *         data the event should carry. This data is placed as the {@code
+     *            data the event should carry. This data is placed as the {@code
      *         detail} property of the event, nullable
-     * @see #fireEvent(String, JsonValue, EventOptions) for full set of
-     *         options
+     * @see #fireEvent(String, JsonValue, EventOptions) for full set of options
      */
     public void fireEvent(String eventName, JsonValue objectData) {
         fireEvent(eventName, objectData, BASIC_OPTIONS);
@@ -115,15 +113,17 @@ public final class WebComponent<C extends Component> implements Serializable {
      * behavior with {@link EventOptions}.
      *
      * @param eventName
-     *         name of the event, not null
+     *            name of the event, not null
      * @param objectData
-     *         data the event should carry. This data is placed as the {@code
+     *            data the event should carry. This data is placed as the {@code
      *         detail} property of the event, nullable
      * @param options
-     *         event options for {@code bubbles}, {@code cancelable}, and {@code
+     *            event options for {@code bubbles}, {@code cancelable}, and
+     *            {@code
      *         composed} flags, not null
      * @throws NullPointerException
-     *         if either {@code eventName} or {@code options} is {@code null}
+     *             if either {@code eventName} or {@code options} is
+     *             {@code null}
      */
     public void fireEvent(String eventName, JsonValue objectData,
             EventOptions options) {
@@ -144,28 +144,29 @@ public final class WebComponent<C extends Component> implements Serializable {
 
     /**
      * Sets property value on the client-side to the given {@code value}. The
-     * required {@link PropertyConfigurationImpl} is received from {@link
-     * com.vaadin.flow.component.WebComponentExporter} when a new property is
-     * added for the web component.
+     * required {@link PropertyConfigurationImpl} is received from
+     * {@link com.vaadin.flow.component.WebComponentExporter} when a new
+     * property is added for the web component.
      *
      * @param propertyConfiguration
-     *         identifies the property for which the value is being set, not
-     *         {@code null}
+     *            identifies the property for which the value is being set, not
+     *            {@code null}
      * @param value
-     *         new value for the property, can be {@code null}
+     *            new value for the property, can be {@code null}
      * @param <P>
-     *         type of the property value being set. If the type does not match
-     *         the original property type, throws an exception
+     *            type of the property value being set. If the type does not
+     *            match the original property type, throws an exception
      * @throws NullPointerException
-     *         if {@code propertyConfiguration} is {@code null}
+     *             if {@code propertyConfiguration} is {@code null}
      * @throws IllegalArgumentException
-     *         if {@code PropertyConfiguration} is not a correct implementation
+     *             if {@code PropertyConfiguration} is not a correct
+     *             implementation
      * @throws IllegalArgumentException
-     *         if the web component does not have a property identified by
-     *         {@code propertyConfiguration}
+     *             if the web component does not have a property identified by
+     *             {@code propertyConfiguration}
      * @throws IllegalArgumentException
-     *         the provided {@code value} is not of the type expected by the
-     *         property
+     *             the provided {@code value} is not of the type expected by the
+     *             property
      */
     @SuppressWarnings("unchecked")
     public <P extends Serializable> void setProperty(
@@ -174,9 +175,8 @@ public final class WebComponent<C extends Component> implements Serializable {
                 "Parameter " + "'propertyConfiguration' must not be null!");
 
         if (!(propertyConfiguration instanceof PropertyConfigurationImpl)) {
-            throw new IllegalArgumentException(String.format(
-                    "Parameter "
-                            + "'propertyConfiguration' is not an implementation of %s",
+            throw new IllegalArgumentException(String.format("Parameter "
+                    + "'propertyConfiguration' is not an implementation of %s",
                     PropertyConfigurationImpl.class));
         }
         PropertyConfigurationImpl<C, P> propertyConfigurationImpl = (PropertyConfigurationImpl<C, P>) propertyConfiguration;
@@ -194,9 +194,8 @@ public final class WebComponent<C extends Component> implements Serializable {
         // is the property's value type correct
         if (value != null && !binding.getPropertyType(propertyName)
                 .isAssignableFrom(value.getClass())) {
-            throw new IllegalArgumentException(String.format(
-                    "Property '%s' "
-                            + "of type '%s' cannot be assigned value of type '%s'!",
+            throw new IllegalArgumentException(String.format("Property '%s' "
+                    + "of type '%s' cannot be assigned value of type '%s'!",
                     propertyName,
                     binding.getPropertyType(propertyName).getName(),
                     value.getClass().getCanonicalName()));

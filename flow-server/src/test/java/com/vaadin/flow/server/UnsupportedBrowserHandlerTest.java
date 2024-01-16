@@ -31,8 +31,10 @@ public class UnsupportedBrowserHandlerTest {
         configuration = new MockDeploymentConfiguration();
 
         request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request.getHeader("Cookie")).thenReturn(forceReloadCookie
-                ? UnsupportedBrowserHandler.FORCE_LOAD_COOKIE : null);
+        Mockito.when(request.getHeader("Cookie"))
+                .thenReturn(forceReloadCookie
+                        ? UnsupportedBrowserHandler.FORCE_LOAD_COOKIE
+                        : null);
 
         writer = Mockito.mock(PrintWriter.class);
 

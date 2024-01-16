@@ -684,7 +684,7 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Get the layout chain for the {@link #getNavigationState(String, List)
      * navigation target}.
-     * 
+     *
      * @return layout chain
      */
     public List<Class<? extends RouterLayout>> getLayouts() {
@@ -738,8 +738,7 @@ public abstract class BeforeEvent extends EventObject {
 
             rerouteTargetState = new NavigationStateBuilder(
                     ui.getInternals().getRouter())
-                            .withTarget(lookupResult.getNavigationTarget())
-                            .build();
+                    .withTarget(lookupResult.getNavigationTarget()).build();
             rerouteTarget = new ErrorStateRenderer(rerouteTargetState);
 
             errorParameter = new ErrorParameter<>(

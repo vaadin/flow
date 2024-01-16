@@ -24,15 +24,17 @@ import com.vaadin.flow.component.UI;
  *
  * @since 1.0
  * @deprecated Deprecated due to multiple issues on feature design, like this
- * won't work together with the {@link com.vaadin.flow.router.PreserveOnRefresh}
- * annotation. Will not be removed until <em>after the next long term support
- * version</em> (targeted Vaadin 23).
- * <p>
- * For Vaadin 14, use {@link BootstrapListener} instead, which provides API for
- * modifying the bootstrap page and access to the {@link UI}, which provides
- * further replacement API like {@link UI#getLoadingIndicatorConfiguration()}.
- * <p>
- * For Vaadin 15+, use {@code AppShellConfigurator} instead.
+ *             won't work together with the
+ *             {@link com.vaadin.flow.router.PreserveOnRefresh} annotation. Will
+ *             not be removed until <em>after the next long term support
+ *             version</em> (targeted Vaadin 23).
+ *             <p>
+ *             For Vaadin 14, use {@link BootstrapListener} instead, which
+ *             provides API for modifying the bootstrap page and access to the
+ *             {@link UI}, which provides further replacement API like
+ *             {@link UI#getLoadingIndicatorConfiguration()}.
+ *             <p>
+ *             For Vaadin 15+, use {@code AppShellConfigurator} instead.
  */
 @Deprecated
 @FunctionalInterface

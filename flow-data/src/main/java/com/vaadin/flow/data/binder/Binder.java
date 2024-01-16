@@ -239,10 +239,11 @@ public class Binder<BEAN> implements Serializable {
         public boolean isAsRequiredEnabled();
 
         /**
-         * Define whether validators are disabled or enabled for this
-         * specific binding.
+         * Define whether validators are disabled or enabled for this specific
+         * binding.
          *
-         * @param validatorsDisabled A boolean value.
+         * @param validatorsDisabled
+         *            A boolean value.
          */
         public void setValidatorsDisabled(boolean validatorsDisabled);
 
@@ -257,15 +258,17 @@ public class Binder<BEAN> implements Serializable {
          * Define whether the value should be converted back to the presentation
          * in the field when a converter is used in binding.
          * <p>
-         * The default behavior (do not convert back to presentation) changes to the
-         * opposite as of Vaadin 19 / Flow 6.0, when a converter is used on a binding
-         * and the user input value is modified by the converter, the value from the
-         * converter is applied back to the input. It is possible to control this
-         * behavior with this API.
+         * The default behavior (do not convert back to presentation) changes to
+         * the opposite as of Vaadin 19 / Flow 6.0, when a converter is used on
+         * a binding and the user input value is modified by the converter, the
+         * value from the converter is applied back to the input. It is possible
+         * to control this behavior with this API.
          *
          * @see BindingBuilder#withConverter(Converter)
-         * @see BindingBuilder#withConverter(SerializableFunction, SerializableFunction)
-         * @see BindingBuilder#withConverter(SerializableFunction, SerializableFunction, String)
+         * @see BindingBuilder#withConverter(SerializableFunction,
+         *      SerializableFunction)
+         * @see BindingBuilder#withConverter(SerializableFunction,
+         *      SerializableFunction, String)
          *
          * @param convertBackToPresentation
          *            A boolean value
@@ -548,8 +551,8 @@ public class Binder<BEAN> implements Serializable {
          * property using an appropriate converter such as a
          * {@link StringToIntegerConverter}.
          * <p>
-         * The converted value is not applied back to the field by default,
-         * this can be controlled with the method
+         * The converted value is not applied back to the field by default, this
+         * can be controlled with the method
          * {@link Binding#setConvertBackToPresentation(boolean)}.
          *
          * @see Binding#setConvertBackToPresentation(boolean)
@@ -580,8 +583,8 @@ public class Binder<BEAN> implements Serializable {
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
          * <p>
-         * The converted value is not applied back to the field by default,
-         * this can be controlled with the method
+         * The converted value is not applied back to the field by default, this
+         * can be controlled with the method
          * {@link Binding#setConvertBackToPresentation(boolean)}.
          *
          * @see Binding#setConvertBackToPresentation(boolean)
@@ -621,8 +624,8 @@ public class Binder<BEAN> implements Serializable {
          * property using appropriate functions such as:
          * <code>withConverter(Integer::valueOf, String::valueOf);</code>
          * <p>
-         * The converted value is not applied back to the field by default,
-         * this can be controlled with the method
+         * The converted value is not applied back to the field by default, this
+         * can be controlled with the method
          * {@link Binding#setConvertBackToPresentation(boolean)}.
          *
          * @see Binding#setConvertBackToPresentation(boolean)
@@ -662,9 +665,11 @@ public class Binder<BEAN> implements Serializable {
                 TARGET nullRepresentation) {
             return withConverter(
                     fieldValue -> Objects.equals(fieldValue, nullRepresentation)
-                            ? null : fieldValue,
+                            ? null
+                            : fieldValue,
                     modelValue -> Objects.isNull(modelValue)
-                            ? nullRepresentation : modelValue);
+                            ? nullRepresentation
+                            : modelValue);
         }
 
         /**
@@ -1715,9 +1720,9 @@ public class Binder<BEAN> implements Serializable {
 
         return createBinding(field, createNullRepresentationAdapter(field),
                 this::handleValidationStatus)
-                        .withValidator(field instanceof HasValidator
-                                ? ((HasValidator) field).getDefaultValidator()
-                                : Validator.alwaysPass());
+                .withValidator(field instanceof HasValidator
+                        ? ((HasValidator) field).getDefaultValidator()
+                        : Validator.alwaysPass());
     }
 
     /**
@@ -1995,9 +2000,9 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Writes successfully converted changes from the bound fields bypassing
-     * all the Validation or all fields passing conversion if forced = true.
-     * If the conversion fails, the value written to the bean will be null.
+     * Writes successfully converted changes from the bound fields bypassing all
+     * the Validation or all fields passing conversion if forced = true. If the
+     * conversion fails, the value written to the bean will be null.
      *
      * @see #writeBean(Object)
      * @see #writeBeanIfValid(Object)
@@ -2835,7 +2840,8 @@ public class Binder<BEAN> implements Serializable {
         Converter<FIELDVALUE, FIELDVALUE> nullRepresentationConverter = Converter
                 .from(fieldValue -> fieldValue,
                         modelValue -> Objects.isNull(modelValue)
-                                ? field.getEmptyValue() : modelValue,
+                                ? field.getEmptyValue()
+                                : modelValue,
                         Throwable::getMessage);
         ConverterDelegate<FIELDVALUE> converter = new ConverterDelegate<>(
                 nullRepresentationConverter);
@@ -2911,7 +2917,7 @@ public class Binder<BEAN> implements Serializable {
      * @throws IllegalStateException
      *             if there are incompatible HasValue&lt;T&gt; and property
      *             types
-     *             @see #getConverterFactory()
+     * @see #getConverterFactory()
      */
     public void bindInstanceFields(Object objectWithMemberFields) {
         Class<?> objectClass = objectWithMemberFields.getClass();
@@ -3034,12 +3040,12 @@ public class Binder<BEAN> implements Serializable {
                 // 'bindInstanceFields' states that it doesn't override existing
                 // bindings and that incomplete bindings may be completed also
                 // after method call
-                LoggerFactory.getLogger(Binder.class.getName())
-                        .debug("Binding for member '{}' of class '{}' will not be automatically "
+                LoggerFactory.getLogger(Binder.class.getName()).debug(
+                        "Binding for member '{}' of class '{}' will not be automatically "
                                 + "created because a custom binding has been started "
                                 + "but not yet finalized with 'bind()' invocation.",
-                                memberField.getName(),
-                                objectWithMemberFields.getClass().getName());
+                        memberField.getName(),
+                        objectWithMemberFields.getClass().getName());
                 return false;
             }
             BindingBuilder<BEAN, ?> bindingBuilder = forField(field);
@@ -3263,18 +3269,19 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Control whether validators including bean level validators are
-     * disabled or enabled globally for this Binder.
+     * Control whether validators including bean level validators are disabled
+     * or enabled globally for this Binder.
      *
-     * @param validatorsDisabled Boolean value.
+     * @param validatorsDisabled
+     *            Boolean value.
      */
     public void setValidatorsDisabled(boolean validatorsDisabled) {
         this.validatorsDisabled = validatorsDisabled;
     }
 
     /**
-     * Returns if the validators including bean level validators
-     * are disabled or enabled for this Binder.
+     * Returns if the validators including bean level validators are disabled or
+     * enabled for this Binder.
      *
      * @return Boolean value
      */

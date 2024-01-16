@@ -160,10 +160,12 @@ public interface PushConfiguration extends Serializable {
     String getPushUrl();
 
     /**
-     * Sets the factory that will be used to create new instances of {@link PushConnection}.
+     * Sets the factory that will be used to create new instances of
+     * {@link PushConnection}.
      *
      * @param factory
-     *            the factory that will be used to create new instances of {@link PushConnection}
+     *            the factory that will be used to create new instances of
+     *            {@link PushConnection}
      */
     void setPushConnectionFactory(PushConnectionFactory factory);
 

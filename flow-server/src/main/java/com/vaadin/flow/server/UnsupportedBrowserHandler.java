@@ -102,7 +102,8 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
             return true;
         }
 
-        // check for trying to run non-ES6 browser in dev mode without transpilation
+        // check for trying to run non-ES6 browser in dev mode without
+        // transpilation
         if (!session.getConfiguration().isCompatibilityMode()
                 && !session.getConfiguration().isProductionMode()
                 && !browser.isEs6Supported()
@@ -119,9 +120,12 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
     /**
      * Writes a page encouraging the user to upgrade to a more current browser.
      *
-     * @param request  The request to handle
-     * @param response The response object to which a response can be written.
-     * @throws IOException if an IO error occurred
+     * @param request
+     *            The request to handle
+     * @param response
+     *            The response object to which a response can be written.
+     * @throws IOException
+     *             if an IO error occurred
      */
     protected void writeBrowserTooOldPage(VaadinRequest request,
             VaadinResponse response) throws IOException {
@@ -160,10 +164,13 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Writes a page that explains that Production Mode is required for Internet Explorer 11 to work.
+     * Writes a page that explains that Production Mode is required for Internet
+     * Explorer 11 to work.
      *
-     * @param response the response object to write response to
-     * @throws IOException if an IO error occurred
+     * @param response
+     *            the response object to write response to
+     * @throws IOException
+     *             if an IO error occurred
      */
     private void writeIE11InDevelopmentModePage(VaadinResponse response)
             throws IOException {
@@ -195,10 +202,13 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Writes a page that explains that transpilation is required for development mode.
+     * Writes a page that explains that transpilation is required for
+     * development mode.
      *
-     * @param response the response object to write response to
-     * @throws IOException if an IO error occurred
+     * @param response
+     *            the response object to write response to
+     * @throws IOException
+     *             if an IO error occurred
      */
     private void writeES5TranspilationRequiredInDevelopmentModePage(
             VaadinResponse response) throws IOException {

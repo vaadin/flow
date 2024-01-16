@@ -76,9 +76,9 @@ public class NodeInstaller {
      * platform.
      *
      * @param installDirectory
-     *         installation directory
+     *            installation directory
      * @param proxies
-     *         list of proxies
+     *            list of proxies
      */
     public NodeInstaller(File installDirectory,
             List<ProxyConfig.Proxy> proxies) {
@@ -89,11 +89,11 @@ public class NodeInstaller {
      * Create NoodeInstaller with default extractor and downloader.
      *
      * @param installDirectory
-     *         installation directory
+     *            installation directory
      * @param platform
-     *         platform information
+     *            platform information
      * @param proxies
-     *         list of proxies
+     *            list of proxies
      */
     public NodeInstaller(File installDirectory, Platform platform,
             List<ProxyConfig.Proxy> proxies) {
@@ -105,13 +105,13 @@ public class NodeInstaller {
      * Initialize a new NodeInstaller.
      *
      * @param installDirectory
-     *         installation directory
+     *            installation directory
      * @param platform
-     *         platform information
+     *            platform information
      * @param archiveExtractor
-     *         archive extractor
+     *            archive extractor
      * @param fileDownloader
-     *         file downloader
+     *            file downloader
      */
     public NodeInstaller(File installDirectory, Platform platform,
             ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
@@ -125,7 +125,7 @@ public class NodeInstaller {
      * Set the node version to install. (given as "v14.15.4")
      *
      * @param nodeVersion
-     *         version string
+     *            version string
      * @return this
      */
     public NodeInstaller setNodeVersion(String nodeVersion) {
@@ -138,15 +138,13 @@ public class NodeInstaller {
      * <p>
      * This should be a url or directory under which we can find a directory
      * {@link #nodeVersion} and there should then exist the archived node
-     * packages.
-     * For instance for v14.15.4 we should have under nodeDownloadRoot:
-     * ./v14.15.4/node-v14.15.4-linux-x64.tar.xz
+     * packages. For instance for v14.15.4 we should have under
+     * nodeDownloadRoot: ./v14.15.4/node-v14.15.4-linux-x64.tar.xz
      * ./v14.15.4/node-v14.15.4-darwin-x64.tar.gz
-     * ./v14.15.4/node-v14.15.4-win-x64.zip
-     * ./v14.15.4/node-v14.15.4-win-x86.zip
+     * ./v14.15.4/node-v14.15.4-win-x64.zip ./v14.15.4/node-v14.15.4-win-x86.zip
      *
      * @param nodeDownloadRoot
-     *         custom download root
+     *            custom download root
      * @return this
      */
     public NodeInstaller setNodeDownloadRoot(URI nodeDownloadRoot) {
@@ -158,7 +156,7 @@ public class NodeInstaller {
      * Set user name to use.
      *
      * @param userName
-     *         user name
+     *            user name
      * @return this
      */
     public NodeInstaller setUserName(String userName) {
@@ -170,7 +168,7 @@ public class NodeInstaller {
      * Set password to use.
      *
      * @param password
-     *         password
+     *            password
      * @return this
      */
     public NodeInstaller setPassword(String password) {
@@ -194,7 +192,7 @@ public class NodeInstaller {
      * Install node and NPM.
      *
      * @throws InstallationException
-     *         exception thrown when installation fails
+     *             exception thrown when installation fails
      */
     public void install() throws InstallationException {
         // use lock object for a synchronized block
@@ -210,8 +208,8 @@ public class NodeInstaller {
 
             getLogger().info("Installing node version {}", nodeVersion);
             if (!nodeVersion.startsWith("v")) {
-                getLogger()
-                        .warn("Node version does not start with naming convention 'v'. "
+                getLogger().warn(
+                        "Node version does not start with naming convention 'v'. "
                                 + "If download fails please add 'v' to the version string.");
             }
             InstallData data = new InstallData(nodeVersion, nodeDownloadRoot,
@@ -413,7 +411,8 @@ public class NodeInstaller {
         } catch (ArchiveExtractionException e) {
             if (e.getCause() instanceof EOFException) {
                 // https://github.com/eirslett/frontend-maven-plugin/issues/794
-                // The downloading was probably interrupted and archive file is incomplete:
+                // The downloading was probably interrupted and archive file is
+                // incomplete:
                 // delete it to retry from scratch
                 getLogger().error(
                         "The archive file {} is corrupted and will be deleted. "
@@ -421,9 +420,8 @@ public class NodeInstaller {
                         archive.getPath());
                 boolean deleted = archive.delete();
                 if (!deleted) {
-                    getLogger().error(
-                            "Failed to remove archive file {}. "
-                                    + "Please remove it manually and run the application.",
+                    getLogger().error("Failed to remove archive file {}. "
+                            + "Please remove it manually and run the application.",
                             archive.getPath());
                 }
                 try {
@@ -549,13 +547,13 @@ public class NodeInstaller {
          * Build archive file name and return archive file target location.
          *
          * @param name
-         *         archive name
+         *            archive name
          * @param nodeVersion
-         *         node version
+         *            node version
          * @param classifier
-         *         optional classifier
+         *            optional classifier
          * @param archiveExtension
-         *         archive extension
+         *            archive extension
          * @return archive {@link File} for archive
          */
         private File resolveArchive(String name, String nodeVersion,

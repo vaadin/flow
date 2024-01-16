@@ -21,7 +21,8 @@ import java.util.Optional;
 import com.vaadin.flow.plugin.common.ArtifactData;
 
 /**
- * Wrapper around {@link ArtifactData} that holds information about a package located in the corresponding WebJar.
+ * Wrapper around {@link ArtifactData} that holds information about a package
+ * located in the corresponding WebJar.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -34,11 +35,15 @@ public class WebJarPackage {
     /**
      * Creates new wrapper instance.
      *
-     * @param webJar        the WebJar that holds the package in, not {@code null}
-     * @param packageName   name of a package inside the WebJar, not {@code null}
-     * @param pathToPackage path to package inside the WebJar, not {@code null}
+     * @param webJar
+     *            the WebJar that holds the package in, not {@code null}
+     * @param packageName
+     *            name of a package inside the WebJar, not {@code null}
+     * @param pathToPackage
+     *            path to package inside the WebJar, not {@code null}
      */
-    public WebJarPackage(ArtifactData webJar, String packageName, String pathToPackage) {
+    public WebJarPackage(ArtifactData webJar, String packageName,
+            String pathToPackage) {
         this.webJar = Objects.requireNonNull(webJar);
         this.packageName = Objects.requireNonNull(packageName);
         this.pathToPackage = Objects.requireNonNull(pathToPackage);
@@ -72,20 +77,27 @@ public class WebJarPackage {
     }
 
     /**
-     * Attempts to select correct package out of two WebJar package data, resolving common WebJar issues:
+     * Attempts to select correct package out of two WebJar package data,
+     * resolving common WebJar issues:
      * <ul>
-     * <li><a href="https://github.com/webjars/webjars/issues/1656">https://github.com/webjars/webjars/issues/1656</a></li>
-     * <li><a href="https://github.com/webjars/webjars/issues/1452">https://github.com/webjars/webjars/issues/1452</a></li>
+     * <li><a href=
+     * "https://github.com/webjars/webjars/issues/1656">https://github.com/webjars/webjars/issues/1656</a></li>
+     * <li><a href=
+     * "https://github.com/webjars/webjars/issues/1452">https://github.com/webjars/webjars/issues/1452</a></li>
      * </ul>
      * <p>
-     * Versions of the parent packages are considered, even if they are different from the package's one.
-     * The reason for this is:
-     * <a href="https://github.com/bower/spec/blob/master/json.md#version">bower.json version field deprecation notes</a>
+     * Versions of the parent packages are considered, even if they are
+     * different from the package's one. The reason for this is: <a href=
+     * "https://github.com/bower/spec/blob/master/json.md#version">bower.json
+     * version field deprecation notes</a>
      *
-     * @param package1 first package data
-     * @param package2 second package data
+     * @param package1
+     *            first package data
+     * @param package2
+     *            second package data
      * @return package with as less issues as possible
-     * @throws IllegalArgumentException when packages have different names or versions
+     * @throws IllegalArgumentException
+     *             when packages have different names or versions
      */
     public static WebJarPackage selectCorrectPackage(WebJarPackage package1,
             WebJarPackage package2) {
@@ -108,7 +120,7 @@ public class WebJarPackage {
                 "Two webJars have same name and different versions: '%s' and '%s', there should be no version differences",
                 package1.webJar, package2.webJar));
     }
-    
+
     private static Optional<WebJarPackage> selectTopmostPackage(
             WebJarPackage package1, WebJarPackage package2) {
         String path1 = package1.getPathToPackage();

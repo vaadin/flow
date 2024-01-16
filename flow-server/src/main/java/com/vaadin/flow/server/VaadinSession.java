@@ -182,8 +182,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // Be aware that not initialized session doesn't have the
         // correct/expected state: it has no lock, service, session, etc.
         if (!isInitialized()) {
-            getLogger()
-                    .warn("A VaadinSession instance not associated to any service is getting unbound. "
+            getLogger().warn(
+                    "A VaadinSession instance not associated to any service is getting unbound. "
                             + "Session destroy events will not be fired and UIs in the session will not get detached. "
                             + "This might happen if a session is deserialized but never used before it expires.");
             return;
@@ -343,8 +343,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Updates the transient session lock from VaadinService.
      */
     private void refreshLock() {
-        assert lock == null || lock == service.getSessionLock(
-                session) : "Cannot change the lock from one instance to another";
+        assert lock == null || lock == service.getSessionLock(session)
+                : "Cannot change the lock from one instance to another";
         assert hasLock(service, session);
         lock = service.getSessionLock(session);
     }
@@ -354,7 +354,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         if (configuration == null) {
             throw new IllegalArgumentException("Can not set to null");
         }
-        assert this.configuration == null : "Configuration can only be set once";
+        assert this.configuration == null
+                : "Configuration can only be set once";
         this.configuration = configuration;
     }
 
@@ -903,8 +904,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     protected void setState(VaadinSessionState state) {
         checkHasLock();
-        assert isValidChange(state) : "Invalid session state change "
-                + this.state + "->" + state;
+        assert isValidChange(state)
+                : "Invalid session state change " + this.state + "->" + state;
 
         this.state = state;
         if (VaadinSessionState.CLOSED.equals(state)) {
@@ -1101,13 +1102,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * {@link #refreshTransients(WrappedSession, VaadinService)} has been called
      * for it. If the session is just created or deserialized but not yet in
      * real use then it's not initialized and it's state is incomplete.
-     * 
+     *
      * @return whether the session is initialized
      */
     private boolean isInitialized() {
         boolean isInitialized = service != null;
-        assert isInitialized
-                || session == null : "The wrapped session must be null if the service is null (which happens after deserialization)";
+        assert isInitialized || session == null
+                : "The wrapped session must be null if the service is null (which happens after deserialization)";
         return isInitialized;
     }
 

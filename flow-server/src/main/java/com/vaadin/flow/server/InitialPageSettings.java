@@ -41,10 +41,11 @@ import elemental.json.JsonObject;
  *
  * @since 1.0
  * @deprecated Use {@link BootstrapPageResponse} instance passed via
- * {@link BootstrapListener} instead, or acquire the {@link UI} via
- * {@link BootstrapListener} for certain modifications and configuration. For
- * more details, see {@link PageConfigurator} deprecation message. To be removed
- * after the next long term support release (targeted Vaadin 23).
+ *             {@link BootstrapListener} instead, or acquire the {@link UI} via
+ *             {@link BootstrapListener} for certain modifications and
+ *             configuration. For more details, see {@link PageConfigurator}
+ *             deprecation message. To be removed after the next long term
+ *             support release (targeted Vaadin 23).
  */
 @Deprecated
 public class InitialPageSettings implements Serializable {

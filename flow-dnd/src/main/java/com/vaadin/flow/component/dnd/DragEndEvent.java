@@ -78,7 +78,7 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
      * succeed. This is a shorthand for {@code dropEffect != NONE}.
      * <em>NOTE:</em> For Edge, Safari and IE11 this method will <b>always
      * report <code>false</code></b> due to bugs in the browsers!
-     * 
+     *
      * @deprecated replaced with {@link #isSuccessful()} since 2.1 (v14.1), this
      *             method will be removed later.
      * @return {@code true} if the drop event succeeded, {@code false}
@@ -94,7 +94,7 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
      * succeed. This is a shorthand for {@code dropEffect != NONE}.
      * <em>NOTE:</em> For Edge, Safari and IE11 this method will <b>always
      * report <code>false</code></b> due to bugs in the browsers!
-     * 
+     *
      * @return {@code true} if the drop event succeeded, {@code false}
      *         otherwise.
      * @since 2.1
@@ -118,7 +118,7 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
      * <p>
      * This method is a shorthand for calling
      * {@link DragSource#setDragData(Object)} with {@code null} parameter.
-     * 
+     *
      * @see DragStartEvent#setDragData(Object)
      * @see DragSource#setDragData(Object)
      */

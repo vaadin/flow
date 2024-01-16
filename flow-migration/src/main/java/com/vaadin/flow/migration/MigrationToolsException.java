@@ -27,7 +27,7 @@ public class MigrationToolsException extends Exception {
      * Migration tool exception constructor.
      *
      * @param message
-     *         message on why this exception was thrown
+     *            message on why this exception was thrown
      */
     public MigrationToolsException(String message) {
         super(message);

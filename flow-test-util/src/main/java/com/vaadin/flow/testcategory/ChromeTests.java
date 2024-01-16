@@ -19,7 +19,7 @@ package com.vaadin.flow.testcategory;
  * Tests that requires Chrome browser for their execution should be annotated
  * with @ {@code Category(ChromeTests.class} so they can be optionally excluded
  * from the build when needed.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *

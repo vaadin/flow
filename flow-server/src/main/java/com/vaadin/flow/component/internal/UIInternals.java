@@ -363,8 +363,8 @@ public class UIInternals implements Serializable {
         features.add(LoadingIndicatorConfigurationMap.class);
 
         // And return them all
-        assert features.size() == new HashSet<>(features)
-                .size() : "There are duplicates";
+        assert features.size() == new HashSet<>(features).size()
+                : "There are duplicates";
         return (Class<? extends NodeFeature>[]) features
                 .toArray(new Class<?>[0]);
     }
@@ -517,9 +517,11 @@ public class UIInternals implements Serializable {
                     .getAnnotation(ListenerPriority.class);
 
             final int priority1 = listenerPriority1 != null
-                    ? listenerPriority1.value() : 0;
+                    ? listenerPriority1.value()
+                    : 0;
             final int priority2 = listenerPriority2 != null
-                    ? listenerPriority2.value() : 0;
+                    ? listenerPriority2.value()
+                    : 0;
 
             // we want to have a descending order
             return Integer.compare(priority2, priority1);
@@ -772,8 +774,9 @@ public class UIInternals implements Serializable {
                  * In either case, we should update the contents of the current
                  * entry based on its current position in the chain.
                  */
-                assert current instanceof RouterLayout : "All parts of the chain except the first must implement "
-                        + RouterLayout.class.getSimpleName();
+                assert current instanceof RouterLayout
+                        : "All parts of the chain except the first must implement "
+                                + RouterLayout.class.getSimpleName();
 
                 HasElement oldContent = oldChildren.get(current);
                 HasElement newContent = previous;
@@ -1141,7 +1144,8 @@ public class UIInternals implements Serializable {
      */
     public Router getRouter() {
         return ui.isNavigationSupported()
-                ? getSession().getService().getRouter() : null;
+                ? getSession().getService().getRouter()
+                : null;
     }
 
     /**

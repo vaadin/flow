@@ -32,8 +32,8 @@ import java.lang.annotation.Target;
  * the value to be the methodName e.g. for {@code setSubItem(...)} use
  * {@code @ModelItem("subItem")}.
  *
- * Recommend using {@code LitTemplate} instead of PolymerTemplate as Polymer will
- * be deprecated in the next LTS version.
+ * Recommend using {@code LitTemplate} instead of PolymerTemplate as Polymer
+ * will be deprecated in the next LTS version.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -45,7 +45,7 @@ public @interface ModelItem {
 
     /**
      * Path value for ModelItem.
-     * 
+     *
      * @return Given Path or default value
      */
     String value() default "event.model.item";

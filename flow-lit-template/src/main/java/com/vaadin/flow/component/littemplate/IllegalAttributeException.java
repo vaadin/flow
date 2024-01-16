@@ -17,18 +17,18 @@
 package com.vaadin.flow.component.littemplate;
 
 /**
- * Thrown to indicate that an element had an illegal or
- * inappropriate attribute.
+ * Thrown to indicate that an element had an illegal or inappropriate attribute.
  *
  * @since
  */
 public class IllegalAttributeException extends RuntimeException {
 
     /**
-     * Constructs an <code>IllegalAttributeException</code> with the
-     * specified detail message.
+     * Constructs an <code>IllegalAttributeException</code> with the specified
+     * detail message.
      *
-     * @param   s   the detail message.
+     * @param s
+     *            the detail message.
      */
     public IllegalAttributeException(String s) {
         super(s);

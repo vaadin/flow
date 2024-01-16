@@ -58,19 +58,19 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * annotation.
  * <p>
  * It's not possible to execute a function defined in JavaScript module via
- * 
+ *
  * <pre>
- *  
+ *
  * <code>
  * UI.getCurrent().getPage().executeJs("some_function_definied_in_module()");
  * </code>
  * </pre>
- * 
+ *
  * because the function is private there (unless it's explicitly exposed). The
  * JavaScript where the function is defined should be either external or it
  * should be added using {@link Page#addJavaScript(String)}: in this case all
  * declared functions become available in the global scope.
- * 
+ *
  *
  * @author Vaadin Ltd
  * @since 1.0

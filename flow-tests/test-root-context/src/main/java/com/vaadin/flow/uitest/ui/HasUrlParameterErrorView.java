@@ -24,10 +24,12 @@ import com.vaadin.flow.uitest.MyException;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.HasUrlParameterErrorView", layout = ViewTestLayout.class)
-public class HasUrlParameterErrorView extends Div implements HasUrlParameter<String> {
+public class HasUrlParameterErrorView extends Div
+        implements HasUrlParameter<String> {
 
     @Override
-    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter String parameter) {
         throw new MyException();
     }
 }

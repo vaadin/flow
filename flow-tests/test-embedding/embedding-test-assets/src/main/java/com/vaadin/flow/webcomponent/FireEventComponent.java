@@ -22,7 +22,9 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.function.SerializableConsumer;
 
 public class FireEventComponent extends Div {
-    public enum OptionsType {NoBubble_NoCancel, Bubble_NoCancel, Bubble_Cancel}
+    public enum OptionsType {
+        NoBubble_NoCancel, Bubble_NoCancel, Bubble_Cancel
+    }
 
     private SerializableConsumer<Double> numberConsumer;
     private SerializableConsumer<String> errorConsumer;

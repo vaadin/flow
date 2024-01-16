@@ -77,7 +77,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * registered.
      *
      * @param tag
-     *         custom element tag
+     *            custom element tag
      * @return Optional containing a web component configuration matching given
      *         tag
      */
@@ -96,9 +96,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * configurations for a specific {@link Component} type.
      *
      * @param componentClass
-     *         type of the exported {@link Component}
+     *            type of the exported {@link Component}
      * @param <T>
-     *         component
+     *            component
      * @return set of {@link WebComponentConfiguration} or an empty set.
      */
     @SuppressWarnings("unchecked")
@@ -121,7 +121,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Internal method for updating registry.
      *
      * @param configurations
-     *         set of web component configurations to register
+     *            set of web component configurations to register
      */
     protected void updateRegistry(
             Set<WebComponentConfiguration<? extends Component>> configurations) {
@@ -144,8 +144,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * false.
      *
      * @param configurations
-     *         set of web component configurations to register. These
-     *         configurations must have both unique and valid tag names.
+     *            set of web component configurations to register. These
+     *            configurations must have both unique and valid tag names.
      * @return {@code true} if set successfully or {@code false} if not set
      */
     public boolean setConfigurations(
@@ -188,7 +188,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * servlet initialization (exporter classes discovering).
      *
      * @param type
-     *         the configuration annotation type
+     *            the configuration annotation type
      * @return an optional configuration annotation, or an empty optional if
      *         there is no configuration annotation with the given {@code type}
      */
@@ -226,7 +226,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
     /**
      * Set the elements that should be added to each shadow dom hosting an
      * embedded web component.
-     * 
+     *
      * @param elements
      *            list of shadow dom elements
      */
@@ -242,7 +242,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
     /**
      * Get a copy of the elements that should be added to the shadow dom hosting
      * the embedded web component.
-     * 
+     *
      * @return copy of shadow dom elements
      */
     public List<Element> getShadowDomElements() {
@@ -264,7 +264,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Get WebComponentRegistry instance for given servlet context.
      *
      * @param context
-     *         {@link VaadinService} to keep the instance in
+     *            {@link VaadinService} to keep the instance in
      * @return WebComponentRegistry instance
      */
     public static WebComponentConfigurationRegistry getInstance(
@@ -354,19 +354,18 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * Creates a partial copy of the element sub-tree, with the given
      * {@code rootElement} as the root element of the created tree. The copy
      * cares only about the HTML structure of the element and by-passes state
-     * information where possible. The copying is done on element-level:
-     * tags, attributes, and contents.
+     * information where possible. The copying is done on element-level: tags,
+     * attributes, and contents.
      * <p>
-     * This is used create copies from elements
-     * which should be moved from document head to each embedded web component
-     * on the page.
+     * This is used create copies from elements which should be moved from
+     * document head to each embedded web component on the page.
      * <p>
      * Copies the following
      * {@link com.vaadin.flow.internal.nodefeature.NodeFeature}:
      * <ul>
      * <li>{@link com.vaadin.flow.internal.nodefeature.ElementData}</li>
      * </ul>
-     * 
+     *
      * @param rootElement
      *            element to copy and make the root node of the new element tree
      * @return copy of the given {@code rootElement} with copied child hierarchy

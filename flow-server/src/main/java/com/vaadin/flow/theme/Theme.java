@@ -32,21 +32,19 @@ import com.vaadin.flow.router.RouterLayout;
  * {@link Theme} annotation should be added to your root navigation level,
  * {@link RouterLayout} or to the top level @{@link Route}.
  * <p>
- * The {@code themeFolder} property defines the name of the application theme. When
- * the theme is present inside the project, it maps to the {@code
+ * The {@code themeFolder} property defines the name of the application theme.
+ * When the theme is present inside the project, it maps to the {@code
  * frontend/theme/<application-theme-name>}/ folder or alternatively to a folder
  * inside the static resources of a jar file, like {@code
- * src/main/resources/META-INF/resources/theme/<application-theme-name>/}.
- * The application theme is always based on Lumo theme and this is the
- * recommended way to theme applications starting from Flow 2.6 and Vaadin 14.6
+ * src/main/resources/META-INF/resources/theme/<application-theme-name>/}. The
+ * application theme is always based on Lumo theme and this is the recommended
+ * way to theme applications starting from Flow 2.6 and Vaadin 14.6
  * <p>
  * Alternatively , if instead of Lumo theme the Material theme or another "old
  * style custom theme" is to be used, that can be specified with the {@code
- * value} property.
- * This allows defining a way to translate base component url to the
- * themed component url (@see {@link AbstractTheme}), which specifies
- * components
- * styles.
+ * value} property. This allows defining a way to translate base component url
+ * to the themed component url (@see {@link AbstractTheme}), which specifies
+ * components styles.
  * <p>
  * By default {@code com.vaadin.flow.theme.lumo.Lumo} theme is used if it's in
  * the classpath. You may disable theming with {@link NoTheme} annotation.

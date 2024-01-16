@@ -63,8 +63,8 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
 
     static {
         assert Stream.of(AbstractTheme.class.getMethods()).map(Method::getName)
-                .anyMatch(name -> name
-                        .equals(TRANSLATE_URL_METHOD)) : ABSENT_METHOD_ERROR;
+                .anyMatch(name -> name.equals(TRANSLATE_URL_METHOD))
+                : ABSENT_METHOD_ERROR;
     }
 
     /**
@@ -163,9 +163,9 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
         Class<? extends Annotation> theme = loadClassInProjectClassLoader(
                 Theme.class.getName());
         Map<Class<? extends AbstractTheme>, List<Class<?>>> themedComponents = getAnnotatedClasses(
-                theme).collect(
-                        Collectors.toMap(clazz -> getTheme(clazz, theme),
-                                Collections::singletonList, this::mergeLists));
+                theme)
+                .collect(Collectors.toMap(clazz -> getTheme(clazz, theme),
+                        Collections::singletonList, this::mergeLists));
         if (themedComponents.size() > 1) {
             throw new IllegalStateException(
                     "Multiple themes are not supported, "

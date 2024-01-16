@@ -61,7 +61,8 @@ public class ThemeView extends Div {
         faText.setId(FONTAWESOME_ID);
 
         Image snowFlake = new Image(
-            "themes/app-theme/fortawesome/icons/snowflake.svg", "snowflake");
+                "themes/app-theme/fortawesome/icons/snowflake.svg",
+                "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
@@ -70,8 +71,8 @@ public class ThemeView extends Div {
                 "url('themes/app-theme/img/dice.jpg')");
         diceImageSpan.setId(DICE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake, faText,
-                diceImageSpan);
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake,
+                faText, diceImageSpan);
 
         add(new Div());
         add(new MyPolymerField().withId(MY_POLYMER_ID));

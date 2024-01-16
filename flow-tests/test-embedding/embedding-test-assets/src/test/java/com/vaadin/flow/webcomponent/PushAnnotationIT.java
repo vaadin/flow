@@ -50,9 +50,8 @@ public class PushAnnotationIT extends EmbeddingChromeBrowserTest {
 
         int updateCount = getUpdateCount();
         Assert.assertEquals(
-                "The update count should have reached the maximum 50, but it " +
-                        "has value "
-                        + updateCount,
+                "The update count should have reached the maximum 50, but it "
+                        + "has value " + updateCount,
                 50, updateCount);
     }
 

@@ -36,7 +36,7 @@ import com.vaadin.flow.component.HasValue;
  */
 @FunctionalInterface
 public interface Setter<BEAN, FIELDVALUE>
-extends BiConsumer<BEAN, FIELDVALUE>, Serializable {
+        extends BiConsumer<BEAN, FIELDVALUE>, Serializable {
 
     /**
      * Save value to the bean property.

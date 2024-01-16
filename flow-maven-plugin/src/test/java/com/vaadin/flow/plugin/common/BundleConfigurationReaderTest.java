@@ -47,8 +47,11 @@ public class BundleConfigurationReaderTest {
     }
 
     @Test
-    public void cannot_construct_from_file_containing_invalid_json() throws IOException {
-        Files.write(configFile.toPath(), Collections.singletonList("invalid json"), StandardCharsets.UTF_8);
+    public void cannot_construct_from_file_containing_invalid_json()
+            throws IOException {
+        Files.write(configFile.toPath(),
+                Collections.singletonList("invalid json"),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(configFile.getAbsolutePath());
 
@@ -57,7 +60,9 @@ public class BundleConfigurationReaderTest {
 
     @Test
     public void non_array_fragments_property_throws() throws IOException {
-        Files.write(configFile.toPath(), Collections.singletonList("{'fragments':{}}"), StandardCharsets.UTF_8);
+        Files.write(configFile.toPath(),
+                Collections.singletonList("{'fragments':{}}"),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalStateException.class);
         exception.expectMessage("fragments");
 
@@ -65,8 +70,11 @@ public class BundleConfigurationReaderTest {
     }
 
     @Test
-    public void only_arrays_of_objects_allowed_in_the_fragments_array() throws IOException {
-        Files.write(configFile.toPath(), Collections.singletonList("{'fragments':['', []]}"), StandardCharsets.UTF_8);
+    public void only_arrays_of_objects_allowed_in_the_fragments_array()
+            throws IOException {
+        Files.write(configFile.toPath(),
+                Collections.singletonList("{'fragments':['', []]}"),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalStateException.class);
         exception.expectMessage("fragments");
 
@@ -75,21 +83,35 @@ public class BundleConfigurationReaderTest {
 
     @Test
     public void no_fragments_present_returns_empty_set() throws IOException {
-        Files.write(configFile.toPath(), Collections.singletonList("{'no-fragments-here':{}}"), StandardCharsets.UTF_8);
-        Map<String, Set<String>> fragments = new BundleConfigurationReader(configFile).getFragments();
-        Assert.assertEquals("Expect to have empty fragments returned for empty fragments configuration", Collections.emptyMap(), fragments);
+        Files.write(configFile.toPath(),
+                Collections.singletonList("{'no-fragments-here':{}}"),
+                StandardCharsets.UTF_8);
+        Map<String, Set<String>> fragments = new BundleConfigurationReader(
+                configFile).getFragments();
+        Assert.assertEquals(
+                "Expect to have empty fragments returned for empty fragments configuration",
+                Collections.emptyMap(), fragments);
     }
 
     @Test
-    public void empty_array_of_fragments_returns_empty_set() throws IOException {
-        Files.write(configFile.toPath(), Collections.singletonList("{'fragments':[]}"), StandardCharsets.UTF_8);
-        Map<String, Set<String>> fragments = new BundleConfigurationReader(configFile).getFragments();
-        Assert.assertEquals("Expect to have empty fragments returned for empty array in json", Collections.emptyMap(), fragments);
+    public void empty_array_of_fragments_returns_empty_set()
+            throws IOException {
+        Files.write(configFile.toPath(),
+                Collections.singletonList("{'fragments':[]}"),
+                StandardCharsets.UTF_8);
+        Map<String, Set<String>> fragments = new BundleConfigurationReader(
+                configFile).getFragments();
+        Assert.assertEquals(
+                "Expect to have empty fragments returned for empty array in json",
+                Collections.emptyMap(), fragments);
     }
 
     @Test
     public void fragments_without_name_throw_exception() throws IOException {
-        Files.write(configFile.toPath(), Collections.singletonList("{'fragments':[ {'files': ['one']} ]}"), StandardCharsets.UTF_8);
+        Files.write(configFile.toPath(),
+                Collections
+                        .singletonList("{'fragments':[ {'files': ['one']} ]}"),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalStateException.class);
         exception.expectMessage("name");
 
@@ -97,8 +119,12 @@ public class BundleConfigurationReaderTest {
     }
 
     @Test
-    public void fragments_with_name_not_string_throw_exception2() throws IOException {
-        Files.write(configFile.toPath(), Collections.singletonList("{'fragments':[ {'name': {}, 'files': ['one']} ]}"), StandardCharsets.UTF_8);
+    public void fragments_with_name_not_string_throw_exception2()
+            throws IOException {
+        Files.write(configFile.toPath(),
+                Collections.singletonList(
+                        "{'fragments':[ {'name': {}, 'files': ['one']} ]}"),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalStateException.class);
         exception.expectMessage("name");
 
@@ -107,7 +133,10 @@ public class BundleConfigurationReaderTest {
 
     @Test
     public void fragments_with_empty_name_throw_exception() throws IOException {
-        Files.write(configFile.toPath(), Collections.singletonList("{'fragments':[ {'name': '', 'files': ['one']} ]}"), StandardCharsets.UTF_8);
+        Files.write(configFile.toPath(),
+                Collections.singletonList(
+                        "{'fragments':[ {'name': '', 'files': ['one']} ]}"),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalStateException.class);
         exception.expectMessage("name");
 
@@ -117,7 +146,10 @@ public class BundleConfigurationReaderTest {
     @Test
     public void fragments_without_files_throw_exception() throws IOException {
         String fragmentName = "test";
-        Files.write(configFile.toPath(), Collections.singletonList(String.format("{'fragments':[ {'name': '%s'} ]}", fragmentName)), StandardCharsets.UTF_8);
+        Files.write(configFile.toPath(),
+                Collections.singletonList(String.format(
+                        "{'fragments':[ {'name': '%s'} ]}", fragmentName)),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalStateException.class);
         exception.expectMessage(fragmentName);
 
@@ -125,9 +157,14 @@ public class BundleConfigurationReaderTest {
     }
 
     @Test
-    public void fragments_with_files_not_array_throw_exception() throws IOException {
+    public void fragments_with_files_not_array_throw_exception()
+            throws IOException {
         String fragmentName = "test";
-        Files.write(configFile.toPath(), Collections.singletonList(String.format("{'fragments':[ {'name': '%s', 'files': {}} ]}", fragmentName)), StandardCharsets.UTF_8);
+        Files.write(configFile.toPath(),
+                Collections.singletonList(String.format(
+                        "{'fragments':[ {'name': '%s', 'files': {}} ]}",
+                        fragmentName)),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalStateException.class);
         exception.expectMessage(fragmentName);
 
@@ -135,9 +172,14 @@ public class BundleConfigurationReaderTest {
     }
 
     @Test
-    public void fragments_with_file_paths_not_string_throw_exception() throws IOException {
+    public void fragments_with_file_paths_not_string_throw_exception()
+            throws IOException {
         String fragmentName = "test";
-        Files.write(configFile.toPath(), Collections.singletonList(String.format("{'fragments':[ {'name': '%s', 'files': [20]} ]}", fragmentName)), StandardCharsets.UTF_8);
+        Files.write(configFile.toPath(),
+                Collections.singletonList(String.format(
+                        "{'fragments':[ {'name': '%s', 'files': [20]} ]}",
+                        fragmentName)),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalStateException.class);
         exception.expectMessage(fragmentName);
 
@@ -145,9 +187,14 @@ public class BundleConfigurationReaderTest {
     }
 
     @Test
-    public void fragments_with_empty_files_throw_exception() throws IOException {
+    public void fragments_with_empty_files_throw_exception()
+            throws IOException {
         String fragmentName = "test";
-        Files.write(configFile.toPath(), Collections.singletonList(String.format("{'fragments':[ {'name': '%s', 'files': []} ]}", fragmentName)), StandardCharsets.UTF_8);
+        Files.write(configFile.toPath(),
+                Collections.singletonList(String.format(
+                        "{'fragments':[ {'name': '%s', 'files': []} ]}",
+                        fragmentName)),
+                StandardCharsets.UTF_8);
         exception.expect(IllegalStateException.class);
         exception.expectMessage(fragmentName);
 
@@ -156,55 +203,51 @@ public class BundleConfigurationReaderTest {
 
     @Test
     public void fragments_parsed_correctly() throws IOException {
-        String tutorialExample = "{\n" +
-                "  'fragments': [\n" +
-                "    {\n" +
-                "      'name': 'icons-fragment',\n" +
-                "      'files': ['bower_components/vaadin-icons/vaadin-icons.html']\n" +
-                "    },\n" +
-                "    {\n" +
-                "      'name': 'important-components',\n" +
-                "      'files': [\n" +
-                "         'bower_components/vaadin-form-layout/vaadin-form-layout.html',\n" +
-                "         'bower_components/vaadin-form-layout/vaadin-form-item.html',\n" +
-                "         'bower_components/vaadin-text-field/vaadin-text-field.html',\n" +
-                "         'bower_components/vaadin-text-field/vaadin-password-field.html',\n" +
-                "         'bower_components/vaadin-combo-box/vaadin-combo-box.html'\n" +
-                "       ]\n" +
-                "    },\n" +
-                "    {\n" +
-                "      'name': 'grid-fragment',\n" +
-                "      'files': [\n" +
-                "         'gridConnector.js',\n" +
-                "         'vaadin-grid-flow-selection-column.html',\n" +
-                "         'bower_components/vaadin-grid/vaadin-grid.html',\n" +
-                "         'bower_components/vaadin-grid/vaadin-grid-column-group.html',\n" +
-                "         'bower_components/vaadin-grid/vaadin-grid-sorter.html'\n" +
-                "       ]\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
-        Files.write(configFile.toPath(), Collections.singletonList(tutorialExample), StandardCharsets.UTF_8);
+        String tutorialExample = "{\n" + "  'fragments': [\n" + "    {\n"
+                + "      'name': 'icons-fragment',\n"
+                + "      'files': ['bower_components/vaadin-icons/vaadin-icons.html']\n"
+                + "    },\n" + "    {\n"
+                + "      'name': 'important-components',\n"
+                + "      'files': [\n"
+                + "         'bower_components/vaadin-form-layout/vaadin-form-layout.html',\n"
+                + "         'bower_components/vaadin-form-layout/vaadin-form-item.html',\n"
+                + "         'bower_components/vaadin-text-field/vaadin-text-field.html',\n"
+                + "         'bower_components/vaadin-text-field/vaadin-password-field.html',\n"
+                + "         'bower_components/vaadin-combo-box/vaadin-combo-box.html'\n"
+                + "       ]\n" + "    },\n" + "    {\n"
+                + "      'name': 'grid-fragment',\n" + "      'files': [\n"
+                + "         'gridConnector.js',\n"
+                + "         'vaadin-grid-flow-selection-column.html',\n"
+                + "         'bower_components/vaadin-grid/vaadin-grid.html',\n"
+                + "         'bower_components/vaadin-grid/vaadin-grid-column-group.html',\n"
+                + "         'bower_components/vaadin-grid/vaadin-grid-sorter.html'\n"
+                + "       ]\n" + "    }\n" + "  ]\n" + "}";
+        Files.write(configFile.toPath(),
+                Collections.singletonList(tutorialExample),
+                StandardCharsets.UTF_8);
         Map<String, Set<String>> expectedResult = ImmutableMap.of(
-                "icons-fragment", ImmutableSet.of("bower_components/vaadin-icons/vaadin-icons.html"),
-                "important-components", ImmutableSet.of(
+                "icons-fragment",
+                ImmutableSet
+                        .of("bower_components/vaadin-icons/vaadin-icons.html"),
+                "important-components",
+                ImmutableSet.of(
                         "bower_components/vaadin-form-layout/vaadin-form-layout.html",
                         "bower_components/vaadin-form-layout/vaadin-form-item.html",
                         "bower_components/vaadin-text-field/vaadin-text-field.html",
                         "bower_components/vaadin-text-field/vaadin-password-field.html",
-                        "bower_components/vaadin-combo-box/vaadin-combo-box.html"
-                ),
-                "grid-fragment", ImmutableSet.of(
-                        "gridConnector.js",
+                        "bower_components/vaadin-combo-box/vaadin-combo-box.html"),
+                "grid-fragment",
+                ImmutableSet.of("gridConnector.js",
                         "vaadin-grid-flow-selection-column.html",
                         "bower_components/vaadin-grid/vaadin-grid.html",
                         "bower_components/vaadin-grid/vaadin-grid-column-group.html",
-                        "bower_components/vaadin-grid/vaadin-grid-sorter.html"
-                )
-        );
+                        "bower_components/vaadin-grid/vaadin-grid-sorter.html"));
 
-        Map<String, Set<String>> fragments = new BundleConfigurationReader(configFile).getFragments();
+        Map<String, Set<String>> fragments = new BundleConfigurationReader(
+                configFile).getFragments();
 
-        Assert.assertEquals("Expect tutorial example to be parsed fully into three fragments", expectedResult, fragments);
+        Assert.assertEquals(
+                "Expect tutorial example to be parsed fully into three fragments",
+                expectedResult, fragments);
     }
 }

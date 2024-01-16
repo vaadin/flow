@@ -24,6 +24,7 @@ public class DefaultValueInitializationComponent extends Div {
     private int updateCounter = 0;
     private Paragraph valueParagraph;
     private Paragraph updateParagraph;
+
     public DefaultValueInitializationComponent() {
         valueParagraph = new Paragraph();
         valueParagraph.setId("value");

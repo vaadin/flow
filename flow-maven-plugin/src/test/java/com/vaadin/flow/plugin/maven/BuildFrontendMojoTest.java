@@ -215,11 +215,9 @@ public class BuildFrontendMojoTest {
                 "All project resources should be copied into the node_modules",
                 projectFrontendResources.size(), filesInNodeModules.size());
 
-        filesInNodeModules.forEach(file -> Assert.assertTrue(
-                String.format(
-                        "Expected the copied file '%s' to be in the project resources",
-                        file),
-                projectFrontendResources.contains(file.getName())));
+        filesInNodeModules.forEach(file -> Assert.assertTrue(String.format(
+                "Expected the copied file '%s' to be in the project resources",
+                file), projectFrontendResources.contains(file.getName())));
     }
 
     @Test
@@ -566,13 +564,13 @@ public class BuildFrontendMojoTest {
         if (contains) {
             Arrays.asList(imports)
                     .forEach(s -> Assert.assertTrue(
-                            s + " not found in:\n" + content, content
-                                    .contains(addWebpackPrefix(s))));
+                            s + " not found in:\n" + content,
+                            content.contains(addWebpackPrefix(s))));
         } else {
             Arrays.asList(imports)
                     .forEach(s -> Assert.assertFalse(
-                            s + " found in:\n" + content, content
-                                    .contains(addWebpackPrefix(s))));
+                            s + " found in:\n" + content,
+                            content.contains(addWebpackPrefix(s))));
         }
     }
 

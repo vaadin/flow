@@ -26,7 +26,7 @@ import com.vaadin.flow.component.HasValue;
  * register an instance of this class to be able to customize validation error
  * handling.
  *
- * 
+ *
  * @see DefaultBinderValidationErrorHandler
  * @see Binder#setValidationErrorHandler(BinderValidationErrorHandler)
  * @author Vaadin Ltd
@@ -40,7 +40,7 @@ public interface BinderValidationErrorHandler extends Serializable {
      * given field.
      * <p>
      * See #clearError for clearing the error.
-     * 
+     *
      * @see #clearError(HasValue)
      * @param field
      *            the field with the invalid value

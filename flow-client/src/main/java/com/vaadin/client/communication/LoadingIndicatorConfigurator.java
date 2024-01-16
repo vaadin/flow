@@ -62,8 +62,11 @@ public class LoadingIndicatorConfigurator {
                 loadingIndicator::setThirdDelay,
                 LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT);
 
-        MapProperty defaultThemeProperty = configMap.getProperty(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY);
-        defaultThemeProperty.addChangeListener(event -> loadingIndicator.setApplyDefaultTheme(event.getSource().getValueOrDefault(LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
+        MapProperty defaultThemeProperty = configMap.getProperty(
+                LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY);
+        defaultThemeProperty.addChangeListener(event -> loadingIndicator
+                .setApplyDefaultTheme(event.getSource().getValueOrDefault(
+                        LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
     }
 
     /**

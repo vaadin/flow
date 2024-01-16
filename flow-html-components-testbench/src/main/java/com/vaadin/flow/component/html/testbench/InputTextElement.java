@@ -32,7 +32,7 @@ public class InputTextElement extends TestBenchElement {
     /**
      * Sets the value of the text input to the given value, clearing out any old
      * value of the input.
-     * 
+     *
      * @param value
      *            the value to set
      */

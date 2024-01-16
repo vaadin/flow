@@ -35,7 +35,7 @@ public class RouteData extends RouteBaseData<RouteData> {
     /**
      * RouteData constructor. This constructor doesn't support parameters. When
      * a non empty List is provided {@link IllegalArgumentException} is raised.
-     * 
+     *
      * @param parentLayouts
      *            route parent layout class chain
      * @param template

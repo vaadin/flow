@@ -404,9 +404,8 @@ public class ReflectTools implements Serializable {
      */
     public static String getPropertyName(Method method) {
         String methodName = method.getName();
-        assert isGetter(method)
-                || isSetter(method) : "Method is not a valid getter or setter: "
-                        + methodName;
+        assert isGetter(method) || isSetter(method)
+                : "Method is not a valid getter or setter: " + methodName;
 
         String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
                 .replaceFirst("");
@@ -601,7 +600,7 @@ public class ReflectTools implements Serializable {
      * @return List of Class if found else empty List, never {@literal null}
      */
     public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
-                                                          Class<?> interfaceType) {
+            Class<?> interfaceType) {
         return Stream.of(interfaceType.getTypeParameters())
                 .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz,
                         typeParam))
@@ -746,11 +745,10 @@ public class ReflectTools implements Serializable {
     /**
      * Finds the common ancestor of the two {@code ClassLoaders}. The class
      * loaders themselves are acceptable ancestors; If they are equal, {@code
-     * classLoaderA} is returned.
-     * An empty optional is returned if the two class loaders aren't equal,
-     * no shared ancestor is found, or the implementation of the class loader
-     * treats bootstrap class loader as {@code null} when it is the parent of
-     * a class loaders (see {@link ClassLoader#getParent()}.
+     * classLoaderA} is returned. An empty optional is returned if the two class
+     * loaders aren't equal, no shared ancestor is found, or the implementation
+     * of the class loader treats bootstrap class loader as {@code null} when it
+     * is the parent of a class loaders (see {@link ClassLoader#getParent()}.
      *
      * @param classLoaderA
      *            class loader A

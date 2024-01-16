@@ -99,8 +99,8 @@ public final class TestUtils {
      * @return list of paths, relative to the directory specified
      */
     public static List<String> listFilesRecursively(File directory) {
-        assert directory != null && directory
-                .isDirectory() : "This method expects valid directory as input, but got: "
+        assert directory != null && directory.isDirectory()
+                : "This method expects valid directory as input, but got: "
                         + directory;
 
         try {
@@ -109,7 +109,8 @@ public final class TestUtils {
                     .map(Path::toString)
                     .map(path -> path.replace(directory.getAbsolutePath(), ""))
                     .map(path -> path.startsWith(File.separator)
-                            ? path.substring(1) : path)
+                            ? path.substring(1)
+                            : path)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new AssertionError(String.format(

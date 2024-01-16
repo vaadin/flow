@@ -48,7 +48,7 @@ public class UIInitEvent extends EventObject {
 
     /**
      * Get the initialized UI for this initialization event.
-     * 
+     *
      * @return initialized UI
      */
     public UI getUI() {

@@ -32,16 +32,20 @@ public class RequestParametersIT extends ChromeBrowserTest {
     @Test
     public void noParameters() {
         open();
-        WebElement label = findElement(By.id(RequestParametersView.REQUEST_PARAM_ID));
+        WebElement label = findElement(
+                By.id(RequestParametersView.REQUEST_PARAM_ID));
 
-        Assert.assertEquals(RequestParametersView.NO_INPUT_TEXT, label.getText());
+        Assert.assertEquals(RequestParametersView.NO_INPUT_TEXT,
+                label.getText());
     }
 
     @Test
     public void parameterProvided() {
         String paramValue = "Super-intelligent shade of the colour blue";
-        open(String.format("%s=%s", RequestParametersView.REQUEST_PARAM_NAME, paramValue));
-        WebElement label = findElement(By.id(RequestParametersView.REQUEST_PARAM_ID));
+        open(String.format("%s=%s", RequestParametersView.REQUEST_PARAM_NAME,
+                paramValue));
+        WebElement label = findElement(
+                By.id(RequestParametersView.REQUEST_PARAM_ID));
 
         Assert.assertEquals(paramValue, label.getText());
     }

@@ -129,9 +129,9 @@ public class Platform {
      * Construct a new Platform.
      *
      * @param os
-     *         platform OS
+     *            platform OS
      * @param architecture
-     *         platform Architecture
+     *            platform Architecture
      */
     public Platform(OS os, Architecture architecture) {
         this(DEFAULT_NODEJS_DOWNLOAD_ROOT, os, architecture, null);

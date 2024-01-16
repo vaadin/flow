@@ -38,7 +38,7 @@ import com.vaadin.flow.server.VaadinServlet;
  * singleton services.
  * <p>
  * This is the code which one may use to get the {@link Lookup} instance:
- * 
+ *
  * <pre>
  * <code>
  *     VaadinContext context = ...;
@@ -48,8 +48,8 @@ import com.vaadin.flow.server.VaadinServlet;
  * <p>
  * This SPI is mostly for internal framework usage since {@link Instantiator}
  * provides all required services for the application developer.
- * 
- * 
+ *
+ *
  * @see Instantiator
  * @author Vaadin Ltd
  * @since
@@ -61,12 +61,12 @@ public interface Lookup {
      * <p>
      * The {@code serviceClass} is usually an interface (though it doesn't have
      * to be) and the returned value is some implementation of this interface.
-     * 
+     *
      * @param <T>
      *            a service type
      * @param serviceClass
      *            a service SPI class
-     * 
+     *
      * @see Lookup#lookupAll(Class)
      * @return a service which implements the {@code serviceClass}, may be
      *         {@code null} if no services are registered for this SPI

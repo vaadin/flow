@@ -110,16 +110,18 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         if (componentInfo.isHTML() && !compatibilityMode) {
-            LoggerFactory.getLogger(WebComponentProvider.class)
-                    .info("Received web-component request for html component in npm"
-                            + " mode with request path {}", pathInfo);
+            LoggerFactory.getLogger(WebComponentProvider.class).info(
+                    "Received web-component request for html component in npm"
+                            + " mode with request path {}",
+                    pathInfo);
             return false;
         }
 
         if (componentInfo.isJS() && compatibilityMode) {
-            LoggerFactory.getLogger(WebComponentProvider.class)
-                    .info("Received web-component request for js component in compatibility"
-                            + " mode with request path {}", pathInfo);
+            LoggerFactory.getLogger(WebComponentProvider.class).info(
+                    "Received web-component request for js component in compatibility"
+                            + " mode with request path {}",
+                    pathInfo);
             return false;
         }
 
@@ -175,7 +177,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      * Enable / disable bootstrap HTML fragment caching based on component tag.
      * Calling this method has the side effect of always clearing the cache.
      *
-     * @param cacheEnabled whether bootstrap fragments should be cached per tag
+     * @param cacheEnabled
+     *            whether bootstrap fragments should be cached per tag
      */
     public void setCacheEnabled(boolean cacheEnabled) {
         if (cacheEnabled) {
@@ -244,11 +247,11 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      * Generate the npm response for the web component.
      *
      * @param tagName
-     *         tag name of component
+     *            tag name of component
      * @param request
-     *         current VaadinRequest
+     *            current VaadinRequest
      * @param response
-     *         current VaadinResponse
+     *            current VaadinResponse
      * @return npm response script
      */
     protected String generateNPMResponse(String tagName, VaadinRequest request,

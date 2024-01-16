@@ -19,7 +19,7 @@ package com.vaadin.flow.testcategory;
  * Tests that should not be run with IE11 should be annotated with @
  * {@code Category(IgnoreIE11.class)} so they can be optionally excluded from
  * the build when running with IE11.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *

@@ -459,9 +459,8 @@ public class TaskUpdatePackagesNpmTest {
                 dependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
         final JsonObject vaadinDependencies = packageJson
                 .getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
-        Assert.assertFalse(
-                VAADIN_CORE_NPM_PACKAGE
-                        + " version should not be written to vaadin dependencies in package.json",
+        Assert.assertFalse(VAADIN_CORE_NPM_PACKAGE
+                + " version should not be written to vaadin dependencies in package.json",
                 vaadinDependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
     }
 

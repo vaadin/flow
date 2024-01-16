@@ -118,7 +118,7 @@ final class FrontendClassVisitor extends ClassVisitor {
                     // The owner of the Handle is the reference information
                     addSignatureToClasses(children, ((Handle) obj).getOwner());
                     // the descriptor for the Handle won't be scanned, as it
-                    // adds from +10% to 40%  to the execution time and does not
+                    // adds from +10% to 40% to the execution time and does not
                     // affect the fix in itself
                 }
                 // the case for ConstantDynamic is also skipped for

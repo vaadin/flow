@@ -124,7 +124,7 @@ public class NavigationEvent extends EventObject {
     /**
      * Gets navigation state. It contains for example the scroll position and
      * the complete href of the RouterLink that triggers this navigation.
-     * 
+     *
      * @return the navigation state
      */
     public Optional<JsonValue> getState() {
@@ -134,7 +134,7 @@ public class NavigationEvent extends EventObject {
     /**
      * Checks whether this event is created as a result of
      * {@link BeforeEvent#forwardTo} or not.
-     * 
+     *
      * @return {@code true} if this event is created as a result calling
      *         {@link BeforeEvent#forwardTo}, {@code false} otherwise
      */

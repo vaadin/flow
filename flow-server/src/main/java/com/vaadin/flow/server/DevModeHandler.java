@@ -83,7 +83,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  *
  * By default it keeps updated npm dependencies and node imports before running
  * webpack server
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -263,7 +263,7 @@ public final class DevModeHandler implements RequestHandler {
 
     /**
      * Set the live reload service instance.
-     * 
+     *
      * @param liveReload
      *            the live reload instance
      */
@@ -273,7 +273,7 @@ public final class DevModeHandler implements RequestHandler {
 
     /**
      * Get the live reload service instance.
-     * 
+     *
      * @return the live reload instance
      */
     public BrowserLiveReload getLiveReload() {

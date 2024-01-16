@@ -38,8 +38,8 @@ public class Text extends Component implements HasText {
      * Creates an instance using the given text.
      *
      * @param text
-     *            the text to show, <code>null</code>
-     *            is interpreted as an empty string
+     *            the text to show, <code>null</code> is interpreted as an empty
+     *            string
      */
     public Text(String text) {
         super(Element.createText(text));
@@ -49,8 +49,8 @@ public class Text extends Component implements HasText {
      * Sets the text of the component.
      *
      * @param text
-     *            the text of the component, <code>null</code>
-     *            is interpreted as an empty string
+     *            the text of the component, <code>null</code> is interpreted as
+     *            an empty string
      */
     @Override
     public void setText(String text) {

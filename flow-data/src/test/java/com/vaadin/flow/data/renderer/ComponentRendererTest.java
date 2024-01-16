@@ -82,8 +82,8 @@ public class ComponentRendererTest {
                 .render(container, keyMapper);
 
         // simulate a call from the grid to refresh data - template is not setup
-        containerParent.getNode().runWhenAttached(
-                ui2 -> ui2.getInternals().getStateTree()
+        containerParent.getNode()
+                .runWhenAttached(ui2 -> ui2.getInternals().getStateTree()
                         .beforeClientResponse(containerParent.getNode(),
                                 context -> {
                                     Assert.assertNotNull(
@@ -119,11 +119,12 @@ public class ComponentRendererTest {
         ComponentDataGenerator<String> rendering = (ComponentDataGenerator<String>) renderer
                 .render(container, keyMapper);
 
-        containerParent.getNode().runWhenAttached(
-                ui2 -> ui2.getInternals().getStateTree()
+        containerParent.getNode()
+                .runWhenAttached(ui2 -> ui2.getInternals().getStateTree()
                         .beforeClientResponse(containerParent.getNode(),
                                 context -> {
-                                    // if nodeid is null then the component won't be rendered correctly
+                                    // if nodeid is null then the component
+                                    // won't be rendered correctly
                                     Assert.assertNotNull(
                                             "NodeIdPropertyName should not be null",
                                             rendering.getNodeIdPropertyName());
@@ -193,14 +194,14 @@ public class ComponentRendererTest {
                     Assert.assertEquals("New item", item);
                     return new TestLabel();
                 }, (component, item) -> {
-            updateInvocations.incrementAndGet();
-            Assert.assertEquals("Updated item", item);
-            return component;
-        });
+                    updateInvocations.incrementAndGet();
+                    Assert.assertEquals("Updated item", item);
+                    return component;
+                });
 
         TestLabel div = renderer.createComponent("New item");
-        Component updatedComponent = renderer
-                .updateComponent(div, "Updated item");
+        Component updatedComponent = renderer.updateComponent(div,
+                "Updated item");
 
         Assert.assertEquals(
                 "The component creation function should have been invoked once",

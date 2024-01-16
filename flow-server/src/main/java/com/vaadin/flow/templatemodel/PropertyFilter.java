@@ -108,7 +108,7 @@ public class PropertyFilter implements Predicate<String> {
      * Get the full path prefix of this property filter. The prefix is
      * accumulated when constructing new property filters from outer filters and
      * scope names.
-     * 
+     *
      * @return the prefix string of this filter
      */
     public String getPrefix() {

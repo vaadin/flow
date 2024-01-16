@@ -26,7 +26,8 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.WildcardParameter;
 
 /**
- * UI to be a parent for routed layouts (see inner classes). Mapped to some context inside the application.
+ * UI to be a parent for routed layouts (see inner classes). Mapped to some
+ * context inside the application.
  *
  * @since 1.2
  */
@@ -49,16 +50,19 @@ public class PathLayout extends Div implements RouterLayout {
     }
 
     @Route(value = "sub-context", layout = PathLayout.class)
-    public static class SubContextLayout extends DependencyLayout implements HasUrlParameter<String> {
+    public static class SubContextLayout extends DependencyLayout
+            implements HasUrlParameter<String> {
 
         public SubContextLayout() {
-            getElement().appendChild(ElementFactory.createDiv("Routed Sub Context Layout")
-                    .setAttribute("id", "routed-sub"));
+            getElement().appendChild(
+                    ElementFactory.createDiv("Routed Sub Context Layout")
+                            .setAttribute("id", "routed-sub"));
         }
 
         @Override
-        public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
-            //Nothing to do
+        public void setParameter(BeforeEvent event,
+                @WildcardParameter String parameter) {
+            // Nothing to do
         }
     }
 }

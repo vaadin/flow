@@ -677,7 +677,7 @@ public class AtmospherePushConnection implements PushConnection {
             JavaScriptObject config)
     /*-{
         var self = this;
-    
+
         config.url = uri;
         config.onOpen = $entry(function(response) {
             self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
@@ -708,7 +708,7 @@ public class AtmospherePushConnection implements PushConnection {
                 return self.@com.vaadin.client.communication.AtmospherePushConnection::getLastSeenServerSyncId(*)();
             }
         };
-    
+
         return $wnd.vaadinPush.atmosphere.subscribe(config);
     }-*/;
 

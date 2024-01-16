@@ -494,7 +494,7 @@ final class RouteSegment implements Serializable {
      * <p>
      * Input parameters argument will be filled with parameter values found in
      * segments.
-     * 
+     *
      * @param segments
      *            input segments from navigation url.
      * @param parameters

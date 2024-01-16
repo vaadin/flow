@@ -324,7 +324,7 @@ public class JsonConstants implements Serializable {
      * The token is chosen to avoid collisions with regular event data
      * expressions by using a character that cannot be the start of a valid JS
      * expression.
-     * 
+     *
      * @since 9.0
      */
     public static final String MAP_STATE_NODE_EVENT_DATA = "]";

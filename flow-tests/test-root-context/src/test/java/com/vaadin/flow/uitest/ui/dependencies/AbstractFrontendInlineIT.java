@@ -32,7 +32,9 @@ public abstract class AbstractFrontendInlineIT extends ChromeBrowserTest {
 
         checkLogsForErrors(msg -> msg.contains("HTML Imports is deprecated"));
 
-        waitUntil(driver -> !driver.findElement(By.className("v-loading-indicator")).isDisplayed());
+        waitUntil(driver -> !driver
+                .findElement(By.className("v-loading-indicator"))
+                .isDisplayed());
 
         WebElement templateElement = $(TestBenchElement.class).id("template")
                 .$(DivElement.class).id("frontend-inline");

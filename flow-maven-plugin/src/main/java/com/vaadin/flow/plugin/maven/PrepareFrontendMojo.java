@@ -127,7 +127,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
 
-        if(nodeDownloadRoot == null) {
+        if (nodeDownloadRoot == null) {
             nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
         }
 
@@ -145,11 +145,13 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             nodeDownloadRootURI = new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
-            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
+            throw new MojoExecutionException(
+                    "Failed to parse " + nodeDownloadRoot, e);
         }
         try {
             FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                    () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                    () -> FrontendUtils.getVaadinHomeDirectory()
+                            .getAbsolutePath(),
                     nodeVersion, nodeDownloadRootURI, requireHomeNodeExec);
             tools.validateNodeAndNpmVersion();
         } catch (IllegalStateException exception) {
@@ -158,26 +160,26 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             FileUtils.forceMkdir(generatedFolder);
         } catch (IOException e) {
-            throw new MojoFailureException(
-                    "Failed to create folder '" + generatedFolder
-                            + "'. Verify that you may write to path.", e);
+            throw new MojoFailureException("Failed to create folder '"
+                    + generatedFolder + "'. Verify that you may write to path.",
+                    e);
         }
         try {
-            NodeTasks.Builder builder = new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                    generatedFolder, frontendDirectory)
-                            .withWebpack(webpackOutputDirectory,
-                                    webpackTemplate, webpackGeneratedTemplate)
-                            .createMissingPackageJson(true)
-                            .enableImportsUpdate(false)
-                            .enablePackagesUpdate(false)
-                            .runNpmInstall(false)
-                            .withNodeVersion(nodeVersion)
-                            .withNodeDownloadRoot(nodeDownloadRootURI)
-                            .withHomeNodeExecRequired(requireHomeNodeExec)
-                            .withProductionMode(productionMode);
-            // If building a jar project copy jar artifact contents now as we might
+            NodeTasks.Builder builder = new NodeTasks.Builder(
+                    getClassFinder(project), npmFolder, generatedFolder,
+                    frontendDirectory)
+                    .withWebpack(webpackOutputDirectory, webpackTemplate,
+                            webpackGeneratedTemplate)
+                    .createMissingPackageJson(true).enableImportsUpdate(false)
+                    .enablePackagesUpdate(false).runNpmInstall(false)
+                    .withNodeVersion(nodeVersion)
+                    .withNodeDownloadRoot(nodeDownloadRootURI)
+                    .withHomeNodeExecRequired(requireHomeNodeExec)
+                    .withProductionMode(productionMode);
+            // If building a jar project copy jar artifact contents now as we
+            // might
             // not be able to read files from jar path.
-            if("jar".equals(project.getPackaging())) {
+            if ("jar".equals(project.getPackaging())) {
                 Set<File> jarFiles = project.getArtifacts().stream()
                         .filter(artifact -> "jar".equals(artifact.getType()))
                         .map(Artifact::getFile).collect(Collectors.toSet());

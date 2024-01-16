@@ -63,12 +63,14 @@ public class ResponseWriter implements Serializable {
             .compile("(\\d*)-(\\d*)");
 
     /**
-     * Maximum number of ranges accepted in a single Range header. Remaining ranges will be ignored.
+     * Maximum number of ranges accepted in a single Range header. Remaining
+     * ranges will be ignored.
      */
     private static final int MAX_RANGE_COUNT = 16;
 
     /**
-     * Maximum number of overlapping ranges allowed. The request will be denied if above this threshold.
+     * Maximum number of overlapping ranges allowed. The request will be denied
+     * if above this threshold.
      */
     private static final int MAX_OVERLAPPING_RANGE_COUNT = 2;
 
@@ -98,8 +100,8 @@ public class ResponseWriter implements Serializable {
      * Creates a response writer with custom buffer size.
      * <p>
      * This will always mark us as compatibility mode and not accept loading
-     * resources from the classpath. To enable compressed resources use {@link
-     * #ResponseWriter(DeploymentConfiguration)}.
+     * resources from the classpath. To enable compressed resources use
+     * {@link #ResponseWriter(DeploymentConfiguration)}.
      *
      * @param bufferSize
      *            custom buffer size
@@ -352,13 +354,11 @@ public class ResponseWriter implements Serializable {
                             String.format("Content-Type: %s\r\n", mimeType)
                                     .getBytes());
                 }
-                outputStream
-                        .write(String
-                                .format("Content-Range: %s\r\n\r\n",
-                                        createContentRangeHeader(start, end,
-                                                connection
-                                                        .getContentLengthLong()))
-                                .getBytes());
+                outputStream.write(String
+                        .format("Content-Range: %s\r\n\r\n",
+                                createContentRangeHeader(start, end,
+                                        connection.getContentLengthLong()))
+                        .getBytes());
 
                 if (position > start) {
                     // out-of-sequence range -> open new stream to the file
@@ -394,9 +394,10 @@ public class ResponseWriter implements Serializable {
     }
 
     /**
-     * Returns true if the number of ranges in <code>ranges</code> is less than the
-     * upper limit and the number that overlap (= have at least one byte in common)
-     * with the range <code>[start, end]</code> are less than the upper limit.
+     * Returns true if the number of ranges in <code>ranges</code> is less than
+     * the upper limit and the number that overlap (= have at least one byte in
+     * common) with the range <code>[start, end]</code> are less than the upper
+     * limit.
      */
     private boolean verifyRangeLimits(List<Pair<Long, Long>> ranges) {
         if (ranges.size() > MAX_RANGE_COUNT) {
@@ -437,10 +438,11 @@ public class ResponseWriter implements Serializable {
     /**
      * Check if it is ok to serve the requested file from the classpath.
      * <p>
-     * ClassLoader is applicable for use when we are in NPM mode and
-     * are serving from the VAADIN/build folder with no folder changes in path.
+     * ClassLoader is applicable for use when we are in NPM mode and are serving
+     * from the VAADIN/build folder with no folder changes in path.
      *
-     * @param filenameWithPath requested filename containing path
+     * @param filenameWithPath
+     *            requested filename containing path
      * @return true if we are ok to try serving the file
      */
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
@@ -554,9 +556,9 @@ public class ResponseWriter implements Serializable {
      * encoding is disabled and not accepted.
      *
      * @param acceptEncoding
-     *         Accept-Encoding header from request
+     *            Accept-Encoding header from request
      * @param encoding
-     *         encoding to check
+     *            encoding to check
      * @return true if quality value is Zero
      */
     private static boolean isQualityValueZero(String acceptEncoding,

@@ -269,8 +269,8 @@ public class LitTemplateParserImplTest {
     public void es5Andes6Sources_getsCorrectlyEs6Source() {
 
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
-        LitTemplateParser.TemplateData templateContent = instance.getTemplateContent(
-                ImageCard.class, "image-card", service);
+        LitTemplateParser.TemplateData templateContent = instance
+                .getTemplateContent(ImageCard.class, "image-card", service);
 
         Assert.assertNotNull(
                 "ES5 was selected from which template content can not be parsed",

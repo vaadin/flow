@@ -89,7 +89,7 @@ public class DefaultConverterFactoryTest {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void assertThatConversionIsSupported(Class presentationType,
-                                                 Class modelType, Class<? extends Converter> expectedConverter) {
+            Class modelType, Class<? extends Converter> expectedConverter) {
         Optional<Converter> maybeConverter = factory
                 .newInstance(presentationType, modelType);
         assertTrue(
@@ -189,4 +189,3 @@ public class DefaultConverterFactoryTest {
     }
 
 }
-

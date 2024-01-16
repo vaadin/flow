@@ -37,8 +37,7 @@ public class VisibilityView extends AbstractDivView {
         div.add(label);
 
         NativeButton updateVisibility = createButton("Update visibility",
-                "updateVisibiity",
-                event -> div.setVisible(!div.isVisible()));
+                "updateVisibiity", event -> div.setVisible(!div.isVisible()));
 
         NativeButton updateLabelVisibility = createButton(
                 "Update label visibility", "updateLabelVisibiity",

@@ -44,21 +44,24 @@ public class ParentThemeIT extends ChromeBrowserTest {
         final WebElement body = findElement(By.tagName("body"));
 
         Assert.assertEquals(
-            "url(\"" + getRootURL() + "/VAADIN/static/themes/child-theme/bg.jpg\")",
-            body.getCssValue("background-image"));
+                "url(\"" + getRootURL()
+                        + "/VAADIN/static/themes/child-theme/bg.jpg\")",
+                body.getCssValue("background-image"));
 
-        Assert.assertEquals("\"IBM Plex Mono\"", body.getCssValue("font-family"));
+        Assert.assertEquals("\"IBM Plex Mono\"",
+                body.getCssValue("font-family"));
 
         Assert.assertEquals("Child should override parent external.",
-            "url(\"" + getRootURL()
-                + "/VAADIN/static/themes/child-theme/img/gobo.png\")",
-            $(SpanElement.class).id(BUTTERFLY_ID)
-                .getCssValue("background-image"));
+                "url(\"" + getRootURL()
+                        + "/VAADIN/static/themes/child-theme/img/gobo.png\")",
+                $(SpanElement.class).id(BUTTERFLY_ID)
+                        .getCssValue("background-image"));
 
         Assert.assertEquals("Child img selector should be used",
-            "url(\"" + getRootURL() + "/VAADIN/static/themes/child-theme/img/viking.png\")",
-            $(SpanElement.class).id(OCTOPUSS_ID)
-                .getCssValue("background-image"));
+                "url(\"" + getRootURL()
+                        + "/VAADIN/static/themes/child-theme/img/viking.png\")",
+                $(SpanElement.class).id(OCTOPUSS_ID)
+                        .getCssValue("background-image"));
     }
 
     @Test
@@ -66,12 +69,12 @@ public class ParentThemeIT extends ChromeBrowserTest {
         open();
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
         TestBenchElement input = myField.$(TestBenchElement.class)
-            .id("vaadin-text-field-input-0");
+                .id("vaadin-text-field-input-0");
         Assert.assertEquals("Polymer text field should have red background",
-            "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
+                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
 
         Assert.assertEquals("Text field should have color as green",
-            "rgba(0, 128, 0, 1)", input.getCssValue("color"));
+                "rgba(0, 128, 0, 1)", input.getCssValue("color"));
 
     }
 

@@ -60,9 +60,8 @@ public class MigrationToolTest {
     }
 
     @Test
-    public void noBaseDir_throw()
-            throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, IOException {
+    public void noBaseDir_throw() throws CommandArgumentException,
+            MigrationToolsException, MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(ParseException.class));
         tool.runMigration(new String[] { "-src", "barSrcs", "-c",
@@ -71,9 +70,8 @@ public class MigrationToolTest {
     }
 
     @Test
-    public void noSourceRoot_throw()
-            throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, IOException {
+    public void noSourceRoot_throw() throws CommandArgumentException,
+            MigrationToolsException, MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(ParseException.class));
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-c",
@@ -82,9 +80,8 @@ public class MigrationToolTest {
     }
 
     @Test
-    public void noClassesDir_throw()
-            throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, IOException {
+    public void noClassesDir_throw() throws CommandArgumentException,
+            MigrationToolsException, MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(ParseException.class));
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
@@ -92,9 +89,8 @@ public class MigrationToolTest {
     }
 
     @Test
-    public void noDependeciesUrls_throw()
-            throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, IOException {
+    public void noDependeciesUrls_throw() throws CommandArgumentException,
+            MigrationToolsException, MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(ParseException.class));
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
@@ -102,9 +98,8 @@ public class MigrationToolTest {
     }
 
     @Test
-    public void passBadDependencyUrl_throw()
-            throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, IOException {
+    public void passBadDependencyUrl_throw() throws CommandArgumentException,
+            MigrationToolsException, MigrationFailureException, IOException {
         exception.expect(CommandArgumentException.class);
         exception.expectCause(Matchers.any(MalformedURLException.class));
         tool.runMigration(new String[] { "-b", "fooBaseDir", "-src", "barSrcs",
@@ -346,8 +341,7 @@ public class MigrationToolTest {
     @Test
     public void passDpeUrls_classFinderIsConfigured()
             throws CommandArgumentException, MigrationToolsException,
-            MigrationFailureException, IOException,
-            URISyntaxException {
+            MigrationFailureException, IOException, URISyntaxException {
         File depDir = makeSomeFolder();
         File file = new File(depDir, "foo");
         file.createNewFile();

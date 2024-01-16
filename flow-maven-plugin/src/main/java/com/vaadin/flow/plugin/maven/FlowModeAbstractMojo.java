@@ -87,7 +87,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
         }
         // Default mode for V14 is bower true
         compatibility = compatibilityMode != null
-                ? Boolean.valueOf(compatibilityMode) : isDefaultCompatibility();
+                ? Boolean.valueOf(compatibilityMode)
+                : isDefaultCompatibility();
     }
 
     abstract boolean isDefaultCompatibility();
@@ -105,7 +106,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * environments where the node.js download can be provided from an intranet
      * mirror. Defaults to null which will cause the downloader to use
      * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
-     * <p></p>
+     * <p>
+     * </p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
     @Parameter(property = NODE_DOWNLOAD_ROOT)

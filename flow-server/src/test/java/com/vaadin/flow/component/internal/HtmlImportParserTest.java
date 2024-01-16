@@ -88,8 +88,8 @@ public class HtmlImportParserTest {
                     normalize(protocol + "://foo/./bar"));
             assertEquals(protocol + "://foo/bar",
                     normalize(protocol + "://foo/baz/../bar"));
-            assertEquals(
-                    protocol + "://bower_components/vaadin-button/src/vaadin-button.html",
+            assertEquals(protocol
+                    + "://bower_components/vaadin-button/src/vaadin-button.html",
                     normalize(protocol
                             + "://src/views/login/../../../bower_components/vaadin-button/src/vaadin-button.html"));
             assertEquals(protocol + "://components/js/hash-actions.html",

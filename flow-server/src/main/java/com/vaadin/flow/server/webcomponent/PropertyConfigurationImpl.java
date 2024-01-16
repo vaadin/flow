@@ -24,13 +24,13 @@ import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
 /**
- * 
+ *
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @param <C>
- *         type of the exported {@code component}
+ *            type of the exported {@code component}
  * @param <P>
- *         type of the property
+ *            type of the property
  * @author Vaadin Ltd.
  * @since 2.0
  */
@@ -45,15 +45,15 @@ public final class PropertyConfigurationImpl<C extends Component, P extends Seri
      * {@link Component} type given by {@code componentType}.
      *
      * @param componentType
-     *         type of the exported {@code component}
+     *            type of the exported {@code component}
      * @param propertyName
-     *         name of the property
+     *            name of the property
      * @param propertyType
-     *         type of the property
+     *            type of the property
      * @param defaultValue
-     *         default value of the property. If the property type has a
-     *         primitive version, this value is used when ever the property is
-     *         being set to a {@code null}.
+     *            default value of the property. If the property type has a
+     *            primitive version, this value is used when ever the property
+     *            is being set to a {@code null}.
      */
     public PropertyConfigurationImpl(Class<C> componentType,
             String propertyName, Class<P> propertyType, P defaultValue) {

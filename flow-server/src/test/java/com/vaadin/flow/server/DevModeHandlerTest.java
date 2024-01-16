@@ -137,7 +137,7 @@ public class DevModeHandlerTest {
         handler.join();
         assertTrue(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
-                        .canRead());
+                .canRead());
         assertNull(DevModeHandler.getDevModeHandler().getFailedOutput());
         assertTrue(0 < DevModeHandler.getDevModeHandler().getPort());
         Thread.sleep(150); // NOSONAR
@@ -262,7 +262,7 @@ public class DevModeHandlerTest {
         handler.join();
         assertFalse(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
-                        .canRead());
+                .canRead());
     }
 
     @Test

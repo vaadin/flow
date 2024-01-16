@@ -77,7 +77,7 @@ import com.vaadin.flow.dom.Element;
  * values used in the template. If the attribute/property value is not
  * explicitly set on the server side then the template value is used. In this
  * example:
- * 
+ *
  * <pre>
  * <code>
  * &#64;Tag("my-layout")
@@ -86,7 +86,7 @@ import com.vaadin.flow.dom.Element;
  *      &#64;Id("container")
  *      private MyComponent container;
  * }
- * 
+ *
  * &#64;Tag("my-component")
  * public class MyComponent extends LitTemplate {
  *
@@ -94,10 +94,10 @@ import com.vaadin.flow.dom.Element;
  *          getElement().setProperty("name","Joe");
  *      }
  * }
- * 
+ *
  * </code>
  * </pre>
- * 
+ *
  * the {@code container} field has {@code "name"} property value {@code "Joe"}
  * (even though it has another value declared in the template) and it has
  * {@code "version"} value {@code "1.0"} with the following template:
@@ -110,7 +110,7 @@ import com.vaadin.flow.dom.Element;
  *     `;
  * </code>
  * </pre>
- * 
+ *
  *
  * @author Vaadin Ltd
  * @since

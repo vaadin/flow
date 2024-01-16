@@ -1104,8 +1104,8 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(
                 "webcomponents-loader.js should be added to head. (not deferred)",
                 allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element
-                                .equals("<script type=\"text/javascript\" src=\"./"
+                        .anyMatch(element -> element.equals(
+                                "<script type=\"text/javascript\" src=\"./"
                                         + VAADIN_MAPPING
                                         + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
 
@@ -1122,8 +1122,8 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(
                 "index.js should be added to head for ES5 browsers. (deferred and nomodule)",
                 allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element
-                                .equals("<script type=\"text/javascript\" defer src=\"./"
+                        .anyMatch(element -> element.equals(
+                                "<script type=\"text/javascript\" defer src=\"./"
                                         + VAADIN_MAPPING
                                         + "build/index.es5-2222.cache.js\" nomodule data-app-id=\""
                                         + testUI.getInternals().getAppId()
@@ -1421,11 +1421,9 @@ public class BootstrapHandlerTest {
 
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(
-                String.format(
-                        "In development mode, es5 prefix should be equal to '%s' parameter value",
-                        Constants.FRONTEND_URL_ES5),
-                urlES5, is(es5Prefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es5 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
     }
 
     // This test is not applicable for npm mode
@@ -1445,11 +1443,9 @@ public class BootstrapHandlerTest {
 
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(
-                String.format(
-                        "In development mode, es6 prefix should be equal to '%s' parameter value",
-                        Constants.FRONTEND_URL_ES6),
-                urlES6, is(es6Prefix + urlPart));
+        assertThat(String.format(
+                "In development mode, es6 prefix should be equal to '%s' parameter value",
+                Constants.FRONTEND_URL_ES6), urlES6, is(es6Prefix + urlPart));
     }
 
     @Test
@@ -1764,9 +1760,8 @@ public class BootstrapHandlerTest {
 
         Elements scripts = page.head().getElementsByTag("script");
 
-        Element bundle = scripts.stream()
-                .filter(el -> el.attr("src")
-                        .equals("./VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc.cache.js"))
+        Element bundle = scripts.stream().filter(el -> el.attr("src").equals(
+                "./VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc.cache.js"))
                 .findFirst().get();
         Assert.assertFalse(bundle.hasAttr("defer"));
     }
@@ -2016,8 +2011,8 @@ public class BootstrapHandlerTest {
         BootstrapHandler.addLicenseChecker(document, deploymentConfiguration);
 
         assertTrue("Expected license checker script in the document head",
-                document.head().getAllElements().get(0).toString().contains(
-                        "window.Vaadin.VaadinLicenseChecker"));
+                document.head().getAllElements().get(0).toString()
+                        .contains("window.Vaadin.VaadinLicenseChecker"));
     }
 
     @Test
@@ -2030,8 +2025,8 @@ public class BootstrapHandlerTest {
         BootstrapHandler.addLicenseChecker(document, deploymentConfiguration);
 
         assertFalse("Expected no license checker scripts in the document head",
-                document.head().getAllElements().get(0).toString().contains(
-                        "window.Vaadin.VaadinLicenseChecker"));
+                document.head().getAllElements().get(0).toString()
+                        .contains("window.Vaadin.VaadinLicenseChecker"));
     }
 
     public static Location requestToLocation(VaadinRequest request) {

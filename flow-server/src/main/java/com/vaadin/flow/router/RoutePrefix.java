@@ -39,7 +39,7 @@ public @interface RoutePrefix {
      * <p>
      * This value accepts also parameter template segments which can be defined
      * using following format: <code>:parameterName[?|*][(regex)]</code>.
-    
+     *
      * @return route prefix to add
      */
     String value();
@@ -47,7 +47,7 @@ public @interface RoutePrefix {
     /**
      * Have the route chain break on defined class and not take into notice any
      * more parent layout route prefixes.
-     * 
+     *
      * @return route up to here should be absolute
      */
     boolean absolute() default false;

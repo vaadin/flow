@@ -65,9 +65,11 @@ public class DataChangeEvent<T> extends EventObject {
          * @param item
          *            the updated item, not null
          * @param refreshChildren
-         *            whether, in hierarchical providers, subelements should be refreshed as well
+         *            whether, in hierarchical providers, subelements should be
+         *            refreshed as well
          */
-        public DataRefreshEvent(DataProvider<T, ?> source, T item, boolean refreshChildren) {
+        public DataRefreshEvent(DataProvider<T, ?> source, T item,
+                boolean refreshChildren) {
             super(source);
             Objects.requireNonNull(item, "Refreshed item can't be null");
             this.item = item;
@@ -84,9 +86,11 @@ public class DataChangeEvent<T> extends EventObject {
         }
 
         /**
-         * Gets the a boolean whether the refresh is supposed to be refreshChildren (in hierarchical data providers).
+         * Gets the a boolean whether the refresh is supposed to be
+         * refreshChildren (in hierarchical data providers).
          *
-         * @return whether, in hierarchical providers, subelements should be refreshed as well
+         * @return whether, in hierarchical providers, subelements should be
+         *         refreshed as well
          */
         public boolean isRefreshChildren() {
             return refreshChildren;

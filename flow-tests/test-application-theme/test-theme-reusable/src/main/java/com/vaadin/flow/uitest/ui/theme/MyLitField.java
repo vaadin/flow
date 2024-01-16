@@ -32,7 +32,7 @@ public class MyLitField extends Component {
      * Set the component id.
      *
      * @param id
-     *     value to set
+     *            value to set
      * @return this component
      */
     public Component withId(String id) {

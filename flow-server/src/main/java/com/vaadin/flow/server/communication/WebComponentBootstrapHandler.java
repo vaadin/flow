@@ -282,7 +282,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
          */
         response.setContentType(contentType);
         /*
-         * Collection of Elements that should be transferred to the web 
+         * Collection of Elements that should be transferred to the web
          * component shadow DOMs rather than the page head
          */
         ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
@@ -468,7 +468,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @return true if request has been handled, false otherwise
      */
     protected boolean handleWebComponentResyncRequest(BootstrapContext context,
-                                                      VaadinRequest request, VaadinResponse response) {
+            VaadinRequest request, VaadinResponse response) {
 
         if (!HandlerHelper.isRequestType(request,
                 HandlerHelper.RequestType.WEBCOMPONENT_RESYNC)) {

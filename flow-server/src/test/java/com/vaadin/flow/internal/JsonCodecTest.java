@@ -212,7 +212,7 @@ public class JsonCodecTest {
                 JsonCodec.decodeAs(json, int.class));
         Assert.assertEquals(Integer.valueOf(0),
                 JsonCodec.decodeAs(Json.createNull(), int.class));
-        //double
+        // double
         Assert.assertNull(JsonCodec.decodeAs(Json.createNull(), Double.class));
         Assert.assertTrue(JsonCodec.decodeAs(json, Double.class).isNaN());
         Assert.assertTrue(JsonCodec.decodeAs(json, double.class).isNaN());

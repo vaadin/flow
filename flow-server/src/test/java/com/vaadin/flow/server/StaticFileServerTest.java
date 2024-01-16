@@ -261,15 +261,16 @@ public class StaticFileServerTest implements Serializable {
     private void setupRequestURI(String encodedContextPath, String servletPath,
             String pathInfo) {
         assert !encodedContextPath.equals("/") : "root context is always \"\"";
-        assert encodedContextPath.equals("") || encodedContextPath
-                .startsWith("/") : "context always starts with /";
-        assert !encodedContextPath.endsWith(
-                "/") : "context path should start with / but not end with /";
+        assert encodedContextPath.equals("")
+                || encodedContextPath.startsWith("/")
+                : "context always starts with /";
+        assert !encodedContextPath.endsWith("/")
+                : "context path should start with / but not end with /";
         assert !servletPath.equals("/") : "a /* mapped servlet has path \"\"";
-        assert servletPath.equals("") || servletPath
-                .startsWith("/") : "servlet path always starts with /";
-        assert !servletPath.endsWith(
-                "/") : "servlet path should start with / but not end with /";
+        assert servletPath.equals("") || servletPath.startsWith("/")
+                : "servlet path always starts with /";
+        assert !servletPath.endsWith("/")
+                : "servlet path should start with / but not end with /";
         assert pathInfo == null || pathInfo.startsWith("/");
 
         String requestURI = "";
@@ -489,8 +490,7 @@ public class StaticFileServerTest implements Serializable {
         final FileSystem fileSystem = FileSystems
                 .newFileSystem(new URL("jar:file:///"
                         + tempArchive.toString().replaceAll("\\\\", "/") + "!/")
-                                .toURI(),
-                        Collections.emptyMap());
+                        .toURI(), Collections.emptyMap());
 
         final URL folderResourceURL = new URL(
                 "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
@@ -672,19 +672,18 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isNotResourceRequestWithContextPath() throws Exception {
         setupRequestURI("/context", "", "/");
-        Mockito.when(servletContext.getResource("/"))
-                .thenReturn(new URL("file", "", -1,
-                        "flow/flow-tests/non-root-context-test/src/main/webapp/",
-                        new URLStreamHandler() {
+        Mockito.when(servletContext.getResource("/")).thenReturn(new URL("file",
+                "", -1,
+                "flow/flow-tests/non-root-context-test/src/main/webapp/",
+                new URLStreamHandler() {
 
-                            @Override
-                            protected URLConnection openConnection(URL u)
-                                    throws IOException {
-                                URLConnection mock = Mockito
-                                        .mock(URLConnection.class);
-                                return mock;
-                            }
-                        }));
+                    @Override
+                    protected URLConnection openConnection(URL u)
+                            throws IOException {
+                        URLConnection mock = Mockito.mock(URLConnection.class);
+                        return mock;
+                    }
+                }));
 
         Assert.assertFalse(fileServer.isStaticResourceRequest(request));
     }
@@ -1042,9 +1041,9 @@ public class StaticFileServerTest implements Serializable {
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
-        Mockito.when(mockLoader.getResource("META-INF" + pathInfo))
-                .thenReturn(createFileURLWithDataAndLength(
-                        "META-INF" + pathInfo, fileData.getBytes(StandardCharsets.UTF_8)));
+        Mockito.when(mockLoader.getResource("META-INF" + pathInfo)).thenReturn(
+                createFileURLWithDataAndLength("META-INF" + pathInfo,
+                        fileData.getBytes(StandardCharsets.UTF_8)));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
@@ -1053,7 +1052,8 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(response.getOutputStream()).thenReturn(out);
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData.getBytes(StandardCharsets.UTF_8), out.getOutput());
+        Assert.assertArrayEquals(fileData.getBytes(StandardCharsets.UTF_8),
+                out.getOutput());
     }
 
     @Test

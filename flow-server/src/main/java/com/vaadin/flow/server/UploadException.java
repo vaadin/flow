@@ -23,7 +23,7 @@ package com.vaadin.flow.server;
 public class UploadException extends Exception {
     /**
      * Exception constructor with exception.
-     * 
+     *
      * @param exception
      *            exception
      */
@@ -33,7 +33,7 @@ public class UploadException extends Exception {
 
     /**
      * Exception constructor with message.
-     * 
+     *
      * @param message
      *            error message
      */

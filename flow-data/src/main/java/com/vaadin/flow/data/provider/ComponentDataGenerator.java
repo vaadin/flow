@@ -32,7 +32,7 @@ import elemental.json.JsonObject;
  * <p>
  * This class is used internally by listing components that support
  * ComponentRenderers.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -49,7 +49,7 @@ public class ComponentDataGenerator<T>
 
     /**
      * Creates a new generator.
-     * 
+     *
      * @param componentRenderer
      *            the renderer used to produce components based on data items
      * @param keyMapper

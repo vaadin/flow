@@ -60,8 +60,8 @@ public class NodeTasksTest {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
                 new File(userDir)).enablePackagesUpdate(false)
-                        .enableImportsUpdate(true).runNpmInstall(false)
-                        .withEmbeddableWebComponents(false);
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -86,8 +86,8 @@ public class NodeTasksTest {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
                 new File(userDir)).enablePackagesUpdate(false)
-                        .enableImportsUpdate(true).runNpmInstall(false)
-                        .withEmbeddableWebComponents(false);
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false);
 
         Assert.assertEquals(
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),

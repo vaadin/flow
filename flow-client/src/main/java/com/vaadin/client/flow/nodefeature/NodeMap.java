@@ -125,7 +125,7 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
 
     /**
      * Gets all property names in this map.
-     * 
+     *
      * @return a list with the property names, never <code>null</code>
      */
     public JsArray<String> getPropertyNames() {

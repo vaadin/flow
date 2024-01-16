@@ -392,7 +392,7 @@ public class ApplicationConfiguration {
 
     /**
      * Sets the URL for the live reload websocket connection.
-     * 
+     *
      * @param liveReloadUrl
      *            URL for the live reload websocket connection
      */
@@ -402,7 +402,7 @@ public class ApplicationConfiguration {
 
     /**
      * Gets the the live reload backend technology identifier.
-     * 
+     *
      * @return the live reload backend technology identifier
      */
     public String getLiveReloadBackend() {
@@ -411,7 +411,7 @@ public class ApplicationConfiguration {
 
     /**
      * Sets the live reload backend technology identifier.
-     * 
+     *
      * @param liveReloadBackend
      *            the live reload backend technology identifier
      */
@@ -421,7 +421,7 @@ public class ApplicationConfiguration {
 
     /**
      * Gets the Spring boot live reload port.
-     * 
+     *
      * @return the Spring boot live reload port
      */
     public String getSpringBootLiveReloadPort() {
@@ -430,7 +430,7 @@ public class ApplicationConfiguration {
 
     /**
      * Sets the Spring boot live reload port.
-     * 
+     *
      * @param springBootLiveReloadPort
      *            the Spring boot live reload port
      */

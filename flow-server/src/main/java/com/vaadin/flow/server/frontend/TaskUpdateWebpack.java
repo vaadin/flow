@@ -83,7 +83,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.flowResourcesFolder = new File(webpackConfigFolder,
                 System.getProperty(PARAM_GENERATED_DIR, DEFAULT_GENERATED_DIR))
-                        .toPath();
+                .toPath();
         this.resourceFolder = new File(webpackOutputDirectory.getParentFile(),
                 VAADIN_STATIC_FILES_PATH).toPath();
     }
@@ -179,7 +179,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
     private String getEscapedRelativeWebpackPath(Path path) {
         Path relativePath = path.isAbsolute()
-                ? webpackConfigPath.relativize(path) : path;
+                ? webpackConfigPath.relativize(path)
+                : path;
         return relativePath.toString().replaceAll("\\\\", "/");
     }
 

@@ -23,7 +23,8 @@ public class InnerTemplateVisibilityView extends AbstractDivView {
     @JsModule("./template-inner.js")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-inner.html")
     public static class Inner extends PolymerTemplate<Inner.Model> {
-        public static class Model implements TemplateModel {}
+        public static class Model implements TemplateModel {
+        }
 
         public Inner() {
         }
@@ -33,7 +34,8 @@ public class InnerTemplateVisibilityView extends AbstractDivView {
     @JsModule("./template-outer.js")
     @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-outer.html")
     public static class Outer extends PolymerTemplate<Outer.Model> {
-        public static class Model implements TemplateModel {}
+        public static class Model implements TemplateModel {
+        }
 
         @Id("inner")
         Inner inner;

@@ -57,7 +57,7 @@ public class PropertyChangeEvent extends EventObject {
 
     /**
      * Returns the value of the source before this value change event occurred.
-     * 
+     *
      * @return the value previously held by the source of this event
      */
     public Serializable getOldValue() {
@@ -86,7 +86,7 @@ public class PropertyChangeEvent extends EventObject {
 
     /**
      * Returns the property name.
-     * 
+     *
      * @return the property name
      */
     public String getPropertyName() {

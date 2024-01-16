@@ -354,7 +354,8 @@ public class TaskUpdateImports extends NodeUpdater {
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, boolean disablePnpm, boolean productionMode, boolean oldLicenseChecker) {
+            File tokenFile, boolean disablePnpm, boolean productionMode,
+            boolean oldLicenseChecker) {
         this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
                 generatedPath, frontendDirectory, tokenFile, null, disablePnpm,
                 Collections.emptyList(), productionMode, oldLicenseChecker);
@@ -430,9 +431,8 @@ public class TaskUpdateImports extends NodeUpdater {
         }
         def = fallbackScanner.getThemeDefinition();
         if (def != null && log().isDebugEnabled()) {
-            log().debug(
-                    "Theme definition is discovered by the fallback "
-                            + "scanner and not discovered by the main scanner. Theme '{}' will be used",
+            log().debug("Theme definition is discovered by the fallback "
+                    + "scanner and not discovered by the main scanner. Theme '{}' will be used",
                     def.getTheme().getName());
         }
         return def;

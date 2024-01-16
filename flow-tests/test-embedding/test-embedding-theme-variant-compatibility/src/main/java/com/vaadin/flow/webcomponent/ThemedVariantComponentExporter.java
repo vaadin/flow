@@ -28,7 +28,8 @@ public class ThemedVariantComponentExporter
     }
 
     @Override
-    public void configureInstance(WebComponent<ThemedVariantComponent> webComponent,
+    public void configureInstance(
+            WebComponent<ThemedVariantComponent> webComponent,
             ThemedVariantComponent component) {
     }
 }

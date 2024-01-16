@@ -124,14 +124,14 @@ public class VersionsJsonFilterTest {
 
     private void assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
             String depKey) throws IOException {
-        String versions = IOUtils
-                .toString(
-                        Objects.requireNonNull(getClass().getClassLoader()
-                                .getResourceAsStream("versions/versions.json")),
-                        StandardCharsets.UTF_8);
-        String pkgJson = IOUtils.toString(
+        String versions = IOUtils.toString(
                 Objects.requireNonNull(getClass().getClassLoader()
-                        .getResourceAsStream("versions/no_vaadin_package.json")),
+                        .getResourceAsStream("versions/versions.json")),
+                StandardCharsets.UTF_8);
+        String pkgJson = IOUtils.toString(
+                Objects.requireNonNull(
+                        getClass().getClassLoader().getResourceAsStream(
+                                "versions/no_vaadin_package.json")),
                 StandardCharsets.UTF_8);
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
@@ -148,16 +148,14 @@ public class VersionsJsonFilterTest {
 
     private void assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
             String depKey) throws IOException {
-        String versions = IOUtils
-                .toString(
-                        Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(
-                                "versions/user_versions.json")),
-                        StandardCharsets.UTF_8);
-        String pkgJson = IOUtils
-                .toString(
-                        Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(
-                                "versions/user_package.json")),
-                        StandardCharsets.UTF_8);
+        String versions = IOUtils.toString(
+                Objects.requireNonNull(getClass().getClassLoader()
+                        .getResourceAsStream("versions/user_versions.json")),
+                StandardCharsets.UTF_8);
+        String pkgJson = IOUtils.toString(
+                Objects.requireNonNull(getClass().getClassLoader()
+                        .getResourceAsStream("versions/user_package.json")),
+                StandardCharsets.UTF_8);
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
                 depKey);
@@ -196,16 +194,14 @@ public class VersionsJsonFilterTest {
 
     private void assertFilterPlatformVersions(String depKey)
             throws IOException {
-        String versions = IOUtils
-                .toString(
-                        Objects.requireNonNull(getClass().getClassLoader()
-                                .getResourceAsStream("versions/versions.json")),
-                        StandardCharsets.UTF_8);
-        String pkgJson = IOUtils
-                .toString(
-                        Objects.requireNonNull(getClass().getClassLoader()
-                                .getResourceAsStream("versions/package.json")),
-                        StandardCharsets.UTF_8);
+        String versions = IOUtils.toString(
+                Objects.requireNonNull(getClass().getClassLoader()
+                        .getResourceAsStream("versions/versions.json")),
+                StandardCharsets.UTF_8);
+        String pkgJson = IOUtils.toString(
+                Objects.requireNonNull(getClass().getClassLoader()
+                        .getResourceAsStream("versions/package.json")),
+                StandardCharsets.UTF_8);
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
                 depKey);

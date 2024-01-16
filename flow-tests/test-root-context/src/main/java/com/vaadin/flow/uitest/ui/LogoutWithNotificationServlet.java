@@ -56,8 +56,7 @@ public class LogoutWithNotificationServlet extends VaadinServlet {
         super.servletInitialized();
         getService().setSystemMessagesProvider(
                 (SystemMessagesProvider) systemMessagesInfo -> {
-                    final CustomizedSystemMessages systemMessages =
-                            new CustomizedSystemMessages();
+                    final CustomizedSystemMessages systemMessages = new CustomizedSystemMessages();
                     systemMessages.setSessionExpiredNotificationEnabled(true);
                     return systemMessages;
                 });

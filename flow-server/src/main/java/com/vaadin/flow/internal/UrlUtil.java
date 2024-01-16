@@ -37,7 +37,7 @@ public class UrlUtil {
     /**
      * checks if the given url is an external URL (e.g. staring with http:// or
      * https://) or not.
-     * 
+     *
      * @param url
      *            is the url to be checked.
      * @return true if the url is external otherwise false.
@@ -62,7 +62,7 @@ public class UrlUtil {
      * <p>
      * The following characters are not escaped:
      * {@literal A-Za-z0-9;,/?:@&=+$-_.!~*'()#}
-     * 
+     *
      * @param uri
      *            the uri to encode
      */
@@ -88,7 +88,7 @@ public class UrlUtil {
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
      * <p>
      * The following characters are not escaped: {@literal A-Za-z0-9-_.!~*'()}
-     * 
+     *
      * @param path
      *            the path to encode
      */

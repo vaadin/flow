@@ -81,7 +81,8 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 
     @Override
     public int handle(NavigationEvent event) {
-        assert event instanceof ErrorNavigationEvent : "Error handling needs ErrorNavigationEvent";
+        assert event instanceof ErrorNavigationEvent
+                : "Error handling needs ErrorNavigationEvent";
 
         ExceptionsTrace trace = ComponentUtil.getData(event.getUI(),
                 ExceptionsTrace.class);

@@ -16,8 +16,8 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
         open();
 
         // when inner is hidden
-        NativeButtonElement toggleButton = $(NativeButtonElement.class)
-                .id(InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
+        NativeButtonElement toggleButton = $(NativeButtonElement.class).id(
+                InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
         toggleButton.click();
 
         // then: element is not visible, attribute 'hidden' and 'display: none'
@@ -38,8 +38,8 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
         open();
 
         // when inner is hidden and unhidden
-        NativeButtonElement toggleButton = $(NativeButtonElement.class)
-                .id(InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
+        NativeButtonElement toggleButton = $(NativeButtonElement.class).id(
+                InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
         toggleButton.click();
         toggleButton.click();
 
@@ -61,8 +61,8 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
         open();
 
         // when hidden
-        NativeButtonElement toggleButton = $(NativeButtonElement.class)
-                .id(InnerTemplateVisibilityView.TOGGLE_OUTER_VISIBILITY_BUTTON_ID);
+        NativeButtonElement toggleButton = $(NativeButtonElement.class).id(
+                InnerTemplateVisibilityView.TOGGLE_OUTER_VISIBILITY_BUTTON_ID);
         toggleButton.click();
 
         // then: element is not visible, attribute 'hidden' is set but

@@ -31,7 +31,7 @@ import elemental.json.JsonValue;
  * This is a way of deduplicating JSON values that are expected to be sent to
  * the same client multiple times, since all references to the same JSON
  * structure will be encoded as the same id.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

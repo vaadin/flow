@@ -84,15 +84,13 @@ public class TemplateInitializerTest {
                 .getField("element").getAnnotation(Id.class).value();
 
         templateParser = (clazz, tag, service) -> new TemplateData("",
-                Jsoup.parse(String.format(
-                        "<dom-module id='%s'><template>"
-                                + "    <template><div id='%s'>Test</div></template>"
-                                + "    <div id='%s'></div>"
-                                + "    <div a='{{twoWay}}' b='{{invalid}} syntax' c='{{two.way}}'"
-                                + "        d='{{invalidSyntax' e='{{withEvent::eventName}}' f='[[oneWay]]'></div>"
-                                + "</template></dom-module>",
-                        parentTemplateId, inTemplateElementId,
-                        outsideTemplateElementId)));
+                Jsoup.parse(String.format("<dom-module id='%s'><template>"
+                        + "    <template><div id='%s'>Test</div></template>"
+                        + "    <div id='%s'></div>"
+                        + "    <div a='{{twoWay}}' b='{{invalid}} syntax' c='{{two.way}}'"
+                        + "        d='{{invalidSyntax' e='{{withEvent::eventName}}' f='[[oneWay]]'></div>"
+                        + "</template></dom-module>", parentTemplateId,
+                        inTemplateElementId, outsideTemplateElementId)));
     }
 
     @After
@@ -115,7 +113,7 @@ public class TemplateInitializerTest {
     public void twoWayBindingPaths() {
         Set<String> twoWayBindingPaths = new TemplateInitializer(
                 new OutsideTemplateClass(), templateParser, service)
-                        .getTwoWayBindingPaths();
+                .getTwoWayBindingPaths();
 
         Assert.assertEquals(
                 new HashSet<>(Arrays.asList("twoWay", "two.way", "withEvent")),

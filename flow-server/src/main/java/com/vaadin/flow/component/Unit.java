@@ -23,8 +23,8 @@ import java.util.stream.Stream;
  */
 public enum Unit {
     /**
-     * Unit code representing in percentage of the containing element
-     * defined by terminal.
+     * Unit code representing in percentage of the containing element defined by
+     * terminal.
      */
     PERCENTAGE("%"),
     /**
@@ -105,9 +105,10 @@ public enum Unit {
 
     /**
      * Gives size unit of the css string representing a size.
-     * 
-     * @param cssSize Css compliant size string such as "50px".
-     * 
+     *
+     * @param cssSize
+     *            Css compliant size string such as "50px".
+     *
      * @return A Optional unit.
      */
     public static Optional<Unit> getUnit(String cssSize) {
@@ -125,9 +126,10 @@ public enum Unit {
 
     /**
      * Gives size component as float of the css string representing a size.
-     * 
-     * @param cssSize Css compliant size string such as "50px".
-     * 
+     *
+     * @param cssSize
+     *            Css compliant size string such as "50px".
+     *
      * @return Size as float, 0 if string contained only the unit.
      */
     public static float getSize(String cssSize) {
@@ -150,7 +152,8 @@ public enum Unit {
     /**
      * Convert unit string symbol to Unit.
      *
-     * @param symbol A String.
+     * @param symbol
+     *            A String.
      * @return A Unit, Unit.PIXELS if symbol was null or not matching.
      */
     public static Unit getUnitFromSymbol(String symbol) {

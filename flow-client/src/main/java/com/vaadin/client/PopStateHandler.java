@@ -65,17 +65,17 @@ public class PopStateHandler {
         // from server
         registry.getRequestResponseTracker()
                 .addResponseHandlingEndedHandler(event ->
-        // history.pushState(...) instruction from server side
-        // is invoked within a setTimeout(), so we need to defer
-        // the retrieval of window.location properties on next
-        // event loop cycle, otherwise we get values before
-        // they change (#14323)
-        Scheduler.get().scheduleDeferred(() -> {
-            pathAfterPreviousResponse = Browser.getWindow().getLocation()
-                    .getPathname();
-            queryAfterPreviousResponse = Browser.getWindow().getLocation()
-                    .getSearch();
-        }));
+                // history.pushState(...) instruction from server side
+                // is invoked within a setTimeout(), so we need to defer
+                // the retrieval of window.location properties on next
+                // event loop cycle, otherwise we get values before
+                // they change (#14323)
+                Scheduler.get().scheduleDeferred(() -> {
+                    pathAfterPreviousResponse = Browser.getWindow()
+                            .getLocation().getPathname();
+                    queryAfterPreviousResponse = Browser.getWindow()
+                            .getLocation().getSearch();
+                }));
         Browser.getWindow().addEventListener("popstate", this::onPopStateEvent);
     }
 
@@ -89,7 +89,8 @@ public class PopStateHandler {
         final String path = Browser.getWindow().getLocation().getPathname();
         final String query = Browser.getWindow().getLocation().getSearch();
 
-        assert pathAfterPreviousResponse != null : "Initial response has not ended before pop state event was triggered";
+        assert pathAfterPreviousResponse != null
+                : "Initial response has not ended before pop state event was triggered";
 
         // don't visit server on pop state events caused by fragment change
         boolean requiresServerSideRoundtrip = !(Objects.equals(path,

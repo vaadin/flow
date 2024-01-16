@@ -50,7 +50,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *
      * @param finder
      *            The class finder to use
-     * 
+     *
      * @param annotationName
      *            The annotation class name to visit
      */

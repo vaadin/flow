@@ -77,7 +77,7 @@ public abstract class NodeFeature {
      * Convert the feature values into a {@link JsonValue} using provided
      * {@code converter} for the values stored in the feature (i.e. primitive
      * types, StateNodes).
-     * 
+     *
      * @param converter
      *            converter to convert values stored in the feature
      * @return resulting converted value

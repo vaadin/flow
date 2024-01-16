@@ -179,7 +179,8 @@ public class ScannerThemeTest {
     @Test
     public void should_takeThemeFromLayout_ifLayoutAlreadyVisited()
             throws Exception {
-        // Make sure that all entry-points sharing layouts are correctly theming-configured
+        // Make sure that all entry-points sharing layouts are correctly
+        // theming-configured
         FrontendDependencies deps = getFrontendDependencies(
                 RootViewWithLayoutTheme.class, RootView2WithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());

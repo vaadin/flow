@@ -358,8 +358,8 @@ public class FrontendDataProvider {
         try {
             FileUtils.forceMkdir(outputDir);
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to create output " +
-                    "directory for generated web components!", e);
+            throw new IllegalStateException("Unable to create output "
+                    + "directory for generated web components!", e);
         }
 
         WebComponentModulesGenerator generator = getWebComponentGenerator(

@@ -27,24 +27,29 @@ import org.junit.Test;
 public class UrlValidationIT extends ChromeBrowserTest {
 
     @Test
-    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden() throws IOException {
+    public void devModeUriValidation_uriWithDirectoryChange_statusForbidden()
+            throws IOException {
         sendRequestAndValidateResponseStatusForbidden(
                 "/VAADIN/build/%252E%252E/vaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden() throws IOException {
+    public void staticResourceUriValidation_uriWithDirectoryChange_statusForbidden()
+            throws IOException {
         sendRequestAndValidateResponseStatusForbidden(
                 "/VAADIN/build/%252E%252E/some-resource.css");
     }
 
-    private void sendRequestAndValidateResponseStatusForbidden(String pathToResource) throws IOException {
+    private void sendRequestAndValidateResponseStatusForbidden(
+            String pathToResource) throws IOException {
         final String urlString = getRootURL() + "/view" + pathToResource;
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         int responseCode = connection.getResponseCode();
-        Assert.assertEquals("HTTP 403 Forbidden expected for urls with " +
-                "directory change", HttpURLConnection.HTTP_FORBIDDEN, responseCode);
+        Assert.assertEquals(
+                "HTTP 403 Forbidden expected for urls with "
+                        + "directory change",
+                HttpURLConnection.HTTP_FORBIDDEN, responseCode);
     }
 }

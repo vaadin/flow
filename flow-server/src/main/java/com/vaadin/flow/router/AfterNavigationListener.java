@@ -26,8 +26,9 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
  * attached to the {@link com.vaadin.flow.component.UI} and all navigation tasks
  * have resolved.
  *
- * All AfterNavigationListeners will be executed before the AfterNavigationObservers.
- * To control the order of execution of AfterNavigationListeners, see {@link ListenerPriority}
+ * All AfterNavigationListeners will be executed before the
+ * AfterNavigationObservers. To control the order of execution of
+ * AfterNavigationListeners, see {@link ListenerPriority}
  *
  * @since 1.0
  */

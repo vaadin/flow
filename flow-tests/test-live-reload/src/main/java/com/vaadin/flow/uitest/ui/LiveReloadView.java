@@ -49,19 +49,21 @@ public class LiveReloadView extends Div {
     private static final Random random = new Random();
     Integer instanceIdentifier = random.nextInt();
 
-
     public LiveReloadView() {
         Span label = new Span(Integer.toString(instanceIdentifier));
         label.setId(INSTANCE_IDENTIFIER);
         add(label);
 
-        NativeButton javaReloadButton = new NativeButton("Trigger Java live reload");
+        NativeButton javaReloadButton = new NativeButton(
+                "Trigger Java live reload");
         javaReloadButton.addClickListener(this::handleClickJavaLiveReload);
         javaReloadButton.setId(JAVA_LIVE_RELOAD_TRIGGER_BUTTON);
         add(javaReloadButton);
 
-        NativeButton webpackReloadButton = new NativeButton("Trigger Webpack live reload");
-        webpackReloadButton.addClickListener(this::handleClickWebpackLiveReload);
+        NativeButton webpackReloadButton = new NativeButton(
+                "Trigger Webpack live reload");
+        webpackReloadButton
+                .addClickListener(this::handleClickWebpackLiveReload);
         webpackReloadButton.setId(WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON);
         add(webpackReloadButton);
     }
@@ -84,21 +86,22 @@ public class LiveReloadView extends Div {
         String projectFrontendDir = configuration.getStringProperty(
                 FrontendUtils.PARAM_FRONTEND_DIR,
                 FrontendUtils.DEFAULT_FRONTEND_DIR);
-        File styleFile = new File(projectFrontendDir,"styles.css");
+        File styleFile = new File(projectFrontendDir, "styles.css");
         try {
             BufferedWriter out = null;
             try {
                 FileWriter fstream = new FileWriter(styleFile, true);
                 out = new BufferedWriter(fstream);
-                out.write(String.format("\nbody { background-color: rgb(%d,%d,%d); }",
-                        random.nextInt(256), random.nextInt(256), random.nextInt(256)));
+                out.write(String.format(
+                        "\nbody { background-color: rgb(%d,%d,%d); }",
+                        random.nextInt(256), random.nextInt(256),
+                        random.nextInt(256)));
             } finally {
                 if (out != null) {
                     out.close();
                 }
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }

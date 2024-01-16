@@ -41,7 +41,7 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
      * Creates a new map for the given node.
      *
      * @param node
-     *         the node that the map belongs to
+     *            the node that the map belongs to
      */
     public LoadingIndicatorConfigurationMap(StateNode node) {
         super(node);

@@ -276,7 +276,7 @@ public class ConfiguredRoutes implements Serializable {
 
     /**
      * Make a copy of the target and route models mapping.
-     * 
+     *
      * @return a copy of the target and route models mapping.
      */
     protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels(
@@ -425,7 +425,7 @@ public class ConfiguredRoutes implements Serializable {
 
     /**
      * Gets the parameters defined by the given template.
-     * 
+     *
      * @param template
      *            template to get parameters from.
      * @return map parameter names with

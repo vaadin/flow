@@ -19,10 +19,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 
-@PWA(name = ParentLayout.PWA_NAME,
-        shortName = ParentLayout.PWA_SHORT_NAME,
-        themeColor = ParentLayout.THEME_COLOR,
-        backgroundColor = ParentLayout.BG_COLOR)
+@PWA(name = ParentLayout.PWA_NAME, shortName = ParentLayout.PWA_SHORT_NAME, themeColor = ParentLayout.THEME_COLOR, backgroundColor = ParentLayout.BG_COLOR)
 public class ParentLayout extends Div implements RouterLayout {
     static final String THEME_COLOR = "#1f1f1f";
     static final String BG_COLOR = "#ffffff";
