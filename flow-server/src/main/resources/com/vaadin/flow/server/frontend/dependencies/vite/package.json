@@ -15,6 +15,7 @@
     "@vitejs/plugin-react-swc": "3.5.0",
     "@rollup/plugin-replace": "5.0.5",
     "@rollup/pluginutils": "5.1.0",
+    "@babel/preset-react": "^7",
     "rollup-plugin-visualizer": "5.11.0",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.6.2",
