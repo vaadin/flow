@@ -184,15 +184,17 @@ class SpringSecurityAutoConfigurationTest {
     private <T> void assertObjectIsSerializable(T instance) {
         Object deserialized = Assertions.assertDoesNotThrow(() -> {
             ByteArrayOutputStream bs = new ByteArrayOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(bs);
-            out.writeObject(instance);
+            try (ObjectOutputStream out = new ObjectOutputStream(bs)) {
+                out.writeObject(instance);
+            }
             byte[] data = bs.toByteArray();
-            ObjectInputStream in = new ObjectInputStream(
-                    new ByteArrayInputStream(data));
+            try (ObjectInputStream in = new ObjectInputStream(
+                    new ByteArrayInputStream(data))) {
 
-            @SuppressWarnings("unchecked")
-            T readObject = (T) in.readObject();
-            return readObject;
+                @SuppressWarnings("unchecked")
+                T readObject = (T) in.readObject();
+                return readObject;
+            }
         });
         Assertions.assertNotNull(deserialized, "Deserialized object is null");
     }
