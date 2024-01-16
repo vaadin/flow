@@ -141,7 +141,8 @@ function vaadinRouterGlobalClickHandler(event) {
 // We can't initiate useNavigate() from outside React component, so we store it here for use in the navigateEvent.
 let navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
 let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>> | undefined = undefined;
-let lastNavigation: String;
+let lastNavigation: string;
+let prevNavigation: string;
 let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
 
 // @ts-ignore
@@ -151,6 +152,7 @@ function navigateEventHandler(event) {
     }
     // @ts-ignore
     let matched = matchRoutes(routes, event.detail.pathname);
+    prevNavigation = lastNavigation;
 
     // if navigation event route targets a flow view do beforeEnter for the
     // target path. Server will then handle updates and postpone as needed.
@@ -163,6 +165,8 @@ function navigateEventHandler(event) {
                 },
                 {
                     prevent() {
+                        window.history.pushState(window.history.state, '', prevNavigation);
+                        window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
                     },
                     // @ts-ignore
                     redirect: (path) => {
