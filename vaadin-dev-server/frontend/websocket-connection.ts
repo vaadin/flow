@@ -7,16 +7,23 @@ export class WebSocketConnection extends Connection {
 
   socket?: any;
 
+  url?: string
+
   constructor(url: string) {
     super();
     if (!url) {
       return;
     }
 
+    this.url = url;
+    this.createSocket();
+  }
+
+  createSocket() {
     const config = {
       transport: 'websocket',
       fallbackTransport: 'websocket',
-      url,
+      url: this.url,
       contentType: 'application/json; charset=UTF-8',
       reconnectInterval: 5000,
       timeout: -1,
@@ -33,19 +40,21 @@ export class WebSocketConnection extends Connection {
       onError: (response: any) => {
         this.handleError(response);
       }
-    };
-
+    }
     waitForPush().then((atmosphere) => {
       this.socket = atmosphere.subscribe(config);
     });
   }
-
   onReload() {
     // Intentionally empty
   }
 
   onUpdate(_path: string, _content: string) {
     // Intentionally empty
+  }
+
+  reconnectionUrl(token: string): string {
+    return this.url!;
   }
 
   onMessage(_message: any) {}
@@ -59,7 +68,11 @@ export class WebSocketConnection extends Connection {
       this.handleError(`[${e.name}: ${e.message}`);
       return;
     }
-    if (json.command === 'hello') {
+    if (json.command === 'reconnect') {
+      this.socket.close()
+      this.url = this.reconnectionUrl(json.token);
+      this.createSocket();
+    } else if (json.command === 'hello') {
       this.setStatus(ConnectionStatus.ACTIVE);
       this.onHandshake();
     } else if (json.command === 'reload') {

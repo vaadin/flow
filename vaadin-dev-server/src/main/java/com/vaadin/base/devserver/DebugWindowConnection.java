@@ -45,7 +45,7 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
-import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
+import com.vaadin.flow.server.communication.DevToolsToken;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -197,9 +197,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onConnect(AtmosphereResource resource) {
-        if (IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN
-                .equals(resource.getRequest().getParameter("token"))) {
+        DevToolsToken.TokenValidation validation = DevToolsToken
+                .validateToken(resource.getRequest().getParameter("token"));
+        if (validation == DevToolsToken.TokenValidation.OK) {
             handleConnect(resource);
+        } else if (validation == DevToolsToken.TokenValidation.EXPIRED) {
+            forceReconnection(resource);
         } else {
             getLogger().warn(
                     "Connection denied because of a missing or invalid token. The host is probably not on the allow list");
@@ -232,6 +235,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
             send(resource, ThemeEditorCommand.STATE,
                     themeEditorMessageHandler.getState());
         }
+    }
+
+    private void forceReconnection(AtmosphereResource resource) {
+        resource.suspend(-1);
+        resource.getBroadcaster()
+                .broadcast("{\"command\": \"reconnect\", \"token\": \""
+                        + DevToolsToken.token() + "\"}", resource);
     }
 
     private void send(AtmosphereResource resource, String command,

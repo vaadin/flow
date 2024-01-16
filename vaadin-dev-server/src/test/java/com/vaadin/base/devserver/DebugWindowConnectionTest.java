@@ -19,23 +19,25 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.communication.DevToolsToken;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 
 public class DebugWindowConnectionTest {
@@ -46,8 +48,7 @@ public class DebugWindowConnectionTest {
     @Test
     public void onConnect_suspend_sayHello() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource,
-                IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
+        createMockRequestWithToken(resource, DevToolsToken.token());
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
@@ -63,8 +64,7 @@ public class DebugWindowConnectionTest {
     @Test
     public void onconnect_should_allow_connection_if_valid_token_is_present() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource,
-                IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
+        createMockRequestWithToken(resource, DevToolsToken.token());
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
@@ -120,14 +120,42 @@ public class DebugWindowConnectionTest {
     }
 
     @Test
+    public void onconnect_should_request_reconnection_if_invalid_token_is_expired() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        try (MockedStatic<DevToolsToken> devToolsToken = Mockito
+                .mockStatic(DevToolsToken.class)) {
+            devToolsToken.when(DevToolsToken::token).thenReturn("oldToken",
+                    "newToken");
+            devToolsToken.when(() -> DevToolsToken.validateToken(anyString()))
+                    .thenReturn(DevToolsToken.TokenValidation.INVALID);
+            devToolsToken.when(() -> DevToolsToken.validateToken("oldToken"))
+                    .thenReturn(DevToolsToken.TokenValidation.EXPIRED);
+            devToolsToken.when(() -> DevToolsToken.validateToken("newToken"))
+                    .thenReturn(DevToolsToken.TokenValidation.OK);
+
+            createMockRequestWithToken(resource, DevToolsToken.token());
+
+            Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+            Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+
+            reload.onConnect(resource);
+
+            Assert.assertFalse(reload.isLiveReload(resource));
+            Mockito.verify(resource).suspend(-1);
+            Mockito.verify(broadcaster).broadcast(
+                    "{\"command\": \"reconnect\", \"token\": \"newToken\"}",
+                    resource);
+        }
+
+    }
+
+    @Test
     public void reload_twoConnections_sendReloadCommand() {
         AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource1,
-                IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
+        createMockRequestWithToken(resource1, DevToolsToken.token());
 
         AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource2,
-                IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
+        createMockRequestWithToken(resource2, DevToolsToken.token());
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource1.getBroadcaster()).thenReturn(broadcaster);
@@ -189,8 +217,7 @@ public class DebugWindowConnectionTest {
     @Test
     public void reload_resourceIsDisconnected_reloadCommandIsNotSent() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource,
-                IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN);
+        createMockRequestWithToken(resource, DevToolsToken.token());
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
