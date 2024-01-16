@@ -4,6 +4,7 @@
     "application-theme-plugin",
     "theme-loader",
     "theme-live-reload-plugin",
-    "rollup-plugin-postcss-lit-custom"
+    "rollup-plugin-postcss-lit-custom",
+    "react-function-location-plugin"
   ]
 }
