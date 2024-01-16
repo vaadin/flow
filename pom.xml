@@ -99,8 +99,8 @@
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-        <maven.surefire.plugin.version>3.2.3</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>3.2.3</maven.failsafe.plugin.version>
+        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>3.2.5</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
@@ -250,7 +250,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.12.3</version>
+                <version>1.12.4</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -267,7 +267,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.8.0</version>
+                <version>5.9.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>

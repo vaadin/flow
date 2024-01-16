@@ -66,8 +66,12 @@ public class ProxyConfig {
      * @return Proxy if one found, else null.
      */
     public Proxy getProxyForUrl(String requestUrl) {
+        String docLink = "see https://vaadin.com/docs/latest/configuration/"
+                + "development-mode/node-js#proxy-settings-for-downloading-"
+                + "frontend-toolchain for information on proxy configuration.";
         if (proxies.isEmpty()) {
-            getLogger().info("No proxies configured");
+            getLogger().info("No proxies configured. "
+                    + "If you are behind a proxy server, " + docLink);
             return null;
         }
         final URI uri = URI.create(requestUrl);
@@ -76,7 +80,8 @@ public class ProxyConfig {
                 return proxy;
             }
         }
-        getLogger().info("Could not find matching proxy for host: {}",
+        getLogger().info(
+                "Could not find matching proxy for host: {}" + " - " + docLink,
                 uri.getHost());
         return null;
     }
