@@ -22,29 +22,33 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import org.slf4j.LoggerFactory;
 
 /**
  * Representation of the security token exchanged with the Dev Tools client to
  * validate websocket connections.
+ *
+ * The token is temporarily stored locally to prevent websocket connection to be
+ * refused after a server restart.
+ *
+ * For internal yse only.
  */
 public class DevToolsToken implements Serializable {
 
     /**
-     * Random token to ensure dev-tools websocket connections.
+     * Random token to verify dev-tools websocket connections.
      */
     private static String randomDevToolsToken = UUID.randomUUID().toString();
 
     /**
-     * Initialize the dev-tools token, by trying to getz
+     * Initialize the dev-tools token, potentially loading a value generated
+     * previously, before a server shutdown.
      *
      * @param vaadinService
      *            Vaadin service instance
      */
     static synchronized void init(VaadinService vaadinService) {
-        String token = randomDevToolsToken;
         File projectFolder = vaadinService.getDeploymentConfiguration()
                 .getProjectFolder();
         if (projectFolder != null) {
@@ -66,9 +70,8 @@ public class DevToolsToken implements Serializable {
                             e);
                 }
             } else {
-                randomDevToolsToken = UUID.randomUUID().toString();
                 try {
-                    Files.writeString(tokenFile.toPath(), token);
+                    Files.writeString(tokenFile.toPath(), randomDevToolsToken);
                 } catch (IOException e) {
                     LoggerFactory.getLogger(DevToolsToken.class).debug(
                             "Cannot write dev-tools token file. A new token will be generated on server restart.",
@@ -78,12 +81,10 @@ public class DevToolsToken implements Serializable {
         }
     }
 
-    private static final Pattern TOKEN_DELIMITER = Pattern.compile("_");
-
     /**
-     * Gets the signed token exchanged between Dev Tools client and server.
+     * Gets the token exchanged between Dev Tools client and the server.
      *
-     * @return signed token, never {@literal null}.
+     * @return dev-tools token, never {@literal null}.
      */
     public static String token() {
         return randomDevToolsToken;

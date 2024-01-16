@@ -234,13 +234,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
     }
 
-    private void forceReconnection(AtmosphereResource resource) {
-        resource.suspend(-1);
-        resource.getBroadcaster()
-                .broadcast("{\"command\": \"reconnect\", \"token\": \""
-                        + DevToolsToken.token() + "\"}", resource);
-    }
-
     private void send(AtmosphereResource resource, String command,
             Object data) {
         try {
