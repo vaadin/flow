@@ -19,6 +19,7 @@ package com.vaadin.flow.server.communication;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import java.io.Serializable;
 import java.util.HexFormat;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -33,7 +34,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Representation of the security token exchanged with the Dev Tools client to
  * validate websocket connections.
  */
-public class DevToolsToken {
+public class DevToolsToken implements Serializable {
 
     /**
      * Random token to ensure dev-tools websocket connections.
