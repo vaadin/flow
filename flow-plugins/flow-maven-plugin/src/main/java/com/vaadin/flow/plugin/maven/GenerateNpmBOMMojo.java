@@ -157,13 +157,10 @@ public class GenerateNpmBOMMojo extends AbstractMojo {
                 + (flattenComponents ? " --flatten-components" : "")
                 + (shortPURLs ? " --short-PURLs" : "")
                 + (outputReproducible ? " --output-reproducible" : "")
-                + (validate ? " --validate" : "")
-                + " --mc-type " + mcType
-                + " --omit " + omit
-                + " --spec-version " + specVersion
-                + " --output-file " + outputFilePath
-                + " --output-format " + outputFormat
-                + " -- " + packageManifest);
+                + (validate ? " --validate" : " --no-validate") + " --mc-type "
+                + mcType + " --omit " + omit + " --spec-version " + specVersion
+                + " --output-file " + outputFilePath + " --output-format "
+                + outputFormat + " -- " + packageManifest);
         return properties;
     }
 

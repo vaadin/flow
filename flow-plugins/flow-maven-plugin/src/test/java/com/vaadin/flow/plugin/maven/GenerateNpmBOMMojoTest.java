@@ -40,12 +40,16 @@ public class GenerateNpmBOMMojoTest {
 
         String manifestFilePath = "src/test/resources/package.json";
         // set Mojo properties
-        ReflectionUtils.setVariableValueInObject(mojo, "ignoreNpmErrors", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "packageLockOnly", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "ignoreNpmErrors",
+                false);
+        ReflectionUtils.setVariableValueInObject(mojo, "packageLockOnly",
+                false);
         ReflectionUtils.setVariableValueInObject(mojo, "omit", "dev");
-        ReflectionUtils.setVariableValueInObject(mojo, "flattenComponents", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "flattenComponents",
+                false);
         ReflectionUtils.setVariableValueInObject(mojo, "shortPURLs", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "outputReproducible", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "outputReproducible",
+                false);
         ReflectionUtils.setVariableValueInObject(mojo, "validate", true);
         ReflectionUtils.setVariableValueInObject(mojo, "mcType", "application");
         ReflectionUtils.setVariableValueInObject(mojo, "outputFormat", "json");
