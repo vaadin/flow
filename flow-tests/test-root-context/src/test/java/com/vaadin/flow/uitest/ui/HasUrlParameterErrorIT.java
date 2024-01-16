@@ -27,6 +27,7 @@ public class HasUrlParameterErrorIT extends ChromeBrowserTest {
     public void testNavigationTriggers() {
         open();
 
-        Assert.assertNotNull("Expected custom error handler to render", findElement(By.id("custom-exception")));
+        Assert.assertNotNull("Expected custom error handler to render",
+                findElement(By.id("custom-exception")));
     }
 }

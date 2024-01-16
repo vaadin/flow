@@ -22,7 +22,7 @@ import java.util.EventListener;
 /**
  * Listener for shortcut events.
  *
- * @author  Vaadin Ltd.
+ * @author Vaadin Ltd.
  * @since 1.3
  */
 @FunctionalInterface
@@ -31,7 +31,7 @@ public interface ShortcutEventListener extends EventListener, Serializable {
      * Invoked when shortcut has been used.
      *
      * @param event
-     *          {@link ShortcutEvent} based on the registered shortcut
+     *            {@link ShortcutEvent} based on the registered shortcut
      */
     void onShortcut(ShortcutEvent event);
 }

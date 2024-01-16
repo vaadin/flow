@@ -99,8 +99,8 @@ public class ReconnectDialogConfiguration {
     public String getDialogTextGaveUp() {
         return getProperty(
                 ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT);
+                .getValueOrDefault(
+                        ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT);
     }
 
     /**
@@ -112,8 +112,8 @@ public class ReconnectDialogConfiguration {
     public int getReconnectAttempts() {
         return getProperty(
                 ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT);
+                .getValueOrDefault(
+                        ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT);
     }
 
     /**
@@ -124,8 +124,8 @@ public class ReconnectDialogConfiguration {
     public int getReconnectInterval() {
         return getProperty(
                 ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
+                .getValueOrDefault(
+                        ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
     }
 
     /**
@@ -137,8 +137,8 @@ public class ReconnectDialogConfiguration {
     public int getDialogGracePeriod() {
         return getProperty(
                 ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT);
+                .getValueOrDefault(
+                        ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT);
     }
 
 }

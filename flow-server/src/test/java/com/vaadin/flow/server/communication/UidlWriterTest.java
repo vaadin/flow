@@ -207,10 +207,9 @@ public class UidlWriterTest {
         JsonArray json = UidlWriter
                 .encodeExecuteJavaScriptList(executeJavaScriptList);
 
-        JsonArray expectedJson = JsonUtils.createArray(
-                JsonUtils.createArray(
-                        // Null since element is not attached
-                        Json.createNull(), Json.create("$0.focus()")),
+        JsonArray expectedJson = JsonUtils.createArray(JsonUtils.createArray(
+                // Null since element is not attached
+                Json.createNull(), Json.create("$0.focus()")),
                 JsonUtils.createArray(Json.create("Lives remaining:"),
                         Json.create(3), Json.create("console.log($0, $1)")));
 

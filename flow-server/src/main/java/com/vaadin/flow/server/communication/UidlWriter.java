@@ -165,7 +165,8 @@ public class UidlWriter implements Serializable {
         getLogger().debug("* Creating response to client");
 
         int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
-                ? uiInternals.getServerSyncId() : -1;
+                ? uiInternals.getServerSyncId()
+                : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
         if (resync) {
@@ -292,12 +293,10 @@ public class UidlWriter implements Serializable {
 
         if (stream == null) {
             String resolvedPath = service.resolveResource(url, browser);
-            getLogger().warn(
-                    "The path '{}' for inline resource "
-                            + "has been resolved to '{}'. "
-                            + "But resource is not available via the servlet context. "
-                            + "Trying to load '{}' as a URL",
-                    url, resolvedPath, url);
+            getLogger().warn("The path '{}' for inline resource "
+                    + "has been resolved to '{}'. "
+                    + "But resource is not available via the servlet context. "
+                    + "Trying to load '{}' as a URL", url, resolvedPath, url);
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (MalformedURLException exception) {

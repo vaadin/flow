@@ -67,23 +67,32 @@ public class HtmlComponentSmokeTest {
         testValues.put(NumberingType.class, NumberingType.LOWERCASE_ROMAN);
         testValues.put(int.class, 42);
         testValues.put(IFrame.ImportanceType.class, IFrame.ImportanceType.HIGH);
-        testValues.put(IFrame.SandboxType[].class, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS });
+        testValues.put(IFrame.SandboxType[].class,
+                new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS,
+                        IFrame.SandboxType.ALLOW_MODALS });
         testValues.put(Component.class, new Paragraph("Component"));
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
     static {
         specialTestValues.put(NativeDetails.class, new HashMap<>());
-        specialTestValues.computeIfPresent(NativeDetails.class, (key, nestedTestValueMap) -> {
-            nestedTestValueMap.put(boolean.class, true); // special case because setOpen defaults to false
-            return nestedTestValueMap;
-        });
+        specialTestValues.computeIfPresent(NativeDetails.class,
+                (key, nestedTestValueMap) -> {
+                    nestedTestValueMap.put(boolean.class, true); // special case
+                                                                 // because
+                                                                 // setOpen
+                                                                 // defaults to
+                                                                 // false
+                    return nestedTestValueMap;
+                });
     }
 
-    // For classes registered here testStringConstructor will be ignored. This test checks whether the content of the
-    // element is the constructor argument. However, for some HTMLComponents this test is not valid.
+    // For classes registered here testStringConstructor will be ignored. This
+    // test checks whether the content of the
+    // element is the constructor argument. However, for some HTMLComponents
+    // this test is not valid.
     //
-    // -  NativeDetails delegates it's string constructor to the nested <summary>
+    // - NativeDetails delegates it's string constructor to the nested <summary>
     private static final Set<Class<?>> ignoredStringConstructors = new HashSet<>();
     static {
         ignoredStringConstructors.add(IFrame.class);
@@ -210,9 +219,10 @@ public class HtmlComponentSmokeTest {
             return true;
         }
 
-        // -  NativeDetails delegates it's setSummaryText to the nested <summary>
+        // - NativeDetails delegates it's setSummaryText to the nested <summary>
         // NativeDetails::setSummaryText(String summary)
-        // -  NativeDetails allows to setSummary(Component..) but it returns Summary getSummary instead of Component[]
+        // - NativeDetails allows to setSummary(Component..) but it returns
+        // Summary getSummary instead of Component[]
         // NativeDetails::setSummary(Component... components)
         if (method.getDeclaringClass() == NativeDetails.class
                 && method.getName().startsWith("setSummary")) {
@@ -239,9 +249,11 @@ public class HtmlComponentSmokeTest {
         Assert.assertEquals(setter + " should have the same type as its getter",
                 propertyType, getterType);
 
-        Map<Class<?>, Object> specialValueMap = specialTestValues.get(instance.getClass());
+        Map<Class<?>, Object> specialValueMap = specialTestValues
+                .get(instance.getClass());
         Object testValue;
-        if (specialValueMap != null && specialValueMap.containsKey(propertyType)) {
+        if (specialValueMap != null
+                && specialValueMap.containsKey(propertyType)) {
             testValue = specialValueMap.get(propertyType);
         } else {
             testValue = testValues.get(propertyType);

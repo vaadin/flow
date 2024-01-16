@@ -390,7 +390,8 @@ public class FullDependenciesScannerTest {
                 .thenReturn(getAnnotatedClasses(annotationType));
 
         return new FullDependenciesScanner(finder,
-                (type, annotation) -> findAnnotations(type, annotationType), false);
+                (type, annotation) -> findAnnotations(type, annotationType),
+                false);
     }
 
     private FullDependenciesScanner setUpThemeScanner(

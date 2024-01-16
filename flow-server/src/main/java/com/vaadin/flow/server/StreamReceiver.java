@@ -40,9 +40,9 @@ public class StreamReceiver extends AbstractStreamResource {
      * Creates {@link StreamReceiver} instance for {@code streamVariable} as a
      * data receiver.
      * <p>
-     * {@code resourceName} parameter value will be used in URI (generated when resource
-     * is registered) in a way that the {@code resourceName} is the last segment of the
-     * path. So this is synthetic file name (not real one).
+     * {@code resourceName} parameter value will be used in URI (generated when
+     * resource is registered) in a way that the {@code resourceName} is the
+     * last segment of the path. So this is synthetic file name (not real one).
      *
      * @param node
      *            receiver node
@@ -64,7 +64,7 @@ public class StreamReceiver extends AbstractStreamResource {
 
     /**
      * Get the node that this stream receiver is linked to.
-     * 
+     *
      * @return bound node
      */
     public StateNode getNode() {
@@ -73,7 +73,7 @@ public class StreamReceiver extends AbstractStreamResource {
 
     /**
      * Get the {@link StreamVariable} for this stream receiver.
-     * 
+     *
      * @return stream variable for this receiver
      */
     public StreamVariable getStreamVariable() {

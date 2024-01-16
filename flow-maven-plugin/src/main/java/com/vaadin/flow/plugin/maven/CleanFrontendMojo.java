@@ -92,14 +92,14 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
         }
 
         // clean up generated files from frontend
-        File generatedFrontendFolder = frontendDirectory.toPath().resolve("generated").toFile();
+        File generatedFrontendFolder = frontendDirectory.toPath()
+                .resolve("generated").toFile();
         if (generatedFrontendFolder.exists()) {
             try {
                 FileUtils.deleteDirectory(generatedFrontendFolder);
             } catch (IOException exception) {
-                throw new MojoFailureException(
-                        "Failed to remove folder'"
-                                + generatedFrontendFolder.getAbsolutePath() + "'",
+                throw new MojoFailureException("Failed to remove folder'"
+                        + generatedFrontendFolder.getAbsolutePath() + "'",
                         exception);
             }
         }
@@ -202,8 +202,8 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
         }
         String buildFolder = projectBuildDir;
         if (projectBuildDir.startsWith(projectBasedir.toString())) {
-            buildFolder = projectBasedir.toPath().relativize(Paths.get(projectBuildDir))
-                    .toString();
+            buildFolder = projectBasedir.toPath()
+                    .relativize(Paths.get(projectBuildDir)).toString();
         }
         String buildTargetFolder = "./" + buildFolder;
 

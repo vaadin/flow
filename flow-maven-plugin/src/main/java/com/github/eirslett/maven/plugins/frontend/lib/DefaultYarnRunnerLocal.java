@@ -31,7 +31,7 @@ public class DefaultYarnRunnerLocal {
 
     /**
      * Creates a DefaultYarnRunner with an specific configuration.
-     * 
+     *
      * @param config
      *            yarn configuration
      * @param proxyConfig

@@ -100,13 +100,13 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
      * Copy ZipEntry file contents to target path.
      *
      * @param zipFile
-     *         zip file
+     *            zip file
      * @param entry
-     *         zip entry
+     *            zip entry
      * @param destinationFile
-     *         destination
+     *            destination
      * @throws IOException
-     *         thrown if copying fails
+     *             thrown if copying fails
      */
     private void copyZipFileContents(ZipFile zipFile, ZipEntry entry,
             File destinationFile) throws IOException {
@@ -121,7 +121,8 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
 
     private void extractGzipTarArchive(File archive, File destinationDirectory)
             throws IOException {
-        // TarArchiveInputStream can be constructed with a normal FileInputStream if
+        // TarArchiveInputStream can be constructed with a normal
+        // FileInputStream if
         // we ever need to extract regular '.tar' files.
 
         try (FileInputStream fis = new FileInputStream(archive);
@@ -152,17 +153,17 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
     }
 
     /**
-     * Copy TarArchiveEntry file contents to target path.
-     * Set file to executable if marked so in the entry.
+     * Copy TarArchiveEntry file contents to target path. Set file to executable
+     * if marked so in the entry.
      *
      * @param tarIn
-     *         tar archive input stream
+     *            tar archive input stream
      * @param tarEntry
-     *         tar archive entry
+     *            tar archive entry
      * @param destinationFile
-     *         destination
+     *            destination
      * @throws IOException
-     *         thrown if copying fails
+     *             thrown if copying fails
      */
     private void copyTarFileContents(TarArchiveInputStream tarIn,
             TarArchiveEntry tarEntry, File destinationFile) throws IOException {
@@ -196,13 +197,12 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
 
     /**
      * Do multiple file system checks that should enable the extractor to work
-     * on any file system
-     * whether or not it's case sensitive or not.
+     * on any file system whether or not it's case sensitive or not.
      *
      * @param destPath
-     *         destination path
+     *            destination path
      * @param destDir
-     *         destination directory
+     *            destination directory
      * @return true is destination path starts with destination directory
      */
     private boolean startsWithPath(String destPath, String destDir) {

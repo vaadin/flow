@@ -87,8 +87,7 @@ public class FrontendToolsManager {
             String es5OutputDirectoryName, String es6OutputDirectoryName,
             FrontendDataProvider frontendDataProvider,
             RunnerManager runnerManager) {
-        FlowFileUtils
-                .forceMkdir(Objects.requireNonNull(workingDirectory));
+        FlowFileUtils.forceMkdir(Objects.requireNonNull(workingDirectory));
         this.runnerManager = Objects.requireNonNull(runnerManager);
         this.workingDirectory = workingDirectory;
         this.es5OutputDirectoryName = Objects
@@ -101,7 +100,7 @@ public class FrontendToolsManager {
 
     /**
      * Installs tools required for transpilation.
-     * 
+     *
      * Tools installed are specified in the {@literal package.json} file in the
      * plugin project's resources directory. Additionally, copies numerous files
      * required for transpilation into the working directory.

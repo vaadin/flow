@@ -24,7 +24,7 @@ import java.util.Objects;
 /**
  * Utility class which contains various methods for parsing a route url into
  * segments.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -76,14 +76,15 @@ public class PathUtil implements Serializable {
     public static String getPath(String basePath, List<String> segments) {
         basePath = trimPath(basePath);
 
-        return trimPath(basePath + ((segments == null || segments.isEmpty())
-                ? "" : ("/" + String.join("/", segments))));
+        return trimPath(
+                basePath + ((segments == null || segments.isEmpty()) ? ""
+                        : ("/" + String.join("/", segments))));
     }
 
     /**
      * Trim the path by removing any leading and trailing whitespaces and
      * slashes.
-     * 
+     *
      * @param path
      *            url path to trim.
      * @return a String representing the input path without any leading and

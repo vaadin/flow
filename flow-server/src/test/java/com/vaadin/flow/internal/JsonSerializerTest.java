@@ -633,7 +633,7 @@ public class JsonSerializerTest {
          * private List<String> listOfStrings; private Set<Integer>
          * setOfIntegers; private LinkedList<Boolean> linkedListOfBooleans;
          * private ArrayList<Double> arrayListOfDoubles;
-         * 
+         *
          */
 
         JsonValue json = JsonSerializer.toJson(bean);

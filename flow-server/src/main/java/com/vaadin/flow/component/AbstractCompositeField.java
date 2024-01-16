@@ -24,8 +24,8 @@ import com.vaadin.flow.shared.Registration;
 /**
  * An abstract field class that is backed by a composite component.
  * <p>
- * Note that composite fields do not automatically show client side
- * validation error messages or required indicators.
+ * Note that composite fields do not automatically show client side validation
+ * error messages or required indicators.
  * <p>
  * See the detailed documentation for {@link AbstractField} and
  * {@link Composite} for detailed information.

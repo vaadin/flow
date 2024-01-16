@@ -23,7 +23,7 @@ import com.vaadin.flow.dom.Element;
 /**
  * A component which the children components are ordered, so the index of each
  * child matters for the layout.
- * 
+ *
  * @param <T>
  *            the type of the component which implements the interface
  * @since 1.0
@@ -39,12 +39,12 @@ public interface HasOrderedComponents<T extends Component>
      * the container. If the both component are already in the container, their
      * positions are swapped. Component attach and detach events should be taken
      * care as with add and remove.
-     * 
+     *
      * @param oldComponent
      *            the old component that will be replaced. Can be
      *            <code>null</code>, which will make the newComponent to be
      *            added to the layout without replacing any other
-     * 
+     *
      * @param newComponent
      *            the new component to be replaced. Can be <code>null</code>,
      *            which will make the oldComponent to be removed from the layout
@@ -76,7 +76,7 @@ public interface HasOrderedComponents<T extends Component>
 
     /**
      * Returns the index of the given component.
-     * 
+     *
      * @param component
      *            the component to look up, can not be <code>null</code>
      * @return the index of the component or -1 if the component is not a child
@@ -100,7 +100,7 @@ public interface HasOrderedComponents<T extends Component>
 
     /**
      * Gets the number of children components.
-     * 
+     *
      * @return the number of components
      */
     default int getComponentCount() {
@@ -109,7 +109,7 @@ public interface HasOrderedComponents<T extends Component>
 
     /**
      * Returns the component at the given position.
-     * 
+     *
      * @param index
      *            the position of the component, must be greater than or equals
      *            to 0 and less than the number of children components

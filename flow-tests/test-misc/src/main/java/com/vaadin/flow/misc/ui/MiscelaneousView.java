@@ -33,7 +33,7 @@ import com.vaadin.flow.theme.Theme;
 @JsModule("./src/my-component-themed.js")
 @HtmlImport("frontend://src/my-component-themed.html")
 
-//`src/` in component above should be replaced by `theme/my-theme`
+// `src/` in component above should be replaced by `theme/my-theme`
 @Theme(MyTheme.class)
 @PWA(name = "Project Base for Vaadin", shortName = "Project Base")
 public class MiscelaneousView extends Div {
@@ -53,8 +53,9 @@ public class MiscelaneousView extends Div {
 
         @Override
         public List<String> getHeaderInlineContents() {
-            return Collections.singletonList("<custom-style>\n <style>\n   html {\n"
-                + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
+            return Collections
+                    .singletonList("<custom-style>\n <style>\n   html {\n"
+                            + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
         }
     }
 

@@ -74,8 +74,10 @@ public class DependencyIT extends ChromeBrowserTest {
 
         Assert.assertEquals(3, messages.size());
         assertTrue(messages.contains("HTML import 4 companion JS loaded"));
-        assertTrue(messages.contains("Messagehandler initialized in HTML import 1"));
-        assertTrue(messages.contains("Messagehandler initialized in HTML import 4"));
+        assertTrue(messages
+                .contains("Messagehandler initialized in HTML import 1"));
+        assertTrue(messages
+                .contains("Messagehandler initialized in HTML import 4"));
 
         // Inject html
         findElementById("loadHtml").click();

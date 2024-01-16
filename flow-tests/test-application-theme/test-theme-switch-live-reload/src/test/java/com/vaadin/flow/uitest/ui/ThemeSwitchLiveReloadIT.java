@@ -40,8 +40,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
 
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
-    private static final String ERROR_MESSAGE =
-            "Expected theme swap from '%s' to '%s' has not been done after '%d' attempts";
+    private static final String ERROR_MESSAGE = "Expected theme swap from '%s' to '%s' has not been done after '%d' attempts";
     private static final int TIMEOUT = 5;
     private static final int ATTEMPTS = 5;
 
@@ -60,8 +59,9 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     @Test
     public void switchThemeName_changeThemeNameAndRecompile_themeIsChangedOnFly() {
         open();
-        Assert.assertFalse(OTHER_THEME +
-                           " styles are not expected before switching the theme",
+        Assert.assertFalse(
+                OTHER_THEME
+                        + " styles are not expected before switching the theme",
                 isOtherThemeUsed());
 
         // Live reload upon theme name switching
@@ -70,12 +70,13 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilOtherTheme() {
-        waitUntilThemeSwap(String.format(ERROR_MESSAGE, APP_THEME, OTHER_THEME,
-                ATTEMPTS), this::isOtherThemeUsed);
+        waitUntilThemeSwap(
+                String.format(ERROR_MESSAGE, APP_THEME, OTHER_THEME, ATTEMPTS),
+                this::isOtherThemeUsed);
     }
 
     private void waitUntilThemeSwap(String errMessage,
-                                    SerializableSupplier<Boolean> themeStylesSupplier) {
+            SerializableSupplier<Boolean> themeStylesSupplier) {
         int attempts = 0;
         while (attempts < ATTEMPTS) {
             getDriver().navigate().refresh();
@@ -91,8 +92,9 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilAppTheme() {
-        waitUntilThemeSwap(String.format(ERROR_MESSAGE, OTHER_THEME, APP_THEME,
-                ATTEMPTS), () -> !isOtherThemeUsed());
+        waitUntilThemeSwap(
+                String.format(ERROR_MESSAGE, OTHER_THEME, APP_THEME, ATTEMPTS),
+                () -> !isOtherThemeUsed());
     }
 
     private boolean isOtherThemeUsed() {
@@ -106,13 +108,12 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
 
     private void switchThemeName(String oldThemeName, String newThemeName) {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        File sourcePath = Paths
-                .get(baseDir.getPath(), "src", "main", "java", ThemeSwitchLiveReloadView.class
-                        .getPackage().getName().replace(".", File.separator))
+        File sourcePath = Paths.get(baseDir.getPath(), "src", "main", "java",
+                ThemeSwitchLiveReloadView.class.getPackage().getName()
+                        .replace(".", File.separator))
                 .toFile();
-        File viewClassFile = Paths
-                .get(sourcePath.getPath(),
-                        ThemeSwitchLiveReloadView.class.getSimpleName().concat(".java"))
+        File viewClassFile = Paths.get(sourcePath.getPath(),
+                ThemeSwitchLiveReloadView.class.getSimpleName().concat(".java"))
                 .toFile();
         File outputPath = Paths.get(baseDir.getPath(), "target", "classes")
                 .toFile();
@@ -127,16 +128,18 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
             }
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Failed to change theme name in ThemeSwitchLiveReloadView class", e);
+                    "Failed to change theme name in ThemeSwitchLiveReloadView class",
+                    e);
         }
     }
 
     private void recompileViewClass(File viewClassFile, File sourcePath,
-                                    File outputPath) {
+            File outputPath) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         int result = compiler.run(null, null, null, "-d", outputPath.getPath(),
-                "-sourcepath", sourcePath.getPath(),
-                viewClassFile.getPath());
-        Assert.assertEquals("Failed to recompile ThemeSwitchLiveReloadView.java", 0, result);
+                "-sourcepath", sourcePath.getPath(), viewClassFile.getPath());
+        Assert.assertEquals(
+                "Failed to recompile ThemeSwitchLiveReloadView.java", 0,
+                result);
     }
 }

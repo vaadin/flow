@@ -24,7 +24,7 @@ import java.io.Serializable;
 /**
  * Handler for static files. The handler should be responsible in identifying
  * and serving the static files, based on the servlet request.
- * 
+ *
  * @author Vaadin Ltd.
  * @since 1.3
  *

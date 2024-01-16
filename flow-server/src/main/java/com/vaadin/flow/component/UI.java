@@ -914,9 +914,8 @@ public class UI extends Component
      *            parameters to pass to view.
      * @throws IllegalArgumentException
      *             if navigationTarget is a {@link HasUrlParameter} with a
-     *             mandatory parameter, but parameters argument doesn't
-     *             provide {@link HasUrlParameterFormat#PARAMETER_NAME}
-     *             parameter.
+     *             mandatory parameter, but parameters argument doesn't provide
+     *             {@link HasUrlParameterFormat#PARAMETER_NAME} parameter.
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
@@ -1097,7 +1096,7 @@ public class UI extends Component
      * {@link com.vaadin.flow.component.page.Page#setLocation(URI)}, typing a
      * URL into the address bar, or closing the browser), listeners are not
      * called.
-     * 
+     *
      * @param listener
      *            the before leave listener
      * @return handler to remove the event listener

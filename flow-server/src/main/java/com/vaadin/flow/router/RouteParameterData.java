@@ -29,7 +29,7 @@ public class RouteParameterData implements Serializable {
 
     /**
      * Creates a parameter data instance.
-     * 
+     *
      * @param template
      *            the parameter template.
      * @param regex
@@ -42,7 +42,7 @@ public class RouteParameterData implements Serializable {
 
     /**
      * Gets the parameter template string.
-     * 
+     *
      * @return the parameter template.
      */
     public String getTemplate() {
@@ -51,7 +51,7 @@ public class RouteParameterData implements Serializable {
 
     /**
      * Gets the regex of the parameter.
-     * 
+     *
      * @return the regex of the parameter.
      */
     public Optional<String> getRegex() {

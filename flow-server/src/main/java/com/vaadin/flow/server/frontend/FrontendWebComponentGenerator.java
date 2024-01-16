@@ -37,7 +37,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * {@link com.vaadin.flow.component.WebComponentExporter} or
  * {@link WebComponentExporterFactory} implementations found by
  * {@link ClassFinder}.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

@@ -283,10 +283,9 @@ public abstract class AbstractNavigationStateRenderer
             ErrorNavigationEvent errorEvent = (ErrorNavigationEvent) event;
             if (isRouterLinkNotFoundNavigationError(errorEvent)) {
                 // #8544
-                event.getState()
-                        .ifPresent(s -> ui.getPage().executeJs(
-                                "this.scrollPositionHandlerAfterServerNavigation($0);",
-                                s));
+                event.getState().ifPresent(s -> ui.getPage().executeJs(
+                        "this.scrollPositionHandlerAfterServerNavigation($0);",
+                        s));
             }
         } else if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             /*

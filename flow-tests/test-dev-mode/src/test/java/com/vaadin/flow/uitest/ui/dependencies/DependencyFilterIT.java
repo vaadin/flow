@@ -24,7 +24,7 @@ public class DependencyFilterIT extends ChromeBrowserTest {
 
         List<String> testMessages = findElements(
                 By.className("dependenciesTest")).stream()
-                        .map(WebElement::getText).collect(Collectors.toList());
+                .map(WebElement::getText).collect(Collectors.toList());
 
         assertThat(
                 "4 elements are expected to be added: 1 for filtered dependency, 2 for eager dependencies and 1 for UI 'onAttach' method",

@@ -61,20 +61,19 @@ public class RunnerManager {
             this.gulpRunner = new DefaultGulpRunnerLocal(
                     new NodeExecutorConfigLocal(localNodePath.get(), null,
                             builder.workingDirectory, builder.workingDirectory))
-                                    .getDefaultGulpRunner();
+                    .getDefaultGulpRunner();
             this.yarnRunner = getToolPath(builder.yarnPath,
                     builder.autodetectTools, "yarn")
-                            .map(localYarnPath -> new YarnConfigurationLocal(
-                                    localNodePath.get(), localYarnPath,
-                                    builder.workingDirectory))
-                            .map(config -> new DefaultYarnRunnerLocal(config,
-                                    builder.proxyConfig,
-                                    validateUrl(builder.npmRegistryUrl)))
-                            .map(DefaultYarnRunnerLocal::getDefaultYarnRunner)
-                            .orElseGet(() -> downloadYarn(
-                                    builder.workingDirectory,
-                                    builder.proxyConfig, builder.npmRegistryUrl,
-                                    builder.yarnVersion));
+                    .map(localYarnPath -> new YarnConfigurationLocal(
+                            localNodePath.get(), localYarnPath,
+                            builder.workingDirectory))
+                    .map(config -> new DefaultYarnRunnerLocal(config,
+                            builder.proxyConfig,
+                            validateUrl(builder.npmRegistryUrl)))
+                    .map(DefaultYarnRunnerLocal::getDefaultYarnRunner)
+                    .orElseGet(() -> downloadYarn(builder.workingDirectory,
+                            builder.proxyConfig, builder.npmRegistryUrl,
+                            builder.yarnVersion));
         } else {
             LOGGER.debug("Downloading the tools required into '{}' directory",
                     builder.workingDirectory);

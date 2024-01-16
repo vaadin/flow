@@ -23,12 +23,12 @@ import java.util.Locale;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
- * 
+ *
  * A template renderer for presenting {@code LocalDateTime} objects.
  *
  * @author Vaadin Ltd
  * @since 1.0.
- * 
+ *
  * @param <SOURCE>
  *            the type of the input item, from which the {@link LocalDateTime}
  *            is extracted
@@ -45,7 +45,7 @@ public class LocalDateTimeRenderer<SOURCE>
      * The renderer is configured to render with the format style
      * {@code FormatStyle.LONG} for the date and {@code FormatStyle.SHORT} for
      * time, with an empty string as its null representation.
-     * 
+     *
      * @param valueProvider
      *            the callback to provide a {@link LocalDateTime} to the
      *            renderer, not <code>null</code>

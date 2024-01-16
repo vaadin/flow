@@ -88,12 +88,12 @@ public class ElementListenerMap extends NodeMap {
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
-                        .map(entry -> Stream
-                                .concat(Stream.of(
+                        .map(entry -> Stream.concat(
+                                Stream.of(
                                         Json.create(entry.getKey().intValue())),
-                                        entry.getValue().stream()
-                                                .map(DebouncePhase::getIdentifier)
-                                                .map(Json::create))
+                                entry.getValue().stream()
+                                        .map(DebouncePhase::getIdentifier)
+                                        .map(Json::create))
                                 .collect(JsonUtils.asArray()))
                         .collect(JsonUtils.asArray());
             }

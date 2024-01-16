@@ -51,8 +51,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface ListenerPriority {
     /**
-     * The priority of the annotated listener, can be any integer. Larger numbers
-     * indicate higher priority.
+     * The priority of the annotated listener, can be any integer. Larger
+     * numbers indicate higher priority.
      *
      * @return the priority-value.
      */

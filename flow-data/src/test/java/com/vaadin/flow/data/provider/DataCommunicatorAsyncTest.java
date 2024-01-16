@@ -126,9 +126,9 @@ public class DataCommunicatorAsyncTest {
         dataCommunicator.enablePushUpdates(executor);
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
-    }    
+    }
 
-    @Test    
+    @Test
     public void asyncRequestedRangeHappensLater() {
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         latch = new CountDownLatch(1);

@@ -54,7 +54,7 @@ public class LitTemplateInitializer {
      *            a template to initialize
      * @param service
      *            the related service
-     * 
+     *
      * @see VaadinService
      * @see LitTemplateParserFactory
      * @see Instantiator
@@ -109,7 +109,7 @@ public class LitTemplateInitializer {
                         tag,
                         element -> new InjectableLitElementInitializer(element,
                                 templateClass)
-                                        .accept(parserData.getAttributes(id))));
+                                .accept(parserData.getAttributes(id))));
     }
 
 }

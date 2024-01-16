@@ -204,9 +204,8 @@ public class HierarchicalCommunicatorDataTest {
         fakeClientCommunication();
 
         Arrays.asList("ROOT", "FOLDER", "LEAF")
-                .forEach(key -> Assert.assertNotNull(
-                        "Expected key '" + key
-                                + "' to be generated when unique key provider used",
+                .forEach(key -> Assert.assertNotNull("Expected key '" + key
+                        + "' to be generated when unique key provider used",
                         communicator.getKeyMapper().get(key)));
     }
 
@@ -226,9 +225,8 @@ public class HierarchicalCommunicatorDataTest {
 
         // key mapper should generate keys 1,2,3
         IntStream.range(1, 4).mapToObj(String::valueOf)
-                .forEach(i -> Assert.assertNotNull(
-                        "Expected key '" + i
-                                + "' to be generated when unique key provider is not set",
+                .forEach(i -> Assert.assertNotNull("Expected key '" + i
+                        + "' to be generated when unique key provider is not set",
                         communicator.getKeyMapper().get(i)));
     }
 
@@ -313,9 +311,8 @@ public class HierarchicalCommunicatorDataTest {
                                 + " to be fetched, but was not",
                         communicator.getKeyMapper().get(treeItemId));
             } else {
-                Assert.assertNull(
-                        "Expecting item " + treeItemId
-                                + " not to be fetched because of max allowed items rule, but it was fetched",
+                Assert.assertNull("Expecting item " + treeItemId
+                        + " not to be fetched because of max allowed items rule, but it was fetched",
                         communicator.getKeyMapper().get(treeItemId));
             }
         });

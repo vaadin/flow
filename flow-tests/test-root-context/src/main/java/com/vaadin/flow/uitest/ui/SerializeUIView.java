@@ -35,11 +35,11 @@ public class SerializeUIView extends AbstractDivView {
             try {
                 byte[] serialize = SerializationUtils.serialize(ui);
 
-                String result = serialize.length > 0 ?
-                        "Successfully serialized ui" :
-                        "Serialization failed";
+                String result = serialize.length > 0
+                        ? "Successfully serialized ui"
+                        : "Serialization failed";
                 label.setText(result);
-            }catch(SerializationException se) {
+            } catch (SerializationException se) {
                 label.setText(se.getMessage());
             }
         });

@@ -31,7 +31,7 @@ import org.eclipse.jetty.webapp.WebInfConfiguration;
  * http://localhost:9998/ to serve all your demo views annotated with
  * <code>@Route</code> for development and integration testing. This class can
  * be extended for additional configuration.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -46,10 +46,10 @@ public class ComponentDemoServer {
     /**
      * Starts a web server to the port defined by {@link #getPort()}. It serves
      * the test UIs annotated with <code>@Route</code>.
-     * 
+     *
      * @throws Exception
      *             if any issue on server start occurs
-     * 
+     *
      * @return the server object
      */
     public Server startServer() throws Exception {
@@ -98,7 +98,7 @@ public class ComponentDemoServer {
 
     /**
      * Gets the port number to which this server will be connected.
-     * 
+     *
      * @return the port number to which this server will be connected.
      */
     protected int getPort() {

@@ -74,7 +74,7 @@ public class ElementData extends NodeMap {
 
     /**
      * Set the visibility of the element.
-     * 
+     *
      * @param visible
      *            is the element visible or hidden
      */
@@ -84,7 +84,7 @@ public class ElementData extends NodeMap {
 
     /**
      * Get element visibility.
-     * 
+     *
      * @return Element is visible by default
      */
     public boolean isVisible() {
@@ -93,7 +93,7 @@ public class ElementData extends NodeMap {
 
     /**
      * Gets the payload data of the element.
-     * 
+     *
      * @return the payload data of the element
      */
     public JsonValue getPayload() {

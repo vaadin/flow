@@ -96,6 +96,7 @@ public class OSGiVaadinServletTest {
             protected DeploymentConfiguration createDeploymentConfiguration() {
                 return Mockito.mock(DeploymentConfiguration.class);
             }
+
             @Override
             protected VaadinServletService createServletService(
                     DeploymentConfiguration deploymentConfiguration) {

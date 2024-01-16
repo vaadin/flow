@@ -459,16 +459,19 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void licenseChecker_newLicenseCheckerUsed_setStrictOfflineCalled() throws ServletException {
+    public void licenseChecker_newLicenseCheckerUsed_setStrictOfflineCalled()
+            throws ServletException {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
-        DeploymentConfiguration deploymentConfiguration =
-                Mockito.mock(DeploymentConfiguration.class);
+        DeploymentConfiguration deploymentConfiguration = Mockito
+                .mock(DeploymentConfiguration.class);
         Mockito.when(deploymentConfiguration.enableDevServer())
                 .thenReturn(true);
 
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito.mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
             try {
-                DevModeInitializer.initDevModeHandler(new HashSet<>(), servletContext, deploymentConfiguration);
+                DevModeInitializer.initDevModeHandler(new HashSet<>(),
+                        servletContext, deploymentConfiguration);
             } catch (NullPointerException e) {
                 // expected exception within dev server init
             }
@@ -478,23 +481,27 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void licenseChecker_oldLicenseCheckerUsed_setStrictOfflineNotCalled() throws ServletException {
+    public void licenseChecker_oldLicenseCheckerUsed_setStrictOfflineNotCalled()
+            throws ServletException {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
-        DeploymentConfiguration deploymentConfiguration =
-                Mockito.mock(DeploymentConfiguration.class);
+        DeploymentConfiguration deploymentConfiguration = Mockito
+                .mock(DeploymentConfiguration.class);
         Mockito.when(deploymentConfiguration.enableDevServer())
                 .thenReturn(true);
 
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito.mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
             Mockito.when(deploymentConfiguration.isOldLicenseCheckerEnabled())
                     .thenReturn(true);
             try {
-                DevModeInitializer.initDevModeHandler(new HashSet<>(), servletContext, deploymentConfiguration);
+                DevModeInitializer.initDevModeHandler(new HashSet<>(),
+                        servletContext, deploymentConfiguration);
             } catch (NullPointerException e) {
                 // expected exception within dev server init
             }
 
-            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true), times(0));
+            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true),
+                    times(0));
         }
     }
 

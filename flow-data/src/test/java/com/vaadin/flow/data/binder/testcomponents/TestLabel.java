@@ -24,7 +24,6 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 
-
 /* Test label so that we don't depend on the html components. */
 @Tag(Tag.LABEL)
 public class TestLabel extends HtmlContainer {

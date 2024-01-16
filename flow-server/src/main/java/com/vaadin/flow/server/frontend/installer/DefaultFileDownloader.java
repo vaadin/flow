@@ -63,7 +63,7 @@ public final class DefaultFileDownloader implements FileDownloader {
      * Construct file downloader with given proxy configuration.
      *
      * @param proxyConfig
-     *         proxy configuration to use for file download
+     *            proxy configuration to use for file download
      */
     public DefaultFileDownloader(ProxyConfig proxyConfig) {
         this.proxyConfig = proxyConfig;
@@ -106,7 +106,7 @@ public final class DefaultFileDownloader implements FileDownloader {
         }
         new File(
                 FilenameUtils.getFullPathNoEndSeparator(destination.toString()))
-                        .mkdirs();
+                .mkdirs();
 
         try (ReadableByteChannel rbc = Channels
                 .newChannel(response.getEntity().getContent());

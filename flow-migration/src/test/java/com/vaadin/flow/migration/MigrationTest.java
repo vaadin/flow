@@ -127,18 +127,22 @@ public class MigrationTest {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         final List<String> npm = tools.getNpmExecutable();
         // Expected execution calls:
-        // 1 - npm --no-update-notifier --no-audit --scripts-prepend-node-path=true install polymer-modulizer
+        // 1 - npm --no-update-notifier --no-audit
+        // --scripts-prepend-node-path=true install polymer-modulizer
         // 2 - node {tempFolder} i -F --confid.interactive=false -S
         // polymer#2.8.0
-        // 3 - npm --no-update-notifier --no-audit --scripts-prepend-node-path=true i
+        // 3 - npm --no-update-notifier --no-audit
+        // --scripts-prepend-node-path=true i
         // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
         // --out , --import-style=name
 
         // with .vadin path calls 1 and 3 will get node in the beginning.
-        if(npm.get(0).contains(".vaadin")) {
-            migratePassesHappyPath(Stream.of(7, 7, 6, 6).collect(Collectors.toCollection(LinkedList::new)));
+        if (npm.get(0).contains(".vaadin")) {
+            migratePassesHappyPath(Stream.of(7, 7, 6, 6)
+                    .collect(Collectors.toCollection(LinkedList::new)));
         } else {
-            migratePassesHappyPath(Stream.of(6, 7, 5, 6).collect(Collectors.toCollection(LinkedList::new)));
+            migratePassesHappyPath(Stream.of(6, 7, 5, 6)
+                    .collect(Collectors.toCollection(LinkedList::new)));
         }
     }
 
@@ -151,7 +155,8 @@ public class MigrationTest {
 
         File homeNodeDir = Paths
                 .get(FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                        "node").toFile();
+                        "node")
+                .toFile();
         File baseDir = new File(targetFolder.getAbsolutePath(), "foo");
         FrontendTools tools = new FrontendTools(baseDir.getAbsolutePath(),
                 () -> baseDir.getAbsolutePath());
@@ -161,13 +166,13 @@ public class MigrationTest {
 
             // Expected execution calls:
             // 1 - node node_modules/npm/bin/npx-cli.js --yes --quiet pnpm
-            //     --shamefully-hoist=true install polymer-modulizer
+            // --shamefully-hoist=true install polymer-modulizer
             // 2 - node {tempFolder} i -F --confid.interactive=false -S
-            //     polymer#2.8.0
+            // polymer#2.8.0
             // 3 - node node_modules/npm/bin/npx-cli.js --yes --quiet pnpm
-            //     --shamefully-hoist=true i
+            // --shamefully-hoist=true i
             // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
-            //     --out , --import-style=name
+            // --out , --import-style=name
             migratePassesHappyPath(Stream.of(8, 7, 7, 6)
                     .collect(Collectors.toCollection(LinkedList::new)));
         } else {
@@ -175,19 +180,18 @@ public class MigrationTest {
 
             // Expected execution calls:
             // 1 - npx --yes --quiet pnpm --shamefully-hoist=true install
-            //     polymer-modulizer
+            // polymer-modulizer
             // 2 - node {tempFolder} i -F --confid.interactive=false -S
-            //     polymer#2.8.0
+            // polymer#2.8.0
             // 3 - npx --yes --quiet pnpm --shamefully-hoist=true i
             // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
-            //     --out , --import-style=name
+            // --out , --import-style=name
             migratePassesHappyPath(Stream.of(7, 7, 6, 6)
                     .collect(Collectors.toCollection(LinkedList::new)));
         }
     }
 
-    private void migratePassesHappyPath(
-            LinkedList<Integer> executeExpectations)
+    private void migratePassesHappyPath(LinkedList<Integer> executeExpectations)
             throws MigrationFailureException, MigrationToolsException,
             IOException {
         File sourcesFolder = makeTempDirectoryStructure();

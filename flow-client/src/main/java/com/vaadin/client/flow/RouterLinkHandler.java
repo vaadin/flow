@@ -167,7 +167,8 @@ public class RouterLinkHandler {
     public static boolean isInsidePageNavigation(String path,
             boolean hasFragment) {
         String currentPath = Browser.getWindow().getLocation().getPathname();
-        assert currentPath != null : "window.location.path should never be null";
+        assert currentPath != null
+                : "window.location.path should never be null";
 
         if (!Objects.equals(currentPath, path)) {
             return false;

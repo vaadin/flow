@@ -23,12 +23,12 @@ public class ToggleNullListView extends AbstractDivView {
         ServerModelNullListTemplate template = new ServerModelNullListTemplate();
         NativeButton button = createButton("Toggle template", TOGGLE_BUTTON_ID,
                 event -> {
-            if (template.getParent().isPresent()) {
-                container.remove(template);
-            } else {
-                container.add(template);
-            }
-        });
+                    if (template.getParent().isPresent()) {
+                        container.remove(template);
+                    } else {
+                        container.add(template);
+                    }
+                });
         add(button, container);
     }
 

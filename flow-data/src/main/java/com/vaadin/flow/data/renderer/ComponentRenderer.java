@@ -165,10 +165,8 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
          * problem in this case since setupTemplateWhenAttached only sets
          * properties but doesn't execute any JS.
          */
-        container.getNode()
-                .runWhenAttached(ui -> setupTemplateWhenAttached(
-                        ui, container, rendering,
-                        keyMapper));
+        container.getNode().runWhenAttached(ui -> setupTemplateWhenAttached(ui,
+                container, rendering, keyMapper));
 
         return rendering;
     }
@@ -251,7 +249,7 @@ public class ComponentRenderer<COMPONENT extends Component, SOURCE>
      * but setting a update function via the
      * {@link #ComponentRenderer(SerializableFunction, SerializableBiFunction)}
      * can change the behavior.
-     * 
+     *
      * @param currentComponent
      *            the current component used to render the item, not
      *            <code>null</code>

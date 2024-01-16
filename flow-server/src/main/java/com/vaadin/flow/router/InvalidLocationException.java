@@ -17,7 +17,7 @@ package com.vaadin.flow.router;
 
 /**
  * Thrown to indicate that a {@link Location} instance is invalid.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -39,7 +39,7 @@ public class InvalidLocationException extends RuntimeException {
     /**
      * Constructs a new runtime exception with the specified detail message and
      * cause.
-     * 
+     *
      * @param message
      *            the detail message (which is saved for later retrieval by the
      *            {@link #getMessage()} method).

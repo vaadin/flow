@@ -32,7 +32,8 @@ public class MyThemeIT extends ChromeBrowserTest {
 
         TestBenchElement element = $("my-component").first();
 
-        Assert.assertNotNull("Couldn't find element.", element.$("*").id("component"));
+        Assert.assertNotNull("Couldn't find element.",
+                element.$("*").id("component"));
     }
 
     @Test

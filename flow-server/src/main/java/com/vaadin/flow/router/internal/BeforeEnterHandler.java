@@ -21,7 +21,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 
 /**
  * The base interface for every {@link BeforeEnterEvent} handler.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

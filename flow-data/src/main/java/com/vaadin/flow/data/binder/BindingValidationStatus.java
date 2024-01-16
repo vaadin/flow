@@ -87,7 +87,7 @@ public class BindingValidationStatus<TARGET> implements Serializable {
      *            the related result object, may be {@code null}
      * @param source
      *            field whose status has changed, not {@code null}
-     * 
+     *
      */
     public BindingValidationStatus(Result<TARGET> result,
             Binding<?, TARGET> source) {

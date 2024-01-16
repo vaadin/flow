@@ -29,7 +29,8 @@ public class ThemedComponentExporter
     }
 
     @Override
-    public void configureInstance(WebComponent<ThemedComponent> webComponent, ThemedComponent component) {
+    public void configureInstance(WebComponent<ThemedComponent> webComponent,
+            ThemedComponent component) {
 
     }
 }

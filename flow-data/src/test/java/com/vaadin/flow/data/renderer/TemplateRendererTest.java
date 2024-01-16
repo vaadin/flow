@@ -62,7 +62,7 @@ public class TemplateRendererTest {
             if (TemplateRenderer.hasClassOrStyleWithoutDollar(template)) {
                 Assert.fail(
                         "Missing dollar should not be detected for the string: "
-                        + template);
+                                + template);
             }
         }
     }

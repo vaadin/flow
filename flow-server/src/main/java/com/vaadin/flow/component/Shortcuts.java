@@ -22,8 +22,8 @@ import com.vaadin.flow.shared.Registration;
 /**
  * Collections of methods for configuring more complex Shortcut interactions.
  * <p>
- * Unlike the shortcut methods offered by {@link Focusable} and {@link
- * ClickNotifier}, these methods allow for configuring the {@code
+ * Unlike the shortcut methods offered by {@link Focusable} and
+ * {@link ClickNotifier}, these methods allow for configuring the {@code
  * lifecycleOwner} directly, making it possible to add the shortcut onto any
  * component. The {@code lifecycleOwner} denotes the component to which the
  * shortcut is bound to. If the lifecycle owner is not attached, visible, or
@@ -33,9 +33,9 @@ import com.vaadin.flow.shared.Registration;
  * @since 1.3
  *
  * @see Focusable#addFocusShortcut(Key, KeyModifier...) for adding a shortcut
- *         for focusing the component
+ *      for focusing the component
  * @see ClickNotifier#addClickShortcut(Key, KeyModifier...) for adding a
- *         shortcut which performs the click-action
+ *      shortcut which performs the click-action
  */
 public final class Shortcuts {
     static final String NULL = "Parameter '%s' must not be null!";
@@ -51,21 +51,22 @@ public final class Shortcuts {
      * lifecycleOwner} and the shortcut is available in the global scope.
      * <p>
      * By default, the shortcut's listener is bound to {@link UI}. The listening
-     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component...)}.
+     * component can be changed by calling
+     * {@link ShortcutRegistration#listenOn(Component...)}.
      *
      * @param lifecycleOwner
-     *         the component that controls, when the shortcut is active. If the
-     *         component is either invisible or detached, the shortcut won't
-     *         work. Cannot be {@code null}
+     *            the component that controls, when the shortcut is active. If
+     *            the component is either invisible or detached, the shortcut
+     *            won't work. Cannot be {@code null}
      * @param command
-     *         code to execute when the shortcut is invoked. Cannot be {@code
+     *            code to execute when the shortcut is invoked. Cannot be {@code
      *         null}
      * @param key
-     *         primary {@link Key} used to trigger the shortcut. Cannot be
-     *         {@code null}
+     *            primary {@link Key} used to trigger the shortcut. Cannot be
+     *            {@code null}
      * @param keyModifiers
-     *         {@link KeyModifier KeyModifiers} which also need to be pressed
-     *         for the shortcut to trigger
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
      * @return {@link ShortcutRegistration} for configuring and removing the
      *         shortcut
      */
@@ -94,21 +95,22 @@ public final class Shortcuts {
      * lifecycleOwner} and the shortcut is available in the global scope.
      * <p>
      * By default, the shortcut's listener is bound to {@link UI}. The listening
-     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component...)}.
+     * component can be changed by calling
+     * {@link ShortcutRegistration#listenOn(Component...)}.
      *
      * @param lifecycleOwner
-     *         the component that controls, when the shortcut is active. If the
-     *         component is either invisible or detached, the shortcut won't
-     *         work. Cannot be {@code null}
+     *            the component that controls, when the shortcut is active. If
+     *            the component is either invisible or detached, the shortcut
+     *            won't work. Cannot be {@code null}
      * @param listener
-     *         listener to execute when the shortcut is invoked. Receives a
-     *         {@link ShortcutEvent}. Cannot be {@code null}
+     *            listener to execute when the shortcut is invoked. Receives a
+     *            {@link ShortcutEvent}. Cannot be {@code null}
      * @param key
-     *         primary {@link Key} used to trigger the shortcut. Cannot be
-     *         {@code null}
+     *            primary {@link Key} used to trigger the shortcut. Cannot be
+     *            {@code null}
      * @param keyModifiers
-     *         {@link KeyModifier KeyModifiers} which also need to be pressed
-     *         for the shortcut to trigger
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
      * @return {@link ShortcutRegistration} for configuring and removing the
      *         shortcut
      */

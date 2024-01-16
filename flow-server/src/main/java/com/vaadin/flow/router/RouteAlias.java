@@ -36,8 +36,8 @@ import com.vaadin.flow.component.UI;
  * {@code @RouteAlias} route path is used only to resolve the component during
  * navigation.
  * <p>
- * The route template of the navigation target is composed of the values of
- * all {@link RoutePrefix} annotated on the {@link #layout()} and
+ * The route template of the navigation target is composed of the values of all
+ * {@link RoutePrefix} annotated on the {@link #layout()} and
  * {@link ParentLayout} class values, starting from the root parent and joined
  * together using slash delimiter to form a path form string.
  * <p>
@@ -72,13 +72,13 @@ public @interface RouteAlias {
      * <p>
      * When navigating between components that use the same layout, the same
      * component instance is reused. Default layout target is the {@link UI},
-     * but the layout should not be a custom {@code UI} as {@code UI} is a special
-     * class used to know where the route stack ends and no parent layouts should
-     * be involved.
+     * but the layout should not be a custom {@code UI} as {@code UI} is a
+     * special class used to know where the route stack ends and no parent
+     * layouts should be involved.
      *
      * <p>
-     * All layout stacks will be appended to the {@code UI} as it represents
-     * the Body element.
+     * All layout stacks will be appended to the {@code UI} as it represents the
+     * Body element.
      *
      * @return the layout component class used by the route target component.
      * @see RouterLayout

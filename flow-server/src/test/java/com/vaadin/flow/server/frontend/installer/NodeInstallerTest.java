@@ -91,9 +91,8 @@ public class NodeInstallerTest {
 
         NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
                 Collections.emptyList())
-                        .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                        .setNodeDownloadRoot(
-                                new File(baseDir).toPath().toUri());
+                .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .setNodeDownloadRoot(new File(baseDir).toPath().toUri());
 
         try {
             nodeInstaller.install();

@@ -473,8 +473,8 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Enables ci build.
          * <p>
-         * "npm ci" will be used instead of "npm install". "--frozen-lockfile" will
-         * be used if pnpm is used instead of npm.
+         * "npm ci" will be used instead of "npm install". "--frozen-lockfile"
+         * will be used if pnpm is used instead of npm.
          *
          * @param ciBuild
          *            true to enable ci build

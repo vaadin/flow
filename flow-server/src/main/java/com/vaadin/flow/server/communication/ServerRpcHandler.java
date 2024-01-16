@@ -288,8 +288,8 @@ public class ServerRpcHandler implements Serializable {
                  * situation is most likely triggered by a timeout or such
                  * causing a message to be resent.
                  */
-                getLogger()
-                        .info("Ignoring old duplicate message from the client. Expected: "
+                getLogger().info(
+                        "Ignoring old duplicate message from the client. Expected: "
                                 + expectedId + ", got: " + requestId);
             } else {
                 /*
@@ -436,9 +436,9 @@ public class ServerRpcHandler implements Serializable {
         }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
-            assert !handle.isPresent() : "RPC handler "
-                    + handler.getClass().getName()
-                    + " returned a Runnable even though it shouldn't";
+            assert !handle.isPresent()
+                    : "RPC handler " + handler.getClass().getName()
+                            + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
             ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
         }

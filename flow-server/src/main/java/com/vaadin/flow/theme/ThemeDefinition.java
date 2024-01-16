@@ -22,7 +22,7 @@ import com.vaadin.flow.component.UI;
 
 /**
  * Holds all the settings needed to properly set a Theme in the application.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  * @see Theme
@@ -37,7 +37,7 @@ public class ThemeDefinition implements Serializable {
 
     /**
      * Creates a definition with the given them class and variant.
-     * 
+     *
      * @param theme
      *            the theme class, not <code>null</code>
      * @param variant
@@ -60,7 +60,7 @@ public class ThemeDefinition implements Serializable {
     /**
      * Helper constructor that extracts the needed information from a Theme
      * annotation.
-     * 
+     *
      * @param themeAnnotation
      *            the annotation to get the definition from
      */
@@ -71,7 +71,7 @@ public class ThemeDefinition implements Serializable {
 
     /**
      * Gets the theme class.
-     * 
+     *
      * @return the theme class
      */
     public Class<? extends AbstractTheme> getTheme() {
@@ -80,7 +80,7 @@ public class ThemeDefinition implements Serializable {
 
     /**
      * Gets the variant of the theme.
-     * 
+     *
      * @return the variant
      */
     public String getVariant() {

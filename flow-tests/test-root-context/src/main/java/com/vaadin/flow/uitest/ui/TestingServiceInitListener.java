@@ -32,7 +32,8 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
     public static final String DYNAMICALLY_REGISTERED_ROUTE = "dynamically-registered-route";
     private static AtomicInteger initCount = new AtomicInteger();
     private static AtomicInteger requestCount = new AtomicInteger();
-    private static Set<UI> notNavigatedUis = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private static Set<UI> notNavigatedUis = Collections
+            .newSetFromMap(new ConcurrentHashMap<>());
 
     private boolean redirected;
 
@@ -41,11 +42,13 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
         event.getSource().addUIInitListener(this::handleUIInit);
         initCount.incrementAndGet();
 
-        RouteConfiguration configuration = RouteConfiguration.forApplicationScope();
+        RouteConfiguration configuration = RouteConfiguration
+                .forApplicationScope();
         // lock registry from any other updates to get registrations correctly.
         configuration.getHandledRegistry().update(() -> {
             if (!configuration.isPathRegistered(DYNAMICALLY_REGISTERED_ROUTE)) {
-                configuration.setRoute(DYNAMICALLY_REGISTERED_ROUTE, DynamicallyRegisteredRoute.class);
+                configuration.setRoute(DYNAMICALLY_REGISTERED_ROUTE,
+                        DynamicallyRegisteredRoute.class);
             }
         });
 
@@ -69,15 +72,17 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
 
     private void handleUIInit(UIInitEvent event) {
         notNavigatedUis.add(event.getUI());
-        event.getUI().addBeforeEnterListener((BeforeEnterListener & Serializable) e -> {
-            if (e.getNavigationTarget() != null) {
-                notNavigatedUis.remove(e.getUI());
-            }
-            if (!redirected && ServiceInitListenersView.class.equals(e.getNavigationTarget())) {
-                e.rerouteTo(e.getLocation().getPath(), 22);
-                redirected = true;
-            }
-        });
+        event.getUI().addBeforeEnterListener(
+                (BeforeEnterListener & Serializable) e -> {
+                    if (e.getNavigationTarget() != null) {
+                        notNavigatedUis.remove(e.getUI());
+                    }
+                    if (!redirected && ServiceInitListenersView.class
+                            .equals(e.getNavigationTarget())) {
+                        e.rerouteTo(e.getLocation().getPath(), 22);
+                        redirected = true;
+                    }
+                });
     }
 
 }

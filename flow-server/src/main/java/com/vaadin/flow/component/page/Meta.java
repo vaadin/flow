@@ -38,14 +38,14 @@ import java.lang.annotation.Target;
 public @interface Meta {
     /**
      * Gets the custom tag name.
-     * 
+     *
      * @return the custom tag name
      */
     String name();
 
     /**
      * Gets the custom tag content.
-     * 
+     *
      * @return the custom tag content
      */
     String content();

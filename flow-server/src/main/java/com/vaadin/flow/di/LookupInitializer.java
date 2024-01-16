@@ -44,7 +44,7 @@ import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Default implementation of {@link AbstractLookupInitializer}.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -61,7 +61,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
     /**
      * Default implementation of {@link Lookup}.
-     * 
+     *
      * @author Vaadin Ltd
      * @since
      *
@@ -73,7 +73,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
         /**
          * Creates a new instance of {@link Lookup} with services found in the
          * application classpath.
-         * 
+         *
          * @param initialServices
          *            map of initial services with their implementations
          * @param factory
@@ -143,7 +143,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
     /**
      * Default implementation of {@link ResourceProvider}.
-     * 
+     *
      * @author Vaadin Ltd
      * @since
      *
@@ -227,10 +227,10 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
     /**
      * Creates a lookup based on provided {@code services}.
-     * 
+     *
      * @param context
      *            a Vaadin context to create a lookup for
-     * 
+     *
      * @param services
      *            the service objects mapped to the service type to create a
      *            lookup
@@ -247,7 +247,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * <p>
      * The default {@code  serviceImpl} implementation will be set as the
      * service into {@code services} if there is no other services available.
-     * 
+     *
      * @param services
      *            map of internal services
      * @param serviceType
@@ -278,7 +278,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
     /**
      * Instantiates service {@code implementation} type with the given
      * {@code serviceClass} .
-     * 
+     *
      * @param <T>
      *            service type
      * @param serviceClass

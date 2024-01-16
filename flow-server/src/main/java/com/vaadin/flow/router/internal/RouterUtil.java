@@ -43,8 +43,9 @@ import com.vaadin.flow.router.RouterLayout;
 /**
  * Utility class with methods for router layout handling.
  *
- * @deprecated This is an internal class for Flow and should not be used outside.
- * This is deprecated since 1.3 and will be removed in later versions of Flow.
+ * @deprecated This is an internal class for Flow and should not be used
+ *             outside. This is deprecated since 1.3 and will be removed in
+ *             later versions of Flow.
  *
  * @since 1.0
  */
@@ -58,9 +59,11 @@ public final class RouterUtil extends RouteUtil {
      * Get parent layouts for navigation target according to the {@link Route}
      * or {@link RouteAlias} annotation.
      *
-     * @param component navigation target to get parents for
-     * @param path      path used to get navigation target so we know which annotation
-     *                  to handle
+     * @param component
+     *            navigation target to get parents for
+     * @param path
+     *            path used to get navigation target so we know which annotation
+     *            to handle
      * @return parent layouts for target
      */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
@@ -94,8 +97,10 @@ public final class RouterUtil extends RouteUtil {
      * Uses {@link HasDynamicTitle#getPageTitle()} if implemented, or else the
      * {@link PageTitle} annotation, to resolve the title.
      *
-     * @param navigationEvent the event object about the navigation
-     * @param routeTarget     the currently visible component
+     * @param navigationEvent
+     *            the event object about the navigation
+     * @param routeTarget
+     *            the currently visible component
      */
     public static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget) {
@@ -121,8 +126,10 @@ public final class RouterUtil extends RouteUtil {
      * Checks that the same component type is not used in multiple parts of a
      * route chain.
      *
-     * @param routeTargetType  the actual component in the route chain
-     * @param routeLayoutTypes the parent types in the route chain
+     * @param routeTargetType
+     *            the actual component in the route chain
+     * @param routeLayoutTypes
+     *            the parent types in the route chain
      */
     public static void checkForDuplicates(
             Class<? extends Component> routeTargetType,
@@ -140,8 +147,10 @@ public final class RouterUtil extends RouteUtil {
     /**
      * Create a new location change event for given navigation event and chain.
      *
-     * @param event            current navigation event
-     * @param routeTargetChain chain of route targets
+     * @param event
+     *            current navigation event
+     * @param routeTargetChain
+     *            chain of route targets
      * @return new LocationChangeEvent
      */
     public static LocationChangeEvent createEvent(NavigationEvent event,

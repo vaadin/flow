@@ -73,7 +73,7 @@ public interface HierarchicalArrayUpdater extends ArrayUpdater {
 
         /**
          * Enqueue function call with the given arguments.
-         * 
+         *
          * @see JsonCodec JsonCodec for supported argument types
          * @param name
          *            the name of the function to call, may contain dots to
@@ -87,7 +87,7 @@ public interface HierarchicalArrayUpdater extends ArrayUpdater {
 
         /**
          * Commits changes for the given {@code updateId} and parent key.
-         * 
+         *
          * @param updateId
          *            the update identifier of the commit for the target
          *            parentKey

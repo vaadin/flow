@@ -32,7 +32,7 @@ public class VaadinServletConfig implements VaadinConfig {
      * Vaadin servlet configuration wrapper constructor.
      *
      * @param config
-     *         servlet configuration object, not <code>null</code>
+     *            servlet configuration object, not <code>null</code>
      */
     public VaadinServletConfig(ServletConfig config) {
         Objects.requireNonNull(config,

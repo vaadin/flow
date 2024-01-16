@@ -82,8 +82,7 @@ public class DialogShortcutIT extends ChromeBrowserTest {
 
         pressShortcutKey(getDialogInput(REUSABLE_DIALOG_ID));
         // no shortcut in dialog -> ui still gets the shortcut
-        validateLatestShortcutEvent(0,
-                DialogShortcutView.UI_BUTTON);
+        validateLatestShortcutEvent(0, DialogShortcutView.UI_BUTTON);
 
         listenToShortcutOnDialog(REUSABLE_DIALOG_ID);
 

@@ -178,9 +178,9 @@ public final class WebComponentBinding<C extends Component>
      * @param propertyConfiguration
      *            property configuration, not {@code null}
      * @param overrideDefault
-     *            set to {@code true} if the property should be initialized
-     *            with {@code startingValue} instead of default value found
-     *            in {@link PropertyData}
+     *            set to {@code true} if the property should be initialized with
+     *            {@code startingValue} instead of default value found in
+     *            {@link PropertyData}
      * @param startingValue
      *            starting value for the property. Can be {@code null}.
      *            {@code overrideDefault} must be {@code true} for this value to
@@ -247,22 +247,19 @@ public final class WebComponentBinding<C extends Component>
         void updateValue(Serializable newValue) {
             if (isReadOnly()) {
                 LoggerFactory.getLogger(getClass())
-                        .warn(String.format(
-                                "An attempt was made to write to "
-                                        + "a read-only property '%s' owned by exported "
-                                        + "component %s",
-                                getName(), getType().getCanonicalName()));
+                        .warn(String.format("An attempt was made to write to "
+                                + "a read-only property '%s' owned by exported "
+                                + "component %s", getName(),
+                                getType().getCanonicalName()));
                 return;
             }
 
             if (newValue != null
                     && !getType().isAssignableFrom(newValue.getClass())) {
-                throw new IllegalArgumentException(String.format(
-                        "Parameter "
-                                + "'newValue' is of the wrong type: onChangeHandler"
-                                + " of the property expected to receive %s but "
-                                + "found %s instead.",
-                        getType().getCanonicalName(),
+                throw new IllegalArgumentException(String.format("Parameter "
+                        + "'newValue' is of the wrong type: onChangeHandler"
+                        + " of the property expected to receive %s but "
+                        + "found %s instead.", getType().getCanonicalName(),
                         newValue.getClass().getCanonicalName()));
             }
 

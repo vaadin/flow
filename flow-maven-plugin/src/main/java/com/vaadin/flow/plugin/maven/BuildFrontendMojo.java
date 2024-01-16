@@ -151,8 +151,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private boolean optimizeBundle;
 
     /**
-     * Whether to use old JavaScript license checker and disable server-side
-     * and offline features of the new license checker.
+     * Whether to use old JavaScript license checker and disable server-side and
+     * offline features of the new license checker.
      * <p>
      * Compatibility/Bower mode always uses old license checking.
      */

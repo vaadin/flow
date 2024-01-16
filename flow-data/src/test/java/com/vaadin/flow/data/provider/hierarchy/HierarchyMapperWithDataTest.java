@@ -4,14 +4,14 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
- * the License. 
+ * the License.
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
@@ -224,8 +224,8 @@ public class HierarchyMapperWithDataTest {
         // Root nodes plus children of expanded nodes 0 and 4 that match the
         // filter
         List<Node> expectedResult = IntStream
-            .of(0, 1, 4, 6, 7, 10, 13, 26, 39, 52).mapToObj(testData::get)
-            .collect(Collectors.toList());
+                .of(0, 1, 4, 6, 7, 10, 13, 26, 39, 52).mapToObj(testData::get)
+                .collect(Collectors.toList());
 
         mapper.setFilter(filter);
 
@@ -243,17 +243,15 @@ public class HierarchyMapperWithDataTest {
         TreeNode third11 = new TreeNode("third-1-1", second1);
         TreeNode third21 = new TreeNode("third-2-1", second2);
 
-        HierarchicalDataProvider<TreeNode, Void> dataProvider =
-                new ThreeLevelStaticHierarchicalDataProvider(root,
-                        new TreeNode[]{second1, second2},
-                        new TreeNode[]{third11, third21});
+        HierarchicalDataProvider<TreeNode, Void> dataProvider = new ThreeLevelStaticHierarchicalDataProvider(
+                root, new TreeNode[] { second1, second2 },
+                new TreeNode[] { third11, third21 });
 
         HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
-                dataProvider
-        );
+                dataProvider);
 
-        Collection<TreeNode> expandedItems =
-                getHierarchyMapperExpandedItems(hierarchyMapper);
+        Collection<TreeNode> expandedItems = getHierarchyMapperExpandedItems(
+                hierarchyMapper);
         Assert.assertNotNull(expandedItems);
         Assert.assertEquals(0L, expandedItems.size());
 
@@ -263,10 +261,9 @@ public class HierarchyMapperWithDataTest {
         expandedItems = getHierarchyMapperExpandedItems(hierarchyMapper);
         Assert.assertNotNull(expandedItems);
         Assert.assertEquals(2L, expandedItems.size());
-        Assert.assertArrayEquals(new Object[]{"root", "second-2"},
-                expandedItems.stream()
-                        .map(TreeNode::getName)
-                        .sorted().toArray());
+        Assert.assertArrayEquals(new Object[] { "root", "second-2" },
+                expandedItems.stream().map(TreeNode::getName).sorted()
+                        .toArray());
     }
 
     @Test
@@ -280,20 +277,18 @@ public class HierarchyMapperWithDataTest {
         TreeNode third11 = new TreeNode("third-1-1", second1);
         TreeNode third21 = new TreeNode("third-2-1", second2);
 
-        HierarchicalDataProvider<TreeNode, Void> dataProvider =
-                new ThreeLevelStaticHierarchicalDataProvider(root,
-                        new TreeNode[]{second1, second2},
-                        new TreeNode[]{third11, third21});
+        HierarchicalDataProvider<TreeNode, Void> dataProvider = new ThreeLevelStaticHierarchicalDataProvider(
+                root, new TreeNode[] { second1, second2 },
+                new TreeNode[] { third11, third21 });
 
         HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
-                dataProvider
-        );
+                dataProvider);
 
         hierarchyMapper.expand(root);
         hierarchyMapper.expand(second1);
 
-        Collection<TreeNode> expandedItems =
-                getHierarchyMapperExpandedItems(hierarchyMapper);
+        Collection<TreeNode> expandedItems = getHierarchyMapperExpandedItems(
+                hierarchyMapper);
         expandedItems.add(new TreeNode("third-1"));
     }
 
@@ -358,23 +353,22 @@ public class HierarchyMapperWithDataTest {
         }
 
         Collection<TreeNode> expandedItems = new HashSet<>();
-        hierarchyMapper.fetchRootItems(null)
-                .forEach(root -> expandedItems.addAll(
-                        getExpandedItems(root, hierarchyMapper)));
+        hierarchyMapper.fetchRootItems(null).forEach(root -> expandedItems
+                .addAll(getExpandedItems(root, hierarchyMapper)));
 
         return Collections.unmodifiableCollection(expandedItems);
     }
 
-    private Collection<TreeNode> getExpandedItems(
-            TreeNode parent, HierarchyMapper<TreeNode, ?> hierarchyMapper) {
+    private Collection<TreeNode> getExpandedItems(TreeNode parent,
+            HierarchyMapper<TreeNode, ?> hierarchyMapper) {
         Collection<TreeNode> expandedItems = new HashSet<>();
 
         if (hierarchyMapper.isExpanded(parent)) {
             expandedItems.add(parent);
         }
         hierarchyMapper.fetchChildItems(parent, null)
-                .forEach(child -> expandedItems.addAll(
-                        getExpandedItems(child, hierarchyMapper)));
+                .forEach(child -> expandedItems
+                        .addAll(getExpandedItems(child, hierarchyMapper)));
         return expandedItems;
     }
 
@@ -415,10 +409,8 @@ public class HierarchyMapperWithDataTest {
         private TreeNode[] secondLevelNodes;
         private TreeNode[] thirdLevelNodes;
 
-        public ThreeLevelStaticHierarchicalDataProvider(
-                TreeNode root,
-                TreeNode[] secondLevelNodes,
-                TreeNode[] thirdLevelNodes) {
+        public ThreeLevelStaticHierarchicalDataProvider(TreeNode root,
+                TreeNode[] secondLevelNodes, TreeNode[] thirdLevelNodes) {
             this.root = root;
             this.secondLevelNodes = secondLevelNodes;
             this.thirdLevelNodes = thirdLevelNodes;
@@ -444,18 +436,17 @@ public class HierarchyMapperWithDataTest {
 
         @Override
         public boolean hasChildren(TreeNode item) {
-            return item.getParent() == null ||
-                    Arrays.stream(secondLevelNodes)
-                            .anyMatch(node -> node == item);
+            return item.getParent() == null || Arrays.stream(secondLevelNodes)
+                    .anyMatch(node -> node == item);
         }
 
         @Override
         protected Stream<TreeNode> fetchChildrenFromBackEnd(
                 HierarchicalQuery<TreeNode, Void> query) {
             if (query.getParent() == null) {
-                return Arrays.stream(new TreeNode[] {root});
+                return Arrays.stream(new TreeNode[] { root });
             }
-            if(query.getParent() == root) {
+            if (query.getParent() == root) {
                 return Arrays.stream(secondLevelNodes);
             }
             return Arrays.stream(thirdLevelNodes)

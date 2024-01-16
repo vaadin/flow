@@ -782,17 +782,17 @@ public class ShortcutRegistration implements Registration, Serializable {
                 .anyMatch(key -> key.matches(Key.ALT.getKeys().get(0)));
 
         return Arrays.stream(KeyModifier.values()).map(modifier -> {
-                    String modKey = modifier.getKeys().get(0);
-                    boolean modifierRequired = realMods.stream()
-                            .anyMatch(mod -> mod.matches(modKey));
-                    if (!modifierRequired && modifier == KeyModifier.ALT_GRAPH
-                            && altAdded) {
-                        return null;
-                    } else {
-                        return (modifierRequired ? "" : "!")
-                                + "event.getModifierState('" + modKey + "')";
-                    }
-                }).filter(Objects::nonNull).filter(s -> !s.trim().isEmpty())
+            String modKey = modifier.getKeys().get(0);
+            boolean modifierRequired = realMods.stream()
+                    .anyMatch(mod -> mod.matches(modKey));
+            if (!modifierRequired && modifier == KeyModifier.ALT_GRAPH
+                    && altAdded) {
+                return null;
+            } else {
+                return (modifierRequired ? "" : "!")
+                        + "event.getModifierState('" + modKey + "')";
+            }
+        }).filter(Objects::nonNull).filter(s -> !s.trim().isEmpty())
                 .collect(Collectors.joining(" && "));
 
     }
@@ -914,7 +914,8 @@ public class ShortcutRegistration implements Registration, Serializable {
                 Arrays.toString(modifiers.stream().map(k -> k.getKeys().get(0))
                         .toArray()),
                 lifecycleOwner != null
-                        ? lifecycleOwner.getClass().getSimpleName() : "null",
+                        ? lifecycleOwner.getClass().getSimpleName()
+                        : "null",
                 builder.toString(), allowDefaultBehavior,
                 allowEventPropagation);
     }

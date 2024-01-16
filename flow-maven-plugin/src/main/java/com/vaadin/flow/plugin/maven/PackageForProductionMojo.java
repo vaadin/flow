@@ -253,9 +253,9 @@ public class PackageForProductionMojo extends FlowModeAbstractMojo {
     private RunnerManager getRunnerManager() {
         return new RunnerManager.Builder(transpileWorkingDirectory,
                 getProxyConfig()).versionsToDownload(nodeVersion, yarnVersion)
-                        .localInstallations(nodePath, yarnPath)
-                        .autodetectTools(autodetectTools)
-                        .npmRegistryUrl(npmRegistryURL).build();
+                .localInstallations(nodePath, yarnPath)
+                .autodetectTools(autodetectTools).npmRegistryUrl(npmRegistryURL)
+                .build();
     }
 
     private Map<String, Set<String>> getFragmentsData(

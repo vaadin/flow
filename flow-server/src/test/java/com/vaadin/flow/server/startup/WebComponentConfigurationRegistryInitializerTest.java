@@ -84,7 +84,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         initializer = new WebComponentConfigurationRegistryInitializer();
         when(servletContext.getAttribute(
                 WebComponentConfigurationRegistry.class.getName()))
-                        .thenReturn(registry);
+                .thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);
         when(vaadinService.getInstantiator())
@@ -168,13 +168,13 @@ public class WebComponentConfigurationRegistryInitializerTest {
     public void invalidCustomElementName_initializerThrowsException()
             throws ServletException {
         expectedEx.expect(ServletException.class);
-        expectedEx.expectCause(
-                CauseMatcher.ex(InvalidCustomElementNameException.class)
-                        .msgEquals(String.format(
-                                "Tag name '%s' given by '%s' is not a valid custom element "
-                                        + "name.",
-                                "invalid",
-                                InvalidNameExporter.class.getCanonicalName())));
+        expectedEx.expectCause(CauseMatcher
+                .ex(InvalidCustomElementNameException.class)
+                .msgEquals(String.format(
+                        "Tag name '%s' given by '%s' is not a valid custom element "
+                                + "name.",
+                        "invalid",
+                        InvalidNameExporter.class.getCanonicalName())));
 
         initializer.process(Collections.singleton(InvalidNameExporter.class),
                 servletContext);

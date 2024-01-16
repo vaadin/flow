@@ -33,7 +33,7 @@ public class ThemedComponent extends Div {
     public ThemedComponent() {
         setId(EMBEDDED_ID);
         final Span textSpan = new Span(
-            "Welcome to the embedded application theme test");
+                "Welcome to the embedded application theme test");
         textSpan.setId(TEST_TEXT_ID);
 
         Span hand = new Span();

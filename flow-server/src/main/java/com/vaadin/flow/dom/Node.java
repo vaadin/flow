@@ -188,7 +188,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * client-side counterpart is created in the memory but it's not attached to
      * the DOM tree. The resulting element is referenced via the server side
      * {@link Element} in JS function call as usual. *
-     * 
+     *
      * @param children
      *            the element(s) to remove
      * @return this element
@@ -272,7 +272,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                     index, getChildCount()));
         }
 
-        for (int i = 0, insertIndex = index; i < children.length; i++, insertIndex++) {
+        for (int i = 0,
+                insertIndex = index; i < children.length; i++, insertIndex++) {
             Element child = children[i];
             if (child == null) {
                 throw new IllegalArgumentException(

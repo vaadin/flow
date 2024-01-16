@@ -60,7 +60,8 @@ import elemental.json.JsonValue;
  * to write {@link JsonObject}s representing each data object to be sent to the
  * client-side.
  *
- * @param <T> the bean type
+ * @param <T>
+ *            the bean type
  * @since 1.0
  */
 public class DataCommunicator<T> implements Serializable {
@@ -138,10 +139,14 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Creates a new instance.
      *
-     * @param dataGenerator the data generator function
-     * @param arrayUpdater  array updater strategy
-     * @param dataUpdater   data updater strategy
-     * @param stateNode     the state node used to communicate for
+     * @param dataGenerator
+     *            the data generator function
+     * @param arrayUpdater
+     *            array updater strategy
+     * @param dataUpdater
+     *            data updater strategy
+     * @param stateNode
+     *            the state node used to communicate for
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
@@ -160,8 +165,10 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Sets the requested range of data to be sent.
      *
-     * @param start  the start of the requested range
-     * @param length the end of the requested range
+     * @param start
+     *            the start of the requested range
+     * @param length
+     *            the end of the requested range
      */
     public void setRequestedRange(int start, int length) {
         requestedRange = computeRequestedRange(start, length);
@@ -197,7 +204,8 @@ public class DataCommunicator<T> implements Serializable {
      * Note: This works only with Grid component. If set to true, Push needs to
      * be enabled and set to PushMode.AUTOMATIC in order this to work.
      *
-     * @param executor The Executor used for async updates.
+     * @param executor
+     *            The Executor used for async updates.
      */
     public void enablePushUpdates(Executor executor) {
         if (this.executor != null && future != null) {
@@ -222,7 +230,8 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Informs the DataCommunicator that a data object has been updated.
      *
-     * @param data updated data object; not {@code null}
+     * @param data
+     *            updated data object; not {@code null}
      */
     public void refresh(T data) {
         Objects.requireNonNull(data,
@@ -236,7 +245,8 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Confirm update with the given {@code updateId}.
      *
-     * @param updateId the update identifier
+     * @param updateId
+     *            the update identifier
      */
     public void confirmUpdate(int updateId) {
         confirmedUpdates.add(Integer.valueOf(updateId));
@@ -262,10 +272,13 @@ public class DataCommunicator<T> implements Serializable {
      * should be included in queries sent to the data provider. It is only valid
      * until another data provider is set.
      *
-     * @param dataProvider  the data provider to set, not <code>null</code>
-     * @param initialFilter the initial filter value to use, or <code>null</code> to not
-     *                      use any initial filter value
-     * @param <F>           the filter type
+     * @param dataProvider
+     *            the data provider to set, not <code>null</code>
+     * @param initialFilter
+     *            the initial filter value to use, or <code>null</code> to not
+     *            use any initial filter value
+     * @param <F>
+     *            the filter type
      * @return a consumer that accepts a new filter value to use
      */
     public <F> SerializableConsumer<F> setDataProvider(
@@ -313,7 +326,8 @@ public class DataCommunicator<T> implements Serializable {
      * mapper can be used to map keys sent to the client-side back to their
      * respective data objects.
      *
-     * @param keyMapper the keyMapper
+     * @param keyMapper
+     *            the keyMapper
      */
     protected void setKeyMapper(DataKeyMapper<T> keyMapper) {
         this.keyMapper = keyMapper;
@@ -322,7 +336,8 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Sets the {@link Comparator} to use with in-memory sorting.
      *
-     * @param comparator comparator used to sort data
+     * @param comparator
+     *            comparator used to sort data
      */
     public void setInMemorySorting(SerializableComparator<T> comparator) {
         inMemorySorting = comparator;
@@ -341,7 +356,8 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Sets the {@link QuerySortOrder}s to use with backend sorting.
      *
-     * @param sortOrder list of sort order information to pass to a query
+     * @param sortOrder
+     *            list of sort order information to pass to a query
      */
     public void setBackEndSorting(List<QuerySortOrder> sortOrder) {
         backEndSorting.clear();
@@ -381,8 +397,10 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Fetches a list of items from the DataProvider.
      *
-     * @param offset the starting index of the range
-     * @param limit  the max number of results
+     * @param offset
+     *            the starting index of the range
+     * @param limit
+     *            the max number of results
      * @return the list of items in given range
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -412,12 +430,10 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private String getInvalidContractMessage(String method) {
-        return String.format(
-                "The data provider hasn't ever called %s() "
-                        + "method on the provided query. "
-                        + "It means that the the data provider breaks the contract "
-                        + "and the returned stream contains unxpected data.",
-                method);
+        return String.format("The data provider hasn't ever called %s() "
+                + "method on the provided query. "
+                + "It means that the the data provider breaks the contract "
+                + "and the returned stream contains unxpected data.", method);
     }
 
     private void handleAttach() {

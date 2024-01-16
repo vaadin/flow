@@ -28,7 +28,7 @@ import com.vaadin.flow.dom.Element;
  * Initialize a lit template element with data.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -38,9 +38,10 @@ public class InjectableLitElementInitializer
 
     private static final String DYNAMIC_ATTRIBUTE_PREFIX = "Template {} contains an attribute {} in element {} which";
     private final Class<? extends Component> templateClass;
+
     /**
      * Creates an initializer for the {@code element}.
-     * 
+     *
      * @param element
      *            element to initialize
      * @param templateClass
@@ -54,13 +55,14 @@ public class InjectableLitElementInitializer
 
     @Override
     public void accept(Map<String, String> templateAttributes) {
-        if(templateAttributes.containsKey("disabled")) {
+        if (templateAttributes.containsKey("disabled")) {
             String errorMessage = String.format(
-                "Lit template '%s' injected element '%s' with id '%s'"
-                    + " uses the disabled attribute.%n"
-                    + "Mapped components should instead be disabled "
-                    + "using the 'setEnabled(false)' method on the server side.",
-                templateClass.getName(), getElement().getTag(), templateAttributes.get("id"));
+                    "Lit template '%s' injected element '%s' with id '%s'"
+                            + " uses the disabled attribute.%n"
+                            + "Mapped components should instead be disabled "
+                            + "using the 'setEnabled(false)' method on the server side.",
+                    templateClass.getName(), getElement().getTag(),
+                    templateAttributes.get("id"));
             throw new IllegalAttributeException(errorMessage);
         }
         super.accept(templateAttributes);

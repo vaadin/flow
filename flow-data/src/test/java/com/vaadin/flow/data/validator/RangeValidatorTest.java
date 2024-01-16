@@ -111,12 +111,9 @@ public class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testDateRange() {
-        RangeValidator<LocalDate> v = RangeValidator.of("Date must be in 2016",
-                LocalDate.of(2016, 1, 1), LocalDate.of(2016, 12, 31));
+        RangeValidator<LocalDate>v=RangeValidator.of("Date must be in 2016",LocalDate.of(2016,1,1),LocalDate.of(2016,12,31));
 
-        assertFails(LocalDate.ofEpochDay(0), v);
-        assertPasses(LocalDate.of(2016, 7, 31), v);
-        assertFails(LocalDate.ofEpochDay(1_000_000_000), v);
+        assertFails(LocalDate.ofEpochDay(0),v);assertPasses(LocalDate.of(2016,7,31),v);assertFails(LocalDate.ofEpochDay(1_000_000_000),v);
     }
 
 }

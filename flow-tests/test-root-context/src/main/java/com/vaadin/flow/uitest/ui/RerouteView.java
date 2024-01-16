@@ -73,8 +73,9 @@ public class RerouteView extends AbstractDivView {
         public CheckBox() {
             input = new Input();
             input.getElement().setAttribute("type", "checkbox");
-            input.getElement().addPropertyChangeListener("checked",
-                    "change", event -> {});
+            input.getElement().addPropertyChangeListener("checked", "change",
+                    event -> {
+                    });
             add(input);
         }
 

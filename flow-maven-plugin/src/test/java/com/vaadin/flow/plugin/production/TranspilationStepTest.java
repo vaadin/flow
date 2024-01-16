@@ -143,9 +143,9 @@ public class TranspilationStepTest {
         FrontendToolsManager toolsManagerMock = mock(
                 FrontendToolsManager.class);
         when(toolsManagerMock.transpileFiles(es6Directory, outputDirectory,
-                skipEs5)).thenReturn(
-                        Collections.singletonMap(es6Directory.getName(),
-                                nonExistingFile));
+                skipEs5))
+                .thenReturn(Collections.singletonMap(es6Directory.getName(),
+                        nonExistingFile));
 
         try {
             new TranspilationStep(toolsManagerMock, networkConcurrency)

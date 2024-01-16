@@ -246,6 +246,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /**
          * Should custom theme be initialized.
+         *
          * @return true if theme should be initialized
          */
         public boolean isInitTheme() {
@@ -254,7 +255,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /**
          * Set if custom theme should be initialized.
-         * @param initTheme enable or disable theme initialisation
+         *
+         * @param initTheme
+         *            enable or disable theme initialisation
          */
         public void setInitTheme(boolean initTheme) {
             this.initTheme = initTheme;
@@ -524,38 +527,42 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Adds the needed overrides for the license checker to work when in
      * development mode.
      */
-    public static void addLicenseChecker(Document indexDocument, DeploymentConfiguration config) {
+    public static void addLicenseChecker(Document indexDocument,
+            DeploymentConfiguration config) {
         if (!config.isOldLicenseCheckerEnabled()) {
             // maybeCheck is invoked by the WC license checker
             addScript(indexDocument, "" + //
-                     "window.Vaadin = window.Vaadin || {};" + //
-                     "window.Vaadin.VaadinLicenseChecker = {" + //
-                     "  maybeCheck: (productInfo) => {" + //
-                     // This disables the license check that the web components are
-                     // still using
-                     "  }" + //
-                     "};" + //
-                     "window.Vaadin.devTools = window.Vaadin.devTools || {};"
-                     + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
-                     + //
-                     "const originalCustomElementDefineFn = window.customElements.define;"
-                     + //
-                     "window.customElements.define = function (tagName, constructor, ...args) {"
-                     + //
-                     "const { cvdlName, version } = constructor;" + //
-                     "if (cvdlName && version) {" + //
-                     "  const { connectedCallback } = constructor.prototype;" + //
-                     "  constructor.prototype.connectedCallback = function () {" + //
-                     "    window.Vaadin.devTools.createdCvdlElements.push(this);" + //
-                     "    if (connectedCallback) {" + //
-                     "      connectedCallback.call(this);" + //
-                     "    }" + //
-                     "  }" + //
-                     "}" + //
+                    "window.Vaadin = window.Vaadin || {};" + //
+                    "window.Vaadin.VaadinLicenseChecker = {" + //
+                    "  maybeCheck: (productInfo) => {" + //
+                    // This disables the license check that the web components
+                    // are
+                    // still using
+                    "  }" + //
+                    "};" + //
+                    "window.Vaadin.devTools = window.Vaadin.devTools || {};"
+                    + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
+                    + //
+                    "const originalCustomElementDefineFn = window.customElements.define;"
+                    + //
+                    "window.customElements.define = function (tagName, constructor, ...args) {"
+                    + //
+                    "const { cvdlName, version } = constructor;" + //
+                    "if (cvdlName && version) {" + //
+                    "  const { connectedCallback } = constructor.prototype;" + //
+                    "  constructor.prototype.connectedCallback = function () {"
+                    + //
+                    "    window.Vaadin.devTools.createdCvdlElements.push(this);"
+                    + //
+                    "    if (connectedCallback) {" + //
+                    "      connectedCallback.call(this);" + //
+                    "    }" + //
+                    "  }" + //
+                    "}" + //
 
-                     "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
-                     + //
-                     "};");
+                    "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
+                    + //
+                    "};");
         }
     }
 
@@ -707,8 +714,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     Element errorElement = document.createElement("div");
                     errorElement.setBaseUri("");
                     errorElement.attr("class", "v-system-error");
-                    errorElement
-                            .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
+                    errorElement.html(
+                            "<h3 style=\"display:inline;\">Webpack Error</h3>"
                                     + "<h6 style=\"display:inline; padding-left:10px;\""
                                     + "onclick=\"this.parentElement.parentElement.removeChild(this.parentElement)\">Close</h6>"
                                     + "<pre>" + errorMsg + "</pre>");
@@ -742,8 +749,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!entries.isEmpty()) {
                 // Registers the entries in a way that is picked up as a Vaadin
                 // WebComponent by the usage stats gatherer
-                document.body().appendElement(SCRIPT_TAG)
-                        .text("window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                document.body().appendElement(SCRIPT_TAG).text(
+                        "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
                                 + "window.Vaadin.registrations.push(" + entries
                                 + ");");
             }
@@ -1126,8 +1133,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                             + properties.getProperty("jsFile");
                 } else {
-                    getLogger()
-                            .warn("No compile.properties available on initialization, "
+                    getLogger().warn(
+                            "No compile.properties available on initialization, "
                                     + "could not read client engine file name.");
                 }
             } catch (IOException e) {
@@ -1166,7 +1173,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             // Basic reconnect and system error dialog styles just to make them
             // visible and outside of normal flow
-            styles.appendText(".v-reconnect-dialog, .v-system-error {" // @formatter:off
+            styles.appendText(
+                    ".v-reconnect-dialog, .v-system-error {" // @formatter:off
                     +   "position: absolute;"
                     +   "color: black;"
                     +   "background: white;"
@@ -1202,8 +1210,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             BootstrapUtils.getMetaTargets(context)
                     .forEach((name, content) -> head.appendElement(META_TAG)
-                            .attr("name", name).attr(CONTENT_ATTRIBUTE,
-                                    content));
+                            .attr("name", name)
+                            .attr(CONTENT_ATTRIBUTE, content));
 
             resolvePageTitle(context).ifPresent(title -> {
                 if (!title.isEmpty()) {
@@ -1340,8 +1348,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 LoadMode loadMode, JsonObject dependency,
                 Dependency.Type type) {
             boolean inlineElement = loadMode == LoadMode.INLINE;
-            String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
-                    .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
+            String url = dependency.hasKey(Dependency.KEY_URL)
+                    ? resolver.resolveVaadinUri(
+                            dependency.getString(Dependency.KEY_URL))
                     : null;
 
             final Element dependencyElement;
@@ -1537,7 +1546,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .getInstantiator()
                         .getOrCreate(BrowserLiveReloadAccess.class);
                 BrowserLiveReload liveReload = liveReloadAccess != null
-                        ? liveReloadAccess.getLiveReload(service) : null;
+                        ? liveReloadAccess.getLiveReload(service)
+                        : null;
 
                 if (liveReload != null) {
                     appConfig.put("liveReloadUrl", BootstrapHandlerHelper

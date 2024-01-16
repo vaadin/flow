@@ -33,7 +33,7 @@ public abstract class TabbedComponentDemoTest extends ComponentDemoTest {
      * Navigates from one tab to another and checks whether the navigation
      * causes errors in the browser. The {@code tab} will be added to the
      * default test-path for navigation.
-     * 
+     *
      * @param tab
      *            the name of the tab to navigate to
      */

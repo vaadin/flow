@@ -34,7 +34,7 @@ final class CssAnnotationVisitor extends RepeatedAnnotationVisitor {
 
     /**
      * This visitor needs a list to be updated.
-     * 
+     *
      * @param cssList
      *            the list to update with this annotation values
      */

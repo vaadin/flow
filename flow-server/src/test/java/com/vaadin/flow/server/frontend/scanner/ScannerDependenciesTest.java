@@ -199,7 +199,8 @@ public class ScannerDependenciesTest {
                     deps.getClasses().contains(clz.getName()));
         }
 
-        // Visit the same route but also the super routed class, the number of visited classes should
+        // Visit the same route but also the super routed class, the number of
+        // visited classes should
         // be the same, but number of entry points increases
         deps = getFrontendDependencies(RoutedClassWithoutAnnotations.class,
                 RoutedClass.class);

@@ -62,10 +62,9 @@ public class RunnerManagerTest {
 
         RunnerManager runnerManager = new RunnerManager.Builder(
                 downloadDirectory.getRoot(), proxyConfig)
-                        .localInstallations(nonExistingFile, nonExistingFile)
-                        .autodetectTools(false)
-                        .frontendToolsLocator(locatorMock)
-                        .npmRegistryUrl(incorrectRegistry).build();
+                .localInstallations(nonExistingFile, nonExistingFile)
+                .autodetectTools(false).frontendToolsLocator(locatorMock)
+                .npmRegistryUrl(incorrectRegistry).build();
 
         exception.expect(TaskRunnerException.class);
         exception.expectMessage(
@@ -101,9 +100,8 @@ public class RunnerManagerTest {
 
         RunnerManager runnerManager = new RunnerManager.Builder(
                 downloadDirectory.getRoot(), proxyConfig)
-                        .localInstallations(nodePath, yarnPath)
-                        .autodetectTools(false)
-                        .frontendToolsLocator(locatorMock).build();
+                .localInstallations(nodePath, yarnPath).autodetectTools(false)
+                .frontendToolsLocator(locatorMock).build();
 
         assertNotNull("Frontend tool runners should be present",
                 runnerManager.getGulpRunner());
@@ -131,7 +129,7 @@ public class RunnerManagerTest {
 
         RunnerManager runnerManager = new RunnerManager.Builder(
                 downloadDirectory.getRoot(), proxyConfig).autodetectTools(true)
-                        .frontendToolsLocator(locatorMock).build();
+                .frontendToolsLocator(locatorMock).build();
 
         assertNotNull("Frontend tool runners should be present",
                 runnerManager.getGulpRunner());
@@ -158,9 +156,8 @@ public class RunnerManagerTest {
 
         RunnerManager runnerManager = new RunnerManager.Builder(
                 downloadDirectory.getRoot(), proxyConfig)
-                        .localInstallations(nodePath, null)
-                        .autodetectTools(true).frontendToolsLocator(locatorMock)
-                        .build();
+                .localInstallations(nodePath, null).autodetectTools(true)
+                .frontendToolsLocator(locatorMock).build();
 
         assertNotNull("Frontend tool runners should be present",
                 runnerManager.getGulpRunner());
@@ -187,9 +184,8 @@ public class RunnerManagerTest {
 
         RunnerManager runnerManager = new RunnerManager.Builder(
                 downloadDirectory.getRoot(), proxyConfig)
-                .localInstallations(null, yarnPath)
-                .autodetectTools(true).frontendToolsLocator(locatorMock)
-                .build();
+                .localInstallations(null, yarnPath).autodetectTools(true)
+                .frontendToolsLocator(locatorMock).build();
 
         assertNotNull("Frontend tool runners should be present",
                 runnerManager.getGulpRunner());

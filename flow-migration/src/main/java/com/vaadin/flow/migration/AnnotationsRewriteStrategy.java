@@ -19,8 +19,7 @@ import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 
 /**
- * The strategy to rewrite {@link HtmlImport}/{@link StyleSheet}
- * annotations.
+ * The strategy to rewrite {@link HtmlImport}/{@link StyleSheet} annotations.
  *
  * @since 2.0
  */

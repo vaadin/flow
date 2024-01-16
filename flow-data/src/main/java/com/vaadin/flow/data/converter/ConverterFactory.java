@@ -46,6 +46,5 @@ public interface ConverterFactory extends Serializable {
      *         an empty {@link Optional} if no suitable converter is available.
      */
     <P, M> Optional<Converter<P, M>> newInstance(Class<P> presentationType,
-                                                 Class<M> modelType);
+            Class<M> modelType);
 }
-

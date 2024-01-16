@@ -24,7 +24,7 @@ import com.vaadin.flow.internal.nodefeature.NodeList;
  * feature.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *
@@ -62,7 +62,7 @@ public abstract class AbstractListChange<T extends Serializable>
 
     /**
      * Gets a changed list.
-     * 
+     *
      * @return the changed list
      */
     protected NodeList<T> getNodeList() {
@@ -71,7 +71,7 @@ public abstract class AbstractListChange<T extends Serializable>
 
     /**
      * Gets a copy of the change with the same data except {@code index}.
-     * 
+     *
      * @param index
      *            the new index of the change
      * @return a copy of the change based on new index

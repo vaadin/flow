@@ -47,15 +47,17 @@ public class DeploymentConfigurationTest {
 
     @Test
     public void licenseChecker_liveReloadDisabled_useOldLicenseChecker() {
-        Mockito.when(configuration.isDevModeLiveReloadEnabled()).thenReturn(false);
+        Mockito.when(configuration.isDevModeLiveReloadEnabled())
+                .thenReturn(false);
         Assert.assertTrue(configuration.isOldLicenseCheckerEnabled());
     }
 
     @Test
     public void licenseChecker_configParameterIsTrue_useOldLicenseChecker() {
-        Mockito.when(configuration.isDevModeLiveReloadEnabled()).thenReturn(true);
-        Mockito.when(configuration.getBooleanProperty(
-                Mockito.eq(InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER),
+        Mockito.when(configuration.isDevModeLiveReloadEnabled())
+                .thenReturn(true);
+        Mockito.when(configuration.getBooleanProperty(Mockito.eq(
+                InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER),
                 Mockito.eq(false))).thenReturn(true);
         Assert.assertTrue(configuration.isOldLicenseCheckerEnabled());
     }

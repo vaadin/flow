@@ -95,8 +95,8 @@ public class ThemedURLTranslatorTest {
     @Test
     public void applyTheme_noThemeIsDiscovered_urlsAreRewritten() {
         ClassFinder finder = new ReflectionsClassFinder(
-            TestUtils.getTestResource(TestUtils.SERVER_JAR),
-            TestUtils.getTestResource(TestUtils.DATA_JAR));
+                TestUtils.getTestResource(TestUtils.SERVER_JAR),
+                TestUtils.getTestResource(TestUtils.DATA_JAR));
 
         ClassPathIntrospector introspector = new ClassPathIntrospector(finder) {
         };
@@ -152,7 +152,8 @@ public class ThemedURLTranslatorTest {
     }
 
     @Test
-    public void applyTheme_when_annotation_on_a_routerLayout() throws Exception {
+    public void applyTheme_when_annotation_on_a_routerLayout()
+            throws Exception {
 
         ClassFinder finder = new ReflectionsClassFinder(
                 TestUtils.getTestResource(TestUtils.SERVER_JAR),

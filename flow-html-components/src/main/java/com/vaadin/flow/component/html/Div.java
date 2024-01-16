@@ -28,7 +28,8 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.DIV)
-public class Div extends HtmlContainer implements ClickNotifier<Div>, HasOrderedComponents {
+public class Div extends HtmlContainer
+        implements ClickNotifier<Div>, HasOrderedComponents {
 
     /**
      * Creates a new empty div.

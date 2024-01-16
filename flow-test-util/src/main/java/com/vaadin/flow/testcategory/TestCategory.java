@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 /**
  * Base for classes and interfaces used as a JUnit test category
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */

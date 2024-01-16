@@ -105,7 +105,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * <p>
      * The component draggable state can be changed later on with
      * {@link #setDraggable(boolean)}.
-     * 
+     *
      * @param component
      *            the component to make draggable
      * @param draggable
@@ -130,7 +130,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * <p>
      * The default implementation of this method returns {@code this}. This
      * method exists for type safe access for the drag source component.
-     * 
+     *
      * @return the drag source component
      */
     /*
@@ -170,7 +170,7 @@ public interface DragSource<T extends Component> extends HasElement {
 
     /**
      * Sets this component as draggable. By default it is not.
-     * 
+     *
      * @param draggable
      *            {@code true} for enable dragging, {@code false} to prevent
      */
@@ -225,7 +225,7 @@ public interface DragSource<T extends Component> extends HasElement {
 
     /**
      * Is this component currently draggable. By default it is not.
-     * 
+     *
      * @return {@code true} draggable, {@code false} if not
      */
     default boolean isDraggable() {
@@ -279,7 +279,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * <em>NOTE 2: Edge, Safari and IE11 will allow the drop to occur even when
      * the effect allowed does not match the drop effect set on the drop target.
      * Chrome and Firefox prevent the drop if those do not match.</em>
-     * 
+     *
      * @param effect
      *            Effects to allow for this draggable element. Cannot be {@code
      *               null}.
@@ -300,7 +300,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * Returns the allowed effects for the current drag source element. Used to
      * set client side {@code DataTransfer.effectAllowed} parameter for the drag
      * event.
-     * 
+     *
      * @return effects that are allowed for this draggable element.
      */
     default EffectAllowed getEffectAllowed() {

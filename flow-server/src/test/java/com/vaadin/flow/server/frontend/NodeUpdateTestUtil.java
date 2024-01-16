@@ -257,8 +257,8 @@ public class NodeUpdateTestUtil {
 
         private ToolStubInfo(boolean stubbed, String script) {
             this.stubbed = stubbed;
-            assert !stubbed || (script != null && !script
-                    .isEmpty()) : "Script may not be empty for stubbed tool";
+            assert !stubbed || (script != null && !script.isEmpty())
+                    : "Script may not be empty for stubbed tool";
             this.script = script;
         }
 
@@ -365,8 +365,8 @@ public class NodeUpdateTestUtil {
             String script;
             // default version used in tests
             version = version == null ? DEFAULT_NODE_VERSION : version;
-            scriptBuilder
-                    .append("  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
+            scriptBuilder.append(
+                    "  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
                     .append("    echo ").append(version).append("\n")
                     .append("    break\n").append("  fi\n");
             if (cacheDir != null) {
@@ -390,12 +390,12 @@ public class NodeUpdateTestUtil {
             String script;
             // default version used in tests
             version = version == null ? DEFAULT_NPM_VERSION : version;
-            scriptBuilder
-                    .append("process.argv.includes('--version') && console.log('")
+            scriptBuilder.append(
+                    "process.argv.includes('--version') && console.log('")
                     .append(version).append("');\n");
             if (cacheDir != null) {
-                scriptBuilder
-                        .append("process.argv.includes('cache') && console.log('")
+                scriptBuilder.append(
+                        "process.argv.includes('cache') && console.log('")
                         .append(cacheDir).append("');\n");
             }
             script = scriptBuilder.toString();

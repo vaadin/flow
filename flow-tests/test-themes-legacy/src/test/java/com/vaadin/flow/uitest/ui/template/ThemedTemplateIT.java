@@ -40,18 +40,22 @@ public class ThemedTemplateIT extends ChromeBrowserTest {
         // check that all imported templates are available in the DOM
         TestBenchElement template = $("themed-template").first();
 
-        Assert.assertNotNull("The main template has no simple child Div inside it",
+        Assert.assertNotNull(
+                "The main template has no simple child Div inside it",
                 isPresentInShadowRoot(template, "div"));
 
-        Assert.assertNotNull("The main template has no sub template which is imported by "
+        Assert.assertNotNull(
+                "The main template has no sub template which is imported by "
                         + "relative URL referring to the resource in the same folder",
                 isPresentInShadowRoot(template, "relative1"));
 
-        Assert.assertNotNull("The main template has no sub template which is imported by "
+        Assert.assertNotNull(
+                "The main template has no sub template which is imported by "
                         + "relative URL referring to the resource in the parent folder",
                 isPresentInShadowRoot(template, "relative2"));
 
-        Assert.assertNotNull("The main template has no sub template which is imported by "
+        Assert.assertNotNull(
+                "The main template has no sub template which is imported by "
                         + "absolute URL",
                 isPresentInShadowRoot(template, "absolute"));
 
@@ -92,7 +96,8 @@ public class ThemedTemplateIT extends ChromeBrowserTest {
         }
     }
 
-    private TestBenchElement isPresentInShadowRoot(TestBenchElement template, String id){
+    private TestBenchElement isPresentInShadowRoot(TestBenchElement template,
+            String id) {
         TestBenchElement element = template.$("*").id(id);
         return element;
     }

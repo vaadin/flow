@@ -59,7 +59,8 @@ import static org.junit.Assert.assertThat;
 public class FrontendToolsTest {
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
-            ? "node\\node.exe" : "node/node";
+            ? "node\\node.exe"
+            : "node/node";
 
     public static final String NPM_CLI_STRING = Stream
             .of("node", "node_modules", "npm", "bin", "npm-cli.js")
@@ -659,8 +660,8 @@ public class FrontendToolsTest {
 
         FileWriter fileWriter = new FileWriter(npxJs);
         try {
-            fileWriter
-                    .write("pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
+            fileWriter.write(
+                    "pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
                             + defaultPnpmVersion + "'\n"
                             + "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
                             + "    console.log(pnpmVersion);\n" + "}\n");

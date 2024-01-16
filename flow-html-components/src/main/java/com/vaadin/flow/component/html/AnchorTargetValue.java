@@ -23,10 +23,10 @@ import java.util.stream.Stream;
 /**
  * Represents <code>target</code> attribute values for an <code>&lt;a&gt;</code>
  * element.
- * 
+ *
  * @author Vaadin Ltd
  * @since
- * 
+ *
  * @see AnchorTarget
  *
  */
@@ -35,14 +35,14 @@ public interface AnchorTargetValue extends Serializable {
 
     /**
      * Gets the string value representation.
-     * 
+     *
      * @return string value representation
      */
     String getValue();
 
     /**
      * Gets an object instance wrapping the {@code value} string representation.
-     * 
+     *
      * @param value
      *            the string value representation, not {@code null}
      * @return an object wrapping the string value

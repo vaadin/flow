@@ -70,7 +70,8 @@ public final class WebComponentModulesWriter implements Serializable {
      *            {@code true} to generated html modules, {@code false} to
      *            generate JavaScript modules
      * @param themeName
-     *            the theme defined using {@link Theme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not
+     *            defined
      * @return generated files
      * @throws java.lang.NullPointerException
      *             if {@code exportedClasses} or {@code outputDirectory} is null
@@ -87,9 +88,8 @@ public final class WebComponentModulesWriter implements Serializable {
                 "Parameter 'outputDirectory' must not be null");
 
         if (!outputDirectory.isDirectory()) {
-            throw new IllegalArgumentException(String.format(
-                    "Path provided "
-                            + "by parameter 'outputDirectory' (%s) is not a directory",
+            throw new IllegalArgumentException(String.format("Path provided "
+                    + "by parameter 'outputDirectory' (%s) is not a directory",
                     outputDirectory.getPath()));
         }
 
@@ -108,7 +108,8 @@ public final class WebComponentModulesWriter implements Serializable {
      * @param outputDirectory
      *            folder into which the generate file is written
      * @param themeName
-     *            the theme defined using {@link Theme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not
+     *            defined
      * @return the generated module content
      */
     private static File writeWebComponentToDirectory(
@@ -175,7 +176,8 @@ public final class WebComponentModulesWriter implements Serializable {
          *            {@code true} to generated html modules, {@code false} to *
          *            generate JavaScript modules
          * @param themeName
-         *              the theme defined using {@link Theme} or {@code null} if not defined
+         *            the theme defined using {@link Theme} or {@code null} if
+         *            not defined
          * @return generated files
          * @throws java.lang.NullPointerException
          *             if {@code writerClassSupplier},

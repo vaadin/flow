@@ -323,8 +323,8 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Determines if webJars mechanism is enabled. It is disabled if the user
-     * have explicitly set the {@link InitParameters#DISABLE_WEBJARS} property to
-     * {@code true}, or the user have not set the property at all and the
+     * have explicitly set the {@link InitParameters#DISABLE_WEBJARS} property
+     * to {@code true}, or the user have not set the property at all and the
      * {@link #useCompiledFrontendResources()} returns false.
      *
      * @return {@code true} if webJars are enabled, {@code false} otherwise
@@ -386,8 +386,8 @@ public interface DeploymentConfiguration extends Serializable {
      * Returns an array with polyfills to be loaded when the app is loaded.
      *
      * The default value is empty, but it can be changed by setting the
-     * {@link InitParameters#SERVLET_PARAMETER_POLYFILLS} as a comma separated list
-     * of JS files to load.
+     * {@link InitParameters#SERVLET_PARAMETER_POLYFILLS} as a comma separated
+     * list of JS files to load.
      *
      * @return polyfills to load
      */
@@ -442,7 +442,8 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Checks if dev mode live reload is enabled or not.
      *
-     * @return {@code true} if dev mode live reload is enabled, {@code false} otherwise
+     * @return {@code true} if dev mode live reload is enabled, {@code false}
+     *         otherwise
      */
     default boolean isDevModeLiveReloadEnabled() {
         return !isProductionMode() && !isCompatibilityMode()
@@ -466,12 +467,12 @@ public interface DeploymentConfiguration extends Serializable {
      * Returns whether server-side and offline license checking are enabled or
      * not.
      * <p>
-     * New license checker is only available in npm mode with enabled live reload.
-     * Once compatibility/bower mode is used or live reload is disabled,
+     * New license checker is only available in npm mode with enabled live
+     * reload. Once compatibility/bower mode is used or live reload is disabled,
      * the old license checker is used.
      *
      * @return {@code true} if old JavaScript license checker is used,
-     * {@code false} if new license checker enabled
+     *         {@code false} if new license checker enabled
      * @since 2.8
      */
     default boolean isOldLicenseCheckerEnabled() {
@@ -494,6 +495,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return {@code true} if enabled, {@code false} otherwise.
      */
     default boolean isEnforcedFieldValidationEnabled() {
-        return getBooleanProperty(InitParameters.ENFORCE_FIELD_VALIDATION, false);
+        return getBooleanProperty(InitParameters.ENFORCE_FIELD_VALIDATION,
+                false);
     }
 }

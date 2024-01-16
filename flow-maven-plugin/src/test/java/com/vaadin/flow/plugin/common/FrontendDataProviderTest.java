@@ -425,10 +425,10 @@ public class FrontendDataProviderTest {
         when(annotationValuesExtractorMock.extractAnnotationValues(
                 ImmutableMap.of(StyleSheet.class, ThemedURLTranslator.VALUE,
                         JavaScript.class, ThemedURLTranslator.VALUE)))
-                                .thenReturn(getCssAndJsImports(expectedFiles));
+                .thenReturn(getCssAndJsImports(expectedFiles));
         when(annotationValuesExtractorMock.extractAnnotationValues(Collections
                 .singletonMap(HtmlImport.class, ThemedURLTranslator.VALUE)))
-                        .thenReturn(getHtmlImports(expectedFiles));
+                .thenReturn(getHtmlImports(expectedFiles));
 
         FrontendDataProvider dataProvider = new TestFrontendDataProvider(false,
                 false, sourceDirectory, annotationValuesExtractorMock, null,

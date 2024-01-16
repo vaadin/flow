@@ -57,8 +57,7 @@ public class HierarchicalCommunicatorTest {
 
     private List<String> enqueueFunctions = new ArrayList<>();
 
-    private Map<String, Serializable[]> enqueueFunctionsWithParams =
-            new HashMap<>();
+    private Map<String, Serializable[]> enqueueFunctionsWithParams = new HashMap<>();
 
     private class UpdateQueue implements HierarchicalUpdate {
         @Override
@@ -113,8 +112,7 @@ public class HierarchicalCommunicatorTest {
         }
     };
 
-    private final HierarchicalArrayUpdater arrayUpdaterWithArguments =
-            new HierarchicalArrayUpdater() {
+    private final HierarchicalArrayUpdater arrayUpdaterWithArguments = new HierarchicalArrayUpdater() {
         @Override
         public HierarchicalUpdate startUpdate(int sizeChange) {
             return new UpdateQueueWithArguments();
@@ -229,12 +227,10 @@ public class HierarchicalCommunicatorTest {
         // One expandItems for calling expand(...)
         // One expandItems and one ensureHierarchy for calling reset()
         Assert.assertEquals(3, enqueueFunctions.size());
-        Assert.assertEquals("$connector.expandItems",
-                enqueueFunctions.get(0));
+        Assert.assertEquals("$connector.expandItems", enqueueFunctions.get(0));
         Assert.assertEquals("$connector.ensureHierarchy",
                 enqueueFunctions.get(1));
-        Assert.assertEquals("$connector.expandItems",
-                enqueueFunctions.get(2));
+        Assert.assertEquals("$connector.expandItems", enqueueFunctions.get(2));
     }
 
     @Test
@@ -248,14 +244,13 @@ public class HierarchicalCommunicatorTest {
         hierarchyTreeData.addItem("first-1", "second-1-1");
         hierarchyTreeData.addItem("first-2", "second-2-1");
 
-        TreeDataProvider<String> treeDataProvider =
-                new TreeDataProvider<>(hierarchyTreeData);
+        TreeDataProvider<String> treeDataProvider = new TreeDataProvider<>(
+                hierarchyTreeData);
 
-        HierarchicalDataCommunicator<String> dataCommunicator =
-                new HierarchicalDataCommunicator<String>(
-                        Mockito.mock(CompositeDataGenerator.class),
-                        arrayUpdaterWithArguments,
-                        json -> {}, Mockito.mock(StateNode.class), () -> null);
+        HierarchicalDataCommunicator<String> dataCommunicator = new HierarchicalDataCommunicator<String>(
+                Mockito.mock(CompositeDataGenerator.class),
+                arrayUpdaterWithArguments, json -> {
+                }, Mockito.mock(StateNode.class), () -> null);
 
         dataCommunicator.setDataProvider(treeDataProvider, null);
 

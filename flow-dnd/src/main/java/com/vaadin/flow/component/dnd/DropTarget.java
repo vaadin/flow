@@ -52,7 +52,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * The given component will be always set an active drop target, if this is
      * not desired, use either method {@link #configure(Component, boolean)} or
      * {@link #setActive(boolean)}.
-     * 
+     *
      * @param component
      *            the component to make a drop target
      * @param <T>
@@ -71,7 +71,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * Unlike {@link #create(Component)} and
      * {@link #configure(Component, boolean)}, this method does not change the
      * active drop target status of the given component.
-     * 
+     *
      * @param component
      *            the component to make a drop target
      * @param <T>
@@ -99,7 +99,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * <p>
      * The drop target active state can be changed at any time with
      * {@link #setActive(boolean)}.
-     * 
+     *
      * @param component
      *            the component to provide drop target API for
      * @param active
@@ -125,7 +125,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * The default implementation of this method returns {@code this}. This
      * method exists for type safe access for the drop target component and
      * being able to provide access to drop target API for any component.
-     * 
+     *
      * @return the drop target component
      */
     default T getDropTargetComponent() {
@@ -136,7 +136,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      * Returns the element which is made as a drop target in the UI. By default
      * it is the element of the component returned by
      * {@link #getDropTargetComponent()}.
-     * 
+     *
      * @return the element that is a drop target
      */
     @Override
@@ -146,7 +146,7 @@ public interface DropTarget<T extends Component> extends HasElement {
 
     /**
      * Activate or deactivate this drop target. By default, it is not active.
-     * 
+     *
      * @param active
      *            {@code true} to allow drops, {@code false} to not
      */
@@ -163,7 +163,7 @@ public interface DropTarget<T extends Component> extends HasElement {
 
     /**
      * Gets whether this drop target is activate or not. By default, it is not.
-     * 
+     *
      * @return {@code true} to allow drops, {@code false} to not
      */
     default boolean isActive() {

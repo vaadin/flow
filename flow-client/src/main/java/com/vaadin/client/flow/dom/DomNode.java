@@ -167,7 +167,7 @@ public interface DomNode {
      * The isSameNode() method for Node objects is a legacy alias the for the
      * === strict equality operator. That is, it tests whether two nodes are the
      * same (in other words, whether they reference the same object).
-     * 
+     *
      * @param node
      *            the node to test
      * @return whether the nodes are the same

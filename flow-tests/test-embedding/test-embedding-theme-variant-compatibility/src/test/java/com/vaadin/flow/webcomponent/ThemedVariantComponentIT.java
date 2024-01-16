@@ -36,9 +36,12 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        waitUntil(driver -> !driver.findElement(By.className("v-loading-indicator")).isDisplayed());
-        
-        TestBenchElement webComponent = $("themed-variant-web-component").first();
+        waitUntil(driver -> !driver
+                .findElement(By.className("v-loading-indicator"))
+                .isDisplayed());
+
+        TestBenchElement webComponent = $("themed-variant-web-component")
+                .first();
         Assert.assertEquals("dark", webComponent.getAttribute("theme"));
 
         String customStyle = $("custom-style").first()

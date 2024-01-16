@@ -28,7 +28,7 @@ import com.vaadin.flow.dom.Element;
  * Generic initializer logic.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -54,7 +54,7 @@ public abstract class AbstractInjectableElementInitializer
 
     /**
      * Creates an initializer for the {@code element}.
-     * 
+     *
      * @param element
      *            element to initialize
      */
@@ -70,7 +70,7 @@ public abstract class AbstractInjectableElementInitializer
     /**
      * Checks whether the attribute declaration is an attribute with a static
      * value ( so it can be set on the serve side).
-     * 
+     *
      * @param name
      *            the template attribute name
      * @param value
@@ -82,7 +82,7 @@ public abstract class AbstractInjectableElementInitializer
 
     /**
      * Returns server side element to initialize.
-     * 
+     *
      * @return the server side element to initialize
      */
     protected Element getElement() {

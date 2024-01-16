@@ -34,7 +34,7 @@ import com.vaadin.flow.dom.ThemeList;
  * {@link ThemeListImpl#THEME_ATTRIBUTE_NAME}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */
@@ -67,7 +67,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
 
     /**
      * Creates new theme list for element specified.
-     * 
+     *
      * @param element
      *            the element to reflect theme changes onto
      */

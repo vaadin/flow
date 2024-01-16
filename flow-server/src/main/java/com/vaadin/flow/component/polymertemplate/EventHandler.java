@@ -28,8 +28,8 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
  * Publishes the annotated method so it can be invoked from the client side as
  * template event handlers.
  *
- * Recommend using {@code LitTemplate} instead of PolymerTemplate as Polymer will
- * be deprecated in the next LTS version.
+ * Recommend using {@code LitTemplate} instead of PolymerTemplate as Polymer
+ * will be deprecated in the next LTS version.
  *
  * @see EventData
  * @author Vaadin Ltd

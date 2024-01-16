@@ -57,7 +57,8 @@ public class ReusableThemeView extends Div {
         faText.setId(FONTAWESOME_ID);
 
         Image snowFlake = new Image(
-            "themes/reusable-theme/fortawesome/icons/snowflake.svg", "snowflake");
+                "themes/reusable-theme/fortawesome/icons/snowflake.svg",
+                "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 

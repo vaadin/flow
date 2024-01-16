@@ -56,8 +56,8 @@ public class ComponentMapping extends ServerSideFeature {
      */
     public void setComponent(Component component) {
         assert component != null : "Component must not be null";
-        assert this.component == null
-                || component instanceof Composite : "Only a Composite is allowed to remap a component";
+        assert this.component == null || component instanceof Composite
+                : "Only a Composite is allowed to remap a component";
         this.component = component;
 
         if (getNode().hasFeature(ClientCallableHandlers.class)) {

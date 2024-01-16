@@ -178,7 +178,7 @@ public class ProxyConfig {
 
         /**
          * Construct a Proxy object out of a proxy url.
-         * 
+         *
          * @param id
          *            proxy id
          * @param proxyUrl
@@ -218,7 +218,8 @@ public class ProxyConfig {
          */
         public URI getUri() {
             String authentication = useAuthentication()
-                    ? username + ":" + password : null;
+                    ? username + ":" + password
+                    : null;
             try {
                 // Proxies should be schemed with http, even if the protocol is
                 // https
@@ -266,7 +267,8 @@ public class ProxyConfig {
             return id + "{" + "protocol='" + protocol + '\'' + ", host='" + host
                     + '\'' + ", port=" + port
                     + (useAuthentication()
-                            ? ", with username/passport authentication" : "")
+                            ? ", with username/passport authentication"
+                            : "")
                     + '}';
         }
     }

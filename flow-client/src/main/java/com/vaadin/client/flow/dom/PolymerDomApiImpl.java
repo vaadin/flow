@@ -69,7 +69,7 @@ public class PolymerDomApiImpl implements DomApiImpl {
 
         /**
          * Returns polymer version.
-         * 
+         *
          * @return polymer version
          */
         @JsProperty

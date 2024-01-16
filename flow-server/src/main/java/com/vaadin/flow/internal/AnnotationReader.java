@@ -94,7 +94,7 @@ public class AnnotationReader {
      * class, its super classes and implenented interfaces.
      *
      * @param componentClass
-     *         the component class to search for the annotation
+     *            the component class to search for the annotation
      * @return a list the JavaScript annotations found
      */
     public static List<JsModule> getJsModuleAnnotations(

@@ -331,7 +331,7 @@ public class PendingJavaScriptInvocationTest {
 
             List<Future<JsonValue>> futures = createBlockingActions(
                     completableFuture).stream().map(executor::submit)
-                            .collect(Collectors.toList());
+                    .collect(Collectors.toList());
 
             Assert.assertEquals("All futures should be pending", 0,
                     futures.stream().filter(Future::isDone).count());

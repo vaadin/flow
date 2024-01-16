@@ -45,7 +45,8 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
     @Override
     public Registration addDataProviderListener(
             DataProviderListener<T> listener) {
-        // Using an anonymous class instead of lambda or method reference to prevent potential
+        // Using an anonymous class instead of lambda or method reference to
+        // prevent potential
         // self reference serialization issues when clients holds a reference
         // to the Registration instance returned by this method
         SerializableConsumer<DataChangeEvent> consumer = new SerializableConsumer<DataChangeEvent>() {

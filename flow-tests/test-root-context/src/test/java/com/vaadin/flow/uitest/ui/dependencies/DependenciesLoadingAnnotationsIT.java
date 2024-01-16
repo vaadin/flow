@@ -66,7 +66,7 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
 
         List<String> testMessages = findElements(
                 By.className("dependenciesTest")).stream()
-                        .map(WebElement::getText).collect(Collectors.toList());
+                .map(WebElement::getText).collect(Collectors.toList());
 
         assertThat(
                 "7 elements are expected to be added: 2 for eager dependencies, 2 for inline dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
@@ -127,7 +127,8 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
         for (int i = 0; i < jsImports.size(); i++) {
             WebElement jsImport = jsImports.get(i);
             String jsUrl = jsImport.getAttribute("src");
-            // TODO: where are these comming from and why do they get async when using driver.
+            // TODO: where are these comming from and why do they get async when
+            // using driver.
             if (!jsImport.getAttribute("type").equals("text/javascript")
                     || jsUrl.startsWith("data:text/javascript")) {
                 continue;

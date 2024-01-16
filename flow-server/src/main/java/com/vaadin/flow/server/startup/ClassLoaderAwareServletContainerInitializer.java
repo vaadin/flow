@@ -125,7 +125,7 @@ public interface ClassLoaderAwareServletContainerInitializer
 
     /**
      * Whether this initializer requires lookup or not.
-     * 
+     *
      * @return whether this initializer requires lookup
      */
     default boolean requiresLookup() {

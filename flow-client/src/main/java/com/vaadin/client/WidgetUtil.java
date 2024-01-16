@@ -341,15 +341,15 @@ public class WidgetUtil {
     /**
      * Checks whether the objects are equal either as Java objects (considering
      * types and Java {@link Object#equals(Object)} method) or as JS values.
-     * 
+     *
      * @param obj1
      *            an object
-     * 
+     *
      * @param obj2
      *            an object to be compared with {@code a} for deep equality
      * @return {@code true} if the arguments are equal to each other and
      *         {@code false} otherwise
-     * 
+     *
      * @see #equalsInJS(Object, Object)
      */
     public static boolean equals(Object obj1, Object obj2) {
@@ -361,10 +361,10 @@ public class WidgetUtil {
      * <p>
      * This check ignores object types and checks the values via JS {@code ==}.
      * E.g. it means that an empty string equals to {@code 0}.
-     * 
+     *
      * @param obj1
      *            an object
-     * 
+     *
      * @param obj2
      *            an object to be compared with {@code a} for deep equality
      * @return {@code true} if the arguments are equal via JS {@code ==} to each

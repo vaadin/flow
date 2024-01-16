@@ -151,12 +151,10 @@ public class DependencyListTest {
 
         assertEquals("Expected to receive exactly one dependency", 1,
                 deps.getPendingSendToClient().size());
-        assertTrue(
-                String.format(
-                        "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
-                        expectedJson.toJson(),
-                        deps.getPendingSendToClient().iterator().next()
-                                .toJson()),
+        assertTrue(String.format(
+                "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
+                expectedJson.toJson(),
+                deps.getPendingSendToClient().iterator().next().toJson()),
                 JsonUtils.jsonEquals(expectedJson, deps.getPendingSendToClient()
                         .iterator().next().toJson()));
     }

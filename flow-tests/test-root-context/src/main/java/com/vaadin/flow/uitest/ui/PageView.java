@@ -46,10 +46,11 @@ public class PageView extends AbstractDivView {
             getPage().reload();
         });
 
-        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest.getCurrent();
+        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest
+                .getCurrent();
         HttpServletRequest httpServletRequest = request.getHttpServletRequest();
-        String url = httpServletRequest.getRequestURI()
-                .replace(PageView.class.getName(), BaseHrefView.class.getName());
+        String url = httpServletRequest.getRequestURI().replace(
+                PageView.class.getName(), BaseHrefView.class.getName());
 
         Div setLocationButton = new Div();
         setLocationButton.setId("setLocation");
@@ -69,12 +70,12 @@ public class PageView extends AbstractDivView {
         openButton2.setText("Open url in an IFrame");
         openButton2.addClickListener(e -> getPage().open(url, "newWindow"));
 
-
         add(input, updateButton, overrideButton, reloadButton,
                 setLocationButton, openButton, openButton2, frame);
         add(new NativeButton("page.fetchURL", onClickEvent -> {
             getUI().ifPresent(ui -> ui.getPage().fetchCurrentURL(currentUrl -> {
-                LoggerFactory.getLogger(PageView.class.getName()).info(currentUrl.toString());
+                LoggerFactory.getLogger(PageView.class.getName())
+                        .info(currentUrl.toString());
             }));
         }));
     }

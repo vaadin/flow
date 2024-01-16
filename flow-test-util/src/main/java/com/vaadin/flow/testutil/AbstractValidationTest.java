@@ -26,7 +26,7 @@ import com.vaadin.flow.component.HasValidation;
 /**
  * Base class for validation tests of components that implement
  * {@link HasValidation}.
- * 
+ *
  * @see ValidationTestView
  * @since 1.0
  */

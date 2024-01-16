@@ -19,7 +19,7 @@ import org.jsoup.nodes.TextNode;
 
 /**
  * Helpers for HTML related aspects.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

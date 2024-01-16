@@ -58,11 +58,11 @@ public class DependencyUI extends UI {
 
         Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
-        StreamRegistration jsStreamRegistration = getSession().getResourceRegistry()
-                .registerResource(getJsResource());
+        StreamRegistration jsStreamRegistration = getSession()
+                .getResourceRegistry().registerResource(getJsResource());
         jsOrder.addEventListener("click", e -> {
-            getPage()
-                    .addJavaScript("base://" + jsStreamRegistration.getResourceUri().toString());
+            getPage().addJavaScript("base://"
+                    + jsStreamRegistration.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
                 .createButton("Load 'everything blue' stylesheet")

@@ -11,13 +11,17 @@ public class PushUtil {
     }
 
     public static void setupPush() {
-        String transportName = VaadinRequest.getCurrent().getParameter("transport");
+        String transportName = VaadinRequest.getCurrent()
+                .getParameter("transport");
         Transport transport = Transport.getByIdentifier(transportName);
         if (transport != null) {
-            PushConfiguration pushConfiguration = UI.getCurrent().getPushConfiguration();
+            PushConfiguration pushConfiguration = UI.getCurrent()
+                    .getPushConfiguration();
             pushConfiguration.setPushMode(PushMode.MANUAL);
             pushConfiguration.setTransport(transport);
-            Transport fallbackTransport = transport == Transport.WEBSOCKET_XHR ? Transport.WEBSOCKET: transport;
+            Transport fallbackTransport = transport == Transport.WEBSOCKET_XHR
+                    ? Transport.WEBSOCKET
+                    : transport;
             pushConfiguration.setFallbackTransport(fallbackTransport);
         }
     }

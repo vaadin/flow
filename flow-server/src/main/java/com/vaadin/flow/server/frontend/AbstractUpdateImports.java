@@ -368,16 +368,14 @@ abstract class AbstractUpdateImports implements Runnable {
                 suffix = "Unable to locate frontend resources and missing token file. "
                         + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
             } else {
-                suffix = String.format(
-                        "%n  Locations searched were:"
-                                + "%n      - `%s` in this project"
-                                + "%n      - `%s` in included JARs"
-                                + "%n      - `%s` in included JARs"
-                                + "%n%n  Please, double check that those files exist. If you use a custom directory "
-                                + "for your resource files instead of default "
-                                + "`frontend` folder then make sure you it's correctly configured "
-                                + "(e.g. set '%s' property)",
-                        frontendDir.getPath(),
+                suffix = String.format("%n  Locations searched were:"
+                        + "%n      - `%s` in this project"
+                        + "%n      - `%s` in included JARs"
+                        + "%n      - `%s` in included JARs"
+                        + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                        + "for your resource files instead of default "
+                        + "`frontend` folder then make sure you it's correctly configured "
+                        + "(e.g. set '%s' property)", frontendDir.getPath(),
                         Constants.RESOURCES_FRONTEND_DEFAULT,
                         COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         FrontendUtils.PARAM_FRONTEND_DIR);
@@ -493,7 +491,8 @@ abstract class AbstractUpdateImports implements Runnable {
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
         String include = cssData.getInclude() != null
-                ? " include=\"" + cssData.getInclude() + "\"" : "";
+                ? " include=\"" + cssData.getInclude() + "\""
+                : "";
 
         if (cssData.getThemefor() != null) {
             addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport,

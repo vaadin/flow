@@ -35,8 +35,8 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 @JsModule("./template-scalability-view.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateScalabilityView")
 @PageTitle("Template scalability")
-public class TemplateScalabilityView extends PolymerTemplate<TemplateModel> implements
-        AfterNavigationObserver {
+public class TemplateScalabilityView extends PolymerTemplate<TemplateModel>
+        implements AfterNavigationObserver {
 
     public static final String COMPLETED = "completed";
 
@@ -52,7 +52,8 @@ public class TemplateScalabilityView extends PolymerTemplate<TemplateModel> impl
     private void generateChildren() {
         div.removeAll();
         for (int i = 0; i < NUM_ITEMS; ++i) {
-            TemplateScalabilityPanel p = new TemplateScalabilityPanel("Panel " + i);
+            TemplateScalabilityPanel p = new TemplateScalabilityPanel(
+                    "Panel " + i);
             div.add(p);
         }
 

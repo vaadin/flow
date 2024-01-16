@@ -34,7 +34,8 @@ public class MemoryLeakUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        NativeButton button = new NativeButton("Hello", e -> add(new Text("Hello")));
+        NativeButton button = new NativeButton("Hello",
+                e -> add(new Text("Hello")));
         button.setId("hello");
         add(button);
     }

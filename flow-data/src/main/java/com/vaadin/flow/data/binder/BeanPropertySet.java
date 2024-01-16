@@ -148,8 +148,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
              * property definition from the cache.
              */
             return new SerializedPropertyDefinition(
-                    getPropertySet().instanceKey.type,
-                    getName());
+                    getPropertySet().instanceKey.type, getName());
         }
 
         @Override
@@ -240,8 +239,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
              * property definition from the cache.
              */
             return new SerializedPropertyDefinition(
-                    getPropertySet().instanceKey.type,
-                    getName());
+                    getPropertySet().instanceKey.type, getName());
         }
 
         @Override
@@ -321,8 +319,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
 
         try {
             definitions = BeanUtil.getBeanPropertyDescriptors(instanceKey.type)
-                    .stream()
-                    .filter(BeanPropertySet::hasNonObjectReadMethod)
+                    .stream().filter(BeanPropertySet::hasNonObjectReadMethod)
                     .map(descriptor -> new BeanPropertyDefinition<>(this,
                             instanceKey.type, descriptor))
                     .collect(Collectors.toMap(PropertyDefinition::getName,
@@ -332,7 +329,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
             throw new IllegalArgumentException(
                     "Cannot find property descriptors for "
                             + instanceKey.type.getName(),
-                            e);
+                    e);
         }
     }
 
@@ -435,8 +432,9 @@ public class BeanPropertySet<T> implements PropertySet<T> {
         Objects.requireNonNull(beanType, "Bean type cannot be null");
         InstanceKey key = new InstanceKey(beanType, false, 0, null);
         // Cache the reflection results
-        return (PropertySet<T>) INSTANCES.computeIfAbsent(key,
-                ignored -> new BeanPropertySet<>(key)).copy();
+        return (PropertySet<T>) INSTANCES
+                .computeIfAbsent(key, ignored -> new BeanPropertySet<>(key))
+                .copy();
     }
 
     private BeanPropertySet<T> copy() {
@@ -464,9 +462,9 @@ public class BeanPropertySet<T> implements PropertySet<T> {
         InstanceKey key = new InstanceKey(beanType, false,
                 filterDefinition.getMaxNestingDepth(),
                 filterDefinition.getIgnorePackageNamesStartingWith());
-        return (PropertySet<T>) INSTANCES.computeIfAbsent(key,
-                k -> new BeanPropertySet<>(key, checkNestedDefinitions,
-                        filterDefinition))
+        return (PropertySet<T>) INSTANCES
+                .computeIfAbsent(key, k -> new BeanPropertySet<>(key,
+                        checkNestedDefinitions, filterDefinition))
                 .copy();
     }
 
@@ -508,7 +506,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                 throw new IllegalArgumentException(
                         "Cannot find property descriptors for "
                                 + instanceKey.type.getName(),
-                                e);
+                        e);
             }
         }
         return definition;
@@ -516,7 +514,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
 
     /**
      * Gets the bean type of this bean property set.
-     * 
+     *
      * @return the bean type of this bean property set
      */
     public Class<T> getBeanType() {

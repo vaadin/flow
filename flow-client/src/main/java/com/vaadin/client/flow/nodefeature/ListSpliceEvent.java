@@ -94,7 +94,7 @@ public class ListSpliceEvent extends ReactiveValueChangeEvent {
 
     /**
      * Gets whether this event is a {@code clear} event.
-     * 
+     *
      * @return <code>true</code> if the event was triggered after a full clear,
      *         <code>false</code> otherwise.
      */

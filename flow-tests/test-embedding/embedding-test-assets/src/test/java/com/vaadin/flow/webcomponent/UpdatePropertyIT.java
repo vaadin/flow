@@ -21,7 +21,8 @@ import org.openqa.selenium.By;
 
 import com.vaadin.testbench.TestBenchElement;
 
-public class UpdatePropertyIT extends EmbeddingChromeBrowserTest implements HasById {
+public class UpdatePropertyIT extends EmbeddingChromeBrowserTest
+        implements HasById {
 
     @Override
     protected String getTestPath() {
@@ -43,17 +44,13 @@ public class UpdatePropertyIT extends EmbeddingChromeBrowserTest implements HasB
 
         button.click();
 
-        Assert.assertEquals("Count (id:count) should be 1", 1,
-                getInt("count"));
-        Assert.assertEquals("Count (id:json) should be 1", 1,
-                getInt("json"));
+        Assert.assertEquals("Count (id:count) should be 1", 1, getInt("count"));
+        Assert.assertEquals("Count (id:json) should be 1", 1, getInt("json"));
 
         button.click();
 
-        Assert.assertEquals("Count (id:count) should be 2", 2,
-                getInt("count"));
-        Assert.assertEquals("Count (id:json) should be 2", 2,
-                getInt("json"));
+        Assert.assertEquals("Count (id:count) should be 2", 2, getInt("count"));
+        Assert.assertEquals("Count (id:json) should be 2", 2, getInt("json"));
     }
 
     private int getInt(String id) {

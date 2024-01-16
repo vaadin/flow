@@ -30,7 +30,7 @@ import elemental.json.JsonValue;
  * {@link TemplateModel} type and should therefore be immutable to prevent race
  * conditions. The root type for a model can be found using
  * {@link ModelDescriptor#get(Class)}.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

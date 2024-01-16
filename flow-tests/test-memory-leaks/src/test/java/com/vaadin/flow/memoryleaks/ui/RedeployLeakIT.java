@@ -89,9 +89,10 @@ public class RedeployLeakIT extends AbstractTestBenchTest {
         // DO NOT RUN FROM ECLIPSE
         // The test uses files from the target folder
         setup(7778);
-        RemoteWebDriver driver = new RemoteWebDriver(Browser.CHROME.getDesiredCapabilities());
+        RemoteWebDriver driver = new RemoteWebDriver(
+                Browser.CHROME.getDesiredCapabilities());
         try {
-            driver.get("http://"+ getCurrentHostAddress() + ":7778/");
+            driver.get("http://" + getCurrentHostAddress() + ":7778/");
             Assert.assertNotNull(driver.findElement(By.id("hello")));
         } finally {
             driver.close();

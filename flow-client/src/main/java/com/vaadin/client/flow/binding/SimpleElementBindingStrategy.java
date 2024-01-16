@@ -422,8 +422,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
-        assert checkParent(node,
-                host) : "Host element is not a parent of the node whose property has changed. "
+        assert checkParent(node, host)
+                : "Host element is not a parent of the node whose property has changed. "
                         + "This is an implementation error. "
                         + "Most likely it means that there are several StateTrees on the same page "
                         + "(might be possible with portlets) and the target StateTree should not be passed "
@@ -537,7 +537,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindShadowRoot(BindingContext context) {
-        assert context.htmlNode instanceof Element : "Cannot bind shadow root to a Node";
+        assert context.htmlNode instanceof Element
+                : "Cannot bind shadow root to a Node";
         NodeMap map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
 
         attachShadow(context);
@@ -593,8 +594,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext context,
             JsArray<JsMap<String, Computation>> computationsCollection,
             BinderContext nodeFactory) {
-        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
-                + context.node.getId() + " is not an Element";
+        assert context.htmlNode instanceof Element
+                : "The HTML node for the StateNode with id="
+                        + context.node.getId() + " is not an Element";
         NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
 
         visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
@@ -615,8 +617,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext context,
             JsArray<JsMap<String, Computation>> computationsCollection,
             BinderContext nodeFactory) {
-        assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
-                + context.node.getId() + " is not an Element";
+        assert context.htmlNode instanceof Element
+                : "The HTML node for the StateNode with id="
+                        + context.node.getId() + " is not an Element";
         NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
 
         Element element = (Element) context.htmlNode;
@@ -910,7 +913,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
-        assert context.htmlNode instanceof Element : "Unexpected html node. The node is supposed to be a custom element";
+        assert context.htmlNode instanceof Element
+                : "Unexpected html node. The node is supposed to be a custom element";
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
             if (LitUtils.isLitElement(context.htmlNode)) {
                 LitUtils.whenRendered((Element) context.htmlNode,
@@ -1292,7 +1296,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         Node element = context.htmlNode;
         StateNode node = context.node;
-        assert element instanceof Element : "Cannot handle DOM event for a Node";
+        assert element instanceof Element
+                : "Cannot handle DOM event for a Node";
 
         String type = event.getType();
 
@@ -1501,7 +1506,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindClientCallableMethods(BindingContext context) {
-        assert context.htmlNode instanceof Element : "Cannot bind client delegate methods to a Node";
+        assert context.htmlNode instanceof Element
+                : "Cannot bind client delegate methods to a Node";
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 (Element) context.htmlNode, context.node);
     }
@@ -1515,8 +1521,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             JsonValue jsonValue = WidgetUtil.crazyJsoCast(value);
             if (JsonType.OBJECT.equals(jsonValue.getType())) {
                 JsonObject object = (JsonObject) jsonValue;
-                assert object.hasKey(
-                        NodeProperties.URI_ATTRIBUTE) : "Implementation error: JsonObject is recieved as an attribute value for '"
+                assert object.hasKey(NodeProperties.URI_ATTRIBUTE)
+                        : "Implementation error: JsonObject is recieved as an attribute value for '"
                                 + attribute + "' but it has no "
                                 + NodeProperties.URI_ATTRIBUTE + " key";
                 String uri = object.getString(NodeProperties.URI_ATTRIBUTE);

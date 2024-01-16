@@ -52,9 +52,9 @@ public class ReflectionsClassFinder implements ClassFinder {
                 .addClassLoader(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);
 
-        configurationBuilder.setInputsFilter(
-            resourceName -> resourceName.endsWith(".class") && !resourceName
-                        .endsWith("module-info.class"));
+        configurationBuilder
+                .setInputsFilter(resourceName -> resourceName.endsWith(".class")
+                        && !resourceName.endsWith("module-info.class"));
         reflections = new Reflections(configurationBuilder);
     }
 
@@ -73,8 +73,8 @@ public class ReflectionsClassFinder implements ClassFinder {
         Repeatable repeatableAnnotation = annotationClass
                 .getAnnotation(Repeatable.class);
         if (repeatableAnnotation != null) {
-            return reflections.getTypesAnnotatedWith(
-                    repeatableAnnotation.value(), true);
+            return reflections
+                    .getTypesAnnotatedWith(repeatableAnnotation.value(), true);
         }
         return Collections.emptySet();
     }
@@ -86,8 +86,7 @@ public class ReflectionsClassFinder implements ClassFinder {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> Class<T> loadClass(String name)
-            throws ClassNotFoundException {
+    public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
         return (Class<T>) classLoader.loadClass(name);
     }
 

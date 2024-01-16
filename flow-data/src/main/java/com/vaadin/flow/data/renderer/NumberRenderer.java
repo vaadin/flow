@@ -21,18 +21,17 @@ import java.util.Locale;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
- * 
+ *
  * A template renderer for presenting number values.
  *
  * @author Vaadin Ltd
  * @since 1.0.
- * 
+ *
  * @param <SOURCE>
  *            the type of the input item, from which the number is extracted
  *
  */
-public class NumberRenderer<SOURCE>
-        extends BasicRenderer<SOURCE, Number> {
+public class NumberRenderer<SOURCE> extends BasicRenderer<SOURCE, Number> {
 
     private Locale locale;
     private NumberFormat numberFormat;
@@ -44,7 +43,7 @@ public class NumberRenderer<SOURCE>
      * <p>
      * The renderer is configured to render with the number's natural string
      * representation in the default locale.
-     * 
+     *
      * @param valueProvider
      *            the callback to provide a {@link Number} to the renderer, not
      *            <code>null</code>
@@ -76,7 +75,7 @@ public class NumberRenderer<SOURCE>
      * <p>
      * The renderer is configured to render the number as defined with the given
      * number format.
-     * 
+     *
      * @param valueProvider
      *            the callback to provide a {@link Number} to the renderer, not
      *            <code>null</code>
@@ -111,7 +110,7 @@ public class NumberRenderer<SOURCE>
      *            <code>null</code>
      * @param locale
      *            the locale in which to display numbers
-     * 
+     *
      */
     public NumberRenderer(ValueProvider<SOURCE, Number> valueProvider,
             Locale locale) {

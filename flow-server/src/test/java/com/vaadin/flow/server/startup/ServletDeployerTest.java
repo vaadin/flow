@@ -230,7 +230,8 @@ public class ServletDeployerTest {
         params.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
         params.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 "false");
-        deployer.contextInitialized(getContextEvent(true, true,
+        deployer.contextInitialized(getContextEvent(
+                true, true,
                 getServletRegistration("testServlet1", TestVaadinServlet.class,
                         singletonList("/test1/*"),
                         singletonMap(
@@ -307,17 +308,15 @@ public class ServletDeployerTest {
     }
 
     private void assertMappingsCount(int numServlets, int numMappings) {
-        assertEquals(
-                String.format(
-                        "Expected to have exactly '%d' servlets, but got '%d': '%s'",
-                        numServlets, servletNames.getValues().size(),
-                        servletNames.getValues()),
-                servletNames.getValues().size(), numServlets);
-        assertEquals(
-                String.format(
-                        "Expected to have exactly '%d' mappings, but got '%d': '%s'",
-                        numMappings, servletMappings.getValues().size(),
-                        servletMappings.getValues()),
+        assertEquals(String.format(
+                "Expected to have exactly '%d' servlets, but got '%d': '%s'",
+                numServlets, servletNames.getValues().size(),
+                servletNames.getValues()), servletNames.getValues().size(),
+                numServlets);
+        assertEquals(String.format(
+                "Expected to have exactly '%d' mappings, but got '%d': '%s'",
+                numMappings, servletMappings.getValues().size(),
+                servletMappings.getValues()),
                 servletMappings.getValues().size(), numMappings);
     }
 
@@ -325,11 +324,9 @@ public class ServletDeployerTest {
             String mappedPath) {
         int servletNameIndex = servletNames.getValues().indexOf(servletName);
         int pathIndex = servletMappings.getValues().indexOf(mappedPath);
-        assertTrue(
-                String.format(
-                        "Did not find servlet name '%s' among added servlet names: '%s'",
-                        servletName, servletNames.getValues()),
-                servletNameIndex >= 0);
+        assertTrue(String.format(
+                "Did not find servlet name '%s' among added servlet names: '%s'",
+                servletName, servletNames.getValues()), servletNameIndex >= 0);
         assertTrue(
                 String.format(
                         "Did not find mapped path '%s' among added paths: '%s'",
@@ -366,7 +363,7 @@ public class ServletDeployerTest {
 
         expect(resourceProvider.getApplicationResources(
                 anyObject(VaadinContext.class), anyObject()))
-                        .andAnswer(() -> Collections.emptyList()).anyTimes();
+                .andAnswer(() -> Collections.emptyList()).anyTimes();
 
         replay(resourceProvider);
 
@@ -380,7 +377,7 @@ public class ServletDeployerTest {
                 .andReturn(this.getClass().getClassLoader()).anyTimes();
         expect(contextMock.addServlet(EasyMock.capture(servletNames),
                 anyObject(Class.class))).andAnswer(() -> dynamicMock)
-                        .anyTimes();
+                .anyTimes();
 
         expect(contextMock.getResource(EasyMock.anyString())).andReturn(null)
                 .anyTimes();
@@ -396,34 +393,33 @@ public class ServletDeployerTest {
         if (addRoutes) {
             expect(contextMock.getAttribute(
                     ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class
-                            .getName())).andAnswer(() -> {
-                                ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
+                            .getName()))
+                    .andAnswer(() -> {
+                        ApplicationRouteRegistry registry = new ApplicationRouteRegistry();
 
-                                RouteConfiguration routeConfiguration = RouteConfiguration
-                                        .forRegistry(registry);
-                                routeConfiguration.update(() -> {
-                                    routeConfiguration.getHandledRegistry()
-                                            .clean();
-                                    routeConfiguration.setAnnotatedRoute(
-                                            ComponentWithRoute.class);
-                                });
-                                return new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(
-                                        registry);
-                            }).anyTimes();
+                        RouteConfiguration routeConfiguration = RouteConfiguration
+                                .forRegistry(registry);
+                        routeConfiguration.update(() -> {
+                            routeConfiguration.getHandledRegistry().clean();
+                            routeConfiguration.setAnnotatedRoute(
+                                    ComponentWithRoute.class);
+                        });
+                        return new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(
+                                registry);
+                    }).anyTimes();
         }
         if (addWebComponents) {
             expect(contextMock.getAttribute(
                     WebComponentConfigurationRegistry.class.getName()))
-                            .andAnswer(() -> {
-                                WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry() {
-                                };
-                                registry.setConfigurations(
-                                        Collections.singleton(
-                                                new WebComponentExporter.WebComponentConfigurationFactory()
-                                                        .create(new FakeExporter())));
+                    .andAnswer(() -> {
+                        WebComponentConfigurationRegistry registry = new WebComponentConfigurationRegistry() {
+                        };
+                        registry.setConfigurations(Collections.singleton(
+                                new WebComponentExporter.WebComponentConfigurationFactory()
+                                        .create(new FakeExporter())));
 
-                                return registry;
-                            }).anyTimes();
+                        return registry;
+                    }).anyTimes();
 
         }
 

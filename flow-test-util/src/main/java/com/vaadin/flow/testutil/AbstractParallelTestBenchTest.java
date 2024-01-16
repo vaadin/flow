@@ -68,7 +68,7 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     @Before
     @Override
     public void setup() throws Exception {
-        if(USE_HUB) {
+        if (USE_HUB) {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
         }
         super.setup();

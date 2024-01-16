@@ -149,7 +149,7 @@ public class TemplateDataAnalyzer {
 
         /**
          * Gets template element data (attribute values).
-         * 
+         *
          * @param id
          *            the id of the element
          * @return template data

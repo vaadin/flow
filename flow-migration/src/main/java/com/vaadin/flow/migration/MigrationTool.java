@@ -170,8 +170,8 @@ public class MigrationTool {
                 throw new CommandArgumentException(exception);
             }
         } else {
-            getLogger().debug(
-                    "Annotation rewrite strategy is not explicitly set");
+            getLogger()
+                    .debug("Annotation rewrite strategy is not explicitly set");
         }
     }
 

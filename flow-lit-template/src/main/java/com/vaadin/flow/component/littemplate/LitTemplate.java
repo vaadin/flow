@@ -69,7 +69,7 @@ public abstract class LitTemplate extends Component implements HasStyle {
      * {@link #LitTemplate(LitTemplateParser, VaadinService)} via
      * {@code VaadinService.getCurrent()} as a service and parser created via
      * {@link LitTemplateParserFactory} retrieved from {@link Instantiator}.
-     * 
+     *
      * @see #LitTemplate(LitTemplateParser, VaadinService)
      * @see VaadinService
      * @see LitTemplateParserFactory

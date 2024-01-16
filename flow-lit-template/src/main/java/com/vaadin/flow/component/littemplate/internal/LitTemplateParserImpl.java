@@ -98,10 +98,10 @@ public class LitTemplateParserImpl implements LitTemplateParser {
 
         WebBrowser browser = FakeBrowser.getEs6();
         DependencyFilter.FilterContext filterContext = new DependencyFilter.FilterContext(
-            service, browser);
+                service, browser);
         for (DependencyFilter filter : service.getDependencyFilters()) {
             dependencies = filter.filter(new ArrayList<>(dependencies),
-                filterContext);
+                    filterContext);
         }
 
         Pair<Dependency, String> chosenDep = null;
@@ -161,17 +161,18 @@ public class LitTemplateParserImpl implements LitTemplateParser {
     }
 
     /**
-     * Checks that the given dependency matches the given tag name, ignoring the extension of the file.
+     * Checks that the given dependency matches the given tag name, ignoring the
+     * extension of the file.
      *
      * @param dependency
-     *     dependency to check
+     *            dependency to check
      * @param tag
-     *     tag name for element
+     *            tag name for element
      * @return true if dependency file matches the tag name.
      */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
         String url = FilenameUtils.removeExtension(dependency.getUrl())
-            .toLowerCase(Locale.ENGLISH);
+                .toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }
 
@@ -212,8 +213,8 @@ public class LitTemplateParserImpl implements LitTemplateParser {
                 }
             }
             if (!cache.containsKey(url) && jsonStats != null) {
-                cache.put(url,
-                        BundleLitParser.getSourceFromStatistics(url, jsonStats));
+                cache.put(url, BundleLitParser.getSourceFromStatistics(url,
+                        jsonStats));
             }
             return cache.get(url);
         } finally {

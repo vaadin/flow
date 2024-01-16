@@ -25,7 +25,7 @@ import org.openqa.selenium.By;
 /**
  * @author Vaadin Ltd
  * @since 1.0
- * 
+ *
  */
 public class ElementRemoveItselfIT extends ChromeBrowserTest {
 

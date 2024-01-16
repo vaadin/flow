@@ -38,8 +38,8 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  * that the injected element will have functional limitations on the server
  * side.
  *
- * Recommend using {@code LitTemplate} instead of PolymerTemplate as Polymer will
- * be deprecated in the next LTS version.
+ * Recommend using {@code LitTemplate} instead of PolymerTemplate as Polymer
+ * will be deprecated in the next LTS version.
  *
  * @param <M>
  *            a model class that will be used for template data propagation
@@ -80,13 +80,13 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      */
     protected PolymerTemplate(TemplateParser parser, VaadinService service) {
         if (service == null) {
-            throw new IllegalStateException(
-                    VaadinService.class.getSimpleName() + " instance is null. "
-                            + "It means that you are trying to create "
-                            + "a component instance outside of servlet request thread "
-                            + "which is not thread safe. Any component "
-                            + "instantiation logic should be protected by a session lock."
-                            + "Call your logic inside the UI::access method.");
+            throw new IllegalStateException(VaadinService.class.getSimpleName()
+                    + " instance is null. "
+                    + "It means that you are trying to create "
+                    + "a component instance outside of servlet request thread "
+                    + "which is not thread safe. Any component "
+                    + "instantiation logic should be protected by a session lock."
+                    + "Call your logic inside the UI::access method.");
         }
         TemplateInitializer templateInitializer = new TemplateInitializer(this,
                 parser, service);

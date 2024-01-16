@@ -61,21 +61,20 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      * Use the returned {@link ShortcutRegistration} to fluently configure the
      * shortcut.
      * <p>
-     * By default, the returned {@code ShortcutRegistration} allows
-     * browser's default behavior, unlike other {@code ShortcutRegistrations}.
-     * This is used to make sure that value synchronization of input fields is
-     * not blocked for the shortcut key (e.g. Enter key).
-     * To change this behavior, call
-     * {@link ShortcutRegistration#setBrowserDefaultAllowed(boolean)}.
+     * By default, the returned {@code ShortcutRegistration} allows browser's
+     * default behavior, unlike other {@code ShortcutRegistrations}. This is
+     * used to make sure that value synchronization of input fields is not
+     * blocked for the shortcut key (e.g. Enter key). To change this behavior,
+     * call {@link ShortcutRegistration#setBrowserDefaultAllowed(boolean)}.
      *
      * @param key
-     *              primary {@link Key} used to trigger the shortcut. Cannot
-     *              be null.
+     *            primary {@link Key} used to trigger the shortcut. Cannot be
+     *            null.
      * @param keyModifiers
-     *              {@link KeyModifier KeyModifiers} that need to be pressed
-     *              along with the {@code key} for the shortcut to trigger
-     * @return  {@link ShortcutRegistration} for configuring the shortcut and
-     *          removing
+     *            {@link KeyModifier KeyModifiers} that need to be pressed along
+     *            with the {@code key} for the shortcut to trigger
+     * @return {@link ShortcutRegistration} for configuring the shortcut and
+     *         removing
      */
     default ShortcutRegistration addClickShortcut(Key key,
             KeyModifier... keyModifiers) {

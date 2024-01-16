@@ -31,8 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Abstract layout to test various resourcess accessibility.
- * Contains:
+ * Abstract layout to test various resourcess accessibility. Contains:
  * <ul>
  * <li>Static CSS</li>
  * <li>Dynamically loadable CSS.</li>
@@ -78,11 +77,11 @@ public abstract class DependencyLayout extends Div {
 
         Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
-        StreamRegistration jsStreamRegistration = VaadinSession.getCurrent().getResourceRegistry()
-                .registerResource(getJsResource());
+        StreamRegistration jsStreamRegistration = VaadinSession.getCurrent()
+                .getResourceRegistry().registerResource(getJsResource());
         jsOrder.addEventListener("click", event -> {
-            UI.getCurrent().getPage()
-                    .addJavaScript("base://" + jsStreamRegistration.getResourceUri().toString());
+            UI.getCurrent().getPage().addJavaScript("base://"
+                    + jsStreamRegistration.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
                 .createButton("Load 'everything blue' stylesheet")
@@ -96,7 +95,6 @@ public abstract class DependencyLayout extends Div {
                 .createButton("Run delayed push request")
                 .setAttribute("id", RUN_PUSH_ID);
 
-
         pushWorks = ElementFactory.createDiv(NO_PUSH_YET_TEXT);
         pushWorks.setAttribute("id", PUSH_SIGNAL_ID);
         runPush.addEventListener("click", event -> {
@@ -108,12 +106,12 @@ public abstract class DependencyLayout extends Div {
                         Thread.sleep(100);
                         ui.access(() -> {
                             try {
-                                //if push does not work, we'll fail here
+                                // if push does not work, we'll fail here
                                 ui.push();
                             } catch (Throwable e) {
-                                LoggerFactory
-                                        .getLogger(DependencyLayout.class)
-                                        .debug("Push does not work (most probably not a problem)", e);
+                                LoggerFactory.getLogger(DependencyLayout.class)
+                                        .debug("Push does not work (most probably not a problem)",
+                                                e);
                                 return;
                             }
                             pushWorks.setText(PUSH_WORKS_TEXT);
@@ -127,7 +125,8 @@ public abstract class DependencyLayout extends Div {
                 }
             }.start();
         });
-        getElement().appendChild(jsOrder, allBlue, runPush, ElementFactory.createHr(),pushWorks);
+        getElement().appendChild(jsOrder, allBlue, runPush,
+                ElementFactory.createHr(), pushWorks);
     }
 
     private StreamResource getJsResource() {

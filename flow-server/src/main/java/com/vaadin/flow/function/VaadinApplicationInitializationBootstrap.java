@@ -31,7 +31,7 @@ import com.vaadin.flow.server.VaadinContext;
  * available via {@link VaadinContext#getAttribute(Class)} and bootstraps all
  * initializers (basically {@link ServletContainerInitializer} impls) that
  * depends on {@link Lookup} presence.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -41,7 +41,7 @@ public interface VaadinApplicationInitializationBootstrap {
 
     /**
      * Bootstraps Vaadin application initialization.
-     * 
+     *
      * @param lookup
      *            a lookup instance required for initialization
      * @throws ServletException

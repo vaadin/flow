@@ -45,7 +45,7 @@ import com.vaadin.flow.server.VaadinServletContext;
  * Standard servlet initializer for collecting all SPI implementations.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -128,7 +128,7 @@ public class LookupServletContainerInitializer
      * method) will be filtered via checking whether they are assignable to the
      * service types and the resulting classes will be instantiated via
      * reflection.
-     * 
+     *
      * @return a collection of service types which should be available via
      *         Lookup
      * @see LookupInitializer#initialize(VaadinContext, Map,

@@ -246,12 +246,10 @@ public class FrontendUtilsTest {
                 "--config", "./webpack.config.js", "--port 57799", "-d",
                 "--inline=false", "--progress", "--colors");
         String wrappedCommand = FrontendUtils.commandToString(".", command);
-        Assert.assertEquals(
-                "\n" + "./node/node \\ \n"
-                        + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
-                        + "    --config ./webpack.config.js --port 57799 -d \\ \n"
-                        + "    --inline=false --progress --colors \n",
-                wrappedCommand);
+        Assert.assertEquals("\n" + "./node/node \\ \n"
+                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
+                + "    --config ./webpack.config.js --port 57799 -d \\ \n"
+                + "    --inline=false --progress --colors \n", wrappedCommand);
     }
 
     @Test
@@ -260,9 +258,8 @@ public class FrontendUtilsTest {
                 "/somewhere/not/disclosable/node_modules/webpack-dev-server/bin/webpack-dev-server.js");
         String wrappedCommand = FrontendUtils
                 .commandToString("/somewhere/not/disclosable", command);
-        Assert.assertEquals(
-                "\n" + "./node/node \\ \n"
-                        + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n",
+        Assert.assertEquals("\n" + "./node/node \\ \n"
+                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n",
                 wrappedCommand);
     }
 
@@ -477,7 +474,7 @@ public class FrontendUtilsTest {
 
         new TaskRunNpmInstall(finder, nodeUpdater, false, true, "v16.16.0",
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false)
-                        .execute();
+                .execute();
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
 

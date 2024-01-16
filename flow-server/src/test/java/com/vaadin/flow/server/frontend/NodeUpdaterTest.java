@@ -234,10 +234,10 @@ public class NodeUpdaterTest {
                     .getPlatformPinnedDependencies();
             Assert.assertNull(pinnedVersions);
 
-            Mockito.verify(logger, Mockito.times(1))
-                    .info("Couldn't find {} file to pin dependency versions for core components."
+            Mockito.verify(logger, Mockito.times(1)).info(
+                    "Couldn't find {} file to pin dependency versions for core components."
                             + " Transitive dependencies won't be pinned for npm/pnpm.",
-                            Constants.VAADIN_CORE_VERSIONS_JSON);
+                    Constants.VAADIN_CORE_VERSIONS_JSON);
         }
     }
 

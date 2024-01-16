@@ -84,7 +84,7 @@ public class PathLookup<T> {
 
     /**
      * Gets the item for the provided full path.
-     * 
+     *
      * @param fullPath
      *            the fully qualified path for which to find an item
      * @return the item corresponding to the path, or an empty optional if there

@@ -160,8 +160,8 @@ public class CustomizedSystemMessages extends SystemMessages {
     }
 
     /**
-     * Sets the URL the user will be redirected to after dismissing a
-     * "cookies disabled" message.
+     * Sets the URL the user will be redirected to after dismissing a "cookies
+     * disabled" message.
      *
      * Default value is {@literal null}.
      *

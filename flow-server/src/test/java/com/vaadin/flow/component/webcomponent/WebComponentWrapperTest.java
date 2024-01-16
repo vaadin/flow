@@ -208,13 +208,13 @@ public class WebComponentWrapperTest {
 
     /**
      * @param exporter
-     *         exporter of the correct type, defines C
+     *            exporter of the correct type, defines C
      * @param element
-     *         nullable root element
+     *            nullable root element
      * @param ui
-     *         nullable WebComponentUI
+     *            nullable WebComponentUI
      * @param <C>
-     *         type of the exported component
+     *            type of the exported component
      * @return web component wrapper
      */
     private <C extends Component> WebComponentBinding<C> constructWrapperAndGetBinding(

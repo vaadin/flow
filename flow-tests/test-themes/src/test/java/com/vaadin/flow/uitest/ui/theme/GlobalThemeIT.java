@@ -46,19 +46,18 @@ public class GlobalThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        Assert.assertEquals(
-            "Imported FontAwesome css file should be applied.",
-            "\"Font Awesome 5 Free\"", $(SpanElement.class).id(FONTAWESOME_ID)
-                        .getCssValue("font-family"));
+        Assert.assertEquals("Imported FontAwesome css file should be applied.",
+                "\"Font Awesome 5 Free\"", $(SpanElement.class)
+                        .id(FONTAWESOME_ID).getCssValue("font-family"));
 
         String iconUnicode = getCssPseudoElementValue(FONTAWESOME_ID,
-                                          "::before");
+                "::before");
         Assert.assertEquals(
-           "Font-Icon from FontAwesome css file should be applied.",
-           "\"\uf0f4\"", iconUnicode);
+                "Font-Icon from FontAwesome css file should be applied.",
+                "\"\uf0f4\"", iconUnicode);
 
-        getDriver().get(getRootURL() +
-                "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
+        getDriver().get(getRootURL()
+                + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
         Assert.assertFalse("Font resource should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -71,11 +70,11 @@ public class GlobalThemeIT extends ChromeBrowserTest {
     }
 
     private String getCssPseudoElementValue(String elementId,
-                                            String pseudoElement) {
-        String script = "return window.getComputedStyle(" +
-                                    "document.getElementById(arguments[0])" +
-                                ", arguments[1]).content";
-        JavascriptExecutor js = (JavascriptExecutor)driver;
+            String pseudoElement) {
+        String script = "return window.getComputedStyle("
+                + "document.getElementById(arguments[0])"
+                + ", arguments[1]).content";
+        JavascriptExecutor js = (JavascriptExecutor) driver;
         return (String) js.executeScript(script, elementId, pseudoElement);
     }
 }

@@ -145,8 +145,8 @@ public class CallbackDataProvider<T, F>
     @Override
     public Object getId(T item) {
         Object itemId = idGetter.apply(item);
-        assert itemId != null : "CallbackDataProvider got null as an id for item: "
-                + item;
+        assert itemId != null
+                : "CallbackDataProvider got null as an id for item: " + item;
         return itemId;
     }
 }
