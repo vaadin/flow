@@ -243,7 +243,8 @@ public class VaadinServletService extends VaadinService {
     @Override
     public URL getStaticResource(String path) {
         try {
-            return getStaticResource(getServlet().getServletContext(), path);
+            return VaadinServletService
+                    .getStaticResource(getServlet().getServletContext(), path);
         } catch (MalformedURLException e) {
             getLogger().warn("Error finding resource for '{}'", path, e);
         }
