@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.Assert;
@@ -65,6 +66,12 @@ public class GenerateNpmBOMMojoTest {
         Assert.assertFalse(Files.exists(Paths.get(bomFilename)));
         mojo.execute();
         Assert.assertTrue(Files.exists(Paths.get(bomFilename)));
+    }
+
+    @Test(expected = MojoFailureException.class)
+    public void shouldFailWhenNoPackageJsonIsPresent() throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo, "packageManifest", "");
+        mojo.execute();
     }
 
 }

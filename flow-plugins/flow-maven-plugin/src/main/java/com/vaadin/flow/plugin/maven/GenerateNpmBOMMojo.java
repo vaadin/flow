@@ -140,11 +140,12 @@ public class GenerateNpmBOMMojo extends AbstractMojo {
             createDirectoryIfNotExists();
             InvocationResult result = invoker.execute(request);
             if (result.getExitCode() != 0) {
-                throw new RuntimeException("Frontend SBOM generation failed.");
+                throw new MojoFailureException(
+                        "Frontend SBOM generation failed.");
             }
         } catch (MavenInvocationException e) {
-            throw new RuntimeException("Error during Frontend SBOM generation",
-                    e);
+            throw new MojoExecutionException(
+                    "Error during Frontend SBOM generation", e);
         }
     }
 
