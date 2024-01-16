@@ -942,10 +942,6 @@ export class VaadinDevTools extends LitElement {
       this.elementTelemetry();
     };
     frontendConnection.onConnectionError = onConnectionError;
-    frontendConnection.reconnectionUrl = (token: string) => {
-      this.conf.token = token;
-      return this.getDedicatedWebSocketUrl()!;
-    }
     frontendConnection.onReload = onReload;
     frontendConnection.onUpdate = onUpdate;
     frontendConnection.onStatusChange = (status: ConnectionStatus) => {

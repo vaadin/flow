@@ -14,12 +14,16 @@
  * the License.
  */
 
-package com.vaadin.flow.server.communication;
+package com.vaadin.flow.server;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HexFormat;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -39,15 +43,45 @@ public class DevToolsToken implements Serializable {
     /**
      * Random token to ensure dev-tools websocket connections.
      */
-    private static final String RANDOM_DEV_TOOLS_TOKEN = UUID.randomUUID()
-            .toString();
+    private static String randomDevToolsToken = UUID.randomUUID().toString();
 
     /**
-     * Signed token, composed by the random token and its signature, joined by
-     * one underscore character.
+     * Initialize the dev-tools token, by trying to getz
+     *
+     * @param vaadinService
+     *            Vaadin service instance
      */
-    private static final String SIGNED_DEV_TOOLS_TOKEN = RANDOM_DEV_TOOLS_TOKEN
-            + "_" + singValue(RANDOM_DEV_TOOLS_TOKEN);
+    static synchronized void init(VaadinService vaadinService) {
+        String token = randomDevToolsToken;
+        File projectFolder = vaadinService.getDeploymentConfiguration()
+                .getProjectFolder();
+        if (projectFolder != null) {
+            String uniqueUid = UUID
+                    .nameUUIDFromBytes((projectFolder.getAbsolutePath())
+                            .getBytes(StandardCharsets.UTF_8))
+                    .toString();
+            File tokenFile = new File(System.getProperty("java.io.tmpdir"),
+                    uniqueUid);
+            if (tokenFile.exists()) {
+                try {
+                    randomDevToolsToken = UUID
+                            .fromString(Files.readString(tokenFile.toPath()))
+                            .toString();
+                } catch (Exception e) {
+                    LoggerFactory.getLogger(DevToolsToken.class).debug(
+                            "Cannot read dev-tools token file, using a random new token. Browser page might need a reload to make dev-tools websocket establish a connection.");
+                }
+            } else {
+                randomDevToolsToken = UUID.randomUUID().toString();
+                try {
+                    Files.writeString(tokenFile.toPath(), token);
+                } catch (IOException e) {
+                    LoggerFactory.getLogger(DevToolsToken.class).debug(
+                            "Cannot write dev-tools token file. A new token will be generated on server restart.");
+                }
+            }
+        }
+    }
 
     private static final Pattern TOKEN_DELIMITER = Pattern.compile("_");
 
@@ -57,7 +91,8 @@ public class DevToolsToken implements Serializable {
      * @return signed token, never {@literal null}.
      */
     public static String token() {
-        return SIGNED_DEV_TOOLS_TOKEN;
+        // return SIGNED_DEV_TOOLS_TOKEN;
+        return randomDevToolsToken;
     }
 
     private static String singValue(String value) {
@@ -65,7 +100,7 @@ public class DevToolsToken implements Serializable {
             Mac hmac = Mac.getInstance("HmacSHA256");
             String machineId = MachineId.get();
             if (machineId.isEmpty()) {
-                machineId = RANDOM_DEV_TOOLS_TOKEN;
+                machineId = randomDevToolsToken;
             }
             SecretKeySpec secretKeySpec = new SecretKeySpec(
                     machineId.getBytes(UTF_8), "HmacSHA256");
@@ -119,7 +154,7 @@ public class DevToolsToken implements Serializable {
             String clientSignedValue = parts[1];
             String serverSignedValue = singValue(clientToken);
             if (clientSignedValue.equals(serverSignedValue)) {
-                return RANDOM_DEV_TOOLS_TOKEN.equals(clientToken)
+                return randomDevToolsToken.equals(clientToken)
                         ? TokenValidation.OK
                         : TokenValidation.EXPIRED;
             }

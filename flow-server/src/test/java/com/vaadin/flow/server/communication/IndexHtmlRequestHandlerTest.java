@@ -701,7 +701,7 @@ public class IndexHtmlRequestHandlerTest {
 
     // Regular expression to match a UUID in the format 8-4-4-4-12
     private static final Pattern UUID_PATTERN = Pattern.compile(
-            "\"token\":\"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}_[0-9a-f]+\"");
+            "\"token\":\"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\"");
 
     private static boolean isTokenPresent(String htmlContent) {
         Matcher matcher = UUID_PATTERN.matcher(htmlContent);

@@ -24,20 +24,18 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.communication.DevToolsToken;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 
 public class DebugWindowConnectionTest {
@@ -117,36 +115,6 @@ public class DebugWindowConnectionTest {
         Mockito.verify(resource, times(0)).suspend(-1);
         Mockito.verify(broadcaster, times(0))
                 .broadcast("{\"command\": \"hello\"}", resource);
-    }
-
-    @Test
-    public void onconnect_should_request_reconnection_if_invalid_token_is_expired() {
-        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        try (MockedStatic<DevToolsToken> devToolsToken = Mockito
-                .mockStatic(DevToolsToken.class)) {
-            devToolsToken.when(DevToolsToken::token).thenReturn("oldToken",
-                    "newToken");
-            devToolsToken.when(() -> DevToolsToken.validateToken(anyString()))
-                    .thenReturn(DevToolsToken.TokenValidation.INVALID);
-            devToolsToken.when(() -> DevToolsToken.validateToken("oldToken"))
-                    .thenReturn(DevToolsToken.TokenValidation.EXPIRED);
-            devToolsToken.when(() -> DevToolsToken.validateToken("newToken"))
-                    .thenReturn(DevToolsToken.TokenValidation.OK);
-
-            createMockRequestWithToken(resource, DevToolsToken.token());
-
-            Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
-            Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-
-            reload.onConnect(resource);
-
-            Assert.assertFalse(reload.isLiveReload(resource));
-            Mockito.verify(resource).suspend(-1);
-            Mockito.verify(broadcaster).broadcast(
-                    "{\"command\": \"reconnect\", \"token\": \"newToken\"}",
-                    resource);
-        }
-
     }
 
     @Test

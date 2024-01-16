@@ -42,10 +42,10 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
-import com.vaadin.flow.server.communication.DevToolsToken;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -197,12 +197,9 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onConnect(AtmosphereResource resource) {
-        DevToolsToken.TokenValidation validation = DevToolsToken
-                .validateToken(resource.getRequest().getParameter("token"));
-        if (validation == DevToolsToken.TokenValidation.OK) {
+        if (DevToolsToken.token()
+                .equals(resource.getRequest().getParameter("token"))) {
             handleConnect(resource);
-        } else if (validation == DevToolsToken.TokenValidation.EXPIRED) {
-            forceReconnection(resource);
         } else {
             getLogger().warn(
                     "Connection denied because of a missing or invalid token. The host is probably not on the allow list");
