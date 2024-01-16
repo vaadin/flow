@@ -773,7 +773,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         ]
       }),
       // The React plugin provides fast refresh and debug source info
-      reactPlugin({
+      devMode && reactPlugin({
         include: '**/*.tsx',
         babel: {
           // We need to use babel to provide the source information for it to be correct
