@@ -48,7 +48,7 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
  * @author Vaadin Ltd
  *
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(WebSecurityCustomizer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 public class SpringSecurityAutoConfiguration {
