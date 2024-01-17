@@ -33,17 +33,24 @@ public class LicenseCheckTest {
     private static final Set<String> whitelist = new HashSet<>();
     static {
         whitelist.add("http://www.apache.org/licenses/LICENSE-2.0");
+        whitelist.add("https://www.apache.org/licenses/LICENSE-2.0");
         whitelist.add("http://www.apache.org/licenses/LICENSE-2.0.txt");
+        whitelist.add("https://www.apache.org/licenses/LICENSE-2.0.txt");
 
         whitelist.add("http://www.gnu.org/licenses/lgpl.html");
+        whitelist.add("https://www.gnu.org/licenses/lgpl.html");
         whitelist.add("http://www.gnu.org/licenses/lgpl.txt");
+        whitelist.add("https://www.gnu.org/licenses/lgpl.txt");
 
         whitelist.add("http://www.mozilla.org/MPL/2.0/");
+        whitelist.add("https://www.mozilla.org/MPL/2.0/");
 
         whitelist.add("http://opensource.org/licenses/MIT");
         whitelist.add("http://www.opensource.org/licenses/mit-license.php");
+        whitelist.add("https://opensource.org/license/mit/");
 
         whitelist.add("http://www.eclipse.org/legal/epl-v10.html");
+        whitelist.add("https://www.eclipse.org/legal/epl-v10.html");
 
         whitelist.add("https://glassfish.dev.java.net/public/CDDLv1.0.html");
         whitelist.add(
@@ -53,6 +60,7 @@ public class LicenseCheckTest {
                 "http://www.w3.org/Consortium/Legal/copyright-software-19980720");
 
         whitelist.add("http://www.gwtproject.org/terms.html");
+        whitelist.add("https://www.gwtproject.org/terms.html");
 
         /*
          * License names used by some projects that define their license to be
