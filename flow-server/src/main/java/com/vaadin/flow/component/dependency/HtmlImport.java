@@ -55,11 +55,12 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @author Vaadin Ltd
  * @since 1.0
  *
- * @deprecated Bower WebJars will be deprecated soon, so this functionality
- * will also be deprecated and eventually removed from Vaadin. Developers
- * should discontinue using compatibility mode and HtmlImports/WebJars in
- * favor of JsModules.
- * <a href="https://github.com/webjars/webjars/issues/2039">More info about deprecation here.</a>
+ * @deprecated Bower WebJars will be deprecated soon, so this functionality will
+ *             also be deprecated and eventually removed from Vaadin. Developers
+ *             should discontinue using compatibility mode and
+ *             HtmlImports/WebJars in favor of JsModules.
+ *             <a href="https://github.com/webjars/webjars/issues/2039">More
+ *             info about deprecation here.</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

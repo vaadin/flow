@@ -44,8 +44,8 @@ public class InitParameters implements Serializable {
     /**
      * enable it if your project is a Polymer 2.0 one, should be removed in V15
      *
-     * @deprecated Bower WebJars are being deprecated, so compatibility
-     * mode should no longer be used and will be removed in near future.
+     * @deprecated Bower WebJars are being deprecated, so compatibility mode
+     *             should no longer be used and will be removed in near future.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_COMPATIBILITY_MODE = "compatibilityMode";
@@ -53,8 +53,8 @@ public class InitParameters implements Serializable {
     /**
      * enable it if your project is a Polymer 2.0 one, should be removed in V15
      *
-     * @deprecated Bower WebJars are being deprecated, so compatibility
-     * mode should no longer be used and will be removed in near future.
+     * @deprecated Bower WebJars are being deprecated, so compatibility mode
+     *             should no longer be used and will be removed in near future.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_BOWER_MODE = "bowerMode";
