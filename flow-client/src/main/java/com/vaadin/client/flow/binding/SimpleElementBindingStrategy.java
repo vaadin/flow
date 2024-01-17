@@ -940,6 +940,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         StateNode node = context.node;
         String tag = getTag(attachNode);
 
+        // marker comment to highlight the place where it throws the error
+        // about flow-container cannot be found
+
         boolean failure = false;
         if (element == null) {
             failure = true;

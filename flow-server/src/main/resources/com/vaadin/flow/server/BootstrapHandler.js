@@ -15,7 +15,7 @@
      without a proper 'this' reference */
     log = console.log;
   }
-  
+
   var isInitializedInDom = function(appId) {
     var appDiv = document.getElementById(appId);
     if (!appDiv) {
@@ -33,8 +33,8 @@
     }
     return true;
   };
-  
-  /* 
+
+  /*
    * Needed for Testbench compatibility, but prevents any Vaadin 7 app from
    * bootstrapping unless the legacy vaadinBootstrap.js file is loaded before
    * this script.
@@ -59,13 +59,20 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
     }
   };
 
-  if (!window.Vaadin.Flow.clients) {
+  let flowInitialised = false;
+
+  if (window.Vaadin.Flow.clients) {
+    flowInitialised = Object.keys(window.Vaadin.Flow.clients)
+        .find((key) => key !== 'TypeScript');
+  }
+
+  if (!flowInitialised) {
     window.Vaadin.Flow.clients = {};
 
     window.Vaadin.Flow.pendingStartup = {};
     window.Vaadin.Flow.initApplication = function(appId, config) {
       var testbenchId = appId.replace(/-\d+$/, '');
-      
+
       if (apps[appId]) {
         if (window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.clients && window.Vaadin.Flow.clients[testbenchId] && window.Vaadin.Flow.clients[testbenchId].initializing) {
           throw "Application " + appId + " is already being initialized";
@@ -74,9 +81,9 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
           throw "Application " + appId + " already initialized";
         }
       }
-  
+
       log("init application", appId, config);
-      
+
       window.Vaadin.Flow.clients[testbenchId] = {
           isActive: function() {
             return true;
@@ -84,22 +91,22 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
           initializing: true,
           productionMode: mode
       };
-      
+
       var getConfig = function(name) {
         var value = config[name];
         return value;
       };
-      
+
       /* Export public data */
       var app = {
         getConfig: getConfig
       };
       apps[appId] = app;
-      
+
       if (!window.name) {
         window.name =  appId + '-' + Math.random();
       }
-  
+
       var widgetset = "client";
       if (!window.Vaadin.Flow.pendingStartup[widgetset]) {
         window.Vaadin.Flow.pendingStartup[widgetset] = {
@@ -226,7 +233,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       if(navigator.platform) {
         params['v-np'] = navigator.platform;
       }
-      
+
       /* Stringify each value (they are parsed on the server side) */
       Object.keys(params).forEach(function(key) {
         var value = params[key];
@@ -237,11 +244,11 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       return params;
     };
   }
-  
+
   log('Flow bootstrap loaded');
-  
+
   {{GWT_STAT_EVENTS}}
-  
+
   var uidl = {{INITIAL_UIDL}};
   var config = {{CONFIG_JSON}};
   var mode = {{PRODUCTION_MODE}};
