@@ -197,7 +197,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onConnect(AtmosphereResource resource) {
-        if (DevToolsToken.token()
+        if (DevToolsToken.getToken()
                 .equals(resource.getRequest().getParameter("token"))) {
             handleConnect(resource);
         } else {

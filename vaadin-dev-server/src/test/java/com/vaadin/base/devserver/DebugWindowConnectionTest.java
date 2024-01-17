@@ -46,7 +46,7 @@ public class DebugWindowConnectionTest {
     @Test
     public void onConnect_suspend_sayHello() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource, DevToolsToken.token());
+        createMockRequestWithToken(resource, DevToolsToken.getToken());
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
@@ -62,7 +62,7 @@ public class DebugWindowConnectionTest {
     @Test
     public void onconnect_should_allow_connection_if_valid_token_is_present() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource, DevToolsToken.token());
+        createMockRequestWithToken(resource, DevToolsToken.getToken());
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
@@ -120,10 +120,10 @@ public class DebugWindowConnectionTest {
     @Test
     public void reload_twoConnections_sendReloadCommand() {
         AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource1, DevToolsToken.token());
+        createMockRequestWithToken(resource1, DevToolsToken.getToken());
 
         AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource2, DevToolsToken.token());
+        createMockRequestWithToken(resource2, DevToolsToken.getToken());
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource1.getBroadcaster()).thenReturn(broadcaster);
@@ -185,7 +185,7 @@ public class DebugWindowConnectionTest {
     @Test
     public void reload_resourceIsDisconnected_reloadCommandIsNotSent() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
-        createMockRequestWithToken(resource, DevToolsToken.token());
+        createMockRequestWithToken(resource, DevToolsToken.getToken());
 
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);

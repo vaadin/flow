@@ -375,7 +375,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 backend -> devToolsConf.put("backend", backend.toString()));
         devToolsConf.put("liveReloadPort", liveReloadPort);
         if (isAllowedDevToolsHost(config, request)) {
-            devToolsConf.put("token", DevToolsToken.token());
+            devToolsConf.put("token", DevToolsToken.getToken());
         }
         addScript(indexDocument, String.format("""
                 window.Vaadin.devToolsPlugins = [];

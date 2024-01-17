@@ -86,7 +86,7 @@ public class DevToolsToken implements Serializable {
      *
      * @return dev-tools token, never {@literal null}.
      */
-    public static String token() {
+    public static String getToken() {
         return randomDevToolsToken;
     }
 
