@@ -42,10 +42,10 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
-import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -197,7 +197,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     @Override
     public void onConnect(AtmosphereResource resource) {
-        if (IndexHtmlRequestHandler.RANDOM_DEV_TOOLS_TOKEN
+        if (DevToolsToken.getToken()
                 .equals(resource.getRequest().getParameter("token"))) {
             handleConnect(resource);
         } else {
