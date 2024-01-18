@@ -267,6 +267,7 @@ public abstract class VaadinService implements Serializable {
                 addRouterUsageStatistics();
             }
             routeDataList.stream().map(Object::toString).forEach(logger::debug);
+            DevToolsToken.init(this);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
             UsageStatistics.markAsUsed("flow/pnpm", null);

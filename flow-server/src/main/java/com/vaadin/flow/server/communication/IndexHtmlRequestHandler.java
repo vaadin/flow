@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
@@ -49,6 +48,7 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
@@ -82,8 +82,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
-    public static final String RANDOM_DEV_TOOLS_TOKEN = UUID.randomUUID()
-            .toString();
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -377,7 +375,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 backend -> devToolsConf.put("backend", backend.toString()));
         devToolsConf.put("liveReloadPort", liveReloadPort);
         if (isAllowedDevToolsHost(config, request)) {
-            devToolsConf.put("token", RANDOM_DEV_TOOLS_TOKEN);
+            devToolsConf.put("token", DevToolsToken.getToken());
         }
         addScript(indexDocument, String.format("""
                 window.Vaadin.devToolsPlugins = [];
