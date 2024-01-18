@@ -26,16 +26,12 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataCommunicatorTest;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
 
@@ -79,7 +75,7 @@ public class HierarchicalCommunicatorDataTest {
     private TreeDataProvider<Item> dataProvider;
     private HierarchicalDataCommunicator<Item> communicator;
     private TreeData<Item> treeData;
-    private MockUI ui;
+    private DataCommunicatorTest.MockUI ui;
     private Element element;
 
     private boolean parentClearCalled = false;
@@ -137,7 +133,7 @@ public class HierarchicalCommunicatorDataTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ui = new MockUI();
+        ui = new DataCommunicatorTest.MockUI();
         element = new Element("div");
         ui.getElement().appendChild(element);
 
@@ -318,43 +314,6 @@ public class HierarchicalCommunicatorDataTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         ui.getInternals().getStateTree().collectChanges(ignore -> {
         });
-    }
-
-    public static class MockUI extends UI {
-
-        public MockUI() {
-            this(findOrCreateSession());
-        }
-
-        public MockUI(VaadinSession session) {
-            getInternals().setSession(session);
-            setCurrent(this);
-        }
-
-        @Override
-        protected void init(VaadinRequest request) {
-            // Do nothing
-        }
-
-        private static VaadinSession findOrCreateSession() {
-            VaadinSession session = VaadinSession.getCurrent();
-            if (session == null) {
-                session = new DataCommunicatorTest.AlwaysLockedVaadinSession(
-                        null);
-                VaadinSession.setCurrent(session);
-            }
-            return session;
-        }
-    }
-
-    public static class AlwaysLockedVaadinSession
-            extends DataCommunicatorTest.MockVaadinSession {
-
-        public AlwaysLockedVaadinSession(VaadinService service) {
-            super(service);
-            lock();
-        }
-
     }
 
 }

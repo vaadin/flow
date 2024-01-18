@@ -44,6 +44,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 @NotThreadSafe
 public class ErrorHandlerUtilTest {
@@ -128,6 +129,10 @@ public class ErrorHandlerUtilTest {
 
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
         Mockito.when(ui.getInternals()).thenReturn(internals);
+
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(config);
 
         session = new AlwaysLockedVaadinSession(vaadinService);
         VaadinContext context = new MockVaadinContext();

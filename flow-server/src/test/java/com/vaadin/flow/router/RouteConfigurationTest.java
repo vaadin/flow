@@ -31,6 +31,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 @NotThreadSafe
 public class RouteConfigurationTest {
@@ -50,6 +51,9 @@ public class RouteConfigurationTest {
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
         Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(config);
 
         VaadinService.setCurrent(vaadinService);
 

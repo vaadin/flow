@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.MockLogger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -70,6 +72,8 @@ public class VaadinSessionTest {
     public static class VaadinSessionWithMockLogger extends VaadinSession {
         public final MockLogger mockLogger = new MockLogger();
 
+        private DeploymentConfiguration config;
+
         public VaadinSessionWithMockLogger(VaadinService service) {
             super(service);
             mockLogger.includeStackTrace = true;
@@ -81,7 +85,11 @@ public class VaadinSessionTest {
         }
 
         @Override
-        protected void checkSetConfiguration() {
+        public DeploymentConfiguration getConfiguration() {
+            if (config == null) {
+                config = new MockDeploymentConfiguration();
+            }
+            return config;
         }
     }
 
@@ -139,11 +147,6 @@ public class VaadinSessionTest {
 
         session = new VaadinSessionWithMockLogger(mockService);
         mockService.storeSession(session, mockWrappedSession);
-
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        session.lock();
-        session.setConfiguration(configuration);
-        session.unlock();
 
         ui = new UI();
         vaadinRequest = new VaadinServletRequest(
@@ -496,7 +499,15 @@ public class VaadinSessionTest {
     public static class TestVaadinSession extends VaadinSession {
 
         public TestVaadinSession() {
-            super(null);
+            super(new MockVaadinServletService());
+            try {
+                Field serviceField = getClass().getSuperclass()
+                        .getDeclaredField("service");
+                serviceField.setAccessible(true);
+                serviceField.set(this, null);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -545,13 +556,11 @@ public class VaadinSessionTest {
         session.checkHasLock();
 
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
-        session.setConfiguration(configuration);
         session.mockLogger.clearLogs();
         session.checkHasLock();
         Assert.assertEquals("", session.mockLogger.getLogs());
 
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.ASSERT);
-        session.setConfiguration(configuration);
         session.checkHasLock();
     }
 
@@ -560,7 +569,7 @@ public class VaadinSessionTest {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
-        session.setConfiguration(configuration);
+        session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
@@ -581,7 +590,6 @@ public class VaadinSessionTest {
                 .getConfiguration();
         configuration.setProductionMode(true);
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.THROW);
-        session.setConfiguration(configuration);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
@@ -600,7 +608,7 @@ public class VaadinSessionTest {
                 .getConfiguration();
         configuration.setProductionMode(true);
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
-        session.setConfiguration(configuration);
+        session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 

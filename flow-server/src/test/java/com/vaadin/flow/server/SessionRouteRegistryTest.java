@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
@@ -50,6 +51,7 @@ import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class SessionRouteRegistryTest {
 
@@ -75,6 +77,11 @@ public class SessionRouteRegistryTest {
         Mockito.when(vaadinService.getContext()).thenReturn(context);
         Mockito.when(applicationConfiguration.isProductionMode())
                 .thenReturn(true);
+
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        config.setProductionMode(true);
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(config);
 
         VaadinService.setCurrent(vaadinService);
 
@@ -1238,6 +1245,11 @@ public class SessionRouteRegistryTest {
         @Override
         protected RouteRegistry getRouteRegistry() {
             return appRegistry;
+        }
+
+        @Override
+        public DeploymentConfiguration getDeploymentConfiguration() {
+            return new MockDeploymentConfiguration();
         }
     }
 }

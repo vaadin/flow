@@ -1,12 +1,12 @@
 package com.vaadin.base.devserver.themeeditor;
 
 import com.vaadin.base.devserver.MockVaadinContext;
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -44,6 +44,8 @@ public abstract class AbstractThemeEditorTest {
     protected final int INLINEADD_CREATE = 48;
     protected final int INLINEADD_ATTACH = 48;
 
+    private VaadinSession session;
+
     protected class TestThemeModifier extends ThemeModifier {
 
         public TestThemeModifier() {
@@ -57,8 +59,6 @@ public abstract class AbstractThemeEditorTest {
     }
 
     protected class TestJavaSourceModifier extends JavaSourceModifier {
-
-        private VaadinSession session = new MockVaadinSession(null);
 
         public TestJavaSourceModifier() {
             super(mockContext);
@@ -144,6 +144,13 @@ public abstract class AbstractThemeEditorTest {
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
         Mockito.when(service.getContext()).thenReturn(mockContext);
+
+        DeploymentConfiguration depConf = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(depConf.isProductionMode()).thenReturn(false);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(depConf);
+
+        session = new MockVaadinSession(service);
 
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);

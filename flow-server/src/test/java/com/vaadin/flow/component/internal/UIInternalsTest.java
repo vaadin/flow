@@ -39,6 +39,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class UIInternalsTest {
 
@@ -117,6 +118,10 @@ public class UIInternalsTest {
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
         Element body = new Element("body");
         Mockito.when(ui.getElement()).thenReturn(body);
+
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(config);
 
         internals = new UIInternals(ui);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(

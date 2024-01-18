@@ -23,6 +23,7 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -36,6 +37,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import static org.mockito.Mockito.mock;
@@ -242,9 +244,13 @@ public class WebComponentWrapperTest {
         Element body = new Element("body");
         when(ui.getElement()).thenReturn(body);
 
+        VaadinService vaadinService = Mockito.mock(VaadinService.class);
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(config);
+
         UIInternals internals = new UIInternals(ui);
-        internals.setSession(
-                new AlwaysLockedVaadinSession(mock(VaadinService.class)));
+        internals.setSession(new AlwaysLockedVaadinSession(vaadinService));
         when(ui.getInternals()).thenReturn(internals);
 
         Component parent = new Parent();

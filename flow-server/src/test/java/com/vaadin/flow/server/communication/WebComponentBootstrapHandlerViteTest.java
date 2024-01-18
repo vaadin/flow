@@ -199,7 +199,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setFrontendHotdeploy(false);
@@ -234,7 +233,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setFrontendHotdeploy(false);
@@ -300,7 +298,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setFrontendHotdeploy(false);
@@ -334,7 +331,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setApplicationOrSystemProperty(SERVLET_PARAMETER_STATISTICS_JSON,
