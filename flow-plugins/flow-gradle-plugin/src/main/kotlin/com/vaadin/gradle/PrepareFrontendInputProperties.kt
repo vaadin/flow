@@ -137,7 +137,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     public fun getForceProductionBuild(): Provider<Boolean> = config.forceProductionBuild
 
     @Input
-    public fun geReactRouterEnabled(): Provider<Boolean> = config.reactRouterEnabled
+    public fun getReactRouterEnabled(): Provider<Boolean> = config.reactRouterEnabled
 
     @Input
     @Optional
