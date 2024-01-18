@@ -261,18 +261,12 @@ public class StaticFileServer implements StaticFileHandler {
             return true;
         }
 
-        try {
-            if (devModeHandler != null
-                    && !"/index.html".equals(filenameWithPath)
-                    && devModeHandler.serveDevModeRequest(request, response)) {
-                // We don't know what the dev server can serve, but if it served
-                // something we are happy. There is always an index.html in the
-                // dev server but we never want to serve that one directly.
-                return true;
-            }
-        } catch (IOException e) {
-            getLogger().error("Unable to load " + filenameWithPath
-                    + " from the frontend dev server: " + e.getMessage());
+        if (devModeHandler != null && !"/index.html".equals(filenameWithPath)
+                && devModeHandler.serveDevModeRequest(request, response)) {
+            // We don't know what the dev server can serve, but if it served
+            // something we are happy. There is always an index.html in the
+            // dev server but we never want to serve that one directly.
+            return true;
         }
 
         URL resourceUrl = null;
