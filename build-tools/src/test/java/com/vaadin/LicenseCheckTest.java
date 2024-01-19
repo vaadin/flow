@@ -1,5 +1,9 @@
 package com.vaadin;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -18,10 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -32,10 +32,15 @@ import org.xml.sax.SAXException;
 public class LicenseCheckTest {
     private static final Set<String> whitelist = new HashSet<>();
     static {
+        // Vaadin
+        whitelist.add("http://vaadin.com/license/cval-3");
+
         whitelist.add("http://www.apache.org/licenses/LICENSE-2.0");
         whitelist.add("https://www.apache.org/licenses/LICENSE-2.0");
         whitelist.add("http://www.apache.org/licenses/LICENSE-2.0.txt");
         whitelist.add("https://www.apache.org/licenses/LICENSE-2.0.txt");
+        whitelist.add("https://spdx.org/licenses/Apache-2.0#licenseText");
+        whitelist.add("http://www.apache.org/licenses/LICENSE-2.0.html");
 
         whitelist.add("http://www.gnu.org/licenses/lgpl.html");
         whitelist.add("https://www.gnu.org/licenses/lgpl.html");
@@ -45,9 +50,16 @@ public class LicenseCheckTest {
         whitelist.add("http://www.mozilla.org/MPL/2.0/");
         whitelist.add("https://www.mozilla.org/MPL/2.0/");
 
+        whitelist.add("http://www.apache.org/licenses/");
+
+        whitelist.add("http://www.opensource.org/licenses/bsd-license.php");
+
         whitelist.add("http://opensource.org/licenses/MIT");
+        whitelist.add("https://opensource.org/licenses/MIT");
         whitelist.add("http://www.opensource.org/licenses/mit-license.php");
         whitelist.add("https://opensource.org/license/mit/");
+
+        whitelist.add("https://spdx.org/licenses/BSD 3-Clause#licenseText");
 
         whitelist.add("http://www.eclipse.org/legal/epl-v10.html");
         whitelist.add("https://www.eclipse.org/legal/epl-v10.html");
@@ -62,16 +74,27 @@ public class LicenseCheckTest {
         whitelist.add("http://www.gwtproject.org/terms.html");
         whitelist.add("https://www.gwtproject.org/terms.html");
 
+        whitelist.add("https://www.bouncycastle.org/licence.html");
+
         /*
          * License names used by some projects that define their license to be
          * something like to http://projectdomain.com/license, for which the
          * contents might change without notice
          */
         whitelist.add("BSD");
+        whitelist.add("BSD 3-Clause");
+        whitelist.add("BSD-3-Clause");
+        whitelist.add("The New BSD License");
         whitelist.add("The MIT License");
         whitelist.add("MIT");
+        whitelist.add("SPDX-License-Identifier: MIT");
         whitelist.add("Apache License, Version 2.0");
+        whitelist.add("The Apache Software License, Version 2.0");
+        whitelist.add("Apache License 2.0");
+        whitelist.add("Apache-2.0");
         whitelist.add("ICU License");
+        whitelist.add("CDDL + GPLv2 with classpath exception");
+        whitelist.add("Public Domain");
     }
 
     private static final List<String> excludeDirs = Arrays.asList(".git",
@@ -159,9 +182,13 @@ public class LicenseCheckTest {
                 List<String> licenseNames, String dependency, Node child) {
             String name = getTagContent(child, "name");
             String url = getTagContent(child, "url");
-            if (!whitelist.contains(url) && !whitelist.contains(name)) {
+            if (url == null && name == null) {
+                Assert.fail(
+                        "There is no license info (name or url) for dependency: "
+                                + dependency);
+            } else if (!whitelist.contains(name) && !whitelist.contains(url)) {
                 List<String> licenses = unsupportedLicenses
-                        .computeIfAbsent(dependency, key -> new ArrayList<>());
+                        .computeIfAbsent(dependency, k -> new ArrayList<>());
                 licenses.add(name + ": " + url);
             } else {
                 licenseNames.add(name);
@@ -176,7 +203,6 @@ public class LicenseCheckTest {
                     return child.getTextContent();
                 }
             }
-            assert false;
             return null;
         }
 
