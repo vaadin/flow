@@ -51,6 +51,7 @@
                 <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
                     <frontendDirectory>${project.basedir}/side-src/main/frontend</frontendDirectory>
+                    <reactRouterEnabled>false</reactRouterEnabled>
                 </configuration>
                 <executions>
                     <execution>
