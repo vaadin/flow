@@ -2098,7 +2098,11 @@ public class BundleValidationTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
+                "{\"dependencies\": {" + "    \"react\": \"18.2.0\",\n"
+                        + "    \"react-dom\": \"18.2.0\",\n"
+                        + "    \"react-router-dom\": \"6.18.0\",\n"
+                        + "    \"@types/react\": \"18.2.37\",\n"
+                        + "    \"@types/react-dom\": \"18.2.15\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 

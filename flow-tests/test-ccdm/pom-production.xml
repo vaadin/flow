@@ -52,6 +52,9 @@
                         <phase>compile</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <reactRouterEnabled>false</reactRouterEnabled>
+                </configuration>
             </plugin>
         </plugins>
     </build>
