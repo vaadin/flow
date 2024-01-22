@@ -12,7 +12,6 @@
   "devDependencies": {
     "vite": "5.0.12",
     "@vitejs/plugin-react": "4.2.1",
-    "@vitejs/plugin-react-swc": "3.5.0",
     "@rollup/plugin-replace": "5.0.5",
     "@rollup/pluginutils": "5.1.0",
     "@babel/preset-react": "^7",
