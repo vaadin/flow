@@ -279,9 +279,12 @@ public class StaticFileServer implements StaticFileHandler {
                         "Unable to load " + filenameWithPath
                                 + " from the frontend dev server: "
                                 + e.getMessage());
-            } catch (Exception ignore) {
+            } catch (Exception ee) {
                 // The server might have partly written an output. If so, let's
                 // just go with that
+                getLogger().trace(
+                        "Ignoring exception when writing dev server error response",
+                        ee);
             }
             return true;
         }
