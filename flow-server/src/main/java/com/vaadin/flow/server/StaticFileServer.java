@@ -271,8 +271,13 @@ public class StaticFileServer implements StaticFileHandler {
                 return true;
             }
         } catch (IOException e) {
-            getLogger().error("Unable to load " + filenameWithPath
-                    + " from the frontend dev server: " + e.getMessage());
+            if (getLogger().isTraceEnabled()) {
+                getLogger().trace("Unable to load " + filenameWithPath
+                        + " from the frontend dev server", e);
+            } else {
+                getLogger().error("Unable to load " + filenameWithPath
+                        + " from the frontend dev server: " + e.getMessage());
+            }
             try {
                 response.sendError(
                         HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(),
