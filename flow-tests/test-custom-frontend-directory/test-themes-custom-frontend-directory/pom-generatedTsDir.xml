@@ -51,6 +51,7 @@
                 <configuration>
                     <frontendDirectory>${project.basedir}/side-src/main/frontend</frontendDirectory>
                     <generatedTsFolder>${project.basedir}/target/the-frontend/generated</generatedTsFolder>
+                    <reactRouterEnabled>false</reactRouterEnabled>
                 </configuration>
                 <executions>
                     <execution>

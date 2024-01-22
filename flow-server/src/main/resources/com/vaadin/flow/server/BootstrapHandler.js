@@ -59,7 +59,14 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
     }
   };
 
-  if (!window.Vaadin.Flow.clients) {
+  let flowInitialised = false;
+
+  if (window.Vaadin.Flow.clients) {
+    flowInitialised = Object.keys(window.Vaadin.Flow.clients)
+        .find((key) => key !== 'TypeScript');
+  }
+
+  if (!flowInitialised) {
     window.Vaadin.Flow.clients = {};
 
     window.Vaadin.Flow.pendingStartup = {};
