@@ -16,7 +16,6 @@
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import { useEffect, useRef } from "react";
 import {
-    matchPath,
     matchRoutes,
     NavigateFunction,
     useLocation,
@@ -181,7 +180,7 @@ function navigateEventHandler(event) {
         // navigation. If not postponed clear + navigate will be executed.
         if (mountedContainer?.onBeforeLeave) {
             mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
-                prevent() {},
+                prevent() {}
             }, router);
         } else {
             // Navigate to a non flow view. Clean nodes and undefine container.
@@ -261,6 +260,15 @@ export default function Flow() {
                 window.removeEventListener('popstate', popstateHandler);
                 window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
             }
+
+            let matched = matchRoutes(routes, pathname);
+
+            // if router force navigated using 'Link' we will need to remove
+            // flow from the view
+            if(matched && matched[0].route.path !== "/*") {
+                mountedContainer?.parentNode?.removeChild(mountedContainer);
+                mountedContainer = undefined;
+            }
         };
     }, [pathname, search, hash]);
     return <output ref={ref} />;
@@ -270,7 +278,7 @@ export const serverSideRoutes = [
     { path: '/*', element: <Flow/> },
 ];
 
-export function listenerCollector() {
+(function () {
     "use strict";
     [Document, Window].forEach((cst) => {
         // save the original methods before overwriting them
@@ -344,4 +352,4 @@ export function listenerCollector() {
             };
         }
     });
-};
+})();
