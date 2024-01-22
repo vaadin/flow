@@ -135,7 +135,6 @@ public class NodeUpdaterTest {
         // Vite
         expectedDependencies.add("vite");
         expectedDependencies.add("@vitejs/plugin-react");
-        expectedDependencies.add("@vitejs/plugin-react-swc");
         expectedDependencies.add("rollup-plugin-brotli");
         expectedDependencies.add("@rollup/plugin-replace");
         expectedDependencies.add("@rollup/pluginutils");
@@ -144,6 +143,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("workbox-build");
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
+        expectedDependencies.add("@babel/preset-react");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
