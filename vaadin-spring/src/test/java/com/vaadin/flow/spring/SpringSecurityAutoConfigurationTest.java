@@ -16,10 +16,15 @@
 
 package com.vaadin.flow.spring;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.function.Function;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -36,9 +41,11 @@ import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AccessCheckDecision;
 import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AccessPathChecker;
+import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
+import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
@@ -124,6 +131,29 @@ class SpringSecurityAutoConfigurationTest {
                 .run(SpringSecurityAutoConfigurationTest::assertThatCustomNavigationAccessCheckerIsUsed);
     }
 
+    @Test
+    void securityBeansAreSerializable() {
+        this.contextRunner.run((context) -> {
+
+            // view access checker
+            assertThat(context).getBean(AccessAnnotationChecker.class)
+                    .satisfies(this::assertObjectIsSerializable);
+
+            assertThat(context).getBean(AnnotatedViewAccessChecker.class)
+                    .satisfies(this::assertObjectIsSerializable);
+
+            assertThat(context).getBean(AccessPathChecker.class)
+                    .satisfies(this::assertObjectIsSerializable);
+
+            assertThat(context).getBean(RoutePathAccessChecker.class)
+                    .satisfies(this::assertObjectIsSerializable);
+
+            assertThat(context).getBean(NavigationAccessControl.class)
+                    .satisfies(this::assertObjectIsSerializable);
+        });
+
+    }
+
     private static void assertThatCustomNavigationAccessCheckerIsUsed(
             AssertableWebApplicationContext context) {
         assertThat(context).hasSingleBean(NavigationAccessControl.class);
@@ -151,11 +181,29 @@ class SpringSecurityAutoConfigurationTest {
         Mockito.verify(navigationContext, Mockito.never()).neutral();
     }
 
+    private <T> void assertObjectIsSerializable(T instance) {
+        Object deserialized = Assertions.assertDoesNotThrow(() -> {
+            ByteArrayOutputStream bs = new ByteArrayOutputStream();
+            try (ObjectOutputStream out = new ObjectOutputStream(bs)) {
+                out.writeObject(instance);
+            }
+            byte[] data = bs.toByteArray();
+            try (ObjectInputStream in = new ObjectInputStream(
+                    new ByteArrayInputStream(data))) {
+
+                @SuppressWarnings("unchecked")
+                T readObject = (T) in.readObject();
+                return readObject;
+            }
+        });
+        Assertions.assertNotNull(deserialized, "Deserialized object is null");
+    }
+
     @TestConfiguration(proxyBeanMethods = false)
     static class CustomAccessPathChecker extends VaadinWebSecurity {
 
         @Bean
-        AccessPathChecker customAccessPathChecker() {
+        static AccessPathChecker customAccessPathChecker() {
             return DISABLED_PATH_CHECKER;
         }
     }
@@ -164,7 +212,7 @@ class SpringSecurityAutoConfigurationTest {
     static class CustomAccessAnnotationChecker extends VaadinWebSecurity {
 
         @Bean
-        AccessAnnotationChecker accessAnnotationChecker() {
+        static AccessAnnotationChecker accessAnnotationChecker() {
             return DISABLED_ANNOTATION_CHECKER;
         }
     }
