@@ -36,7 +36,6 @@
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
-        <module>build-tools</module>
     </modules>
 
     <organization>
@@ -635,6 +634,17 @@
                     com.vaadin.flow.testcategory.ThemeLiveReloadTests
                 </test.excludegroup>
             </properties>
+        </profile>
+        <profile>
+            <id>build-tools</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>build-tools</module>
+            </modules>
         </profile>
         <profile>
             <id>validation</id>
