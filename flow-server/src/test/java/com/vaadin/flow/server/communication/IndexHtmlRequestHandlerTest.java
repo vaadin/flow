@@ -23,6 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -48,6 +49,8 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
@@ -445,6 +448,36 @@ public class IndexHtmlRequestHandlerTest {
         verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
 
         Assert.assertNotNull(captor.getValue().getUI());
+    }
+
+    @Test
+    public void eagerServerLoad_requestParameters_forwardedToLocationObject()
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+
+        Map<String, String[]> requestParams = new HashMap<>();
+        requestParams.put("param1", new String[] { "a", "b" });
+        requestParams.put("param2", new String[] { "2" });
+        VaadinServletRequest request = createVaadinRequest("/view");
+        Mockito.when(request.getHttpServletRequest().getParameterMap())
+                .thenReturn(requestParams);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
+
+        ArgumentCaptor<IndexHtmlResponse> captor = ArgumentCaptor
+                .forClass(IndexHtmlResponse.class);
+
+        verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
+
+        Optional<UI> maybeUI = captor.getValue().getUI();
+        Assert.assertNotNull(maybeUI);
+        QueryParameters locationParams = maybeUI.get().getActiveViewLocation()
+                .getQueryParameters();
+        Assert.assertEquals(List.of("a", "b"),
+                locationParams.getParameters("param1"));
+        Assert.assertEquals(List.of("2"),
+                locationParams.getParameters("param2"));
     }
 
     @Test
