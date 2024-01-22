@@ -22,7 +22,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -240,7 +243,7 @@ public class VaadinServletService extends VaadinService {
     @Override
     public URL getStaticResource(String path) {
         try {
-            return getServlet().getServletContext().getResource(path);
+            return getStaticResource(getServlet().getServletContext(), path);
         } catch (MalformedURLException e) {
             getLogger().warn("Error finding resource for '{}'", path, e);
         }
@@ -315,5 +318,23 @@ public class VaadinServletService extends VaadinService {
     @Override
     protected void setDefaultClassLoader() {
         setClassLoader(getServlet().getServletContext().getClassLoader());
+    }
+
+    static URL getStaticResource(ServletContext servletContext, String path)
+            throws MalformedURLException {
+        URL url = servletContext.getResource(path);
+        if (url != null && Optional.ofNullable(servletContext.getServerInfo())
+                .orElse("").contains("jetty/12.")) {
+            // Making sure that resource exists before returning it. Jetty
+            // 12 may return URL for non-existing resource.
+            try {
+                if (!Files.exists(Path.of(url.toURI()))) {
+                    url = null;
+                }
+            } catch (URISyntaxException e) {
+                url = null;
+            }
+        }
+        return url;
     }
 }
