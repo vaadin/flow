@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -120,7 +122,14 @@ public abstract class VaadinWebSecurity {
     private String servletContextPath;
 
     @Autowired
+    private ObjectProvider<NavigationAccessControl> accessControlProvider;
+
     private NavigationAccessControl accessControl;
+
+    @PostConstruct
+    void afterPropertiesSet() {
+        accessControl = accessControlProvider.getIfAvailable();
+    }
 
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
