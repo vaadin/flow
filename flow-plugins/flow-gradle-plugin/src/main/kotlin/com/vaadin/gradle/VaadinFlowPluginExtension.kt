@@ -271,6 +271,8 @@ public abstract class VaadinFlowPluginExtension {
      */
     public abstract val alwaysExecutePrepareFrontend: Property<Boolean>
 
+    public abstract val reactRouterEnabled: Property<Boolean>
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter
         block.resolveStrategy = Closure.DELEGATE_FIRST
@@ -411,6 +413,10 @@ internal class PluginEffectiveConfiguration(
     val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
         .convention(false)
 
+    val reactRouterEnabled: Provider<Boolean> = extension.reactRouterEnabled
+        .convention(true)
+        .overrideWithSystemProperty(InitParameters.REACT_ROUTER_ENABLED)
+
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
      *
@@ -457,7 +463,8 @@ internal class PluginEffectiveConfiguration(
             "processResourcesTaskName=${processResourcesTaskName.get()}, " +
             "skipDevBundleBuild=${skipDevBundleBuild.get()}, " +
             "alwaysExecutePrepareFrontend=${alwaysExecutePrepareFrontend.get()}, " +
-            "frontendHotdeploy=${frontendHotdeploy.get()}" +
+            "frontendHotdeploy=${frontendHotdeploy.get()}," +
+            "reactRouterEnabled=${reactRouterEnabled.get()}" +
             ")"
     companion object {
         internal fun get(project: Project): PluginEffectiveConfiguration =
