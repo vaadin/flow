@@ -31,7 +31,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  * Test that application is deployed and can be opened in the browser. Works
  * also when starting server with exec-maven-plugin. Waits for server to start.
  */
-public class SmokeTestIT extends ChromeBrowserTest {
+public class SmokeTestIT extends AbstractSpringTest {
 
     @Override
     @Before
@@ -65,7 +65,7 @@ public class SmokeTestIT extends ChromeBrowserTest {
 
     private void waitViewUrl(int count)
             throws MalformedURLException, InterruptedException {
-        String viewUrl = getRootURL() + getTestPath();
+        String viewUrl = getContextRootURL() + getTestPath();
         if (count == 0) {
             throw new IllegalStateException(
                     "URL '" + viewUrl + "' is not available");

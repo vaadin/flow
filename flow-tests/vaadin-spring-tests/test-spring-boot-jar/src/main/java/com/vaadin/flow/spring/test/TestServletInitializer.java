@@ -17,9 +17,13 @@ package com.vaadin.flow.spring.test;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;import org.springframework.web.bind.annotation.ResponseStatus;
 
 @SpringBootApplication
 @Configuration
@@ -28,6 +32,24 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 public class TestServletInitializer {
 
     public static void main(String[] args) {
-        SpringApplication.run(TestServletInitializer.class, args);
+        ConfigurableApplicationContext applicationContext = SpringApplication
+                .run(TestServletInitializer.class, args);
+        ShutdownHook.registerShutdownHook(applicationContext::close);
+    }
+
+    /**
+     * Requests to /shutdown will trigger application shutdown. This is needed
+     * e.g. when running executable jar with exec-maven-plugin to stop the
+     * server after ITs are done.
+     */
+    @Controller
+    public static class ShutdownController {
+
+        @GetMapping("/shutdown")
+        @ResponseStatus(HttpStatus.OK)
+        public void shutdown() {
+            System.out.println("Shutdown request received.");
+            ShutdownHook.shutdownHook.run();
+        }
     }
 }
