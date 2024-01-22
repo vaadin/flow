@@ -137,6 +137,9 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     public fun getForceProductionBuild(): Provider<Boolean> = config.forceProductionBuild
 
     @Input
+    public fun getReactRouterEnabled(): Provider<Boolean> = config.reactRouterEnabled
+
+    @Input
     @Optional
     public fun getNodeExecutablePath(): Provider<String> = tools
         .mapOrNull { it.nodeBinary }
@@ -151,7 +154,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
 
     @Input
     @Optional
-    public fun getPnpmExecutablePath(): Provider<String> = config.pnpmEnable.map { pnpmEnable ->
+    public fun getPnpmExecutablePath(): Provider<String> = config.pnpmEnable.map { pnpmEnable: Boolean ->
         if (!pnpmEnable) {
             return@map ""
         }
@@ -159,7 +162,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
         pnpmExecutable.joinToString(" ")
     }
 
-    private fun initialiseFrontendToolsSettings(): Provider<FrontendTools> = config.npmFolder.map { npmFolder ->
+    private fun initialiseFrontendToolsSettings(): Provider<FrontendTools> = config.npmFolder.map { npmFolder: File ->
         val settings = FrontendToolsSettings(npmFolder.absolutePath) {
             FrontendUtils.getVaadinHomeDirectory()
                 .absolutePath
