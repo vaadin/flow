@@ -46,9 +46,6 @@ public class ReactComponentsIT extends ChromeBrowserTest {
                     result.get("fileName").toString().endsWith(filenameEnd));
             Assert.assertSame(line, result.get("lineNumber"));
             Assert.assertSame(column, result.get("columnNumber"));
-
         }
-        ;
     }
-
 }
