@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.spring.test;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -50,7 +53,9 @@ public class TestServletInitializer {
         @ResponseStatus(HttpStatus.OK)
         public void shutdown() {
             System.out.println("Shutdown request received.");
-            ShutdownHook.shutdownHook.run();
+            CompletableFuture.runAsync(() -> ShutdownHook.shutdownHook.run(),
+                    CompletableFuture.delayedExecutor(50,
+                            TimeUnit.MILLISECONDS));
         }
     }
 }
