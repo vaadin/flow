@@ -469,12 +469,12 @@ public class IndexHtmlRequestHandlerTest {
 
         Optional<UI> maybeUI = captor.getValue().getUI();
         Assert.assertNotNull(maybeUI);
-        QueryParameters locationParams = maybeUI.get().getActiveViewLocation()
-                .getQueryParameters();
+        QueryParameters locationParams = maybeUI.get().getInternals()
+                .getActiveViewLocation().getQueryParameters();
         Assert.assertEquals(List.of("a", "b"),
-                locationParams.getParameters("param1"));
+                locationParams.getParameters().get("param1"));
         Assert.assertEquals(List.of("2"),
-                locationParams.getParameters("param2"));
+                locationParams.getParameters().get("param2"));
     }
 
     @Test
