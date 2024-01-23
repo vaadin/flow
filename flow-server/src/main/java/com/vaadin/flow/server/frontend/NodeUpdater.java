@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -295,7 +295,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDependencies() {
         Map<String, String> dependencies = readDependencies("default",
                 "dependencies");
-        if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT_ROUTER)) {
+        if (options.isReactRouterEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
         } else {

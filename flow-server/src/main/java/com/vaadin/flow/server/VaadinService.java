@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -267,6 +267,7 @@ public abstract class VaadinService implements Serializable {
                 addRouterUsageStatistics();
             }
             routeDataList.stream().map(Object::toString).forEach(logger::debug);
+            DevToolsToken.init(this);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
             UsageStatistics.markAsUsed("flow/pnpm", null);

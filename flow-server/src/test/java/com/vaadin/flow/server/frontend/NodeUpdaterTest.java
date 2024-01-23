@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -112,9 +112,14 @@ public class NodeUpdaterTest {
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
         expectedDependencies.add("@vaadin/common-frontend");
-        expectedDependencies.add("@vaadin/router");
+        // expectedDependencies.add("@vaadin/router");
         expectedDependencies.add("construct-style-sheets-polyfill");
         expectedDependencies.add("lit");
+        expectedDependencies.add("react");
+        expectedDependencies.add("react-dom");
+        expectedDependencies.add("react-router-dom");
+        expectedDependencies.add("@types/react");
+        expectedDependencies.add("@types/react-dom");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -130,7 +135,6 @@ public class NodeUpdaterTest {
         // Vite
         expectedDependencies.add("vite");
         expectedDependencies.add("@vitejs/plugin-react");
-        expectedDependencies.add("@vitejs/plugin-react-swc");
         expectedDependencies.add("rollup-plugin-brotli");
         expectedDependencies.add("@rollup/plugin-replace");
         expectedDependencies.add("@rollup/pluginutils");
@@ -139,6 +143,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("workbox-build");
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
+        expectedDependencies.add("@babel/preset-react");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 

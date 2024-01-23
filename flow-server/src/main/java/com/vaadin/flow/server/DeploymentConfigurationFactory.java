@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -122,17 +122,6 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
             }
         }
 
-        if (!initParameters.containsKey(REACT_ROUTER_ENABLED)) {
-            // TODO: When not a feature flag remember to synchronize with
-            // NodeTasks!!
-            // This is set immediately, but a marking in the token file may
-            // override this.
-            // But mainly this is now dictated by the feature flag setting.
-            initParameters.put(REACT_ROUTER_ENABLED,
-                    String.valueOf(
-                            new FeatureFlags(context.getAttribute(Lookup.class))
-                                    .isEnabled(FeatureFlags.REACT_ROUTER)));
-        }
     }
 
     private static void readUiFromEnclosingClass(

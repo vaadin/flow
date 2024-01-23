@@ -32,6 +32,7 @@ public class MockDeploymentConfiguration
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
     private boolean devToolsEnabled = true;
+    private boolean isReactRouterEnabled = true;
     private SessionLockCheckStrategy sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
 
     private File projectFolder = null;
@@ -218,5 +219,14 @@ public class MockDeploymentConfiguration
     public void setLockCheckStrategy(
             SessionLockCheckStrategy sessionLockCheckStrategy) {
         this.sessionLockCheckStrategy = sessionLockCheckStrategy;
+    }
+
+    @Override
+    public boolean isReactRouterEnabled() {
+        return isReactRouterEnabled;
+    }
+
+    public void setReactRouterEnabled(boolean isReactRouterEnabled) {
+        this.isReactRouterEnabled = isReactRouterEnabled;
     }
 }
