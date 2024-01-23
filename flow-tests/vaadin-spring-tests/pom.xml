@@ -311,6 +311,7 @@
                 <module>test-spring-helpers</module>
                 <module>test-spring-common</module>
                 <module>test-spring-boot</module>
+                <module>test-spring-boot-jar</module>
                 <!-- Disabled as the resource scanner does not work with Undertow
                 <module>test-spring-boot-undertow</module>
                 -->
