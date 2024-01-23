@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -107,11 +108,11 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             }
 
             // Case 2, use the request
-            if (request instanceof VaadinServletRequest) {
+            Map<String, String[]> parameterMap = request.getParameterMap();
+            if (parameterMap != null && !parameterMap.isEmpty()) {
                 return new Location(request.getPathInfo(),
-                        QueryParameters
-                                .fromString(((VaadinServletRequest) request)
-                                        .getQueryString()));
+                        QueryParameters.full(parameterMap));
+
             } else {
                 return new Location(request.getPathInfo(),
                         QueryParameters.empty());
