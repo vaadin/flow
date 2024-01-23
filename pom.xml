@@ -549,6 +549,9 @@
                         <threadCount>4</threadCount>
 -->
                         <failIfNoTests>false</failIfNoTests>
+                        <systemPropertyVariables>
+                            <maven.home>${maven.home}</maven.home>
+                        </systemPropertyVariables>
                     </configuration>
                 </plugin>
                 <plugin>
