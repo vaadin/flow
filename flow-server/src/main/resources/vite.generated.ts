@@ -33,6 +33,7 @@ import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/r
 import { createRequire } from 'module';
 
 import { visualizer } from 'rollup-plugin-visualizer';
+import reactPlugin from '@vitejs/plugin-react';
 
 // Make `require` compatible with ES modules
 const require = createRequire(import.meta.url);
@@ -644,8 +645,6 @@ function runWatchDog(watchDogPort, watchDogHost) {
   client.connect(watchDogPort, watchDogHost || 'localhost');
 }
 
-let spaMiddlewareForceRemoved = false;
-
 const allowedFrontendFolders = [frontendFolder, nodeModulesFolder];
 
 function showRecompileReason(): PluginOption {
@@ -771,20 +770,25 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
+      // The React plugin provides fast refresh and debug source info
+      devMode && reactPlugin({
+        include: '**/*.tsx',
+        babel: {
+          // We need to use babel to provide the source information for it to be correct
+          // (otherwise Babel will slightly rewrite the source file and esbuild generate source info for the modified file)
+          presets: [['@babel/preset-react', { runtime: 'automatic', development: devMode }]],
+        },
+      }),
       {
         name: 'vaadin:force-remove-html-middleware',
-        transformIndexHtml: {
-          order: 'pre',
-          handler(_html, { server }) {
-            if (server && !spaMiddlewareForceRemoved) {
-              server.middlewares.stack = server.middlewares.stack.filter((mw) => {
-                const handleName = '' + mw.handle;
-                return !handleName.includes('viteHtmlFallbackMiddleware');
-              });
-              spaMiddlewareForceRemoved = true;
-            }
-          }
-        }
+        configureServer(server) {
+          return () => {
+            server.middlewares.stack = server.middlewares.stack.filter((mw) => {
+              const handleName = `${mw.handle}`;
+              return !handleName.includes('viteHtmlFallbackMiddleware');
+            });
+          };
+        },
       },
       hasExportedWebComponents && {
         name: 'vaadin:inject-entrypoints-to-web-component-html',

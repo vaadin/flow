@@ -74,7 +74,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         String indexTemplate;
         String indexFile = INDEX_TS;
-        if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT_ROUTER)) {
+        if (options.isReactRouterEnabled()) {
             indexFile = "index-react.ts";
         }
         try (InputStream indexTsStream = getClass()

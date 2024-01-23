@@ -56,10 +56,10 @@ public class HistoryIT extends ChromeBrowserTest {
         backButton.click();
 
         Assert.assertEquals(baseUrl, getCurrentUrl());
-        Assert.assertEquals(
-                Arrays.asList(
-                        "New location: com.vaadin.flow.uitest.ui.HistoryView"),
-                getStatusMessages());
+        // idx value in history state is added by react-router
+        Assert.assertEquals(Arrays.asList(
+                "New location: com.vaadin.flow.uitest.ui.HistoryView",
+                "New state: {\"idx\":0}"), getStatusMessages());
         clearButton.click();
 
         stateField.clear();

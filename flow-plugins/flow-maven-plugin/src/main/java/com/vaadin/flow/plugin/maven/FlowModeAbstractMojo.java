@@ -226,6 +226,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
 
+    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "true")
+    private boolean reactRouterEnabled;
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
@@ -456,4 +459,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         return false;
     }
 
+    @Override
+    public boolean isReactRouterEnabled() {
+        return reactRouterEnabled;
+    }
 }
