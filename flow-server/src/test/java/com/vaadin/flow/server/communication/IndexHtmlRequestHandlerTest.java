@@ -16,8 +16,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -45,7 +45,6 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -443,12 +442,12 @@ public class IndexHtmlRequestHandlerTest {
 
         Optional<UI> maybeUI = captor.getValue().getUI();
         Assert.assertNotNull(maybeUI);
-        QueryParameters locationParams = maybeUI.get().getActiveViewLocation()
-                .getQueryParameters();
-        Assert.assertEquals(List.of("a", "b"),
-                locationParams.getParameters("param1"));
-        Assert.assertEquals(List.of("2"),
-                locationParams.getParameters("param2"));
+        QueryParameters locationParams = maybeUI.get().getInternals()
+                .getActiveViewLocation().getQueryParameters();
+        Assert.assertEquals(Arrays.asList("a", "b"),
+                locationParams.getParameters().get("param1"));
+        Assert.assertEquals(Arrays.asList("2"),
+                locationParams.getParameters().get("param2"));
     }
 
     @Test
