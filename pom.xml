@@ -636,17 +636,6 @@
             </properties>
         </profile>
         <profile>
-            <id>build-tools</id>
-            <activation>
-                <property>
-                    <name>!skipTests</name>
-                </property>
-            </activation>
-            <modules>
-                <module>build-tools</module>
-            </modules>
-        </profile>
-        <profile>
             <id>validation</id>
             <properties>
                 <maven.javadoc.skip>false</maven.javadoc.skip>
