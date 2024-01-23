@@ -85,6 +85,7 @@ const moduleWeights = {
   'flow-tests/test-frontend/vite-test-assets': { pos: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-only-prepare': { pos: 4, weight: 5 },
   'flow-tests/vaadin-spring-tests/test-spring-boot': { pos: 4, weight: 5 },
+  'flow-tests/vaadin-spring-tests/test-spring-boot-jar': { pos: 4, weight: 5 },
   'flow-tests/vaadin-spring-tests/test-spring-war': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-scan': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-contextpath': { pos: 4, weight: 4 },
