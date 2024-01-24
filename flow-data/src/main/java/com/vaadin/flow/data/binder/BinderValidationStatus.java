@@ -54,6 +54,8 @@ public class BinderValidationStatus<BEAN> implements Serializable {
     private final Binder<BEAN> binder;
     private final List<BindingValidationStatus<?>> bindingStatuses;
     private final List<ValidationResult> binderStatuses;
+    private List<BindingValidationStatus<?>> bindingValidationStatuses;
+    private List<ValidationResult> beanStatuses;
 
     /**
      * Creates a new binder validation status for the given binder and
@@ -76,6 +78,31 @@ public class BinderValidationStatus<BEAN> implements Serializable {
         this.binder = source;
         this.bindingStatuses = Collections.unmodifiableList(bindingStatuses);
         this.binderStatuses = Collections.unmodifiableList(binderStatuses);
+    }
+
+    /**
+     * Creates a new binder validation status for the given binder and
+     * validation results. This constructor is called when the status is changed
+     * due to a change in the status of a single binding. In this case
+     * bindingStatuses will only contain status for that binding and
+     * binderStatuses will always be empty. The current validation status of the
+     * whole binder should be passed in as binderValidationStatus.
+     *
+     * @param source
+     *            the source binder
+     * @param bindingStatuses
+     *            the validation results for the fields
+     * @param binderStatuses
+     *            the validation results for binder level validation // TODO
+     */
+    public BinderValidationStatus(Binder<BEAN> source,
+            List<BindingValidationStatus<?>> bindingStatuses,
+            List<ValidationResult> binderStatuses,
+            List<BindingValidationStatus<?>> bindingValidationStatuses,
+            List<ValidationResult> beanStatuses) {
+        this(source, bindingStatuses, binderStatuses);
+        this.bindingValidationStatuses = bindingValidationStatuses;
+        this.beanStatuses = beanStatuses;
     }
 
     /**
@@ -212,5 +239,13 @@ public class BinderValidationStatus<BEAN> implements Serializable {
             SerializablePredicate<BindingValidationStatus<?>> filter) {
         bindingStatuses.stream().filter(filter).forEach(s -> s.getBinding()
                 .getValidationStatusHandler().statusChange(s));
+    }
+
+    public List<BindingValidationStatus<?>> getBindingValidationStatuses() {
+        return bindingValidationStatuses;
+    }
+
+    public List<ValidationResult> getBeanStatuses() {
+        return beanStatuses;
     }
 }

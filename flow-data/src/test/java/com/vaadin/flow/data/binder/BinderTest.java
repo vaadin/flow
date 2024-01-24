@@ -1450,7 +1450,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    public void two_asRequired_fields_without_initial_values() {
+    public void two_asRequired_fields_without_initial_values_setBean() {
         binder.forField(nameField).asRequired("Empty name").bind(p -> "",
                 (p, s) -> {
                 });
@@ -1459,6 +1459,37 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 });
 
         binder.setBean(item);
+        assertThat("Initially there should be no errors",
+                nameField.getErrorMessage(), isEmptyString());
+        assertThat("Initially there should be no errors",
+                ageField.getErrorMessage(), isEmptyString());
+
+        nameField.setValue("Foo");
+        assertThat("Name with a value should not be an error",
+                nameField.getErrorMessage(), isEmptyString());
+
+        assertNotNull(
+                "Age field should now be in error, since setBean is used.",
+                ageField.getErrorMessage());
+
+        nameField.setValue("");
+        assertNotNull("Empty name should now be in error.",
+                nameField.getErrorMessage());
+
+        assertNotNull("Age field should still be in error.",
+                ageField.getErrorMessage());
+    }
+
+    @Test
+    public void two_asRequired_fields_without_initial_values_readBean() {
+        binder.forField(nameField).asRequired("Empty name").bind(p -> "",
+                (p, s) -> {
+                });
+        binder.forField(ageField).asRequired("Empty age").bind(p -> "",
+                (p, s) -> {
+                });
+
+        binder.readBean(item);
         assertThat("Initially there should be no errors",
                 nameField.getErrorMessage(), isEmptyString());
         assertThat("Initially there should be no errors",
