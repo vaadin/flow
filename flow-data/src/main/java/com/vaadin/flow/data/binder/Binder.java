@@ -1347,8 +1347,7 @@ public class Binder<BEAN> implements Serializable {
             getBinder().getValidationStatusHandler()
                     .statusChange(new BinderValidationStatus<>(getBinder(),
                             Collections.singletonList(status),
-                            Collections.emptyList(), bindingValidationStatuses,
-                            beanStatuses));
+                            Collections.emptyList()));
 
             boolean binderHasErrors = bindingValidationStatuses.stream()
                     .anyMatch(BindingValidationStatus::isError)
