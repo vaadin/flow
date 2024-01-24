@@ -11,6 +11,7 @@ import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
 import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils.js';
+import { addFunctionComponentSourceLocationBabel } from '#buildFolder#/plugins/react-function-location-plugin/react-function-location-plugin.js';
 import settings from '#settingsImport#';
 import {
   AssetInfo,
@@ -777,7 +778,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // We need to use babel to provide the source information for it to be correct
           // (otherwise Babel will slightly rewrite the source file and esbuild generate source info for the modified file)
           presets: [['@babel/preset-react', { runtime: 'automatic', development: devMode }]],
-        },
+          // React writes the source location for where components are used, this writes for where they are defined
+          plugins: [addFunctionComponentSourceLocationBabel()]
+        }
       }),
       {
         name: 'vaadin:force-remove-html-middleware',
