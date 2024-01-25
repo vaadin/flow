@@ -354,13 +354,8 @@ public class Binder<BEAN> implements Serializable {
          * @return predicate for testing {@link #isApplied()}
          */
         default SerializablePredicate<Binding<BEAN, TARGET>> getIsAppliedPredicate() {
-            return binding -> {
-                if (binding.getField() instanceof Component) {
-                    return ((Component) binding.getField()).isVisible();
-                } else {
-                    return true;
-                }
-            };
+            return binding -> !(binding.getField() instanceof Component c)
+                    || c.isVisible();
         }
 
         /**
@@ -2825,7 +2820,7 @@ public class Binder<BEAN> implements Serializable {
         // First run fields level validation, if no validation errors then
         // update bean.
         List<BindingValidationStatus<?>> bindingResults = currentBindings
-                .stream().filter(Binding::isApplied).map(b -> b.validate(false))
+                .stream().map(b -> b.validate(false))
                 .collect(Collectors.toList());
 
         if (bindingResults.stream()

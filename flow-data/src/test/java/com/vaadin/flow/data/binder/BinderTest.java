@@ -974,6 +974,30 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void writeBean_isAppliedIsEvaluated() {
+        AtomicInteger invokes = new AtomicInteger();
+
+        binder.forField(nameField).withValidator(name -> false, "")
+                .bind(Person::getFirstName, Person::setFirstName)
+                .setIsAppliedPredicate(p -> {
+                    invokes.incrementAndGet();
+                    return false;
+                });
+
+        binder.readBean(item);
+        nameField.setValue("");
+
+        binder.writeBeanIfValid(item);
+        Assert.assertEquals("writeBeanIfValid should have invoked isApplied", 1,
+                invokes.get());
+
+        binder.writeBeanAsDraft(item);
+        Assert.assertEquals("writeBeanAsDraft should have invoked isApplied", 2,
+                invokes.get());
+
+    }
+
+    @Test
     public void setRequired_withErrorMessage_fieldGetsRequiredIndicatorAndValidator() {
         TestTextField textField = new TestTextField();
         assertFalse(textField.isRequiredIndicatorVisible());
