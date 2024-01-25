@@ -294,6 +294,44 @@ public class Binder<BEAN> implements Serializable {
          *         changes, otherwise {@literal false}.
          */
         boolean hasChanges();
+
+        /**
+         * Checks whether this binding should be processed during validation and
+         * writing to bean.
+         *
+         * @return {@literal true} if this binding should be processed,
+         *         {@literal false} if this binding should be ignored
+         */
+        default boolean isApplied() {
+            return getIsAppliedPredicate().test(this);
+        }
+
+        /**
+         * Gets predicate for testing {@link #isApplied()}. By default,
+         * non-visible components are ignored during validation and bean
+         * writing.
+         *
+         * @return predicate for testing {@link #isApplied()}
+         */
+        default SerializablePredicate<Binding<BEAN, TARGET>> getIsAppliedPredicate() {
+            return binding -> {
+                if (binding.getField() instanceof Component) {
+                    return ((Component) binding.getField()).isVisible();
+                } else {
+                    return true;
+                }
+            };
+        }
+
+        /**
+         * Sets a custom predicate for testing {@link #isApplied()}. Set to
+         * {@literal null} to restore default functionality.
+         *
+         * @param isAppliedPredicate
+         *            custom predicate for testing {@link #isApplied()}
+         */
+        void setIsAppliedPredicate(
+                SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate);
     }
 
     /**
@@ -1238,6 +1276,8 @@ public class Binder<BEAN> implements Serializable {
 
         private Registration onValidationStatusChange;
 
+        private SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -1548,7 +1588,6 @@ public class Binder<BEAN> implements Serializable {
             }
             if (asRequiredEnabled != isAsRequiredEnabled()) {
                 field.setRequiredIndicatorVisible(asRequiredEnabled);
-                validate();
             }
         }
 
@@ -1610,6 +1649,19 @@ public class Binder<BEAN> implements Serializable {
             }
 
             return this.binder.hasChanges(this);
+        }
+
+        @Override
+        public SerializablePredicate<Binding<BEAN, TARGET>> getIsAppliedPredicate() {
+            return isAppliedPredicate == null
+                    ? Binding.super.getIsAppliedPredicate()
+                    : isAppliedPredicate;
+        }
+
+        @Override
+        public void setIsAppliedPredicate(
+                SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate) {
+            this.isAppliedPredicate = isAppliedPredicate;
         }
     }
 
@@ -1827,7 +1879,7 @@ public class Binder<BEAN> implements Serializable {
      * Informs the Binder that a value in Binding was changed. This method will
      * trigger validating and writing of the whole bean if using
      * {@link #setBean(Object)}. If using {@link #readBean(Object)} only the
-     * field validation is run.
+     * field validation for the given Binding is run.
      *
      * @param binding
      *            the binding whose value has been changed
@@ -1837,7 +1889,7 @@ public class Binder<BEAN> implements Serializable {
         if (getBean() != null) {
             doWriteIfValid(getBean(), changedBindings);
         } else {
-            binding.validate();
+            validate(binding);
         }
     }
 
@@ -2127,9 +2179,9 @@ public class Binder<BEAN> implements Serializable {
      * back to their corresponding property values of the bean as long as the
      * bean is bound.
      * <p>
-     * Any change made in the fields also runs validation for the field
-     * {@link Binding} and bean level validation for this binder (bean level
-     * validators are added using {@link Binder#withValidator(Validator)}.
+     * Any change made in one of the fields also runs validation for all the
+     * fields {@link Binding} and bean level validation for this binder (bean
+     * level validators are added using {@link Binder#withValidator(Validator)}.
      * <p>
      * After updating each field, the value is read back from the field and the
      * bean's property value is updated if it has been changed from the original
@@ -2342,15 +2394,16 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(bean, "bean cannot be null");
         List<ValidationResult> binderResults = Collections.emptyList();
 
-        // make a copy of the incoming bindings to avoid their modifications
-        // during validation
-        Collection<Binding<BEAN, ?>> currentBindings = new ArrayList<>(
-                bindings);
+        // Make a copy of the incoming bindings to avoid their modifications
+        // during validation. Also filter out bindings which should not be
+        // applied.
+        Collection<Binding<BEAN, ?>> currentBindings = bindings.stream()
+                .filter(Binding::isApplied).collect(Collectors.toList());
 
         // First run fields level validation, if no validation errors then
-        // update bean
-        List<BindingValidationStatus<?>> bindingResults = currentBindings
-                .stream().map(b -> b.validate(false))
+        // update bean. Note that this will validate all bindings.
+        List<BindingValidationStatus<?>> bindingResults = getBindings().stream()
+                .filter(Binding::isApplied).map(b -> b.validate(false))
                 .collect(Collectors.toList());
 
         if (bindingResults.stream()
@@ -2413,13 +2466,15 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(bean, "bean cannot be null");
 
         if (!forced) {
-            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                    .writeFieldValue(bean));
+            bindings.stream().filter(Binding::isApplied)
+                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                            .writeFieldValue(bean));
         } else {
             boolean isDisabled = isValidatorsDisabled();
             setValidatorsDisabled(true);
-            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                    .writeFieldValue(bean));
+            bindings.stream().filter(Binding::isApplied)
+                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                            .writeFieldValue(bean));
             setValidatorsDisabled(isDisabled);
         }
     }
@@ -2618,6 +2673,38 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Validates the target binding. Also runs validation for all other
+     * bindings, and if possible, bean-level validations as well.
+     *
+     * {@link BinderValidationStatusHandler} is called with only the status of
+     * the target binding.
+     *
+     * {@link StatusChangeEvent} is fired with current binder validation status
+     *
+     * @param targetBinding
+     *            target binding for validation
+     */
+    private void validate(Binding<BEAN, ?> targetBinding) {
+        List<BindingValidationStatus<?>> bindingValidationStatuses = validateBindings();
+
+        List<ValidationResult> beanStatuses = new ArrayList<>();
+        if (getBean() != null) {
+            beanStatuses.addAll(validateBean(getBean()));
+        }
+        BindingValidationStatus<?> status = bindingValidationStatuses.stream()
+                .filter(s -> targetBinding.equals(s.getBinding())).findFirst()
+                .orElse(null);
+
+        getValidationStatusHandler().statusChange(new BinderValidationStatus<>(
+                this, Collections.singletonList(status),
+                Collections.emptyList()));
+
+        fireStatusChangeEvent(bindingValidationStatuses.stream()
+                .anyMatch(BindingValidationStatus::isError)
+                || beanStatuses.stream().anyMatch(ValidationResult::isError));
+    }
+
+    /**
      * Runs all currently configured field level validators, as well as all bean
      * level validators if a bean is currently set with
      * {@link #setBean(Object)}, and returns whether any of the validators
@@ -2653,7 +2740,8 @@ public class Binder<BEAN> implements Serializable {
      * @return an immutable list of validation results for bindings
      */
     private List<BindingValidationStatus<?>> validateBindings() {
-        return getBindings().stream().map(BindingImpl::doValidation)
+        return getBindings().stream().filter(BindingImpl::isApplied)
+                .map(BindingImpl::doValidation)
                 .collect(Collectors.collectingAndThen(Collectors.toList(),
                         Collections::unmodifiableList));
     }
