@@ -67,7 +67,8 @@ public class TaskInstallFrontendBuildPluginsTest {
     public void getPluginsReturnsExpectedList() {
         String[] expectedPlugins = new String[] { "application-theme-plugin",
                 "theme-loader", "theme-live-reload-plugin",
-                "build-status-plugin", "rollup-plugin-postcss-lit-custom" };
+                "build-status-plugin", "rollup-plugin-postcss-lit-custom",
+                "react-function-location-plugin" };
         final List<String> plugins = FrontendPluginsUtil.getPlugins();
         Assert.assertEquals("Unexpected number of plugins in 'plugins.json'",
                 expectedPlugins.length, plugins.size());
