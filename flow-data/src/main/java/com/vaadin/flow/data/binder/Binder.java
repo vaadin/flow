@@ -2341,11 +2341,10 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(bean, "bean cannot be null");
         List<ValidationResult> binderResults = Collections.emptyList();
 
-        // Make a copy of the incoming bindings to avoid their modifications
-        // during validation. Also filter out bindings which should not be
-        // applied.
-        Collection<Binding<BEAN, ?>> currentBindings = bindings.stream()
-                .collect(Collectors.toList());
+        // make a copy of the incoming bindings to avoid their modifications
+        // during validation
+        Collection<Binding<BEAN, ?>> currentBindings = new ArrayList<>(
+                bindings);
 
         // First run fields level validation, if no validation errors then
         // update bean. Note that this will validate all bindings.
@@ -2412,15 +2411,13 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(bean, "bean cannot be null");
 
         if (!forced) {
-            bindings.stream()
-                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                            .writeFieldValue(bean));
+            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                    .writeFieldValue(bean));
         } else {
             boolean isDisabled = isValidatorsDisabled();
             setValidatorsDisabled(true);
-            bindings.stream()
-                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                            .writeFieldValue(bean));
+            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                    .writeFieldValue(bean));
             setValidatorsDisabled(isDisabled);
         }
     }
