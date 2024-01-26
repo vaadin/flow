@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Version;
@@ -60,6 +61,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TaskGenerateReactFiles implements FallibleCommand {
 
     private final File frontendDirectory;
+    private Options options;
     protected static String NO_IMPORT = """
             Faulty configuration of serverSideRoutes.
             The server route definition is missing from the '%1$s' file
@@ -93,6 +95,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
      *            the task options
      */
     TaskGenerateReactFiles(Options options) {
+        this.options = options;
         this.frontendDirectory = options.getFrontendDirectory();
     }
 
@@ -116,7 +119,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                         UTF_8);
                 Pattern serverImport = Pattern.compile(
                         "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
-                if (!serverImport.matcher(routesContent).find()) {
+                if (!serverImport.matcher(routesContent).find()
+                        && !options.getClassFinder()
+                                .getAnnotatedClasses(Route.class).isEmpty()) {
                     throw new ExecutionFailedException(
                             String.format(NO_IMPORT, routesTsx.getPath()));
                 }
