@@ -151,7 +151,7 @@ public class BuildFrontendUtil {
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
                 .createMissingPackageJson(
-                        new File(adapter.npmFolder(), PACKAGE_JSON).exists())
+                        !new File(adapter.npmFolder(), PACKAGE_JSON).exists())
                 .enableImportsUpdate(false).enablePackagesUpdate(false)
                 .withRunNpmInstall(false)
                 .withFrontendGeneratedFolder(adapter.generatedTsFolder())
