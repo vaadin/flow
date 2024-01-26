@@ -51,6 +51,7 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.tests.data.bean.Person;
 import com.vaadin.flow.tests.data.bean.Sex;
@@ -869,6 +870,36 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void setRequiredAsEnabled_shouldNotTriggerValidation() {
+        AtomicBoolean hasErrors = new AtomicBoolean();
+        // Binding is required but has setAsRequiredEnabled set to false
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .asRequired("Name is required")
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        binder.addStatusChangeListener(
+                status -> hasErrors.getAndSet(status.hasValidationErrors()));
+        binder.setBean(new Person());
+
+        // Base state -> valid
+        Assert.assertFalse("binder should not have errors", hasErrors.get());
+        Assert.assertEquals("Name field should not be in error.", "",
+                nameField.getErrorMessage());
+
+        // Set setAsRequiredEnabled false -> should still be valid
+        nameBinding.setAsRequiredEnabled(false);
+        Assert.assertFalse("binder should not have errors", hasErrors.get());
+        Assert.assertEquals("Name field should not be in error.", "",
+                nameField.getErrorMessage());
+
+        // Set setAsRequiredEnabled true -> should still be valid
+        nameBinding.setAsRequiredEnabled(true);
+        Assert.assertFalse("binder should not have errors", hasErrors.get());
+        Assert.assertEquals("Name field should not be in error.", "",
+                nameField.getErrorMessage());
+    }
+
+    @Test
     public void validationStatusHandler_onlyRunForChangedField() {
         TestTextField firstNameField = new TestTextField();
         TestTextField lastNameField = new TestTextField();
@@ -1389,6 +1420,37 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 });
 
         binder.setBean(item);
+        assertThat("Initially there should be no errors",
+                nameField.getErrorMessage(), isEmptyString());
+        assertThat("Initially there should be no errors",
+                ageField.getErrorMessage(), isEmptyString());
+
+        nameField.setValue("Foo");
+        assertThat("Name with a value should not be an error",
+                nameField.getErrorMessage(), isEmptyString());
+
+        assertNotNull(
+                "Age field should now be in error, since setBean is used.",
+                ageField.getErrorMessage());
+
+        nameField.setValue("");
+        assertNotNull("Empty name should now be in error.",
+                nameField.getErrorMessage());
+
+        assertNotNull("Age field should still be in error.",
+                ageField.getErrorMessage());
+    }
+
+    @Test
+    public void two_asRequired_fields_without_initial_values_readBean() {
+        binder.forField(nameField).asRequired("Empty name").bind(p -> "",
+                (p, s) -> {
+                });
+        binder.forField(ageField).asRequired("Empty age").bind(p -> "",
+                (p, s) -> {
+                });
+
+        binder.readBean(item);
         assertThat("Initially there should be no errors",
                 nameField.getErrorMessage(), isEmptyString());
         assertThat("Initially there should be no errors",

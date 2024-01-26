@@ -1536,7 +1536,6 @@ public class Binder<BEAN> implements Serializable {
             }
             if (asRequiredEnabled != isAsRequiredEnabled()) {
                 field.setRequiredIndicatorVisible(asRequiredEnabled);
-                validate();
             }
         }
 
@@ -1805,7 +1804,7 @@ public class Binder<BEAN> implements Serializable {
      * Informs the Binder that a value in Binding was changed. This method will
      * trigger validating and writing of the whole bean if using
      * {@link #setBean(Object)}. If using {@link #readBean(Object)} only the
-     * field validation is run.
+     * field validation for the given Binding is run.
      *
      * @param binding
      *            the binding whose value has been changed
@@ -1815,7 +1814,7 @@ public class Binder<BEAN> implements Serializable {
         if (getBean() != null) {
             doWriteIfValid(getBean(), changedBindings);
         } else {
-            binding.validate();
+            validate(binding);
         }
     }
 
@@ -2105,9 +2104,9 @@ public class Binder<BEAN> implements Serializable {
      * back to their corresponding property values of the bean as long as the
      * bean is bound.
      * <p>
-     * Any change made in the fields also runs validation for the field
-     * {@link Binding} and bean level validation for this binder (bean level
-     * validators are added using {@link Binder#withValidator(Validator)}.
+     * Any change made in one of the fields also runs validation for all the
+     * fields {@link Binding} and bean level validation for this binder (bean
+     * level validators are added using {@link Binder#withValidator(Validator)}.
      * <p>
      * After updating each field, the value is read back from the field and the
      * bean's property value is updated if it has been changed from the original
@@ -2326,10 +2325,9 @@ public class Binder<BEAN> implements Serializable {
                 bindings);
 
         // First run fields level validation, if no validation errors then
-        // update bean
-        List<BindingValidationStatus<?>> bindingResults = currentBindings
-                .stream().map(b -> b.validate(false))
-                .collect(Collectors.toList());
+        // update bean. Note that this will validate all bindings.
+        List<BindingValidationStatus<?>> bindingResults = getBindings().stream()
+                .map(b -> b.validate(false)).collect(Collectors.toList());
 
         if (bindingResults.stream()
                 .noneMatch(BindingValidationStatus::isError)) {
@@ -2593,6 +2591,38 @@ public class Binder<BEAN> implements Serializable {
             fireStatusChangeEvent(validationStatus.hasErrors());
         }
         return validationStatus;
+    }
+
+    /**
+     * Validates the target binding. Also runs validation for all other
+     * bindings, and if possible, bean-level validations as well.
+     *
+     * {@link BinderValidationStatusHandler} is called with only the status of
+     * the target binding.
+     *
+     * {@link StatusChangeEvent} is fired with current binder validation status
+     *
+     * @param targetBinding
+     *            target binding for validation
+     */
+    private void validate(Binding<BEAN, ?> targetBinding) {
+        List<BindingValidationStatus<?>> bindingValidationStatuses = validateBindings();
+
+        List<ValidationResult> beanStatuses = new ArrayList<>();
+        if (getBean() != null) {
+            beanStatuses.addAll(validateBean(getBean()));
+        }
+        BindingValidationStatus<?> status = bindingValidationStatuses.stream()
+                .filter(s -> targetBinding.equals(s.getBinding())).findFirst()
+                .orElse(null);
+
+        getValidationStatusHandler().statusChange(new BinderValidationStatus<>(
+                this, Collections.singletonList(status),
+                Collections.emptyList()));
+
+        fireStatusChangeEvent(bindingValidationStatuses.stream()
+                .anyMatch(BindingValidationStatus::isError)
+                || beanStatuses.stream().anyMatch(ValidationResult::isError));
     }
 
     /**
