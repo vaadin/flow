@@ -968,6 +968,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals("Name field should not be in error.", "",
                 nameField.getErrorMessage());
     }
+
     @Test
     public void validationStatusHandler_onlyRunForChangedField() {
         TestTextField firstNameField = new TestTextField();
