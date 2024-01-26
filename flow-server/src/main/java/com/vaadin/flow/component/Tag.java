@@ -189,12 +189,40 @@ public @interface Tag {
      */
     String SUMMARY = "summary";
     /**
+     * Tag for a <code>&lt;table&gt;</code>.
+     */
+    String TABLE = "table";
+    /**
+     * Tag for a <code>&lt;tbody&gt;</code>.
+     */
+    String TBODY = "tbody";
+    /**
+     * Tag for a <code>&lt;tfoot&gt;</code>.
+     */
+    String TFOOT = "tfoot";
+    /**
+     * Tag for a <code>&lt;td&gt;</code>.
+     */
+    String TD = "td";
+    /**
+     * Tag for a <code>&lt;th&gt;</code>.
+     */
+    String TH = "th";
+    /**
+     * Tag for a <code>&lt;thead&gt;</code>.
+     */
+    String THEAD = "thead";
+    /**
      * Tag for an <code>&lt;textarea&gt;</code>.
      */
     String TEXTAREA = "textarea";
     /**
      * Tag for an <code>&lt;ul&gt;</code>.
      */
+    /**
+     * Tag for a <code>&lt;tr&gt;</code>.
+     */
+    String TR = "tr";
     String UL = "ul";
 
     /**
