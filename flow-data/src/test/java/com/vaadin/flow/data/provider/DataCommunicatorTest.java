@@ -997,6 +997,18 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void getItem_streamIsClosed() {
+        AtomicBoolean streamIsClosed = new AtomicBoolean();
+        dataCommunicator.setDataProvider(createDataProvider(streamIsClosed),
+                null);
+
+        fakeClientCommunication();
+        dataCommunicator.getItem(0);
+
+        Assert.assertTrue(streamIsClosed.get());
+    }
+
+    @Test
     public void itemCountEstimateAndStep_defaults() {
         Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
                 pageSize * 4);
@@ -1351,6 +1363,18 @@ public class DataCommunicatorTest {
         Assert.assertEquals(13, itemList.size());
         Assert.assertEquals(new Item(101), itemList.get(0));
 
+    }
+
+    @Test
+    public void fetchFromProvider_streamIsClosed() {
+        AtomicBoolean streamIsClosed = new AtomicBoolean();
+        dataCommunicator.setDataProvider(createDataProvider(streamIsClosed),
+                null);
+        dataCommunicator.setRequestedRange(0, 50);
+
+        fakeClientCommunication();
+
+        Assert.assertTrue(streamIsClosed.get());
     }
 
     @Test
@@ -1737,6 +1761,11 @@ public class DataCommunicatorTest {
     }
 
     private AbstractDataProvider<Item, Object> createDataProvider() {
+        return createDataProvider(new AtomicBoolean());
+    }
+
+    private AbstractDataProvider<Item, Object> createDataProvider(
+            AtomicBoolean streamIsClosed) {
         return new AbstractDataProvider<Item, Object>() {
             @Override
             public boolean isInMemory() {
@@ -1752,7 +1781,8 @@ public class DataCommunicatorTest {
             public Stream<Item> fetch(Query<Item, Object> query) {
                 return asParallelIfRequired(IntStream.range(query.getOffset(),
                         query.getLimit() + query.getOffset()))
-                        .mapToObj(Item::new);
+                                .mapToObj(Item::new)
+                                .onClose(() -> streamIsClosed.set(true));
             }
         };
     }

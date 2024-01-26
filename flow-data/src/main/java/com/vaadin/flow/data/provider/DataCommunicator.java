@@ -598,8 +598,10 @@ public class DataCommunicator<T> implements Serializable {
              * because the backend can have the item on that index (we simply
              * not yet fetched this item during the scrolling).
              */
-            return (T) getDataProvider().fetch(buildQuery(index, 1)).findFirst()
-                    .orElse(null);
+            try (Stream<T> stream = getDataProvider()
+                    .fetch(buildQuery(index, 1))) {
+                return stream.findFirst().orElse(null);
+            }
         }
     }
 
@@ -998,18 +1000,20 @@ public class DataCommunicator<T> implements Serializable {
                 int page = 0;
                 do {
                     final int newOffset = offset + page * pageSize;
-                    Stream<T> dataProviderStream = doFetchFromDataProvider(
-                            newOffset, pageSize);
-                    // Stream.Builder is not thread safe, so for parallel stream
-                    // we need to first collect items before adding them
-                    if (dataProviderStream.isParallel()) {
-                        getLogger().debug(
-                                "Data provider {} has returned parallel stream on 'fetch' call",
-                                getDataProvider().getClass());
-                        dataProviderStream.collect(Collectors.toList())
-                                .forEach(addItemAndCheckConsumer);
-                    } else {
-                        dataProviderStream.forEach(addItemAndCheckConsumer);
+                    try (Stream<T> dataProviderStream = doFetchFromDataProvider(
+                            newOffset, pageSize)) {
+                        // Stream.Builder is not thread safe, so for parallel
+                        // stream we need to first collect items before adding
+                        // them
+                        if (dataProviderStream.isParallel()) {
+                            getLogger().debug(
+                                    "Data provider {} has returned parallel stream on 'fetch' call",
+                                    getDataProvider().getClass());
+                            dataProviderStream.collect(Collectors.toList())
+                                    .forEach(addItemAndCheckConsumer);
+                        } else {
+                            dataProviderStream.forEach(addItemAndCheckConsumer);
+                        }
                     }
                     page++;
                 } while (page < pages
@@ -1028,8 +1032,10 @@ public class DataCommunicator<T> implements Serializable {
             getLogger().debug(
                     "Data provider {} has returned parallel stream on 'fetch' call",
                     getDataProvider().getClass());
-            stream = stream.collect(Collectors.toList()).stream();
-            assert !stream.isParallel();
+            try (Stream<T> parallelStream = stream) {
+                stream = parallelStream.collect(Collectors.toList()).stream();
+                assert !stream.isParallel();
+            }
         }
 
         SizeVerifier verifier = new SizeVerifier<>(limit);
@@ -1464,17 +1470,20 @@ public class DataCommunicator<T> implements Serializable {
 
         // XXX Explicitly refresh anything that is updated
         List<String> activeKeys = new ArrayList<>(range.length());
-        fetchFromProvider(range.getStart(), range.length()).forEach(bean -> {
-            boolean mapperHasKey = keyMapper.has(bean);
-            String key = keyMapper.key(bean);
-            if (mapperHasKey) {
-                // Ensure latest instance from provider is used
-                keyMapper.refresh(bean);
-                passivatedByUpdate.values().stream()
-                        .forEach(set -> set.remove(key));
-            }
-            activeKeys.add(key);
-        });
+        try (Stream<T> stream = fetchFromProvider(range.getStart(),
+                range.length())) {
+            stream.forEach(bean -> {
+                boolean mapperHasKey = keyMapper.has(bean);
+                String key = keyMapper.key(bean);
+                if (mapperHasKey) {
+                    // Ensure latest instance from provider is used
+                    keyMapper.refresh(bean);
+                    passivatedByUpdate.values().stream()
+                            .forEach(set -> set.remove(key));
+                }
+                activeKeys.add(key);
+            });
+        }
         boolean needsSizeRecheck = activeKeys.size() < range.length();
         return new Activation(activeKeys, needsSizeRecheck);
     }
