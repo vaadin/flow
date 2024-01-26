@@ -150,7 +150,7 @@ function navigateEventHandler(event) {
         event.preventDefault();
     }
     // @ts-ignore
-    let matched = matchRoutes(routes, event.detail.pathname);
+    let matched = matchRoutes(Array.from(routes), event.detail.pathname);
     prevNavigation = lastNavigation;
 
     // if navigation event route targets a flow view do beforeEnter for the
@@ -261,7 +261,7 @@ export default function Flow() {
                 window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
             }
 
-            let matched = matchRoutes(routes, pathname);
+            let matched = matchRoutes(Array.from(routes), pathname);
 
             // if router force navigated using 'Link' we will need to remove
             // flow from the view
