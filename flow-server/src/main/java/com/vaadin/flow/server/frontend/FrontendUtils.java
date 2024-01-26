@@ -32,9 +32,11 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -61,6 +63,7 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -304,6 +307,9 @@ public class FrontendUtils {
     public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
     public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
+
+    public static final Pattern IMPORT_VAADIN_ROUTER = Pattern.compile(
+            "import[\\s\\S]+\\{[\\s\\S]+}[\\s\\S]+from[\\s\\S]+([\"'`])@vaadin/router\\1;");
 
     /**
      * Only static stuff here.
@@ -1176,4 +1182,34 @@ public class FrontendUtils {
                 "web-components");
     }
 
+    public static boolean isReactRouterEnabled(String parameterValue,
+            File frontendDirectory) {
+        Objects.requireNonNull(frontendDirectory);
+        if (parameterValue == null) {
+            // auto-detection
+            boolean result = true;
+            File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
+            if (indexTs.exists()) {
+                try {
+                    String indexTsContent = IOUtils.toString(indexTs.toURI(),
+                            UTF_8);
+                    result = !IMPORT_VAADIN_ROUTER.matcher(indexTsContent)
+                            .find();
+                } catch (IOException e) {
+                    getLogger().error(
+                            "Couldn't auto-detect React/Lit application, react-router will be used",
+                            e);
+                }
+            }
+            if (getLogger().isDebugEnabled()) {
+                getLogger().debug("Auto-detected client-side router to use: {}",
+                        result ? "react-router" : "vaadin-router");
+            }
+            return result;
+        } else if (parameterValue.isBlank()) {
+            return true;
+        } else {
+            return Boolean.parseBoolean(parameterValue.trim());
+        }
+    }
 }

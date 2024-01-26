@@ -40,6 +40,7 @@ import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -226,8 +227,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
 
-    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "true")
-    private boolean reactRouterEnabled;
+    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "${null}")
+    private String reactRouterEnabled;
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -460,7 +461,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isReactRouterEnabled() {
+    public String isReactRouterEnabled() {
         return reactRouterEnabled;
     }
 }
