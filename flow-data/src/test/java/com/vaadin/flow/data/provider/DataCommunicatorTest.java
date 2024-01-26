@@ -1781,8 +1781,8 @@ public class DataCommunicatorTest {
             public Stream<Item> fetch(Query<Item, Object> query) {
                 return asParallelIfRequired(IntStream.range(query.getOffset(),
                         query.getLimit() + query.getOffset()))
-                                .mapToObj(Item::new)
-                                .onClose(() -> streamIsClosed.set(true));
+                        .mapToObj(Item::new)
+                        .onClose(() -> streamIsClosed.set(true));
             }
         };
     }
