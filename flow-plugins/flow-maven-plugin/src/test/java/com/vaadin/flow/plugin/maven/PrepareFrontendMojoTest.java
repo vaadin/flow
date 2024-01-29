@@ -238,7 +238,7 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void should_updateAndkeepDependencies_when_packageJsonExists()
+    public void should_updateAndKeepDependencies_when_packageJsonExists()
             throws Exception {
         JsonObject json = TestUtils.getInitialPackageJson();
         json.put("dependencies", Json.createObject());
