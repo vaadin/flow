@@ -832,18 +832,14 @@ public class Binder<BEAN> implements Serializable {
                 BindingValidationStatusHandler handler);
 
         /**
-         * Provides means to override the default validator execution of this
-         * binding, instead of following the mode set for the Binder.
+         * Tells Binder to skip executing the default validators (e.g. min/max
+         * validators in DatePicker) for this binding.
          *
-         * @param skipDefaultValidator
-         *            {@literal true} to skip default validator,
-         *            {@literal false} to execute it, regardless of Binder
-         *            setting.
          * @return this binding, for chaining
-         * @see Binder#skipDefaultValidators()
+         * @see Binder#skipDefaultValidators() for faster way to skip default
+         *      validators for all bound fields.
          */
-        BindingBuilder<BEAN, TARGET> withSkipDefaultValidator(
-                boolean skipDefaultValidator);
+        BindingBuilder<BEAN, TARGET> skipDefaultValidator();
 
         /**
          * Sets the field to be required. This means two things:
@@ -959,7 +955,7 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean asRequiredSet;
 
-        private Boolean skipDefaultValidator;
+        private boolean skipDefaultValidator;
 
         /**
          * Creates a new binding builder associated with the given field.
@@ -985,12 +981,12 @@ public class Binder<BEAN> implements Serializable {
             this.statusHandler = statusHandler;
 
             if (field instanceof HasValidator hasValidator) {
-                withValidator((val, ctx) -> {
-                    return binding.isSkipDefaultValidator()
-                            ? ValidationResult.ok()
-                            : hasValidator.getDefaultValidator().apply(val,
-                                    ctx);
-                });
+                withValidator((val,
+                        ctx) -> getBinder().skipDefaultValidators
+                                || binding.isSkipDefaultValidator()
+                                        ? ValidationResult.ok()
+                                        : hasValidator.getDefaultValidator()
+                                                .apply(val, ctx));
             }
         }
 
@@ -1136,10 +1132,9 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public BindingBuilder<BEAN, TARGET> withSkipDefaultValidator(
-                boolean skipDefaultValidator) {
+        public BindingBuilder<BEAN, TARGET> skipDefaultValidator() {
             checkUnbound();
-            this.skipDefaultValidator = skipDefaultValidator;
+            this.skipDefaultValidator = true;
             return this;
         }
 
@@ -1289,9 +1284,7 @@ public class Binder<BEAN> implements Serializable {
             this.asRequiredSet = builder.asRequiredSet;
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
 
-            skipDefaultValidator = builder.skipDefaultValidator != null
-                    ? builder.skipDefaultValidator
-                    : getBinder().skipDefaultValidators;
+            skipDefaultValidator = builder.skipDefaultValidator;
 
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
@@ -2760,8 +2753,7 @@ public class Binder<BEAN> implements Serializable {
 
     /**
      * Tells Binder to skip executing the default validators (e.g. min/max
-     * validators in DatePicker) of bound fields by default. This can be
-     * overridden for individual bindings if needed.
+     * validators in DatePicker) of all bound fields by default.
      */
     public void skipDefaultValidators() {
         this.skipDefaultValidators = true;
