@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TO
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.REACT_ROUTER_ENABLED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -255,6 +256,8 @@ public class BuildFrontendUtil {
             buildInfo.put(DISABLE_PREPARE_FRONTEND_CACHE, true);
         }
 
+        buildInfo.put(REACT_ROUTER_ENABLED, adapter.isReactRouterEnabled());
+
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
@@ -328,7 +331,8 @@ public class BuildFrontendUtil {
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withCiBuild(adapter.ciBuild())
-                    .withForceProductionBuild(adapter.forceProductionBuild());
+                    .withForceProductionBuild(adapter.forceProductionBuild())
+                    .withReactRouter(adapter.isReactRouterEnabled());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -392,7 +396,8 @@ public class BuildFrontendUtil {
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withBundleBuild(true)
                     .skipDevBundleBuild(adapter.skipDevBundleBuild())
-                    .withCompressBundle(adapter.compressBundle());
+                    .withCompressBundle(adapter.compressBundle())
+                    .withReactRouter(adapter.isReactRouterEnabled());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

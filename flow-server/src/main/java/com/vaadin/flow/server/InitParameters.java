@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -65,6 +65,7 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String NODE_VERSION = "node.version";
     public static final String NODE_DOWNLOAD_ROOT = "node.download.root";
+    public static final String REACT_ROUTER_ENABLED = "enable.react.router";
 
     /**
      * Configuration name for the parameter that determines whether Brotli
@@ -162,6 +163,14 @@ public class InitParameters implements Serializable {
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
 
     /**
+     * Configuration parameter name for enabling component tracking in
+     * development mode. If not set, tracking is enabled by default.
+     *
+     * @since
+     */
+    public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
+
+    /**
      * I18N provider property.
      */
     public static final String I18N_PROVIDER = "i18n.provider";
@@ -243,4 +252,9 @@ public class InitParameters implements Serializable {
      * Configuration name for forcing optimized production bundle build.
      */
     public static final String COMPRESS_BUNDLE = "vaadin.compress.bundle";
+
+    /**
+     * Configuration name for cleaning or leaving frontend files in build.
+     */
+    public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";
 }

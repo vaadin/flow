@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,6 +52,15 @@ public abstract class DataProviderWrapper<T, F, M>
     protected DataProviderWrapper(DataProvider<T, M> dataProvider) {
         this.dataProvider = Objects.requireNonNull(dataProvider,
                 "The wrapped data provider cannot be null.");
+    }
+
+    /**
+     * Gets wrapped data provider.
+     *
+     * @return the wrapped data provider
+     */
+    DataProvider<T, M> getWrappedDataProvider() {
+        return dataProvider;
     }
 
     @Override

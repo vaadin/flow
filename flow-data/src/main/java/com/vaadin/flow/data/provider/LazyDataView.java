@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -102,4 +102,17 @@ public interface LazyDataView<T> extends DataView<T> {
      * items and faster scrolling down is desired.
      */
     void setItemCountUnknown();
+
+    /**
+     * Sets the item index provider for this lazy data view. The provider is
+     * used to fetch the index of an item.
+     * {@link ItemIndexProvider#apply(Object, Query)} is called when
+     * {@link #getItemIndex(Object)} is called. It gives an item and a
+     * {@link Query} as parameters. Query is prepared for fetching all items
+     * including filter and sorting.
+     *
+     * @param itemIndexProvider
+     *            the item index provider to use
+     */
+    void setItemIndexProvider(ItemIndexProvider<T, ?> itemIndexProvider);
 }

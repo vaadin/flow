@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,9 +29,12 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -161,7 +164,7 @@ public class PwaRegistry implements Serializable {
 
     private URL getResourceUrl(ServletContext context, String path)
             throws MalformedURLException {
-        URL resourceUrl = context.getResource(path);
+        URL resourceUrl = VaadinServletService.getStaticResource(context, path);
         if (resourceUrl == null) {
             // this is a workaround specific for Spring default static resources
             // location: see #8705

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,11 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
-import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
-import com.vaadin.base.devserver.stats.StatisticsConstants;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.NetworkUtil;
 import com.vaadin.flow.internal.UrlUtil;
@@ -111,8 +107,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private AtomicBoolean isDevServerFailedToStart = new AtomicBoolean();
 
-    private transient BrowserLiveReload liveReload;
-
     private final CompletableFuture<Void> devServerStartFuture;
 
     private final AtomicReference<DevServerWatchDog> watchDog = new AtomicReference<>();
@@ -147,13 +141,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 .lookup(ApplicationConfiguration.class);
         reuseDevServer = applicationConfiguration.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
-
-        BrowserLiveReloadAccessor liveReloadAccess = lookup
-                .lookup(BrowserLiveReloadAccessor.class);
-        liveReload = liveReloadAccess != null
-                ? liveReloadAccess
-                        .getLiveReload(applicationConfiguration.getContext())
-                : null;
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
             // this will throw an exception if an exception has been thrown by
@@ -461,15 +448,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     protected DevServerWatchDog getWatchDog() {
         return watchDog.get();
-    }
-
-    /** Triggers live reload. */
-    protected void triggerLiveReload() {
-        if (liveReload != null) {
-            liveReload.reload();
-            DevModeUsageStatistics
-                    .collectEvent(StatisticsConstants.EVENT_LIVE_RELOAD);
-        }
     }
 
     @Override

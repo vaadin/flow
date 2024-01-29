@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -64,8 +64,8 @@ public class PlatformTest {
 
         if (hillaVersion != null) {
             final Path hillaJar = temporary.newFolder().toPath();
-            final Path pomProperties = hillaJar
-                    .resolve("META-INF/maven/dev.hilla/hilla/pom.properties");
+            final Path pomProperties = hillaJar.resolve(
+                    "META-INF/maven/com.vaadin.hilla/hilla/pom.properties");
             Files.createDirectories(pomProperties.getParent());
             Files.writeString(pomProperties, "version=" + hillaVersion);
             classPath.add(hillaJar.toUri().toURL());

@@ -26,6 +26,7 @@ import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -391,6 +392,13 @@ public class JavaScriptBootstrapUITest {
         Page page = mockPage();
 
         UIInternals internals = mockUIInternals();
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(internals.getSession()).thenReturn(session);
+        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.isReactRouterEnabled()).thenReturn(false);
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");

@@ -15,7 +15,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
-        <vaadin.components.version>24.3-SNAPSHOT</vaadin.components.version>
+        <vaadin.components.version>24.3.3</vaadin.components.version>
     </properties>
 
     <dependencies>

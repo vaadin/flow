@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -292,7 +292,7 @@ public class JsonUtilsTest {
 
         public LocalTime localTime = LocalTime.of(10, 23, 55);
 
-        public LocalDate localDate = LocalDate.of(2023, 6, 26);
+        public LocalDate localDate = LocalDate.of(2024, 6, 26);
 
         public LocalDateTime localDateTime = localDate.atTime(localTime);
 
@@ -374,10 +374,10 @@ public class JsonUtilsTest {
                 JsonUtils.jsonEquals(createNumberArray(10, 23, 55),
                         json.getArray("localTime")));
         Assert.assertTrue("LocalDate not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2023, 6, 26),
+                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26),
                         json.getArray("localDate")));
         Assert.assertTrue("LocalDateTime not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2023, 6, 26, 10, 23, 55),
+                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26, 10, 23, 55),
                         json.getArray("localDateTime")));
         Assert.assertEquals("ZonedDateTime not serialized as expected",
                 bean.zonedDateTime.toEpochSecond(),

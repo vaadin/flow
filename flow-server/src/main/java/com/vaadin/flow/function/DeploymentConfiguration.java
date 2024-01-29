@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -322,7 +322,21 @@ public interface DeploymentConfiguration
      * Returns the strategy for Vaadin session lock checking in production mode.
      * Ignored in development mode.
      *
+     * By default, it returns {@link SessionLockCheckStrategy#ASSERT}.
+     *
      * @return the lock checking strategy, never null.
      */
-    SessionLockCheckStrategy getSessionLockCheckStrategy();
+    default SessionLockCheckStrategy getSessionLockCheckStrategy() {
+        return SessionLockCheckStrategy.ASSERT;
+    }
+
+    /**
+     * Check if the React Router is enabled for the project instead of Vaadin
+     * router.
+     *
+     * @return {@code true} if React Router is used, on by default
+     */
+    default boolean isReactRouterEnabled() {
+        return getBooleanProperty(InitParameters.REACT_ROUTER_ENABLED, true);
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,7 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -49,6 +51,8 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
@@ -434,6 +438,36 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void eagerServerLoad_requestParameters_forwardedToLocationObject()
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+
+        Map<String, String[]> requestParams = new HashMap<>();
+        requestParams.put("param1", new String[] { "a", "b" });
+        requestParams.put("param2", new String[] { "2" });
+        VaadinServletRequest request = createVaadinRequest("/view");
+        Mockito.when(request.getHttpServletRequest().getParameterMap())
+                .thenReturn(requestParams);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
+                response);
+
+        ArgumentCaptor<IndexHtmlResponse> captor = ArgumentCaptor
+                .forClass(IndexHtmlResponse.class);
+
+        verify(request.getService()).modifyIndexHtmlResponse(captor.capture());
+
+        Optional<UI> maybeUI = captor.getValue().getUI();
+        Assert.assertNotNull(maybeUI);
+        QueryParameters locationParams = maybeUI.get().getActiveViewLocation()
+                .getQueryParameters();
+        Assert.assertEquals(List.of("a", "b"),
+                locationParams.getParameters("param1"));
+        Assert.assertEquals(List.of("2"),
+                locationParams.getParameters("param2"));
+    }
+
+    @Test
     public void should_getter_UI_return_empty_when_not_includeInitialBootstrapUidl()
             throws IOException {
         VaadinRequest request = createVaadinRequest("/");
@@ -725,6 +759,33 @@ public class IndexHtmlRequestHandlerTest {
     //
     // assertFalse(isTokenPresent(indexHtml));
     // }
+
+    @Test
+    public void devTools_disable_stubPushFunctionRegistered()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        TestUtil.createIndexHtmlStub(projectRootFolder);
+        TestUtil.createStatsJsonStub(projectRootFolder);
+        deploymentConfiguration.setDevToolsEnabled(false);
+        deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertTrue(
+                "Expected devToolsPlugins.push function when dev-tools are disabled",
+                document.head().getElementsByTag("script").stream()
+                        .map(Element::html)
+                        .anyMatch(script -> script
+                                .contains("window.Vaadin.devToolsPlugins = {")
+                                && script
+                                        .contains("push: function(plugin) {")));
+
+    }
 
     @Test
     public void should_NOT_export_usage_statistics_in_production_mode()

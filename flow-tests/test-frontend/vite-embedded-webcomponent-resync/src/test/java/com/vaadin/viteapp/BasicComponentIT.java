@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,15 @@
  */
 package com.vaadin.viteapp;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
+
 import java.io.File;
 
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,10 +33,6 @@ import org.openqa.selenium.StaleElementReferenceException;
 
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
-
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionEvent;
-import jakarta.servlet.http.HttpSessionListener;
 
 public class BasicComponentIT extends ChromeDeviceTest {
 
@@ -57,7 +57,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
 
     @Test
     public void session_resynced_webcomponent_is_active() throws Exception {
-
+        waitForWebComponentsBootstrap();
         // check if web component works
         clickButton();
         Assert.assertEquals("Authentication failure",
@@ -65,6 +65,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
 
         // simulate expired session by invalidating current session
         session.invalidate();
+        waitForWebComponentsBootstrap();
 
         // init request to resynchronize expired session and recreate components
         clickButton();
@@ -85,7 +86,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
     }
 
     private void clickButton() {
-        $("login-form").first().$("button").first().click();
+        waitUntil(d -> $("login-form").first().$("button").first()).click();
     }
 
     private String getAuthenticationResult() {

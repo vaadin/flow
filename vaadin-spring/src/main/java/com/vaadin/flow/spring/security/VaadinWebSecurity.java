@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -120,7 +122,14 @@ public abstract class VaadinWebSecurity {
     private String servletContextPath;
 
     @Autowired
+    private ObjectProvider<NavigationAccessControl> accessControlProvider;
+
     private NavigationAccessControl accessControl;
+
+    @PostConstruct
+    void afterPropertiesSet() {
+        accessControl = accessControlProvider.getIfAvailable();
+    }
 
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
@@ -206,10 +215,12 @@ public abstract class VaadinWebSecurity {
                     .permitAll();
             urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
                     requestUtil.getUrlMapping())).permitAll();
-
             // matcher for Vaadin static (public) resources
             urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(
                     requestUtil.getUrlMapping())).permitAll();
+            // matcher for custom PWA icons and favicon
+            urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
+                    .permitAll();
 
             // all other requests require authentication
             urlRegistry.anyRequest().authenticated();

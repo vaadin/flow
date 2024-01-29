@@ -1,0 +1,14 @@
+{
+  "name": "react-function-location-plugin",
+  "version": "1.0.0",
+  "description": "A Vite plugin for gather development information about source location of React functions",
+  "main": "react-function-location-plugin.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "files": [
+    "react-function-location-plugin.js"
+  ]
+}

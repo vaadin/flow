@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,10 +39,32 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     private final Options options;
 
     private final Set<String> webComponentTags;
+    private static final String[] reactPluginTemplatesUsedInStarters = new String[] {
+            getSimplifiedTemplate("vite.config-react.ts"),
+            getSimplifiedTemplate("vite.config-react-swc.ts") };
 
     TaskUpdateVite(Options options, Set<String> webComponentTags) {
         this.options = options;
         this.webComponentTags = webComponentTags;
+    }
+
+    private static String getSimplifiedTemplate(String string) {
+        return simplifyTemplate(getTemplate(string));
+    }
+
+    private static String getTemplate(String string) {
+        try {
+            return IOUtils.toString(
+                    TaskUpdateVite.class.getResourceAsStream(string),
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static String simplifyTemplate(String text) {
+        return text.replace("\n", "").replace("\r", "").replace("\t", "")
+                .replace(" ", "");
     }
 
     @Override
@@ -60,7 +82,11 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
         File configFile = new File(options.getNpmFolder(),
                 FrontendUtils.VITE_CONFIG);
         if (configFile.exists()) {
-            return;
+            if (!replaceWithDefault(configFile)) {
+                return;
+            }
+            log().info(
+                    "Replacing vite.config.ts with the default version as the React plugin is now automatically included");
         }
 
         URL resource = this.getClass().getClassLoader()
@@ -69,6 +95,17 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
         FileUtils.write(configFile, template, StandardCharsets.UTF_8);
         log().debug("Created vite configuration file: '{}'", configFile);
 
+    }
+
+    private boolean replaceWithDefault(File configFile) throws IOException {
+        String text = simplifyTemplate(
+                IOUtils.toString(configFile.toURI(), StandardCharsets.UTF_8));
+        for (String template : reactPluginTemplatesUsedInStarters) {
+            if (text.equals(template)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void createGeneratedConfig() throws IOException {

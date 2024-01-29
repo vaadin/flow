@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -93,7 +93,7 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
         Assert.assertTrue("Addon import is expected", found);
     }
 
-    private static JsonObject getFrontendHashes() throws IOException {
+    public static JsonObject getFrontendHashes() throws IOException {
         JsonObject statsJson = getStatsJson();
         JsonObject frontendHashes = statsJson.getObject("frontendHashes");
         Assert.assertNotNull("Frontend hashes are expected in the stats.json",

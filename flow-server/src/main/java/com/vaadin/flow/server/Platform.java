@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -91,14 +91,14 @@ public class Platform implements Serializable {
         if (hillaVersion == null) {
             try (final InputStream hillaPomProperties = Thread.currentThread()
                     .getContextClassLoader().getResourceAsStream(
-                            "META-INF/maven/dev.hilla/hilla/pom.properties")) {
+                            "META-INF/maven/com.vaadin.hilla/hilla/pom.properties")) {
                 if (hillaPomProperties != null) {
                     final Properties properties = new Properties();
                     properties.load(hillaPomProperties);
                     hillaVersion = properties.getProperty("version", "");
                 } else {
                     LOGGER.info("Unable to determine Hilla version. "
-                            + "No META-INF/maven/dev.hilla/hilla/pom.properties found");
+                            + "No META-INF/maven/com.vaadin.hilla/hilla/pom.properties found");
                     hillaVersion = "";
                 }
             } catch (Exception e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -903,6 +903,41 @@ public class AbstractListDataViewTest {
     public void getItem_indexOutsideOfSize_throwsException() {
         exceptionRule.expect(IndexOutOfBoundsException.class);
         dataView.getItem(items.size());
+    }
+
+    @Test
+    public void getItemIndex_itemPresentedInDataSet_indexFound() {
+        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
+                dataView.getItemIndex("middle"));
+    }
+
+    @Test
+    public void getItemIndex_itemNotPresentedInDataSet_indexNotFound() {
+        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
+                dataView.getItemIndex("notPresent"));
+    }
+
+    @Test
+    public void getItemIndex_filteringApplied_indexFound() {
+        dataProvider
+                .setFilter(item -> "first".equals(item) || "last".equals(item));
+        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
+                dataView.getItemIndex("last"));
+    }
+
+    @Test
+    public void getItemIndex_sortingApplied_indexFound() {
+        dataProvider.setSortOrder(item -> item, SortDirection.DESCENDING);
+        Assert.assertEquals("Wrong index returned for item", Optional.of(0),
+                dataView.getItemIndex("middle"));
+    }
+
+    @Test
+    public void getItemIndex_itemNotPresentedInDataSet_filteringApplied_indexNotFound() {
+        dataProvider
+                .setFilter(item -> "first".equals(item) || "last".equals(item));
+        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
+                dataView.getItemIndex("middle"));
     }
 
     @Test

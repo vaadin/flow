@@ -39,6 +39,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
 
@@ -1796,6 +1797,91 @@ public class BundleValidationTest {
     }
 
     @Test
+    public void localPackageInPackageJson_notChanged_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "file:my-pkg");
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertFalse(
+                "Shouldn't re-bundle when referencing local packages in package.json",
+                needsBuild);
+    }
+
+    @Test
+    public void localPackageInPackageJson_differentReference_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg",
+                "./another-folder");
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertTrue(
+                "Should re-bundle when local packages have different values",
+                needsBuild);
+    }
+
+    @Test
+    public void localPackageInPackageJson_parsableVersionInStats_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "1.0.0");
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertTrue(
+                "Should re-bundle when local package in package.json but parsable version in stats",
+                needsBuild);
+    }
+
+    @Test
+    public void localPackageInStats_parsableVersionInPackageJson_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"my-pkg\": \"1.0.0\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "file:my-pkg");
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertTrue(
+                "Should re-bundle when local package in stats but parsable version in package.json",
+                needsBuild);
+    }
+
+    @Test
     public void bundleMissesSomeEntries_devMode_skipBundleBuildSet_noBundleRebuild()
             throws IOException {
         Assume.assumeTrue(mode == Mode.DEVELOPMENT_BUNDLE);
@@ -2012,7 +2098,11 @@ public class BundleValidationTest {
         packageJson.createNewFile();
 
         FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"@vaadin/router\": \"^1.7.5\"}, "
+                "{\"dependencies\": {" + "    \"react\": \"18.2.0\",\n"
+                        + "    \"react-dom\": \"18.2.0\",\n"
+                        + "    \"react-router-dom\": \"6.18.0\",\n"
+                        + "    \"@types/react\": \"18.2.37\",\n"
+                        + "    \"@types/react-dom\": \"18.2.15\"}, "
                         + "\"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 

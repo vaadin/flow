@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -28,7 +24,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -59,8 +55,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.BundleUtils;
-import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -70,6 +64,10 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Bootstrap handler for WebComponent requests.
@@ -82,7 +80,7 @@ import elemental.json.impl.JsonUtil;
 public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static final String REQ_PARAM_URL = "url";
     private static final String PATH_PREFIX = "/web-component/web-component";
-    private static final Pattern PATH_PATTERN = Pattern
+    static final Pattern PATH_PATTERN = Pattern
             .compile(".*" + PATH_PREFIX + "-(ui|bootstrap)\\.(js|html)$");
 
     private static class WebComponentBootstrapContext extends BootstrapContext {
@@ -295,6 +293,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        if ("HEAD".equals(request.getMethod().toUpperCase(Locale.ROOT))) {
+            // Poll request to check if the dev-bundle is ready
+            // Prevent the creation of a UI
+            return true;
+        }
         // Find UI class
         Class<? extends UI> uiClass = getUIClass(request);
 

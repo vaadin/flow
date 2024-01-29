@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,7 +27,7 @@ import com.vaadin.flow.router.Route;
 
 import elemental.json.JsonValue;
 
-@Route(value = "com.vaadin.flow.uitest.ui.scroll.PushStateScrollView", layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.scroll.PushStateScrollView/:param?", layout = ViewTestLayout.class)
 public class PushStateScrollView extends AbstractDivView {
     public PushStateScrollView() {
         Element filler = ElementFactory.createDiv(

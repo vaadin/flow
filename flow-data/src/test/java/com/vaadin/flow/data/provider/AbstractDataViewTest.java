@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,8 @@ package com.vaadin.flow.data.provider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -26,7 +28,9 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.tests.data.bean.Item;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +41,8 @@ public class AbstractDataViewTest {
     private Collection<Item> items;
 
     private ListDataProvider<Item> dataProvider;
+
+    private DataProvider<Item, ?> wrapperDataProvider;
 
     private AbstractDataView<Item> dataView;
 
@@ -100,6 +106,139 @@ public class AbstractDataViewTest {
         Assert.assertEquals(dataProvider, refreshAllEvent.get().getSource());
     }
 
+    @Test
+    public void verifyDataProviderType_wrappedDataProviderIsSupported() {
+        // starting with EmptyDataProvider to bypass checking too early in
+        // the DataViewImpl constructor.
+        wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
+                component) {
+            @Override
+            public Class<?> getSupportedDataProviderType() {
+                return InMemoryDataProvider.class;
+            }
+        };
+        wrapperDataProvider = getWrapperDataProvider();
+        dataView.verifyDataProviderType(wrapperDataProvider);
+    }
+
+    @Test
+    public void verifyDataProviderType_withConfigurableFilter_wrappedDataProviderIsSupported() {
+        wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
+                component) {
+            @Override
+            public Class<?> getSupportedDataProviderType() {
+                return InMemoryDataProvider.class;
+            }
+        };
+        wrapperDataProvider = dataProvider.withConfigurableFilter();
+        dataView.verifyDataProviderType(wrapperDataProvider);
+    }
+
+    @Test
+    public void verifyDataProviderType_wrappedDataProviderIsNotSupported() {
+        wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
+                component) {
+            @Override
+            public Class<?> getSupportedDataProviderType() {
+                return BackEndDataProvider.class;
+            }
+        };
+        wrapperDataProvider = getWrapperDataProvider();
+        Assert.assertThrows(IllegalStateException.class,
+                () -> dataView.verifyDataProviderType(wrapperDataProvider));
+    }
+
+    @Test
+    public void verifyDataProviderType_withConfigurableFilter_wrappedDataProviderIsNotSupported() {
+        wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
+                component) {
+            @Override
+            public Class<?> getSupportedDataProviderType() {
+                return BackEndDataProvider.class;
+            }
+        };
+        wrapperDataProvider = dataProvider.withConfigurableFilter();
+        Assert.assertThrows(IllegalStateException.class,
+                () -> dataView.verifyDataProviderType(wrapperDataProvider));
+    }
+
+    @Test
+    public void verifyDataProviderType_wrapperIsBackEndDataProvider_wrapperDataProviderIsSupported() {
+        wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
+                component) {
+            @Override
+            public Class<?> getSupportedDataProviderType() {
+                return BackEndDataProvider.class;
+            }
+        };
+        wrapperDataProvider = new BackEndDataProviderWrapper(dataProvider);
+        dataView.verifyDataProviderType(wrapperDataProvider);
+    }
+
+    private DataProvider<Item, Object> getWrapperDataProvider() {
+        return new DataProviderWrapper<Item, Object, SerializablePredicate<Item>>(
+                dataProvider) {
+            @Override
+            protected SerializablePredicate<Item> getFilter(Query query) {
+                return null;
+            }
+
+            @Override
+            public Stream fetch(Query query) {
+                return null;
+            }
+        };
+    }
+
+    // BackEndDataProvider that is also a DataProviderWrapper
+    private static class BackEndDataProviderWrapper extends
+            DataProviderWrapper<Item, Object, SerializablePredicate<Item>>
+            implements BackEndDataProvider<Item, Object> {
+        protected BackEndDataProviderWrapper(
+                DataProvider<Item, SerializablePredicate<Item>> dataProvider) {
+            super(dataProvider);
+        }
+
+        @Override
+        public Stream fetch(Query query) {
+            return null;
+        }
+
+        @Override
+        public void setSortOrders(List<QuerySortOrder> sortOrders) {
+        }
+
+        @Override
+        public int size(Query<Item, Object> query) {
+            return 0;
+        }
+
+        @Override
+        protected SerializablePredicate<Item> getFilter(
+                Query<Item, Object> query) {
+            return null;
+        }
+
+        @Override
+        public void refreshItem(Item item) {
+        }
+
+        @Override
+        public void refreshAll() {
+        }
+
+        @Override
+        public Registration addDataProviderListener(
+                DataProviderListener<Item> listener) {
+            return null;
+        }
+    }
+
     /**
      * setIdentifierProvider is tested in AbstractListDataView since it has the
      * container(T item) method.
@@ -125,6 +264,11 @@ public class AbstractDataViewTest {
         @Override
         public Item getItem(int index) {
             return null;
+        }
+
+        @Override
+        public Optional<Integer> getItemIndex(Item item) {
+            return Optional.of(0);
         }
     }
 

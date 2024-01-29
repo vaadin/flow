@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
@@ -1866,7 +1868,14 @@ public class UI extends Component
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
-            getInternals().clearLastHandledNavigation();
+            if (getInternals().getSession().getConfiguration()
+                    .isReactRouterEnabled()
+                    && getInternals().getContinueNavigationAction() != null) {
+                getInternals().clearLastHandledNavigation();
+            } else {
+                getInternals().clearLastHandledNavigation();
+            }
+
         }
     }
 

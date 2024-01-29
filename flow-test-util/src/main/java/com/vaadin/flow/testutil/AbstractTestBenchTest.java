@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -176,6 +176,13 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         if (isClientRouter()) {
             waitForElementPresent(By.cssSelector("#outlet > *"));
         }
+    }
+
+    protected void waitForWebComponentsBootstrap() {
+        waitUntil(driver -> driver.findElement(By.cssSelector(
+                "script[src*='web-component/web-component-bootstrap.js']")),
+                // longer timeout to prevent failures during dev-bundle creation
+                60);
     }
 
     /**

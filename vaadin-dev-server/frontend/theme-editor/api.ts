@@ -1,4 +1,4 @@
-import { Connection } from '../connection';
+import { WebSocketConnection } from '../websocket-connection';
 import { ComponentReference } from '../component-util';
 
 export enum Commands {
@@ -47,12 +47,12 @@ interface RequestHandle {
 }
 
 export class ThemeEditorApi {
-  private wrappedConnection: Connection;
+  private wrappedConnection: WebSocketConnection;
   private pendingRequests: { [key: string]: RequestHandle } = {};
   private requestCounter: number = 0;
   private globalUiId: number | undefined;
 
-  constructor(wrappedConnection: Connection) {
+  constructor(wrappedConnection: WebSocketConnection) {
     this.wrappedConnection = wrappedConnection;
     const prevOnMessage = this.wrappedConnection.onMessage;
     this.wrappedConnection.onMessage = (message: any) => {
