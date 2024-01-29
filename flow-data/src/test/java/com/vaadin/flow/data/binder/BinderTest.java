@@ -39,6 +39,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder.Binding;
@@ -51,7 +52,6 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
 import com.vaadin.flow.data.validator.StringLengthValidator;
-import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.tests.data.bean.Person;
 import com.vaadin.flow.tests.data.bean.Sex;
@@ -1540,6 +1540,78 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         assertThat("Age field should still be ok.", ageField.getErrorMessage(),
                 isEmptyString());
+    }
+
+    @Test
+    public void skipDefaultValidators_testNoneSkippedByDefault() {
+        TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_1"));
+        TestTextFieldDefaultValidator field2 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_2"));
+
+        binder.forField(field1).bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.forField(field2).bind(Person::getLastName, Person::setLastName);
+
+        BinderValidationStatus<Person> status = binder.validate();
+        Assert.assertTrue(
+                "Validation should have two errors. "
+                        + "Default validators should be run.",
+                status.getValidationErrors().size() == 2);
+    }
+
+    @Test
+    public void skipDefaultValidators_testAllSkipped_whenBinderSkipSet() {
+        TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_1"));
+        TestTextFieldDefaultValidator field2 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_2"));
+        binder.skipDefaultValidators();
+
+        binder.forField(field1).bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.forField(field2).bind(Person::getLastName, Person::setLastName);
+
+        BinderValidationStatus<Person> status = binder.validate();
+        Assert.assertTrue(
+                "Validation should not have errors. "
+                        + "Default validator should be skipped.",
+                status.getValidationErrors().isEmpty());
+    }
+
+    @Test
+    public void skipDefaultValidator_testSingleBindingSkipped_whenBinderSkipNotSet() {
+        TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_1"));
+        TestTextFieldDefaultValidator field2 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_2"));
+
+        binder.forField(field1).bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.forField(field2).skipDefaultValidator().bind(Person::getLastName,
+                Person::setLastName);
+
+        BinderValidationStatus<Person> status = binder.validate();
+        Assert.assertTrue(
+                "Validation should have one error. "
+                        + "Only one default validators should be skipped.",
+                status.getValidationErrors().size() == 1);
+    }
+
+    public class TestTextFieldDefaultValidator extends TestTextField
+            implements HasValidator<String> {
+
+        private final Validator<String> defaultValidator;
+
+        public TestTextFieldDefaultValidator(
+                Validator<String> defaultValidator) {
+            this.defaultValidator = defaultValidator;
+        }
+
+        @Override
+        public Validator<String> getDefaultValidator() {
+            return defaultValidator;
+        }
     }
 
     @Test
