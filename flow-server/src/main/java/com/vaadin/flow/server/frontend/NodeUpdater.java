@@ -173,8 +173,10 @@ public abstract class NodeUpdater implements FallibleCommand {
             String versionsOrigin) throws IOException {
         JsonObject versionsJson;
         try (InputStream content = versionsResource.openStream()) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(Json
-                    .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
+            VersionsJsonConverter convert = new VersionsJsonConverter(
+                    Json.parse(
+                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    options.isReactRouterEnabled());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)

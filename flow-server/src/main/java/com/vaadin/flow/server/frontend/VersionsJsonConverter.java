@@ -40,7 +40,10 @@ class VersionsJsonConverter {
     private static final String NPM_VERSION = "npmVersion";
     private final JsonObject convertedObject;
 
-    VersionsJsonConverter(JsonObject platformVersions) {
+    private boolean reactEnabled;
+
+    VersionsJsonConverter(JsonObject platformVersions, boolean reactEnabled) {
+        this.reactEnabled = reactEnabled;
         convertedObject = Json.createObject();
 
         collectDependencies(platformVersions);
@@ -59,7 +62,8 @@ class VersionsJsonConverter {
     private void collectDependencies(JsonObject obj) {
         for (String key : obj.keys()) {
             JsonValue value = obj.get(key);
-            if (!(value instanceof JsonObject)) {
+            if (!(value instanceof JsonObject)
+                    || (!reactEnabled && isReactObject(key))) {
                 continue;
             }
             JsonObject json = (JsonObject) value;
@@ -69,6 +73,10 @@ class VersionsJsonConverter {
                 collectDependencies(json);
             }
         }
+    }
+
+    private boolean isReactObject(String key) {
+        return key.equals("react") || key.equals("react-pro");
     }
 
     private void addDependency(JsonObject obj) {
