@@ -778,6 +778,11 @@ public class StateNode implements Serializable {
             } else {
                 id = -1;
             }
+        } else if (id > -1 && getOwner() == NullOwner.get()) {
+            // When id is set but owner is NullOwner, removeFromTree has been
+            // called, so we should clear node id and attached state, thus allow
+            // moving the node to another StateTree
+            reset(false);
         }
         owner = tree;
     }
