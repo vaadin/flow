@@ -260,7 +260,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return A boolean value.
          */
-        boolean isSkipDefaultValidator();
+        boolean isDefaultValidatorSkipped();
 
         /**
          * Define whether the value should be converted back to the presentation
@@ -983,7 +983,7 @@ public class Binder<BEAN> implements Serializable {
             if (field instanceof HasValidator hasValidator) {
                 withValidator((val,
                         ctx) -> getBinder().skipDefaultValidators
-                                || binding.isSkipDefaultValidator()
+                                || binding.isDefaultValidatorSkipped()
                                         ? ValidationResult.ok()
                                         : hasValidator.getDefaultValidator()
                                                 .apply(val, ctx));
@@ -1606,7 +1606,7 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public boolean isSkipDefaultValidator() {
+        public boolean isDefaultValidatorSkipped() {
             return skipDefaultValidator;
         }
 
