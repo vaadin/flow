@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Version;
@@ -59,15 +60,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskGenerateReactFiles implements FallibleCommand {
 
-    private final File frontendDirectory;
+    private Options options;
     protected static String NO_IMPORT = """
             Faulty configuration of serverSideRoutes.
             The server route definition is missing from the '%1$s' file
 
             To have working Flow routes add the following to the '%1$s' file:
-            - import line 'import {serverSideRoutes} from 'Frontend/generated/flow/Flow';'
-            - route '...serverSideRoutes' into the routes definition
-            Hybrid example with client main layout wrapper:
+            - import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+            - route '...serverSideRoutes' into the routes definition as shown below:
 
                 export const routes = [
                   {
@@ -80,6 +80,12 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                   },
                 ] as RouteObject[];
             """;
+    protected static String MISSING_ROUTES_EXPORT = """
+            Routes need to be exported as 'routes' for server navigation handling.
+            routes.tsx should at least contain
+            'export const routes = [...serverSideRoutes] as RouteObject[];'
+            but can have react routes also defined.
+            """;
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -88,11 +94,12 @@ public class TaskGenerateReactFiles implements FallibleCommand {
      *            the task options
      */
     TaskGenerateReactFiles(Options options) {
-        this.frontendDirectory = options.getFrontendDirectory();
+        this.options = options;
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
+        File frontendDirectory = options.getFrontendDirectory();
         File appTsx = new File(frontendDirectory, "App.tsx");
         File flowTsx = new File(
                 new File(frontendDirectory, FrontendUtils.GENERATED),
@@ -109,17 +116,30 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             } else {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
-                Pattern serverImport = Pattern.compile(
-                        "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
-                if (!serverImport.matcher(routesContent).find()) {
+                if (missingServerImport(routesContent)
+                        && serverRoutesAvailable()) {
                     throw new ExecutionFailedException(
                             String.format(NO_IMPORT, routesTsx.getPath()));
+                }
+                if (!routesContent.contains("export const routes")) {
+                    throw new ExecutionFailedException(MISSING_ROUTES_EXPORT);
                 }
             }
         } catch (IOException e) {
             throw new ExecutionFailedException("Failed to read file content",
                     e);
         }
+    }
+
+    private boolean missingServerImport(String routesContent) {
+        Pattern serverImport = Pattern.compile(
+                "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
+        return !serverImport.matcher(routesContent).find();
+    }
+
+    private boolean serverRoutesAvailable() {
+        return !options.getClassFinder().getAnnotatedClasses(Route.class)
+                .isEmpty();
     }
 
     private void writeFile(File target, String content)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -54,30 +54,117 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
     public static final String DEV_DEPENDENCIES = "devDependencies";
     public static final String OVERRIDES = "overrides";
 
+    public class Options {
+        private boolean cleanPackageJson = true;
+
+        private boolean removeDevBundle = true;
+        private boolean removeFrontendGeneratedFolder = true;
+        private boolean removeGeneratedTSFolder = true;
+        private boolean removeNodeModules = true;
+        private boolean removePackageLock = true;
+        private boolean removePnpmFile = true;
+
+        public Options withRemovePackageLock(boolean removePackageLock) {
+            this.removePackageLock = removePackageLock;
+            return this;
+        }
+
+        public Options withRemovePnpmFile(boolean removePnpmFile) {
+            this.removePnpmFile = removePnpmFile;
+            return this;
+        }
+
+        public Options withRemoveGeneratedTSFolder(
+                boolean removeGeneratedTSFolder) {
+            this.removeGeneratedTSFolder = removeGeneratedTSFolder;
+            return this;
+        }
+
+        public Options withRemoveFrontendGeneratedFolder(
+                boolean removeFrontendGeneratedFolder) {
+            this.removeFrontendGeneratedFolder = removeFrontendGeneratedFolder;
+            return this;
+        }
+
+        public Options withCleanPackageJson(boolean cleanPackageJson) {
+            this.cleanPackageJson = cleanPackageJson;
+            return this;
+        }
+
+        public Options withRemoveDevBundle(boolean removeDevBundle) {
+            this.removeDevBundle = removeDevBundle;
+            return this;
+        }
+
+        public Options withRemoveNodeModules(boolean removeNodeModules) {
+            this.removeNodeModules = removeNodeModules;
+            return this;
+        }
+
+        public boolean isRemovePackageLock() {
+            return removePackageLock;
+        }
+
+        public boolean isRemovePnpmFile() {
+            return removePnpmFile;
+        }
+
+        public boolean isRemoveGeneratedTSFolder() {
+            return removeGeneratedTSFolder;
+        }
+
+        public boolean isRemoveFrontendGeneratedFolder() {
+            return removeFrontendGeneratedFolder;
+        }
+
+        public boolean isCleanPackageJson() {
+            return cleanPackageJson;
+        }
+
+        public boolean isRemoveDevBundle() {
+            return removeDevBundle;
+        }
+
+        public boolean isRemoveNodeModules() {
+            return removeNodeModules;
+        }
+    }
+
     @Override
     public void execute() throws MojoFailureException {
-        removeNodeModules();
+        runCleaning(new Options());
+    }
 
-        // Cleanup (p)npm lock file.
-        File lockFile = new File(npmFolder(), Constants.PACKAGE_LOCK_YAML);
-        if (!lockFile.exists()) {
-            lockFile = new File(npmFolder(), Constants.PACKAGE_LOCK_BUN);
-        }
-        if (!lockFile.exists()) {
-            lockFile = new File(npmFolder(), Constants.PACKAGE_LOCK_JSON);
-        }
-        if (lockFile.exists()) {
-            lockFile.delete();
+    protected void runCleaning(Options options) throws MojoFailureException {
+        if (options.isRemoveNodeModules()) {
+            removeNodeModules();
         }
 
-        // clean up .pnpmfile.cjs
-        File pnpmfile = new File(npmFolder(), ".pnpmfile.cjs");
-        if (pnpmfile.exists()) {
-            pnpmfile.delete();
+        if (options.isRemovePackageLock()) {
+            // Cleanup (p)npm lock file.
+            File lockFile = new File(npmFolder(), Constants.PACKAGE_LOCK_YAML);
+            if (!lockFile.exists()) {
+                lockFile = new File(npmFolder(), Constants.PACKAGE_LOCK_BUN);
+            }
+            if (!lockFile.exists()) {
+                lockFile = new File(npmFolder(), Constants.PACKAGE_LOCK_JSON);
+            }
+            if (lockFile.exists()) {
+                lockFile.delete();
+            }
+        }
+
+        if (options.isRemovePnpmFile()) {
+            // clean up .pnpmfile.cjs
+            File pnpmfile = new File(npmFolder(), ".pnpmfile.cjs");
+            if (pnpmfile.exists()) {
+                pnpmfile.delete();
+            }
         }
 
         // clean up generated files from frontend
-        if (generatedTsFolder().exists()) {
+        if (generatedTsFolder().exists()
+                && options.isRemoveGeneratedTSFolder()) {
             try {
                 FileUtils.deleteDirectory(generatedTsFolder());
             } catch (IOException exception) {
@@ -94,7 +181,8 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
         // ${frontendDirectory}/generated
         File frontendGeneratedFolder = new File(frontendDirectory(),
                 FrontendUtils.GENERATED);
-        if (frontendGeneratedFolder.exists()) {
+        if (frontendGeneratedFolder.exists()
+                && options.isRemoveFrontendGeneratedFolder()) {
             try {
                 FileUtils.deleteDirectory(frontendGeneratedFolder);
             } catch (IOException exception) {
@@ -107,7 +195,7 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
         try {
             // Clean up package json framework managed versions.
             File packageJsonFile = new File(npmFolder(), "package.json");
-            if (packageJsonFile.exists()) {
+            if (packageJsonFile.exists() && options.isCleanPackageJson()) {
                 JsonObject packageJson = Json.parse(FileUtils.readFileToString(
                         packageJsonFile, StandardCharsets.UTF_8.name()));
 
@@ -122,7 +210,9 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
                     "Failed to clean 'package.json' file", e);
         }
 
-        removeDevBundle();
+        if (options.removeDevBundle) {
+            removeDevBundle();
+        }
     }
 
     /**

@@ -101,7 +101,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
     @Test
     public void should_generateOpenApi() throws Exception {
         File generatedOpenApiJson = Paths
-                .get(baseDir, TARGET, "classes/dev/hilla/openapi.json")
+                .get(baseDir, TARGET, "classes/com/vaadin/hilla/openapi.json")
                 .toFile();
 
         Assert.assertFalse(generatedOpenApiJson.exists());

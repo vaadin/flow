@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -105,7 +106,14 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
                 || NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             return true;
         } else {
-            return super.shouldPushHistoryState(event);
+            // For react router the server should push history state for
+            // server rendering even when client previously updated url with
+            // vaadin-router.
+            return super.shouldPushHistoryState(event)
+                    || (event.getUI().getInternals().getSession()
+                            .getConfiguration().isReactRouterEnabled()
+                            && NavigationTrigger.CLIENT_SIDE
+                                    .equals(event.getTrigger()));
         }
     }
 

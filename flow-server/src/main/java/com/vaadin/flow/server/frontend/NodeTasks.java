@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -284,8 +284,7 @@ public class NodeTasks implements FallibleCommand {
         if (options.isProductionMode() || options.isFrontendHotdeploy()
                 || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
-            if (options.getFeatureFlags()
-                    .isEnabled(FeatureFlags.REACT_ROUTER)) {
+            if (options.isReactRouterEnabled()) {
                 commands.add(new TaskGenerateReactFiles(options));
             }
             if (!options.isProductionMode()) {

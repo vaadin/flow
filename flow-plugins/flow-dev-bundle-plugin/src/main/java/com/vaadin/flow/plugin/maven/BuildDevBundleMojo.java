@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -160,6 +160,9 @@ public class BuildDevBundleMojo extends AbstractMojo
      */
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
+
+    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "true")
+    private boolean reactRouterEnabled;
 
     @Override
     public void execute() throws MojoFailureException {
@@ -429,6 +432,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isPrepareFrontendCacheDisabled() {
         return false;
+    }
+
+    @Override
+    public boolean isReactRouterEnabled() {
+        return reactRouterEnabled;
     }
 
 }

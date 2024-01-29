@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -82,7 +82,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         lines.addAll(getThemeLines());
 
         for (TypeScriptBootstrapModifier modifier : modifiers) {
-            modifier.modify(lines, options.isProductionMode());
+            modifier.modify(lines, options.isProductionMode(),
+                    frontDeps.getThemeDefinition());
         }
         return String.join(System.lineSeparator(), lines);
     }

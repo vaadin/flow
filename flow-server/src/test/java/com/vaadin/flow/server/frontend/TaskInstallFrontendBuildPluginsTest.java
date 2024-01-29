@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -67,7 +67,8 @@ public class TaskInstallFrontendBuildPluginsTest {
     public void getPluginsReturnsExpectedList() {
         String[] expectedPlugins = new String[] { "application-theme-plugin",
                 "theme-loader", "theme-live-reload-plugin",
-                "build-status-plugin", "rollup-plugin-postcss-lit-custom" };
+                "build-status-plugin", "rollup-plugin-postcss-lit-custom",
+                "react-function-location-plugin" };
         final List<String> plugins = FrontendPluginsUtil.getPlugins();
         Assert.assertEquals("Unexpected number of plugins in 'plugins.json'",
                 expectedPlugins.length, plugins.size());

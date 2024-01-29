@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -332,6 +332,21 @@ public class DataCommunicator<T> implements Serializable {
      *            the end of the requested range
      */
     public void setRequestedRange(int start, int length) {
+        requestedRange = computeRequestedRange(start, length);
+        requestFlush();
+    }
+
+    /**
+     * Computes the requested range, limiting the number of requested items to a
+     * given threshold of ten pages.
+     *
+     * @param start
+     *            the start of the requested range
+     * @param length
+     *            the end of the requested range
+     * @return
+     */
+    protected final Range computeRequestedRange(int start, int length) {
         final int maximumAllowedItems = getMaximumAllowedItems();
         if (length > maximumAllowedItems) {
             getLogger().warn(String.format(
@@ -340,10 +355,7 @@ public class DataCommunicator<T> implements Serializable {
                             + "items allowed '%d'.",
                     length, maximumAllowedItems));
         }
-        requestedRange = Range.withLength(start,
-                Math.min(length, maximumAllowedItems));
-
-        requestFlush();
+        return Range.withLength(start, Math.min(length, maximumAllowedItems));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
@@ -49,6 +48,7 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
@@ -60,6 +60,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -81,8 +82,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
-    public static final String RANDOM_DEV_TOOLS_TOKEN = UUID.randomUUID()
-            .toString();
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -178,6 +177,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             catchErrorsInDevMode(indexDocument);
 
             addLicenseChecker(indexDocument);
+        } else if (!config.isProductionMode()) {
+            // If a dev-tools plugin tries to register itself with disabled
+            // dev-tools, the application completely breaks with a JS error
+            addScript(indexDocument,
+                    """
+                            window.Vaadin = window.Vaadin || {};
+                            window.Vaadin.devToolsPlugins = {
+                                push: function(plugin) {
+                                    window.console.debug("Vaadin Dev Tools disabled. Plugin cannot be registered.", plugin);
+                                }
+                            };
+                            """);
         }
 
         // this invokes any custom listeners and should be run when the whole
@@ -318,6 +329,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         indexDocument.head().insertChildren(0, elm);
     }
 
+    private static void addScriptSrc(Document indexDocument, String scriptUrl) {
+        Element elm = new Element(SCRIPT);
+        elm.attr(SCRIPT_INITIAL, "");
+        elm.attr("src", scriptUrl);
+        indexDocument.head().appendChild(elm);
+    }
+
     private void storeAppShellTitleToUI(Document indexDocument) {
         if (UI.getCurrent() != null) {
             Element elm = indexDocument.head().selectFirst("title");
@@ -357,7 +375,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 backend -> devToolsConf.put("backend", backend.toString()));
         devToolsConf.put("liveReloadPort", liveReloadPort);
         if (isAllowedDevToolsHost(config, request)) {
-            devToolsConf.put("token", RANDOM_DEV_TOOLS_TOKEN);
+            devToolsConf.put("token", DevToolsToken.getToken());
         }
         addScript(indexDocument, String.format("""
                 window.Vaadin.devToolsPlugins = [];
@@ -365,6 +383,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     """, devToolsConf.toJson()));
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
+
+        String pushUrl = BootstrapHandlerHelper.getServiceUrl(request) + "/"
+                + ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+        addScriptSrc(indexDocument, pushUrl);
     }
 
     static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,

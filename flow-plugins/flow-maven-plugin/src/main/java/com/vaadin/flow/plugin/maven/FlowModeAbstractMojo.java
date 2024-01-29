@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -225,6 +225,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
+
+    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "true")
+    private boolean reactRouterEnabled;
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -456,4 +459,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         return false;
     }
 
+    @Override
+    public boolean isReactRouterEnabled() {
+        return reactRouterEnabled;
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -326,6 +327,28 @@ public class AbstractLazyDataViewTest {
 
         fakeClientCommunication();
         dataView.getItem(3);
+    }
+
+    @Test
+    public void getItemIndex_withoutItemIndexProvider_throwUnsupportedOperationException() {
+        Assert.assertThrows(UnsupportedOperationException.class,
+                () -> dataView.getItemIndex("bar"));
+    }
+
+    @Test
+    public void getItemIndex_itemPresentedInDataSet_indexFound() {
+        dataView.setItemIndexProvider(
+                (item, query) -> "bar".equals(item) ? 1 : null);
+        Assert.assertEquals("Wrong index returned for item", Optional.of(1),
+                dataView.getItemIndex("bar"));
+    }
+
+    @Test
+    public void getItemIndex_itemNotPresentedInDataSet_indexNotFound() {
+        dataView.setItemIndexProvider(
+                (item, query) -> "bar".equals(item) ? 1 : null);
+        Assert.assertEquals("Wrong index returned for item", Optional.empty(),
+                dataView.getItemIndex("notPresent"));
     }
 
     @Test

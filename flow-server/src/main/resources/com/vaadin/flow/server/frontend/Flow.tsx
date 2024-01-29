@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,13 @@
  */
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import { useEffect, useRef } from "react";
-import { NavigateFunction, useLocation, useNavigate } from "react-router-dom";
+import {
+    matchRoutes,
+    NavigateFunction,
+    useLocation,
+    useNavigate
+} from "react-router-dom";
+import { routes } from "Frontend/routes.js";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -108,6 +114,8 @@ function vaadinRouterGlobalClickHandler(event) {
 
     // ignore the click if the target URL is a fragment on the current page
     if (anchor.pathname === window.location.pathname && anchor.hash !== '') {
+        lastNavigation = anchor.pathname;
+        window.location.hash = anchor.hash;
         return;
     }
 
@@ -129,37 +137,109 @@ function vaadinRouterGlobalClickHandler(event) {
     }
 }
 
-// We can't initiate useNavigate() from outside React component so we store it here for use in the navigateEvent.
+// We can't initiate useNavigate() from outside React component, so we store it here for use in the navigateEvent.
 let navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
 let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>> | undefined = undefined;
+let lastNavigation: string;
+let prevNavigation: string;
+let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
 
 // @ts-ignore
 function navigateEventHandler(event) {
     if (event && event.preventDefault) {
         event.preventDefault();
     }
+    // @ts-ignore
+    let matched = matchRoutes(Array.from(routes), event.detail.pathname);
+    prevNavigation = lastNavigation;
 
-    if (mountedContainer?.onBeforeLeave) {
-        mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
-            prevent() {},
-        }, router);
+    // if navigation event route targets a flow view do beforeEnter for the
+    // target path. Server will then handle updates and postpone as needed.
+    if(matched?.length == 1 && matched[0].route.path === "/*") {
+        if (mountedContainer?.onBeforeEnter) {
+            mountedContainer.onBeforeEnter(
+                {
+                    pathname: event.detail.pathname,
+                    search: event.detail.search
+                },
+                {
+                    prevent() {
+                        window.history.pushState(window.history.state, '', prevNavigation);
+                        window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
+                    },
+                    // @ts-ignore
+                    redirect: (path) => {
+                        navigation(path, {replace: false});
+                    }
+                },
+                router,
+            );
+        }
     } else {
-        navigation(event.detail.pathname, {replace: false})
+        // Navigating to a non flow view. If beforeLeave set call that before
+        // navigation. If not postponed clear + navigate will be executed.
+        if (mountedContainer?.onBeforeLeave) {
+            mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
+                prevent() {}
+            }, router);
+        } else {
+            // Navigate to a non flow view. Clean nodes and undefine container.
+            mountedContainer?.parentNode?.removeChild(mountedContainer);
+            mountedContainer = undefined;
+            navigation(event.detail.pathname, {replace: false});
+        }
     }
+    lastNavigation = event.detail.pathname;
+}
+
+function popstateHandler(event: PopStateEvent) {
+    if (event.state === 'vaadin-router-ignore') {
+        return;
+    }
+    const {pathname, search, hash} = window.location;
+    if(pathname === lastNavigation) {
+        return;
+    }
+    // @ts-ignore
+    window.dispatchEvent(new CustomEvent('vaadin-router-go', {
+        cancelable: true,
+        detail: {pathname, search, hash}
+    }));
 }
 
 export default function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const {pathname, search, hash} = useLocation();
     const navigate = useNavigate();
+
     navigation = navigate;
     useEffect(() => {
+
         window.document.addEventListener('click', vaadinRouterGlobalClickHandler);
         window.addEventListener('vaadin-router-go', navigateEventHandler);
+
+        if(popstateListener) {
+            // If we have gotten the router popstate handle that
+            window.removeEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
+            window.addEventListener('popstate', popstateHandler);
+        } else {
+            // @ts-ignore
+            let popstateListeners = window.getEventListeners('popstate');
+            if (popstateListeners.length > 0) {
+                // pick the first popstate and use that in future.
+
+                popstateListener = popstateListeners[0];
+                window.removeEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
+                window.addEventListener('popstate', popstateHandler);
+            }
+        }
+        if(lastNavigation === pathname) {
+            return;
+        }
         flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
-                outlet.insertBefore(container, ref.current);
+                outlet.append(container);
             }
             mountedContainer = container;
             if (container.onBeforeEnter) {
@@ -174,15 +254,21 @@ export default function Flow() {
             }
         });
         return () => {
-            if (mountedContainer?.onBeforeLeave) {
-                mountedContainer?.onBeforeLeave({pathname, search}, {
-                    prevent() {},
-                }, router);
-            }
-            mountedContainer?.parentNode?.removeChild(mountedContainer);
-            mountedContainer = undefined;
             window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
             window.removeEventListener('vaadin-router-go', navigateEventHandler);
+            if (popstateListener) {
+                window.removeEventListener('popstate', popstateHandler);
+                window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
+            }
+
+            let matched = matchRoutes(Array.from(routes), pathname);
+
+            // if router force navigated using 'Link' we will need to remove
+            // flow from the view
+            if(matched && matched[0].route.path !== "/*") {
+                mountedContainer?.parentNode?.removeChild(mountedContainer);
+                mountedContainer = undefined;
+            }
         };
     }, [pathname, search, hash]);
     return <output ref={ref} />;
@@ -191,3 +277,79 @@ export default function Flow() {
 export const serverSideRoutes = [
     { path: '/*', element: <Flow/> },
 ];
+
+(function () {
+    "use strict";
+    [Document, Window].forEach((cst) => {
+        // save the original methods before overwriting them
+        if (typeof cst === "function") {
+            // @ts-ignore
+            cst.prototype._addEventListener = cst.prototype.addEventListener;
+            // @ts-ignore
+            cst.prototype._removeEventListener = cst.prototype.removeEventListener;
+
+            cst.prototype.addEventListener = function (type: string, listener: EventListener,
+                                                       useCapture: boolean = false) {
+                // declare listener
+                // @ts-ignore
+                this._addEventListener(type, listener, useCapture);
+
+                // @ts-ignore
+                if (!this.eventListenerList) this.eventListenerList = {};
+                // @ts-ignore
+                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
+
+                // add listener to  event tracking list
+                // @ts-ignore
+                this.eventListenerList[type].push({ type, listener, useCapture });
+            };
+
+            cst.prototype.removeEventListener = function (type: string, listener: EventListener,
+                                                          useCapture: boolean = false) {
+                // remove listener
+                // @ts-ignore
+                this._removeEventListener(type, listener, useCapture);
+
+                // @ts-ignore
+                if (!this.eventListenerList) this.eventListenerList = {};
+                // @ts-ignore
+                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
+
+                // Find the event in the list, If a listener is registered twice, one
+                // with capture and one without, remove each one separately. Removal of
+                // a capturing listener does not affect a non-capturing version of the
+                // same listener, and vice versa.
+                // @ts-ignore
+                for (let i = 0; i < this.eventListenerList[type].length; i++) {
+                    if (
+                        // @ts-ignore
+                        this.eventListenerList[type][i].listener === listener &&
+                        // @ts-ignore
+                        this.eventListenerList[type][i].useCapture === useCapture
+                    ) {
+                        // @ts-ignore
+                        this.eventListenerList[type].splice(i, 1);
+                        break;
+                    }
+                }
+                // if no more events of the removed event type are left,remove the group
+                // @ts-ignore
+                if (this.eventListenerList[type].length == 0)
+                    // @ts-ignore
+                    delete this.eventListenerList[type];
+            };
+
+            // @ts-ignore
+            cst.prototype.getEventListeners = function (type: string) {
+                // @ts-ignore
+                if (!this.eventListenerList) this.eventListenerList = {};
+
+                // return reqested listeners type or all them
+                // @ts-ignore
+                if (type === undefined) return this.eventListenerList;
+                // @ts-ignore
+                return this.eventListenerList[type];
+            };
+        }
+    });
+})();

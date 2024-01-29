@@ -11,6 +11,7 @@ import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
 import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils.js';
+import { addFunctionComponentSourceLocationBabel } from '#buildFolder#/plugins/react-function-location-plugin/react-function-location-plugin.js';
 import settings from '#settingsImport#';
 import {
   AssetInfo,
@@ -33,6 +34,7 @@ import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/r
 import { createRequire } from 'module';
 
 import { visualizer } from 'rollup-plugin-visualizer';
+import reactPlugin from '@vitejs/plugin-react';
 
 // Make `require` compatible with ES modules
 const require = createRequire(import.meta.url);
@@ -300,13 +302,23 @@ function statsExtracterPlugin(): PluginOption {
           id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
               && id.match(/.*\/jar-resources\/themes\/[^\/]+\/components\//);
 
+      const isGeneratedWebComponentResource = (id: string) =>
+          id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
+              && id.match(/.*\/flow\/web-components\//);
+
+      const isFrontendResourceCollected = (id: string) =>
+          !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
+          || isThemeComponentsResource(id) 
+          || isGeneratedWebComponentResource(id);
+
       // collects project's frontend resources in frontend folder, excluding
       // 'generated' sub-folder, except for legacy shadow DOM stylesheets
-      // packaged in `theme/components/` folder.
+      // packaged in `theme/components/` folder
+      // and generated web component resources in `flow/web-components` folder.
       modules
         .map((id) => id.replace(/\\/g, '/'))
         .filter((id) => id.startsWith(frontendFolder.replace(/\\/g, '/')))
-        .filter((id) => !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/')) || isThemeComponentsResource(id))
+        .filter(isFrontendResourceCollected)
         .map((id) => id.substring(frontendFolder.length + 1))
         .map((line: string) => (line.includes('?') ? line.substring(0, line.lastIndexOf('?')) : line))
         .forEach((line: string) => {
@@ -333,6 +345,22 @@ function statsExtracterPlugin(): PluginOption {
           const fileKey = line.substring(line.indexOf('jar-resources/') + 14);
           frontendFiles[fileKey] = hash;
         });
+      // collects and hash rest of the Frontend resources excluding files in /generated/ and /themes/ 
+      // and files already in frontendFiles.
+      let frontendFolderAlias = "Frontend";
+      generatedImports
+        .filter((line: string) => line.startsWith(frontendFolderAlias + '/'))
+        .filter((line: string) => !line.startsWith(frontendFolderAlias + '/generated/'))
+        .filter((line: string) => !line.startsWith(frontendFolderAlias + '/themes/'))
+        .map((line) => line.substring(frontendFolderAlias.length + 1))
+        .filter((line: string) => !frontendFiles[line])
+        .forEach((line: string) => {
+          const filePath = path.resolve(frontendFolder, line);
+          if (projectFileExtensions.includes(path.extname(filePath)) && existsSync(filePath)) {
+            const fileBuffer = readFileSync(filePath, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
+            frontendFiles[line] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
+          }
+        });        
       // If a index.ts exists hash it to be able to see if it changes.
       if (existsSync(path.resolve(frontendFolder, 'index.ts'))) {
         const fileBuffer = readFileSync(path.resolve(frontendFolder, 'index.ts'), { encoding: 'utf-8' }).replace(
@@ -618,8 +646,6 @@ function runWatchDog(watchDogPort, watchDogHost) {
   client.connect(watchDogPort, watchDogHost || 'localhost');
 }
 
-let spaMiddlewareForceRemoved = false;
-
 const allowedFrontendFolders = [frontendFolder, nodeModulesFolder];
 
 function showRecompileReason(): PluginOption {
@@ -745,26 +771,33 @@ export const vaadinConfig: UserConfigFn = (env) => {
           new RegExp('.*/.*\\?html-proxy.*')
         ]
       }),
+      // The React plugin provides fast refresh and debug source info
+      devMode && reactPlugin({
+        include: '**/*.tsx',
+        babel: {
+          // We need to use babel to provide the source information for it to be correct
+          // (otherwise Babel will slightly rewrite the source file and esbuild generate source info for the modified file)
+          presets: [['@babel/preset-react', { runtime: 'automatic', development: devMode }]],
+          // React writes the source location for where components are used, this writes for where they are defined
+          plugins: [addFunctionComponentSourceLocationBabel()]
+        }
+      }),
       {
         name: 'vaadin:force-remove-html-middleware',
-        transformIndexHtml: {
-          enforce: 'pre',
-          transform(_html, { server }) {
-            if (server && !spaMiddlewareForceRemoved) {
-              server.middlewares.stack = server.middlewares.stack.filter((mw) => {
-                const handleName = '' + mw.handle;
-                return !handleName.includes('viteHtmlFallbackMiddleware');
-              });
-              spaMiddlewareForceRemoved = true;
-            }
-          }
-        }
+        configureServer(server) {
+          return () => {
+            server.middlewares.stack = server.middlewares.stack.filter((mw) => {
+              const handleName = `${mw.handle}`;
+              return !handleName.includes('viteHtmlFallbackMiddleware');
+            });
+          };
+        },
       },
       hasExportedWebComponents && {
         name: 'vaadin:inject-entrypoints-to-web-component-html',
         transformIndexHtml: {
-          enforce: 'pre',
-          transform(_html, { path, server }) {
+          order: 'pre',
+          handler(_html, { path, server }) {
             if (path !== '/web-component.html') {
               return;
             }
@@ -782,8 +815,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       {
         name: 'vaadin:inject-entrypoints-to-index-html',
         transformIndexHtml: {
-          enforce: 'pre',
-          transform(_html, { path, server }) {
+          order: 'pre',
+          handler(_html, { path, server }) {
             if (path !== '/index.html') {
               return;
             }

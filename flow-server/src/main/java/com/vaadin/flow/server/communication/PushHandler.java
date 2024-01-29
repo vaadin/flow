@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -150,7 +150,8 @@ public class PushHandler {
                 + "connection is kept open or if the UI has a "
                 + "connection of unexpected type.";
 
-        Reader reader = connection.receiveMessage(req.getReader());
+        Reader reader = AtmospherePushConnection.receiveMessage(resource,
+                req.getReader(), connection);
         if (reader == null) {
             // The whole message was not yet received
             return;
@@ -624,15 +625,23 @@ public class PushHandler {
 
     private void handleDebugWindowMessage(AtmosphereRequest request) {
         try {
-            String msg = IOUtils.toString(request.getReader());
             Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                     .getLiveReloadFromService(service);
-            if (liveReload.isPresent()) {
-                liveReload.get().onMessage(request.resource(), msg);
-            } else {
+            if (!liveReload.isPresent()) {
                 getLogger().error(
                         "Received message for debug window but there is no debug window connection available");
+                return;
             }
+            AtmosphereResource resource = request.resource();
+            Reader reader = AtmospherePushConnection.receiveMessage(resource,
+                    request.getReader(), liveReload.get());
+            if (reader == null) {
+                // The whole message was not yet received
+                return;
+            }
+
+            String msg = IOUtils.toString(reader);
+            liveReload.get().onMessage(resource, msg);
         } catch (IOException e) {
             getLogger().error(
                     "Unable to read contents of debug connection message", e);

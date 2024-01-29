@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -163,6 +163,20 @@ public class StateTreeTest {
         StateNodeTest.setParent(node, tree.getRootNode());
 
         StateNodeTest.setParent(node, null);
+
+        StateTree anotherTree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+
+        StateNodeTest.setParent(node, anotherTree.getRootNode());
+    }
+
+    @Test
+    public void moveNodeToOtherRoot_removeFromTree_doesNotThrow() {
+        StateNode node = StateNodeTest.createEmptyNode();
+
+        StateNodeTest.setParent(node, tree.getRootNode());
+
+        node.removeFromTree();
 
         StateTree anotherTree = new StateTree(new UI().getInternals(),
                 ElementChildrenList.class);

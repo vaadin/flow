@@ -904,6 +904,13 @@ export class VaadinDevTools extends LitElement {
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
     if (!this.conf.token) {
       console.error('Dev tools functionality denied for this host.');
+      this.log(
+          MessageType.LOG,
+          'See Vaadin documentation on how to configure devmode.hostsAllowed property.',
+          undefined,
+          'https://vaadin.com/docs/latest/configuration/properties#properties',
+          undefined
+      );
       return;
     }
     const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
@@ -1024,7 +1031,7 @@ export class VaadinDevTools extends LitElement {
       console.error('The protocol of the url should be http or https for live reload to work.');
       return undefined;
     }
-    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&debug_window&token=${this.conf.token}`;
+    return `${connectionBaseUrl}?v-r=push&debug_window&token=${this.conf.token}`;
   }
 
   getSpringBootWebSocketUrl(location: any) {
@@ -1050,7 +1057,7 @@ export class VaadinDevTools extends LitElement {
     super.connectedCallback();
     this.catchErrors();
 
-    this.conf = (window.Vaadin as any).devToolsConf;
+    this.conf = (window.Vaadin as any).devToolsConf || this.conf;
     // when focus or clicking anywhere, move the splash message to the message tray
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
     document.body.addEventListener('focus', this.disableEventListener);
