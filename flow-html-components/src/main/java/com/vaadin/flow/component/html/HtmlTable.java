@@ -27,13 +27,13 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TABLE)
-public class Table extends HtmlComponent
-        implements HasComponents, ClickNotifier<Table> {
+public class HtmlTable extends HtmlComponent
+        implements HasComponents, ClickNotifier<HtmlTable> {
 
     /**
      * Creates a new empty table.
      */
-    public Table() {
+    public HtmlTable() {
         super();
     }
 
@@ -43,7 +43,7 @@ public class Table extends HtmlComponent
      * @param components
      *            the children components.
      */
-    public Table(Component... components) {
+    public HtmlTable(Component... components) {
         super();
         add(components);
     }
