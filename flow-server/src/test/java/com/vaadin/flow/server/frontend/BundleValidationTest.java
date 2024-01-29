@@ -39,6 +39,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
 
@@ -1792,6 +1793,91 @@ public class BundleValidationTest {
                 depScanner, finder, mode);
         Assert.assertFalse(
                 "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json",
+                needsBuild);
+    }
+
+    @Test
+    public void localPackageInPackageJson_notChanged_noBundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "file:my-pkg");
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertFalse(
+                "Shouldn't re-bundle when referencing local packages in package.json",
+                needsBuild);
+    }
+
+    @Test
+    public void localPackageInPackageJson_differentReference_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg",
+                "./another-folder");
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertTrue(
+                "Should re-bundle when local packages have different values",
+                needsBuild);
+    }
+
+    @Test
+    public void localPackageInPackageJson_parsableVersionInStats_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"my-pkg\": \"file:my-pkg\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "1.0.0");
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertTrue(
+                "Should re-bundle when local package in package.json but parsable version in stats",
+                needsBuild);
+    }
+
+    @Test
+    public void localPackageInStats_parsableVersionInPackageJson_bundleRebuild()
+            throws IOException {
+        createPackageJsonStub(
+                "{\"dependencies\": {\"my-pkg\": \"1.0.0\"}, \"vaadin\": { \"hash\": \"aHash\"} }");
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES).put("my-pkg", "file:my-pkg");
+
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, finder, mode);
+        Assert.assertTrue(
+                "Should re-bundle when local package in stats but parsable version in package.json",
                 needsBuild);
     }
 

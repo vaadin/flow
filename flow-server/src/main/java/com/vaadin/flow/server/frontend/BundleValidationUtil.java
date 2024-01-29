@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -449,8 +450,30 @@ public final class BundleValidationUtil {
     }
 
     private static boolean versionAccepted(String expected, String actual) {
-        FrontendVersion expectedVersion = new FrontendVersion(expected);
-        FrontendVersion actualVersion = new FrontendVersion(actual);
+        FrontendVersion expectedVersion;
+        try {
+            expectedVersion = new FrontendVersion(expected);
+        } catch (NumberFormatException ex) {
+            expectedVersion = null;
+        }
+        FrontendVersion actualVersion;
+        try {
+            actualVersion = new FrontendVersion(actual);
+        } catch (NumberFormatException ex) {
+            actualVersion = null;
+        }
+
+        if (expectedVersion == null && actualVersion == null) {
+            return Objects.equals(expected, actual);
+        } else if (expectedVersion == null || actualVersion == null) {
+            // expected or actual version is referencing a local package
+            // while the other one is a parsable version
+            getLogger().debug(
+                    "Version '{}' cannot be parsed and compared to '{}'",
+                    expectedVersion == null ? expected : actual,
+                    expectedVersion == null ? actual : expected);
+            return false;
+        }
 
         if (expected.startsWith("~")) {
             boolean correctRange = expectedVersion
