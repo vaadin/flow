@@ -29,6 +29,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -48,6 +50,10 @@ public class TaskGenerateReactFilesTest {
         classFinder = Mockito.mock(ClassFinder.class);
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(classFinder);
+
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(TestRoute.class));
+
         options = new Options(lookup, temporaryFolder.getRoot())
                 .withBuildDirectory("target");
         frontend = temporaryFolder.newFolder("frontend");
@@ -138,9 +144,6 @@ public class TaskGenerateReactFilesTest {
 
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
 
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
-                Collections.singleton(TaskGenerateReactFilesTest.class));
-
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
 
         Exception exception = Assert.assertThrows(
@@ -187,6 +190,44 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
+    public void missingImport_noServerRoutesDefined_noExpectionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { lazy } from 'react';
+                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import {protectRoutes} from "@hilla/react-auth";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+
+                                export const routes: RouteObject[] = protectRoutes([
+                                        {
+                                                element: <MainLayout />,
+                                        handle: { title: 'Main' },
+                                children: [
+                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                                { path: '/about', element: <AboutView />, handle: { title: 'About' } }
+                            ],
+                          },
+                                { path: '/login', element: <LoginView />},
+                        ]);
+
+                        export default createBrowserRouter(routes);
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.emptySet());
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
     public void routesexportMissing_expectionThrown() throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
@@ -223,5 +264,10 @@ public class TaskGenerateReactFilesTest {
                 ExecutionFailedException.class, () -> task.execute());
         Assert.assertEquals(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
                 exception.getMessage());
+    }
+
+    @Tag("div")
+    @Route("test")
+    private class TestRoute extends Component {
     }
 }

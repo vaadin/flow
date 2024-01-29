@@ -60,7 +60,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskGenerateReactFiles implements FallibleCommand {
 
-    private final File frontendDirectory;
     private Options options;
     protected static String NO_IMPORT = """
             Faulty configuration of serverSideRoutes.
@@ -96,11 +95,11 @@ public class TaskGenerateReactFiles implements FallibleCommand {
      */
     TaskGenerateReactFiles(Options options) {
         this.options = options;
-        this.frontendDirectory = options.getFrontendDirectory();
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
+        File frontendDirectory = options.getFrontendDirectory();
         File appTsx = new File(frontendDirectory, "App.tsx");
         File flowTsx = new File(
                 new File(frontendDirectory, FrontendUtils.GENERATED),
@@ -117,11 +116,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             } else {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
-                Pattern serverImport = Pattern.compile(
-                        "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
-                if (!serverImport.matcher(routesContent).find()
-                        && !options.getClassFinder()
-                                .getAnnotatedClasses(Route.class).isEmpty()) {
+                if (missingServerImport(routesContent)
+                        && serverRoutesAvailable()) {
                     throw new ExecutionFailedException(
                             String.format(NO_IMPORT, routesTsx.getPath()));
                 }
@@ -133,6 +129,17 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             throw new ExecutionFailedException("Failed to read file content",
                     e);
         }
+    }
+
+    private boolean missingServerImport(String routesContent) {
+        Pattern serverImport = Pattern.compile(
+                "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
+        return !serverImport.matcher(routesContent).find();
+    }
+
+    private boolean serverRoutesAvailable() {
+        return !options.getClassFinder().getAnnotatedClasses(Route.class)
+                .isEmpty();
     }
 
     private void writeFile(File target, String content)
