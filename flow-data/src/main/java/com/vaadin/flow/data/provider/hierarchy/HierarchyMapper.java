@@ -534,8 +534,9 @@ public class HierarchyMapper<T, F> implements Serializable {
     private Stream<T> getFlatChildrenStream(T parent, boolean includeParent) {
         List<T> childList = Collections.emptyList();
         if (isExpanded(parent)) {
-            childList = doFetchDirectChildren(parent)
-                    .collect(Collectors.toList());
+            try (Stream<T> stream = doFetchDirectChildren(parent)) {
+                childList = stream.collect(Collectors.toList());
+            }
             if (childList.isEmpty()) {
                 removeChildren(parent == null ? null
                         : getDataProvider().getId(parent));
@@ -563,8 +564,9 @@ public class HierarchyMapper<T, F> implements Serializable {
             boolean includeParent) {
         List<T> childList = Collections.emptyList();
         if (isExpanded(parent)) {
-            childList = doFetchDirectChildren(parent, range)
-                    .collect(Collectors.toList());
+            try (Stream<T> stream = doFetchDirectChildren(parent, range)) {
+                childList = stream.collect(Collectors.toList());
+            }
             if (childList.isEmpty()) {
                 removeChildren(parent == null ? null
                         : getDataProvider().getId(parent));
