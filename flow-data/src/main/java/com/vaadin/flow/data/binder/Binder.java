@@ -1615,11 +1615,8 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public boolean isDefaultValidatorsSkipped() {
-            if (defaultValidatorsSkipped == null) {
-                return getBinder().isDefaultValidatorsSkipped();
-            } else {
-                return defaultValidatorsSkipped;
-            }
+            return Optional.ofNullable(defaultValidatorsSkipped)
+                    .orElse(getBinder().isDefaultValidatorsSkipped());
         }
 
         @Override
