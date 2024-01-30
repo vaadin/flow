@@ -67,6 +67,16 @@ const $wnd = window as any as {
   };
 } & EventTarget;
 
+function getClients() {
+  return Object.keys($wnd.Vaadin.Flow.clients)
+    .filter((key) => key !== 'TypeScript')
+    .map((id) => $wnd.Vaadin.Flow.clients[id]);
+}
+
+function sendEvent(eventName: string, data: any) {
+  getClients().forEach((client) => client.sendUIEventMessage(eventName, data));
+}
+
 /**
  * Client API for flow UI operations.
  */
@@ -220,7 +230,7 @@ export class Flow {
       };
 
       // Call server side to check whether we can leave the view
-      flowRoot.$server.leaveNavigation(this.getFlowRoutePath(ctx), this.getFlowRouteQuery(ctx));
+      sendEvent('ui-leave-navigation', { route: this.getFlowRoutePath(ctx), query: this.getFlowRouteQuery(ctx) });
     });
   }
 
@@ -248,13 +258,13 @@ export class Flow {
         };
 
         // Call server side to navigate to the given route
-        flowRoot.$server.connectClient(
-          this.getFlowRoutePath(ctx),
-          this.getFlowRouteQuery(ctx),
-          this.appShellTitle,
-          history.state,
-          this.navigation
-        );
+        sendEvent('ui-navigate', {
+          route: this.getFlowRoutePath(ctx),
+          query: this.getFlowRouteQuery(ctx),
+          appShellTitle: this.appShellTitle,
+          historyState: history.state,
+          trigger: this.navigation
+        });
         // Default to history navigation trigger.
         // Link and client cases are handled by click listener in loadingFinished().
         this.navigation = 'history';
@@ -354,9 +364,7 @@ export class Flow {
     return new Promise((resolve) => {
       const intervalId = setInterval(() => {
         // client `isActive() == true` while initializing or processing
-        const initializing = Object.keys($wnd.Vaadin.Flow.clients)
-          .filter((key) => key !== 'TypeScript')
-          .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
+        const initializing = getClients().reduce((prev, client) => prev || client.isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
           resolve();
