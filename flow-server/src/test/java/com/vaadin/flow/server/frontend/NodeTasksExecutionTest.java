@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
@@ -59,8 +60,10 @@ public class NodeTasksExecutionTest {
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Collections.singleton(this.getClass()));
         Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-        options = new Options(lookup, null).withBuildDirectory(TARGET);
-        options.withProductionMode(false);
+        options = new Options(lookup, new File(TARGET))
+                .withBuildDirectory(TARGET)
+                .withJarFrontendResourcesFolder(new File(TARGET))
+                .withProductionMode(false);
 
         nodeTasks = new NodeTasks(options);
         commandsOrder = getCommandOrder(nodeTasks);

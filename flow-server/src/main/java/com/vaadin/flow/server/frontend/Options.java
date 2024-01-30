@@ -34,8 +34,6 @@ public class Options implements Serializable {
 
     private boolean enablePackagesUpdate = false;
 
-    private boolean createMissingPackageJson = false;
-
     private boolean enableImportsUpdate = false;
 
     private boolean enableWebpackConfigUpdate = false;
@@ -227,8 +225,6 @@ public class Options implements Serializable {
      */
     public Options enableImportsUpdate(boolean enableImportsUpdate) {
         this.enableImportsUpdate = enableImportsUpdate;
-        this.createMissingPackageJson = enableImportsUpdate
-                || createMissingPackageJson;
         return this;
     }
 
@@ -300,18 +296,6 @@ public class Options implements Serializable {
     public Options withEmbeddableWebComponents(
             boolean generateEmbeddableWebComponents) {
         this.generateEmbeddableWebComponents = generateEmbeddableWebComponents;
-        return this;
-    }
-
-    /**
-     * Sets whether to create the package file if missing.
-     *
-     * @param create
-     *            create the package
-     * @return the builder
-     */
-    public Options createMissingPackageJson(boolean create) {
-        this.createMissingPackageJson = create;
         return this;
     }
 
@@ -698,10 +682,6 @@ public class Options implements Serializable {
 
     public boolean isEnablePackagesUpdate() {
         return enablePackagesUpdate;
-    }
-
-    public boolean isCreateMissingPackageJson() {
-        return createMissingPackageJson;
     }
 
     public boolean isEnableImportsUpdate() {

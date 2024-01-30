@@ -30,14 +30,10 @@ import elemental.json.JsonObject;
 public class TaskGeneratePackageJson extends NodeUpdater {
 
     /**
-     * Create an instance of the updater given all configurable parameters.
+     * Create an instance of the updater
      *
-     * @param npmFolder
-     *            folder with the `package.json` file.
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param buildDir
-     *            the used build directory
+     * @param options
+     *            task execution options
      */
     TaskGeneratePackageJson(Options options) {
         super(null, null, options);

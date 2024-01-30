@@ -232,12 +232,6 @@ public class DevModeInitializer implements Serializable {
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
                         .toFile());
 
-        // If we are missing either the base or generated package json
-        // files generate those
-        if (!new File(options.getNpmFolder(), PACKAGE_JSON).exists()) {
-            options.createMissingPackageJson(true);
-        }
-
         Set<File> frontendLocations = getFrontendLocationsFromClassloader(
                 DevModeStartupListener.class.getClassLoader());
 
