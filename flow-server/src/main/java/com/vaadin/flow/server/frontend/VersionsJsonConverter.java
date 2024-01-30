@@ -42,8 +42,9 @@ class VersionsJsonConverter {
 
     private boolean reactEnabled;
 
-    VersionsJsonConverter(JsonObject platformVersions, boolean reactEnabled) {
-        this.reactEnabled = reactEnabled;
+    VersionsJsonConverter(JsonObject platformVersions,
+            boolean collectReactComponents) {
+        this.reactEnabled = collectReactComponents;
         convertedObject = Json.createObject();
 
         collectDependencies(platformVersions);
