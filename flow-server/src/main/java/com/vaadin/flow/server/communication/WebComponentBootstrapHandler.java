@@ -573,7 +573,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .replace("//<![CDATA[", "/*<![CDATA[*/")
                 .replace("//]]>", "/*]]>*/")
                 // get rid of all the unnecessary white-space
-                .replaceAll("\\s{2,}", "").replace("\t", "").replace("\n", "")
+                .replaceAll("\\s{2,}", "").replace("\t", "").replace("\n", "\\n")
                 .replace("\r", "");
     }
 
