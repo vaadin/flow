@@ -224,6 +224,33 @@ public class HierarchicalCommunicatorDataTest {
     }
 
     @Test
+    public void expandRoot_streamIsClosed() {
+        AtomicBoolean streamIsClosed = new AtomicBoolean();
+
+        dataProvider = new TreeDataProvider<>(treeData) {
+
+            @Override
+            public Stream<Item> fetchChildren(
+                    HierarchicalQuery<Item, SerializablePredicate<Item>> query) {
+                return super.fetchChildren(query)
+                        .onClose(() -> streamIsClosed.set(true));
+            }
+        };
+
+        communicator.setDataProvider(dataProvider, null);
+
+        communicator.expand(ROOT);
+        fakeClientCommunication();
+
+        communicator.setParentRequestedRange(0, 50, ROOT);
+        fakeClientCommunication();
+
+        communicator.reset();
+
+        Assert.assertTrue(streamIsClosed.get());
+    }
+
+    @Test
     public void expandRoot_filterOutAllChildren_clearCalled() {
         parentClearCalled = false;
 
@@ -309,33 +336,6 @@ public class HierarchicalCommunicatorDataTest {
                         communicator.getKeyMapper().get(treeItemId));
             }
         });
-    }
-
-    @Test
-    public void expandRoot_streamIsClosed() {
-        AtomicBoolean streamIsClosed = new AtomicBoolean();
-
-        dataProvider = new TreeDataProvider<>(treeData) {
-
-            @Override
-            public Stream<Item> fetchChildren(
-                    HierarchicalQuery<Item, SerializablePredicate<Item>> query) {
-                return super.fetchChildren(query)
-                        .onClose(() -> streamIsClosed.set(true));
-            }
-        };
-
-        communicator.setDataProvider(dataProvider, null);
-
-        communicator.expand(ROOT);
-        fakeClientCommunication();
-
-        communicator.setParentRequestedRange(0, 50, ROOT);
-        fakeClientCommunication();
-
-        communicator.reset();
-
-        Assert.assertTrue(streamIsClosed.get());
     }
 
     private void assertKeyItemPairIsPresentInKeyMapper(String key, Item item) {
