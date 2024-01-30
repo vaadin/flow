@@ -39,7 +39,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder.Binding;
@@ -1543,7 +1542,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    public void skipDefaultValidators_testNoneSkippedByDefault() {
+    public void disableDefaultValidators_binderLevel_enabledAndDisabled() {
         TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
                 (val, ctx) -> ValidationResult.error("fail_1"));
         TestTextFieldDefaultValidator field2 = new TestTextFieldDefaultValidator(
@@ -1553,26 +1552,16 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 Person::setFirstName);
         binder.forField(field2).bind(Person::getLastName, Person::setLastName);
 
+        // Default behavior -> validators enabled
         BinderValidationStatus<Person> status = binder.validate();
         assertEquals(
                 "Validation should have two errors. "
                         + "Default validators should be run.",
                 2, status.getValidationErrors().size());
-    }
 
-    @Test
-    public void skipDefaultValidators_testAllSkipped_whenBinderSkipSet() {
-        TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
-                (val, ctx) -> ValidationResult.error("fail_1"));
-        TestTextFieldDefaultValidator field2 = new TestTextFieldDefaultValidator(
-                (val, ctx) -> ValidationResult.error("fail_2"));
-        binder.setDefaultValidatorsSkipped(true);
-
-        binder.forField(field1).bind(Person::getFirstName,
-                Person::setFirstName);
-        binder.forField(field2).bind(Person::getLastName, Person::setLastName);
-
-        BinderValidationStatus<Person> status = binder.validate();
+        // Toggle default validators to disabled
+        binder.setDefaultValidatorsDisabled(true);
+        status = binder.validate();
         Assert.assertTrue(
                 "Validation should not have errors. "
                         + "Default validator should be skipped.",
@@ -1580,7 +1569,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    public void skipDefaultValidator_testSingleBindingSkipped_whenBinderSkipNotSet() {
+    public void disableDefaultValidator_testSingleBindingLevelDisabled_whenBinderLevelEnabled() {
         TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
                 (val, ctx) -> ValidationResult.error("fail_1"));
         TestTextFieldDefaultValidator field2 = new TestTextFieldDefaultValidator(
@@ -1588,18 +1577,28 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.forField(field1).bind(Person::getFirstName,
                 Person::setFirstName);
-        binder.forField(field2).setDefaultValidatorsSkipped(true)
+        Binding<Person, String> binding = binder.forField(field2)
+                .setDefaultValidatorsDisabled(true)
                 .bind(Person::getLastName, Person::setLastName);
 
+        // One binding has default validators disabled
         BinderValidationStatus<Person> status = binder.validate();
         assertEquals(
                 "Validation should have one error. "
                         + "Only one default validators should be skipped.",
                 1, status.getValidationErrors().size());
+
+        // Re-enable default validators of binding
+        binding.setDefaultValidatorsDisabled(false);
+        status = binder.validate();
+        assertEquals(
+                "Validation should have two errors. "
+                        + "Default validators should be run.",
+                2, status.getValidationErrors().size());
     }
 
     @Test
-    public void skipDefaultValidator_testSingleBindingNotSkipped_whenBinderSkipSet() {
+    public void skipDefaultValidator_crossToggleSingleBindingAndBinderState() {
         AtomicBoolean nonSkippedDidRun = new AtomicBoolean(false);
 
         TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
@@ -1610,19 +1609,33 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                     return ValidationResult.error("fail_2");
                 });
 
-        binder.setDefaultValidatorsSkipped(true);
-
         binder.forField(field1).bind(Person::getFirstName,
                 Person::setFirstName);
-        binder.forField(field2).setDefaultValidatorsSkipped(false)
+        Binding<Person, String> binding = binder.forField(field2)
+                .setDefaultValidatorsDisabled(false)
                 .bind(Person::getLastName, Person::setLastName);
 
+        // Initial case: binder disabled & binding overrides to enable
+        binder.setDefaultValidatorsDisabled(true);
         BinderValidationStatus<Person> status = binder.validate();
         assertEquals(
                 "Validation should have one error. "
                         + "Only one default validators should be skipped.",
                 1, status.getValidationErrors().size());
         assertTrue("Non-skipped validator should have been run.",
+                nonSkippedDidRun.get());
+
+        nonSkippedDidRun.getAndSet(false);
+
+        // Cross-toggle false <-> true
+        binder.setDefaultValidatorsDisabled(false);
+        binding.setDefaultValidatorsDisabled(true);
+        status = binder.validate();
+        assertEquals(
+                "Validation should have one error. "
+                        + "Only one default validators should be skipped.",
+                1, status.getValidationErrors().size());
+        assertFalse("Now skipped validator should not have been run.",
                 nonSkippedDidRun.get());
     }
 
