@@ -1182,34 +1182,33 @@ public class FrontendUtils {
                 "web-components");
     }
 
-    public static boolean isReactRouterEnabled(String parameterValue,
-            File frontendDirectory) {
+    /**
+     * Auto-detects what router is used in a project based on what is imported
+     * in {@link FrontendUtils#INDEX_TS} file.
+     *
+     * @param frontendDirectory
+     *            path to the frontend folder in a project.
+     * @return {@code false} if vaadin-router is used, {@code true} otherwise.
+     */
+    public static boolean isReactRouterRequired(File frontendDirectory) {
         Objects.requireNonNull(frontendDirectory);
-        if (parameterValue == null) {
-            // auto-detection
-            boolean result = true;
-            File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
-            if (indexTs.exists()) {
-                try {
-                    String indexTsContent = IOUtils.toString(indexTs.toURI(),
-                            UTF_8);
-                    result = !IMPORT_VAADIN_ROUTER.matcher(indexTsContent)
-                            .find();
-                } catch (IOException e) {
-                    getLogger().error(
-                            "Couldn't auto-detect React/Lit application, react-router will be used",
-                            e);
-                }
+        boolean result = true;
+        File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
+        if (indexTs.exists()) {
+            try {
+                String indexTsContent = IOUtils.toString(indexTs.toURI(),
+                        UTF_8);
+                result = !IMPORT_VAADIN_ROUTER.matcher(indexTsContent).find();
+            } catch (IOException e) {
+                getLogger().error(
+                        "Couldn't auto-detect React/Lit application, react-router will be used",
+                        e);
             }
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Auto-detected client-side router to use: {}",
-                        result ? "react-router" : "vaadin-router");
-            }
-            return result;
-        } else if (parameterValue.isBlank()) {
-            return true;
-        } else {
-            return Boolean.parseBoolean(parameterValue.trim());
         }
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Auto-detected client-side router to use: {}",
+                    result ? "react-router" : "vaadin-router");
+        }
+        return result;
     }
 }

@@ -198,5 +198,5 @@ internal class GradlePluginAdapter(
 
     override fun isPrepareFrontendCacheDisabled(): Boolean = config.alwaysExecutePrepareFrontend.get()
 
-    override fun isReactRouterEnabled(): String = config.reactRouterEnabled.get()
+    override fun isReactRouterEnabled(): Boolean = config.reactRouterEnabled.get()
 }

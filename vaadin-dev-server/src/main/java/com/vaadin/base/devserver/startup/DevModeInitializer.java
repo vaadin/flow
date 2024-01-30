@@ -270,9 +270,9 @@ public class DevModeInitializer implements Serializable {
                 FrontendUtils.JAR_RESOURCES_FOLDER);
         JsonObject tokenFileData = Json.createObject();
         Mode mode = config.getMode();
-        boolean reactRouterEnabled = FrontendUtils.isReactRouterEnabled(
-                config.getStringProperty(REACT_ROUTER_ENABLED, null),
-                options.getFrontendDirectory());
+        boolean reactRouterEnabled = config
+                .getBooleanProperty(REACT_ROUTER_ENABLED, FrontendUtils
+                        .isReactRouterRequired(options.getFrontendDirectory()));
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)

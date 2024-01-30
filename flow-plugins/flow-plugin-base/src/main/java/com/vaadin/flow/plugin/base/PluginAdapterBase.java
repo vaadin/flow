@@ -305,9 +305,7 @@ public interface PluginAdapterBase {
     /**
      * Set react router as enabled or disabled.
      *
-     * @return {@code "true"} or {@code empty} for react router, {@code "false"}
-     *         for vaadin-router, {@code null} if this parameter isn't set and
-     *         requires auto-detection
+     * @return {@code true} for react-router and {@code false} for vaadin-router
      */
-    String isReactRouterEnabled();
+    boolean isReactRouterEnabled();
 }

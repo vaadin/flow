@@ -18,6 +18,7 @@ package com.vaadin.gradle
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
+import com.vaadin.flow.server.frontend.FrontendUtils
 import com.vaadin.flow.server.frontend.installer.NodeInstaller
 import com.vaadin.flow.server.frontend.installer.Platform
 import groovy.lang.Closure
@@ -271,7 +272,7 @@ public abstract class VaadinFlowPluginExtension {
      */
     public abstract val alwaysExecutePrepareFrontend: Property<Boolean>
 
-    public abstract val reactRouterEnabled: Property<String>
+    public abstract val reactRouterEnabled: Property<Boolean>
 
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter
@@ -413,8 +414,9 @@ internal class PluginEffectiveConfiguration(
     val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
         .convention(false)
 
-    val reactRouterEnabled: Provider<String> = extension.reactRouterEnabled
-        .convention("true")
+    val reactRouterEnabled: Provider<Boolean> = extension.reactRouterEnabled
+        .convention(FrontendUtils.isReactRouterRequired(frontendDirectory.get()))
+        .overrideWithSystemProperty(InitParameters.REACT_ROUTER_ENABLED)
 
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
