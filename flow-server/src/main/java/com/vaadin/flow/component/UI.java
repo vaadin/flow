@@ -264,13 +264,16 @@ public class UI extends Component
 
         getInternals().setFullAppId(appId);
 
-        // Create flow reference for the client outlet element
-        wrapperElement = new Element(getInternals().getContainerTag());
+        if (isNavigationSupported()) {
 
-        // Connect server with client
-        getElement().getStateProvider().appendVirtualChild(
-                getElement().getNode(), wrapperElement,
-                NodeProperties.INJECT_BY_ID, appId);
+            // Create flow reference for the client outlet element
+            wrapperElement = new Element(getInternals().getContainerTag());
+
+            // Connect server with client
+            getElement().getStateProvider().appendVirtualChild(
+                    getElement().getNode(), wrapperElement,
+                    NodeProperties.INJECT_BY_ID, appId);
+        }
 
         // Add any dependencies from the UI class
         getInternals().addComponentDependencies(getClass());

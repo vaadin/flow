@@ -46,6 +46,7 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Custom UI for use with WebComponents served from the server.
@@ -65,6 +66,17 @@ public class WebComponentUI extends UI {
         assignThemeVariant();
         getEventBus().addListener(WebComponentConnectEvent.class,
                 this::connectWebComponent);
+    }
+
+    @Override
+    public void connectClient(String flowRoutePath, String flowRouteQuery,
+            String appShellTitle, JsonValue historyState, String trigger) {
+        return;
+    }
+
+    @Override
+    public void leaveNavigation(String route, String query) {
+        return;
     }
 
     /**

@@ -65,8 +65,10 @@ public class ApplicationConnection {
 
         Element body = Browser.getDocument().getBody();
 
-        rootNode.setDomNode(body);
-        Binder.bind(rootNode, body);
+        if (applicationConfiguration.getExportedWebComponents() == null) {
+            rootNode.setDomNode(body);
+            Binder.bind(rootNode, body);
+        }
 
         Console.log("Starting application "
                 + applicationConfiguration.getApplicationId());
