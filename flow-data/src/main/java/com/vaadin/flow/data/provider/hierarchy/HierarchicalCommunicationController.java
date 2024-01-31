@@ -255,16 +255,18 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         // XXX Explicitly refresh anything that is updated
         List<String> activeKeys = new ArrayList<>(range.length());
 
-        fetchItems.apply(parentKey, range).forEach(bean -> {
-            boolean mapperHasKey = keyMapper.has(bean);
-            String key = keyMapper.key(bean);
-            if (mapperHasKey) {
-                // Ensure latest instance from provider is used
-                keyMapper.refresh(bean);
-                passivatedByUpdate.values().forEach(set -> set.remove(key));
-            }
-            activeKeys.add(key);
-        });
+        try (Stream<T> stream = fetchItems.apply(parentKey, range)) {
+            stream.forEach(bean -> {
+                boolean mapperHasKey = keyMapper.has(bean);
+                String key = keyMapper.key(bean);
+                if (mapperHasKey) {
+                    // Ensure latest instance from provider is used
+                    keyMapper.refresh(bean);
+                    passivatedByUpdate.values().forEach(set -> set.remove(key));
+                }
+                activeKeys.add(key);
+            });
+        }
         return activeKeys;
     }
 
