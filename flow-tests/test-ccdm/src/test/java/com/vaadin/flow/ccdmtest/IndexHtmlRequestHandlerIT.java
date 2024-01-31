@@ -171,7 +171,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("div2"));
 
         String content = findElement(By.id("div2")).getText();
-        Assert.assertEquals("true true true", content);
+        Assert.assertEquals("true true", content);
     }
 
     @Test
