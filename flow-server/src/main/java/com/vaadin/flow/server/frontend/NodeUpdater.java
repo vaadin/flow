@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -173,8 +174,11 @@ public abstract class NodeUpdater implements FallibleCommand {
             String versionsOrigin) throws IOException {
         JsonObject versionsJson;
         try (InputStream content = versionsResource.openStream()) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(Json
-                    .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
+            VersionsJsonConverter convert = new VersionsJsonConverter(
+                    Json.parse(
+                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    options.isReactRouterEnabled()
+                            && EndpointRequestUtil.isHillaAvailable());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)
