@@ -66,6 +66,7 @@ const $wnd = window as any as {
     listener: any;
   };
 } & EventTarget;
+const ROOT_NODE_ID = 1; // See StateTree.java
 
 function getClients() {
   return Object.keys($wnd.Vaadin.Flow.clients)
@@ -74,7 +75,7 @@ function getClients() {
 }
 
 function sendEvent(eventName: string, data: any) {
-  getClients().forEach((client) => client.sendUIEventMessage(eventName, data));
+  getClients().forEach((client) => client.sendEventMessage(ROOT_NODE_ID, eventName, data));
 }
 
 /**

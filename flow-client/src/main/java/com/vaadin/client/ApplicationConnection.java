@@ -209,13 +209,6 @@ public class ApplicationConnection {
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
 
-        client.sendUIEventMessage = $entry(function(eventType, eventData) {
-            var registry = ap.@ApplicationConnection::registry;
-            var sc = registry.@com.vaadin.client.Registry::getServerConnector()();
-            var uiNodeId = registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::id;
-            client.sendEventMessage(uiNodeId, eventType, eventData);
-        });
-
         client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
