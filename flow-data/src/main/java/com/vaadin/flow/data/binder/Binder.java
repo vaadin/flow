@@ -267,7 +267,6 @@ public class Binder<BEAN> implements Serializable {
          *            {@literal true} to disable default validators for this
          *            binding, {@literal false} to enable them, {@literal null}
          *            to reset (fallback to Binder-level setting)
-         * @return this binding, for chaining
          * @see Binder#setDefaultValidatorsDisabled(boolean) for faster way to
          *      disable default validators for all bound fields.
          */
