@@ -1690,9 +1690,9 @@ public class UI extends Component
         return forwardToClientUrl;
     }
 
-    @DomEvent("ui-leave-navigation")
+    @DomEvent(BrowserLeaveNavigationEvent.EVENT_NAME)
     public static class BrowserLeaveNavigationEvent extends ComponentEvent<UI> {
-
+        public static final String EVENT_NAME = "ui-leave-navigation";
         private final String route;
         private final String query;
 
@@ -1713,8 +1713,9 @@ public class UI extends Component
         }
     }
 
-    @DomEvent("ui-navigate")
+    @DomEvent(BrowserNavigateEvent.EVENT_NAME)
     public static class BrowserNavigateEvent extends ComponentEvent<UI> {
+        public static final String EVENT_NAME = "ui-navigate";
 
         private final String route;
         private final String query;
@@ -1761,7 +1762,6 @@ public class UI extends Component
      * @param event
      *            the event from the browser
      */
-    @AllowInert
     public void browserNavigate(BrowserNavigateEvent event) {
 
         if (event.appShellTitle != null && !event.appShellTitle.isEmpty()) {
