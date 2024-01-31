@@ -1578,7 +1578,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(field1).bind(Person::getFirstName,
                 Person::setFirstName);
         Binding<Person, String> binding = binder.forField(field2)
-                .setDefaultValidatorsDisabled(true)
+                .setDefaultValidatorDisabled(true)
                 .bind(Person::getLastName, Person::setLastName);
 
         // One binding has default validators disabled
@@ -1589,7 +1589,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 1, status.getValidationErrors().size());
 
         // Re-enable default validators of binding
-        binding.setDefaultValidatorsDisabled(false);
+        binding.setDefaultValidatorDisabled(false);
         status = binder.validate();
         assertEquals(
                 "Validation should have two errors. "
@@ -1612,7 +1612,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(field1).bind(Person::getFirstName,
                 Person::setFirstName);
         Binding<Person, String> binding = binder.forField(field2)
-                .setDefaultValidatorsDisabled(false)
+                .setDefaultValidatorDisabled(false)
                 .bind(Person::getLastName, Person::setLastName);
 
         // Initial case: binder disabled & binding overrides to enable
@@ -1629,7 +1629,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         // Cross-toggle false <-> true
         binder.setDefaultValidatorsDisabled(false);
-        binding.setDefaultValidatorsDisabled(true);
+        binding.setDefaultValidatorDisabled(true);
         status = binder.validate();
         assertEquals(
                 "Validation should have one error. "
