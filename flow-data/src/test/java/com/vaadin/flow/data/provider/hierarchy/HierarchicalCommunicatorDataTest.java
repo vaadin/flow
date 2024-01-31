@@ -18,7 +18,9 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -219,6 +221,33 @@ public class HierarchicalCommunicatorDataTest {
                 .forEach(i -> Assert.assertNotNull("Expected key '" + i
                         + "' to be generated when unique key provider is not set",
                         communicator.getKeyMapper().get(i)));
+    }
+
+    @Test
+    public void expandRoot_streamIsClosed() {
+        AtomicBoolean streamIsClosed = new AtomicBoolean();
+
+        dataProvider = new TreeDataProvider<>(treeData) {
+
+            @Override
+            public Stream<Item> fetchChildren(
+                    HierarchicalQuery<Item, SerializablePredicate<Item>> query) {
+                return super.fetchChildren(query)
+                        .onClose(() -> streamIsClosed.set(true));
+            }
+        };
+
+        communicator.setDataProvider(dataProvider, null);
+
+        communicator.expand(ROOT);
+        fakeClientCommunication();
+
+        communicator.setParentRequestedRange(0, 50, ROOT);
+        fakeClientCommunication();
+
+        communicator.reset();
+
+        Assert.assertTrue(streamIsClosed.get());
     }
 
     @Test

@@ -171,6 +171,20 @@ public class StateTreeTest {
     }
 
     @Test
+    public void moveNodeToOtherRoot_removeFromTree_doesNotThrow() {
+        StateNode node = StateNodeTest.createEmptyNode();
+
+        StateNodeTest.setParent(node, tree.getRootNode());
+
+        node.removeFromTree();
+
+        StateTree anotherTree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+
+        StateNodeTest.setParent(node, anotherTree.getRootNode());
+    }
+
+    @Test
     public void testNoRootAttachChange() {
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
