@@ -344,6 +344,52 @@ public class FrontendUtilsTest {
                         && stdErr.contains("Invalid stream THROW EXCEPTION"));
     }
 
+    @Test
+    public void isReactRouterRequired_importsVaadinRouter_false()
+            throws IOException {
+        File frontend = tmpDir.newFolder("frontend");
+        File indexTs = new File(frontend, FrontendUtils.INDEX_TS);
+
+        String content = """
+                    import { Router } from '@vaadin/router';
+                    import { routes } from './routes';
+
+                    export const router = new Router(document.querySelector('#outlet'));
+                    router.setRoutes(routes);
+                """;
+
+        FileUtils.write(indexTs, content, StandardCharsets.UTF_8);
+        Assert.assertFalse("vaadin-router expected when it imported",
+                FrontendUtils.isReactRouterRequired(frontend));
+    }
+
+    @Test
+    public void isReactRouterRequired_doesntImportVaadinRouter_true()
+            throws IOException {
+        File frontend = tmpDir.newFolder("frontend");
+        File indexTs = new File(frontend, FrontendUtils.INDEX_TS);
+
+        String content = """
+                    import { createElement } from "react";
+                    import { createRoot } from "react-dom/client";
+                    import App from "./App.js";
+
+                    createRoot(document.getElementById("outlet")!).render(createElement(App));
+                """;
+
+        FileUtils.write(indexTs, content, StandardCharsets.UTF_8);
+        Assert.assertTrue(
+                "react-router expected when no vaadin-router imported",
+                FrontendUtils.isReactRouterRequired(frontend));
+    }
+
+    @Test
+    public void isReactRouterRequired_noIndexTsFile_true() throws IOException {
+        File frontend = tmpDir.newFolder("frontend");
+        Assert.assertTrue("react-router expected when index.ts isn't there",
+                FrontendUtils.isReactRouterRequired(frontend));
+    }
+
     private Pair<String, String> executeExternalProcess(String... args)
             throws Exception {
         List<String> cmd = new ArrayList<>(List.of(
