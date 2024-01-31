@@ -36,7 +36,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -50,6 +49,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
@@ -307,9 +307,6 @@ public class FrontendUtils {
     public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
     public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
-
-    public static final Pattern IMPORT_VAADIN_ROUTER = Pattern.compile(
-            "import[\\s\\S]+\\{[\\s\\S]+}[\\s\\S]+from[\\s\\S]+([\"'`])@vaadin/router\\1;");
 
     /**
      * Only static stuff here.
@@ -1198,7 +1195,8 @@ public class FrontendUtils {
             try {
                 String indexTsContent = IOUtils.toString(indexTs.toURI(),
                         UTF_8);
-                result = !IMPORT_VAADIN_ROUTER.matcher(indexTsContent).find();
+                indexTsContent = StringUtil.removeComments(indexTsContent);
+                result = !indexTsContent.contains("@vaadin/router");
             } catch (IOException e) {
                 getLogger().error(
                         "Couldn't auto-detect React/Lit application, react-router will be used",

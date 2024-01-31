@@ -161,8 +161,8 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
 
-    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "${null}")
-    private Boolean reactRouterEnabled;
+    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "true")
+    private boolean reactRouterEnabled;
 
     @Override
     public void execute() throws MojoFailureException {
@@ -436,10 +436,7 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public boolean isReactRouterEnabled() {
-        if (reactRouterEnabled != null) {
-            return reactRouterEnabled;
-        }
-        return FrontendUtils.isReactRouterRequired(frontendDirectory());
+        return reactRouterEnabled;
     }
 
 }
