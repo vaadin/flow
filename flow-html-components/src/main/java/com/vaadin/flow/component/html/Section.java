@@ -15,7 +15,12 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasAriaLabel;
+import com.vaadin.flow.component.HasOrderedComponents;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;section&gt;</code> element.
