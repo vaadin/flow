@@ -6,7 +6,7 @@ import {
 } from '@vaadin/common-frontend';
 
 export interface FlowConfig {
-  imports?: () => Promise<void>;
+  imports?: () => Promise<any>;
 }
 
 class FlowUiInitializationError extends Error {}
