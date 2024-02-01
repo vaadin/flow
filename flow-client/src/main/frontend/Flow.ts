@@ -6,7 +6,7 @@ import {
 } from '@vaadin/common-frontend';
 
 export interface FlowConfig {
-  imports?: () => void;
+  imports?: () => Promise<any>;
 }
 
 class FlowUiInitializationError extends Error {}
@@ -300,17 +300,9 @@ export class Flow {
       }
       const { appId } = appConfig;
 
-      // Load bootstrap script with server side parameters
-      const bootstrapMod = await import('./FlowBootstrap');
-      await bootstrapMod.init(this.response);
-
-      // Load custom modules defined by user
-      if (typeof this.config.imports === 'function') {
-        this.injectAppIdScript(appId);
-        await this.config.imports();
-      }
-
       // we use a custom tag for the flow app container
+      // This must be created before bootstrapMod.init is called as that call
+      // can handle a UIDL from the server, which relies on the container being available
       const tag = `flow-container-${appId.toLowerCase()}`;
       const serverCreatedContainer = document.querySelector(tag);
       if (serverCreatedContainer) {
@@ -320,6 +312,16 @@ export class Flow {
         this.container.id = appId;
       }
       flowRoot.$[appId] = this.container;
+
+      // Load bootstrap script with server side parameters
+      const bootstrapMod = await import('./FlowBootstrap');
+      bootstrapMod.init(this.response);
+
+      // Load custom modules defined by user
+      if (typeof this.config.imports === 'function') {
+        this.injectAppIdScript(appId);
+        await this.config.imports();
+      }
 
       // Load flow-client module
       const clientMod = await import('./FlowClient');
