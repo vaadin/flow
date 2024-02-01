@@ -34,6 +34,10 @@ public class SectionTest extends ComponentTest {
     @Test
     @Override
     public void testHasOrderedComponents() {
+        // According to this article:
+        // https://www.scottohara.me/blog/2021/07/16/section.html
+        // aria-label and aria-labelled-by are the best way to provide an
+        // accessible name
         super.testHasOrderedComponents();
     }
 
