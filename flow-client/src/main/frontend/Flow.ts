@@ -6,7 +6,7 @@ import {
 } from '@vaadin/common-frontend';
 
 export interface FlowConfig {
-  imports?: () => void;
+  imports?: () => Promise<void>;
 }
 
 class FlowUiInitializationError extends Error {}
@@ -320,7 +320,7 @@ export class Flow {
       // Load custom modules defined by user
       if (typeof this.config.imports === 'function') {
         this.injectAppIdScript(appId);
-        this.config.imports();
+        await this.config.imports();
       }
 
       // Load flow-client module
