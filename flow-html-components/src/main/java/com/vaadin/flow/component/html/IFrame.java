@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
@@ -35,7 +36,7 @@ import java.util.stream.Stream;
  *      Inline Frame element</a>
  */
 @Tag(Tag.IFRAME)
-public class IFrame extends HtmlComponent {
+public class IFrame extends HtmlComponent implements HasAriaLabel {
 
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
             .attributeWithDefault("src", "");

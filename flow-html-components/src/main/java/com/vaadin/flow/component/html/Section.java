@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.ClickNotifier;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasOrderedComponents;
-import com.vaadin.flow.component.HtmlContainer;
-import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.*;
 
 /**
  * Component representing a <code>&lt;section&gt;</code> element.
@@ -29,7 +25,7 @@ import com.vaadin.flow.component.Tag;
  */
 @Tag(Tag.SECTION)
 public class Section extends HtmlContainer
-        implements ClickNotifier<Section>, HasOrderedComponents {
+        implements ClickNotifier<Section>, HasOrderedComponents, HasAriaLabel {
 
     /**
      * Creates a new empty section.

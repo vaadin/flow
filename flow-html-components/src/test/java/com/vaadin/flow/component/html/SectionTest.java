@@ -27,17 +27,14 @@ public class SectionTest extends ComponentTest {
 
     @Test
     @Override
-    public void testHasOrderedComponents() {
-        super.testHasOrderedComponents();
+    public void testHasAriaLabelIsImplemented() {
+        super.testHasAriaLabelIsImplemented();
     }
 
     @Test
     @Override
-    public void testHasAriaLabelIsNotImplemented() {
-        // For most assistive technology it's fine to use aria-label or
-        // aria-labelledby on the <nav>, and <main> elements but not
-        // on <footer>, <section>, <article>, or <header>.
-        // Source: https://www.w3.org/TR/using-aria/#label-support
-        super.testHasAriaLabelIsNotImplemented();
+    public void testHasOrderedComponents() {
+        super.testHasOrderedComponents();
     }
+
 }
