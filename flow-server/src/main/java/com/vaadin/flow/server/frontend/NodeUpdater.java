@@ -37,7 +37,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -302,9 +301,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactRouterEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
+            putHillaComponentsDependencies(dependencies, "react");
         } else {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
+            putHillaComponentsDependencies(dependencies, "lit");
         }
         return dependencies;
     }
@@ -572,5 +573,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
 
         return versionsJson;
+    }
+
+    private static void putHillaComponentsDependencies(
+            Map<String, String> dependencies, String id) {
+        if (EndpointRequestUtil.isHillaAvailable()) {
+            dependencies.putAll(readDependencies(id, "dependencies"));
+        }
     }
 }
