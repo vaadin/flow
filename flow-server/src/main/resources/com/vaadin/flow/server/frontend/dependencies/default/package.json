@@ -12,11 +12,11 @@
     "@polymer/polymer": "3.5.1",
     "@vaadin/common-frontend": "0.0.19",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "3.1.0"
+    "lit": "3.1.2"
   },
   "devDependencies": {
-    "async": "3.2.4",
-    "glob": "10.3.3",
+    "async": "3.2.5",
+    "glob": "10.3.10",
     "typescript": "5.3.3",
     "workbox-core": "7.0.0",
     "workbox-precaching": "7.0.0",
