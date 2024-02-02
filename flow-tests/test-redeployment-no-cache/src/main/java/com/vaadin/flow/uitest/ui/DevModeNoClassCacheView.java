@@ -32,16 +32,6 @@ public class DevModeNoClassCacheView extends Div {
             Class<?> reloadCacheClass = Class
                     .forName("com.vaadin.flow.spring.ReloadCache");
 
-            // appShellClasses;
-            Field appShellClassesField = reloadCacheClass
-                    .getDeclaredField("appShellClasses");
-            appShellClassesField.setAccessible(true);
-            Set<Class<?>> appShellClasses = (Set<Class<?>>) appShellClassesField
-                    .get(null);
-            add(new Span(
-                    "appshell class count:" + (appShellClasses == null ? "0"
-                            : appShellClasses.size())));
-
             // lookupClasses;
             Field lookupClassesField = reloadCacheClass
                     .getDeclaredField("lookupClasses");

@@ -19,8 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import com.vaadin.flow.component.page.AppShellConfigurator;
 
 /**
  * The entry point of the Spring Boot application.
@@ -30,7 +33,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  */
 @SpringBootApplication
-public class Application {
+public class Application implements AppShellConfigurator {
+
+    // DummyService here tests that dependency injection works correctly in
+    // AppShellConfigurator class
+    @Autowired
+    private transient DummyService dummyService;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
