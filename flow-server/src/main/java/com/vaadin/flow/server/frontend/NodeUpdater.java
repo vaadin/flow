@@ -575,10 +575,21 @@ public abstract class NodeUpdater implements FallibleCommand {
         return versionsJson;
     }
 
+    /**
+     * Adds Hilla components to package.json if Hilla is used in the project.
+     *
+     * @see <a href=
+     *      "https://github.com/vaadin/hilla/tree/main/packages/java/hilla/src/main/resources/com/vaadin/flow/server/frontend/dependencies/hilla/components</a>
+     * @param dependencies
+     *            to be added into package.json
+     * @param id
+     *            the relative path location of template files
+     */
     private static void putHillaComponentsDependencies(
             Map<String, String> dependencies, String id) {
         if (EndpointRequestUtil.isHillaAvailable()) {
-            dependencies.putAll(readDependencies(id, "dependencies"));
+            dependencies.putAll(
+                    readDependencies("hilla/components/" + id, "dependencies"));
         }
     }
 }

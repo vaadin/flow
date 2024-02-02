@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -63,12 +64,14 @@ public class NodeUpdaterTest {
 
     private ClassFinder finder;
 
+    private Options options;
+
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
         finder = Mockito.mock(ClassFinder.class);
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withBuildDirectory(TARGET).withFeatureFlags(featureFlags);
 
         nodeUpdater = new NodeUpdater(finder,
@@ -465,6 +468,52 @@ public class NodeUpdaterTest {
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/grid-pro"));
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/vaadin-grid-pro"));
+    }
+
+    @Test
+    public void getDefaultDependencies_reactRouterIsUsed_addsHillaReactComponents() {
+        boolean reactRouterEnabled = options.isReactRouterEnabled();
+        try (MockedStatic<EndpointRequestUtil> mock = Mockito
+                .mockStatic(EndpointRequestUtil.class)) {
+            mock.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
+            options.withReactRouter(true);
+            Map<String, String> defaultDeps = nodeUpdater
+                    .getDefaultDependencies();
+            Assert.assertTrue(
+                    defaultDeps.containsKey("@vaadin/hilla-lit-form"));
+            Assert.assertTrue(
+                    defaultDeps.containsKey("@vaadin/hilla-react-auth"));
+            Assert.assertTrue(
+                    defaultDeps.containsKey("@vaadin/hilla-react-crud"));
+            Assert.assertTrue(
+                    defaultDeps.containsKey("@vaadin/hilla-react-form"));
+        } finally {
+            options.withReactRouter(reactRouterEnabled);
+        }
+    }
+
+    @Test
+    public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
+        boolean reactRouterEnabled = options.isReactRouterEnabled();
+        try (MockedStatic<EndpointRequestUtil> mock = Mockito
+                .mockStatic(EndpointRequestUtil.class)) {
+            mock.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
+            options.withReactRouter(false);
+            Map<String, String> defaultDeps = nodeUpdater
+                    .getDefaultDependencies();
+            Assert.assertTrue(
+                    defaultDeps.containsKey("@vaadin/hilla-lit-form"));
+            Assert.assertFalse(
+                    defaultDeps.containsKey("@vaadin/hilla-react-form"));
+        } finally {
+            options.withReactRouter(reactRouterEnabled);
+        }
+    }
+
+    @Test
+    public void getDefaultDependencies_hillaIsNotUsed_doesntAddHillaComponents() {
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+        Assert.assertFalse(defaultDeps.containsKey("@vaadin/hilla-lit-form"));
     }
 
     private String getPolymerVersion(JsonObject object) {
