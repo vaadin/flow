@@ -14,7 +14,7 @@
  * the License.
  */
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
     matchRoutes,
     NavigateFunction,
@@ -370,4 +370,14 @@ export const loadComponentScript = (tag: String) => {
             document.head.removeChild(script);
         }
     }, []);
+};
+
+/**
+ * Load WebComponent script and create a React element for the WebComponent.
+ *
+ * @param tag custom web-component tag name.
+ */
+export const createWebComponent = (tag: string) => {
+    loadComponentScript(tag);
+    return React.createElement(tag);
 };
