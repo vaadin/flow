@@ -6,7 +6,7 @@
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
     "@testscope/map": "../vite-test-assets/packages/@testscope/map",
-    "@types/react": "18.2.48",
+    "@types/react": "18.2.50",
     "@types/react-dom": "18.2.18",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
     "@vaadin/common-frontend": "0.0.19",
@@ -15,10 +15,10 @@
     "@vaadin/vaadin-lumo-styles": "24.3.2",
     "@vaadin/vaadin-themable-mixin": "24.3.2",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "3.1.1",
+    "lit": "3.1.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-router-dom": "6.21.2"
+    "react-router-dom": "6.21.3"
   },
   "devDependencies": {
     "@babel/preset-react": "^7",
@@ -33,7 +33,7 @@
     "transform-ast": "2.4.4",
     "typescript": "5.3.3",
     "vite": "5.0.12",
-    "vite-plugin-checker": "0.6.2",
+    "vite-plugin-checker": "0.6.4",
     "workbox-build": "7.0.0",
     "workbox-core": "7.0.0",
     "workbox-precaching": "7.0.0"
@@ -41,7 +41,7 @@
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.1",
-      "@types/react": "18.2.48",
+      "@types/react": "18.2.50",
       "@types/react-dom": "18.2.18",
       "@vaadin/common-frontend": "0.0.19",
       "@vaadin/polymer-legacy-adapter": "24.3.2",
@@ -49,10 +49,10 @@
       "@vaadin/vaadin-lumo-styles": "24.3.2",
       "@vaadin/vaadin-themable-mixin": "24.3.2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "3.1.1",
+      "lit": "3.1.2",
       "react": "18.2.0",
       "react-dom": "18.2.0",
-      "react-router-dom": "6.21.2"
+      "react-router-dom": "6.21.3"
     },
     "devDependencies": {
       "@babel/preset-react": "^7",
@@ -67,12 +67,12 @@
       "transform-ast": "2.4.4",
       "typescript": "5.3.3",
       "vite": "5.0.12",
-      "vite-plugin-checker": "0.6.2",
+      "vite-plugin-checker": "0.6.4",
       "workbox-build": "7.0.0",
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "f4cb57d69c9f8ea5503c85d519f2e79638b7692580f9073c073176a51097794d"
+    "hash": "42b329c0496d035ac665b14342e70adcabb9da860f090fd050d89d40d2dc672d"
   },
   "overrides": {
     "@polymer/polymer": "$@polymer/polymer",
