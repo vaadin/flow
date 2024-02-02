@@ -154,8 +154,7 @@ public class NodeTasks implements FallibleCommand {
                 if (BundleValidationUtil.needsBuild(options,
                         frontendDependencies, classFinder,
                         Mode.DEVELOPMENT_BUNDLE)) {
-                    commands.add(
-                            new TaskCleanFrontendFiles(options.getNpmFolder()));
+                    commands.add(new TaskCleanFrontendFiles(options));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
                     BundleUtils.copyPackageLockFromBundle(options);

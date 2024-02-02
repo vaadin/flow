@@ -58,11 +58,11 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
     /**
      * Scans the jar files given defined by {@code resourcesToScan}.
      *
-     * @param projectRoot
-     *            project root folder
+     * @param options
+     *            the options to use for the task
      */
-    public TaskCleanFrontendFiles(File projectRoot) {
-        this.projectRoot = projectRoot;
+    public TaskCleanFrontendFiles(Options options) {
+        this.projectRoot = options.getNpmFolder();
 
         Arrays.stream(projectRoot
                 .listFiles(file -> generatedFiles.contains(file.getName())))
@@ -72,7 +72,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
         // node_modules
         if (existingFiles
                 .contains(new File(projectRoot, Constants.PACKAGE_JSON))
-                || EndpointRequestUtil.isHillaAvailable()) {
+                || FrontendUtils.isHillaUsed(options.getFrontendDirectory())) {
             existingFiles.add(new File(projectRoot, NODE_MODULES));
         }
     }
