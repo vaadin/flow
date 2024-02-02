@@ -56,6 +56,7 @@ public class IFrameTest extends ComponentTest {
 
         Mockito.verify(element).executeJs("this.src = this.src");
     }
+
     @Test
     @Override
     public void testHasAriaLabelIsImplemented() {
