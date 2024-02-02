@@ -353,3 +353,21 @@ export const serverSideRoutes = [
         }
     });
 })();
+
+
+/**
+ * Load the script for an exported WebComponent with the given tag
+ *
+ * @param tag name of the exported web-component to load
+ */
+export const loadComponentScript = (tag: String) => {
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = `/web-component/${tag}.js`;
+        document.head.appendChild(script);
+
+        return () => {
+            document.head.removeChild(script);
+        }
+    }, []);
+};
