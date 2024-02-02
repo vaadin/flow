@@ -16,11 +16,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-
-import static com.vaadin.flow.server.Constants.TARGET;
 
 public class TaskCleanFrontendFilesTest {
     @Rule
