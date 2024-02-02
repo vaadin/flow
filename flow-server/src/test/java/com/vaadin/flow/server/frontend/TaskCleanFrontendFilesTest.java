@@ -27,20 +27,19 @@ public class TaskCleanFrontendFilesTest {
     public final TemporaryFolder rootFolder = new TemporaryFolder();
 
     private File projectRoot;
-    private Options options;
+    private File frontendDirectory;
 
     @Before
     public void init() {
         projectRoot = rootFolder.getRoot();
-        options = new Options(Mockito.mock(Lookup.class), projectRoot)
-                .withBuildDirectory(TARGET).withFrontendDirectory(
-                        new File(projectRoot, "target/frontend"));
+        frontendDirectory = new File(projectRoot, "target/frontend");
     }
 
     @Test
     public void createdFileAreRemoved()
             throws IOException, ExecutionFailedException {
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
+                frontendDirectory);
 
         final Set<String> generatedFiles = Stream
                 .of(FrontendUtils.VITE_CONFIG,
@@ -65,7 +64,8 @@ public class TaskCleanFrontendFilesTest {
                 .collect(Collectors.toSet());
         createFiles(existingfiles);
 
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
+                frontendDirectory);
 
         final Set<String> generatedFiles = Stream
                 .of(FrontendUtils.VITE_GENERATED_CONFIG,
@@ -83,7 +83,8 @@ public class TaskCleanFrontendFilesTest {
     @Test
     public void nodeModulesFolderIsCleared()
             throws IOException, ExecutionFailedException {
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
+                frontendDirectory);
 
         final File nodeModules = rootFolder.newFolder("node_modules");
         new File(nodeModules, "file").createNewFile();
@@ -100,7 +101,8 @@ public class TaskCleanFrontendFilesTest {
     public void packageJsonExists_nodeModulesFolderIsKept()
             throws IOException, ExecutionFailedException {
         createFiles(Collections.singleton(Constants.PACKAGE_JSON));
-        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
+                frontendDirectory);
 
         final File nodeModules = rootFolder.newFolder("node_modules");
         new File(nodeModules, "file").createNewFile();
@@ -121,7 +123,7 @@ public class TaskCleanFrontendFilesTest {
                 .mockStatic(FrontendUtils.class)) {
             util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
                     .thenReturn(true);
-            clean = new TaskCleanFrontendFiles(options);
+            clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory);
         }
 
         final File nodeModules = rootFolder.newFolder("node_modules");
