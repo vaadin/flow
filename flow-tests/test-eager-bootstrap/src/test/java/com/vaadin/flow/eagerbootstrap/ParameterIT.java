@@ -15,6 +15,7 @@ public class ParameterIT extends ChromeBrowserTest {
     private void openWithParameter(String parameter) {
         String url = getTestURL();
         getDriver().get(url + "/" + parameter);
+        waitForDevServer();
     }
 
     @Test
