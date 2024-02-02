@@ -105,7 +105,7 @@ public class FrontendUtilsTest {
     private static final String ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_2 = """
                 import {serverSideRoutes} from "Frontend/generated/flow/Flow";
 
-                export const routes: RouteObject[] = [
+                export const routes: RouteViewObject[] = [
                   {
                     path: 'hello',
                     component: 'hello-world-view',

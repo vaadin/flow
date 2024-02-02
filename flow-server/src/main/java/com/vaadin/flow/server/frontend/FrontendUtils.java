@@ -322,7 +322,7 @@ public class FrontendUtils {
     // Regex pattern matches everything between "const|let|var routes = [" (or
     // "const routes: RouteObject[] = [") and "...serverSideRoutes"
     private static final Pattern CLIENT_SIDE_ROUTES_PATTERN = Pattern.compile(
-            "(?<=(?:const|let|var) routes(:\\s?RouteObject\\[\\s?])?\\s?=\\s?\\[)([\\s\\S]*?)(?=\\.{3}serverSideRoutes)",
+            "(?<=(?:const|let|var) routes)(:\\s?\\w*\\[\\s?])?\\s?=\\s?\\[([\\s\\S]*?)(?=\\.{3}serverSideRoutes)",
             Pattern.MULTILINE);
 
     /**
@@ -1239,7 +1239,8 @@ public class FrontendUtils {
      */
     public static boolean isHillaViewsUsed(File frontendDirectory) {
         Objects.requireNonNull(frontendDirectory);
-        var files = List.of(FrontendUtils.ROUTES_TS, FrontendUtils.ROUTES_TSX);
+        var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.ROUTES_TS,
+                FrontendUtils.ROUTES_TSX);
         for (String fileName : files) {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {
@@ -1287,7 +1288,7 @@ public class FrontendUtils {
     private static boolean mayHaveClientSideRoutes(String routesContent) {
         Matcher matcher = CLIENT_SIDE_ROUTES_PATTERN.matcher(routesContent);
         while (matcher.find()) {
-            for (int index = 0; index <= matcher.groupCount(); index++) {
+            for (int index = 1; index <= matcher.groupCount(); index++) {
                 String group = matcher.group(index);
                 if (group != null && !group.isBlank()
                         && group.startsWith(":")) {
