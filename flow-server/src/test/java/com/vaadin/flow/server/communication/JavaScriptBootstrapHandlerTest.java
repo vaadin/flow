@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UI.BrowserNavigateEvent;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
@@ -139,7 +140,8 @@ public class JavaScriptBootstrapHandlerTest {
         jsInitHandler.handleRequest(session, request, response);
 
         UI ui = UI.getCurrent();
-        ui.connectClient("a-route", "", "", null, "");
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, "a-route", "", "",
+                null, ""));
 
         TestNodeVisitor visitor = new TestNodeVisitor(true);
         BasicElementStateProvider.get().visit(ui.getElement().getNode(),

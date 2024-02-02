@@ -18,6 +18,7 @@ package com.vaadin.gradle
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
+import com.vaadin.flow.server.frontend.FrontendUtils
 import com.vaadin.flow.server.frontend.installer.NodeInstaller
 import com.vaadin.flow.server.frontend.installer.Platform
 import groovy.lang.Closure
@@ -414,7 +415,7 @@ internal class PluginEffectiveConfiguration(
         .convention(false)
 
     val reactRouterEnabled: Provider<Boolean> = extension.reactRouterEnabled
-        .convention(true)
+        .convention(FrontendUtils.isReactRouterRequired(frontendDirectory.get()))
         .overrideWithSystemProperty(InitParameters.REACT_ROUTER_ENABLED)
 
     /**

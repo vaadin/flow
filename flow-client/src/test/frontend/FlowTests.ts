@@ -131,10 +131,10 @@ describe('Flow', () => {
     server.remove();
     delete $wnd.Vaadin;
     delete flowRoot.$;
-    if (flowRoot.$server) {
+    if (flowRoot.timers) {
       // clear timers started in stubServerRemoteFunction
-      flowRoot.$server.timers.forEach(clearTimeout);
-      delete flowRoot.$server;
+      flowRoot.timers.forEach(clearTimeout);
+      delete flowRoot.timers;
     }
     listeners.forEach((recorded: any) => {
       $wnd.removeEventListener(recorded.type, recorded.listener);
@@ -617,7 +617,7 @@ describe('Flow', () => {
   });
 
   it("when no Flow client loaded, should transition to CONNECTED when receiving 'offline' and then 'online' events and connection is reestablished", async () => {
-    server.addHandler("HEAD",/^.*sw.js/, (req) => {
+    server.addHandler('HEAD', /^.*sw.js/, (req) => {
       req.respond(200);
     });
     new Flow();
@@ -631,7 +631,7 @@ describe('Flow', () => {
   });
 
   it("when no Flow client loaded, should transition to CONNECTION_LOST when receiving 'offline' and then 'online' events and connection is not reestablished", async () => {
-    server.addHandler("HEAD",/^.*sw.js/, (req) => {
+    server.addHandler('HEAD', /^.*sw.js/, (req) => {
       req.setNetworkError();
     });
 
@@ -703,10 +703,8 @@ function stubServerRemoteFunction(
 ) {
   let container: any;
 
-  // Stub remote function exported in JavaScriptBootstrapUI.
-  flowRoot.$server = {
-    timers: [],
-
+  flowRoot.timers = [];
+  const handlers = {
     connectClient: (route: string) => {
       expect(route).not.to.be.undefined;
       if (routeRegex) {
@@ -730,14 +728,28 @@ function stubServerRemoteFunction(
         // container should be visible when not cancelled or not has redirect server-client
         expect(cancel || url ? 'none' : '').to.equal(container.style.display);
       }, 10);
-      flowRoot.$server.timers.push(timer);
+      flowRoot.timers.push(timer);
     },
     leaveNavigation: () => {
       // asynchronously resolve the promise
       const timer = setTimeout(() => container.serverConnected(cancel, url), 10);
-      flowRoot.$server.timers.push(timer);
+      flowRoot.timers.push(timer);
     }
   };
+
+  flowRoot.timers = [];
+  server.addHandler('POST', /^.*\?v-r=uidl.*/, (req) => {
+    const payload = JSON.parse(req.body);
+    if (payload.rpc && payload.rpc[0].type === 'event') {
+      const rpc = payload.rpc[0];
+      if (rpc.event === 'ui-navigate') {
+        handlers.connectClient(rpc.data.route);
+      } else if (rpc.event === 'ui-leave-navigation') {
+        handlers.leaveNavigation();
+      }
+    }
+    req.respond(200, { 'content-type': 'application/json' }, 'for(;;);[{}]');
+  });
 }
 
 function mockInitResponse(appId: string, changes = '[]', pushScript?: string, withCharset?: boolean) {
