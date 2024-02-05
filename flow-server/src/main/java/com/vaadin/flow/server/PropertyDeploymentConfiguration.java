@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -151,8 +152,8 @@ public class PropertyDeploymentConfiguration
     @Override
     public boolean frontendHotdeploy() {
         if (isOwnProperty(FRONTEND_HOTDEPLOY)) {
-            return getBooleanProperty(FRONTEND_HOTDEPLOY,
-                    EndpointRequestUtil.isHillaAvailable());
+            return getBooleanProperty(FRONTEND_HOTDEPLOY, FrontendUtils
+                    .isHillaUsed(FrontendUtils.getProjectFrontendDir(this)));
         }
         return parentConfig.frontendHotdeploy();
     }

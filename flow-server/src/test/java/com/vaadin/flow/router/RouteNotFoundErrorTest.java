@@ -21,6 +21,7 @@ import java.util.List;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -28,7 +29,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 public class RouteNotFoundErrorTest {
 
@@ -72,6 +75,13 @@ public class RouteNotFoundErrorTest {
         ErrorParameter<NotFoundException> param = new ErrorParameter<>(
                 NotFoundException.class, new NotFoundException());
 
+        VaadinService vaadinService = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration deploymentConfiguration = Mockito
+                .mock(DeploymentConfiguration.class);
+        VaadinService.setCurrent(vaadinService);
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(null);
+
         Router router = Mockito.mock(Router.class);
         Mockito.when(event.getSource()).thenReturn(router);
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
@@ -80,7 +90,15 @@ public class RouteNotFoundErrorTest {
 
         event.getSource().getRegistry().getRegisteredRoutes();
 
-        page.setErrorParameter(event, param);
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            util.when(() -> FrontendUtils.getProjectFrontendDir(Mockito.any()))
+                    .thenReturn(null);
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+                    .thenReturn(false);
+
+            page.setErrorParameter(event, param);
+        }
 
         MatcherAssert.assertThat(page.getElement().toString(),
                 CoreMatchers.containsString("No views found"));
