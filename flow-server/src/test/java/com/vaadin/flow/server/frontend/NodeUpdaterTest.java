@@ -479,9 +479,11 @@ public class NodeUpdaterTest {
             options.withReactRouter(true);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
-            Assert.assertTrue(
+            Assert.assertFalse(
+                    "Lit component added unexpectedly for react-router",
                     defaultDeps.containsKey("@vaadin/hilla-lit-form"));
             Assert.assertTrue(
+                    "React component should be added when vaadin-router is used",
                     defaultDeps.containsKey("@vaadin/hilla-react-auth"));
             Assert.assertTrue(
                     defaultDeps.containsKey("@vaadin/hilla-react-crud"));
@@ -502,8 +504,10 @@ public class NodeUpdaterTest {
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
             Assert.assertTrue(
+                    "Lit component should be when vaadin-router is used",
                     defaultDeps.containsKey("@vaadin/hilla-lit-form"));
             Assert.assertFalse(
+                    "React component added unexpectedly for vaadin-router",
                     defaultDeps.containsKey("@vaadin/hilla-react-form"));
         } finally {
             options.withReactRouter(reactRouterEnabled);
@@ -513,7 +517,12 @@ public class NodeUpdaterTest {
     @Test
     public void getDefaultDependencies_hillaIsNotUsed_doesntAddHillaComponents() {
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
-        Assert.assertFalse(defaultDeps.containsKey("@vaadin/hilla-lit-form"));
+        Assert.assertFalse(
+                "Lit component added unexpectedly when Hilla isn't used",
+                defaultDeps.containsKey("@vaadin/hilla-lit-form"));
+        Assert.assertTrue(
+                "React component added unexpectedly when Hilla isn't used",
+                defaultDeps.containsKey("@vaadin/hilla-react-auth"));
     }
 
     private String getPolymerVersion(JsonObject object) {

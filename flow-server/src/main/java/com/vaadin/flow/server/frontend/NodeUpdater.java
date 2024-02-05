@@ -301,11 +301,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactRouterEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
-            putHillaComponentsDependencies(dependencies, "react");
+            putHillaComponentsDependencies(dependencies, "react",
+                    "dependencies");
         } else {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
-            putHillaComponentsDependencies(dependencies, "lit");
+            putHillaComponentsDependencies(dependencies, "lit", "dependencies");
         }
         return dependencies;
     }
@@ -584,12 +585,17 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            to be added into package.json
      * @param id
      *            the relative path location of template files
+     * @param packageJsonKey
+     *            the key inside package.json containing the sub-list of
+     *            dependencies to read and add
+     *
      */
     private static void putHillaComponentsDependencies(
-            Map<String, String> dependencies, String id) {
+            Map<String, String> dependencies, String id,
+            String packageJsonKey) {
         if (EndpointRequestUtil.isHillaAvailable()) {
             dependencies.putAll(
-                    readDependencies("hilla/components/" + id, "dependencies"));
+                    readDependencies("hilla/components/" + id, packageJsonKey));
         }
     }
 }
