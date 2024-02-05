@@ -24,7 +24,6 @@ import java.util.Set;
  * Spring Boot DevTools reload, so the cached data can be used after reload.
  */
 class ReloadCache implements Serializable {
-    static Set<Class<?>> appShellClasses;
     static Set<Class<?>> lookupClasses;
     static Set<String> validResources = new HashSet<>();
     static Set<String> skippedResources = new HashSet<>();
