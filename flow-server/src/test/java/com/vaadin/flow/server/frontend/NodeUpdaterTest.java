@@ -520,7 +520,7 @@ public class NodeUpdaterTest {
         Assert.assertFalse(
                 "Lit component added unexpectedly when Hilla isn't used",
                 defaultDeps.containsKey("@vaadin/hilla-lit-form"));
-        Assert.assertTrue(
+        Assert.assertFalse(
                 "React component added unexpectedly when Hilla isn't used",
                 defaultDeps.containsKey("@vaadin/hilla-react-auth"));
     }
