@@ -70,8 +70,8 @@ public final class BundleValidationUtil {
         try {
             boolean needsBuild;
             if (mode.isProduction()) {
-                if (options.isForceProductionBuild()
-                        || EndpointRequestUtil.isHillaAvailable()) {
+                if (options.isForceProductionBuild() || FrontendUtils
+                        .isHillaUsed(options.getFrontendDirectory())) {
                     if (options.isForceProductionBuild()) {
                         UsageStatistics.markAsUsed("flow/prod-build-requested",
                                 null);
