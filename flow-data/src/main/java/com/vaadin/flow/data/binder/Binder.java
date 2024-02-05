@@ -1006,9 +1006,12 @@ public class Binder<BEAN> implements Serializable {
             this.statusHandler = statusHandler;
 
             if (field instanceof HasValidator hasValidator) {
-                withValidator((val, ctx) -> binding.isDefaultValidatorDisabled()
-                        ? ValidationResult.ok()
-                        : hasValidator.getDefaultValidator().apply(val, ctx));
+                withValidator((val,
+                        ctx) -> binding != null
+                                && binding.isDefaultValidatorDisabled()
+                                        ? ValidationResult.ok()
+                                        : hasValidator.getDefaultValidator()
+                                                .apply(val, ctx));
             }
         }
 
@@ -1024,6 +1027,12 @@ public class Binder<BEAN> implements Serializable {
 
             BindingImpl<BEAN, FIELDVALUE, TARGET> binding = new BindingImpl<>(
                     this, getter, setter);
+            // Setting the binding field value has been moved up here to fix a
+            // regression NPE https://github.com/vaadin/flow/issues/18608 which
+            // breaks tests of Grid component: UpdateEditorComponentIT,
+            // DynamicEditorKBNavigationIT and
+            // GridViewEditorIT.dynamicNotBufferedEditor*
+            this.binding = binding;
 
             // Remove existing binding for same field to avoid potential
             // multiple application of converter
@@ -1042,7 +1051,6 @@ public class Binder<BEAN> implements Serializable {
             if (getBinder().incompleteBindings != null) {
                 getBinder().incompleteBindings.remove(getField());
             }
-            this.binding = binding;
 
             return binding;
         }

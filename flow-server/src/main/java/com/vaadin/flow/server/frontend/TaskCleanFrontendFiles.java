@@ -60,8 +60,10 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
      *
      * @param projectRoot
      *            project root folder
+     * @param frontendDirectory
+     *            frontend directory
      */
-    public TaskCleanFrontendFiles(File projectRoot) {
+    public TaskCleanFrontendFiles(File projectRoot, File frontendDirectory) {
         this.projectRoot = projectRoot;
 
         Arrays.stream(projectRoot
@@ -72,7 +74,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
         // node_modules
         if (existingFiles
                 .contains(new File(projectRoot, Constants.PACKAGE_JSON))
-                || EndpointRequestUtil.isHillaAvailable()) {
+                || FrontendUtils.isHillaUsed(frontendDirectory)) {
             existingFiles.add(new File(projectRoot, NODE_MODULES));
         }
     }

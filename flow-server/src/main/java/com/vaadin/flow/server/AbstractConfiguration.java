@@ -56,7 +56,8 @@ public interface AbstractConfiguration extends Serializable {
             return false;
         }
         return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
-                EndpointRequestUtil.isHillaAvailable());
+                FrontendUtils.isHillaUsed(
+                        FrontendUtils.getProjectFrontendDir(this)));
     }
 
     /**
