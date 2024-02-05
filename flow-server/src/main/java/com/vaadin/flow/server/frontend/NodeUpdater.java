@@ -177,8 +177,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     Json.parse(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    options.isReactRouterEnabled()
-                            && EndpointRequestUtil.isHillaAvailable());
+                    options.isReactRouterEnabled());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)
