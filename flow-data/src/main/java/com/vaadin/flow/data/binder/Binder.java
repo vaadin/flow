@@ -1006,9 +1006,12 @@ public class Binder<BEAN> implements Serializable {
             this.statusHandler = statusHandler;
 
             if (field instanceof HasValidator hasValidator) {
-                withValidator((val, ctx) -> binding.isDefaultValidatorDisabled()
-                        ? ValidationResult.ok()
-                        : hasValidator.getDefaultValidator().apply(val, ctx));
+                withValidator((val,
+                        ctx) -> binding != null
+                                && binding.isDefaultValidatorDisabled()
+                                        ? ValidationResult.ok()
+                                        : hasValidator.getDefaultValidator()
+                                                .apply(val, ctx));
             }
         }
 
