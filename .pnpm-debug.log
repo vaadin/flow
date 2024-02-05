@@ -1,0 +1,126 @@
+{
+  "0 info pnpm:global": "Nothing to stop. No server is running for the store at /Users/antonplatonov/.pnpm-store/v3",
+  "1 debug pnpm:scope": {
+    "selected": 1
+  },
+  "2 debug pnpm:package-manifest": {
+    "initial": {},
+    "prefix": "/usr/local/Cellar/node/21.1.0/pnpm-global/5"
+  },
+  "3 debug pnpm:context": {
+    "currentLockfileExists": false,
+    "storeDir": "/Users/antonplatonov/.pnpm-store/v3",
+    "virtualStoreDir": "/usr/local/Cellar/node/21.1.0/pnpm-global/5/node_modules/.pnpm"
+  },
+  "4 debug pnpm:stage": {
+    "prefix": "/usr/local/Cellar/node/21.1.0/pnpm-global/5",
+    "stage": "resolution_started"
+  },
+  "5 debug pnpm:request-retry": {
+    "attempt": 1,
+    "error": {
+      "code": "ERR_INVALID_THIS"
+    },
+    "maxRetries": 2,
+    "method": "GET",
+    "timeout": 10000,
+    "url": "https://registry.npmjs.org/pnpm"
+  },
+  "6 debug pnpm:request-retry": {
+    "attempt": 2,
+    "error": {
+      "code": "ERR_INVALID_THIS"
+    },
+    "maxRetries": 2,
+    "method": "GET",
+    "timeout": 60000,
+    "url": "https://registry.npmjs.org/pnpm"
+  },
+  "7 error pnpm": {
+    "code": "ERR_PNPM_META_FETCH_FAIL",
+    "attempts": 1,
+    "err": {
+      "name": "Error",
+      "message": "GET https://registry.npmjs.org/pnpm: Value of \"this\" must be of type URLSearchParams",
+      "code": "ERR_PNPM_META_FETCH_FAIL",
+      "stack": "Error: GET https://registry.npmjs.org/pnpm: Value of \"this\" must be of type URLSearchParams\n    at RetryOperation._fn (/usr/local/lib/node_modules/pnpm/dist/pnpm.cjs:85463:19)"
+    }
+  },
+  "8 debug pnpm": "Using cached meta from /Users/antonplatonov/Library/Caches/pnpm/metadata/registry.npmjs.org/pnpm.json",
+  "9 debug pnpm:_dependency_resolved": {
+    "resolution": "registry.npmjs.org/pnpm/8.7.4",
+    "wanted": {
+      "dependentId": ".",
+      "name": "pnpm",
+      "rawSpec": "latest"
+    }
+  },
+  "10 debug pnpm:progress": {
+    "packageId": "registry.npmjs.org/pnpm/8.7.4",
+    "requester": "/usr/local/Cellar/node/21.1.0/pnpm-global/5",
+    "status": "resolved"
+  },
+  "11 debug pnpm:package-manifest": {
+    "prefix": "/usr/local/Cellar/node/21.1.0/pnpm-global/5",
+    "updated": {
+      "dependencies": {
+        "pnpm": "^8.7.4"
+      }
+    }
+  },
+  "12 debug pnpm:stage": {
+    "prefix": "/usr/local/Cellar/node/21.1.0/pnpm-global/5",
+    "stage": "resolution_done"
+  },
+  "13 debug pnpm:stats": {
+    "prefix": "/usr/local/Cellar/node/21.1.0/pnpm-global/5",
+    "removed": 0
+  },
+  "14 debug pnpm:request-retry": {
+    "attempt": 1,
+    "error": {
+      "code": "ERR_INVALID_THIS",
+      "attempts": 1,
+      "resource": "https://registry.npmjs.org/pnpm/-/pnpm-8.7.4.tgz"
+    },
+    "maxRetries": 2,
+    "method": "GET",
+    "timeout": 10000,
+    "url": "https://registry.npmjs.org/pnpm/-/pnpm-8.7.4.tgz"
+  },
+  "15 debug pnpm:stage": {
+    "prefix": "/usr/local/Cellar/node/21.1.0/pnpm-global/5",
+    "stage": "importing_started"
+  },
+  "16 debug pnpm:stats": {
+    "added": 1,
+    "prefix": "/usr/local/Cellar/node/21.1.0/pnpm-global/5"
+  },
+  "17 debug pnpm:request-retry": {
+    "attempt": 2,
+    "error": {
+      "code": "ERR_INVALID_THIS",
+      "attempts": 2,
+      "resource": "https://registry.npmjs.org/pnpm/-/pnpm-8.7.4.tgz"
+    },
+    "maxRetries": 2,
+    "method": "GET",
+    "timeout": 60000,
+    "url": "https://registry.npmjs.org/pnpm/-/pnpm-8.7.4.tgz"
+  },
+  "18 warn pnpm:package-requester": {
+    "message": "Fetching registry.npmjs.org/pnpm/8.7.4 failed!",
+    "prefix": "/usr/local/Cellar/node/21.1.0/pnpm-global/5"
+  },
+  "19 error pnpm": {
+    "code": "ERR_INVALID_THIS",
+    "attempts": 3,
+    "resource": "https://registry.npmjs.org/pnpm/-/pnpm-8.7.4.tgz",
+    "err": {
+      "name": "pnpm",
+      "message": "Value of \"this\" must be of type URLSearchParams",
+      "code": "ERR_INVALID_THIS",
+      "stack": "pnpm [ERR_INVALID_THIS]: Value of \"this\" must be of type URLSearchParams\n    at Proxy.getAll (node:internal/url:533:13)\n    at Proxy.<anonymous> (/usr/local/lib/node_modules/pnpm/dist/pnpm.cjs:52178:55)\n    at /usr/local/lib/node_modules/pnpm/dist/pnpm.cjs:52228:31\n    at Array.reduce (<anonymous>)\n    at Proxy.raw (/usr/local/lib/node_modules/pnpm/dist/pnpm.cjs:52227:33)\n    at new Headers (/usr/local/lib/node_modules/pnpm/dist/pnpm.cjs:52128:28)\n    at getNodeRequestOptions (/usr/local/lib/node_modules/pnpm/dist/pnpm.cjs:52435:23)\n    at /usr/local/lib/node_modules/pnpm/dist/pnpm.cjs:52492:25\n    at new Promise (<anonymous>)\n    at fetch (/usr/local/lib/node_modules/pnpm/dist/pnpm.cjs:52490:14)"
+    }
+  }
+}
