@@ -313,6 +313,12 @@ public abstract class NodeUpdater implements FallibleCommand {
             Map<String, String> map = new HashMap<>();
             JsonObject dependencies = readPackageJson(id)
                     .getObject(packageJsonKey);
+            if (dependencies == null) {
+                LoggerFactory.getLogger(NodeUpdater.class)
+                        .error("Unable to find " + packageJsonKey + " from '"
+                                + id + "'");
+                return new HashMap<>();
+            }
             for (String key : dependencies.keys()) {
                 map.put(key, dependencies.getString(key));
             }
@@ -327,9 +333,14 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     }
 
-    private static JsonObject readPackageJson(String id) throws IOException {
+    static JsonObject readPackageJson(String id) throws IOException {
         try (InputStream packageJson = NodeUpdater.class
                 .getResourceAsStream("dependencies/" + id + "/package.json")) {
+            if (packageJson == null) {
+                LoggerFactory.getLogger(NodeUpdater.class)
+                        .error("Unable to find package.json from '" + id + "'");
+                return Json.createObject();
+            }
             JsonObject content = Json.parse(
                     IOUtils.toString(packageJson, StandardCharsets.UTF_8));
             return content;

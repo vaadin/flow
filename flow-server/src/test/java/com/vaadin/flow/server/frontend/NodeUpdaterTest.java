@@ -554,6 +554,18 @@ public class NodeUpdaterTest {
                 defaultDevDeps.containsKey("lit-dev-dependency"));
     }
 
+    @Test
+    public void readPackageJson_nonExistingFile_doesNotThrow()
+            throws IOException {
+        NodeUpdater.readPackageJson("non-existing-folder");
+    }
+
+    @Test
+    public void readDependencies_doesntHaveDependencies_doesNotThrow() {
+        NodeUpdater.readDependencies("no-deps", "dependencies");
+        NodeUpdater.readDependencies("no-deps", "devDependencies");
+    }
+
     private String getPolymerVersion(JsonObject object) {
         JsonObject deps = object.get("dependencies");
         String version = deps.getString("@polymer/polymer");
