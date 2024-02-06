@@ -337,8 +337,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         try (InputStream packageJson = NodeUpdater.class
                 .getResourceAsStream("dependencies/" + id + "/package.json")) {
             if (packageJson == null) {
-                LoggerFactory.getLogger(NodeUpdater.class).error(
-                        "Unable to find package.json from '" + id + "'");
+                LoggerFactory.getLogger(NodeUpdater.class)
+                        .error("Unable to find package.json from '" + id + "'");
                 return Json.createObject();
             }
             JsonObject content = Json.parse(
