@@ -106,7 +106,7 @@
             <plugin>
                 <groupId>io.gatling</groupId>
                 <artifactId>gatling-maven-plugin</artifactId>
-                <version>4.7.0</version>
+                <version>4.8.0</version>
                 <executions>
                     <!-- Warmup for Jetty -->
                     <execution>
