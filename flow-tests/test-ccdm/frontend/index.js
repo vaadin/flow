@@ -17,10 +17,9 @@ document.getElementById("button2").addEventListener('click', async e => {
     await flow.flowInit(true);
     const bootstrapLoaded = !!window.Vaadin.Flow.initApplication;
     const clientLoaded = !!window.Vaadin.Flow.clients.foo.resolveUri;
-    const remoteMethod = !!document.body.$server.connectClient;
     const div = document.createElement('div');
     div.id = 'div2';
-    div.textContent = bootstrapLoaded + " " + clientLoaded + " " + remoteMethod;
+    div.textContent = bootstrapLoaded + " " + clientLoaded;
     document.body.appendChild(div);
 });
 

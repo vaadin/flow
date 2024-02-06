@@ -32,9 +32,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -48,6 +51,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
@@ -61,6 +66,7 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -217,6 +223,10 @@ public class FrontendUtils {
      */
     public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
 
+    public static final String ROUTES_TS = "routes.ts";
+
+    public static final String ROUTES_TSX = "routes.tsx";
+
     /**
      * Default generated path for generated frontend files.
      */
@@ -304,6 +314,16 @@ public class FrontendUtils {
     public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
     public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
+
+    // Regex pattern matches "...serverSideRoutes"
+    private static final Pattern SERVER_SIDE_ROUTES_PATTERN = Pattern.compile(
+            "(?<=\\s|^)\\.{3}serverSideRoutes(?=\\s|$)", Pattern.MULTILINE);
+
+    // Regex pattern matches everything between "const|let|var routes = [" (or
+    // "const routes: RouteObject[] = [") and "...serverSideRoutes"
+    private static final Pattern CLIENT_SIDE_ROUTES_PATTERN = Pattern.compile(
+            "(?<=(?:const|let|var) routes)(:\\s?\\w*\\[\\s?])?\\s?=\\s?\\[([\\s\\S]*?)(?=\\.{3}serverSideRoutes)",
+            Pattern.MULTILINE);
 
     /**
      * Only static stuff here.
@@ -1174,6 +1194,115 @@ public class FrontendUtils {
             File frontendFolder) {
         return new File(getFlowGeneratedFolder(frontendFolder),
                 "web-components");
+    }
+
+    /**
+     * Auto-detects what router is used in a project based on what is imported
+     * in {@link FrontendUtils#INDEX_TS} file.
+     *
+     * @param frontendDirectory
+     *            path to the frontend folder in a project.
+     * @return {@code false} if vaadin-router is used, {@code true} otherwise.
+     */
+    public static boolean isReactRouterRequired(File frontendDirectory) {
+        Objects.requireNonNull(frontendDirectory);
+        boolean result = true;
+        File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
+        if (indexTs.exists()) {
+            try {
+                String indexTsContent = IOUtils.toString(indexTs.toURI(),
+                        UTF_8);
+                indexTsContent = StringUtil.removeComments(indexTsContent);
+                result = !indexTsContent.contains("@vaadin/router");
+            } catch (IOException e) {
+                getLogger().error(
+                        "Couldn't auto-detect React/Lit application, react-router will be used",
+                        e);
+            }
+        }
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Auto-detected client-side router to use: {}",
+                    result ? "react-router" : "vaadin-router");
+        }
+        return result;
+    }
+
+    /**
+     * Auto-detects if hilla views are used in the project based on what is in
+     * routes.ts or routes.tsx file.
+     * {@link FrontendUtils#getProjectFrontendDir(AbstractConfiguration)} can be
+     * used to get the frontend directory.
+     *
+     * @param frontendDirectory
+     *            Target frontend directory.
+     * @return {@code true} if hilla views are used, {@code false} otherwise.
+     */
+    public static boolean isHillaViewsUsed(File frontendDirectory) {
+        Objects.requireNonNull(frontendDirectory);
+        var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.ROUTES_TS,
+                FrontendUtils.ROUTES_TSX);
+        for (String fileName : files) {
+            File routesFile = new File(frontendDirectory, fileName);
+            if (routesFile.exists()) {
+                try {
+                    String routesTsContent = IOUtils
+                            .toString(routesFile.toURI(), UTF_8);
+                    return isRoutesContentUsingHillaViews(routesTsContent);
+                } catch (IOException e) {
+                    getLogger().error(
+                            "Couldn't read {} for hilla views auto-detection",
+                            routesFile.getName(), e);
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if Hilla is available and Hilla views are used in the project
+     * based on what is in routes.ts or routes.tsx file.
+     * {@link FrontendUtils#getProjectFrontendDir(AbstractConfiguration)} can be
+     * used to get the frontend directory.
+     *
+     * @return {@code true} if Hilla is available and Hilla views are used,
+     *         {@code false} otherwise
+     */
+    public static boolean isHillaUsed(File frontendDirectory) {
+        return EndpointRequestUtil.isHillaAvailable()
+                && isHillaViewsUsed(frontendDirectory);
+    }
+
+    private static boolean isRoutesContentUsingHillaViews(
+            String routesContent) {
+        routesContent = StringUtil.removeComments(routesContent);
+        if (missingServerSideRoutes(routesContent)) {
+            return true;
+        }
+        return mayHaveClientSideRoutes(routesContent);
+    }
+
+    private static boolean missingServerSideRoutes(String routesContent) {
+        return !SERVER_SIDE_ROUTES_PATTERN.matcher(routesContent).find();
+    }
+
+    private static boolean mayHaveClientSideRoutes(String routesContent) {
+        Matcher matcher = CLIENT_SIDE_ROUTES_PATTERN.matcher(routesContent);
+        while (matcher.find()) {
+            for (int index = 1; index <= matcher.groupCount(); index++) {
+                String group = matcher.group(index);
+                if (group != null && !group.isBlank()
+                        && group.startsWith(":")) {
+                    continue;
+                }
+                if (group != null && !group.isBlank()) {
+                    group = group.trim();
+                    // Not checking actual routes here. It's enough to know that
+                    // array contains more than just "...serverSideRoutes".
+                    return group.contains(",");
+                }
+            }
+        }
+        return false;
     }
 
 }

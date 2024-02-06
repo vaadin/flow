@@ -14,7 +14,7 @@
  * the License.
  */
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
     matchRoutes,
     NavigateFunction,
@@ -150,7 +150,7 @@ function navigateEventHandler(event) {
         event.preventDefault();
     }
     // @ts-ignore
-    let matched = matchRoutes(routes, event.detail.pathname);
+    let matched = matchRoutes(Array.from(routes), event.detail.pathname);
     prevNavigation = lastNavigation;
 
     // if navigation event route targets a flow view do beforeEnter for the
@@ -261,7 +261,7 @@ export default function Flow() {
                 window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
             }
 
-            let matched = matchRoutes(routes, pathname);
+            let matched = matchRoutes(Array.from(routes), pathname);
 
             // if router force navigated using 'Link' we will need to remove
             // flow from the view
@@ -353,3 +353,31 @@ export const serverSideRoutes = [
         }
     });
 })();
+
+
+/**
+ * Load the script for an exported WebComponent with the given tag
+ *
+ * @param tag name of the exported web-component to load
+ */
+export const loadComponentScript = (tag: String) => {
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = `/web-component/${tag}.js`;
+        document.head.appendChild(script);
+
+        return () => {
+            document.head.removeChild(script);
+        }
+    }, []);
+};
+
+/**
+ * Load WebComponent script and create a React element for the WebComponent.
+ *
+ * @param tag custom web-component tag name.
+ */
+export const createWebComponent = (tag: string) => {
+    loadComponentScript(tag);
+    return React.createElement(tag);
+};
