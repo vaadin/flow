@@ -473,9 +473,10 @@ public class NodeUpdaterTest {
     @Test
     public void getDefaultDependencies_reactRouterIsUsed_addsHillaReactComponents() {
         boolean reactRouterEnabled = options.isReactRouterEnabled();
-        try (MockedStatic<EndpointRequestUtil> mock = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
-            mock.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
+        try (MockedStatic<FrontendUtils> mock = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class)))
+                    .thenReturn(true);
             options.withReactRouter(true);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
@@ -506,9 +507,10 @@ public class NodeUpdaterTest {
     @Test
     public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
         boolean reactRouterEnabled = options.isReactRouterEnabled();
-        try (MockedStatic<EndpointRequestUtil> mock = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
-            mock.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
+        try (MockedStatic<FrontendUtils> mock = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class)))
+                    .thenReturn(true);
             options.withReactRouter(false);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
