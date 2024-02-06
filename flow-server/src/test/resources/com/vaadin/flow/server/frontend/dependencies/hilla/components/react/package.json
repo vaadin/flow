@@ -12,5 +12,8 @@
     "@vaadin/hilla-react-auth": "24.4.0-alpha2",
     "@vaadin/hilla-react-crud": "24.4.0-alpha2",
     "@vaadin/hilla-react-form": "24.4.0-alpha2"
+  },
+  "devDependencies": {
+    "react-dev-dependency": "1.0.0"
   }
 }
