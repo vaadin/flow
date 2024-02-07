@@ -37,6 +37,7 @@ public class GenerateNpmBOMMojoTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File jarResourcesSource;
+    private File nodeModulesDir;
 
     private GenerateNpmBOMMojo mojo;
 
@@ -58,6 +59,10 @@ public class GenerateNpmBOMMojoTest {
         jarResourcesSource.mkdirs();
         bomFilename = new File(resourceOutputDirectory, "bom-npm.json")
                 .getAbsolutePath();
+
+        nodeModulesDir = new File(temporaryFolder.getRoot(), "node_modules");
+        boolean nodeModulesDirCreated = nodeModulesDir.mkdir();
+        Assert.assertTrue(nodeModulesDirCreated);
 
         String manifestFilePath = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         // set Mojo properties
@@ -118,7 +123,7 @@ public class GenerateNpmBOMMojoTest {
 
     @Test
     public void shouldRunNpmInstallIfNodeModulesIsNotPresent() throws Exception {
-        File nodeModulesDir = new File(temporaryFolder.getRoot(), "node_modules");
+        Assert.assertTrue(nodeModulesDir.delete());
         Assert.assertFalse(nodeModulesDir.exists());
         mojo.execute();
         Assert.assertTrue(nodeModulesDir.exists());
@@ -126,9 +131,6 @@ public class GenerateNpmBOMMojoTest {
 
     @Test
     public void shouldSkipNpmInstallIfNodeModulesIsPresent() throws Exception {
-        File nodeModulesDir = new File(temporaryFolder.getRoot(), "node_modules");
-        boolean nodeModulesDirCreated = nodeModulesDir.mkdir();
-        Assert.assertTrue(nodeModulesDirCreated);
         List<String> originalContent = TestUtils.listFilesRecursively(nodeModulesDir);
 
         mojo.execute();
