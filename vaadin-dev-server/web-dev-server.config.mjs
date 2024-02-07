@@ -12,7 +12,7 @@ export default {
     }),
     // Enable hot module reload for dev tools components
     hmrPlugin({
-      include: ['frontend/**/*'],
+      include: ['src/main/frontend/**/*'],
       presets: [presets.lit]
     }),
   ],
