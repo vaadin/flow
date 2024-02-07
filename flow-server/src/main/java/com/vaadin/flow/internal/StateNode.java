@@ -450,7 +450,6 @@ public class StateNode implements Serializable {
             stateNode.hasBeenAttached = false;
             stateNode.hasBeenDetached = false;
         });
-        visitNodeTreeBottomUp(sn -> sn.fireAttachListeners(true));
     }
 
     /**
