@@ -484,8 +484,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     String writePackageFile(JsonObject json, File packageFile)
             throws IOException {
         String content = stringify(json, 2) + "\n";
-        if (packageFile.exists() || options.isFrontendHotdeploy()
-                || options.isBundleBuild()) {
+        if (options.isCreateMissingPackageJson()
+                || options.isFrontendHotdeploy() || options.isBundleBuild()) {
             log().debug("writing file {}.", packageFile.getAbsolutePath());
             FileUtils.forceMkdirParent(packageFile);
             FileIOUtils.writeIfChanged(packageFile, content);
