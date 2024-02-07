@@ -18,7 +18,6 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Properties;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -33,12 +32,10 @@ import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
-import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
