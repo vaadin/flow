@@ -171,6 +171,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private JsonObject getFilteredVersionsFromResource(URL versionsResource,
             String versionsOrigin) throws IOException {
         JsonObject versionsJson;
+
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     Json.parse(

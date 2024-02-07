@@ -262,12 +262,12 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public File frontendDirectory() {
-        return new File(projectBasedir, FRONTEND);
+        return new File(projectBasedir, "src/main/" + FRONTEND);
     }
 
     @Override
     public File generatedTsFolder() {
-        return new File(projectBasedir, FRONTEND + "/generated");
+        return new File(frontendDirectory(),  "generated");
     }
 
     @Override
