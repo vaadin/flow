@@ -112,8 +112,8 @@ public class FrontendUtils {
      *
      * By default it is <code>/frontend</code> in the project folder.
      */
-    public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR + "src/main/"
-            + FRONTEND;
+    public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR
+            + "src/main/" + FRONTEND;
 
     /**
      * The name of the vite configuration file.
