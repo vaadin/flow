@@ -74,7 +74,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * A directory with project's frontend source files.
      */
-    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
+    @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
     private File frontendDirectory;
 
     /**
