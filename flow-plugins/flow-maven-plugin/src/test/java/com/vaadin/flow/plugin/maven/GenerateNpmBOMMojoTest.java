@@ -43,7 +43,6 @@ public class GenerateNpmBOMMojoTest {
 
     private Lookup lookup;
 
-
     @Before
     public void setUp() throws Exception {
         this.mojo = Mockito.spy(new GenerateNpmBOMMojo());
@@ -64,7 +63,8 @@ public class GenerateNpmBOMMojoTest {
         boolean nodeModulesDirCreated = nodeModulesDir.mkdir();
         Assert.assertTrue(nodeModulesDirCreated);
 
-        String manifestFilePath = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
+        String manifestFilePath = new File(projectBase, PACKAGE_JSON)
+                .getAbsolutePath();
         // set Mojo properties
         ReflectionUtils.setVariableValueInObject(mojo, "ignoreNpmErrors",
                 false);
@@ -85,14 +85,16 @@ public class GenerateNpmBOMMojoTest {
                 manifestFilePath);
         ReflectionUtils.setVariableValueInObject(mojo, "specVersion", "1.4");
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+                frontendDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
                 FrontendTools.DEFAULT_NODE_VERSION);
-        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
+                projectBase);
         Mockito.when(mojo.getJarFiles()).thenReturn(
                 Set.of(jarResourcesSource.getParentFile().getParentFile()));
 
@@ -102,8 +104,8 @@ public class GenerateNpmBOMMojoTest {
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doAnswer(invocation -> {
-            Mockito.doReturn(invocation.getArguments()[0])
-                    .when(lookup).lookup(ClassFinder.class);
+            Mockito.doReturn(invocation.getArguments()[0]).when(lookup)
+                    .lookup(ClassFinder.class);
             return lookup;
         }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
     }
@@ -122,7 +124,8 @@ public class GenerateNpmBOMMojoTest {
     }
 
     @Test
-    public void shouldRunNpmInstallIfNodeModulesIsNotPresent() throws Exception {
+    public void shouldRunNpmInstallIfNodeModulesIsNotPresent()
+            throws Exception {
         Assert.assertTrue(nodeModulesDir.delete());
         Assert.assertFalse(nodeModulesDir.exists());
         mojo.execute();
@@ -131,12 +134,15 @@ public class GenerateNpmBOMMojoTest {
 
     @Test
     public void shouldSkipNpmInstallIfNodeModulesIsPresent() throws Exception {
-        List<String> originalContent = TestUtils.listFilesRecursively(nodeModulesDir);
+        List<String> originalContent = TestUtils
+                .listFilesRecursively(nodeModulesDir);
 
         mojo.execute();
 
-        List<String> newContent = TestUtils.listFilesRecursively(nodeModulesDir);
-        Assert.assertArrayEquals(originalContent.toArray(), newContent.toArray());
+        List<String> newContent = TestUtils
+                .listFilesRecursively(nodeModulesDir);
+        Assert.assertArrayEquals(originalContent.toArray(),
+                newContent.toArray());
     }
 
 }

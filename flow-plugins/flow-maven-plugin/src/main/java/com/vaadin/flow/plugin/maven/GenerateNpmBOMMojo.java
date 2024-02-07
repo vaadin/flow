@@ -152,11 +152,14 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                 logInfo("No node_modules directory found. Running npm install.");
                 ClassFinder classFinder = getClassFinder();
                 Lookup lookup = createLookup(classFinder);
-                File jarFrontendResourcesFolder = new File(new File(frontendDirectory(), FrontendUtils.GENERATED), FrontendUtils.JAR_RESOURCES_FOLDER);
+                File jarFrontendResourcesFolder = new File(
+                        new File(frontendDirectory(), FrontendUtils.GENERATED),
+                        FrontendUtils.JAR_RESOURCES_FOLDER);
                 Options options = new Options(lookup, npmFolder())
                         .withFrontendDirectory(frontendDirectory())
                         .withBuildDirectory(buildFolder())
-                        .withJarFrontendResourcesFolder(jarFrontendResourcesFolder)
+                        .withJarFrontendResourcesFolder(
+                                jarFrontendResourcesFolder)
                         .createMissingPackageJson(true)
                         .enableImportsUpdate(true).enablePackagesUpdate(true)
                         .withRunNpmInstall(true)
@@ -173,10 +176,11 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
             InvocationResult result = invoker.execute(request);
             if (result.getExitCode() != 0) {
                 throw new MojoFailureException(
-                        "Frontend SBOM generation failed.", result.getExecutionException());
+                        "Frontend SBOM generation failed.",
+                        result.getExecutionException());
             }
-        } catch (MavenInvocationException | ExecutionFailedException |
-                 URISyntaxException e) {
+        } catch (MavenInvocationException | ExecutionFailedException
+                | URISyntaxException e) {
             throw new MojoExecutionException(
                     "Error during Frontend SBOM generation", e);
         }
