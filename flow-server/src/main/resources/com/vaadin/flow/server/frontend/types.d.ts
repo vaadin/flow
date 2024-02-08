@@ -4,7 +4,7 @@
 // It is recommended to commit this file to the VCS.
 // You might want to change the configurations to fit your preferences
 declare module '*.css?inline' {
-  import { CSSResultGroup } from 'lit';
+  import type { CSSResultGroup } from 'lit';
   const content: CSSResultGroup;
   export default content;
 }
