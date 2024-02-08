@@ -1009,10 +1009,10 @@ public class Binder<BEAN> implements Serializable {
             if (field instanceof HasValidator hasValidator) {
                 withValidator((val,
                         ctx) -> binding != null
-                                && binding.isDefaultValidatorEnabled()
-                                        ? hasValidator.getDefaultValidator()
-                                                .apply(val, ctx)
-                                        : ValidationResult.ok());
+                                && !binding.isDefaultValidatorEnabled()
+                                        ? ValidationResult.ok()
+                                        : hasValidator.getDefaultValidator()
+                                                .apply(val, ctx));
             }
         }
 
