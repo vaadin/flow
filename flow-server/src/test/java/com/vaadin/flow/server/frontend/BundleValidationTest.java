@@ -108,7 +108,8 @@ public class BundleValidationTest {
         options.withProductionMode(mode.isProduction());
         bundleLocation = mode.isProduction() ? Constants.PROD_BUNDLE_NAME
                 : Constants.DEV_BUNDLE_NAME;
-        finder = Mockito.mock(ClassFinder.class);
+        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+                this.getClass().getClassLoader()));
         frontendUtils = Mockito.mockStatic(FrontendUtils.class,
                 Mockito.CALLS_REAL_METHODS);
         devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,
