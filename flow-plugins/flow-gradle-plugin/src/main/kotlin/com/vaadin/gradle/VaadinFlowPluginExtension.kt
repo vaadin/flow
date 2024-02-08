@@ -397,7 +397,7 @@ internal class PluginEffectiveConfiguration(
             }
         })
 
-    val frontendHotdeploy: Property<Boolean> = extension.frontendHotdeploy
+    val frontendHotdeploy: Provider<Boolean> = extension.frontendHotdeploy
         .convention(FrontendUtils.isHillaUsed(frontendDirectory.get()))
         .overrideWithSystemProperty(InitParameters.FRONTEND_HOTDEPLOY)
 
