@@ -398,7 +398,8 @@ internal class PluginEffectiveConfiguration(
         })
 
     val frontendHotdeploy: Property<Boolean> = extension.frontendHotdeploy
-        .convention(false)
+        .convention(FrontendUtils.isHillaUsed(frontendDirectory.get()))
+        .overrideWithSystemProperty(InitParameters.FRONTEND_HOTDEPLOY)
 
     val ciBuild: Provider<Boolean> = extension.ciBuild
         .convention(false)
