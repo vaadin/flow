@@ -70,8 +70,8 @@ public class NodeUpdaterTest {
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        finder = new ClassFinder.DefaultClassFinder(
-                this.getClass().getClassLoader());
+        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+                this.getClass().getClassLoader()));
         options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withBuildDirectory(TARGET).withFeatureFlags(featureFlags);
 
