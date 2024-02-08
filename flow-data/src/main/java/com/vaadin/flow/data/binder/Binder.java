@@ -57,6 +57,7 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
@@ -265,7 +266,7 @@ public class Binder<BEAN> implements Serializable {
          * @param defaultValidatorEnabled
          *            {@literal true} to enable default validator for this
          *            binding, {@literal false} to disable it, {@literal null}
-         *            to reset (fallback to Binder-level setting)
+         *            to reset (fall back to Binder-level setting)
          * @see Binder#setDefaultValidatorsEnabled(boolean) for faster way to
          *      toggle default validators for all bound fields.
          */
@@ -276,7 +277,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return {@literal true} if default validator is enabled for this
          *         binding, {@literal false} if it is disabled, {@literal null}
-         *         to fallback to Binder-level setting
+         *         if falls back to Binder-level setting
          */
         Boolean isDefaultValidatorEnabled();
 
@@ -1007,12 +1008,14 @@ public class Binder<BEAN> implements Serializable {
             this.statusHandler = statusHandler;
 
             if (field instanceof HasValidator hasValidator) {
-                withValidator((val,
-                        ctx) -> binding != null
-                                && !binding.isDefaultValidatorEnabled()
-                                        ? ValidationResult.ok()
-                                        : hasValidator.getDefaultValidator()
-                                                .apply(val, ctx));
+                SerializableSupplier<Boolean> shouldValidate = () -> binding != null
+                        && Optional
+                                .ofNullable(binding.isDefaultValidatorEnabled())
+                                .orElse(getBinder()
+                                        .isDefaultValidatorsEnabled());
+                withValidator((val, ctx) -> shouldValidate.get()
+                        ? hasValidator.getDefaultValidator().apply(val, ctx)
+                        : ValidationResult.ok());
             }
         }
 
@@ -1645,8 +1648,7 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public Boolean isDefaultValidatorEnabled() {
-            return Optional.ofNullable(defaultValidatorEnabled)
-                    .orElse(getBinder().isDefaultValidatorsEnabled());
+            return defaultValidatorEnabled;
         }
 
         @Override
