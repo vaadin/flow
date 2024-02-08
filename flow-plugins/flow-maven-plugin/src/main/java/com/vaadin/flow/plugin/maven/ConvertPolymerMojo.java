@@ -20,6 +20,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.flow.plugin.base.ConvertPolymerCommand;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * A Maven goal that converts Polymer-based source files to Lit.
@@ -51,6 +52,13 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoFailureException {
+        if (FrontendUtils.isHillaUsed(frontendDirectory())) {
+            getLog().warn(
+                    """
+                            The 'convert-polymer' goal is not meant to be used in Hilla projects as polymer templates are not supported.
+                            """
+                            .stripIndent());
+        }
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(this,
                 path, useLit1, disableOptionalChaining)) {
             command.execute();

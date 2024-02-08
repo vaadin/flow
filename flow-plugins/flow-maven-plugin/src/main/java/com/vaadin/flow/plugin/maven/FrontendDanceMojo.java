@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * This is the hidden `vaadin:dance` to clean up the frontend files.
@@ -25,4 +28,16 @@ import org.apache.maven.plugins.annotations.Mojo;
  */
 @Mojo(name = "dance", defaultPhase = LifecyclePhase.PRE_CLEAN)
 public class FrontendDanceMojo extends CleanFrontendMojo {
+
+    @Override
+    public void execute() throws MojoFailureException {
+        if (FrontendUtils.isHillaUsed(frontendDirectory())) {
+            getLog().warn(
+                    """
+                            The 'dance' goal is not meant to be used in Hilla projects as it delete 'package-lock.json' and also clearing out the content of 'package.json'.
+                            """
+                            .stripIndent());
+        }
+        runCleaning(new Options());
+    }
 }
