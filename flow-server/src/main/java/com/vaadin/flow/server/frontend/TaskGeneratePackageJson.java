@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+
 import elemental.json.JsonObject;
 
 /**
@@ -39,8 +41,8 @@ public class TaskGeneratePackageJson extends NodeUpdater {
      * @param buildDir
      *            the used build directory
      */
-    TaskGeneratePackageJson(Options options) {
-        super(null, null, options);
+    TaskGeneratePackageJson(Options options, ClassFinder classFinder) {
+        super(classFinder, null, options);
     }
 
     @Override

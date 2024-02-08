@@ -88,9 +88,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         options = new Options(Mockito.mock(Lookup.class), baseDir)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
         // .withJarFrontendResourcesFolder(jarResourceFolder);
-        packageCreator = new TaskGeneratePackageJson(options);
-
         classFinder = Mockito.spy(getClassFinder());
+        packageCreator = new TaskGeneratePackageJson(options, classFinder);
         versions = temporaryFolder.newFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
         Mockito.when(

@@ -82,6 +82,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
+    private static final String FRONTEND_RESOURCES_PATH = NodeUpdater.class
+            .getPackage().getName().replace('.', '/') + "/";
     @Deprecated
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     @Deprecated
@@ -295,23 +297,24 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     Map<String, String> getDefaultDependencies() {
         Map<String, String> dependencies = readDependencies("default",
-                "dependencies");
+                "dependencies", finder);
         if (options.isReactRouterEnabled()) {
-            dependencies
-                    .putAll(readDependencies("react-router", "dependencies"));
+            dependencies.putAll(
+                    readDependencies("react-router", "dependencies", finder));
         } else {
-            dependencies
-                    .putAll(readDependencies("vaadin-router", "dependencies"));
+            dependencies.putAll(
+                    readDependencies("vaadin-router", "dependencies", finder));
         }
-        putHillaComponentsDependencies(options, dependencies, "dependencies");
+        putHillaComponentsDependencies(options, dependencies, "dependencies",
+                finder);
         return dependencies;
     }
 
     static Map<String, String> readDependencies(String id,
-            String packageJsonKey) {
+            String packageJsonKey, ClassFinder classFinder) {
         try {
             Map<String, String> map = new HashMap<>();
-            JsonObject dependencies = readPackageJson(id)
+            JsonObject dependencies = readPackageJson(id, classFinder)
                     .getObject(packageJsonKey);
             if (dependencies == null) {
                 LoggerFactory.getLogger(NodeUpdater.class)
@@ -333,26 +336,24 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     }
 
-    static JsonObject readPackageJson(String id) throws IOException {
-        try (InputStream packageJson = NodeUpdater.class
-                .getResourceAsStream("dependencies/" + id + "/package.json")) {
-            if (packageJson == null) {
-                LoggerFactory.getLogger(NodeUpdater.class)
-                        .error("Unable to find package.json from '" + id + "'");
-                return Json.createObject();
-            }
-            JsonObject content = Json.parse(
-                    IOUtils.toString(packageJson, StandardCharsets.UTF_8));
-            return content;
+    static JsonObject readPackageJson(String id, ClassFinder classFinder)
+            throws IOException {
+        URL resource = classFinder.getResource(FRONTEND_RESOURCES_PATH
+                + "dependencies/" + id + "/package.json");
+        if (resource == null) {
+            LoggerFactory.getLogger(NodeUpdater.class)
+                    .error("Unable to find package.json from '" + id + "'");
+            return Json.createObject();
         }
-
+        return Json.parse(IOUtils.toString(resource, StandardCharsets.UTF_8));
     }
 
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
-        defaults.putAll(readDependencies("default", "devDependencies"));
-        defaults.putAll(readDependencies("vite", "devDependencies"));
-        putHillaComponentsDependencies(options, defaults, "devDependencies");
+        defaults.putAll(readDependencies("default", "devDependencies", finder));
+        defaults.putAll(readDependencies("vite", "devDependencies", finder));
+        putHillaComponentsDependencies(options, defaults, "devDependencies",
+                finder);
 
         return defaults;
     }
@@ -598,14 +599,15 @@ public abstract class NodeUpdater implements FallibleCommand {
      *      "https://github.com/vaadin/hilla/tree/main/packages/java/hilla/src/main/resources/com/vaadin/flow/server/frontend/dependencies/hilla/components</a>
      */
     private static void putHillaComponentsDependencies(Options options,
-            Map<String, String> dependencies, String packageJsonKey) {
+            Map<String, String> dependencies, String packageJsonKey,
+            ClassFinder classFinder) {
         if (FrontendUtils.isHillaUsed(options.getFrontendDirectory())) {
             if (options.isReactRouterEnabled()) {
                 dependencies.putAll(readDependencies("hilla/components/react",
-                        packageJsonKey));
+                        packageJsonKey, classFinder));
             } else {
                 dependencies.putAll(readDependencies("hilla/components/lit",
-                        packageJsonKey));
+                        packageJsonKey, classFinder));
             }
         }
     }

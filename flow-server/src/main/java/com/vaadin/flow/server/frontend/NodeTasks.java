@@ -218,7 +218,7 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isCreateMissingPackageJson()) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
-                    options);
+                    options, classFinder);
             commands.add(packageCreator);
         }
 
