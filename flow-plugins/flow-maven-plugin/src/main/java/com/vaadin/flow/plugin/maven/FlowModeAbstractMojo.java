@@ -256,6 +256,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Checks if Hilla is available based on the Maven project's classpath.
      *
+     * @param mavenProject
+     *            Target Maven project
      * @return true if Hilla is available, false otherwise
      */
     public static boolean isHillaAvailable(MavenProject mavenProject) {
@@ -270,6 +272,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Checks if Hilla is available and Hilla views are used in the Maven
      * project based on what is in routes.ts or routes.tsx file.
      *
+     * @param mavenProject
+     *            Target Maven project
+     * @param frontendDirectory
+     *            Target frontend directory.
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
      */
