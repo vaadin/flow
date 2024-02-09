@@ -198,5 +198,5 @@ internal class GradlePluginAdapter(
 
     override fun isPrepareFrontendCacheDisabled(): Boolean = config.alwaysExecutePrepareFrontend.get()
 
-    fun isReactEnabled(): Boolean = config.reactEnabled.get()
+    override fun isReactEnabled(): Boolean = config.reactEnabled.get()
 }
