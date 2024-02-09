@@ -162,7 +162,9 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        Options options = new Options(Mockito.mock(Lookup.class), baseDir)
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(classFinder);
+        Options options = new Options(lookup, baseDir)
                 .withEnablePnpm(enablePnpm).withBuildDirectory(TARGET)
                 .withProductionMode(true);
 

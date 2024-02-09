@@ -89,8 +89,10 @@ public class TaskRunNpmInstallTest {
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
         finder = Mockito.mock(ClassFinder.class);
-        options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET).withBundleBuild(true);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
+        options = new Options(lookup, npmFolder).withBuildDirectory(TARGET)
+                .withBundleBuild(true);
         nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
                 options) {
 
