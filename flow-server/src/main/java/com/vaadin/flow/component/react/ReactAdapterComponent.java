@@ -18,8 +18,10 @@ package com.vaadin.flow.component.react;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
+import elemental.json.Json;
 import elemental.json.JsonValue;
 
 import java.util.function.Consumer;
@@ -94,8 +96,7 @@ public abstract class ReactAdapterComponent extends Component {
      *            type of the state value
      */
     protected <T> T getState(String stateName, Class<T> typeClass) {
-        return readFromJson((JsonValue) getElement().getPropertyRaw(stateName),
-                typeClass);
+        return readFromJson(getPropertyJson(stateName), typeClass);
     }
 
     /**
@@ -110,20 +111,7 @@ public abstract class ReactAdapterComponent extends Component {
      *            type of the state value
      */
     protected <T> T getState(String stateName, TypeReference<T> typeReference) {
-        return readFromJson((JsonValue) getElement().getPropertyRaw(stateName),
-                typeReference);
-    }
-
-    private <T> DomListenerRegistration addJsonReaderStateChangeListener(
-            String stateName, Function<JsonValue, T> jsonReader,
-            Consumer<T> listener) {
-        return getElement().addPropertyChangeListener(stateName,
-                stateName + "-changed", (event -> {
-                    JsonValue newStateJson = JsonCodec
-                            .encodeWithoutTypeInfo(event.getValue());
-                    T newState = jsonReader.apply(newStateJson);
-                    listener.accept(newState);
-                }));
+        return readFromJson(getPropertyJson(stateName), typeReference);
     }
 
     /**
@@ -168,4 +156,34 @@ public abstract class ReactAdapterComponent extends Component {
     protected static JsonValue writeAsJson(Object object) {
         return JsonUtils.writeValue(object);
     }
+
+    private JsonValue getPropertyJson(String propertyName) {
+        var rawValue = getElement().getPropertyRaw(propertyName);
+        if (rawValue == null) {
+            return Json.createNull();
+        } else if (rawValue instanceof JsonValue jsonValue) {
+            return jsonValue;
+        } else if (rawValue instanceof String stringValue) {
+            return Json.create(stringValue);
+        } else if (rawValue instanceof Double doubleValue) {
+            return Json.create(doubleValue);
+        } else if (rawValue instanceof Boolean booleanValue) {
+            return Json.create(booleanValue);
+        } else {
+            return Json.create(rawValue.toString());
+        }
+    }
+
+    private <T> DomListenerRegistration addJsonReaderStateChangeListener(
+            String stateName, Function<JsonValue, T> jsonReader,
+            Consumer<T> listener) {
+        return getElement().addPropertyChangeListener(stateName,
+                stateName + "-changed", (event -> {
+                    JsonValue newStateJson = JsonCodec
+                            .encodeWithoutTypeInfo(event.getValue());
+                    T newState = jsonReader.apply(newStateJson);
+                    listener.accept(newState);
+                }));
+    }
+
 }
