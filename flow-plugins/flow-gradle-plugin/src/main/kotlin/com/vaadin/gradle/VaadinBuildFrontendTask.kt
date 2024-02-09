@@ -73,7 +73,8 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
         val cleanTask = TaskCleanFrontendFiles(config.npmFolder.get(),
-            config.frontendDirectory.get())
+            config.frontendDirectory.get(), adapter.classFinder
+        )
         BuildFrontendUtil.runNodeUpdater(adapter)
 
         if (adapter.generateBundle() && BundleValidationUtil.needsBundleBuild
