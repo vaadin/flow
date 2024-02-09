@@ -20,7 +20,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -111,7 +110,7 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
             // vaadin-router.
             return super.shouldPushHistoryState(event)
                     || (event.getUI().getInternals().getSession()
-                            .getConfiguration().isReactRouterEnabled()
+                            .getConfiguration().isReactEnabled()
                             && NavigationTrigger.CLIENT_SIDE
                                     .equals(event.getTrigger()));
         }

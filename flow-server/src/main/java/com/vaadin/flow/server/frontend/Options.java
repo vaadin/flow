@@ -121,7 +121,7 @@ public class Options implements Serializable {
 
     private boolean frontendHotdeploy = false;
 
-    private boolean reactRouterEnabled = true;
+    private boolean reactEnabled = true;
 
     /**
      * Creates a new instance.
@@ -862,12 +862,12 @@ public class Options implements Serializable {
         return compressBundle;
     }
 
-    public boolean isReactRouterEnabled() {
-        return reactRouterEnabled;
+    public boolean isReactEnabled() {
+        return reactEnabled;
     }
 
-    public Options withReactRouter(boolean reactRouterEnabled) {
-        this.reactRouterEnabled = reactRouterEnabled;
+    public Options withReact(boolean reactEnabled) {
+        this.reactEnabled = reactEnabled;
         return this;
     }
 }

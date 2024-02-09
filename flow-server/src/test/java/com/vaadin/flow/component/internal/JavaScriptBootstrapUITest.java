@@ -415,7 +415,7 @@ public class JavaScriptBootstrapUITest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(internals.getSession()).thenReturn(session);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(configuration.isReactRouterEnabled()).thenReturn(false);
+        Mockito.when(configuration.isReactEnabled()).thenReturn(false);
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");

@@ -585,7 +585,7 @@ public class NavigationStateRendererTest {
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         // When using react router we have the sever do the update in all cases
         // to control the correct timing for url updates
-        configuration.setReactRouterEnabled(false);
+        configuration.setReactEnabled(false);
         session.setConfiguration(configuration);
 
         // given a NavigationStateRenderer mapping to RegularView

@@ -227,7 +227,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
 
-    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "${null}")
+    @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactRouterEnabled;
 
     /**
@@ -464,7 +464,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isReactRouterEnabled() {
+    public boolean isReactEnabled() {
         if (reactRouterEnabled != null) {
             return reactRouterEnabled;
         }
