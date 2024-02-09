@@ -14,7 +14,7 @@
  * the License.
  */
 import {createRoot, Root} from "react-dom/client";
-import {createElement, Dispatch, ReactNode, useReducer} from "react";
+import {createElement, type Dispatch, type ReactElement, useReducer} from "react";
 
 type FlowStateKeyChangedAction<K extends string, V> = Readonly<{
     type: 'stateKeyChanged',
@@ -27,17 +27,19 @@ type FlowStateReducerAction = FlowStateKeyChangedAction<string, unknown>;
 function stateReducer<S extends Readonly<Record<string, unknown>>>(state: S, action: FlowStateReducerAction): S {
     switch (action.type) {
         case "stateKeyChanged":
-            const {key, value} = action satisfies FlowStateKeyChangedAction<string, unknown>;
+            const {key, value} = action;
             return {
                 ...state,
                 key: value
             } as S;
+        default:
+            return state;
     }
 }
 
 type DispatchEvent<T> = T extends undefined
     ? () => boolean
-    : { dispatch(value: T): boolean }["dispatch"];
+    : (value: T) => boolean;
 
 const emptyAction: Dispatch<unknown> = () => {};
 
@@ -62,7 +64,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
 
     readonly #renderHooks: RenderHooks;
 
-    readonly #Wrapper: () => ReactNode;
+    readonly #Wrapper: () => ReactElement | null;
 
     #unmountComplete = Promise.resolve();
 
@@ -105,30 +107,31 @@ export abstract class ReactAdapterElement extends HTMLElement {
      * @protected
      */
     protected useState<T>(key: string, initialValue?: T): [value: T, setValue: Dispatch<T>] {
-        if (!this.#stateSetters.has(key)) {
-            const value = ((this as Record<string, unknown>)[key] as T) ?? initialValue!;
-            this.#state[key] = value;
-            Object.defineProperty(this, key, {
-                enumerable: true,
-                get(): T {
-                    return this.#state[key];
-                },
-                set(nextValue: T) {
-                    this.#state[key] = nextValue;
-                    this.#dispatchFlowState({type: 'stateKeyChanged', key, value});
-                }
-            });
-
-            const dispatchChangedEvent = this.useCustomEvent<{value: T}>(`${key}-changed`, {detail: {value}});
-            const setValue = (value: T) => {
-                this.#state[key] = value;
-                dispatchChangedEvent({value});
-                this.#dispatchFlowState({type: 'stateKeyChanged', key, value});
-            };
-            this.#stateSetters.set(key, setValue as Dispatch<unknown>);
-            return [value, setValue];
+        if (this.#stateSetters.has(key)) {
+            return [this.#state[key] as T, this.#stateSetters.get(key)!];
         }
-        return [this.#state[key] as T, this.#stateSetters.get(key)!];
+
+        const value = ((this as Record<string, unknown>)[key] as T) ?? initialValue!;
+        this.#state[key] = value;
+        Object.defineProperty(this, key, {
+            enumerable: true,
+            get(): T {
+                return this.#state[key];
+            },
+            set(nextValue: T) {
+                this.#state[key] = nextValue;
+                this.#dispatchFlowState({type: 'stateKeyChanged', key, value});
+            }
+        });
+
+        const dispatchChangedEvent = this.useCustomEvent<{value: T}>(`${key}-changed`, {detail: {value}});
+        const setValue = (value: T) => {
+            this.#state[key] = value;
+            dispatchChangedEvent({value});
+            this.#dispatchFlowState({type: 'stateKeyChanged', key, value});
+        };
+        this.#stateSetters.set(key, setValue as Dispatch<unknown>);
+        return [value, setValue];
     }
 
     /**
@@ -155,7 +158,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
                 const event = new CustomEvent(type, eventInitDict);
                 return this.dispatchEvent(event);
             }) as DispatchEvent<T>;
-            this.#customEvents.set(type, dispatch);
+            this.#customEvents.set(type, dispatch as DispatchEvent<unknown>);
             return dispatch;
         }
         return this.#customEvents.get(type)! as DispatchEvent<T>;
@@ -167,7 +170,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
      * @param hooks - the Web Component APIs exposed for React render.
      * @protected
      */
-    protected abstract render(hooks: RenderHooks): ReactNode;
+    protected abstract render(hooks: RenderHooks): ReactElement | null;
 
     #maybeRenderRoot() {
         if (this.#rootRendered || !this.#root) {
@@ -178,7 +181,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
         this.#rootRendered = true;
     }
 
-    #renderWrapper(): ReactNode {
+    #renderWrapper(): R
         const [state, dispatchFlowState] = useReducer(stateReducer, this.#state);
         this.#state = state;
         this.#dispatchFlowState = dispatchFlowState;
