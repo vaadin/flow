@@ -108,7 +108,10 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
       }
     };
 
-    poller();
+    // Initial poll is not called immediately to give time for
+    // setting the attributes when client is already initialized.
+    // Mainly an issue in dynamic creation for React.
+    setTimeout(poller, 10);
   }
   _getClient() {
     if (_TagCamel_._getClientStrategy){
