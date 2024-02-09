@@ -13,11 +13,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class TaskCleanFrontendFilesTest {
     @Rule
@@ -25,6 +27,8 @@ public class TaskCleanFrontendFilesTest {
 
     private File projectRoot;
     private File frontendDirectory;
+    @Mock
+    private ClassFinder classFinder;
 
     @Before
     public void init() {
@@ -36,7 +40,7 @@ public class TaskCleanFrontendFilesTest {
     public void createdFileAreRemoved()
             throws IOException, ExecutionFailedException {
         TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
-                frontendDirectory);
+                frontendDirectory, classFinder);
 
         final Set<String> generatedFiles = Stream
                 .of(FrontendUtils.VITE_CONFIG,
@@ -62,7 +66,7 @@ public class TaskCleanFrontendFilesTest {
         createFiles(existingfiles);
 
         TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
-                frontendDirectory);
+                frontendDirectory, classFinder);
 
         final Set<String> generatedFiles = Stream
                 .of(FrontendUtils.VITE_GENERATED_CONFIG,
@@ -81,7 +85,7 @@ public class TaskCleanFrontendFilesTest {
     public void nodeModulesFolderIsCleared()
             throws IOException, ExecutionFailedException {
         TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
-                frontendDirectory);
+                frontendDirectory, classFinder);
 
         final File nodeModules = rootFolder.newFolder("node_modules");
         new File(nodeModules, "file").createNewFile();
@@ -99,7 +103,7 @@ public class TaskCleanFrontendFilesTest {
             throws IOException, ExecutionFailedException {
         createFiles(Collections.singleton(Constants.PACKAGE_JSON));
         TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(projectRoot,
-                frontendDirectory);
+                frontendDirectory, classFinder);
 
         final File nodeModules = rootFolder.newFolder("node_modules");
         new File(nodeModules, "file").createNewFile();
@@ -120,7 +124,8 @@ public class TaskCleanFrontendFilesTest {
                 .mockStatic(FrontendUtils.class)) {
             util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
                     .thenReturn(true);
-            clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory);
+            clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory,
+                    classFinder);
         }
 
         final File nodeModules = rootFolder.newFolder("node_modules");

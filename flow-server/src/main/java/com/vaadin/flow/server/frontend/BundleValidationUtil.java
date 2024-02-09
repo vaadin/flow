@@ -71,7 +71,7 @@ public final class BundleValidationUtil {
             boolean needsBuild;
             if (mode.isProduction()) {
                 if (options.isForceProductionBuild() || FrontendUtils
-                        .isHillaUsed(options.getFrontendDirectory())) {
+                        .isHillaUsed(options.getFrontendDirectory(), finder)) {
                     if (options.isForceProductionBuild()) {
                         UsageStatistics.markAsUsed("flow/prod-build-requested",
                                 null);
