@@ -123,15 +123,7 @@ public class CleanFrontendMojoTest {
     @Test
     public void should_notRemoveNodeModulesFolder_hilla()
             throws MojoFailureException, IOException {
-        // Add fake com.vaadin.hilla.EndpointController class to make project
-        // detected as Hilla project with endpoints.
-        Files.createDirectories(Paths.get(projectBase.toString(), "target")
-                .resolve("test-classes/com/vaadin/hilla"));
-        Files.createFile(Paths.get(projectBase.toString(), "target").resolve(
-                "test-classes/com/vaadin/hilla/EndpointController.class"));
-        Files.createDirectories(Paths.get(projectBase.toString(), "frontend"));
-        Files.createFile(Paths.get(projectBase.toString(), "frontend")
-                .resolve("index.ts"));
+        enableHilla();
         final File nodeModules = new File(projectBase, NODE_MODULES);
         Assert.assertTrue("Failed to create 'node_modules'",
                 nodeModules.mkdirs());
@@ -216,6 +208,18 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
+    public void should_notRemoveNpmPackageLockFile_hilla()
+            throws MojoFailureException, IOException {
+        enableHilla();
+        final File packageLock = new File(projectBase, "package-lock.json");
+        FileUtils.fileWrite(packageLock, "{ \"fake\": \"lock\"}");
+
+        mojo.execute();
+        Assert.assertTrue("package-lock.json should not be removed",
+                packageLock.exists());
+    }
+
+    @Test
     public void should_removePnpmFile()
             throws MojoFailureException, IOException {
         final File pnpmFile = new File(projectBase, ".pnpmfile.cjs");
@@ -288,6 +292,18 @@ public class CleanFrontendMojoTest {
 
         assertNotContainsPackage(packageJsonObject.getObject("devDependencies"),
                 "vite");
+    }
+
+    private void enableHilla() throws IOException {
+        // Add fake com.vaadin.hilla.EndpointController class to make project
+        // detected as Hilla project with endpoints.
+        Files.createDirectories(Paths.get(projectBase.toString(), "target")
+                .resolve("test-classes/com/vaadin/hilla"));
+        Files.createFile(Paths.get(projectBase.toString(), "target").resolve(
+                "test-classes/com/vaadin/hilla/EndpointController.class"));
+        Files.createDirectories(Paths.get(projectBase.toString(), "frontend"));
+        Files.createFile(Paths.get(projectBase.toString(), "frontend")
+                .resolve("index.ts"));
     }
 
     static void assertNotContainsPackage(JsonObject dependencies,
