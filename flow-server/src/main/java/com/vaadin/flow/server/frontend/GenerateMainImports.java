@@ -45,10 +45,9 @@ public class GenerateMainImports extends AbstractUpdateImports {
     private JsonObject statsJson;
     private Map<File, List<String>> output;
 
-    public GenerateMainImports(ClassFinder classFinder,
-            FrontendDependenciesScanner frontendDepScanner, Options options,
-            JsonObject statsJson) {
-        super(options, frontendDepScanner, classFinder);
+    public GenerateMainImports(FrontendDependenciesScanner frontendDepScanner,
+            Options options, JsonObject statsJson) {
+        super(options, frontendDepScanner);
         this.statsJson = statsJson;
     }
 

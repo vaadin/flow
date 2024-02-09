@@ -75,8 +75,8 @@ public class NodeUpdaterTest {
         options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withBuildDirectory(TARGET).withFeatureFlags(featureFlags);
 
-        nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), options) {
+        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
+                options) {
 
             @Override
             public void execute() {
@@ -558,13 +558,13 @@ public class NodeUpdaterTest {
     @Test
     public void readPackageJson_nonExistingFile_doesNotThrow()
             throws IOException {
-        NodeUpdater.readPackageJson("non-existing-folder", finder);
+        nodeUpdater.readPackageJson("non-existing-folder");
     }
 
     @Test
     public void readDependencies_doesntHaveDependencies_doesNotThrow() {
-        NodeUpdater.readDependencies("no-deps", "dependencies", finder);
-        NodeUpdater.readDependencies("no-deps", "devDependencies", finder);
+        nodeUpdater.readDependencies("no-deps", "dependencies");
+        nodeUpdater.readDependencies("no-deps", "devDependencies");
     }
 
     private String getPolymerVersion(JsonObject object) {

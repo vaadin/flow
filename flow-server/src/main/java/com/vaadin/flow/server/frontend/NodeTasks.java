@@ -106,8 +106,7 @@ public class NodeTasks implements FallibleCommand {
         lockFile = new File(options.getNpmFolder(), ".flow-node-tasks.lock")
                 .toPath();
 
-        ClassFinder classFinder = new ClassFinder.CachedClassFinder(
-                options.getClassFinder());
+        ClassFinder classFinder = options.getClassFinder();
         FrontendDependenciesScanner frontendDependencies = null;
 
         Set<String> webComponentTags = new HashSet<>();
@@ -127,7 +126,7 @@ public class NodeTasks implements FallibleCommand {
 
             if (options.isProductionMode()) {
                 boolean needBuild = BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, classFinder,
+                        frontendDependencies,
                         Mode.PRODUCTION_PRECOMPILED_BUNDLE);
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
@@ -152,8 +151,7 @@ public class NodeTasks implements FallibleCommand {
                 // immediately
                 // and no update tasks are executed before it.
                 if (BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, classFinder,
-                        Mode.DEVELOPMENT_BUNDLE)) {
+                        frontendDependencies, Mode.DEVELOPMENT_BUNDLE)) {
                     commands.add(new TaskCleanFrontendFiles(
                             options.getNpmFolder(),
                             options.getFrontendDirectory(), classFinder));
@@ -218,7 +216,7 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isCreateMissingPackageJson()) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
-                    options, classFinder);
+                    options);
             commands.add(packageCreator);
         }
 
@@ -267,8 +265,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (options.isEnableImportsUpdate()) {
-            commands.add(new TaskUpdateImports(classFinder,
-                    frontendDependencies, options));
+            commands.add(new TaskUpdateImports(frontendDependencies, options));
 
             commands.add(new TaskUpdateThemeImport(
                     frontendDependencies.getThemeDefinition(), options));

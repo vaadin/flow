@@ -32,6 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.TestUtils;
 
 import elemental.json.JsonObject;
@@ -82,11 +83,13 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_createPackageJson() throws IOException {
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class))
+                .thenReturn(getClassFinder());
+        Options options = new Options(lookup, npmFolder)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
 
-        TaskGeneratePackageJson task = new TaskGeneratePackageJson(options,
-                getClassFinder());
+        TaskGeneratePackageJson task = new TaskGeneratePackageJson(options);
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());

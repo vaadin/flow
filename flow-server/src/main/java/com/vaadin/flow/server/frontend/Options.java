@@ -131,7 +131,8 @@ public class Options implements Serializable {
      */
     public Options(Lookup lookup, File npmFolder) {
         this.lookup = lookup;
-        this.classFinder = lookup.lookup(ClassFinder.class);
+        this.classFinder = new ClassFinder.CachedClassFinder(
+                lookup.lookup(ClassFinder.class));
         this.npmFolder = npmFolder;
     }
 

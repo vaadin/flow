@@ -26,7 +26,6 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.Mode;
@@ -57,21 +56,19 @@ public final class BundleValidationUtil {
      *            Flow plugin options
      * @param frontendDependencies
      *            frontend dependencies scanner to lookup for frontend imports
-     * @param finder
-     *            class finder to obtain classes and resources from class-path
      * @param mode
      *            Vaadin application mode
      * @return true if a new frontend bundle is needed, false otherwise
      */
     public static boolean needsBuild(Options options,
-            FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder, Mode mode) {
+            FrontendDependenciesScanner frontendDependencies, Mode mode) {
         getLogger().info("Checking if a {} mode bundle build is needed", mode);
         try {
             boolean needsBuild;
             if (mode.isProduction()) {
                 if (options.isForceProductionBuild() || FrontendUtils
-                        .isHillaUsed(options.getFrontendDirectory(), finder)) {
+                        .isHillaUsed(options.getFrontendDirectory(),
+                                options.getClassFinder())) {
                     if (options.isForceProductionBuild()) {
                         UsageStatistics.markAsUsed("flow/prod-build-requested",
                                 null);
@@ -81,12 +78,11 @@ public final class BundleValidationUtil {
                     return true;
                 } else {
                     needsBuild = needsBuildProdBundle(options,
-                            frontendDependencies, finder);
+                            frontendDependencies);
                     saveResultInFile(needsBuild, options);
                 }
             } else if (Mode.DEVELOPMENT_BUNDLE == mode) {
-                needsBuild = needsBuildDevBundle(options, frontendDependencies,
-                        finder);
+                needsBuild = needsBuildDevBundle(options, frontendDependencies);
             } else if (Mode.DEVELOPMENT_FRONTEND_LIVERELOAD == mode) {
                 return false;
             } else {
@@ -108,15 +104,16 @@ public final class BundleValidationUtil {
     }
 
     private static boolean needsBuildDevBundle(Options options,
-            FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder) throws IOException {
+            FrontendDependenciesScanner frontendDependencies)
+            throws IOException {
         File npmFolder = options.getNpmFolder();
         File compressedDevBundle = new File(npmFolder,
                 Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
         if (!DevBundleUtils
                 .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
                 .exists() && !compressedDevBundle.exists()
-                && !hasJarBundle(DEV_BUNDLE_JAR_PATH, finder)) {
+                && !hasJarBundle(DEV_BUNDLE_JAR_PATH,
+                        options.getClassFinder())) {
             getLogger().info("No dev-bundle found.");
             return true;
         }
@@ -148,17 +145,18 @@ public final class BundleValidationUtil {
             return true;
         }
 
-        return needsBuildInternal(options, frontendDependencies, finder,
+        return needsBuildInternal(options, frontendDependencies,
                 statsJsonContent);
     }
 
     private static boolean needsBuildProdBundle(Options options,
-            FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder) throws IOException {
-        String statsJsonContent = ProdBundleUtils
-                .findBundleStatsJson(options.getNpmFolder(), finder);
+            FrontendDependenciesScanner frontendDependencies)
+            throws IOException {
+        String statsJsonContent = ProdBundleUtils.findBundleStatsJson(
+                options.getNpmFolder(), options.getClassFinder());
 
-        if (!finder.getAnnotatedClasses(LoadDependenciesOnStartup.class)
+        if (!options.getClassFinder()
+                .getAnnotatedClasses(LoadDependenciesOnStartup.class)
                 .isEmpty()) {
             getLogger()
                     .info("Custom eager routes defined. Require bundle build.");
@@ -174,16 +172,15 @@ public final class BundleValidationUtil {
             return true;
         }
 
-        return needsBuildInternal(options, frontendDependencies, finder,
+        return needsBuildInternal(options, frontendDependencies,
                 statsJsonContent);
     }
 
     private static boolean needsBuildInternal(Options options,
             FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder, String statsJsonContent) throws IOException {
+            String statsJsonContent) throws IOException {
 
-        JsonObject packageJson = getPackageJson(options, frontendDependencies,
-                finder);
+        JsonObject packageJson = getPackageJson(options, frontendDependencies);
         JsonObject statsJson = Json.parse(statsJsonContent);
 
         // Get scanned @NpmPackage annotations
@@ -199,14 +196,14 @@ public final class BundleValidationUtil {
             return true;
         }
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options,
-                finder, frontendDependencies)) {
+                frontendDependencies)) {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-missing-frontend-import", null);
             return true;
         }
 
         if (ThemeValidationUtil.themeConfigurationChanged(options, statsJson,
-                frontendDependencies, finder)) {
+                frontendDependencies)) {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-changed-theme-config", null);
             return true;
@@ -220,7 +217,8 @@ public final class BundleValidationUtil {
             return true;
         }
 
-        if (BundleValidationUtil.exportedWebComponents(statsJson, finder)) {
+        if (BundleValidationUtil.exportedWebComponents(statsJson,
+                options.getClassFinder())) {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-added-exported-component", null);
             return true;
@@ -251,13 +249,10 @@ public final class BundleValidationUtil {
      *            the task options
      * @param frontendDependencies
      *            frontend dependency scanner
-     * @param finder
-     *            classfinder
      * @return package.json content as JsonObject
      */
     public static JsonObject getPackageJson(Options options,
-            FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder) {
+            FrontendDependenciesScanner frontendDependencies) {
         File packageJsonFile = new File(options.getNpmFolder(), "package.json");
 
         if (packageJsonFile.exists()) {
@@ -267,21 +262,20 @@ public final class BundleValidationUtil {
                                 StandardCharsets.UTF_8));
                 cleanOldPlatformDependencies(packageJson);
                 return getDefaultPackageJson(options, frontendDependencies,
-                        finder, packageJson);
+                        packageJson);
             } catch (IOException e) {
                 getLogger().warn("Failed to read package.json", e);
             }
         } else {
-            return getDefaultPackageJson(options, frontendDependencies, finder,
-                    null);
+            return getDefaultPackageJson(options, frontendDependencies, null);
         }
         return null;
     }
 
     public static JsonObject getDefaultPackageJson(Options options,
             FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder, JsonObject packageJson) {
-        NodeUpdater nodeUpdater = new NodeUpdater(finder, frontendDependencies,
+            JsonObject packageJson) {
+        NodeUpdater nodeUpdater = new NodeUpdater(frontendDependencies,
                 options) {
             @Override
             public void execute() {
@@ -577,13 +571,12 @@ public final class BundleValidationUtil {
     }
 
     public static boolean frontendImportsFound(JsonObject statsJson,
-            Options options, ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies)
+            Options options, FrontendDependenciesScanner frontendDependencies)
             throws IOException {
 
         // Validate frontend requirements in flow-generated-imports.js
         final GenerateMainImports generateMainImports = new GenerateMainImports(
-                finder, frontendDependencies, options, statsJson);
+                frontendDependencies, options, statsJson);
         generateMainImports.run();
         final List<String> imports = generateMainImports.getLines().stream()
                 .filter(line -> line.startsWith("import"))
@@ -631,7 +624,7 @@ public final class BundleValidationUtil {
 
         for (String jarImport : jarImports) {
             final String jarResourceString = FrontendUtils
-                    .getJarResourceString(jarImport, finder);
+                    .getJarResourceString(jarImport, options.getClassFinder());
             if (jarResourceString == null) {
                 getLogger().info("No file found for '{}'", jarImport);
                 return false;

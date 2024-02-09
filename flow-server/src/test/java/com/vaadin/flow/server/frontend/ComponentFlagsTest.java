@@ -148,7 +148,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
         Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
-        return new TaskUpdateImports(classFinder,
-                getScanner(classFinder, featureFlags), options);
+        return new TaskUpdateImports(getScanner(classFinder, featureFlags),
+                options);
     }
 }

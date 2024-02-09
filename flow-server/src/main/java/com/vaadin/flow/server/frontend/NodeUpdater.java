@@ -109,16 +109,12 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Constructor.
      *
-     * @param finder
-     *            a reusable class finder
-     * @param frontendDependencies
-     *            a reusable frontend dependencies
      * @param options
      *            the task options
      */
-    protected NodeUpdater(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, Options options) {
-        this.finder = finder;
+    protected NodeUpdater(FrontendDependenciesScanner frontendDependencies,
+            Options options) {
+        this.finder = options.getClassFinder();
         this.frontDeps = frontendDependencies;
         this.options = options;
     }
@@ -297,24 +293,22 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     Map<String, String> getDefaultDependencies() {
         Map<String, String> dependencies = readDependencies("default",
-                "dependencies", finder);
+                "dependencies");
         if (options.isReactRouterEnabled()) {
-            dependencies.putAll(
-                    readDependencies("react-router", "dependencies", finder));
+            dependencies
+                    .putAll(readDependencies("react-router", "dependencies"));
         } else {
-            dependencies.putAll(
-                    readDependencies("vaadin-router", "dependencies", finder));
+            dependencies
+                    .putAll(readDependencies("vaadin-router", "dependencies"));
         }
-        putHillaComponentsDependencies(options, dependencies, "dependencies",
-                finder);
+        putHillaComponentsDependencies(dependencies, "dependencies");
         return dependencies;
     }
 
-    static Map<String, String> readDependencies(String id,
-            String packageJsonKey, ClassFinder classFinder) {
+    Map<String, String> readDependencies(String id, String packageJsonKey) {
         try {
             Map<String, String> map = new HashMap<>();
-            JsonObject dependencies = readPackageJson(id, classFinder)
+            JsonObject dependencies = readPackageJson(id)
                     .getObject(packageJsonKey);
             if (dependencies == null) {
                 LoggerFactory.getLogger(NodeUpdater.class)
@@ -336,10 +330,10 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     }
 
-    static JsonObject readPackageJson(String id, ClassFinder classFinder)
-            throws IOException {
-        URL resource = classFinder.getResource(FRONTEND_RESOURCES_PATH
-                + "dependencies/" + id + "/package.json");
+    JsonObject readPackageJson(String id) throws IOException {
+        URL resource = options.getClassFinder()
+                .getResource(FRONTEND_RESOURCES_PATH + "dependencies/" + id
+                        + "/package.json");
         if (resource == null) {
             LoggerFactory.getLogger(NodeUpdater.class)
                     .error("Unable to find package.json from '" + id + "'");
@@ -350,10 +344,9 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
-        defaults.putAll(readDependencies("default", "devDependencies", finder));
-        defaults.putAll(readDependencies("vite", "devDependencies", finder));
-        putHillaComponentsDependencies(options, defaults, "devDependencies",
-                finder);
+        defaults.putAll(readDependencies("default", "devDependencies"));
+        defaults.putAll(readDependencies("vite", "devDependencies"));
+        putHillaComponentsDependencies(defaults, "devDependencies");
 
         return defaults;
     }
@@ -588,8 +581,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Adds Hilla components to package.json if Hilla is used in the project.
      *
-     * @param options
-     *            build options
      * @param dependencies
      *            to be added into package.json
      * @param packageJsonKey
@@ -598,17 +589,16 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @see <a href=
      *      "https://github.com/vaadin/hilla/tree/main/packages/java/hilla/src/main/resources/com/vaadin/flow/server/frontend/dependencies/hilla/components</a>
      */
-    private static void putHillaComponentsDependencies(Options options,
-            Map<String, String> dependencies, String packageJsonKey,
-            ClassFinder classFinder) {
+    private void putHillaComponentsDependencies(
+            Map<String, String> dependencies, String packageJsonKey) {
         if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                classFinder)) {
+                options.getClassFinder())) {
             if (options.isReactRouterEnabled()) {
                 dependencies.putAll(readDependencies("hilla/components/react",
-                        packageJsonKey, classFinder));
+                        packageJsonKey));
             } else {
                 dependencies.putAll(readDependencies("hilla/components/lit",
-                        packageJsonKey, classFinder));
+                        packageJsonKey));
             }
         }
     }

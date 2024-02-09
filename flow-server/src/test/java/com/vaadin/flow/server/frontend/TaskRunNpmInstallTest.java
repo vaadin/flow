@@ -91,8 +91,8 @@ public class TaskRunNpmInstallTest {
         finder = Mockito.mock(ClassFinder.class);
         options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
-        nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), options) {
+        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
+                options) {
 
             @Override
             public void execute() {

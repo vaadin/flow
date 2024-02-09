@@ -81,8 +81,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true)
                 .withBundleBuild(true);
-        updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
-                options) {
+        updater = new TaskUpdateImports(getScanner(classFinder), options) {
             @Override
             Logger log() {
                 return logger;

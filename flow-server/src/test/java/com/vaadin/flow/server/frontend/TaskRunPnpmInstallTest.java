@@ -507,7 +507,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withBuildDirectory(TARGET);
 
-        return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
+        return new NodeUpdater(Mockito.mock(FrontendDependencies.class),
                 options) {
 
             @Override

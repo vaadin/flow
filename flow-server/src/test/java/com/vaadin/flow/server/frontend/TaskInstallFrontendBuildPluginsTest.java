@@ -98,7 +98,7 @@ public class TaskInstallFrontendBuildPluginsTest {
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
                 .withBuildDirectory(BUILD_DIRECTORY);
-        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+        NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependencies.class), options) {
             @Override
             public void execute() {

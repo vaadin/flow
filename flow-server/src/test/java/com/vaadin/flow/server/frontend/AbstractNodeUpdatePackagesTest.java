@@ -85,11 +85,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         baseDir = temporaryFolder.getRoot();
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
-        options = new Options(Mockito.mock(Lookup.class), baseDir)
-                .withBuildDirectory(TARGET).withBundleBuild(true);
-        // .withJarFrontendResourcesFolder(jarResourceFolder);
         classFinder = Mockito.spy(getClassFinder());
-        packageCreator = new TaskGeneratePackageJson(options, classFinder);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(classFinder);
+        options = new Options(lookup, baseDir).withBuildDirectory(TARGET)
+                .withBundleBuild(true);
+        packageCreator = new TaskGeneratePackageJson(options);
         versions = temporaryFolder.newFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
         Mockito.when(

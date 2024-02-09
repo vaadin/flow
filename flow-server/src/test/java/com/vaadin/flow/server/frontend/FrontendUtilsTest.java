@@ -400,7 +400,7 @@ public class FrontendUtilsTest {
         Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withBuildDirectory(TARGET);
-        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+        NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependencies.class), options) {
             @Override
             public void execute() throws ExecutionFailedException {
