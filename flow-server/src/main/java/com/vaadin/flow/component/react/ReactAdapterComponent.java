@@ -33,10 +33,11 @@ import java.util.function.Function;
  * Component defines the React JSX template to render the React components with
  * the specified props mapping, defines the named state that is synchronised
  * with the server-side Java component, and custom DOM events.
- * <p>The subclasses should specify the following:
+ * <p>
+ * The subclasses should specify the following:
  * <ul>
- * <li>A {@link com.vaadin.flow.component.Tag} annotation with the
- * name of the React adapter Web Component.
+ * <li>A {@link com.vaadin.flow.component.Tag} annotation with the name of the
+ * React adapter Web Component.
  * <li>A {@link com.vaadin.flow.component.dependency.JsModule} annotation with
  * the React adapter Web Component implementation.
  * <li>An optional {@link com.vaadin.flow.component.dependency.NpmPackage}

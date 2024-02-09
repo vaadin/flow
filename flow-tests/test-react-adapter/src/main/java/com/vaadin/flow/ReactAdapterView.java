@@ -32,20 +32,19 @@ public class ReactAdapterView extends Div {
 
         input.addValueChangeListener(listenerOutput::setText);
 
-        var setValueButton = new NativeButton("Set value", (event) -> input.setValue("set value"));
+        var setValueButton = new NativeButton("Set value",
+                (event) -> input.setValue("set value"));
         setValueButton.setId("setValueButton");
 
         var getOutput = new Span();
         getOutput.setId("getOutput");
 
-        var getValueButton = new NativeButton("Get value", (event) -> getOutput.setText(input.getValue()));
+        var getValueButton = new NativeButton("Get value",
+                (event) -> getOutput.setText(input.getValue()));
         getValueButton.setId("getValueButton");
 
-        add(
-                new Div(input, listenerOutput),
-                new Div(setValueButton),
-                new Div(getValueButton, getOutput)
-        );
+        add(new Div(input, listenerOutput), new Div(setValueButton),
+                new Div(getValueButton, getOutput));
     }
 
 }
