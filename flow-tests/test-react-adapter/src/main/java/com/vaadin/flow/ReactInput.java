@@ -22,7 +22,7 @@ import com.vaadin.flow.component.react.ReactAdapterComponent;
 
 import java.util.function.Consumer;
 
-@JsModule("Frontend/ReactInput.tsx")
+@JsModule("./ReactInput.tsx")
 @Tag("react-input")
 public class ReactInput extends ReactAdapterComponent {
 
@@ -45,4 +45,5 @@ public class ReactInput extends ReactAdapterComponent {
     public void addValueChangeListener(Consumer<String> onChange) {
         addStateChangeListener("value", String.class, onChange);
     }
+
 }

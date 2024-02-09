@@ -47,4 +47,5 @@ public class ReactAdapterView extends Div {
                 new Div(getValueButton, getOutput)
         );
     }
+
 }
