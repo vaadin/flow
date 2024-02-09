@@ -18,7 +18,6 @@ package com.vaadin.flow.component.react;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
 import elemental.json.Json;
@@ -27,6 +26,26 @@ import elemental.json.JsonValue;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * An abstract implementation of an adapter for integrating with React
+ * components. To be used together with a React adapter Web Component that
+ * subclasses the {@code ReactAdapterElement} JS class. The React adapter Web
+ * Component defines the React JSX template to render the React components with
+ * the specified props mapping, defines the named state that is synchronised
+ * with the server-side Java component, and custom DOM events.
+ * <p>The subclasses should specify the following:
+ * <ul>
+ * <li>A {@link com.vaadin.flow.component.Tag} annotation with the
+ * name of the React adapter Web Component.
+ * <li>A {@link com.vaadin.flow.component.dependency.JsModule} annotation with
+ * the React adapter Web Component implementation.
+ * <li>An optional {@link com.vaadin.flow.component.dependency.NpmPackage}
+ * annotation for npm dependencies of the React adapter Web Component.
+ * </ul>
+ *
+ * @author Vaadin Ltd
+ * @since 24.4
+ */
 public abstract class ReactAdapterComponent extends Component {
     /**
      * Adds the specified listener for the state change event in the React
