@@ -29,15 +29,4 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 @Mojo(name = "dance", defaultPhase = LifecyclePhase.PRE_CLEAN)
 public class FrontendDanceMojo extends CleanFrontendMojo {
 
-    @Override
-    public void execute() throws MojoFailureException {
-        if (FrontendUtils.isHillaUsed(frontendDirectory())) {
-            getLog().warn(
-                    """
-                            The 'dance' goal is not meant to be used in Hilla projects as it delete 'package-lock.json' and also clearing out the content of 'package.json'.
-                            """
-                            .stripIndent());
-        }
-        runCleaning(new Options());
-    }
 }

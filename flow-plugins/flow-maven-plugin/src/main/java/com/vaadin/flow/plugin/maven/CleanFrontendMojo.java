@@ -132,14 +132,11 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        if (FrontendUtils.isHillaUsed(frontendDirectory())) {
-            getLog().warn(
-                    """
-                                    The 'clean-frontend' goal is not meant to be used in Hilla projects as it delete 'package-lock.json' and also clearing out the content of 'package.json'.
-                            """
-                            .stripIndent());
+        Options options = new Options();
+        if (isHillaUsed(project, frontendDirectory())) {
+            options.withRemovePackageLock(false).withRemoveNodeModules(false);
         }
-        runCleaning(new Options());
+        runCleaning(options);
     }
 
     protected void runCleaning(Options options) throws MojoFailureException {
