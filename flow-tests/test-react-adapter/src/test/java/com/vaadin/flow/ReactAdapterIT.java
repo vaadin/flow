@@ -19,7 +19,7 @@ public class ReactAdapterIT extends ChromeBrowserTest {
         Assert.assertEquals("initialValue", getReactElement().getPropertyString("value"));
 
         $(NativeButtonElement.class).id("getValueButton").click();
-        Assert.assertEquals("initialValue", $(SpanElement.class).id("output").getText());
+        Assert.assertEquals("initialValue", $(SpanElement.class).id("getOutput").getText());
     }
 
     @Test
