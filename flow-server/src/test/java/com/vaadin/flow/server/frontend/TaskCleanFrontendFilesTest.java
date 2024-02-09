@@ -27,13 +27,13 @@ public class TaskCleanFrontendFilesTest {
 
     private File projectRoot;
     private File frontendDirectory;
-    @Mock
     private ClassFinder classFinder;
 
     @Before
     public void init() {
         projectRoot = rootFolder.getRoot();
         frontendDirectory = new File(projectRoot, "target/frontend");
+        classFinder = Mockito.mock(ClassFinder.class);
     }
 
     @Test
@@ -122,8 +122,8 @@ public class TaskCleanFrontendFilesTest {
         TaskCleanFrontendFiles clean;
         try (MockedStatic<FrontendUtils> util = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
-                    .thenReturn(true);
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any(ClassFinder.class))).thenReturn(true);
             clean = new TaskCleanFrontendFiles(projectRoot, frontendDirectory,
                     classFinder);
         }
