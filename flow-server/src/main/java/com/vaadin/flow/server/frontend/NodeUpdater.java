@@ -349,6 +349,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.putAll(readDependencies("default", "devDependencies"));
         defaults.putAll(readDependencies("vite", "devDependencies"));
         putHillaComponentsDependencies(defaults, "devDependencies");
+        if (options.isReactRouterEnabled()) {
+            defaults.putAll(
+                    readDependencies("react-router", "devDependencies"));
+        }
 
         return defaults;
     }

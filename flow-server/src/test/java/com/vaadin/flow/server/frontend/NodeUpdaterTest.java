@@ -124,8 +124,6 @@ public class NodeUpdaterTest {
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
         expectedDependencies.add("react-router-dom");
-        expectedDependencies.add("@types/react");
-        expectedDependencies.add("@types/react-dom");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -150,6 +148,8 @@ public class NodeUpdaterTest {
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
         expectedDependencies.add("@babel/preset-react");
+        expectedDependencies.add("@types/react");
+        expectedDependencies.add("@types/react-dom");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
