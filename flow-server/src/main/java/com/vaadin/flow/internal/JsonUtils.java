@@ -326,7 +326,7 @@ public final class JsonUtils {
         try {
             return Json.parse(objectMapper.writeValueAsString(bean));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting bean to JSON", e);
+            throw new JsonEncodingException("Error converting bean to JSON", e);
         }
     }
 
@@ -342,7 +342,7 @@ public final class JsonUtils {
         try {
             return Json.instance().parse(objectMapper.writeValueAsString(list));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting list to JSON", e);
+            throw new JsonEncodingException("Error converting list to JSON", e);
         }
     }
 
@@ -358,7 +358,7 @@ public final class JsonUtils {
         try {
             return Json.instance().parse(objectMapper.writeValueAsString(map));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting map to JSON", e);
+            throw new JsonEncodingException("Error converting map to JSON", e);
         }
     }
 
@@ -378,7 +378,7 @@ public final class JsonUtils {
         try {
             return objectMapper.readValue(jsonObject.toJson(), tClass);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(
+            throw new JsonDecodingException(
                     "Error converting JsonObject to " + tClass.getName(), e);
         }
     }
@@ -399,7 +399,7 @@ public final class JsonUtils {
         try {
             return objectMapper.readValue(jsonValue.toJson(), tClass);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(
+            throw new JsonDecodingException(
                     "Error converting JsonValue to " + tClass.getName(), e);
         }
     }
@@ -421,7 +421,7 @@ public final class JsonUtils {
         try {
             return objectMapper.readValue(jsonValue.toJson(), typeReference);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting JsonValue to "
+            throw new JsonDecodingException("Error converting JsonValue to "
                     + typeReference.getType().getTypeName(), e);
         }
     }
@@ -438,7 +438,7 @@ public final class JsonUtils {
             return Json.instance()
                     .parse(objectMapper.writeValueAsString(object));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error converting to JSON", e);
+            throw new JsonEncodingException("Error converting to JSON", e);
         }
     }
 }
