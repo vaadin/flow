@@ -108,7 +108,7 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
       }
     };
 
-    poller();
+    setTimeout(poller, 10);
   }
   _getClient() {
     if (_TagCamel_._getClientStrategy){
