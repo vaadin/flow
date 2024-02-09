@@ -263,9 +263,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public static boolean isHillaAvailable(MavenProject mavenProject) {
         List<String> classpathElements = FlowModeAbstractMojo
                 .getClasspathElements(mavenProject);
-        var resource = BuildFrontendUtil.getClassFinder(classpathElements)
-                .getResource("com/vaadin/hilla/EndpointController.class");
-        return resource != null;
+        return BuildFrontendUtil.getClassFinder(classpathElements).getResource(
+                "com/vaadin/hilla/EndpointController.class") != null;
     }
 
     /**

@@ -15,11 +15,8 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
-
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * This is the hidden `vaadin:dance` to clean up the frontend files.

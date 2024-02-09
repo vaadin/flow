@@ -20,7 +20,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.flow.plugin.base.ConvertPolymerCommand;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * A Maven goal that converts Polymer-based source files to Lit.

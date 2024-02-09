@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
@@ -116,6 +117,26 @@ public class CleanFrontendMojoTest {
                 nodeModules.mkdirs());
         mojo.execute();
         Assert.assertFalse("'node_modules' was not removed.",
+                nodeModules.exists());
+    }
+
+    @Test
+    public void should_notRemoveNodeModulesFolder_hilla()
+            throws MojoFailureException, IOException {
+        // Add fake com.vaadin.hilla.EndpointController class to make project
+        // detected as Hilla project with endpoints.
+        Files.createDirectories(Paths.get(projectBase.toString(), "target")
+                .resolve("test-classes/com/vaadin/hilla"));
+        Files.createFile(Paths.get(projectBase.toString(), "target").resolve(
+                "test-classes/com/vaadin/hilla/EndpointController.class"));
+        Files.createDirectories(Paths.get(projectBase.toString(), "frontend"));
+        Files.createFile(Paths.get(projectBase.toString(), "frontend")
+                .resolve("index.ts"));
+        final File nodeModules = new File(projectBase, NODE_MODULES);
+        Assert.assertTrue("Failed to create 'node_modules'",
+                nodeModules.mkdirs());
+        mojo.execute();
+        Assert.assertTrue("'node_modules' should not be removed.",
                 nodeModules.exists());
     }
 
