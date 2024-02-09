@@ -96,7 +96,9 @@ public class TaskInstallFrontendBuildPluginsTest {
     @Test
     public void pluginsNotAddedToPackageJson() throws IOException {
         ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
+        Options options = new Options(lookup, rootFolder)
                 .withBuildDirectory(BUILD_DIRECTORY);
         NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependencies.class), options) {

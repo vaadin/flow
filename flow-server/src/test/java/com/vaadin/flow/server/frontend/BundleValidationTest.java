@@ -102,14 +102,16 @@ public class BundleValidationTest {
 
     @Before
     public void init() {
-        options = new Options(Mockito.mock(Lookup.class),
-                temporaryFolder.getRoot()).withBuildDirectory("target");
+        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+                this.getClass().getClassLoader()));
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
+        options = new Options(lookup, temporaryFolder.getRoot())
+                .withBuildDirectory("target");
         options.copyResources(Collections.emptySet());
         options.withProductionMode(mode.isProduction());
         bundleLocation = mode.isProduction() ? Constants.PROD_BUNDLE_NAME
                 : Constants.DEV_BUNDLE_NAME;
-        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
-                this.getClass().getClassLoader()));
         frontendUtils = Mockito.mockStatic(FrontendUtils.class,
                 Mockito.CALLS_REAL_METHODS);
         devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,

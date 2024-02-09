@@ -77,7 +77,9 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
 
         ClassFinder classFinder = getClassFinder();
-        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(classFinder);
+        Options options = new Options(lookup, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true)
                 .withBundleBuild(true);

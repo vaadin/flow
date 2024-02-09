@@ -398,7 +398,9 @@ public class FrontendUtilsTest {
         ClassFinder finder = Mockito.mock(ClassFinder.class);
 
         Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
+        Options options = new Options(lookup, npmFolder)
                 .withBuildDirectory(TARGET);
         NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependencies.class), options) {

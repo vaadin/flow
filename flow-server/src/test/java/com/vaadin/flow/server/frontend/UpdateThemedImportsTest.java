@@ -140,7 +140,9 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 return new ThemeDefinition(MyTheme.class, "", "");
             }
         };
-        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
+        Options options = new Options(lookup, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
         updater = new TaskUpdateImports(deps, options);

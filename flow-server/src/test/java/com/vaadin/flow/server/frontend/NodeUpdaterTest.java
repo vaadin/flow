@@ -72,8 +72,10 @@ public class NodeUpdaterTest {
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
-        options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET).withFeatureFlags(featureFlags);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
+        options = new Options(lookup, npmFolder).withBuildDirectory(TARGET)
+                .withFeatureFlags(featureFlags);
 
         nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
                 options) {
