@@ -221,8 +221,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * <p>
      * By default, the frontend server is not used.
      */
-    @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "false")
-    private boolean frontendHotdeploy;
+    @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "${null}")
+    private Boolean frontendHotdeploy;
 
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
@@ -447,7 +447,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public boolean isFrontendHotdeploy() {
-        return frontendHotdeploy;
+        if (frontendHotdeploy != null) {
+            return frontendHotdeploy;
+        }
+        return FrontendUtils.isHillaUsed(frontendDirectory());
     }
 
     @Override
