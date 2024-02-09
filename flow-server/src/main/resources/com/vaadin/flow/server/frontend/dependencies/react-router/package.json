@@ -11,10 +11,10 @@
   "dependencies": {
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-router-dom": "6.21.3",
-    "@types/react": "18.2.50",
-    "@types/react-dom": "18.2.18"
+    "react-router-dom": "6.21.3"
   },
   "devDependencies": {
+    "@types/react": "18.2.50",
+    "@types/react-dom": "18.2.18"
   }
 }
