@@ -181,7 +181,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
         this.#rootRendered = true;
     }
 
-    #renderWrapper(): R
+    #renderWrapper(): ReactElement | null {
         const [state, dispatchFlowState] = useReducer(stateReducer, this.#state);
         this.#state = state;
         this.#dispatchFlowState = dispatchFlowState;
