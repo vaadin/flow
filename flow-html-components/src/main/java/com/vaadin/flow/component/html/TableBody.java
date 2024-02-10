@@ -28,7 +28,7 @@ import com.vaadin.flow.component.Tag;
  */
 @Tag(Tag.TBODY)
 public class TableBody extends HtmlComponent
-        implements HasOrderedComponents, ClickNotifier<TableBody> {
+        implements TableRowContainer, ClickNotifier<TableBody> {
 
     /**
      * Creates a new empty table body.

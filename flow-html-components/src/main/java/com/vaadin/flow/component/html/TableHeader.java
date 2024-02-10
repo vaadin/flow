@@ -28,7 +28,7 @@ import com.vaadin.flow.component.Tag;
  */
 @Tag(Tag.THEAD)
 public class TableHeader extends HtmlComponent
-        implements HasComponents, ClickNotifier<TableHeader> {
+        implements TableRowContainer, ClickNotifier<TableHeader> {
 
     /**
      * Creates a new empty table header component.

@@ -28,7 +28,7 @@ import com.vaadin.flow.component.Tag;
  */
 @Tag(Tag.TFOOT)
 public class TableFooter extends HtmlComponent
-        implements HasComponents, ClickNotifier<TableFooter> {
+        implements TableRowContainer, ClickNotifier<TableFooter> {
 
     /**
      * Creates a new empty table footer.
