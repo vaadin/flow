@@ -66,7 +66,8 @@ public class TableRow extends HtmlComponent
     /**
      * Insert a new header cell into a given position.
      *
-     * @param position the position into which the header cell must be added.
+     * @param position
+     *            the position into which the header cell must be added.
      * @return the new header cell.
      */
     public TableHeaderCell insertHeaderCell(int position) {
@@ -92,7 +93,8 @@ public class TableRow extends HtmlComponent
     /**
      * Insert a new data cell into a given position.
      *
-     * @param position the position into which the data cell must be added.
+     * @param position
+     *            the position into which the data cell must be added.
      * @return the new data cell.
      */
     public TableCell insertDataCell(int position) {
@@ -110,10 +112,8 @@ public class TableRow extends HtmlComponent
      * @return A list of all header cells in this row.
      */
     public List<TableHeaderCell> getHeaderCells() {
-        return getChildren()
-                .filter(c -> c instanceof TableHeaderCell)
-                .map(c -> (TableHeaderCell) c)
-                .collect(Collectors.toList());
+        return getChildren().filter(c -> c instanceof TableHeaderCell)
+                .map(c -> (TableHeaderCell) c).collect(Collectors.toList());
     }
 
     /**
@@ -122,10 +122,8 @@ public class TableRow extends HtmlComponent
      * @return A list of all data cells in this row.
      */
     public List<TableCell> getDataCells() {
-        return getChildren()
-                .filter(c -> c instanceof TableCell)
-                .map(c -> (TableCell) c)
-                .collect(Collectors.toList());
+        return getChildren().filter(c -> c instanceof TableCell)
+                .map(c -> (TableCell) c).collect(Collectors.toList());
     }
 
     /**
@@ -134,34 +132,25 @@ public class TableRow extends HtmlComponent
      * @return a list of all cells in this row.
      */
     public List<Component> getAllCells() {
-        return getChildren()
-                .filter(c -> c instanceof TableCell
-                        || c instanceof TableHeaderCell)
+        return getChildren().filter(
+                c -> c instanceof TableCell || c instanceof TableHeaderCell)
                 .collect(Collectors.toList());
     }
 
     public Optional<TableHeaderCell> getHeaderCell(int index) {
-        return getChildren()
-                .filter(c -> c instanceof TableHeaderCell)
-                .map(c -> (TableHeaderCell) c)
-                .skip(index)
-                .findFirst();
+        return getChildren().filter(c -> c instanceof TableHeaderCell)
+                .map(c -> (TableHeaderCell) c).skip(index).findFirst();
     }
 
     public Optional<TableCell> getDataCell(int index) {
-        return getChildren()
-                .filter(c -> c instanceof TableCell)
-                .map(c -> (TableCell) c)
-                .skip(index)
-                .findFirst();
+        return getChildren().filter(c -> c instanceof TableCell)
+                .map(c -> (TableCell) c).skip(index).findFirst();
     }
 
     public Optional<Component> getCell(int index) {
-        return getChildren()
-                .filter(c -> c instanceof TableCell
-                        || c instanceof TableHeaderCell)
-                .skip(index)
-                .findFirst();
+        return getChildren().filter(
+                c -> c instanceof TableCell || c instanceof TableHeaderCell)
+                .skip(index).findFirst();
     }
 
     public void removeCell(int index) {

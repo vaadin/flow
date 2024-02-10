@@ -73,8 +73,8 @@ public class NativeTable extends HtmlComponent
     }
 
     /**
-     * Return the table's caption component.
-     * Creates a new instance if no caption is present.
+     * Return the table's caption component. Creates a new instance if no
+     * caption is present.
      *
      * @return the table's caption.
      */
@@ -89,7 +89,8 @@ public class NativeTable extends HtmlComponent
     /**
      * Sets the caption for this table.
      *
-     * @param text the caption's text.
+     * @param text
+     *            the caption's text.
      */
     public void setCaption(String text) {
         getCaption().setText(text);
@@ -108,8 +109,8 @@ public class NativeTable extends HtmlComponent
     /**
      * Returns the head of this table.
      *
-     * @return This table's {@code <thead>} element.
-     * Creates a new one if no element was present.
+     * @return This table's {@code <thead>} element. Creates a new one if no
+     *         element was present.
      */
     public TableHeader getHead() {
         if (head == null) {
@@ -133,8 +134,8 @@ public class NativeTable extends HtmlComponent
     /**
      * Returns the {@code <tfoot>} element of this table.
      *
-     * @return The {@code <tfoot>} element of this table.
-     * Creates a new one if none was present.
+     * @return The {@code <tfoot>} element of this table. Creates a new one if
+     *         none was present.
      */
     public TableFooter getFoot() {
         if (foot == null) {
@@ -164,11 +165,11 @@ public class NativeTable extends HtmlComponent
     }
 
     /**
-     * Returns the first body element in this table.
-     * Creates one if there's none.
+     * Returns the first body element in this table. Creates one if there's
+     * none.
      *
-     * @return the first {@code <tbody>} element in the table.
-     * Creates one if there's none.
+     * @return the first {@code <tbody>} element in the table. Creates one if
+     *         there's none.
      */
     public TableBody getBody() {
         if (bodies.isEmpty()) {
@@ -181,11 +182,12 @@ public class NativeTable extends HtmlComponent
      * Returns the {@code <tbody>} element at a given position relative to other
      * {@code <tbody>} elements.
      *
-     * @param index The position of the body element relative to other body
-     *              elements.
+     * @param index
+     *            The position of the body element relative to other body
+     *            elements.
      * @return The table body component at the given position. If the position
-     * is 0 and there are no body elements present, a new one is created and
-     * returned.
+     *         is 0 and there are no body elements present, a new one is created
+     *         and returned.
      */
     public TableBody getBody(int index) {
         if (index == 0) {
@@ -216,7 +218,8 @@ public class NativeTable extends HtmlComponent
     /**
      * Removes a body element from the table.
      *
-     * @param body The body component to remove.
+     * @param body
+     *            The body component to remove.
      */
     public void removeBody(TableBody body) {
         remove(body);
@@ -226,7 +229,8 @@ public class NativeTable extends HtmlComponent
     /**
      * Removes a body element at a given position.
      *
-     * @param index The position of the body element to remove.
+     * @param index
+     *            The position of the body element to remove.
      */
     public void removeBody(int index) {
         TableBody body = getBody(index);

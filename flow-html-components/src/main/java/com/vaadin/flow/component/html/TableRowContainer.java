@@ -24,7 +24,8 @@ import com.vaadin.flow.component.HasOrderedComponents;
 
 /**
  * A container of {@code
- * <tr>
+ *
+<tr>
  * } elements.
  *
  * @since 24.4
