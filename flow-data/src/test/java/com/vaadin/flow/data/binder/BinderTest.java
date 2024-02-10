@@ -517,7 +517,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         Assert.assertEquals(1, binder.getChangedBindings().size());
 
-        binder.updateBean(updatedPerson);
+        binder.writeChangedBindingsToBean(updatedPerson);
 
         Assert.assertEquals(0, updatedPerson.getAgeSetterCallcount());
         Assert.assertEquals(nameValue, updatedPerson.getFirstName());
