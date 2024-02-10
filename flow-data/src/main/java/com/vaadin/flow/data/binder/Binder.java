@@ -2405,7 +2405,8 @@ public class Binder<BEAN> implements Serializable {
      * @throws ValidationException
      *             if some of the bound field values fail to validate
      */
-    public void writeChangedBindingsToBean(BEAN bean) throws ValidationException {
+    public void writeChangedBindingsToBean(BEAN bean)
+            throws ValidationException {
         writeBean(bean, getChangedBindings());
     }
 
