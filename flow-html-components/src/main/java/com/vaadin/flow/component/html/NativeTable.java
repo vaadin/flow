@@ -39,6 +39,9 @@ public class NativeTable extends HtmlComponent
      */
     private TableCaption caption;
 
+    /**
+     * The {@code <thead>} element of this table.
+     */
     private TableHeader head;
 
     /**
@@ -46,6 +49,9 @@ public class NativeTable extends HtmlComponent
      */
     private final List<TableBody> bodies = new LinkedList<>();
 
+    /**
+     * The {@code <tfoot>} element of this table.
+     */
     private TableFooter foot;
 
     /**
@@ -75,7 +81,7 @@ public class NativeTable extends HtmlComponent
     public TableCaption getCaption() {
         if (caption == null) {
             caption = new TableCaption();
-            this.addComponentAsFirst(caption);
+            addComponentAsFirst(caption);
         }
         return caption;
     }
@@ -95,6 +101,56 @@ public class NativeTable extends HtmlComponent
     public void removeCaption() {
         if (caption != null) {
             remove(caption);
+            caption = null;
+        }
+    }
+
+    /**
+     * Returns the head of this table.
+     *
+     * @return This table's {@code <thead>} element.
+     * Creates a new one if no element was present.
+     */
+    public TableHeader getHead() {
+        if (head == null) {
+            head = new TableHeader();
+            int index = caption == null ? 0 : 1;
+            addComponentAtIndex(index, head);
+        }
+        return head;
+    }
+
+    /**
+     * Remove the head from this table, if present.
+     */
+    public void removeHead() {
+        if (head != null) {
+            remove(head);
+            head = null;
+        }
+    }
+
+    /**
+     * Returns the {@code <tfoot>} element of this table.
+     *
+     * @return The {@code <tfoot>} element of this table.
+     * Creates a new one if none was present.
+     */
+    public TableFooter getFoot() {
+        if (foot == null) {
+            foot = new TableFooter();
+            add(foot);
+        }
+        return foot;
+    }
+
+    /**
+     * Removes the foot from this table, if present.
+     */
+    public void removeFoot() {
+        if (foot != null) {
+            remove(foot);
+            foot = null;
         }
     }
 
@@ -175,6 +231,13 @@ public class NativeTable extends HtmlComponent
     public void removeBody(int index) {
         TableBody body = getBody(index);
         removeBody(body);
+    }
+
+    /**
+     * Removes the first body element in the list of bodies of this table.
+     */
+    public void removeBody() {
+        removeBody(0);
     }
 
 }
