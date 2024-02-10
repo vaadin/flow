@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,6 +38,15 @@ public class NativeTable extends HtmlComponent
      * The table's caption.
      */
     private TableCaption caption;
+
+    private TableHeader head;
+
+    /**
+     * The list of {@code <tbody>} elements of the table.
+     */
+    private final List<TableBody> bodies = new LinkedList<>();
+
+    private TableFooter foot;
 
     /**
      * Creates a new empty table.
@@ -87,4 +97,84 @@ public class NativeTable extends HtmlComponent
             remove(caption);
         }
     }
+
+    /**
+     * Returns the list of {@code <tbody>} elements in this table.
+     *
+     * @return the list of table body elements of this table.
+     */
+    public List<TableBody> getBodies() {
+        return new ArrayList<>(bodies);
+    }
+
+    /**
+     * Returns the first body element in this table.
+     * Creates one if there's none.
+     *
+     * @return the first {@code <tbody>} element in the table.
+     * Creates one if there's none.
+     */
+    public TableBody getBody() {
+        if (bodies.isEmpty()) {
+            return addBody();
+        }
+        return bodies.get(0);
+    }
+
+    /**
+     * Returns the {@code <tbody>} element at a given position relative to other
+     * {@code <tbody>} elements.
+     *
+     * @param index The position of the body element relative to other body
+     *              elements.
+     * @return The table body component at the given position. If the position
+     * is 0 and there are no body elements present, a new one is created and
+     * returned.
+     */
+    public TableBody getBody(int index) {
+        if (index == 0) {
+            return getBody();
+        }
+        return bodies.get(index);
+    }
+
+    /**
+     * Adds a new body element to the table.
+     *
+     * @return The new body.
+     */
+    public TableBody addBody() {
+        TableBody body = new TableBody();
+        int index = bodies.size();
+        if (caption != null) {
+            index++;
+        }
+        if (head != null) {
+            index++;
+        }
+        addComponentAtIndex(index, body);
+        bodies.add(body);
+        return body;
+    }
+
+    /**
+     * Removes a body element from the table.
+     *
+     * @param body The body component to remove.
+     */
+    public void removeBody(TableBody body) {
+        remove(body);
+        bodies.remove(body);
+    }
+
+    /**
+     * Removes a body element at a given position.
+     *
+     * @param index The position of the body element to remove.
+     */
+    public void removeBody(int index) {
+        TableBody body = getBody(index);
+        removeBody(body);
+    }
+
 }
