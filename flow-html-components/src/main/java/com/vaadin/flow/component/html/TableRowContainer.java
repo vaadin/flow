@@ -23,7 +23,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasOrderedComponents;
 
 /**
- * A container of {@code <tr>} elements.
+ * A container of {@code
+ * <tr>
+ * } elements.
  *
  * @since 24.4
  */
@@ -32,7 +34,8 @@ interface TableRowContainer extends HasOrderedComponents {
     /**
      * Get the index of a given row.
      *
-     * @param row the row to get the index of.
+     * @param row
+     *            the row to get the index of.
      * @return the index of the row.
      */
     default int getRowIndex(TableRow row) {
@@ -45,30 +48,28 @@ interface TableRowContainer extends HasOrderedComponents {
      * @return all the rows in the container.
      */
     default List<TableRow> getRows() {
-        return getChildren()
-                .filter(c -> c instanceof TableRow)
-                .map(c -> (TableRow) c)
-                .collect(Collectors.toList());
+        return getChildren().filter(c -> c instanceof TableRow)
+                .map(c -> (TableRow) c).collect(Collectors.toList());
     }
 
     /**
      * Returns the row at the given index.
      *
-     * @param index the index of the row. Must be greater than 0 and less than the size of the container.
+     * @param index
+     *            the index of the row. Must be greater than 0 and less than the
+     *            size of the container.
      * @return the row at position {@code index}.
      */
     default Optional<TableRow> getRow(int index) {
-        return getChildren()
-                .filter(c -> c instanceof TableRow)
-                .map(c -> (TableRow) c)
-                .skip(index)
-                .findFirst();
+        return getChildren().filter(c -> c instanceof TableRow)
+                .map(c -> (TableRow) c).skip(index).findFirst();
     }
 
     /**
      * Appends a list of rows to the container.
      *
-     * @param rows the rows to append.
+     * @param rows
+     *            the rows to append.
      */
     default void addRows(TableRow... rows) {
         add(rows);
@@ -88,7 +89,8 @@ interface TableRowContainer extends HasOrderedComponents {
     /**
      * Create and insert a row at a given position.
      *
-     * @param position a value greater than 0 and less than the container's size.
+     * @param position
+     *            a value greater than 0 and less than the container's size.
      * @return the new row.
      */
     default TableRow insertRow(int position) {
@@ -100,7 +102,9 @@ interface TableRowContainer extends HasOrderedComponents {
     /**
      * Remove a list of rows from the container.
      *
-     * @param rows the rows to remove. If a component in the list is not a child of the container, it will throw an exception.
+     * @param rows
+     *            the rows to remove. If a component in the list is not a child
+     *            of the container, it will throw an exception.
      */
     default void removeRows(TableRow... rows) {
         remove(rows);
@@ -109,7 +113,8 @@ interface TableRowContainer extends HasOrderedComponents {
     /**
      * Remove the row at the given index.
      *
-     * @param index the position of the row to remove.
+     * @param index
+     *            the position of the row to remove.
      */
     default void removeRow(int index) {
         getRow(index).ifPresent(this::remove);
@@ -127,8 +132,10 @@ interface TableRowContainer extends HasOrderedComponents {
      * Replaces the row at a given position with a new one. If both rows exist
      * within the container, they swap positions.
      *
-     * @param index the index of the row to replace.
-     * @param row the new row to insert at the position of the old row.
+     * @param index
+     *            the index of the row to replace.
+     * @param row
+     *            the new row to insert at the position of the old row.
      */
     default void replaceRow(int index, TableRow row) {
         Component oldRow = getComponentAt(index);

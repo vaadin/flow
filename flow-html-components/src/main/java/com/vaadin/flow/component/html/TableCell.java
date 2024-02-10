@@ -42,7 +42,8 @@ public class TableCell extends HtmlContainer
     /**
      * Creates a new table cell with the given children components.
      *
-     * @param components the children components.
+     * @param components
+     *            the children components.
      */
     public TableCell(Component... components) {
         super(components);
@@ -51,7 +52,8 @@ public class TableCell extends HtmlContainer
     /**
      * Creates a new table cell with the given text.
      *
-     * @param text the text.
+     * @param text
+     *            the text.
      */
     public TableCell(String text) {
         super();
@@ -61,11 +63,14 @@ public class TableCell extends HtmlContainer
     /**
      * Set the colspan of this cell.
      *
-     * @param colspan a non-negative integer value that indicates how many columns the data cell spans or extends.
+     * @param colspan
+     *            a non-negative integer value that indicates how many columns
+     *            the data cell spans or extends.
      */
     public void setColspan(int colspan) {
         if (colspan < 0) {
-            throw new IllegalArgumentException("colspan must be a non-negative integer value");
+            throw new IllegalArgumentException(
+                    "colspan must be a non-negative integer value");
         }
         getElement().setAttribute(ATTRIBUTE_COLSPAN, String.valueOf(colspan));
     }
@@ -93,16 +98,17 @@ public class TableCell extends HtmlContainer
     /**
      * Sets the rowspan for this cell.
      *
-     * @param rowspan a non-negative integer value that indicates for how many
-     *                rows the data cell spans or extends.
-     *                If its value is set to 0, it
-     *                extends until the end of the table grouping section
-     *                ({@code <thead>}, {@code <tbody>}, {@code <tfoot>}, even
-     *                if implicitly defined), that the cell belongs to.
+     * @param rowspan
+     *            a non-negative integer value that indicates for how many rows
+     *            the data cell spans or extends. If its value is set to 0, it
+     *            extends until the end of the table grouping section
+     *            ({@code <thead>}, {@code <tbody>}, {@code <tfoot>}, even if
+     *            implicitly defined), that the cell belongs to.
      */
     public void setRowspan(int rowspan) {
         if (rowspan < 0) {
-            throw new IllegalArgumentException("rowspan must be a non-negative integer value");
+            throw new IllegalArgumentException(
+                    "rowspan must be a non-negative integer value");
         }
         getElement().setAttribute(ATTRIBUTE_ROWSPAN, String.valueOf(rowspan));
     }
