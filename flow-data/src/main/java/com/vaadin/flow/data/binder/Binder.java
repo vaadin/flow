@@ -2352,7 +2352,7 @@ public class Binder<BEAN> implements Serializable {
      * @see #writeBean(Object)
      * @see #readBean(Object)
      * @see #setBean(Object)
-     * @see #updateBean(Object)
+     * @see #writeChangedBindingsToBean(Object)
      *
      * @param bean
      *            the object to which to write the field values, not
@@ -2361,10 +2361,17 @@ public class Binder<BEAN> implements Serializable {
      *            Collection of bindings to use in writing the bean
      * @throws ValidationException
      *             if some of the bound field values fail to validate
+     * @throws IllegalArgumentException
+     *             if bindingsToWrite contains bindings not belonging to this
+     *             Binder
      */
     public void writeBean(BEAN bean,
             Collection<Binding<BEAN, ?>> bindingsToWrite)
             throws ValidationException {
+        if (!bindings.containsAll(bindingsToWrite)) {
+            throw new IllegalArgumentException(
+                    "Can't write bean using binding that is not bound to this Binder.");
+        }
         BinderValidationStatus<BEAN> status = doWriteIfValid(bean,
                 bindingsToWrite);
         if (status.hasErrors()) {
@@ -2398,19 +2405,19 @@ public class Binder<BEAN> implements Serializable {
      * @throws ValidationException
      *             if some of the bound field values fail to validate
      */
-    public void updateBean(BEAN bean) throws ValidationException {
+    public void writeChangedBindingsToBean(BEAN bean) throws ValidationException {
         writeBean(bean, getChangedBindings());
     }
 
     /**
-     * Get the Set of changed bindings.
+     * Get the immutable Set of changed bindings.
      *
      * @see #hasChanges()
      *
-     * @return Set of bindigns.
+     * @return Immutable set of bindings.
      */
     public Set<Binding<BEAN, ?>> getChangedBindings() {
-        return changedBindings;
+        return Collections.unmodifiableSet(changedBindings);
     }
 
     /**
