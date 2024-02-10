@@ -1,5 +1,5 @@
 package com.vaadin.flow.component.html;
 
-public class HtmlTableTest extends ComponentTest {
+public class NativeTableTest extends ComponentTest {
     // Actual test methods in super class
 }
