@@ -137,38 +137,82 @@ public class TableRow extends HtmlComponent
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Returns the header cell at a given position relative to other header cells.
+     *
+     * @param index the position of the header cell relative to other header cells.
+     * @return the header cell at the given position (relative to other header cells).
+     */
     public Optional<TableHeaderCell> getHeaderCell(int index) {
         return getChildren().filter(c -> c instanceof TableHeaderCell)
                 .map(c -> (TableHeaderCell) c).skip(index).findFirst();
     }
 
+    /**
+     * Returns the data cell at a given position relative to other data cells.
+     *
+     * @param index the position of the data cell relative to other data cells.
+     * @return the data cell at the given position (relative to other data cells).
+     */
     public Optional<TableCell> getDataCell(int index) {
         return getChildren().filter(c -> c instanceof TableCell)
                 .map(c -> (TableCell) c).skip(index).findFirst();
     }
 
+    /**
+     * Returns the cell at a given position.
+     *
+     * @param index the position of the cell.
+     * @return the cell at the given position
+     * @throws IndexOutOfBoundsException if index is negative or greater than (or equal to) the number of cells in the row
+     */
     public Optional<Component> getCell(int index) {
         return getChildren().filter(
                 c -> c instanceof TableCell || c instanceof TableHeaderCell)
                 .skip(index).findFirst();
     }
 
+    /**
+     * Removes the cell at a given position.
+     *
+     * @param index the position of the cell to remove
+     */
     public void removeCell(int index) {
         getCell(index).ifPresent(this::remove);
     }
 
+    /**
+     * Removes the header cell at a position relative to other header cells.
+     *
+     * @param index the position of the header cell relative to other header cells.
+     */
     public void removeHeaderCell(int index) {
         getHeaderCell(index).ifPresent(this::remove);
     }
 
+    /**
+     * Removes a header cell.
+     *
+     * @param headerCell the header cell to remove.
+     */
     public void removeHeaderCell(TableHeaderCell headerCell) {
         remove(headerCell);
     }
 
+    /**
+     * Removes the data cell at a given position relative to other data cells.
+     *
+     * @param index the position of the data cell to remove relative to other data cells.
+     */
     public void removeDataCell(int index) {
         getDataCell(index).ifPresent(this::remove);
     }
 
+    /**
+     * Removes a data cell.
+     *
+     * @param dataCell the data cell to remove.
+     */
     public void removeDataCell(TableCell dataCell) {
         remove(dataCell);
     }
