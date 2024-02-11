@@ -23,10 +23,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasOrderedComponents;
 
 /**
- * A container of {@code
- *
-<tr>
- * } elements.
+ * A container of <code>&lt;tr&gt;</code> elements.
  *
  * @since 24.4
  */
