@@ -19,6 +19,8 @@ public class Person implements Serializable {
 
     private BigDecimal rent;
 
+    private int ageCallcount = 0;
+
     public Person() {
 
     }
@@ -64,6 +66,7 @@ public class Person implements Serializable {
     }
 
     public void setAge(int age) {
+        ageCallcount++;
         this.age = age;
     }
 
@@ -140,5 +143,9 @@ public class Person implements Serializable {
         return new Person("Maya", "Dinkelstein", "maya@foo.bar", 18, Sex.FEMALE,
                 new Address("Red street", 12, "Amsterdam",
                         Country.NETHERLANDS));
+    }
+
+    public int getAgeSetterCallcount() {
+        return ageCallcount;
     }
 }
