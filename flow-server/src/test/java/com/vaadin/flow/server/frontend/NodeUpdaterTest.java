@@ -37,11 +37,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -72,9 +71,7 @@ public class NodeUpdaterTest {
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-        options = new Options(lookup, npmFolder).withBuildDirectory(TARGET)
+        options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
                 .withFeatureFlags(featureFlags);
 
         nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),

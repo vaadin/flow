@@ -35,6 +35,7 @@ import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -104,9 +105,7 @@ public class BundleValidationTest {
     public void init() {
         finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-        options = new Options(lookup, temporaryFolder.getRoot())
+        options = new MockOptions(finder, temporaryFolder.getRoot())
                 .withBuildDirectory("target");
         options.copyResources(Collections.emptySet());
         options.withProductionMode(mode.isProduction());

@@ -35,6 +35,7 @@ import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlagView;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -145,10 +146,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     private TaskUpdateImports createUpdater() throws IOException {
         ClassFinder classFinder = getClassFinder(testClasses);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(classFinder);
-
-        Options options = new Options(lookup, tmpRoot)
+        Options options = new MockOptions(classFinder, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
         return new TaskUpdateImports(getScanner(classFinder, featureFlags),

@@ -197,8 +197,8 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdatePackages packageUpdater = null;
             if (options.isEnablePackagesUpdate()
                     && options.getJarFrontendResourcesFolder() != null) {
-                packageUpdater = new TaskUpdatePackages(classFinder,
-                        frontendDependencies, options);
+                packageUpdater = new TaskUpdatePackages(frontendDependencies,
+                        options);
                 commands.add(packageUpdater);
             }
 

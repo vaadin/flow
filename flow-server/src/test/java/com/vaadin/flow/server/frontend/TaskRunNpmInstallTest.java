@@ -49,6 +49,7 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -88,11 +89,9 @@ public class TaskRunNpmInstallTest {
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-        finder = Mockito.mock(ClassFinder.class);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-        options = new Options(lookup, npmFolder).withBuildDirectory(TARGET)
+        options = new MockOptions(npmFolder).withBuildDirectory(TARGET)
                 .withBundleBuild(true);
+        finder = options.getClassFinder();
         nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
                 options) {
 

@@ -52,6 +52,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -94,8 +95,6 @@ public class TaskUpdatePackagesNpmTest {
         generatedPath.mkdir();
         versionJsonFile = new File(npmFolder, "versions.json");
         finder = Mockito.mock(ClassFinder.class);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
 
@@ -696,14 +695,11 @@ public class TaskUpdatePackagesNpmTest {
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(applicationDependencies);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-        Options options = new Options(lookup, npmFolder)
+        Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
                 .withBundleBuild(true);
 
-        return new TaskUpdatePackages(finder, frontendDependenciesScanner,
-                options) {
+        return new TaskUpdatePackages(frontendDependenciesScanner, options) {
         };
     }
 

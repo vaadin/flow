@@ -65,6 +65,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -170,9 +171,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         ClassFinder classFinder = getClassFinder();
         featureFlags = Mockito.mock(FeatureFlags.class);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(classFinder);
-        options = new Options(lookup, tmpRoot).withTokenFile(tokenFile)
+        options = new MockOptions(classFinder, tmpRoot).withTokenFile(tokenFile)
                 .withProductionMode(true).withFeatureFlags(featureFlags)
                 .withBundleBuild(true);
         updater = new UpdateImports(getScanner(classFinder), options);
