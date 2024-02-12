@@ -1272,6 +1272,24 @@ public class FrontendUtils {
                 && isHillaViewsUsed(frontendDirectory);
     }
 
+    /**
+     * Checks if Hilla is available and Hilla views are used in the project
+     * based on what is in routes.ts or routes.tsx file.
+     * {@link FrontendUtils#getProjectFrontendDir(AbstractConfiguration)} can be
+     * used to get the frontend directory. Given class finder is used to check
+     * the presence of Hilla in a classpath.
+     *
+     * @param classFinder
+     *            class finder to check the presence of Hilla endpoint class
+     * @return {@code true} if Hilla is available and Hilla views are used,
+     *         {@code false} otherwise
+     */
+    public static boolean isHillaUsed(File frontendDirectory,
+            ClassFinder classFinder) {
+        return EndpointRequestUtil.isHillaAvailable(classFinder)
+                && isHillaViewsUsed(frontendDirectory);
+    }
+
     private static boolean isRoutesContentUsingHillaViews(
             String routesContent) {
         routesContent = StringUtil.removeComments(routesContent);

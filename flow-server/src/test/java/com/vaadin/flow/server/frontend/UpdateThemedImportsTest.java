@@ -43,6 +43,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -140,10 +141,10 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 return new ThemeDefinition(MyTheme.class, "", "");
             }
         };
-        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+        Options options = new MockOptions(finder, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
-        updater = new TaskUpdateImports(finder, deps, options);
+        updater = new TaskUpdateImports(deps, options);
     }
 
     @Test

@@ -37,13 +37,13 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testutil.FrontendStubs;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -85,20 +85,18 @@ public abstract class AbstractNodeUpdatePackagesTest
         baseDir = temporaryFolder.getRoot();
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
-        options = new Options(Mockito.mock(Lookup.class), baseDir)
-                .withBuildDirectory(TARGET).withBundleBuild(true);
-        // .withJarFrontendResourcesFolder(jarResourceFolder);
-        packageCreator = new TaskGeneratePackageJson(options);
-
         classFinder = Mockito.spy(getClassFinder());
+        options = new MockOptions(classFinder, baseDir)
+                .withBuildDirectory(TARGET).withBundleBuild(true);
+        packageCreator = new TaskGeneratePackageJson(options);
         versions = temporaryFolder.newFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
         Mockito.when(
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
@@ -138,8 +136,8 @@ public abstract class AbstractNodeUpdatePackagesTest
     public void pnpmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
             throws IOException {
         // use package updater with disabled PNPM
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -153,8 +151,8 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(json.toJson()));
 
         options.withEnablePnpm(true);
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -164,8 +162,8 @@ public abstract class AbstractNodeUpdatePackagesTest
     public void pnpmIsInUse_packageJsonContainsFlowFrontend_removeFlowFrontend()
             throws IOException {
         // use package updater with disabled PNPM
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -179,8 +177,8 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(json.toJson()));
 
         options.withEnablePnpm(true);
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -190,8 +188,8 @@ public abstract class AbstractNodeUpdatePackagesTest
     public void pnpmIsInUse_packageLockExists_removePackageLock()
             throws IOException {
         // use package updater with disabled PNPM
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -200,8 +198,8 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         options.withEnablePnpm(true);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         packageUpdater.execute();
         Assert.assertFalse("npm package-lock should be removed for pnpm",
                 packageLock.exists());
@@ -341,7 +339,7 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         options.withEnablePnpm(true);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
+        packageUpdater = new TaskUpdatePackages(
                 Mockito.mock(FrontendDependencies.class), options);
 
         // Generate package json in a proper format first
@@ -380,8 +378,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -409,8 +406,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         options.enableNpmFileCleaning(true);
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         packageUpdater.execute();
 
         // clean up happened
@@ -431,8 +428,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -461,8 +457,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -506,8 +501,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -537,8 +531,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -560,8 +553,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Map<String, String> packages = new HashMap<>();
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -586,8 +578,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Map<String, String> packages = new HashMap<>();
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -614,8 +605,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
         JsonObject json = getPackageJson(packageJson);
@@ -640,8 +630,8 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(legacyPackageContent));
         options.withEnablePnpm(true);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -654,8 +644,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageJson.toPath(),
                 Collections.singletonList(legacyPackageContent));
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -676,8 +666,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -722,8 +711,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, options);
+        packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
 
         packageCreator.execute();
         packageUpdater.execute();

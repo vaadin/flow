@@ -35,6 +35,7 @@ import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -102,13 +103,14 @@ public class BundleValidationTest {
 
     @Before
     public void init() {
-        options = new Options(Mockito.mock(Lookup.class),
-                temporaryFolder.getRoot()).withBuildDirectory("target");
+        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+                this.getClass().getClassLoader()));
+        options = new MockOptions(finder, temporaryFolder.getRoot())
+                .withBuildDirectory("target");
         options.copyResources(Collections.emptySet());
         options.withProductionMode(mode.isProduction());
         bundleLocation = mode.isProduction() ? Constants.PROD_BUNDLE_NAME
                 : Constants.DEV_BUNDLE_NAME;
-        finder = Mockito.mock(ClassFinder.class);
         frontendUtils = Mockito.mockStatic(FrontendUtils.class,
                 Mockito.CALLS_REAL_METHODS);
         devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,
@@ -151,7 +153,7 @@ public class BundleValidationTest {
         stats.put(THEME_JSON_CONTENTS, themeJsonContents);
         stats.put(PACKAGE_JSON_HASH, "aHash");
 
-        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+        NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependenciesScanner.class), options) {
             @Override
             public void execute() {
@@ -176,7 +178,7 @@ public class BundleValidationTest {
     @Test
     public void noDevBundle_bundleCompilationRequires() {
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                Mockito.mock(FrontendDependenciesScanner.class), finder, mode);
+                Mockito.mock(FrontendDependenciesScanner.class), mode);
         Assert.assertTrue("Bundle should require creation if not available",
                 needsBuild);
     }
@@ -191,7 +193,7 @@ public class BundleValidationTest {
                 .thenReturn(null);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                Mockito.mock(FrontendDependenciesScanner.class), finder, mode);
+                Mockito.mock(FrontendDependenciesScanner.class), mode);
         Assert.assertTrue("Missing stats.json should require bundling",
                 needsBuild);
     }
@@ -220,7 +222,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Matching hashes should not require compilation",
                 needsBuild);
     }
@@ -254,7 +256,7 @@ public class BundleValidationTest {
                 .thenReturn(Collections.singleton(AllEagerAppConf.class));
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "'LoadDependenciesOnStartup' annotation requires build",
                 needsBuild);
@@ -286,7 +288,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Missing npmPackage should require bundling",
                 needsBuild);
     }
@@ -315,7 +317,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Bundle missing module dependency should rebuild",
                 needsBuild);
     }
@@ -345,7 +347,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -392,7 +394,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "vaadin-core-versions.json should have updated version to expected.",
                 needsBuild);
@@ -426,7 +428,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -462,7 +464,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -493,7 +495,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Missing npmPackage in stats.json should require compilation",
                 needsBuild);
@@ -523,7 +525,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Not missing npmPackage in stats.json should not require compilation",
                 needsBuild);
@@ -553,7 +555,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("No compilation if tilde range only patch update",
                 needsBuild);
 
@@ -561,8 +563,7 @@ public class BundleValidationTest {
                 "1.8.1");
         setupFrontendUtilsMock(stats);
 
-        needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
-                finder, mode);
+        needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
         Assert.assertTrue(
                 "Compilation required if minor version change for tilde range",
                 needsBuild);
@@ -592,7 +593,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "No compilation if caret range only minor version update",
                 needsBuild);
@@ -601,8 +602,7 @@ public class BundleValidationTest {
                 "2.0.0");
         setupFrontendUtilsMock(stats);
 
-        needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
-                finder, mode);
+        needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
         Assert.assertTrue(
                 "Compilation required if major version change for caret range",
                 needsBuild);
@@ -636,7 +636,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("No compilation expected if package.json has "
                 + "only dependencies from older Vaadin version not "
                 + "presenting in a newer version", needsBuild);
@@ -650,7 +650,7 @@ public class BundleValidationTest {
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         String defaultHash = BundleValidationUtil
-                .getDefaultPackageJson(options, depScanner, finder, null)
+                .getDefaultPackageJson(options, depScanner, null)
                 .getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getString(NodeUpdater.HASH_KEY);
 
@@ -663,7 +663,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Default package.json should be built and validated",
                 needsBuild);
     }
@@ -676,7 +676,7 @@ public class BundleValidationTest {
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         String defaultHash = BundleValidationUtil
-                .getDefaultPackageJson(options, depScanner, finder, null)
+                .getDefaultPackageJson(options, depScanner, null)
                 .getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getString(NodeUpdater.HASH_KEY);
 
@@ -688,7 +688,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Missing NpmPackage with default bundle should require rebuild",
                 needsBuild);
@@ -702,7 +702,7 @@ public class BundleValidationTest {
                 .thenReturn(Collections.emptyMap());
 
         String defaultHash = BundleValidationUtil
-                .getDefaultPackageJson(options, depScanner, finder, null)
+                .getDefaultPackageJson(options, depScanner, null)
                 .getObject(NodeUpdater.VAADIN_DEP_KEY)
                 .getString(NodeUpdater.HASH_KEY);
 
@@ -714,7 +714,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Default package.json should be built and validated",
                 needsBuild);
     }
@@ -752,7 +752,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Compilation required as stats.json missing import",
                 needsBuild);
     }
@@ -794,7 +794,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("All imports in stats, no compilation required",
                 needsBuild);
     }
@@ -837,7 +837,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "All themed imports in stats, no compilation required",
                 needsBuild);
@@ -877,7 +877,7 @@ public class BundleValidationTest {
                 .thenReturn(temporaryFolder.getRoot());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar fronted file content hash should match.",
                 needsBuild);
     }
@@ -920,7 +920,7 @@ public class BundleValidationTest {
                 .thenReturn(stats.toJson());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Content should not have been validated.",
                 needsBuild);
     }
@@ -965,7 +965,7 @@ public class BundleValidationTest {
                 .thenReturn(stats.toJson());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Jar fronted file content hash should not be a match.",
                 needsBuild);
@@ -1000,7 +1000,7 @@ public class BundleValidationTest {
         jarResources.put("my-styles.css", "body{color:yellow}");
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "CSS 'inline' suffix should be ignored for imports checking",
                 needsBuild);
@@ -1024,7 +1024,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Project frontend file change should trigger rebuild",
                 needsBuild);
     }
@@ -1050,7 +1050,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "No bundle rebuild expected when no changes in frontend file",
                 needsBuild);
@@ -1074,7 +1074,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Project frontend file delete should trigger rebuild",
                 needsBuild);
     }
@@ -1093,7 +1093,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Shouldn't rebuild the bundle if no reused themes",
                 needsBuild);
     }
@@ -1117,7 +1117,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(getBasicStats());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when the new theme has no theme.json",
                 needsBuild);
@@ -1138,7 +1138,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(getBasicStats());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when a new reusable theme is added",
                 needsBuild);
@@ -1162,7 +1162,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when a new reusable theme is added",
                 needsBuild);
@@ -1193,7 +1193,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when the assets updated",
                 needsBuild);
@@ -1226,7 +1226,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when the themes not changed",
                 needsBuild);
@@ -1253,7 +1253,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when no themeJsonContents, but project has theme.json",
                 needsBuild);
@@ -1283,7 +1283,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when parent theme is used",
                 needsBuild);
@@ -1311,7 +1311,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when project has no theme.json",
                 needsBuild);
@@ -1349,7 +1349,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not trigger a bundle rebuild when project theme.json has the same content as in the bundle",
                 needsBuild);
@@ -1384,7 +1384,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should rebuild when project theme.json adds extra entries",
                 needsBuild);
@@ -1417,7 +1417,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Shouldn't re-bundle when the dev bundle already have all"
                         + " the entries defined in the project's theme.json",
@@ -1444,7 +1444,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should trigger a bundle rebuild when project has theme"
                         + ".json but stats doesn't",
@@ -1474,7 +1474,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should rebuild when 'theme.json' from parent theme in "
                         + "frontend folder adds extra entries",
@@ -1664,7 +1664,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("Adding 'index.ts' should require bundling",
                 needsBuild);
     }
@@ -1690,7 +1690,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "'index.ts' equal content should not require bundling",
                 needsBuild);
@@ -1698,8 +1698,7 @@ public class BundleValidationTest {
         FileUtils.write(indexTs, "window.alert('hello');",
                 StandardCharsets.UTF_8);
 
-        needsBuild = BundleValidationUtil.needsBuild(options, depScanner,
-                finder, mode);
+        needsBuild = BundleValidationUtil.needsBuild(options, depScanner, mode);
         Assert.assertTrue(
                 "changed content for 'index.ts' should require bundling",
                 needsBuild);
@@ -1719,7 +1718,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue("'index.ts' delete should require re-bundling",
                 needsBuild);
     }
@@ -1743,7 +1742,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Should not require bundling if component JS is missing in jar-resources",
                 needsBuild);
@@ -1770,7 +1769,7 @@ public class BundleValidationTest {
         // Should not throw an IllegalStateException:
         // "Failed to find the following css files in the...."
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should re-bundle if CSS is imported from META-INF/resources",
                 needsBuild);
@@ -1790,7 +1789,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Shouldn't re-bundle when old @vaadin/flow-frontend package is in package.json",
                 needsBuild);
@@ -1811,7 +1810,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse(
                 "Shouldn't re-bundle when referencing local packages in package.json",
                 needsBuild);
@@ -1833,7 +1832,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should re-bundle when local packages have different values",
                 needsBuild);
@@ -1854,7 +1853,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should re-bundle when local package in package.json but parsable version in stats",
                 needsBuild);
@@ -1875,7 +1874,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertTrue(
                 "Should re-bundle when local package in stats but parsable version in package.json",
                 needsBuild);
@@ -1907,7 +1906,7 @@ public class BundleValidationTest {
         setupFrontendUtilsMock(stats);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Rebuild should be skipped", needsBuild);
     }
 
@@ -1918,7 +1917,7 @@ public class BundleValidationTest {
         options.withForceProductionBuild(true);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                Mockito.mock(FrontendDependenciesScanner.class), finder, mode);
+                Mockito.mock(FrontendDependenciesScanner.class), mode);
         Assert.assertTrue(
                 "Production bundle required due to force.production.bundle flag.",
                 needsBuild);
@@ -1971,7 +1970,7 @@ public class BundleValidationTest {
                 bundleSourceFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar fronted file content hash should match.",
                 needsBuild);
     }
@@ -2023,7 +2022,7 @@ public class BundleValidationTest {
                 bundleSourceFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar fronted file content hash should match.",
                 needsBuild);
     }
@@ -2084,7 +2083,7 @@ public class BundleValidationTest {
         }
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar frontend file content hash should match.",
                 needsBuild);
     }
@@ -2117,7 +2116,7 @@ public class BundleValidationTest {
                 .thenReturn(stats.toJson());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
-                depScanner, finder, mode);
+                depScanner, mode);
         Assert.assertFalse("Jar frontend file content hash should match.",
                 needsBuild);
     }
@@ -2272,8 +2271,7 @@ public class BundleValidationTest {
 
         setupFrontendUtilsMock(stats);
 
-        return BundleValidationUtil.needsBuild(options, depScanner, finder,
-                mode);
+        return BundleValidationUtil.needsBuild(options, depScanner, mode);
     }
 
 }

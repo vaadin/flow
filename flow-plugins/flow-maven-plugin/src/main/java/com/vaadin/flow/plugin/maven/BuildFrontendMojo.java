@@ -133,7 +133,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         long start = System.nanoTime();
 
         TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
-                npmFolder(), frontendDirectory());
+                npmFolder(), frontendDirectory(), getClassFinder());
         try {
             BuildFrontendUtil.runNodeUpdater(this);
         } catch (ExecutionFailedException | URISyntaxException exception) {

@@ -41,9 +41,9 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -77,12 +77,11 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
 
         ClassFinder classFinder = getClassFinder();
-        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+        Options options = new MockOptions(classFinder, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true)
                 .withBundleBuild(true);
-        updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
-                options) {
+        updater = new TaskUpdateImports(getScanner(classFinder), options) {
             @Override
             Logger log() {
                 return logger;

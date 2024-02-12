@@ -32,7 +32,9 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.TestUtils;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.JsonObject;
 
@@ -82,7 +84,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_createPackageJson() throws IOException {
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new MockOptions(getClassFinder(), npmFolder)
                 .withBuildDirectory(TARGET).withBundleBuild(true);
 
         TaskGeneratePackageJson task = new TaskGeneratePackageJson(options);
@@ -110,7 +112,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         // - resourceInFolder.js.map
         File dir = TestUtils.getTestFolder(fsDir);
 
-        Options options = new Options(Mockito.mock(Lookup.class), null);
+        Options options = new MockOptions(null);
         options.withJarFrontendResourcesFolder(frontendDepsFolder)
                 .copyResources(jars(jar, dir));
         TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(options);
