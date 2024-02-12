@@ -25,4 +25,5 @@ import org.apache.maven.plugins.annotations.Mojo;
  */
 @Mojo(name = "dance", defaultPhase = LifecyclePhase.PRE_CLEAN)
 public class FrontendDanceMojo extends CleanFrontendMojo {
+
 }

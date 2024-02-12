@@ -176,6 +176,15 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * @return {@code true} to remove created files, {@code false} to keep files
      */
     protected boolean cleanFrontendFiles() {
+        if (isHillaUsed(project, frontendDirectory())) {
+            /*
+             * Override this to not clean generated frontend files after the
+             * build. For Hilla, the generated files can still be useful for
+             * developers after the build. For example, a developer can use
+             * {@code vite.generated.ts} to run tests with vitest in CI.
+             */
+            return false;
+        }
         return cleanFrontendFiles;
     }
 
