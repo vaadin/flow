@@ -315,7 +315,9 @@ public class NodeTasks implements FallibleCommand {
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        if (endpointGeneratorTaskFactory != null) {
+        if (endpointGeneratorTaskFactory != null && FrontendUtils
+                .isHillaUsed(options.getFrontendDirectory(),
+                        options.getClassFinder())) {
             TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
                     .createTaskGenerateOpenAPI(options);
             commands.add(taskGenerateOpenAPI);
