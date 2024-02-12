@@ -55,7 +55,7 @@ public class TranslationFileRequestHandler implements RequestHandler {
         writeFileToResponse(response, translationPropertyFile);
     }
 
-    private static void handleNotFound(VaadinResponse response) {
+    private void handleNotFound(VaadinResponse response) {
         response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
