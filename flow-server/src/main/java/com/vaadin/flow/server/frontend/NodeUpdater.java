@@ -175,7 +175,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     Json.parse(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    options.isReactRouterEnabled());
+                    options.isReactEnabled());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)
@@ -296,7 +296,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDependencies() {
         Map<String, String> dependencies = readDependencies("default",
                 "dependencies");
-        if (options.isReactRouterEnabled()) {
+        if (options.isReactEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
         } else {
@@ -349,7 +349,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.putAll(readDependencies("default", "devDependencies"));
         defaults.putAll(readDependencies("vite", "devDependencies"));
         putHillaComponentsDependencies(defaults, "devDependencies");
-        if (options.isReactRouterEnabled()) {
+        if (options.isReactEnabled()) {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
         }
@@ -599,7 +599,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             Map<String, String> dependencies, String packageJsonKey) {
         if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
-            if (options.isReactRouterEnabled()) {
+            if (options.isReactEnabled()) {
                 dependencies.putAll(readDependencies("hilla/components/react",
                         packageJsonKey));
             } else {

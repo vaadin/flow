@@ -331,12 +331,12 @@ public interface DeploymentConfiguration
     }
 
     /**
-     * Check if the React Router is enabled for the project instead of Vaadin
-     * router.
+     * Check if the React is enabled for the project, including React router
+     * instead of Vaadin router.
      *
-     * @return {@code true} if React Router is used, on by default
+     * @return {@code true} if React is used, default is {@code true}
      */
-    default boolean isReactRouterEnabled() {
-        return getBooleanProperty(InitParameters.REACT_ROUTER_ENABLED, true);
+    default boolean isReactEnabled() {
+        return getBooleanProperty(InitParameters.REACT_ENABLE, true);
     }
 }

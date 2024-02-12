@@ -27,7 +27,7 @@ import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TO
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
-import static com.vaadin.flow.server.InitParameters.REACT_ROUTER_ENABLED;
+import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -63,7 +63,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -256,7 +255,7 @@ public class BuildFrontendUtil {
             buildInfo.put(DISABLE_PREPARE_FRONTEND_CACHE, true);
         }
 
-        buildInfo.put(REACT_ROUTER_ENABLED, adapter.isReactRouterEnabled());
+        buildInfo.put(REACT_ENABLE, adapter.isReactEnabled());
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
@@ -332,7 +331,7 @@ public class BuildFrontendUtil {
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withCiBuild(adapter.ciBuild())
                     .withForceProductionBuild(adapter.forceProductionBuild())
-                    .withReactRouter(adapter.isReactRouterEnabled());
+                    .withReact(adapter.isReactEnabled());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -397,7 +396,7 @@ public class BuildFrontendUtil {
                     .withBundleBuild(true)
                     .skipDevBundleBuild(adapter.skipDevBundleBuild())
                     .withCompressBundle(adapter.compressBundle())
-                    .withReactRouter(adapter.isReactRouterEnabled());
+                    .withReact(adapter.isReactEnabled());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

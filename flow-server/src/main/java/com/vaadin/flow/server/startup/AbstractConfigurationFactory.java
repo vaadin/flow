@@ -49,7 +49,7 @@ import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
-import static com.vaadin.flow.server.InitParameters.REACT_ROUTER_ENABLED;
+import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -167,9 +167,9 @@ public class AbstractConfigurationFactory implements Serializable {
             UsageStatistics.markAsUsed("flow/always-execute-prepare-frontend",
                     null);
         }
-        if (buildInfo.hasKey(REACT_ROUTER_ENABLED)) {
-            params.put(REACT_ROUTER_ENABLED,
-                    String.valueOf(buildInfo.getBoolean(REACT_ROUTER_ENABLED)));
+        if (buildInfo.hasKey(REACT_ENABLE)) {
+            params.put(REACT_ENABLE,
+                    String.valueOf(buildInfo.getBoolean(REACT_ENABLE)));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);

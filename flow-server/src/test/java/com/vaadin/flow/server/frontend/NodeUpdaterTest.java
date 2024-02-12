@@ -472,12 +472,12 @@ public class NodeUpdaterTest {
 
     @Test
     public void getDefaultDependencies_reactRouterIsUsed_addsHillaReactComponents() {
-        boolean reactRouterEnabled = options.isReactRouterEnabled();
+        boolean reactRouterEnabled = options.isReactEnabled();
         try (MockedStatic<FrontendUtils> mock = Mockito
                 .mockStatic(FrontendUtils.class)) {
             mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
                     Mockito.any(ClassFinder.class))).thenReturn(true);
-            options.withReactRouter(true);
+            options.withReact(true);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
             Assert.assertFalse(
@@ -500,18 +500,18 @@ public class NodeUpdaterTest {
                     "React dev dependency should be added when react-router is used",
                     defaultDevDeps.containsKey("react-dev-dependency"));
         } finally {
-            options.withReactRouter(reactRouterEnabled);
+            options.withReact(reactRouterEnabled);
         }
     }
 
     @Test
     public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
-        boolean reactRouterEnabled = options.isReactRouterEnabled();
+        boolean reactRouterEnabled = options.isReactEnabled();
         try (MockedStatic<FrontendUtils> mock = Mockito
                 .mockStatic(FrontendUtils.class)) {
             mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
                     Mockito.any(ClassFinder.class))).thenReturn(true);
-            options.withReactRouter(false);
+            options.withReact(false);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
             Assert.assertTrue(
@@ -530,7 +530,7 @@ public class NodeUpdaterTest {
                     "Lit dev dependency should be added when vaadin-router is used",
                     defaultDevDeps.containsKey("lit-dev-dependency"));
         } finally {
-            options.withReactRouter(reactRouterEnabled);
+            options.withReact(reactRouterEnabled);
         }
     }
 

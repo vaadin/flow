@@ -21,16 +21,13 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.AbstractConfigurationFactory;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-import static com.vaadin.flow.server.InitParameters.REACT_ROUTER_ENABLED;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
