@@ -91,7 +91,12 @@ public class HandlerHelper implements Serializable {
         /**
          * Page showing that the browser is unsupported.
          */
-        BROWSER_TOO_OLD("oldbrowser");
+        BROWSER_TOO_OLD("oldbrowser"),
+
+        /**
+         * Translation properties file requests.
+         */
+        TRANSLATION_FILE(ApplicationConstants.REQUEST_TYPE_TRANSLATION_FILE);
 
         private final String identifier;
 

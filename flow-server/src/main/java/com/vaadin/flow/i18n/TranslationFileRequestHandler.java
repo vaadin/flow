@@ -30,12 +30,11 @@ public class TranslationFileRequestHandler implements RequestHandler {
 
     static final String COUNTRY_PARAMETER_NAME = "country";
 
-    static final String TRANSLATION_FILE_REQUEST_PATH_INFO = "/i18n";
-
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!isTranslationFileRequest(request)) {
+        if (!HandlerHelper.isRequestType(request,
+                HandlerHelper.RequestType.TRANSLATION_FILE)) {
             return false;
         }
         Locale locale = getLocale(request);
@@ -65,10 +64,6 @@ public class TranslationFileRequestHandler implements RequestHandler {
         translationPropertyFile.keySet().forEach(
                 key -> json.put(key, translationPropertyFile.getString(key)));
         response.getWriter().write(json.toJson());
-    }
-
-    private boolean isTranslationFileRequest(VaadinRequest request) {
-        return request.getPathInfo().equals(TRANSLATION_FILE_REQUEST_PATH_INFO);
     }
 
     private Locale getLocale(VaadinRequest request) {

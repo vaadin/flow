@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.i18n;
 
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.ApplicationConstants;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
@@ -83,7 +85,7 @@ public class TranslationFileRequestHandlerTest {
         try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
                 Mockito.CALLS_REAL_METHODS)) {
             util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            setRequestParams(null, "", "/other");
+            setRequestParams(null, "", "other");
             Assert.assertFalse(
                     handler.handleRequest(session, request, response));
         }
@@ -133,7 +135,7 @@ public class TranslationFileRequestHandlerTest {
                 Mockito.CALLS_REAL_METHODS)) {
             util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
             setRequestParams(lang, country,
-                    TranslationFileRequestHandler.TRANSLATION_FILE_REQUEST_PATH_INFO);
+                    HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier());
             Assert.assertTrue(
                     handler.handleRequest(session, request, response));
             Assert.assertEquals(expectedResponseContent, getResponseContent());
@@ -146,14 +148,16 @@ public class TranslationFileRequestHandlerTest {
     }
 
     private void setRequestParams(String lang, String country,
-            String pathInfo) {
+            String requestTypeId) {
         Mockito.when(request.getParameter(
                 TranslationFileRequestHandler.LANGUAGE_PARAMETER_NAME))
                 .thenReturn(lang);
         Mockito.when(request.getParameter(
                 TranslationFileRequestHandler.COUNTRY_PARAMETER_NAME))
                 .thenReturn(country);
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        Mockito.when(request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn(requestTypeId);
     }
 
     private void createTranslationFiles(boolean withDefault)
