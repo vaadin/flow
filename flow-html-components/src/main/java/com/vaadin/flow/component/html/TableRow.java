@@ -138,10 +138,14 @@ public class TableRow extends HtmlComponent
     }
 
     /**
-     * Returns the header cell at a given position relative to other header cells.
+     * Returns the header cell at a given position relative to other header
+     * cells.
      *
-     * @param index the position of the header cell relative to other header cells.
-     * @return the header cell at the given position (relative to other header cells).
+     * @param index
+     *            the position of the header cell relative to other header
+     *            cells.
+     * @return the header cell at the given position (relative to other header
+     *         cells).
      */
     public Optional<TableHeaderCell> getHeaderCell(int index) {
         return getChildren().filter(c -> c instanceof TableHeaderCell)
@@ -151,8 +155,10 @@ public class TableRow extends HtmlComponent
     /**
      * Returns the data cell at a given position relative to other data cells.
      *
-     * @param index the position of the data cell relative to other data cells.
-     * @return the data cell at the given position (relative to other data cells).
+     * @param index
+     *            the position of the data cell relative to other data cells.
+     * @return the data cell at the given position (relative to other data
+     *         cells).
      */
     public Optional<TableCell> getDataCell(int index) {
         return getChildren().filter(c -> c instanceof TableCell)
@@ -162,9 +168,12 @@ public class TableRow extends HtmlComponent
     /**
      * Returns the cell at a given position.
      *
-     * @param index the position of the cell.
+     * @param index
+     *            the position of the cell.
      * @return the cell at the given position
-     * @throws IndexOutOfBoundsException if index is negative or greater than (or equal to) the number of cells in the row
+     * @throws IndexOutOfBoundsException
+     *             if index is negative or greater than (or equal to) the number
+     *             of cells in the row
      */
     public Optional<Component> getCell(int index) {
         return getChildren().filter(
@@ -175,7 +184,8 @@ public class TableRow extends HtmlComponent
     /**
      * Removes the cell at a given position.
      *
-     * @param index the position of the cell to remove
+     * @param index
+     *            the position of the cell to remove
      */
     public void removeCell(int index) {
         getCell(index).ifPresent(this::remove);
@@ -184,7 +194,9 @@ public class TableRow extends HtmlComponent
     /**
      * Removes the header cell at a position relative to other header cells.
      *
-     * @param index the position of the header cell relative to other header cells.
+     * @param index
+     *            the position of the header cell relative to other header
+     *            cells.
      */
     public void removeHeaderCell(int index) {
         getHeaderCell(index).ifPresent(this::remove);
@@ -193,7 +205,8 @@ public class TableRow extends HtmlComponent
     /**
      * Removes a header cell.
      *
-     * @param headerCell the header cell to remove.
+     * @param headerCell
+     *            the header cell to remove.
      */
     public void removeHeaderCell(TableHeaderCell headerCell) {
         remove(headerCell);
@@ -202,7 +215,9 @@ public class TableRow extends HtmlComponent
     /**
      * Removes the data cell at a given position relative to other data cells.
      *
-     * @param index the position of the data cell to remove relative to other data cells.
+     * @param index
+     *            the position of the data cell to remove relative to other data
+     *            cells.
      */
     public void removeDataCell(int index) {
         getDataCell(index).ifPresent(this::remove);
@@ -211,7 +226,8 @@ public class TableRow extends HtmlComponent
     /**
      * Removes a data cell.
      *
-     * @param dataCell the data cell to remove.
+     * @param dataCell
+     *            the data cell to remove.
      */
     public void removeDataCell(TableCell dataCell) {
         remove(dataCell);
