@@ -223,8 +223,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void applyThemeVariant(Document indexDocument,
             VaadinContext context) throws IOException {
-        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> indexDocument
-                .head().parent().attr("theme", theme.variant()));
+        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
+            String variant = theme.variant();
+            if (!variant.isEmpty()) {
+                indexDocument.head().parent().attr("theme", variant);
+            }
+        });
     }
 
     private void addStyleTagReferences(Document indexDocument,
