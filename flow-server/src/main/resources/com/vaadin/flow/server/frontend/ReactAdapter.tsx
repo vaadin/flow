@@ -43,8 +43,42 @@ type DispatchEvent<T> = T extends undefined
 
 const emptyAction: Dispatch<unknown> = () => {};
 
-type RenderHooks = Readonly<{
+/**
+ * An object with APIs exposed for using in the {@link ReactAdapterElement#render}
+ * implementation.
+ */
+export type RenderHooks = Readonly<{
+    /**
+     * A hook API for using stateful JS properties of the Web Component from
+     * the React `render()`.
+     *
+     * @typeParam T - Type of the state value
+     *
+     * @param key - Web Component property name, which is used for two-way
+     * value propagation from the server and back.
+     * @param initialValue - Fallback initial value (optional). Only applies if
+     * the Java component constructor does not invoke `setState`.
+     * @returns A tuple with two values:
+     * 1. The current state.
+     * 2. The `set` function for changing the state and triggering render
+     * @protected
+     */
     useState: ReactAdapterElement["useState"]
+
+    /**
+     * A hook helper to simplify dispatching a `CustomEvent` on the Web
+     * Component from React.
+     *
+     * @typeParam T - The type for `event.detail` value (optional).
+     *
+     * @param type - The `CustomEvent` type string.
+     * @param options - The settings for the `CustomEvent`.
+     * @returns The `dispatch` function. The function parameters change
+     * depending on the `T` generic type:
+     * - For `undefined` type (default), has no parameters.
+     * - For other types, has one parameter for the `event.detail` value of that type.
+     * @protected
+     */
     useCustomEvent: ReactAdapterElement["useCustomEvent"]
 }>;
 
@@ -92,8 +126,8 @@ export abstract class ReactAdapterElement extends HTMLElement {
     }
 
     /**
-     * A hook-like API for using stateful JS properties of the Web Component
-     * from the React `render()`.
+     * A hook API for using stateful JS properties of the Web Component from
+     * the React `render()`.
      *
      * @typeParam T - Type of the state value
      *
@@ -135,8 +169,8 @@ export abstract class ReactAdapterElement extends HTMLElement {
     }
 
     /**
-     * A React hook-like helper to simplify dispatching a `CustomEvent` on the
-     * Web Component from React.
+     * A hook helper to simplify dispatching a `CustomEvent` on the Web
+     * Component from React.
      *
      * @typeParam T - The type for `event.detail` value (optional).
      *
@@ -167,7 +201,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
     /**
      * The Web Component render function. To be implemented by users with React.
      *
-     * @param hooks - the Web Component APIs exposed for React render.
+     * @param hooks - the adapter APIs exposed for the implementation.
      * @protected
      */
     protected abstract render(hooks: RenderHooks): ReactElement | null;
