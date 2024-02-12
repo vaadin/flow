@@ -65,16 +65,14 @@ public class TaskUpdatePackages extends NodeUpdater {
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param finder
-     *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
      * @param options
      *            the task options
      */
-    TaskUpdatePackages(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, Options options) {
-        super(finder, frontendDependencies, options);
+    TaskUpdatePackages(FrontendDependenciesScanner frontendDependencies,
+            Options options) {
+        super(frontendDependencies, options);
         this.jarResourcesFolder = options.getJarFrontendResourcesFolder();
         this.forceCleanUp = options.isCleanNpmFiles();
         this.enablePnpm = options.isEnablePnpm();

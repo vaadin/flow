@@ -447,7 +447,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private TaskRunNpmInstall createCiTask() {
         NodeUpdater updater = getNodeUpdater();
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
         options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
@@ -459,7 +458,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Override
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
         NodeUpdater updater = createAndRunNodeUpdater(null);
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
         options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
@@ -470,7 +468,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
         NodeUpdater updater = createAndRunNodeUpdater(versionsContent);
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder);
         options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
@@ -504,10 +501,9 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     private NodeUpdater createNodeUpdater(String versionsContent) {
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET);
+        options.withBuildDirectory(TARGET);
 
-        return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
+        return new NodeUpdater(Mockito.mock(FrontendDependencies.class),
                 options) {
 
             @Override
