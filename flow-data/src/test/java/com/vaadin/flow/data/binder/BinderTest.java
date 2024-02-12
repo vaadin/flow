@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -441,6 +442,86 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.writeBean(person);
 
         Assert.assertEquals(fieldValue, person.getFirstName());
+    }
+
+    @Test
+    public void write_binding_bound_propertyIsUpdated()
+            throws ValidationException {
+        Binder<Person> binder = new Binder<>();
+        Binding<Person, String> binding = binder.bind(nameField,
+                Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        Person person = new Person();
+
+        String nameValue = "bar";
+        nameField.setValue(nameValue);
+        String ageValue = "10";
+        ageField.setValue(ageValue);
+
+        person.setFirstName("foo");
+        person.setAge(20);
+
+        binder.writeBean(person, Set.of(binding));
+
+        Assert.assertEquals(1, person.getAgeSetterCallcount());
+        Assert.assertEquals(nameValue, person.getFirstName());
+        Assert.assertNotEquals((int) Integer.valueOf(ageValue),
+                person.getAge());
+    }
+
+    @Test
+    public void write_changedBindings_bound_propertyIsUpdated()
+            throws ValidationException {
+        Binder<Person> binder = new Binder<>();
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        Person person = new Person();
+        Person updatedPerson = new Person();
+
+        String nameValue = "bar";
+        nameField.setValue(nameValue);
+
+        person.setFirstName("foo");
+        person.setAge(20);
+
+        Assert.assertEquals(1, binder.getChangedBindings().size());
+        binder.writeBean(updatedPerson, binder.getChangedBindings());
+
+        Assert.assertEquals(0, updatedPerson.getAgeSetterCallcount());
+        Assert.assertEquals(nameValue, updatedPerson.getFirstName());
+        Assert.assertEquals(0, updatedPerson.getAge());
+    }
+
+    @Test
+    public void update_bound_propertyIsUpdated() throws ValidationException {
+        Binder<Person> binder = new Binder<>();
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        Person person = new Person();
+        Person updatedPerson = new Person();
+
+        String nameValue = "bar";
+        nameField.setValue(nameValue);
+
+        person.setFirstName("foo");
+        person.setAge(20);
+
+        Assert.assertEquals(1, binder.getChangedBindings().size());
+
+        binder.writeChangedBindingsToBean(updatedPerson);
+
+        Assert.assertEquals(0, updatedPerson.getAgeSetterCallcount());
+        Assert.assertEquals(nameValue, updatedPerson.getFirstName());
+        Assert.assertEquals(0, updatedPerson.getAge());
     }
 
     @Test

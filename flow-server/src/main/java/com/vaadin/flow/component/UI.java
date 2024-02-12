@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -1925,8 +1924,7 @@ public class UI extends Component
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
-            if (getInternals().getSession().getConfiguration()
-                    .isReactRouterEnabled()
+            if (getInternals().getSession().getConfiguration().isReactEnabled()
                     && getInternals().getContinueNavigationAction() != null) {
                 getInternals().clearLastHandledNavigation();
             } else {

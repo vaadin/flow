@@ -2325,6 +2325,7 @@ public class Binder<BEAN> implements Serializable {
      * thrown.
      *
      * @see #writeBeanIfValid(Object)
+     * @see #writeBean(Object, Collection)
      * @see #readBean(Object)
      * @see #setBean(Object)
      *
@@ -2335,11 +2336,92 @@ public class Binder<BEAN> implements Serializable {
      *             if some of the bound field values fail to validate
      */
     public void writeBean(BEAN bean) throws ValidationException {
-        BinderValidationStatus<BEAN> status = doWriteIfValid(bean, bindings);
+        writeBean(bean, bindings);
+    }
+
+    /**
+     * Writes changes from the given bindings to the given bean if all
+     * validators (binding and bean level) pass.
+     * <p>
+     * If any field binding validator fails, no values are written and a
+     * {@code ValidationException} is thrown.
+     * <p>
+     * If all field level validators pass, the given bean is updated and bean
+     * level validators are run on the updated bean. If any bean level validator
+     * fails, the bean updates are reverted and a {@code ValidationException} is
+     * thrown.
+     *
+     * @see #writeBeanIfValid(Object)
+     * @see #writeBean(Object)
+     * @see #readBean(Object)
+     * @see #setBean(Object)
+     * @see #writeChangedBindingsToBean(Object)
+     *
+     * @param bean
+     *            the object to which to write the field values, not
+     *            {@code null}
+     * @param bindingsToWrite
+     *            Collection of bindings to use in writing the bean
+     * @throws ValidationException
+     *             if some of the bound field values fail to validate
+     * @throws IllegalArgumentException
+     *             if bindingsToWrite contains bindings not belonging to this
+     *             Binder
+     */
+    public void writeBean(BEAN bean,
+            Collection<Binding<BEAN, ?>> bindingsToWrite)
+            throws ValidationException {
+        if (!bindings.containsAll(bindingsToWrite)) {
+            throw new IllegalArgumentException(
+                    "Can't write bean using binding that is not bound to this Binder.");
+        }
+        BinderValidationStatus<BEAN> status = doWriteIfValid(bean,
+                bindingsToWrite);
         if (status.hasErrors()) {
             throw new ValidationException(status.getFieldValidationErrors(),
                     status.getBeanValidationErrors());
         }
+    }
+
+    /**
+     * Writes changes from the changed bindings to the given bean if all
+     * validators (binding and bean level) pass. If the bean is the same
+     * instance where Binder read the bean, this method updates the bean with
+     * the changes.
+     * <p>
+     * If any field binding validator fails, no values are written and a
+     * {@code ValidationException} is thrown.
+     * <p>
+     * If all field level validators pass, the given bean is updated and bean
+     * level validators are run on the updated bean. If any bean level validator
+     * fails, the bean updates are reverted and a {@code ValidationException} is
+     * thrown.
+     *
+     * @see #writeBeanIfValid(Object)
+     * @see #writeBean(Object)
+     * @see #readBean(Object)
+     * @see #setBean(Object)
+     *
+     * @param bean
+     *            the object to which to write the field values, not
+     *            {@code null}
+     * @throws ValidationException
+     *             if some of the bound field values fail to validate
+     */
+    public void writeChangedBindingsToBean(BEAN bean)
+            throws ValidationException {
+        writeBean(bean, getChangedBindings());
+    }
+
+    /**
+     * Get the immutable Set of changed bindings.
+     *
+     * @see #hasChanges()
+     *
+     * @return Immutable set of bindings.
+     */
+    public Set<Binding<BEAN, ?>> getChangedBindings() {
+        return Collections.unmodifiableSet(changedBindings);
     }
 
     /**

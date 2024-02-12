@@ -37,11 +37,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -70,12 +69,13 @@ public class NodeUpdaterTest {
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        finder = Mockito.mock(ClassFinder.class);
-        options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET).withFeatureFlags(featureFlags);
+        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+                this.getClass().getClassLoader()));
+        options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
+                .withFeatureFlags(featureFlags);
 
-        nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), options) {
+        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
+                options) {
 
             @Override
             public void execute() {
@@ -472,12 +472,12 @@ public class NodeUpdaterTest {
 
     @Test
     public void getDefaultDependencies_reactRouterIsUsed_addsHillaReactComponents() {
-        boolean reactRouterEnabled = options.isReactRouterEnabled();
+        boolean reactRouterEnabled = options.isReactEnabled();
         try (MockedStatic<FrontendUtils> mock = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class)))
-                    .thenReturn(true);
-            options.withReactRouter(true);
+            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
+                    Mockito.any(ClassFinder.class))).thenReturn(true);
+            options.withReact(true);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
             Assert.assertFalse(
@@ -500,18 +500,18 @@ public class NodeUpdaterTest {
                     "React dev dependency should be added when react-router is used",
                     defaultDevDeps.containsKey("react-dev-dependency"));
         } finally {
-            options.withReactRouter(reactRouterEnabled);
+            options.withReact(reactRouterEnabled);
         }
     }
 
     @Test
     public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
-        boolean reactRouterEnabled = options.isReactRouterEnabled();
+        boolean reactRouterEnabled = options.isReactEnabled();
         try (MockedStatic<FrontendUtils> mock = Mockito
                 .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class)))
-                    .thenReturn(true);
-            options.withReactRouter(false);
+            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
+                    Mockito.any(ClassFinder.class))).thenReturn(true);
+            options.withReact(false);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
             Assert.assertTrue(
@@ -530,7 +530,7 @@ public class NodeUpdaterTest {
                     "Lit dev dependency should be added when vaadin-router is used",
                     defaultDevDeps.containsKey("lit-dev-dependency"));
         } finally {
-            options.withReactRouter(reactRouterEnabled);
+            options.withReact(reactRouterEnabled);
         }
     }
 
@@ -557,13 +557,13 @@ public class NodeUpdaterTest {
     @Test
     public void readPackageJson_nonExistingFile_doesNotThrow()
             throws IOException {
-        NodeUpdater.readPackageJson("non-existing-folder");
+        nodeUpdater.readPackageJson("non-existing-folder");
     }
 
     @Test
     public void readDependencies_doesntHaveDependencies_doesNotThrow() {
-        NodeUpdater.readDependencies("no-deps", "dependencies");
-        NodeUpdater.readDependencies("no-deps", "devDependencies");
+        nodeUpdater.readDependencies("no-deps", "dependencies");
+        nodeUpdater.readDependencies("no-deps", "devDependencies");
     }
 
     private String getPolymerVersion(JsonObject object) {

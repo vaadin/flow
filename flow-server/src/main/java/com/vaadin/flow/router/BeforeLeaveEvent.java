@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.Command;
 
 /**
  * Event created before navigation happens.
@@ -90,7 +89,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
                 // changes instead of 1.
                 if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
                         && !event.getUI().getSession().getConfiguration()
-                                .isReactRouterEnabled()) {
+                                .isReactEnabled()) {
                     event = new NavigationEvent(event.getSource(),
                             event.getLocation(), event.getUI(),
                             NavigationTrigger.PROGRAMMATIC);

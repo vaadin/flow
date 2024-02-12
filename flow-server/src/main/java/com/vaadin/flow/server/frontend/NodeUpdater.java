@@ -82,6 +82,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
+    private static final String FRONTEND_RESOURCES_PATH = NodeUpdater.class
+            .getPackage().getName().replace('.', '/') + "/";
     @Deprecated
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     @Deprecated
@@ -107,16 +109,14 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Constructor.
      *
-     * @param finder
-     *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
      * @param options
      *            the task options
      */
-    protected NodeUpdater(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, Options options) {
-        this.finder = finder;
+    protected NodeUpdater(FrontendDependenciesScanner frontendDependencies,
+            Options options) {
+        this.finder = options.getClassFinder();
         this.frontDeps = frontendDependencies;
         this.options = options;
     }
@@ -175,7 +175,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     Json.parse(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    options.isReactRouterEnabled());
+                    options.isReactEnabled());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)
@@ -296,19 +296,18 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDependencies() {
         Map<String, String> dependencies = readDependencies("default",
                 "dependencies");
-        if (options.isReactRouterEnabled()) {
+        if (options.isReactEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
         } else {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
         }
-        putHillaComponentsDependencies(options, dependencies, "dependencies");
+        putHillaComponentsDependencies(dependencies, "dependencies");
         return dependencies;
     }
 
-    static Map<String, String> readDependencies(String id,
-            String packageJsonKey) {
+    Map<String, String> readDependencies(String id, String packageJsonKey) {
         try {
             Map<String, String> map = new HashMap<>();
             JsonObject dependencies = readPackageJson(id)
@@ -333,27 +332,24 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     }
 
-    static JsonObject readPackageJson(String id) throws IOException {
-        try (InputStream packageJson = NodeUpdater.class
-                .getResourceAsStream("dependencies/" + id + "/package.json")) {
-            if (packageJson == null) {
-                LoggerFactory.getLogger(NodeUpdater.class)
-                        .error("Unable to find package.json from '" + id + "'");
-                return Json.createObject();
-            }
-            JsonObject content = Json.parse(
-                    IOUtils.toString(packageJson, StandardCharsets.UTF_8));
-            return content;
+    JsonObject readPackageJson(String id) throws IOException {
+        URL resource = options.getClassFinder()
+                .getResource(FRONTEND_RESOURCES_PATH + "dependencies/" + id
+                        + "/package.json");
+        if (resource == null) {
+            LoggerFactory.getLogger(NodeUpdater.class)
+                    .error("Unable to find package.json from '" + id + "'");
+            return Json.createObject();
         }
-
+        return Json.parse(IOUtils.toString(resource, StandardCharsets.UTF_8));
     }
 
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
         defaults.putAll(readDependencies("default", "devDependencies"));
         defaults.putAll(readDependencies("vite", "devDependencies"));
-        putHillaComponentsDependencies(options, defaults, "devDependencies");
-        if (options.isReactRouterEnabled()) {
+        putHillaComponentsDependencies(defaults, "devDependencies");
+        if (options.isReactEnabled()) {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
         }
@@ -591,8 +587,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Adds Hilla components to package.json if Hilla is used in the project.
      *
-     * @param options
-     *            build options
      * @param dependencies
      *            to be added into package.json
      * @param packageJsonKey
@@ -601,10 +595,11 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @see <a href=
      *      "https://github.com/vaadin/hilla/tree/main/packages/java/hilla/src/main/resources/com/vaadin/flow/server/frontend/dependencies/hilla/components</a>
      */
-    private static void putHillaComponentsDependencies(Options options,
+    private void putHillaComponentsDependencies(
             Map<String, String> dependencies, String packageJsonKey) {
-        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory())) {
-            if (options.isReactRouterEnabled()) {
+        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                options.getClassFinder())) {
+            if (options.isReactEnabled()) {
                 dependencies.putAll(readDependencies("hilla/components/react",
                         packageJsonKey));
             } else {

@@ -276,11 +276,9 @@ public class NodeTasksViteTest {
             bundleUtils.verify(
                     () -> BundleUtils.copyPackageLockFromBundle(options),
                     Mockito.times(1));
-            validationUtil.verify(
-                    () -> BundleValidationUtil.needsBuild(any(Options.class),
-                            any(FrontendDependenciesScanner.class),
-                            any(ClassFinder.class), any(Mode.class)),
-                    Mockito.never());
+            validationUtil.verify(() -> BundleValidationUtil.needsBuild(
+                    any(Options.class), any(FrontendDependenciesScanner.class),
+                    any(Mode.class)), Mockito.never());
         }
     }
 

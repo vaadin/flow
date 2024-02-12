@@ -41,8 +41,8 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -395,12 +395,9 @@ public class FrontendUtilsTest {
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toJson(), StandardCharsets.UTF_8);
 
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-
         Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET);
-        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+        Options options = new MockOptions(npmFolder).withBuildDirectory(TARGET);
+        NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependencies.class), options) {
             @Override
             public void execute() throws ExecutionFailedException {

@@ -227,7 +227,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
 
-    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "${null}")
+    @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactRouterEnabled;
 
     /**
@@ -251,6 +251,37 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                     "Failed to retrieve runtime classpath elements from project '%s'",
                     project), e);
         }
+    }
+
+    /**
+     * Checks if Hilla is available based on the Maven project's classpath.
+     *
+     * @param mavenProject
+     *            Target Maven project
+     * @return true if Hilla is available, false otherwise
+     */
+    public static boolean isHillaAvailable(MavenProject mavenProject) {
+        List<String> classpathElements = FlowModeAbstractMojo
+                .getClasspathElements(mavenProject);
+        return BuildFrontendUtil.getClassFinder(classpathElements).getResource(
+                "com/vaadin/hilla/EndpointController.class") != null;
+    }
+
+    /**
+     * Checks if Hilla is available and Hilla views are used in the Maven
+     * project based on what is in routes.ts or routes.tsx file.
+     *
+     * @param mavenProject
+     *            Target Maven project
+     * @param frontendDirectory
+     *            Target frontend directory.
+     * @return {@code true} if Hilla is available and Hilla views are used,
+     *         {@code false} otherwise
+     */
+    public static boolean isHillaUsed(MavenProject mavenProject,
+            File frontendDirectory) {
+        return isHillaAvailable(mavenProject)
+                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
     @Override
@@ -464,7 +495,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isReactRouterEnabled() {
+    public boolean isReactEnabled() {
         if (reactRouterEnabled != null) {
             return reactRouterEnabled;
         }

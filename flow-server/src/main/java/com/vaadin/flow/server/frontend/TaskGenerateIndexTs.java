@@ -22,7 +22,6 @@ import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
@@ -74,7 +73,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         String indexTemplate;
         String indexFile = INDEX_TS;
-        if (options.isReactRouterEnabled()) {
+        if (options.isReactEnabled()) {
             indexFile = "index-react.ts";
         }
         try (InputStream indexTsStream = getClass()

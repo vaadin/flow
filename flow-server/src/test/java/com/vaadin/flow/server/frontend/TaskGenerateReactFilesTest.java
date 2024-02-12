@@ -35,6 +35,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.tests.util.MockOptions;
 
 public class TaskGenerateReactFilesTest {
 
@@ -48,13 +49,11 @@ public class TaskGenerateReactFilesTest {
     @Before
     public void setup() throws IOException {
         classFinder = Mockito.mock(ClassFinder.class);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(classFinder);
 
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
 
-        options = new Options(lookup, temporaryFolder.getRoot())
+        options = new MockOptions(classFinder, temporaryFolder.getRoot())
                 .withBuildDirectory("target");
         frontend = temporaryFolder.newFolder("frontend");
         options.withFrontendDirectory(frontend);
