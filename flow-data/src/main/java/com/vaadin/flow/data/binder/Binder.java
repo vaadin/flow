@@ -57,6 +57,7 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
@@ -256,28 +257,29 @@ public class Binder<BEAN> implements Serializable {
         public boolean isValidatorsDisabled();
 
         /**
-         * Sets up this binding to either disable or enable the default field
+         * Sets up this binding to either enable or disable the default field
          * validator (e.g. min/max validators in DatePicker). This binding-level
          * setting will override the Binder-level setting for this property.
          *
-         * Defaults to {@literal false}.
+         * Defaults to {@literal null}.
          *
-         * @param defaultValidatorDisabled
-         *            {@literal true} to disable default validator for this
-         *            binding, {@literal false} to enable it, {@literal null} to
-         *            reset (fallback to Binder-level setting)
-         * @see Binder#setDefaultValidatorsDisabled(boolean) for faster way to
-         *      disable default validators for all bound fields.
+         * @param defaultValidatorEnabled
+         *            {@literal true} to enable default validator for this
+         *            binding, {@literal false} to disable it, {@literal null}
+         *            to reset (fall back to Binder-level setting)
+         * @see Binder#setDefaultValidatorsEnabled(boolean) for faster way to
+         *      toggle default validators for all bound fields.
          */
-        void setDefaultValidatorDisabled(boolean defaultValidatorDisabled);
+        void setDefaultValidatorEnabled(Boolean defaultValidatorEnabled);
 
         /**
-         * Returns if default validator of bound field is disabled.
+         * Returns if default validator of bound field is enabled.
          *
-         * @return {@literal true} if default validator is disabled for this
-         *         binding, {@literal false} if it is enabled
+         * @return {@literal true} if default validator is enabled for this
+         *         binding, {@literal false} if it is disabled, {@literal null}
+         *         if falls back to Binder-level setting
          */
-        boolean isDefaultValidatorDisabled();
+        Boolean isDefaultValidatorEnabled();
 
         /**
          * Define whether the value should be converted back to the presentation
@@ -849,22 +851,22 @@ public class Binder<BEAN> implements Serializable {
                 BindingValidationStatusHandler handler);
 
         /**
-         * Sets up this binding to either disable or enable the default field
+         * Sets up this binding to either enable or disable the default field
          * validator (e.g. min/max validators in DatePicker). This binding-level
          * setting will override the Binder-level setting for this property.
          *
-         * Defaults to {@literal false}.
+         * By default, all bindings will use the Binder-level setting if no
+         * value is set for them.
          *
-         * @param defaultValidatorDisabled
-         *            {@literal true} to disable default validator for this
-         *            binding, {@literal false} to enable it, {@literal null} to
-         *            reset (fallback to Binder-level setting)
+         * @param defaultValidatorEnabled
+         *            {@literal true} to enable default validator for this
+         *            binding, {@literal false} to disable it
          * @return this binding, for chaining
-         * @see Binder#setDefaultValidatorsDisabled(boolean) for faster way to
-         *      disable default validators for all bound fields.
+         * @see Binder#setDefaultValidatorsEnabled(boolean) for faster way to
+         *      toggle default validators for all bound fields.
          */
-        BindingBuilder<BEAN, TARGET> setDefaultValidatorDisabled(
-                boolean defaultValidatorDisabled);
+        BindingBuilder<BEAN, TARGET> withDefaultValidator(
+                boolean defaultValidatorEnabled);
 
         /**
          * Sets the field to be required. This means two things:
@@ -980,7 +982,7 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean asRequiredSet;
 
-        private Boolean defaultValidatorDisabled;
+        private Boolean defaultValidatorEnabled;
 
         /**
          * Creates a new binding builder associated with the given field.
@@ -1006,12 +1008,14 @@ public class Binder<BEAN> implements Serializable {
             this.statusHandler = statusHandler;
 
             if (field instanceof HasValidator hasValidator) {
-                withValidator((val,
-                        ctx) -> binding != null
-                                && binding.isDefaultValidatorDisabled()
-                                        ? ValidationResult.ok()
-                                        : hasValidator.getDefaultValidator()
-                                                .apply(val, ctx));
+                SerializableSupplier<Boolean> shouldValidate = () -> binding != null
+                        && Optional
+                                .ofNullable(binding.isDefaultValidatorEnabled())
+                                .orElse(getBinder()
+                                        .isDefaultValidatorsEnabled());
+                withValidator((val, ctx) -> shouldValidate.get()
+                        ? hasValidator.getDefaultValidator().apply(val, ctx)
+                        : ValidationResult.ok());
             }
         }
 
@@ -1162,10 +1166,10 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public BindingBuilder<BEAN, TARGET> setDefaultValidatorDisabled(
-                boolean defaultValidatorDisabled) {
+        public BindingBuilder<BEAN, TARGET> withDefaultValidator(
+                boolean defaultValidatorEnabled) {
             checkUnbound();
-            this.defaultValidatorDisabled = defaultValidatorDisabled;
+            this.defaultValidatorEnabled = defaultValidatorEnabled;
             return this;
         }
 
@@ -1304,7 +1308,7 @@ public class Binder<BEAN> implements Serializable {
 
         private Registration onValidationStatusChange;
 
-        private Boolean defaultValidatorDisabled;
+        private Boolean defaultValidatorEnabled;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
@@ -1315,7 +1319,7 @@ public class Binder<BEAN> implements Serializable {
             this.asRequiredSet = builder.asRequiredSet;
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
 
-            defaultValidatorDisabled = builder.defaultValidatorDisabled;
+            defaultValidatorEnabled = builder.defaultValidatorEnabled;
 
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
@@ -1637,15 +1641,14 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public void setDefaultValidatorDisabled(
-                boolean defaultValidatorDisabled) {
-            this.defaultValidatorDisabled = defaultValidatorDisabled;
+        public void setDefaultValidatorEnabled(
+                Boolean defaultValidatorEnabled) {
+            this.defaultValidatorEnabled = defaultValidatorEnabled;
         }
 
         @Override
-        public boolean isDefaultValidatorDisabled() {
-            return Optional.ofNullable(defaultValidatorDisabled)
-                    .orElse(getBinder().isDefaultValidatorsDisabled());
+        public Boolean isDefaultValidatorEnabled() {
+            return defaultValidatorEnabled;
         }
 
         @Override
@@ -1806,7 +1809,7 @@ public class Binder<BEAN> implements Serializable {
 
     private boolean fieldsValidationStatusChangeListenerEnabled = true;
 
-    private boolean defaultValidatorsDisabled;
+    private boolean defaultValidatorsEnabled = true;
 
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
@@ -2872,31 +2875,30 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Sets up the Binder to either disable or enable the default field
+     * Sets up the Binder to either enable or disable the default field
      * validators (e.g. min/max validators in DatePicker) of all bound fields.
      * This Binder-level setting can be overridden for each binding via either
      * the binding object itself, or the binding builder.
      * <p>
-     * Defaults to {@literal false}.
+     * Defaults to {@literal true}.
      *
-     * @param defaultValidatorsDisabled
-     *            {@literal true} to disable default validators of bound fields,
-     *            {@literal false} to enable them
+     * @param defaultValidatorsEnabled
+     *            {@literal true} to enable default validators of bound fields,
+     *            {@literal false} to disable them
      */
-    public void setDefaultValidatorsDisabled(
-            boolean defaultValidatorsDisabled) {
-        this.defaultValidatorsDisabled = defaultValidatorsDisabled;
+    public void setDefaultValidatorsEnabled(boolean defaultValidatorsEnabled) {
+        this.defaultValidatorsEnabled = defaultValidatorsEnabled;
     }
 
     /**
-     * Returns the Binder-level setting for disabling default validators of
-     * bound fields.
+     * Returns the Binder-level setting for enabling default validators of bound
+     * fields.
      *
      * @return {@literal true} if default validators of bound fields are
-     *         disabled, {@literal false} if they are enabled
+     *         enabled, {@literal false} if they are disabled
      */
-    public boolean isDefaultValidatorsDisabled() {
-        return defaultValidatorsDisabled;
+    public boolean isDefaultValidatorsEnabled() {
+        return defaultValidatorsEnabled;
     }
 
     /**

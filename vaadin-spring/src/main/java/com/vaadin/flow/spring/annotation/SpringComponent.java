@@ -19,6 +19,7 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -40,5 +41,6 @@ public @interface SpringComponent {
      *
      * @return the suggested component name, if any
      */
+    @AliasFor(annotation = Component.class)
     String value() default "";
 }
