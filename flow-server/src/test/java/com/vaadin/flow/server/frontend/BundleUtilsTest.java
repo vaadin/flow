@@ -155,7 +155,7 @@ public class BundleUtilsTest {
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(finder
+        Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -190,7 +190,7 @@ public class BundleUtilsTest {
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(finder
+        Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -214,7 +214,7 @@ public class BundleUtilsTest {
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(finder
+        Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_YAML))
                 .thenReturn(jarPackageLock.toURI().toURL());
 

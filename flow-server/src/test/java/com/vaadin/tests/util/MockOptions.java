@@ -23,7 +23,7 @@ public class MockOptions extends Options {
      *            project base folder
      */
     public MockOptions(ClassFinder classFinder, File projectFolder) {
-        super(Mockito.mock(Lookup.class), projectFolder);
+        super(Mockito.mock(Lookup.class), classFinder, projectFolder);
 
         Mockito.when(getLookup().lookup(ClassFinder.class))
                 .thenReturn(classFinder);
