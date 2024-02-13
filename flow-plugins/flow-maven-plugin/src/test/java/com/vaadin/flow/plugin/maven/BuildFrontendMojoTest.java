@@ -525,6 +525,21 @@ public class BuildFrontendMojoTest {
     @Test
     public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
             throws Exception {
+        // Enable Hilla to generate openApi
+        FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
+                """
+                        import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+                        export const routes = [
+                            {
+                                element: <MainLayout />,
+                                handle: { title: 'Main' }
+                            }
+                        ] as RouteObject[];
+
+
+                        export const router = createBrowserRouter(...routes]);
+                        """);
+
         Assert.assertFalse(
                 FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
         mojo.execute();
@@ -534,6 +549,21 @@ public class BuildFrontendMojoTest {
 
     @Test
     public void mavenGoal_generateTsFiles_when_enabled() throws Exception {
+        // Enable Hilla to generate ts files
+        FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
+                """
+                        import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+                        export const routes = [
+                            {
+                                element: <MainLayout />,
+                                handle: { title: 'Main' }
+                            }
+                        ] as RouteObject[];
+
+
+                        export const router = createBrowserRouter(...routes]);
+                        """);
+
         File connectClientApi = new File(generatedTsFolder,
                 "connect-client.default.ts");
         File endpointClientApi = new File(generatedTsFolder, "MyEndpoint.ts");
