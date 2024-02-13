@@ -27,7 +27,6 @@ import org.openqa.selenium.WebElement;
 @NotThreadSafe
 public class JavaLiveReloadIT extends AbstractLiveReloadIT {
 
-
     @Test
     public void splashMessageShownOnAutoReloadAndClosedOnBodyClick() {
         open();
