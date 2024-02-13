@@ -98,7 +98,7 @@ public class BuildFrontendUtilTest {
 
         // no hilla no lookup call
         Mockito.verify(lookup, Mockito.never())
-                lookup(EndpointGeneratorTaskFactory.class);
+                .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.verify(lookup, Mockito.never())
                 .lookup(TaskGenerateOpenAPI.class);
         Mockito.verify(lookup, Mockito.never())
