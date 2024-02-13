@@ -13,19 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.html;
+package com.vaadin.flow.component.html.testbench;
 
-import com.vaadin.flow.component.HasSize;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.HtmlContainer;
-import com.vaadin.flow.component.Tag;
+import com.vaadin.testbench.TestBenchElement;
+import com.vaadin.testbench.elementsbase.Element;
 
 /**
- * Represents the table caption element ({@code <caption>}).
+ * A TestBench element representing a <code>&lt;table&gt;</code> element.
  *
- * @author Stefan Uebe
  * @since 24.4
  */
-@Tag("caption")
-public class TableCaption extends HtmlContainer implements HasStyle, HasSize {
+@Element("table")
+public class NativeTableElement extends TestBenchElement {
 }

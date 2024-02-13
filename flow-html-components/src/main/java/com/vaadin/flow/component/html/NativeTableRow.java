@@ -23,6 +23,7 @@ import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
 /**
@@ -31,13 +32,13 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TR)
-public class TableRow extends HtmlComponent
-        implements HasOrderedComponents, ClickNotifier<TableRow> {
+public class NativeTableRow extends HtmlContainer
+        implements HasOrderedComponents, ClickNotifier<NativeTableRow> {
 
     /**
      * Creates a new empty table row component.
      */
-    public TableRow() {
+    public NativeTableRow() {
         super();
     }
 
@@ -47,9 +48,8 @@ public class TableRow extends HtmlComponent
      * @param components
      *            the children components.
      */
-    public TableRow(Component... components) {
-        super();
-        add(components);
+    public NativeTableRow(Component... components) {
+        super(components);
     }
 
     /**
@@ -57,8 +57,8 @@ public class TableRow extends HtmlComponent
      *
      * @return the new {@code <th>} element.
      */
-    public TableHeaderCell addHeaderCell() {
-        TableHeaderCell cell = new TableHeaderCell();
+    public NativeTableHeaderCell addHeaderCell() {
+        NativeTableHeaderCell cell = new NativeTableHeaderCell();
         add(cell);
         return cell;
     }
@@ -70,11 +70,11 @@ public class TableRow extends HtmlComponent
      *            the position into which the header cell must be added.
      * @return the new header cell.
      */
-    public TableHeaderCell insertHeaderCell(int position) {
+    public NativeTableHeaderCell insertHeaderCell(int position) {
         if (position == 0) {
             return addHeaderCell();
         }
-        TableHeaderCell headerCell = new TableHeaderCell();
+        NativeTableHeaderCell headerCell = new NativeTableHeaderCell();
         addComponentAtIndex(position, headerCell);
         return headerCell;
     }
@@ -84,8 +84,8 @@ public class TableRow extends HtmlComponent
      *
      * @return the new {@code <td>} element.
      */
-    public TableCell addDataCell() {
-        TableCell cell = new TableCell();
+    public NativeTableCell addDataCell() {
+        NativeTableCell cell = new NativeTableCell();
         add(cell);
         return cell;
     }
@@ -97,13 +97,13 @@ public class TableRow extends HtmlComponent
      *            the position into which the data cell must be added.
      * @return the new data cell.
      */
-    public TableCell insertDataCell(int position) {
+    public NativeTableCell insertDataCell(int position) {
         if (position == 0) {
             return addDataCell();
         }
-        TableCell tableCell = new TableCell();
-        addComponentAtIndex(position, tableCell);
-        return tableCell;
+        NativeTableCell nativeTableCell = new NativeTableCell();
+        addComponentAtIndex(position, nativeTableCell);
+        return nativeTableCell;
     }
 
     /**
@@ -111,9 +111,10 @@ public class TableRow extends HtmlComponent
      *
      * @return A list of all header cells in this row.
      */
-    public List<TableHeaderCell> getHeaderCells() {
-        return getChildren().filter(c -> c instanceof TableHeaderCell)
-                .map(c -> (TableHeaderCell) c).collect(Collectors.toList());
+    public List<NativeTableHeaderCell> getHeaderCells() {
+        return getChildren().filter(c -> c instanceof NativeTableHeaderCell)
+                .map(c -> (NativeTableHeaderCell) c)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -121,9 +122,9 @@ public class TableRow extends HtmlComponent
      *
      * @return A list of all data cells in this row.
      */
-    public List<TableCell> getDataCells() {
-        return getChildren().filter(c -> c instanceof TableCell)
-                .map(c -> (TableCell) c).collect(Collectors.toList());
+    public List<NativeTableCell> getDataCells() {
+        return getChildren().filter(c -> c instanceof NativeTableCell)
+                .map(c -> (NativeTableCell) c).collect(Collectors.toList());
     }
 
     /**
@@ -132,8 +133,9 @@ public class TableRow extends HtmlComponent
      * @return a list of all cells in this row.
      */
     public List<Component> getAllCells() {
-        return getChildren().filter(
-                c -> c instanceof TableCell || c instanceof TableHeaderCell)
+        return getChildren()
+                .filter(c -> c instanceof NativeTableCell
+                        || c instanceof NativeTableHeaderCell)
                 .collect(Collectors.toList());
     }
 
@@ -147,9 +149,9 @@ public class TableRow extends HtmlComponent
      * @return the header cell at the given position (relative to other header
      *         cells).
      */
-    public Optional<TableHeaderCell> getHeaderCell(int index) {
-        return getChildren().filter(c -> c instanceof TableHeaderCell)
-                .map(c -> (TableHeaderCell) c).skip(index).findFirst();
+    public Optional<NativeTableHeaderCell> getHeaderCell(int index) {
+        return getChildren().filter(c -> c instanceof NativeTableHeaderCell)
+                .map(c -> (NativeTableHeaderCell) c).skip(index).findFirst();
     }
 
     /**
@@ -160,9 +162,9 @@ public class TableRow extends HtmlComponent
      * @return the data cell at the given position (relative to other data
      *         cells).
      */
-    public Optional<TableCell> getDataCell(int index) {
-        return getChildren().filter(c -> c instanceof TableCell)
-                .map(c -> (TableCell) c).skip(index).findFirst();
+    public Optional<NativeTableCell> getDataCell(int index) {
+        return getChildren().filter(c -> c instanceof NativeTableCell)
+                .map(c -> (NativeTableCell) c).skip(index).findFirst();
     }
 
     /**
@@ -176,8 +178,9 @@ public class TableRow extends HtmlComponent
      *             of cells in the row
      */
     public Optional<Component> getCell(int index) {
-        return getChildren().filter(
-                c -> c instanceof TableCell || c instanceof TableHeaderCell)
+        return getChildren()
+                .filter(c -> c instanceof NativeTableCell
+                        || c instanceof NativeTableHeaderCell)
                 .skip(index).findFirst();
     }
 
@@ -208,7 +211,7 @@ public class TableRow extends HtmlComponent
      * @param headerCell
      *            the header cell to remove.
      */
-    public void removeHeaderCell(TableHeaderCell headerCell) {
+    public void removeHeaderCell(NativeTableHeaderCell headerCell) {
         remove(headerCell);
     }
 
@@ -229,7 +232,7 @@ public class TableRow extends HtmlComponent
      * @param dataCell
      *            the data cell to remove.
      */
-    public void removeDataCell(TableCell dataCell) {
+    public void removeDataCell(NativeTableCell dataCell) {
         remove(dataCell);
     }
 

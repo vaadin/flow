@@ -23,6 +23,7 @@ import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
 /**
@@ -31,28 +32,28 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TABLE)
-public class NativeTable extends HtmlComponent
-        implements HasComponents, ClickNotifier<NativeTable> {
+public class NativeTable extends HtmlContainer
+        implements ClickNotifier<NativeTable> {
 
     /**
      * The table's caption.
      */
-    private TableCaption caption;
+    private NativeTableCaption caption;
 
     /**
      * The {@code <thead>} element of this table.
      */
-    private TableHeader head;
+    private NativeTableHeader head;
 
     /**
      * The list of {@code <tbody>} elements of the table.
      */
-    private final List<TableBody> bodies = new LinkedList<>();
+    private final List<NativeTableBody> bodies = new LinkedList<>();
 
     /**
      * The {@code <tfoot>} element of this table.
      */
-    private TableFooter foot;
+    private NativeTableFooter foot;
 
     /**
      * Creates a new empty table.
@@ -68,8 +69,7 @@ public class NativeTable extends HtmlComponent
      *            the children components.
      */
     public NativeTable(Component... components) {
-        super();
-        add(components);
+        super(components);
     }
 
     /**
@@ -78,9 +78,9 @@ public class NativeTable extends HtmlComponent
      *
      * @return the table's caption.
      */
-    public TableCaption getCaption() {
+    public NativeTableCaption getCaption() {
         if (caption == null) {
-            caption = new TableCaption();
+            caption = new NativeTableCaption();
             addComponentAsFirst(caption);
         }
         return caption;
@@ -112,9 +112,9 @@ public class NativeTable extends HtmlComponent
      * @return This table's {@code <thead>} element. Creates a new one if no
      *         element was present.
      */
-    public TableHeader getHead() {
+    public NativeTableHeader getHead() {
         if (head == null) {
-            head = new TableHeader();
+            head = new NativeTableHeader();
             int index = caption == null ? 0 : 1;
             addComponentAtIndex(index, head);
         }
@@ -137,9 +137,9 @@ public class NativeTable extends HtmlComponent
      * @return The {@code <tfoot>} element of this table. Creates a new one if
      *         none was present.
      */
-    public TableFooter getFoot() {
+    public NativeTableFooter getFoot() {
         if (foot == null) {
-            foot = new TableFooter();
+            foot = new NativeTableFooter();
             add(foot);
         }
         return foot;
@@ -160,7 +160,7 @@ public class NativeTable extends HtmlComponent
      *
      * @return the list of table body elements of this table.
      */
-    public List<TableBody> getBodies() {
+    public List<NativeTableBody> getBodies() {
         return new ArrayList<>(bodies);
     }
 
@@ -171,7 +171,7 @@ public class NativeTable extends HtmlComponent
      * @return the first {@code <tbody>} element in the table. Creates one if
      *         there's none.
      */
-    public TableBody getBody() {
+    public NativeTableBody getBody() {
         if (bodies.isEmpty()) {
             return addBody();
         }
@@ -189,7 +189,7 @@ public class NativeTable extends HtmlComponent
      *         is 0 and there are no body elements present, a new one is created
      *         and returned.
      */
-    public TableBody getBody(int index) {
+    public NativeTableBody getBody(int index) {
         if (index == 0) {
             return getBody();
         }
@@ -201,8 +201,8 @@ public class NativeTable extends HtmlComponent
      *
      * @return The new body.
      */
-    public TableBody addBody() {
-        TableBody body = new TableBody();
+    public NativeTableBody addBody() {
+        NativeTableBody body = new NativeTableBody();
         int index = bodies.size();
         if (caption != null) {
             index++;
@@ -221,7 +221,7 @@ public class NativeTable extends HtmlComponent
      * @param body
      *            The body component to remove.
      */
-    public void removeBody(TableBody body) {
+    public void removeBody(NativeTableBody body) {
         remove(body);
         bodies.remove(body);
     }
@@ -233,7 +233,7 @@ public class NativeTable extends HtmlComponent
      *            The position of the body element to remove.
      */
     public void removeBody(int index) {
-        TableBody body = getBody(index);
+        NativeTableBody body = getBody(index);
         removeBody(body);
     }
 

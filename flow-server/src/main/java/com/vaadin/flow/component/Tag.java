@@ -217,13 +217,13 @@ public @interface Tag {
      */
     String TEXTAREA = "textarea";
     /**
-     * Tag for an <code>&lt;ul&gt;</code>.
-     */
-    /**
      * Tag for a <code>&lt;tr&gt;</code>.
      */
-    String TR = "tr";
     String UL = "ul";
+    /**
+     * Tag for an <code>&lt;ul&gt;</code>.
+     */
+    String TR = "tr";
 
     /**
      * Gets the tag name.

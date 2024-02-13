@@ -1,6 +1,6 @@
 package com.vaadin.flow.component.html;
 
-public class TableCellTest extends ComponentTest {
+public class NativeTableCaptionTest extends ComponentTest {
     // Actual test methods in super class
 
     @Override

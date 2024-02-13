@@ -9,5 +9,5 @@ import com.vaadin.testbench.elementsbase.Element;
  * @since 24.4
  */
 @Element("caption")
-public class TableCaptionElement extends TestBenchElement {
+public class NativeTableCaptionElement extends TestBenchElement {
 }

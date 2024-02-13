@@ -19,10 +19,10 @@ import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
 /**
- * A TestBench element representing a <code>&lt;th&gt;</code> element.
+ * A TestBench element representing a <code>&lt;tfoot&gt;</code> element.
  *
  * @since 24.4
  */
-@Element("th")
-public class TableHeaderCellElement extends TestBenchElement {
+@Element("tfoot")
+public class NativeTableFooterElement extends TestBenchElement {
 }

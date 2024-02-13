@@ -27,7 +27,7 @@ import com.vaadin.flow.component.HasOrderedComponents;
  *
  * @since 24.4
  */
-interface TableRowContainer extends HasOrderedComponents {
+interface NativeTableRowContainer extends HasOrderedComponents {
 
     /**
      * Get the index of a given row.
@@ -36,7 +36,7 @@ interface TableRowContainer extends HasOrderedComponents {
      *            the row to get the index of.
      * @return the index of the row.
      */
-    default int getRowIndex(TableRow row) {
+    default int getRowIndex(NativeTableRow row) {
         return indexOf(row);
     }
 
@@ -45,9 +45,9 @@ interface TableRowContainer extends HasOrderedComponents {
      *
      * @return all the rows in the container.
      */
-    default List<TableRow> getRows() {
-        return getChildren().filter(c -> c instanceof TableRow)
-                .map(c -> (TableRow) c).collect(Collectors.toList());
+    default List<NativeTableRow> getRows() {
+        return getChildren().filter(c -> c instanceof NativeTableRow)
+                .map(c -> (NativeTableRow) c).collect(Collectors.toList());
     }
 
     /**
@@ -58,9 +58,9 @@ interface TableRowContainer extends HasOrderedComponents {
      *            size of the container.
      * @return the row at position {@code index}.
      */
-    default Optional<TableRow> getRow(int index) {
-        return getChildren().filter(c -> c instanceof TableRow)
-                .map(c -> (TableRow) c).skip(index).findFirst();
+    default Optional<NativeTableRow> getRow(int index) {
+        return getChildren().filter(c -> c instanceof NativeTableRow)
+                .map(c -> (NativeTableRow) c).skip(index).findFirst();
     }
 
     /**
@@ -69,7 +69,7 @@ interface TableRowContainer extends HasOrderedComponents {
      * @param rows
      *            the rows to append.
      */
-    default void addRows(TableRow... rows) {
+    default void addRows(NativeTableRow... rows) {
         add(rows);
     }
 
@@ -78,8 +78,8 @@ interface TableRowContainer extends HasOrderedComponents {
      *
      * @return the new row.
      */
-    default TableRow addRow() {
-        TableRow row = new TableRow();
+    default NativeTableRow addRow() {
+        NativeTableRow row = new NativeTableRow();
         add(row);
         return row;
     }
@@ -91,8 +91,8 @@ interface TableRowContainer extends HasOrderedComponents {
      *            a value greater than 0 and less than the container's size.
      * @return the new row.
      */
-    default TableRow insertRow(int position) {
-        TableRow row = new TableRow();
+    default NativeTableRow insertRow(int position) {
+        NativeTableRow row = new NativeTableRow();
         addComponentAtIndex(position, row);
         return row;
     }
@@ -104,7 +104,7 @@ interface TableRowContainer extends HasOrderedComponents {
      *            the rows to remove. If a component in the list is not a child
      *            of the container, it will throw an exception.
      */
-    default void removeRows(TableRow... rows) {
+    default void removeRows(NativeTableRow... rows) {
         remove(rows);
     }
 
@@ -135,7 +135,7 @@ interface TableRowContainer extends HasOrderedComponents {
      * @param row
      *            the new row to insert at the position of the old row.
      */
-    default void replaceRow(int index, TableRow row) {
+    default void replaceRow(int index, NativeTableRow row) {
         Component oldRow = getComponentAt(index);
         replace(oldRow, row);
     }
@@ -146,7 +146,7 @@ interface TableRowContainer extends HasOrderedComponents {
      * @return the row count.
      */
     default long getRowCount() {
-        return getChildren().filter(c -> c instanceof TableRow).count();
+        return getChildren().filter(c -> c instanceof NativeTableRow).count();
     }
 
 }

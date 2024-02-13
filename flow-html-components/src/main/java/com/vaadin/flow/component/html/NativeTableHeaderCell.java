@@ -26,13 +26,13 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TH)
-public class TableHeaderCell extends HtmlContainer
-        implements ClickNotifier<TableHeaderCell> {
+public class NativeTableHeaderCell extends HtmlContainer
+        implements ClickNotifier<NativeTableHeaderCell> {
 
     /**
      * Creates a new empty header cell component.
      */
-    public TableHeaderCell() {
+    public NativeTableHeaderCell() {
         super();
     }
 
@@ -42,7 +42,7 @@ public class TableHeaderCell extends HtmlContainer
      * @param components
      *            the children components.
      */
-    public TableHeaderCell(Component... components) {
+    public NativeTableHeaderCell(Component... components) {
         super(components);
     }
 
@@ -52,7 +52,7 @@ public class TableHeaderCell extends HtmlContainer
      * @param text
      *            the text.
      */
-    public TableHeaderCell(String text) {
+    public NativeTableHeaderCell(String text) {
         super();
         setText(text);
     }

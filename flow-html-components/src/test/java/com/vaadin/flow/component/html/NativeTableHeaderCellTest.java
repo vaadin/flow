@@ -1,5 +1,5 @@
 package com.vaadin.flow.component.html;
 
-public class TableHeaderCellTest extends ComponentTest {
+public class NativeTableHeaderCellTest extends ComponentTest {
     // Actual test methods in super class
 }

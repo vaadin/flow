@@ -13,16 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.html.testbench;
+package com.vaadin.flow.component.html;
 
-import com.vaadin.testbench.TestBenchElement;
-import com.vaadin.testbench.elementsbase.Element;
+import com.vaadin.flow.component.HasSize;
+import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.Tag;
 
 /**
- * A TestBench element representing a <code>&lt;tfoot&gt;</code> element.
+ * Represents the table caption element ({@code <caption>}).
  *
+ * @author Stefan Uebe
  * @since 24.4
  */
-@Element("tfoot")
-public class TableFooterElement extends TestBenchElement {
+@Tag("caption")
+public class NativeTableCaption extends HtmlContainer {
 }

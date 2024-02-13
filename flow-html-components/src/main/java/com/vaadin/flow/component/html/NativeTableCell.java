@@ -26,8 +26,8 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TD)
-public class TableCell extends HtmlContainer
-        implements ClickNotifier<TableCell> {
+public class NativeTableCell extends HtmlContainer
+        implements ClickNotifier<NativeTableCell> {
 
     final String ATTRIBUTE_COLSPAN = "colspan";
     final String ATTRIBUTE_ROWSPAN = "rowspan";
@@ -35,7 +35,7 @@ public class TableCell extends HtmlContainer
     /**
      * Creates a new empty table cell component.
      */
-    public TableCell() {
+    public NativeTableCell() {
         super();
     }
 
@@ -45,7 +45,7 @@ public class TableCell extends HtmlContainer
      * @param components
      *            the children components.
      */
-    public TableCell(Component... components) {
+    public NativeTableCell(Component... components) {
         super(components);
     }
 
@@ -55,7 +55,7 @@ public class TableCell extends HtmlContainer
      * @param text
      *            the text.
      */
-    public TableCell(String text) {
+    public NativeTableCell(String text) {
         super();
         setText(text);
     }

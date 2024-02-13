@@ -17,34 +17,33 @@ package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Component representing a <code>&lt;thead&gt;</code> element.
+ * Component representing a <code>&lt;tbody&gt;</code> element.
  *
  * @since 24.4
  */
-@Tag(Tag.THEAD)
-public class TableHeader extends HtmlComponent
-        implements TableRowContainer, ClickNotifier<TableHeader> {
+@Tag(Tag.TBODY)
+public class NativeTableBody extends HtmlContainer
+        implements NativeTableRowContainer, ClickNotifier<NativeTableBody> {
 
     /**
-     * Creates a new empty table header component.
+     * Creates a new empty table body.
      */
-    public TableHeader() {
+    public NativeTableBody() {
         super();
     }
 
     /**
-     * Creates a new table header with the given children components.
+     * Creates a new table body with the given children components.
      *
      * @param components
      *            the children components.
      */
-    public TableHeader(Component... components) {
-        super();
-        add(components);
+    public NativeTableBody(Component... components) {
+        super(components);
     }
 }

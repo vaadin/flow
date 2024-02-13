@@ -17,8 +17,8 @@ package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 
 /**
@@ -27,13 +27,13 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TFOOT)
-public class TableFooter extends HtmlComponent
-        implements TableRowContainer, ClickNotifier<TableFooter> {
+public class NativeTableFooter extends HtmlContainer
+        implements NativeTableRowContainer, ClickNotifier<NativeTableFooter> {
 
     /**
      * Creates a new empty table footer.
      */
-    public TableFooter() {
+    public NativeTableFooter() {
         super();
     }
 
@@ -43,8 +43,7 @@ public class TableFooter extends HtmlComponent
      * @param components
      *            the children components.
      */
-    public TableFooter(Component... components) {
-        super();
-        add(components);
+    public NativeTableFooter(Component... components) {
+        super(components);
     }
 }
