@@ -104,9 +104,13 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         File flowTsx = new File(
                 new File(frontendDirectory, FrontendUtils.GENERATED),
                 "flow/Flow.tsx");
+        File reactAdapterTsx = new File(
+                new File(frontendDirectory, FrontendUtils.GENERATED),
+                "flow/ReactAdapter.tsx");
         File routesTsx = new File(frontendDirectory, "routes.tsx");
         try {
             writeFile(flowTsx, getFileContent("Flow.tsx"));
+            writeFile(reactAdapterTsx, getFileContent("ReactAdapter.tsx"));
             if (!appTsx.exists()) {
                 writeFile(appTsx, getFileContent("App.tsx"));
             }
