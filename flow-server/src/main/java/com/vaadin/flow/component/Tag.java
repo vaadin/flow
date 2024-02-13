@@ -55,6 +55,10 @@ public @interface Tag {
      */
     String BUTTON = "button";
     /**
+     * Tag for an <code>&lt;caption&gt;</code>.
+     */
+    String CAPTION = "caption";
+    /**
      * Tag for an <code>&lt;dd&gt;</code>.
      */
     String DD = "dd";
@@ -197,13 +201,17 @@ public @interface Tag {
      */
     String TBODY = "tbody";
     /**
-     * Tag for a <code>&lt;tfoot&gt;</code>.
-     */
-    String TFOOT = "tfoot";
-    /**
      * Tag for a <code>&lt;td&gt;</code>.
      */
     String TD = "td";
+    /**
+     * Tag for a <code>&lt;textarea&gt;</code>.
+     */
+    String TEXTAREA = "textarea";
+    /**
+     * Tag for a <code>&lt;tfoot&gt;</code>.
+     */
+    String TFOOT = "tfoot";
     /**
      * Tag for a <code>&lt;th&gt;</code>.
      */
@@ -213,17 +221,13 @@ public @interface Tag {
      */
     String THEAD = "thead";
     /**
-     * Tag for an <code>&lt;textarea&gt;</code>.
-     */
-    String TEXTAREA = "textarea";
-    /**
      * Tag for a <code>&lt;tr&gt;</code>.
      */
-    String UL = "ul";
-    /**
-     * Tag for an <code>&lt;ul&gt;</code>.
-     */
     String TR = "tr";
+    /**
+     * Tag for a <code>&lt;ul&gt;</code>.
+     */
+    String UL = "ul";
 
     /**
      * Gets the tag name.

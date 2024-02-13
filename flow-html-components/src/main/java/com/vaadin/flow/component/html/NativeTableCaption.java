@@ -23,9 +23,8 @@ import com.vaadin.flow.component.Tag;
 /**
  * Represents the table caption element ({@code <caption>}).
  *
- * @author Stefan Uebe
  * @since 24.4
  */
-@Tag("caption")
+@Tag(Tag.CAPTION)
 public class NativeTableCaption extends HtmlContainer {
 }
