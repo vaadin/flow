@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -95,7 +96,9 @@ public class BuildFrontendUtilTest {
 
         BuildFrontendUtil.prepareFrontend(adapter);
 
-        Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
+        // no hilla no lookup call
+        Mockito.verify(lookup, Mockito.never())
+                .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.verify(lookup, Mockito.never())
                 .lookup(TaskGenerateOpenAPI.class);
         Mockito.verify(lookup, Mockito.never())
@@ -127,7 +130,12 @@ public class BuildFrontendUtilTest {
                 .when(endpointGeneratorTaskFactory)
                 .createTaskGenerateEndpoint(Mockito.any());
 
-        BuildFrontendUtil.runNodeUpdater(adapter);
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
+            BuildFrontendUtil.runNodeUpdater(adapter);
+        }
 
         Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
         Mockito.verify(lookup, Mockito.never())
