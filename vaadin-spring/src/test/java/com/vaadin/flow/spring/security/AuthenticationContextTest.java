@@ -385,5 +385,8 @@ public class AuthenticationContextTest {
         authContext.setRolePrefixHolder(prefixHolder);
         Assert.assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
         Assert.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
+        var roles = authContext.getGrantedRoles();
+        Assert.assertTrue(roles.contains("USER"));
+        Assert.assertTrue(roles.contains("ADMIN"));
     }
 }

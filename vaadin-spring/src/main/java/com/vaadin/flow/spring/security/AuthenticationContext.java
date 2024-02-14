@@ -21,10 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -160,6 +157,20 @@ public class AuthenticationContext {
     }
 
     /**
+     * Gets the roles granted to the current authenticated user.
+     *
+     * @return an unmodifiable collection of role names (without the role
+     *         prefix) or an empty collection if there is no authenticated user.
+     */
+    public Collection<String> getGrantedRoles() {
+        var rolePrefix = getRolePrefix();
+        return getGrantedAuthorities().stream()
+                .filter(ga -> ga.getAuthority().startsWith(rolePrefix))
+                .map(ga -> ga.getAuthority().substring(rolePrefix.length()))
+                .collect(Collectors.toSet());
+    }
+
+    /**
      * Checks whether the current authenticated user has any of the given roles.
      *
      * @param roles
@@ -170,7 +181,17 @@ public class AuthenticationContext {
      *             if the given collection is empty.
      */
     public boolean hasAnyRole(Collection<String> roles) {
-        return hasAnyRole(roles.stream());
+        if (roles.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one role to check");
+        }
+        var grantedRoles = getGrantedRoles();
+        for (var role : roles) {
+            if (grantedRoles.contains(role)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -184,11 +205,7 @@ public class AuthenticationContext {
      *             if the given array is empty.
      */
     public boolean hasAnyRole(String... roles) {
-        return hasAnyRole(Stream.of(roles));
-    }
-
-    private boolean hasAnyRole(Stream<String> roles) {
-        return hasAnyAuthority(roles.map(role -> getRolePrefix() + role));
+        return hasAnyRole(Set.of(roles));
     }
 
     /**
@@ -202,7 +219,12 @@ public class AuthenticationContext {
      *             if the given collection is empty.
      */
     public boolean hasAllRoles(Collection<String> roles) {
-        return hasAllRoles(roles.stream());
+        if (roles.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one role to check");
+        }
+        var grantedRoles = getGrantedRoles();
+        return grantedRoles.containsAll(roles);
     }
 
     /**
@@ -216,11 +238,7 @@ public class AuthenticationContext {
      *             if the given array is empty.
      */
     public boolean hasAllRoles(String... roles) {
-        return hasAllRoles(Stream.of(roles));
-    }
-
-    private boolean hasAllRoles(Stream<String> roles) {
-        return hasAllAuthorities(roles.map(role -> getRolePrefix() + role));
+        return hasAllRoles(Set.of(roles));
     }
 
     /**
@@ -235,7 +253,19 @@ public class AuthenticationContext {
      *             if the given collection is empty.
      */
     public boolean hasAnyAuthority(Collection<String> authorities) {
-        return hasAnyAuthority(authorities.stream());
+        if (authorities.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one authority to check");
+        }
+        var grantedAuthorities = getGrantedAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+        for (var authority : authorities) {
+            if (grantedAuthorities.contains(authority)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -250,18 +280,7 @@ public class AuthenticationContext {
      *             if the given array is empty.
      */
     public boolean hasAnyAuthority(String... authorities) {
-        return hasAnyAuthority(Stream.of(authorities));
-    }
-
-    private boolean hasAnyAuthority(Stream<String> authorities) {
-        var expected = authorities.collect(Collectors.toSet());
-        if (expected.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Must provide at least one authority to check");
-        }
-        return getGrantedAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(expected::contains);
+        return hasAnyAuthority(Set.of(authorities));
     }
 
     /**
@@ -276,7 +295,14 @@ public class AuthenticationContext {
      *             if the given collection is empty.
      */
     public boolean hasAllAuthorities(Collection<String> authorities) {
-        return hasAllAuthorities(authorities.stream());
+        if (authorities.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one authority to check");
+        }
+        var grantedAuthorities = getGrantedAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+        return grantedAuthorities.containsAll(authorities);
     }
 
     /**
@@ -291,19 +317,7 @@ public class AuthenticationContext {
      *             if the given array is empty.
      */
     public boolean hasAllAuthorities(String... authorities) {
-        return hasAllAuthorities(Stream.of(authorities));
-    }
-
-    private boolean hasAllAuthorities(Stream<String> authorities) {
-        var expected = authorities.collect(Collectors.toSet());
-        if (expected.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Must provide at least one authority to check");
-        }
-        var actual = getGrantedAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-        return actual.containsAll(expected);
+        return hasAllAuthorities(Set.of(authorities));
     }
 
     /**
