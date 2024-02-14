@@ -47,7 +47,7 @@
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
-                    <reactRouterEnabled>false</reactRouterEnabled>
+                    <reactEnable>false</reactEnable>
                 </configuration>
             </plugin>
         </plugins>
