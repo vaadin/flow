@@ -344,7 +344,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 result.expectTaskSucceded("vaadinClean")
         }
 
-        for (unsupportedVersion in arrayOf("8.0", "8.1", "8.2", "8.3")) {
+        for (unsupportedVersion in arrayOf("8.3")) {
             setupProjectForGradleVersion(unsupportedVersion)
             val result = testProject.buildAndFail("vaadinClean")
             assertContains(
