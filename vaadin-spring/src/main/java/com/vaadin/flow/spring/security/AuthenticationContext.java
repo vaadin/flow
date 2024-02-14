@@ -193,7 +193,7 @@ public class AuthenticationContext {
 
     /**
      * Checks whether the current authenticated user has all the given roles.
-     * 
+     *
      * @param roles
      *            a collection containing at least one role.
      * @return {@literal true} if the user holds all the given roles, otherwise
@@ -207,7 +207,7 @@ public class AuthenticationContext {
 
     /**
      * Checks whether the current authenticated user has all the given roles.
-     * 
+     *
      * @param roles
      *            an array containing at least one role.
      * @return {@literal true} if the user holds all the given roles, otherwise
@@ -267,7 +267,7 @@ public class AuthenticationContext {
     /**
      * Checks whether the current authenticated user has all the given
      * authorities.
-     * 
+     *
      * @param authorities
      *            a collection containing at least one authority.
      * @return {@literal true} if the user holds all the given authorities,
@@ -282,7 +282,7 @@ public class AuthenticationContext {
     /**
      * Checks whether the current authenticated user has all the given
      * authorities.
-     * 
+     *
      * @param authorities
      *            an array containing at least one authority.
      * @return {@literal true} if the user holds all the given authorities,
@@ -323,7 +323,7 @@ public class AuthenticationContext {
     /**
      * Sets the role prefix holder to use when checking the current user's
      * roles.
-     * 
+     *
      * @param rolePrefixHolder
      *            {@link VaadinRolePrefixHolder} instance, or {@literal null} to
      *            revert to the default {@code ROLE_} prefix.
