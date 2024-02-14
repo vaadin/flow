@@ -1426,7 +1426,7 @@ public class Element extends Node<Element> {
                 .concat(Stream.of(parameters), Stream.of(this));
 
         // Wrap in a function that is applied with last parameter as "this"
-        String wrappedExpression = "return (function() { " + expression
+        String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
         return scheduleJavaScriptInvocation(wrappedExpression,
