@@ -53,7 +53,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <reactRouterEnabled>false</reactRouterEnabled>
+                    <reactEnable>false</reactEnable>
                 </configuration>
             </plugin>
         </plugins>

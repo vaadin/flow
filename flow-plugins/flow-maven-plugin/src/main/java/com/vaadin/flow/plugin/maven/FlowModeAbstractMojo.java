@@ -228,7 +228,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private boolean skipDevBundleRebuild;
 
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
-    private Boolean reactRouterEnabled;
+    private Boolean reactEnable;
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -496,8 +496,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public boolean isReactEnabled() {
-        if (reactRouterEnabled != null) {
-            return reactRouterEnabled;
+        if (reactEnable != null) {
+            return reactEnable;
         }
         return FrontendUtils.isReactRouterRequired(frontendDirectory());
     }

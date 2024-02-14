@@ -121,7 +121,7 @@ public class Options implements Serializable {
 
     private boolean frontendHotdeploy = false;
 
-    private boolean reactEnabled = true;
+    private boolean reactEnable = true;
 
     /**
      * Creates a new instance.
@@ -880,11 +880,11 @@ public class Options implements Serializable {
     }
 
     public boolean isReactEnabled() {
-        return reactEnabled;
+        return reactEnable;
     }
 
-    public Options withReact(boolean reactEnabled) {
-        this.reactEnabled = reactEnabled;
+    public Options withReact(boolean reactEnable) {
+        this.reactEnable = reactEnable;
         return this;
     }
 }

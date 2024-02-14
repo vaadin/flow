@@ -471,8 +471,8 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getDefaultDependencies_reactRouterIsUsed_addsHillaReactComponents() {
-        boolean reactRouterEnabled = options.isReactEnabled();
+    public void getDefaultDependencies_reactIsUsed_addsHillaReactComponents() {
+        boolean reactEnabled = options.isReactEnabled();
         try (MockedStatic<FrontendUtils> mock = Mockito
                 .mockStatic(FrontendUtils.class)) {
             mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
@@ -500,13 +500,13 @@ public class NodeUpdaterTest {
                     "React dev dependency should be added when react-router is used",
                     defaultDevDeps.containsKey("react-dev-dependency"));
         } finally {
-            options.withReact(reactRouterEnabled);
+            options.withReact(reactEnabled);
         }
     }
 
     @Test
     public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
-        boolean reactRouterEnabled = options.isReactEnabled();
+        boolean reactEnabled = options.isReactEnabled();
         try (MockedStatic<FrontendUtils> mock = Mockito
                 .mockStatic(FrontendUtils.class)) {
             mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
@@ -530,7 +530,7 @@ public class NodeUpdaterTest {
                     "Lit dev dependency should be added when vaadin-router is used",
                     defaultDevDeps.containsKey("lit-dev-dependency"));
         } finally {
-            options.withReact(reactRouterEnabled);
+            options.withReact(reactEnabled);
         }
     }
 
