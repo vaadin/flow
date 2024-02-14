@@ -21,8 +21,13 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +35,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
@@ -62,6 +68,8 @@ public class AuthenticationContext {
     private LogoutSuccessHandler logoutSuccessHandler;
 
     private CompositeLogoutHandler logoutHandler;
+
+    private static final String ROLE_PREFIX = "ROLE_";
 
     /**
      * Gets an {@link Optional} with an instance of the current user if it has
@@ -138,6 +146,165 @@ public class AuthenticationContext {
                         e);
             }
         });
+    }
+
+    /**
+     * Gets the authorities granted to the current authenticated user.
+     *
+     * @return an unmodifiable collection of {@link GrantedAuthority}s or an
+     *         empty collection if there is no authenticated user.
+     */
+    public Collection<? extends GrantedAuthority> getGrantedAuthorities() {
+        return getAuthentication().filter(Authentication::isAuthenticated)
+                .map(Authentication::getAuthorities)
+                .orElse(Collections.emptyList());
+    }
+
+    /**
+     * Checks whether the current authenticated user has any of the given roles.
+     *
+     * @param roles
+     *            a collection containing at least one role.
+     * @return {@literal true} if the user holds at least one of the given
+     *         roles, otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given collection is empty.
+     */
+    public boolean hasAnyRole(Collection<String> roles) {
+        return hasAnyRole(roles.stream());
+    }
+
+    /**
+     * Checks whether the current authenticated user has any of the given roles.
+     *
+     * @param roles
+     *            an array containing at least one role.
+     * @return {@literal true} if the user holds at least one of the given
+     *         roles, otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given array is empty.
+     */
+    public boolean hasAnyRole(String... roles) {
+        return hasAnyRole(Stream.of(roles));
+    }
+
+    private boolean hasAnyRole(Stream<String> roles) {
+        return hasAnyAuthority(roles.map(role -> ROLE_PREFIX + role));
+    }
+
+    /**
+     * Checks whether the current authenticated user has all the given roles.
+     * 
+     * @param roles
+     *            a collection containing at least one role.
+     * @return {@literal true} if the user holds all the given roles, otherwise
+     *         {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given collection is empty.
+     */
+    public boolean hasAllRoles(Collection<String> roles) {
+        return hasAllRoles(roles.stream());
+    }
+
+    /**
+     * Checks whether the current authenticated user has all the given roles.
+     * 
+     * @param roles
+     *            an array containing at least one role.
+     * @return {@literal true} if the user holds all the given roles, otherwise
+     *         {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given array is empty.
+     */
+    public boolean hasAllRoles(String... roles) {
+        return hasAllRoles(Stream.of(roles));
+    }
+
+    private boolean hasAllRoles(Stream<String> roles) {
+        return hasAllAuthorities(roles.map(role -> ROLE_PREFIX + role));
+    }
+
+    /**
+     * Checks whether the current authenticated user has any of the given
+     * authorities.
+     *
+     * @param authorities
+     *            a collection containing at least one authority.
+     * @return {@literal true} if the user holds at least one of the given
+     *         authorities, otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given collection is empty.
+     */
+    public boolean hasAnyAuthority(Collection<String> authorities) {
+        return hasAnyAuthority(authorities.stream());
+    }
+
+    /**
+     * Checks whether the current authenticated user has any of the given
+     * authorities.
+     *
+     * @param authorities
+     *            an array containing at least one authority.
+     * @return {@literal true} if the user holds at least one of the given
+     *         authorities, otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given array is empty.
+     */
+    public boolean hasAnyAuthority(String... authorities) {
+        return hasAnyAuthority(Stream.of(authorities));
+    }
+
+    private boolean hasAnyAuthority(Stream<String> authorities) {
+        var expected = authorities.collect(Collectors.toSet());
+        if (expected.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one authority to check");
+        }
+        return getGrantedAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(expected::contains);
+    }
+
+    /**
+     * Checks whether the current authenticated user has all the given
+     * authorities.
+     * 
+     * @param authorities
+     *            a collection containing at least one authority.
+     * @return {@literal true} if the user holds all the given authorities,
+     *         otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given collection is empty.
+     */
+    public boolean hasAllAuthorities(Collection<String> authorities) {
+        return hasAllAuthorities(authorities.stream());
+    }
+
+    /**
+     * Checks whether the current authenticated user has all the given
+     * authorities.
+     * 
+     * @param authorities
+     *            an array containing at least one authority.
+     * @return {@literal true} if the user holds all the given authorities,
+     *         otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given array is empty.
+     */
+    public boolean hasAllAuthorities(String... authorities) {
+        return hasAllAuthorities(Stream.of(authorities));
+    }
+
+    private boolean hasAllAuthorities(Stream<String> authorities) {
+        var expected = authorities.collect(Collectors.toSet());
+        if (expected.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one authority to check");
+        }
+        var actual = getGrantedAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+        return actual.containsAll(expected);
     }
 
     /**

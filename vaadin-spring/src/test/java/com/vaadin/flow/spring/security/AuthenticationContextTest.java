@@ -131,6 +131,146 @@ public class AuthenticationContextTest {
     }
 
     @Test
+    public void hasAnyRole_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasAnyRole("USER"));
+        Assert.assertFalse(authContext.hasAnyRole(List.of("USER")));
+    }
+
+    @Test
+    @WithAnonymousUser()
+    public void hasAnyRole_anonymous_false() {
+        Assert.assertFalse(authContext.hasAnyRole("USER"));
+        Assert.assertFalse(authContext.hasAnyRole(List.of("USER")));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasAnyRole_hasRole_true() {
+        Assert.assertTrue(authContext.hasAnyRole("USER"));
+        Assert.assertTrue(authContext.hasAnyRole(List.of("ADMIN")));
+
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasAnyRole_lacksRole_false() {
+        Assert.assertFalse(authContext.hasAnyRole("SUPERADMIN"));
+        Assert.assertFalse(authContext.hasAnyRole(List.of("SUPERADMIN")));
+    }
+
+    @Test
+    @WithMockUser(roles = {})
+    public void hasAnyRole_noRoles_false() {
+        Assert.assertFalse(authContext.hasAnyRole("USER"));
+        Assert.assertFalse(authContext.hasAnyRole(List.of("USER")));
+    }
+
+    @Test
+    public void hasAllRoles_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+    }
+
+    @Test
+    @WithAnonymousUser()
+    public void hasAllRoles_anonymous_false() {
+        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasAllRoles_hasRoles_true() {
+        Assert.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
+        Assert.assertTrue(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER" })
+    public void hasAllRoles_lacksRole_false() {
+        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+    }
+
+    @Test
+    @WithMockUser(roles = {})
+    public void hasAllRoles_noRoles_false() {
+        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
+        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+    }
+
+    @Test
+   public void hasAnyAuthority_notAuthenticated_false() {
+       Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
+       Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_READ")));
+   }
+
+    @Test
+    @WithAnonymousUser()
+    public void hasAnyAuthority_anonymous_false() {
+        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
+        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_READ")));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAnyAuthority_hasAuthority_true() {
+        Assert.assertTrue(authContext.hasAnyAuthority("AUTH_READ"));
+        Assert.assertTrue(authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
+
+    }
+    
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAnyAuthority_lacksAuthority_false() {
+        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_MANAGE"));
+        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_MANAGE")));
+    }
+
+    @Test
+    @WithMockUser(roles = {})
+    public void hasAnyAuthority_noAuthorities_false() {
+        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
+        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
+    }
+
+    
+    @Test
+    public void hasAllAuthorities_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+
+    @Test
+    @WithAnonymousUser()
+    public void hasAllAuthorities_anonymous_false() {
+        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAllAuthorities_hasAuthorities_true() {
+        Assert.assertTrue(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertTrue(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+    
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ" })
+    public void hasAllAuthorities_lacksAuthority_false() {
+        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+
+    @Test
+    @WithMockUser(roles = {})
+    public void hasAllAuthorities_noAuthorities_false() {
+        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+
+    @Test
     @WithMockUser()
     public void logout_handlersEngaged() throws Exception {
         Authentication authentication = SecurityContextHolder.getContext()
