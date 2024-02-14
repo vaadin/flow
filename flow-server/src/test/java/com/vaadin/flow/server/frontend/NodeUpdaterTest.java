@@ -561,9 +561,42 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void readPackageJson_nonExistingFile_jsonContainsDepsAndDevDeps()
+            throws IOException {
+        JsonObject jsonObject = nodeUpdater
+                .readPackageJson("non-existing-folder");
+        Assert.assertTrue(jsonObject.hasKey("dependencies"));
+        Assert.assertTrue(jsonObject.hasKey("devDependencies"));
+    }
+
+    @Test
     public void readDependencies_doesntHaveDependencies_doesNotThrow() {
         nodeUpdater.readDependencies("no-deps", "dependencies");
         nodeUpdater.readDependencies("no-deps", "devDependencies");
+    }
+
+    @Test
+    public void readPackageJsonIfAvailable_nonExistingFile_noErrorLog() {
+        Logger log = Mockito.mock(Logger.class);
+        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
+                options) {
+
+            @Override
+            public void execute() {
+            }
+
+            @Override
+            Logger log() {
+                return log;
+            }
+        };
+        nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
+                "dependencies");
+        Mockito.verifyNoInteractions(log);
+
+        nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
+                "devDpendencies");
+        Mockito.verifyNoInteractions(log);
     }
 
     private String getPolymerVersion(JsonObject object) {
