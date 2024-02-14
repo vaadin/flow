@@ -87,12 +87,21 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Sets the caption for this table.
+     * Return the caption text for this table.
+     *
+     * @return the table's caption text.
+     */
+    public String getCaptionText() {
+        return getCaption().getText();
+    }
+
+    /**
+     * Sets the caption text for this table.
      *
      * @param text
-     *            the caption's text.
+     *            the caption's text
      */
-    public void setCaption(String text) {
+    public void setCaptionText(String text) {
         getCaption().setText(text);
     }
 

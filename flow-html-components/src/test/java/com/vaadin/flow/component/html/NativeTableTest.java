@@ -15,6 +15,15 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.beans.IntrospectionException;
+
 public class NativeTableTest extends ComponentTest {
     // Actual test methods in super class
+
+    @Override
+    public void setup() throws IntrospectionException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
+        whitelistProperty("captionText");
+        super.setup();
+    }
 }
