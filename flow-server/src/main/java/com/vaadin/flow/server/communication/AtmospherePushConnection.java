@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,7 +47,8 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class AtmospherePushConnection implements PushConnection {
+public class AtmospherePushConnection
+        implements PushConnection, FragmentedMessageHolder {
 
     private UI ui;
     private transient State state = State.DISCONNECTED;
@@ -60,23 +61,21 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Represents a message that can arrive as multiple fragments.
      */
-    protected static class FragmentedMessage implements Serializable {
+    public static class FragmentedMessage implements Serializable {
+
         private final StringBuilder message = new StringBuilder();
-        private final int messageLength;
+        private int messageLength = -1;
 
         /**
          * Creates a message by reading from the given reader.
          * <p>
          * Immediately reads the length of the message (up until
          * {@value PushConstants#MESSAGE_DELIMITER}) from the reader.
-         *
-         * @param reader
-         *            the reader to read the message from
-         * @throws IOException
-         *             if an exception occurred while reading from the reader or
-         *             if unexpected data was read
          */
-        public FragmentedMessage(Reader reader) throws IOException {
+        public FragmentedMessage() {
+        }
+
+        private void readMessageLength(Reader reader) throws IOException {
             // Messages are prefixed by the total message length plus a
             // delimiter
             String length = "";
@@ -103,6 +102,10 @@ public class AtmospherePushConnection implements PushConnection {
          *             if an IO error occurred
          */
         public boolean append(Reader reader) throws IOException {
+            if (messageLength == -1) {
+                readMessageLength(reader);
+            }
+
             char[] buffer = new char[PushConstants.WEBSOCKET_BUFFER_SIZE];
             int read;
             while ((read = reader.read(buffer)) != -1) {
@@ -233,8 +236,12 @@ public class AtmospherePushConnection implements PushConnection {
      * received message, returns a {@link Reader} yielding the complete message.
      * Otherwise, returns null.
      *
+     * @param resource
+     *            The atmosphere resource with data
      * @param reader
-     *            A Reader from which to read the (partial) message
+     *            The request body reader
+     * @param holder
+     *            A holder for a previously received partial message
      * @return A Reader yielding a complete message or null if the message is
      *         not yet complete.
      * @throws IOException
@@ -242,22 +249,18 @@ public class AtmospherePushConnection implements PushConnection {
      * @return a Reader yielding the complete message, or {@code null} if the
      *         received message was a partial message
      */
-    protected Reader receiveMessage(Reader reader) throws IOException {
+    protected static Reader receiveMessage(AtmosphereResource resource,
+            Reader reader, FragmentedMessageHolder holder) throws IOException {
 
         if (resource == null || resource.transport() != TRANSPORT.WEBSOCKET) {
             return reader;
         }
 
-        if (incomingMessage == null) {
-            // No existing partially received message
-            incomingMessage = new FragmentedMessage(reader);
-        }
-
-        if (incomingMessage.append(reader)) {
-            // Message is complete
-            Reader completeReader = incomingMessage.getReader();
-            incomingMessage = null;
-            return completeReader;
+        FragmentedMessage msg = holder.getOrCreateFragmentedMessage(resource);
+        if (msg.append(reader)) {
+            Reader messageReader = msg.getReader();
+            holder.clearFragmentedMessage(resource);
+            return messageReader;
         } else {
             // Only received a partial message
             return null;
@@ -391,6 +394,20 @@ public class AtmospherePushConnection implements PushConnection {
             state = State.DISCONNECTED;
         }
 
+    }
+
+    @Override
+    public FragmentedMessage getOrCreateFragmentedMessage(
+            AtmosphereResource resource) {
+        if (incomingMessage == null) {
+            incomingMessage = new FragmentedMessage();
+        }
+        return incomingMessage;
+    }
+
+    @Override
+    public void clearFragmentedMessage(AtmosphereResource resource) {
+        incomingMessage = null;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -67,7 +68,8 @@ public class TaskInstallFrontendBuildPluginsTest {
     public void getPluginsReturnsExpectedList() {
         String[] expectedPlugins = new String[] { "application-theme-plugin",
                 "theme-loader", "theme-live-reload-plugin",
-                "build-status-plugin", "rollup-plugin-postcss-lit-custom" };
+                "build-status-plugin", "rollup-plugin-postcss-lit-custom",
+                "react-function-location-plugin" };
         final List<String> plugins = FrontendPluginsUtil.getPlugins();
         Assert.assertEquals("Unexpected number of plugins in 'plugins.json'",
                 expectedPlugins.length, plugins.size());
@@ -94,10 +96,9 @@ public class TaskInstallFrontendBuildPluginsTest {
 
     @Test
     public void pluginsNotAddedToPackageJson() throws IOException {
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
+        Options options = new MockOptions(rootFolder)
                 .withBuildDirectory(BUILD_DIRECTORY);
-        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+        NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependencies.class), options) {
             @Override
             public void execute() {

@@ -50,8 +50,7 @@ public class ThemeValidationUtil {
 
     public static boolean themeConfigurationChanged(Options options,
             JsonObject statsJson,
-            FrontendDependenciesScanner frontendDependencies,
-            ClassFinder finder) {
+            FrontendDependenciesScanner frontendDependencies) {
         Map<String, JsonObject> themeJsonContents = new HashMap<>();
 
         if (options.getJarFiles() != null) {

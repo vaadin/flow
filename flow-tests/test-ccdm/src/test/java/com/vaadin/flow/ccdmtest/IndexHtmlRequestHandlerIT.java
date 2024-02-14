@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -171,7 +171,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("div2"));
 
         String content = findElement(By.id("div2")).getText();
-        Assert.assertEquals("true true true", content);
+        Assert.assertEquals("true true", content);
     }
 
     @Test

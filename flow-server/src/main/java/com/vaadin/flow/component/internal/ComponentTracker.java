@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,12 +24,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.server.AbstractConfiguration;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -45,7 +48,7 @@ public class ComponentTracker {
     private static Map<Component, Location> attachLocation = Collections
             .synchronizedMap(new WeakHashMap<>());
 
-    private static Boolean productionMode = null;
+    private static Boolean disabled = null;
     private static String[] prefixesToSkip = new String[] {
             "com.vaadin.flow.component.", "com.vaadin.flow.di.",
             "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
@@ -56,6 +59,8 @@ public class ComponentTracker {
      * Represents a location in the source code.
      */
     public static class Location implements Serializable {
+        private static final Pattern MAYBE_INNER_CLASS = Pattern
+                .compile("(.*\\.[^$.]+)\\$[^.]+$");
         private final String className;
         private final String filename;
         private final String methodName;
@@ -122,10 +127,19 @@ public class ComponentTracker {
          */
         public File findJavaFile(AbstractConfiguration configuration) {
             String cls = className();
-            String filename = filename();
-            if (!cls.endsWith(filename.replace(".java", ""))) {
+            String filenameNoExt = filename().replace(".java", "");
+
+            if (!cls.endsWith(filenameNoExt)) {
+                // Check for inner class
+                Matcher matcher = MAYBE_INNER_CLASS.matcher(cls);
+                if (matcher.find()) {
+                    cls = matcher.group(1);
+                }
+            }
+            if (!cls.endsWith(filenameNoExt)) {
                 return null;
             }
+
             File src = configuration.getJavaSourceFolder();
             File javaFile = new File(src,
                     cls.replace(".", File.separator) + ".java");
@@ -159,7 +173,7 @@ public class ComponentTracker {
      *            the component to track
      */
     public static void trackCreate(Component component) {
-        if (isProductionMode()) {
+        if (isDisabled()) {
             return;
         }
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
@@ -192,7 +206,7 @@ public class ComponentTracker {
      *            the component to track
      */
     public static void trackAttach(Component component) {
-        if (isProductionMode()) {
+        if (isDisabled()) {
             return;
         }
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
@@ -270,7 +284,12 @@ public class ComponentTracker {
     }
 
     /**
-     * Checks if the application is running in production mode.
+     * Checks if the component tracking is disabled.
+     *
+     * Tracking is disabled when application is running in production mode or if
+     * the configuration property
+     * {@literal vaadin.devmode.componentTracker.enabled} is set to
+     * {@literal false}.
      *
      * When unsure, reports that production mode is true so tracking does not
      * take place in production.
@@ -278,9 +297,9 @@ public class ComponentTracker {
      * @return true if in production mode or the mode is unclear, false if in
      *         development mode
      **/
-    private static boolean isProductionMode() {
-        if (productionMode != null) {
-            return productionMode;
+    private static boolean isDisabled() {
+        if (disabled != null) {
+            return disabled;
         }
 
         VaadinService service = VaadinService.getCurrent();
@@ -300,8 +319,11 @@ public class ComponentTracker {
             return true;
         }
 
-        productionMode = applicationConfiguration.isProductionMode();
-        return productionMode;
+        disabled = applicationConfiguration.isProductionMode()
+                || !applicationConfiguration.getBooleanProperty(
+                        InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER,
+                        true);
+        return disabled;
     }
 
     private static Location toLocation(StackTraceElement stackTraceElement) {

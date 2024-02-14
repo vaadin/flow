@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import com.vaadin.flow.component.Component;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -61,6 +62,9 @@ public class AppShellRegistry implements Serializable {
             + "%nRemove \"implements AppShellConfigurator\" from all but one of the following classes:%n  %s%n  %s%n";
 
     private static final String ERROR_MULTIPLE_ANNOTATION = "%n%s is not a repeatable annotation type.%n";
+
+    private static final String ERROR_EXTENDS_COMPONENT = "%nApp shell class is not allowed to extend Vaadin Component: %s. "
+            + "App shells are only intended for page configuration and are instantiated before the UI is created.%n";
 
     // There must be no more than one of the following elements per document
     private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
@@ -133,6 +137,10 @@ public class AppShellRegistry implements Serializable {
             throw new InvalidApplicationConfigurationException(
                     String.format(AppShellRegistry.ERROR_MULTIPLE_SHELL,
                             this.appShellClass.getName(), shell.getName()));
+        }
+        if (shell != null && Component.class.isAssignableFrom(shell)) {
+            throw new InvalidApplicationConfigurationException(
+                    String.format(ERROR_EXTENDS_COMPONENT, shell.getName()));
         }
         this.appShellClass = shell;
     }

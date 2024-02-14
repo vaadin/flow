@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +37,7 @@ import com.vaadin.flow.server.Constants;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 public final class BundleUtils {
@@ -64,6 +65,9 @@ public final class BundleUtils {
             bundledImports.add(jsImport);
             bundledImports.add(jsImport.replace("/theme/lumo/", "/src/"));
             bundledImports.add(jsImport.replace("/theme/material/", "/src/"));
+            bundledImports.add(jsImport.replaceFirst(
+                    "^Frontend/generated/jar-resources/theme/(lumo|material)/",
+                    "./src/"));
             bundledImports.add(jsImport
                     .replaceFirst("^Frontend/generated/jar-resources/", "./"));
             bundledImports.add(jsImport

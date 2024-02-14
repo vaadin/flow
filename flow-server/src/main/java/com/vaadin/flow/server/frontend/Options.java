@@ -121,15 +121,34 @@ public class Options implements Serializable {
 
     private boolean frontendHotdeploy = false;
 
+    private boolean reactEnabled = true;
+
     /**
      * Creates a new instance.
      *
      * @param lookup
      *            a {@link Lookup} to discover services used by Flow (SPI)
+     * @param npmFolder
+     *            a project's base folder
      */
     public Options(Lookup lookup, File npmFolder) {
+        this(lookup, new ClassFinder.CachedClassFinder(
+                lookup.lookup(ClassFinder.class)), npmFolder);
+    }
+
+    /**
+     * Creates a new instance.
+     *
+     * @param lookup
+     *            a {@link Lookup} to discover services used by Flow (SPI)
+     * @param classFinder
+     *            a class finder to use in node tasks
+     * @param npmFolder
+     *            a project's base folder
+     */
+    public Options(Lookup lookup, ClassFinder classFinder, File npmFolder) {
         this.lookup = lookup;
-        this.classFinder = lookup.lookup(ClassFinder.class);
+        this.classFinder = classFinder;
         this.npmFolder = npmFolder;
     }
 
@@ -858,5 +877,14 @@ public class Options implements Serializable {
      */
     public boolean isCompressBundle() {
         return compressBundle;
+    }
+
+    public boolean isReactEnabled() {
+        return reactEnabled;
+    }
+
+    public Options withReact(boolean reactEnabled) {
+        this.reactEnabled = reactEnabled;
+        return this;
     }
 }

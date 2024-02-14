@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,13 +26,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.auth.NavigationAccessChecker.AccessCheckResult;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
-
 /**
- * Default implementation of {@link NavigationAccessChecker.DecisionResolver}
- * that allow access only if input results are all ALLOW, or a combination of
- * ALLOW and NEUTRAL. In any other case the access is DENIED.
+ * Default implementation of {@link AccessCheckDecisionResolver} that allow
+ * access only if input results are all ALLOW, or a combination of ALLOW and
+ * NEUTRAL. In any other case the access is DENIED.
  * <p>
  *
  * <pre>
@@ -61,37 +58,36 @@ import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
  * or DENY results.
  *
  */
-public class DefaultNavigationCheckDecisionResolver
-        implements NavigationAccessChecker.DecisionResolver {
+public class DefaultAccessCheckDecisionResolver
+        implements AccessCheckDecisionResolver {
 
     public static final Logger LOGGER = LoggerFactory
-            .getLogger(DefaultNavigationCheckDecisionResolver.class);
+            .getLogger(DefaultAccessCheckDecisionResolver.class);
 
     @Override
     public AccessCheckResult resolve(List<AccessCheckResult> results,
             NavigationContext context) {
         Class<?> navigationTarget = context.getNavigationTarget();
         String path = context.getLocation().getPath();
-        Map<NavigationAccessChecker.Decision, List<AccessCheckResult>> resultsByDecision = results
+        Map<AccessCheckDecision, List<AccessCheckResult>> resultsByDecision = results
                 .stream()
                 .collect(Collectors.groupingBy(AccessCheckResult::decision));
         int neutralVotes = Optional
-                .ofNullable(resultsByDecision
-                        .remove(NavigationAccessChecker.Decision.NEUTRAL))
+                .ofNullable(
+                        resultsByDecision.remove(AccessCheckDecision.NEUTRAL))
                 .map(Collection::size).orElse(0);
 
         String denyReasons = resultsByDecision
-                .getOrDefault(NavigationAccessChecker.Decision.DENY, List.of())
-                .stream().map(AccessCheckResult::reason)
-                .filter(Objects::nonNull)
+                .getOrDefault(AccessCheckDecision.DENY, List.of()).stream()
+                .map(AccessCheckResult::reason).filter(Objects::nonNull)
                 .collect(Collectors.joining(System.lineSeparator()));
 
         if (resultsByDecision.size() == 1) {
             // Unanimous consensus
-            NavigationAccessChecker.Decision decision = resultsByDecision
-                    .keySet().iterator().next();
+            AccessCheckDecision decision = resultsByDecision.keySet().iterator()
+                    .next();
             int votes = resultsByDecision.get(decision).size();
-            if (decision == NavigationAccessChecker.Decision.ALLOW) {
+            if (decision == AccessCheckDecision.ALLOW) {
                 LOGGER.debug("Access to view '{}' with path '{}' allowed by "
                         + "{} out of {} navigation checkers  ({} neutral).",
                         navigationTarget.getName(), path, votes, results.size(),
@@ -126,8 +122,8 @@ public class DefaultNavigationCheckDecisionResolver
                     .map(e -> e.getKey() + " = " + e.getValue().size())
                     .collect(Collectors.joining(", ", "Votes: ", ""));
             if (neutralVotes > 0) {
-                summary += ", " + NavigationAccessChecker.Decision.NEUTRAL
-                        + " = " + neutralVotes;
+                summary += ", " + AccessCheckDecision.NEUTRAL + " = "
+                        + neutralVotes;
             }
             LOGGER.warn("Access to view '{}' with path '{}' blocked because "
                     + "there is no unanimous consensus from the navigation checkers. {}.",

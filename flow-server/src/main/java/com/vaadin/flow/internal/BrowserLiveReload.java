@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,8 @@ package com.vaadin.flow.internal;
 
 import org.atmosphere.cpr.AtmosphereResource;
 
+import com.vaadin.flow.server.communication.FragmentedMessageHolder;
+
 /**
  * Provides a way to reload browser tabs via web socket connection passed as a
  * {@link AtmosphereResource}.
@@ -26,7 +28,7 @@ import org.atmosphere.cpr.AtmosphereResource;
  * @author Vaadin Ltd
  *
  */
-public interface BrowserLiveReload {
+public interface BrowserLiveReload extends FragmentedMessageHolder {
 
     /**
      * Live reload enabling technology detected.

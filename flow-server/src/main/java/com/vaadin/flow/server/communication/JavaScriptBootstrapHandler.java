@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -107,11 +108,11 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             }
 
             // Case 2, use the request
-            if (request instanceof VaadinServletRequest) {
+            Map<String, String[]> parameterMap = request.getParameterMap();
+            if (parameterMap != null && !parameterMap.isEmpty()) {
                 return new Location(request.getPathInfo(),
-                        QueryParameters
-                                .fromString(((VaadinServletRequest) request)
-                                        .getQueryString()));
+                        QueryParameters.full(parameterMap));
+
             } else {
                 return new Location(request.getPathInfo(),
                         QueryParameters.empty());

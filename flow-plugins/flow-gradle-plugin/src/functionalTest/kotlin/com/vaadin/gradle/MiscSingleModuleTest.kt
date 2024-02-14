@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2023 Vaadin Ltd
+ *    Copyright 2000-2024 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,37 +24,6 @@ import kotlin.test.expect
 import org.junit.Ignore
 
 class MiscSingleModuleTest : AbstractGradleTest() {
-    /**
-     * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/26
-     */
-    @Ignore("The devsoap plugin does not work with Gradle 7")
-    @Test
-    fun testVaadin8VaadinPlatformMPRProject() {
-        testProject.buildFile.writeText(
-                """
-            plugins {
-                id "com.devsoap.plugin.vaadin" version "1.4.1"
-                id 'com.vaadin'
-            }
-            repositories {
-                mavenLocal()
-                mavenCentral()
-                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
-            }
-            // test that we can configure both plugins
-            vaadin {
-                version = "8.9.4"
-            }
-            vaadinPlatform {
-                optimizeBundle = true
-            }
-        """.trimIndent()
-        )
-
-        // the collision between devsoap's `vaadin` extension and com.vaadin's `vaadin`
-        // extension would crash even this very simple build.
-        testProject.build("tasks")
-    }
 
     /**
      * This test covers the [Base Starter Gradle](https://github.com/vaadin/base-starter-gradle)

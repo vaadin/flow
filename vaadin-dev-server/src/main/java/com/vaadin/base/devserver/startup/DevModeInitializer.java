@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -50,6 +50,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.DevBundleBuildingHandler;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
@@ -80,6 +81,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
@@ -268,6 +270,9 @@ public class DevModeInitializer implements Serializable {
                 FrontendUtils.JAR_RESOURCES_FOLDER);
         JsonObject tokenFileData = Json.createObject();
         Mode mode = config.getMode();
+        boolean reactRouterEnabled = config.getBooleanProperty(REACT_ENABLE,
+                FrontendUtils
+                        .isReactRouterRequired(options.getFrontendDirectory()));
         options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -286,7 +291,8 @@ public class DevModeInitializer implements Serializable {
                         Arrays.asList(additionalPostinstallPackages))
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
-                .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE);
+                .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)
+                .withReact(reactRouterEnabled);
 
         NodeTasks tasks = new NodeTasks(options);
 
@@ -315,8 +321,8 @@ public class DevModeInitializer implements Serializable {
         int port = Integer
                 .parseInt(config.getStringProperty("devServerPort", "0"));
         if (mode == Mode.DEVELOPMENT_BUNDLE) {
-            nodeTasksFuture.join();
-            return null;
+            // Shows a "build in progress" page during dev bundle creation
+            return new DevBundleBuildingHandler(nodeTasksFuture);
         } else {
             ViteHandler handler = new ViteHandler(devServerLookup, port,
                     options.getNpmFolder(), nodeTasksFuture);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -252,6 +252,26 @@ public class DefaultDeploymentConfigurationTest {
         config = createDeploymentConfig(init);
         Assert.assertTrue("Expected dev server to be enabled when set true",
                 config.frontendHotdeploy());
+    }
+
+    @Test
+    public void checkLockStrategy_defaultsToAssert() {
+        Properties init = new Properties();
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        Assert.assertEquals(SessionLockCheckStrategy.ASSERT,
+                config.getSessionLockCheckStrategy());
+    }
+
+    @Test
+    public void checkLockStrategy_configurableViaPropertyParameter() {
+        Properties init = new Properties();
+        init.put(InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
+                "throw");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        Assert.assertEquals(SessionLockCheckStrategy.THROW,
+                config.getSessionLockCheckStrategy());
     }
 
     @Test

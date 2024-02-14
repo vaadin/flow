@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -441,6 +442,86 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.writeBean(person);
 
         Assert.assertEquals(fieldValue, person.getFirstName());
+    }
+
+    @Test
+    public void write_binding_bound_propertyIsUpdated()
+            throws ValidationException {
+        Binder<Person> binder = new Binder<>();
+        Binding<Person, String> binding = binder.bind(nameField,
+                Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        Person person = new Person();
+
+        String nameValue = "bar";
+        nameField.setValue(nameValue);
+        String ageValue = "10";
+        ageField.setValue(ageValue);
+
+        person.setFirstName("foo");
+        person.setAge(20);
+
+        binder.writeBean(person, Set.of(binding));
+
+        Assert.assertEquals(1, person.getAgeSetterCallcount());
+        Assert.assertEquals(nameValue, person.getFirstName());
+        Assert.assertNotEquals((int) Integer.valueOf(ageValue),
+                person.getAge());
+    }
+
+    @Test
+    public void write_changedBindings_bound_propertyIsUpdated()
+            throws ValidationException {
+        Binder<Person> binder = new Binder<>();
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        Person person = new Person();
+        Person updatedPerson = new Person();
+
+        String nameValue = "bar";
+        nameField.setValue(nameValue);
+
+        person.setFirstName("foo");
+        person.setAge(20);
+
+        Assert.assertEquals(1, binder.getChangedBindings().size());
+        binder.writeBean(updatedPerson, binder.getChangedBindings());
+
+        Assert.assertEquals(0, updatedPerson.getAgeSetterCallcount());
+        Assert.assertEquals(nameValue, updatedPerson.getFirstName());
+        Assert.assertEquals(0, updatedPerson.getAge());
+    }
+
+    @Test
+    public void update_bound_propertyIsUpdated() throws ValidationException {
+        Binder<Person> binder = new Binder<>();
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        Person person = new Person();
+        Person updatedPerson = new Person();
+
+        String nameValue = "bar";
+        nameField.setValue(nameValue);
+
+        person.setFirstName("foo");
+        person.setAge(20);
+
+        Assert.assertEquals(1, binder.getChangedBindings().size());
+
+        binder.writeChangedBindingsToBean(updatedPerson);
+
+        Assert.assertEquals(0, updatedPerson.getAgeSetterCallcount());
+        Assert.assertEquals(nameValue, updatedPerson.getFirstName());
+        Assert.assertEquals(0, updatedPerson.getAge());
     }
 
     @Test
@@ -936,6 +1017,36 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         textField.setValue("value");
         assertFalse(textField.isInvalid());
         assertTrue(textField.isRequiredIndicatorVisible());
+    }
+
+    @Test
+    public void setRequiredAsEnabled_shouldNotTriggerValidation() {
+        AtomicBoolean hasErrors = new AtomicBoolean();
+        // Binding is required but has setAsRequiredEnabled set to false
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .asRequired("Name is required")
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        binder.addStatusChangeListener(
+                status -> hasErrors.getAndSet(status.hasValidationErrors()));
+        binder.setBean(new Person());
+
+        // Base state -> valid
+        Assert.assertFalse("binder should not have errors", hasErrors.get());
+        Assert.assertEquals("Name field should not be in error.", "",
+                nameField.getErrorMessage());
+
+        // Set setAsRequiredEnabled false -> should still be valid
+        nameBinding.setAsRequiredEnabled(false);
+        Assert.assertFalse("binder should not have errors", hasErrors.get());
+        Assert.assertEquals("Name field should not be in error.", "",
+                nameField.getErrorMessage());
+
+        // Set setAsRequiredEnabled true -> should still be valid
+        nameBinding.setAsRequiredEnabled(true);
+        Assert.assertFalse("binder should not have errors", hasErrors.get());
+        Assert.assertEquals("Name field should not be in error.", "",
+                nameField.getErrorMessage());
     }
 
     @Test
@@ -1468,6 +1579,37 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertThat("Name with a value should not be an error",
                 nameField.getErrorMessage(), isEmptyString());
 
+        assertNotNull(
+                "Age field should now be in error, since setBean is used.",
+                ageField.getErrorMessage());
+
+        nameField.setValue("");
+        assertNotNull("Empty name should now be in error.",
+                nameField.getErrorMessage());
+
+        assertNotNull("Age field should still be in error.",
+                ageField.getErrorMessage());
+    }
+
+    @Test
+    public void two_asRequired_fields_without_initial_values_readBean() {
+        binder.forField(nameField).asRequired("Empty name").bind(p -> "",
+                (p, s) -> {
+                });
+        binder.forField(ageField).asRequired("Empty age").bind(p -> "",
+                (p, s) -> {
+                });
+
+        binder.readBean(item);
+        assertThat("Initially there should be no errors",
+                nameField.getErrorMessage(), isEmptyString());
+        assertThat("Initially there should be no errors",
+                ageField.getErrorMessage(), isEmptyString());
+
+        nameField.setValue("Foo");
+        assertThat("Name with a value should not be an error",
+                nameField.getErrorMessage(), isEmptyString());
+
         assertThat(
                 "Age field should not be in error, since it has not been modified.",
                 ageField.getErrorMessage(), isEmptyString());
@@ -1478,6 +1620,120 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         assertThat("Age field should still be ok.", ageField.getErrorMessage(),
                 isEmptyString());
+    }
+
+    @Test
+    public void disableDefaultValidators_binderLevel_enabledAndDisabled() {
+        TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_1"));
+        TestTextFieldDefaultValidator field2 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_2"));
+
+        binder.forField(field1).bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.forField(field2).bind(Person::getLastName, Person::setLastName);
+
+        // Default behavior -> validators enabled
+        BinderValidationStatus<Person> status = binder.validate();
+        assertEquals(
+                "Validation should have two errors. "
+                        + "Default validators should be run.",
+                2, status.getValidationErrors().size());
+
+        // Toggle default validators to disabled
+        binder.setDefaultValidatorsEnabled(false);
+        status = binder.validate();
+        Assert.assertTrue(
+                "Validation should not have errors. "
+                        + "Default validator should be skipped.",
+                status.getValidationErrors().isEmpty());
+    }
+
+    @Test
+    public void disableDefaultValidator_testSingleBindingLevelDisabled_whenBinderLevelEnabled() {
+        TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_1"));
+        TestTextFieldDefaultValidator field2 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_2"));
+
+        binder.forField(field1).bind(Person::getFirstName,
+                Person::setFirstName);
+        Binding<Person, String> binding = binder.forField(field2)
+                .withDefaultValidator(false)
+                .bind(Person::getLastName, Person::setLastName);
+
+        // One binding has default validators disabled
+        BinderValidationStatus<Person> status = binder.validate();
+        assertEquals(
+                "Validation should have one error. "
+                        + "Only one default validators should be skipped.",
+                1, status.getValidationErrors().size());
+
+        // Re-enable default validators of binding
+        binding.setDefaultValidatorEnabled(true);
+        status = binder.validate();
+        assertEquals(
+                "Validation should have two errors. "
+                        + "Default validators should be run.",
+                2, status.getValidationErrors().size());
+    }
+
+    @Test
+    public void skipDefaultValidator_crossToggleSingleBindingAndBinderState() {
+        AtomicBoolean nonSkippedDidRun = new AtomicBoolean(false);
+
+        TestTextFieldDefaultValidator field1 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> ValidationResult.error("fail_1"));
+        TestTextFieldDefaultValidator field2 = new TestTextFieldDefaultValidator(
+                (val, ctx) -> {
+                    nonSkippedDidRun.getAndSet(true);
+                    return ValidationResult.error("fail_2");
+                });
+
+        binder.forField(field1).bind(Person::getFirstName,
+                Person::setFirstName);
+        Binding<Person, String> binding = binder.forField(field2)
+                .withDefaultValidator(true)
+                .bind(Person::getLastName, Person::setLastName);
+
+        // Initial case: binder disabled & binding overrides to enable
+        binder.setDefaultValidatorsEnabled(false);
+        BinderValidationStatus<Person> status = binder.validate();
+        assertEquals(
+                "Validation should have one error. "
+                        + "Only one default validators should be skipped.",
+                1, status.getValidationErrors().size());
+        assertTrue("Non-skipped validator should have been run.",
+                nonSkippedDidRun.get());
+
+        nonSkippedDidRun.getAndSet(false);
+
+        // Cross-toggle false <-> true
+        binder.setDefaultValidatorsEnabled(true);
+        binding.setDefaultValidatorEnabled(false);
+        status = binder.validate();
+        assertEquals(
+                "Validation should have one error. "
+                        + "Only one default validators should be skipped.",
+                1, status.getValidationErrors().size());
+        assertFalse("Now skipped validator should not have been run.",
+                nonSkippedDidRun.get());
+    }
+
+    public class TestTextFieldDefaultValidator extends TestTextField
+            implements HasValidator<String> {
+
+        private final Validator<String> defaultValidator;
+
+        public TestTextFieldDefaultValidator(
+                Validator<String> defaultValidator) {
+            this.defaultValidator = defaultValidator;
+        }
+
+        @Override
+        public Validator<String> getDefaultValidator() {
+            return defaultValidator;
+        }
     }
 
     @Test
@@ -1870,7 +2126,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         // Without fix for #12356 count will be 5
         assertEquals(3, count.get());
 
-        assertEquals(new Double(2000), item.getSalaryDouble());
+        assertEquals(Double.valueOf(2000), item.getSalaryDouble());
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.Command;
 
 /**
  * Event created before navigation happens.
@@ -88,7 +87,9 @@ public class BeforeLeaveEvent extends BeforeEvent {
                 // updated/added by router when we continue for a Router_link.
                 // If the server updates the url also we will get 2 history
                 // changes instead of 1.
-                if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+                if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
+                        && !event.getUI().getSession().getConfiguration()
+                                .isReactEnabled()) {
                     event = new NavigationEvent(event.getSource(),
                             event.getLocation(), event.getUI(),
                             NavigationTrigger.PROGRAMMATIC);

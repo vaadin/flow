@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.ComponentEventListener;
@@ -46,8 +47,34 @@ public interface DataView<T> extends Serializable {
     T getItem(int index);
 
     /**
+     * Gets the index of the given item from the data available to the
+     * component. Data is filtered and sorted the same way as in the component.
+     *
+     * @param item
+     *            item to get index for
+     * @return index of the item or empty optional if the item is not found
+     */
+    Optional<Integer> getItemIndex(T item);
+
+    /**
      * Get the full data available to the component. Data is filtered and sorted
      * the same way as in the component.
+     * <p>
+     * Consumers of the returned stream are responsible for closing it when all
+     * the stream operations are done to ensure that any resources feeding the
+     * stream are properly released. Failure to close the stream might lead to
+     * resource leaks.
+     * <p>
+     * It is strongly recommended to use a try-with-resources block to
+     * automatically close the stream after its terminal operation has been
+     * executed. Below is an example of how to properly use and close the
+     * stream:
+     *
+     * <pre>{@code
+     * try (Stream<T> stream = dataView.getItems()) {
+     *     stream.forEach(System.out::println); // Example terminal operation
+     * }
+     * }</pre>
      *
      * @return filtered and sorted data set
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -302,4 +302,11 @@ public interface PluginAdapterBase {
      */
     boolean isPrepareFrontendCacheDisabled();
 
+    /**
+     * Set React enabled or disabled.
+     *
+     * @return {@code true} for enable React and {@code false} for using Vaadin
+     *         router and excluding React dependencies
+     */
+    boolean isReactEnabled();
 }

@@ -21,6 +21,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 
@@ -55,11 +56,9 @@ public class NodeTasksExecutionTest {
     public void init() throws Exception {
 
         // Make a builder that doesn't add any commands.
-        Lookup lookup = Mockito.mock(Lookup.class);
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Collections.singleton(this.getClass()));
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-        options = new Options(lookup, null).withBuildDirectory(TARGET);
+        options = new MockOptions(finder, null).withBuildDirectory(TARGET);
         options.withProductionMode(false);
 
         nodeTasks = new NodeTasks(options);

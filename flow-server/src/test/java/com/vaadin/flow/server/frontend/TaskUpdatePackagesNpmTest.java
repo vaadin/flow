@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,6 +52,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -694,12 +695,11 @@ public class TaskUpdatePackagesNpmTest {
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(applicationDependencies);
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
                 .withBundleBuild(true);
 
-        return new TaskUpdatePackages(finder, frontendDependenciesScanner,
-                options) {
+        return new TaskUpdatePackages(frontendDependenciesScanner, options) {
         };
     }
 

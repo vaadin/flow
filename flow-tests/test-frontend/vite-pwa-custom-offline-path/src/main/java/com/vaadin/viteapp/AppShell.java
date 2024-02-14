@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,14 +15,9 @@
  */
 package com.vaadin.viteapp;
 
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 
 @PWA(name = "My PWA app", shortName = "app", offlinePath = "offline.html")
-public class AppShell extends Div
-        implements RouterLayout, AppShellConfigurator {
-    public AppShell() {
-    }
+public class AppShell implements AppShellConfigurator {
 }

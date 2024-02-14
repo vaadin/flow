@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -57,6 +57,7 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
@@ -254,6 +255,31 @@ public class Binder<BEAN> implements Serializable {
          * @return A boolean value.
          */
         public boolean isValidatorsDisabled();
+
+        /**
+         * Sets up this binding to either enable or disable the default field
+         * validator (e.g. min/max validators in DatePicker). This binding-level
+         * setting will override the Binder-level setting for this property.
+         *
+         * Defaults to {@literal null}.
+         *
+         * @param defaultValidatorEnabled
+         *            {@literal true} to enable default validator for this
+         *            binding, {@literal false} to disable it, {@literal null}
+         *            to reset (fall back to Binder-level setting)
+         * @see Binder#setDefaultValidatorsEnabled(boolean) for faster way to
+         *      toggle default validators for all bound fields.
+         */
+        void setDefaultValidatorEnabled(Boolean defaultValidatorEnabled);
+
+        /**
+         * Returns if default validator of bound field is enabled.
+         *
+         * @return {@literal true} if default validator is enabled for this
+         *         binding, {@literal false} if it is disabled, {@literal null}
+         *         if falls back to Binder-level setting
+         */
+        Boolean isDefaultValidatorEnabled();
 
         /**
          * Define whether the value should be converted back to the presentation
@@ -825,6 +851,24 @@ public class Binder<BEAN> implements Serializable {
                 BindingValidationStatusHandler handler);
 
         /**
+         * Sets up this binding to either enable or disable the default field
+         * validator (e.g. min/max validators in DatePicker). This binding-level
+         * setting will override the Binder-level setting for this property.
+         *
+         * By default, all bindings will use the Binder-level setting if no
+         * value is set for them.
+         *
+         * @param defaultValidatorEnabled
+         *            {@literal true} to enable default validator for this
+         *            binding, {@literal false} to disable it
+         * @return this binding, for chaining
+         * @see Binder#setDefaultValidatorsEnabled(boolean) for faster way to
+         *      toggle default validators for all bound fields.
+         */
+        BindingBuilder<BEAN, TARGET> withDefaultValidator(
+                boolean defaultValidatorEnabled);
+
+        /**
          * Sets the field to be required. This means two things:
          * <ol>
          * <li>the required indicator is visible</li>
@@ -938,6 +982,8 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean asRequiredSet;
 
+        private Boolean defaultValidatorEnabled;
+
         /**
          * Creates a new binding builder associated with the given field.
          * Initializes the builder with the given converter chain and status
@@ -960,6 +1006,17 @@ public class Binder<BEAN> implements Serializable {
             this.binder = binder;
             this.converterValidatorChain = converterValidatorChain;
             this.statusHandler = statusHandler;
+
+            if (field instanceof HasValidator hasValidator) {
+                SerializableSupplier<Boolean> shouldValidate = () -> binding != null
+                        && Optional
+                                .ofNullable(binding.isDefaultValidatorEnabled())
+                                .orElse(getBinder()
+                                        .isDefaultValidatorsEnabled());
+                withValidator((val, ctx) -> shouldValidate.get()
+                        ? hasValidator.getDefaultValidator().apply(val, ctx)
+                        : ValidationResult.ok());
+            }
         }
 
         Converter<FIELDVALUE, ?> getConverterValidatorChain() {
@@ -974,6 +1031,12 @@ public class Binder<BEAN> implements Serializable {
 
             BindingImpl<BEAN, FIELDVALUE, TARGET> binding = new BindingImpl<>(
                     this, getter, setter);
+            // Setting the binding field value has been moved up here to fix a
+            // regression NPE https://github.com/vaadin/flow/issues/18608 which
+            // breaks tests of Grid component: UpdateEditorComponentIT,
+            // DynamicEditorKBNavigationIT and
+            // GridViewEditorIT.dynamicNotBufferedEditor*
+            this.binding = binding;
 
             // Remove existing binding for same field to avoid potential
             // multiple application of converter
@@ -992,7 +1055,6 @@ public class Binder<BEAN> implements Serializable {
             if (getBinder().incompleteBindings != null) {
                 getBinder().incompleteBindings.remove(getField());
             }
-            this.binding = binding;
 
             return binding;
         }
@@ -1100,6 +1162,14 @@ public class Binder<BEAN> implements Serializable {
             }
             isStatusHandlerChanged = true;
             statusHandler = handler;
+            return this;
+        }
+
+        @Override
+        public BindingBuilder<BEAN, TARGET> withDefaultValidator(
+                boolean defaultValidatorEnabled) {
+            checkUnbound();
+            this.defaultValidatorEnabled = defaultValidatorEnabled;
             return this;
         }
 
@@ -1238,6 +1308,8 @@ public class Binder<BEAN> implements Serializable {
 
         private Registration onValidationStatusChange;
 
+        private Boolean defaultValidatorEnabled;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -1246,6 +1318,8 @@ public class Binder<BEAN> implements Serializable {
             statusHandler = builder.statusHandler;
             this.asRequiredSet = builder.asRequiredSet;
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
+
+            defaultValidatorEnabled = builder.defaultValidatorEnabled;
 
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
@@ -1548,7 +1622,6 @@ public class Binder<BEAN> implements Serializable {
             }
             if (asRequiredEnabled != isAsRequiredEnabled()) {
                 field.setRequiredIndicatorVisible(asRequiredEnabled);
-                validate();
             }
         }
 
@@ -1565,6 +1638,17 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public boolean isValidatorsDisabled() {
             return validatorsDisabled;
+        }
+
+        @Override
+        public void setDefaultValidatorEnabled(
+                Boolean defaultValidatorEnabled) {
+            this.defaultValidatorEnabled = defaultValidatorEnabled;
+        }
+
+        @Override
+        public Boolean isDefaultValidatorEnabled() {
+            return defaultValidatorEnabled;
         }
 
         @Override
@@ -1725,6 +1809,8 @@ public class Binder<BEAN> implements Serializable {
 
     private boolean fieldsValidationStatusChangeListenerEnabled = true;
 
+    private boolean defaultValidatorsEnabled = true;
+
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
      * finding and resolving property names for
@@ -1827,7 +1913,7 @@ public class Binder<BEAN> implements Serializable {
      * Informs the Binder that a value in Binding was changed. This method will
      * trigger validating and writing of the whole bean if using
      * {@link #setBean(Object)}. If using {@link #readBean(Object)} only the
-     * field validation is run.
+     * field validation for the given Binding is run.
      *
      * @param binding
      *            the binding whose value has been changed
@@ -1837,7 +1923,7 @@ public class Binder<BEAN> implements Serializable {
         if (getBean() != null) {
             doWriteIfValid(getBean(), changedBindings);
         } else {
-            binding.validate();
+            validate(binding);
         }
     }
 
@@ -1878,12 +1964,8 @@ public class Binder<BEAN> implements Serializable {
         // clear previous errors for this field and any bean level validation
         clearError(field);
         getStatusLabel().ifPresent(label -> label.setText(""));
-
         return createBinding(field, createNullRepresentationAdapter(field),
-                this::handleValidationStatus)
-                .withValidator(field instanceof HasValidator
-                        ? ((HasValidator) field).getDefaultValidator()
-                        : Validator.alwaysPass());
+                this::handleValidationStatus);
     }
 
     /**
@@ -2127,9 +2209,9 @@ public class Binder<BEAN> implements Serializable {
      * back to their corresponding property values of the bean as long as the
      * bean is bound.
      * <p>
-     * Any change made in the fields also runs validation for the field
-     * {@link Binding} and bean level validation for this binder (bean level
-     * validators are added using {@link Binder#withValidator(Validator)}.
+     * Any change made in one of the fields also runs validation for all the
+     * fields {@link Binding} and bean level validation for this binder (bean
+     * level validators are added using {@link Binder#withValidator(Validator)}.
      * <p>
      * After updating each field, the value is read back from the field and the
      * bean's property value is updated if it has been changed from the original
@@ -2243,6 +2325,7 @@ public class Binder<BEAN> implements Serializable {
      * thrown.
      *
      * @see #writeBeanIfValid(Object)
+     * @see #writeBean(Object, Collection)
      * @see #readBean(Object)
      * @see #setBean(Object)
      *
@@ -2253,11 +2336,92 @@ public class Binder<BEAN> implements Serializable {
      *             if some of the bound field values fail to validate
      */
     public void writeBean(BEAN bean) throws ValidationException {
-        BinderValidationStatus<BEAN> status = doWriteIfValid(bean, bindings);
+        writeBean(bean, bindings);
+    }
+
+    /**
+     * Writes changes from the given bindings to the given bean if all
+     * validators (binding and bean level) pass.
+     * <p>
+     * If any field binding validator fails, no values are written and a
+     * {@code ValidationException} is thrown.
+     * <p>
+     * If all field level validators pass, the given bean is updated and bean
+     * level validators are run on the updated bean. If any bean level validator
+     * fails, the bean updates are reverted and a {@code ValidationException} is
+     * thrown.
+     *
+     * @see #writeBeanIfValid(Object)
+     * @see #writeBean(Object)
+     * @see #readBean(Object)
+     * @see #setBean(Object)
+     * @see #writeChangedBindingsToBean(Object)
+     *
+     * @param bean
+     *            the object to which to write the field values, not
+     *            {@code null}
+     * @param bindingsToWrite
+     *            Collection of bindings to use in writing the bean
+     * @throws ValidationException
+     *             if some of the bound field values fail to validate
+     * @throws IllegalArgumentException
+     *             if bindingsToWrite contains bindings not belonging to this
+     *             Binder
+     */
+    public void writeBean(BEAN bean,
+            Collection<Binding<BEAN, ?>> bindingsToWrite)
+            throws ValidationException {
+        if (!bindings.containsAll(bindingsToWrite)) {
+            throw new IllegalArgumentException(
+                    "Can't write bean using binding that is not bound to this Binder.");
+        }
+        BinderValidationStatus<BEAN> status = doWriteIfValid(bean,
+                bindingsToWrite);
         if (status.hasErrors()) {
             throw new ValidationException(status.getFieldValidationErrors(),
                     status.getBeanValidationErrors());
         }
+    }
+
+    /**
+     * Writes changes from the changed bindings to the given bean if all
+     * validators (binding and bean level) pass. If the bean is the same
+     * instance where Binder read the bean, this method updates the bean with
+     * the changes.
+     * <p>
+     * If any field binding validator fails, no values are written and a
+     * {@code ValidationException} is thrown.
+     * <p>
+     * If all field level validators pass, the given bean is updated and bean
+     * level validators are run on the updated bean. If any bean level validator
+     * fails, the bean updates are reverted and a {@code ValidationException} is
+     * thrown.
+     *
+     * @see #writeBeanIfValid(Object)
+     * @see #writeBean(Object)
+     * @see #readBean(Object)
+     * @see #setBean(Object)
+     *
+     * @param bean
+     *            the object to which to write the field values, not
+     *            {@code null}
+     * @throws ValidationException
+     *             if some of the bound field values fail to validate
+     */
+    public void writeChangedBindingsToBean(BEAN bean)
+            throws ValidationException {
+        writeBean(bean, getChangedBindings());
+    }
+
+    /**
+     * Get the immutable Set of changed bindings.
+     *
+     * @see #hasChanges()
+     *
+     * @return Immutable set of bindings.
+     */
+    public Set<Binding<BEAN, ?>> getChangedBindings() {
+        return Collections.unmodifiableSet(changedBindings);
     }
 
     /**
@@ -2348,10 +2512,9 @@ public class Binder<BEAN> implements Serializable {
                 bindings);
 
         // First run fields level validation, if no validation errors then
-        // update bean
-        List<BindingValidationStatus<?>> bindingResults = currentBindings
-                .stream().map(b -> b.validate(false))
-                .collect(Collectors.toList());
+        // update bean. Note that this will validate all bindings.
+        List<BindingValidationStatus<?>> bindingResults = getBindings().stream()
+                .map(b -> b.validate(false)).collect(Collectors.toList());
 
         if (bindingResults.stream()
                 .noneMatch(BindingValidationStatus::isError)) {
@@ -2618,6 +2781,38 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Validates the target binding. Also runs validation for all other
+     * bindings, and if possible, bean-level validations as well.
+     *
+     * {@link BinderValidationStatusHandler} is called with only the status of
+     * the target binding.
+     *
+     * {@link StatusChangeEvent} is fired with current binder validation status
+     *
+     * @param targetBinding
+     *            target binding for validation
+     */
+    private void validate(Binding<BEAN, ?> targetBinding) {
+        List<BindingValidationStatus<?>> bindingValidationStatuses = validateBindings();
+
+        List<ValidationResult> beanStatuses = new ArrayList<>();
+        if (getBean() != null) {
+            beanStatuses.addAll(validateBean(getBean()));
+        }
+        BindingValidationStatus<?> status = bindingValidationStatuses.stream()
+                .filter(s -> targetBinding.equals(s.getBinding())).findFirst()
+                .orElse(null);
+
+        getValidationStatusHandler().statusChange(new BinderValidationStatus<>(
+                this, Collections.singletonList(status),
+                Collections.emptyList()));
+
+        fireStatusChangeEvent(bindingValidationStatuses.stream()
+                .anyMatch(BindingValidationStatus::isError)
+                || beanStatuses.stream().anyMatch(ValidationResult::isError));
+    }
+
+    /**
      * Runs all currently configured field level validators, as well as all bean
      * level validators if a bean is currently set with
      * {@link #setBean(Object)}, and returns whether any of the validators
@@ -2677,6 +2872,33 @@ public class Binder<BEAN> implements Serializable {
                 .map(validator -> validator.apply(bean, new ValueContext()))
                 .collect(Collectors.collectingAndThen(Collectors.toList(),
                         Collections::unmodifiableList));
+    }
+
+    /**
+     * Sets up the Binder to either enable or disable the default field
+     * validators (e.g. min/max validators in DatePicker) of all bound fields.
+     * This Binder-level setting can be overridden for each binding via either
+     * the binding object itself, or the binding builder.
+     * <p>
+     * Defaults to {@literal true}.
+     *
+     * @param defaultValidatorsEnabled
+     *            {@literal true} to enable default validators of bound fields,
+     *            {@literal false} to disable them
+     */
+    public void setDefaultValidatorsEnabled(boolean defaultValidatorsEnabled) {
+        this.defaultValidatorsEnabled = defaultValidatorsEnabled;
+    }
+
+    /**
+     * Returns the Binder-level setting for enabling default validators of bound
+     * fields.
+     *
+     * @return {@literal true} if default validators of bound fields are
+     *         enabled, {@literal false} if they are disabled
+     */
+    public boolean isDefaultValidatorsEnabled() {
+        return defaultValidatorsEnabled;
     }
 
     /**

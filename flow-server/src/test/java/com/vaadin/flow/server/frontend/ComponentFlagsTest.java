@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,6 +35,7 @@ import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlagView;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -145,10 +146,10 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     private TaskUpdateImports createUpdater() throws IOException {
         ClassFinder classFinder = getClassFinder(testClasses);
 
-        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+        Options options = new MockOptions(classFinder, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
-        return new TaskUpdateImports(classFinder,
-                getScanner(classFinder, featureFlags), options);
+        return new TaskUpdateImports(getScanner(classFinder, featureFlags),
+                options);
     }
 }

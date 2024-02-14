@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -119,12 +119,21 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(property = InitParameters.FORCE_PRODUCTION_BUILD, defaultValue = "false")
     private boolean forceProductionBuild;
 
+    /**
+     * Control cleaning of generated frontend files when executing
+     * 'build-frontend'.
+     *
+     * Mainly this is wanted to be true which it is by default.
+     */
+    @Parameter(property = InitParameters.CLEAN_BUILD_FRONTEND_FILES, defaultValue = "true")
+    private boolean cleanFrontendFiles;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
         TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
-                npmFolder());
+                npmFolder(), frontendDirectory(), getClassFinder());
         try {
             BuildFrontendUtil.runNodeUpdater(this);
         } catch (ExecutionFailedException | URISyntaxException exception) {
@@ -167,7 +176,16 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      * @return {@code true} to remove created files, {@code false} to keep files
      */
     protected boolean cleanFrontendFiles() {
-        return true;
+        if (isHillaUsed(project, frontendDirectory())) {
+            /*
+             * Override this to not clean generated frontend files after the
+             * build. For Hilla, the generated files can still be useful for
+             * developers after the build. For example, a developer can use
+             * {@code vite.generated.ts} to run tests with vitest in CI.
+             */
+            return false;
+        }
+        return cleanFrontendFiles;
     }
 
     @Override

@@ -16,7 +16,7 @@ import {
 import { detectElementDisplayName, detectTheme } from './detector';
 import { ThemePropertyValueChangeEvent } from './components/editors/base-property-editor';
 import { themePreview } from './preview';
-import { Connection } from '../connection';
+import { WebSocketConnection } from '../websocket-connection';
 import { ThemeEditorApi } from './api';
 import { ThemeEditorHistory, ThemeEditorHistoryActions } from './history';
 import { ScopeChangeEvent } from './components/scope-selector';
@@ -47,7 +47,7 @@ export class ThemeEditor extends LitElement {
   @property({})
   public pickerProvider!: PickerProvider;
   @property({})
-  public connection!: Connection;
+  public connection!: WebSocketConnection;
   private api!: ThemeEditorApi;
   private history!: ThemeEditorHistory;
   @state()
@@ -222,7 +222,7 @@ export class ThemeEditor extends LitElement {
           this.handleUndo();
         }
       }
-    }
+    };
 
     // When the theme is updated due to HMR, remove optimistic updates from
     // theme preview. Also refresh the base theme as default property values may
@@ -233,8 +233,14 @@ export class ThemeEditor extends LitElement {
     });
 
     document.addEventListener('keydown', this.undoRedoListener);
+  }
 
+  activate() {
     this.dispatchEvent(new CustomEvent('before-open'));
+  }
+
+  deactivate() {
+    this.dispatchEvent(new CustomEvent('after-close'));
   }
 
   protected update(changedProperties: PropertyValues) {
@@ -260,8 +266,6 @@ export class ThemeEditor extends LitElement {
     componentOverlayManager.reset();
 
     document.removeEventListener('keydown', this.undoRedoListener);
-
-    this.dispatchEvent(new CustomEvent('after-close'));
   }
 
   render() {

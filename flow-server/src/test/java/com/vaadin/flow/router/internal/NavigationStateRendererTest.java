@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -582,7 +582,11 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        // When using react router we have the sever do the update in all cases
+        // to control the correct timing for url updates
+        configuration.setReactEnabled(false);
+        session.setConfiguration(configuration);
 
         // given a NavigationStateRenderer mapping to RegularView
         new NavigationStateBuilder(router).withTarget(RegularView.class)

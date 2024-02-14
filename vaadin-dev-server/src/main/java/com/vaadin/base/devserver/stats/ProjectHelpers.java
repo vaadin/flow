@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,10 +38,8 @@ import com.vaadin.base.devserver.MavenUtils;
 
 /**
  * Helper methods for extracting and updating project statistics data.
- * <p>
- * Not intended to be used outside.
  */
-class ProjectHelpers {
+public class ProjectHelpers {
 
     /*
      * Avoid instantiation.
@@ -221,7 +219,7 @@ class ProjectHelpers {
      * @return File instance for Vaadin home folder. Does not check if the
      *         folder exists.
      */
-    static File resolveVaadinHomeDirectory() {
+    public static File resolveVaadinHomeDirectory() {
         String userHome = System
                 .getProperty(StatisticsConstants.PROPERTY_USER_HOME);
         return new File(userHome, StatisticsConstants.VAADIN_FOLDER_NAME);
@@ -285,7 +283,7 @@ class ProjectHelpers {
      *
      * @return Generated user id, or null if unable to load or generate one.
      */
-    static String getUserKey() {
+    public static String getUserKey() {
         File userKeyFile = resolveUserKeyLocation();
         UserKey localKey = new UserKey(userKeyFile);
         if (localKey.getKey() != null) {

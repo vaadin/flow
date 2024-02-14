@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import com.vaadin.flow.server.AbstractDeploymentConfiguration;
+import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.shared.communication.PushMode;
 
 public class MockDeploymentConfiguration
@@ -31,6 +32,8 @@ public class MockDeploymentConfiguration
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
     private boolean devToolsEnabled = true;
+    private boolean isReactEnabled = true;
+    private SessionLockCheckStrategy sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
 
     private File projectFolder = null;
 
@@ -206,5 +209,24 @@ public class MockDeploymentConfiguration
 
     public void setProjectFolder(File projectFolder) {
         this.projectFolder = projectFolder;
+    }
+
+    @Override
+    public SessionLockCheckStrategy getSessionLockCheckStrategy() {
+        return sessionLockCheckStrategy;
+    }
+
+    public void setLockCheckStrategy(
+            SessionLockCheckStrategy sessionLockCheckStrategy) {
+        this.sessionLockCheckStrategy = sessionLockCheckStrategy;
+    }
+
+    @Override
+    public boolean isReactEnabled() {
+        return isReactEnabled;
+    }
+
+    public void setReactEnabled(boolean isReactEnabled) {
+        this.isReactEnabled = isReactEnabled;
     }
 }

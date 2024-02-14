@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,7 +38,7 @@ public class Broadcaster {
         instance.router.fireEvent(new RefreshEvent());
     }
 
-    public static Registration addMessageListener(
+    public static synchronized Registration addMessageListener(
             ComponentEventListener<RefreshEvent> listener) {
         return instance.router.addListener(RefreshEvent.class, listener);
     }

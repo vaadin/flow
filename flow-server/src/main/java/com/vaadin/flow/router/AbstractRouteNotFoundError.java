@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +37,8 @@ import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * This is abstract error view for routing exceptions.
@@ -85,9 +87,11 @@ public abstract class AbstractRouteNotFoundError extends Component {
             // The idea of showing a different error page when there are no
             // routes comes from application generated from start.spring.io, see
             // https://github.com/vaadin/flow/issues/16432
-            template = readHtmlFile(EndpointRequestUtil.isHillaAvailable()
-                    ? "NoRoutesError_hilla.html"
-                    : "NoRoutesError_dev.html");
+            template = readHtmlFile(FrontendUtils.isHillaUsed(
+                    FrontendUtils.getProjectFrontendDir(VaadinService
+                            .getCurrent().getDeploymentConfiguration()))
+                                    ? "NoRoutesError_hilla.html"
+                                    : "NoRoutesError_dev.html");
         } else {
             template = readHtmlFile("RouteNotFoundError_dev.html");
         }

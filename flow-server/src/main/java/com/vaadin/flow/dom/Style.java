@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -606,6 +606,18 @@ public interface Style extends Serializable {
      */
     default Style setTransform(String value) {
         return set(STYLE_TRANSFORM, value);
+    }
+
+    /**
+     * Sets the <code>transform-origin</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setTransformOrigin(String value) {
+        return set(STYLE_TRANSFORM_ORIGIN, value);
     }
 
     /**

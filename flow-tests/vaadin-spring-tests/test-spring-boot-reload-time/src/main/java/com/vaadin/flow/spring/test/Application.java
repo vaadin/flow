@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import com.vaadin.flow.component.page.AppShellConfigurator;
 
 /**
  * The entry point of the Spring Boot application.
@@ -30,7 +33,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  */
 @SpringBootApplication
-public class Application {
+public class Application implements AppShellConfigurator {
+
+    // DummyService here tests that dependency injection works correctly in
+    // AppShellConfigurator class
+    @Autowired
+    private transient DummyService dummyService;
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

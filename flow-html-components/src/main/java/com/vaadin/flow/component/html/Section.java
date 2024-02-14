@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.component.html;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
@@ -29,7 +30,7 @@ import com.vaadin.flow.component.Tag;
  */
 @Tag(Tag.SECTION)
 public class Section extends HtmlContainer
-        implements ClickNotifier<Section>, HasOrderedComponents {
+        implements ClickNotifier<Section>, HasOrderedComponents, HasAriaLabel {
 
     /**
      * Creates a new empty section.

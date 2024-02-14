@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.3-SNAPSHOT</version>
+        <version>24.4-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-theme-editor</artifactId>
     <name>Flow tests for Theme Editor</name>
@@ -15,7 +15,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
-        <vaadin.components.version>24.3-SNAPSHOT</vaadin.components.version>
+        <vaadin.components.version>24.3.3</vaadin.components.version>
     </properties>
 
     <dependencies>

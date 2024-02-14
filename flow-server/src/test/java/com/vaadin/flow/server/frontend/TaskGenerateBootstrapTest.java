@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,9 +28,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -38,6 +36,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -60,8 +59,6 @@ public class TaskGenerateBootstrapTest {
 
     private Options options;
 
-    private Lookup lookup;
-
     @Before
     public void setUp() throws Exception {
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
@@ -70,9 +67,7 @@ public class TaskGenerateBootstrapTest {
                 .createScanner(false, finder, false);
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
-        lookup = Mockito.mock(Lookup.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-        options = new Options(lookup, null)
+        options = new MockOptions(finder, null)
                 .withFrontendDirectory(frontendFolder).withProductionMode(true);
 
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
@@ -133,8 +128,7 @@ public class TaskGenerateBootstrapTest {
     @Test
     public void should_load_AppTheme()
             throws MalformedURLException, ExecutionFailedException {
-        Options options = new Options(lookup, null)
-                .withFrontendDirectory(frontendFolder).withProductionMode(true);
+        options.withFrontendDirectory(frontendFolder).withProductionMode(true);
 
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
                 options);

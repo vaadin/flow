@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.3-SNAPSHOT</version>
+        <version>24.4-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -46,6 +46,7 @@
         <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
         <vaadin.devServerPort>0</vaadin.devServerPort>
         <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>
+        <vaadin.devmode.hostsAllowed>*</vaadin.devmode.hostsAllowed>
     </properties>
 
     <dependencies>
@@ -229,6 +230,7 @@
                             <!-- Allow test clients not on localhost to connect to Vite-->
                             <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
                             <vaadin.frontend.hotdeploy>${vaadin.frontend.hotdeploy}</vaadin.frontend.hotdeploy>
+                            <vaadin.devmode.hostsAllowed>${vaadin.devmode.hostsAllowed}</vaadin.devmode.hostsAllowed>
                         </systemProperties>
                     </configuration>
                 </plugin>
@@ -330,6 +332,10 @@
                 <module>test-custom-frontend-directory</module>
 
                 <module>vaadin-spring-tests</module>
+                <module>test-react-router</module>
+                <module>test-react-router/pom-production.xml</module>
+                <module>test-react-adapter</module>
+                <module>test-react-adapter/pom-production.xml</module>
             </modules>
         </profile>
         <profile>

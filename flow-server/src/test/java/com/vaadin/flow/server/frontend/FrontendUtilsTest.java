@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,8 +41,8 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -59,6 +59,123 @@ public class FrontendUtilsTest {
 
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
+
+    private static final String ROUTES_CONTENT_WITH_ONLY_SERVERSIDE_ROUTES = """
+                import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+
+                export const routes = [
+                  ...serverSideRoutes
+                ]
+            """;
+
+    private static final String ROUTES_CONTENT_WITH_ONLY_CLIENTSIDE_ROUTES = """
+                import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+
+                export const routes = [
+                  {
+                    path: 'hello',
+                    component: 'hello-world-view',
+                    title: 'Hello World',
+                  },
+                  {
+                    path: '',
+                    component: 'about-view',
+                    title: 'About',
+                  }
+                ]
+            """;
+
+    private static final String ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_1 = """
+                import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+
+                let routes = [
+                  {
+                    path: 'hello',
+                    component: 'hello-world-view',
+                    title: 'Hello World',
+                  },
+                  ...serverSideRoutes
+                ];
+
+                let unknownRoutes = [
+                  ...serverSideRoutes
+                ];
+            """;
+
+    private static final String ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_2 = """
+                import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+
+                export const routes: RouteViewObject[] = [
+                  {
+                    path: 'hello',
+                    component: 'hello-world-view',
+                    title: 'Hello World',
+                  },
+                  ...serverSideRoutes
+                ]
+            """;
+
+    private static final String ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_3 = """
+                import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+
+                var myFunc = function() {
+                     // this is checked too
+                     export const routes = [
+                      ...serverSideRoutes
+                    ];
+                }
+
+                let unknownRoutes = [
+                  ...serverSideRoutes
+                ];
+
+                const routes = [
+                  {
+                    path: 'hello',
+                    component: 'hello-world-view',
+                    title: 'Hello World',
+                  },
+                  ...serverSideRoutes
+                ];
+            """;
+
+    private static final String ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_MAINLAYOUT_TSX = """
+                import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+                import MainLayout from 'Frontend/views/MainLayout';
+                import ContactsView from 'Frontend/views/ContactsView';
+                import AboutView from 'Frontend/views/AboutView';
+                import { RouteObject } from 'react-router-dom';
+
+                export const routes: RouteObject[] = [
+                      {
+                          element: <MainLayout />,
+                          handle: { title: 'Hilla CRM' },
+                          children: [
+                              { path: '/', element: <ContactsView />, handle: { title: 'Contacts' } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                              ...serverSideRoutes
+                          ],
+                      },
+                  ];
+            """;
+
+    private static final String ROUTES_CONTENT_WITH_SERVER_SIDE_ROUTES_MAINLAYOUT_TSX = """
+                import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+                import MainLayout from 'Frontend/views/MainLayout';
+                import ContactsView from 'Frontend/views/ContactsView';
+                import AboutView from 'Frontend/views/AboutView';
+                import { RouteObject } from 'react-router-dom';
+
+                export const routes: RouteObject[] = [
+                      {
+                          element: <MainLayout />,
+                          handle: { title: 'Hilla CRM' },
+                          children: [
+                              ...serverSideRoutes
+                          ],
+                      },
+                  ];
+            """;
 
     @Test
     public void parseValidVersions() {
@@ -278,12 +395,9 @@ public class FrontendUtilsTest {
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toJson(), StandardCharsets.UTF_8);
 
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-
         Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET);
-        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+        Options options = new MockOptions(npmFolder).withBuildDirectory(TARGET);
+        NodeUpdater nodeUpdater = new NodeUpdater(
                 Mockito.mock(FrontendDependencies.class), options) {
             @Override
             public void execute() throws ExecutionFailedException {
@@ -342,6 +456,160 @@ public class FrontendUtilsTest {
         Assert.assertTrue("Unexpected STDERR contents: " + stdErr,
                 stdErr.contains("RuntimeException")
                         && stdErr.contains("Invalid stream THROW EXCEPTION"));
+    }
+
+    @Test
+    public void isReactRouterRequired_importsVaadinRouter_false()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.INDEX_TS,
+                """
+                            import { Router } from '@vaadin/router';
+                            import { routes } from './routes';
+
+                            export const router = new Router(document.querySelector('#outlet'));
+                            router.setRoutes(routes);
+                        """);
+        Assert.assertFalse("vaadin-router expected when it imported",
+                FrontendUtils.isReactRouterRequired(frontend));
+    }
+
+    @Test
+    public void isReactRouterRequired_doesntImportVaadinRouter_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.INDEX_TS,
+                """
+                            import { createElement } from "react";
+                            import { createRoot } from "react-dom/client";
+                            import App from "./App.js";
+
+                            createRoot(document.getElementById("outlet")!).render(createElement(App));
+                        """);
+        Assert.assertTrue(
+                "react-router expected when no vaadin-router imported",
+                FrontendUtils.isReactRouterRequired(frontend));
+    }
+
+    @Test
+    public void isReactRouterRequired_noIndexTsFile_true() throws IOException {
+        File frontend = tmpDir.newFolder("frontend");
+        Assert.assertTrue("react-router expected when index.ts isn't there",
+                FrontendUtils.isReactRouterRequired(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_onlyServerSideRoutesTs_false()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
+                ROUTES_CONTENT_WITH_ONLY_SERVERSIDE_ROUTES);
+        Assert.assertFalse("hilla-views are not expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_onlyServerSideRoutesTsx_false()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
+                ROUTES_CONTENT_WITH_ONLY_SERVERSIDE_ROUTES);
+        Assert.assertFalse("hilla-views are not expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_onlyClientSideRoutesTs_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
+                ROUTES_CONTENT_WITH_ONLY_CLIENTSIDE_ROUTES);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_onlyClientSideRoutesTsx_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
+                ROUTES_CONTENT_WITH_ONLY_CLIENTSIDE_ROUTES);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_clientAndServerSideRoutesTs1_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
+                ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_1);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_clientAndServerSideRoutesTsx1_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
+                ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_1);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_clientAndServerSideRoutesTs2_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
+                ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_2);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_clientAndServerSideRoutesTsx2_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
+                ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_2);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_clientAndServerSideRoutesTs3_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TS,
+                ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_3);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_clientAndServerSideRoutesTsx3_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
+                ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_3);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_clientAndServerSideRoutesMainLayoutTsx_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
+                ROUTES_CONTENT_WITH_CLIENT_AND_SERVER_SIDE_ROUTES_MAINLAYOUT_TSX);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_serverSideRoutesMainLayoutTsx_true()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
+                ROUTES_CONTENT_WITH_SERVER_SIDE_ROUTES_MAINLAYOUT_TSX);
+        Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    private File prepareFrontendForRoutesFile(String fileName, String content)
+            throws IOException {
+        File frontend = tmpDir.newFolder("frontend");
+        FileUtils.write(new File(frontend, fileName), content,
+                StandardCharsets.UTF_8);
+        return frontend;
     }
 
     private Pair<String, String> executeExternalProcess(String... args)

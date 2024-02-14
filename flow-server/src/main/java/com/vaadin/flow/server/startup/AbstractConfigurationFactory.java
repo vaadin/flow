@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,6 +49,7 @@ import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -165,6 +166,10 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.hasKey(DISABLE_PREPARE_FRONTEND_CACHE)) {
             UsageStatistics.markAsUsed("flow/always-execute-prepare-frontend",
                     null);
+        }
+        if (buildInfo.hasKey(REACT_ENABLE)) {
+            params.put(REACT_ENABLE,
+                    String.valueOf(buildInfo.getBoolean(REACT_ENABLE)));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -151,8 +152,8 @@ public class PropertyDeploymentConfiguration
     @Override
     public boolean frontendHotdeploy() {
         if (isOwnProperty(FRONTEND_HOTDEPLOY)) {
-            return getBooleanProperty(FRONTEND_HOTDEPLOY,
-                    EndpointRequestUtil.isHillaAvailable());
+            return getBooleanProperty(FRONTEND_HOTDEPLOY, FrontendUtils
+                    .isHillaUsed(FrontendUtils.getProjectFrontendDir(this)));
         }
         return parentConfig.frontendHotdeploy();
     }
@@ -278,6 +279,11 @@ public class PropertyDeploymentConfiguration
     public boolean isDevToolsEnabled() {
         return !isProductionMode() && getBooleanProperty(
                 SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS, true);
+    }
+
+    @Override
+    public SessionLockCheckStrategy getSessionLockCheckStrategy() {
+        return SessionLockCheckStrategy.ASSERT;
     }
 
     /**

@@ -566,7 +566,7 @@ public class ElementTest extends AbstractNodeTest {
 
         public LocalTime localTime = LocalTime.of(10, 23, 55);
 
-        public LocalDate localDate = LocalDate.of(2023, 6, 26);
+        public LocalDate localDate = LocalDate.of(2024, 6, 26);
 
         public LocalDateTime localDateTime = localDate.atTime(localTime);
 
@@ -672,10 +672,10 @@ public class ElementTest extends AbstractNodeTest {
                 JsonUtils.jsonEquals(createNumberArray(10, 23, 55),
                         json.getArray("localTime")));
         Assert.assertTrue("LocalDate not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2023, 6, 26),
+                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26),
                         json.getArray("localDate")));
         Assert.assertTrue("LocalDateTime not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2023, 6, 26, 10, 23, 55),
+                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26, 10, 23, 55),
                         json.getArray("localDateTime")));
         Assert.assertEquals("ZonedDateTime not serialized as expected",
                 bean.zonedDateTime.toEpochSecond(),
@@ -2045,6 +2045,19 @@ public class ElementTest extends AbstractNodeTest {
         body.removeAllChildren();
 
         Assert.assertEquals(1, detached.get());
+    }
+
+    @Test
+    public void testMoveFromUiToUi_doesNotThrow() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+
+        child.removeFromTree();
+
+        body = new UI().getElement();
+        body.appendChild(child);
+        Assert.assertEquals(body, child.getParent());
     }
 
     @Test

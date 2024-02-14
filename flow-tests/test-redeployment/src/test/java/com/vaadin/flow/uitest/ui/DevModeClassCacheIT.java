@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,7 +44,7 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
         List<TestBenchElement> allSpans = $("span").all();
 
-        for (int i = 1; i < 6; i++) {
+        for (int i = 1; i < 5; i++) {
             String[] value = allSpans.get(i).getText().split(":");
             Assert.assertTrue("Expected " + value[0] + " to be greater than 0.",
                     Integer.parseInt(value[1]) > 0);
@@ -52,6 +52,6 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
         Assert.assertEquals("Unexpected cached route packages.",
                 "com.vaadin.flow.uitest.ui",
-                allSpans.get(6).getText().split(":")[1]);
+                allSpans.get(5).getText().split(":")[1]);
     }
 }

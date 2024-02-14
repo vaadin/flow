@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -142,7 +142,7 @@ public class VaadinServletContextInitializer
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
                     "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap",
-                    "dev.hilla")
+                    "com.vaadin.hilla")
             .collect(Collectors.toList());
 
     /**
@@ -541,11 +541,14 @@ public class VaadinServletContextInitializer
                     ms);
 
             Environment environment = appContext.getEnvironment();
-            if (ms > 10000 && environment
-                    .getProperty("vaadin.whitelisted-packages") == null) {
+            if (ms > 10000
+                    && environment
+                            .getProperty("vaadin.allowed-packages") == null
+                    && environment.getProperty(
+                            "vaadin.whitelisted-packages") == null) {
                 getLogger().info(
-                        "Due to slow search it is recommended to use the whitelisted-packages feature to make scanning faster.\n\n"
-                                + "See the whitelisted-packages section in the docs at https://vaadin.com/docs/latest/flow/integrations/spring/configuration#special-configuration-parameters");
+                        "Due to slow search it is recommended to use the allowed-packages feature to make scanning faster.\n\n"
+                                + "See the allowed-packages section in the docs at https://vaadin.com/docs/latest/flow/integrations/spring/configuration#special-configuration-parameters");
             }
 
             start = System.nanoTime();
@@ -634,20 +637,11 @@ public class VaadinServletContextInitializer
                 initializeDevModeClassCache();
             }
 
-            Set<Class<?>> classes = null;
-            if (devModeCachingEnabled) {
-                classes = ReloadCache.appShellClasses;
-            }
-            if (classes == null) {
-                classes = findByAnnotationOrSuperType(
-                        getVerifiableAnnotationPackages(), customLoader,
-                        VaadinAppShellInitializer.getValidAnnotations(),
-                        VaadinAppShellInitializer.getValidSupers())
-                        .collect(Collectors.toSet());
-                if (devModeCachingEnabled) {
-                    ReloadCache.appShellClasses = classes;
-                }
-            }
+            Set<Class<?>> classes = findByAnnotationOrSuperType(
+                    getVerifiableAnnotationPackages(), customLoader,
+                    VaadinAppShellInitializer.getValidAnnotations(),
+                    VaadinAppShellInitializer.getValidSupers())
+                    .collect(Collectors.toSet());
 
             VaadinAppShellInitializer.init(classes,
                     new VaadinServletContext(event.getServletContext()));
@@ -668,7 +662,15 @@ public class VaadinServletContextInitializer
         appContext = context;
 
         String neverScanProperty = appContext.getEnvironment()
-                .getProperty("vaadin.blacklisted-packages");
+                .getProperty("vaadin.blocked-packages");
+        if (neverScanProperty == null) {
+            neverScanProperty = appContext.getEnvironment()
+                    .getProperty("vaadin.blacklisted-packages");
+            if (neverScanProperty != null) {
+                getLogger().warn(
+                        "vaadin.blacklisted-packages is deprecated and may not be supported in the future. Use vaadin.blocked-packages instead.");
+            }
+        }
         List<String> neverScan;
         if (neverScanProperty == null) {
             neverScan = Collections.emptyList();
@@ -679,7 +681,15 @@ public class VaadinServletContextInitializer
         }
 
         String onlyScanProperty = appContext.getEnvironment()
-                .getProperty("vaadin.whitelisted-packages");
+                .getProperty("vaadin.allowed-packages");
+        if (onlyScanProperty == null) {
+            onlyScanProperty = appContext.getEnvironment()
+                    .getProperty("vaadin.whitelisted-packages");
+            if (onlyScanProperty != null) {
+                getLogger().warn(
+                        "vaadin.whitelisted-packages is deprecated and may not be supported in the future. Use vaadin.allowed-packages instead.");
+            }
+        }
         if (onlyScanProperty == null) {
             customScanOnly = Collections.emptyList();
             customLoader = new CustomResourceLoader(appContext, neverScan);
@@ -693,7 +703,7 @@ public class VaadinServletContextInitializer
 
         if (!customScanOnly.isEmpty() && !neverScan.isEmpty()) {
             getLogger().warn(
-                    "vaadin.blacklisted-packages is ignored because both vaadin.whitelisted-packages and vaadin.blacklisted-packages have been set.");
+                    "vaadin.blocked-packages is ignored because both vaadin.allowed-packages and vaadin.blocked-packages have been set.");
         }
     }
 
@@ -882,7 +892,7 @@ public class VaadinServletContextInitializer
     private List<String> getLookupPackages() {
         return Stream
                 .concat(getDefaultPackages().stream(),
-                        Stream.of("dev.hilla.frontend",
+                        Stream.of("com.vaadin.hilla.frontend",
                                 "com.vaadin.flow.component.polymertemplate.rpc",
                                 "com.vaadin.base.devserver"))
                 .collect(Collectors.toList());

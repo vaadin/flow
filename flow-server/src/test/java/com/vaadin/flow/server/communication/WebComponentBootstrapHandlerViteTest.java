@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -208,6 +208,7 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(request.getServletPath()).thenReturn("/");
+        Mockito.when(request.getMethod()).thenReturn("GET");
         VaadinResponse response = getMockResponse(null);
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -242,6 +243,7 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(request.getServletPath()).thenReturn("/");
+        Mockito.when(request.getMethod()).thenReturn("GET");
         VaadinResponse response = getMockResponse(null);
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();

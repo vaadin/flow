@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,6 +49,7 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -88,11 +89,11 @@ public class TaskRunNpmInstallTest {
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-        finder = Mockito.mock(ClassFinder.class);
-        options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET).withBundleBuild(true);
-        nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), options) {
+        options = new MockOptions(npmFolder).withBuildDirectory(TARGET)
+                .withBundleBuild(true);
+        finder = options.getClassFinder();
+        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
+                options) {
 
             @Override
             public void execute() {

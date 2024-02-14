@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ public class BasicViewsIT extends ChromeBrowserTest {
     @Test
     public void rootViewShown() throws Exception {
         getDriver().get(getRootURL() + "/");
+        waitForDevServer();
         Assert.assertEquals("This is the root view",
                 $("*").id("view").getText());
     }
@@ -33,6 +34,7 @@ public class BasicViewsIT extends ChromeBrowserTest {
     @Test
     public void helloViewShown() throws Exception {
         getDriver().get(getRootURL() + "/hello");
+        waitForDevServer();
         Assert.assertEquals("This is the Hello view",
                 $("*").id("view").getText());
     }
@@ -40,6 +42,7 @@ public class BasicViewsIT extends ChromeBrowserTest {
     @Test
     public void invalidViewShowsNotFound() throws Exception {
         getDriver().get(getRootURL() + "/nonexistant");
+        waitForDevServer();
 
         Assert.assertTrue(getDriver().getPageSource()
                 .contains("Could not navigate to 'nonexistant'"));

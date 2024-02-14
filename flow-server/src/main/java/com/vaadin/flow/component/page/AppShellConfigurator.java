@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,7 +43,9 @@ import com.vaadin.flow.server.AppShellSettings;
  * <p>
  * There is a single application shell for the entire Vaadin application, and
  * there can only be one class implementing {@link AppShellConfigurator} per
- * Application.
+ * Application. Also, app shell class is not allowed to extend Vaadin Component,
+ * since app shells are only intended for page configuration and are
+ * instantiated before the UI is created.
  * </p>
  *
  * <p>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -170,11 +171,13 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
             String content = FileUtils.readFileToString(file,
                     StandardCharsets.UTF_8);
             String newContent = content.replace(from, to);
+            boolean isSameContent = Objects.equals(content, newContent);
             if (failIfNotModified) {
-                Assert.assertNotEquals("Failed to update content", content,
-                        newContent);
+                Assert.assertFalse("Failed to update content", isSameContent);
             }
-            FileUtils.write(file, newContent, StandardCharsets.UTF_8);
+            if (!isSameContent) {
+                FileUtils.write(file, newContent, StandardCharsets.UTF_8);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

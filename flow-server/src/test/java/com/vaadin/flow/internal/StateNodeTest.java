@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -569,24 +569,22 @@ public class StateNodeTest {
     }
 
     @Test
-    public void runWhenAttachedNodeDetachedInSameRoundTrip() {
-        StateTree tree = createStateTree();
+    public void runWhenAttached_detachingNode_schedulesCommandOnAttach() {
         AtomicInteger commandRun = new AtomicInteger(0);
         StateNode node = createEmptyNode();
+        StateTree tree = createStateTree();
         setParent(node, tree.getRootNode());
-        node.removeFromTree();
 
-        node.runWhenAttached(ui -> {
-            Assert.assertEquals(tree.getUI(), ui);
-            commandRun.incrementAndGet();
+        node.addDetachListener(() -> {
+            node.runWhenAttached(ui -> {
+                Assert.assertEquals(tree.getUI(), ui);
+                commandRun.incrementAndGet();
+            });
         });
 
+        setParent(node, null);
         Assert.assertEquals(0, commandRun.get());
 
-        setParent(node, tree.getRootNode());
-        Assert.assertEquals(1, commandRun.get());
-
-        setParent(node, null);
         setParent(node, tree.getRootNode());
         Assert.assertEquals(1, commandRun.get());
     }

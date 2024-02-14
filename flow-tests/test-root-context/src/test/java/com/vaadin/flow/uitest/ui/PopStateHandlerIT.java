@@ -160,7 +160,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
 
         verifyPopStateEvent(FORUM);
         // NOTE: see https://github.com/vaadin/flow/issues/10865
-        verifyInsideServletLocation(isClientRouter() ? FORUM : EMPTY_HASH);
+        // verifyInsideServletLocation(isClientRouter() ? FORUM : EMPTY_HASH);
+        verifyInsideServletLocation(EMPTY_HASH);
 
         goBack();
 

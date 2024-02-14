@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,10 +37,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonException;
@@ -63,16 +63,19 @@ public class NodeUpdaterTest {
 
     private ClassFinder finder;
 
+    private Options options;
+
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        finder = Mockito.mock(ClassFinder.class);
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
-                .withBuildDirectory(TARGET).withFeatureFlags(featureFlags);
+        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+                this.getClass().getClassLoader()));
+        options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
+                .withFeatureFlags(featureFlags);
 
-        nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), options) {
+        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
+                options) {
 
             @Override
             public void execute() {
@@ -112,9 +115,12 @@ public class NodeUpdaterTest {
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
         expectedDependencies.add("@vaadin/common-frontend");
-        expectedDependencies.add("@vaadin/router");
+        // expectedDependencies.add("@vaadin/router");
         expectedDependencies.add("construct-style-sheets-polyfill");
         expectedDependencies.add("lit");
+        expectedDependencies.add("react");
+        expectedDependencies.add("react-dom");
+        expectedDependencies.add("react-router-dom");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -138,6 +144,9 @@ public class NodeUpdaterTest {
         expectedDependencies.add("workbox-build");
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
+        expectedDependencies.add("@babel/preset-react");
+        expectedDependencies.add("@types/react");
+        expectedDependencies.add("@types/react-dom");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -204,7 +213,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("10.3.3", packageJson
+        Assert.assertEquals("10.3.10", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
@@ -459,6 +468,102 @@ public class NodeUpdaterTest {
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/grid-pro"));
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/vaadin-grid-pro"));
+    }
+
+    @Test
+    public void getDefaultDependencies_reactRouterIsUsed_addsHillaReactComponents() {
+        boolean reactRouterEnabled = options.isReactEnabled();
+        try (MockedStatic<FrontendUtils> mock = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
+                    Mockito.any(ClassFinder.class))).thenReturn(true);
+            options.withReact(true);
+            Map<String, String> defaultDeps = nodeUpdater
+                    .getDefaultDependencies();
+            Assert.assertFalse(
+                    "Lit component added unexpectedly for react-router",
+                    defaultDeps.containsKey("@vaadin/hilla-lit-form"));
+            Assert.assertTrue(
+                    "React component should be added when react-router is used",
+                    defaultDeps.containsKey("@vaadin/hilla-react-auth"));
+            Assert.assertTrue(
+                    defaultDeps.containsKey("@vaadin/hilla-react-crud"));
+            Assert.assertTrue(
+                    defaultDeps.containsKey("@vaadin/hilla-react-form"));
+
+            Map<String, String> defaultDevDeps = nodeUpdater
+                    .getDefaultDevDependencies();
+            Assert.assertFalse(
+                    "Lit dev dependency added unexpectedly for react-router",
+                    defaultDevDeps.containsKey("lit-dev-dependency"));
+            Assert.assertTrue(
+                    "React dev dependency should be added when react-router is used",
+                    defaultDevDeps.containsKey("react-dev-dependency"));
+        } finally {
+            options.withReact(reactRouterEnabled);
+        }
+    }
+
+    @Test
+    public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
+        boolean reactRouterEnabled = options.isReactEnabled();
+        try (MockedStatic<FrontendUtils> mock = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
+                    Mockito.any(ClassFinder.class))).thenReturn(true);
+            options.withReact(false);
+            Map<String, String> defaultDeps = nodeUpdater
+                    .getDefaultDependencies();
+            Assert.assertTrue(
+                    "Lit component should be when vaadin-router is used",
+                    defaultDeps.containsKey("@vaadin/hilla-lit-form"));
+            Assert.assertFalse(
+                    "React component added unexpectedly for vaadin-router",
+                    defaultDeps.containsKey("@vaadin/hilla-react-form"));
+
+            Map<String, String> defaultDevDeps = nodeUpdater
+                    .getDefaultDevDependencies();
+            Assert.assertFalse(
+                    "React dev dependency added unexpectedly for vaadin-router",
+                    defaultDevDeps.containsKey("react-dev-dependency"));
+            Assert.assertTrue(
+                    "Lit dev dependency should be added when vaadin-router is used",
+                    defaultDevDeps.containsKey("lit-dev-dependency"));
+        } finally {
+            options.withReact(reactRouterEnabled);
+        }
+    }
+
+    @Test
+    public void getDefaultDependencies_hillaIsNotUsed_doesntAddHillaComponents() {
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+        Assert.assertFalse(
+                "Lit component added unexpectedly when Hilla isn't used",
+                defaultDeps.containsKey("@vaadin/hilla-lit-form"));
+        Assert.assertFalse(
+                "React component added unexpectedly when Hilla isn't used",
+                defaultDeps.containsKey("@vaadin/hilla-react-auth"));
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertFalse(
+                "React dev dependency added unexpectedly when Hilla isn't used",
+                defaultDevDeps.containsKey("react-dev-dependency"));
+        Assert.assertFalse(
+                "Lit dev dependency added unexpectedly when Hilla isn't used",
+                defaultDevDeps.containsKey("lit-dev-dependency"));
+    }
+
+    @Test
+    public void readPackageJson_nonExistingFile_doesNotThrow()
+            throws IOException {
+        nodeUpdater.readPackageJson("non-existing-folder");
+    }
+
+    @Test
+    public void readDependencies_doesntHaveDependencies_doesNotThrow() {
+        nodeUpdater.readDependencies("no-deps", "dependencies");
+        nodeUpdater.readDependencies("no-deps", "devDependencies");
     }
 
     private String getPolymerVersion(JsonObject object) {

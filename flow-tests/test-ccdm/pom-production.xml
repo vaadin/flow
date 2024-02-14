@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.3-SNAPSHOT</version>
+        <version>24.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -52,6 +52,9 @@
                         <phase>compile</phase>
                     </execution>
                 </executions>
+                <configuration>
+                    <reactRouterEnabled>false</reactRouterEnabled>
+                </configuration>
             </plugin>
         </plugins>
     </build>

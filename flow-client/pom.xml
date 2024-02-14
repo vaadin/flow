@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.3-SNAPSHOT</version>
+        <version>24.4-SNAPSHOT</version>
     </parent>
     <artifactId>flow-client</artifactId>
     <name>Flow Client</name>
@@ -19,8 +19,8 @@
         <gwt.module.style>OBF</gwt.module.style>
         <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
         <skipTsTests>${skipTests}</skipTsTests>
-        <org.eclipse.equinox.common.version>3.14.100</org.eclipse.equinox.common.version>
-        <org.eclipse.core.runtime.version>3.20.100</org.eclipse.core.runtime.version>
+        <org.eclipse.equinox.common.version>3.18.200</org.eclipse.equinox.common.version>
+        <org.eclipse.core.runtime.version>3.30.0</org.eclipse.core.runtime.version>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -94,7 +94,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.16.0</version>
+            <version>1.16.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -126,7 +126,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.equinox.preferences</artifactId>
-            <version>3.10.300</version>
+            <version>3.10.400</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -151,7 +151,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.contenttype</artifactId>
-            <version>3.9.100</version>
+            <version>3.9.200</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

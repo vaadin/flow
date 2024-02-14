@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,6 +51,13 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoFailureException {
+        if (isHillaUsed(project, frontendDirectory())) {
+            getLog().warn(
+                    """
+                            The 'convert-polymer' goal is not meant to be used in Hilla projects as polymer templates are not supported.
+                            """
+                            .stripIndent());
+        }
         try (ConvertPolymerCommand command = new ConvertPolymerCommand(this,
                 path, useLit1, disableOptionalChaining)) {
             command.execute();

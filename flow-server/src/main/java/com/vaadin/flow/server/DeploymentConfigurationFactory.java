@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -105,7 +105,6 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
     private void readBuildInfo(Properties initParameters,
             VaadinContext context) {
         String json = getTokenFileContent(initParameters::getProperty);
-
         // Read the json and set the appropriate system properties if not
         // already set.
         if (json != null) {
@@ -119,6 +118,7 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
                 }
             }
         }
+
     }
 
     private static void readUiFromEnclosingClass(

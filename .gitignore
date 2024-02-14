@@ -44,6 +44,7 @@ node_modules
 /frontend
 */flow-*/frontend
 package-lock.json
+!flow-plugins/flow-maven-plugin/src/test/resources/package-lock.json
 **/webpack.generated.js
 
 flow-tests/**/package.json
@@ -73,7 +74,29 @@ flow-tests/test-express-build/test-theme-dev-bundle/src/main/bundles
 flow-tests/test-express-build/test-reusing-theme-express-build/src/main/bundles
 flow-tests/test-express-build/test-parent-theme-express-build/src/main/bundles
 flow-tests/test-express-build/test-embedding-express-build/src/main/bundles
+flow-tests/test-express-build/test-prod-bundle/src/main/bundles
+flow-tests/test-ccdm-flow-navigation/src/main/bundles/
+flow-tests/test-ccdm/src/main/bundles/
+flow-tests/test-custom-route-registry/src/main/bundles/
+flow-tests/test-frontend/vite-context-path/src/main/bundles/
+flow-tests/test-frontend/vite-production/src/main/bundles/
+flow-tests/test-misc/src/main/bundles/
+flow-tests/test-multi-war/test-war1/src/main/bundles/
+flow-tests/test-multi-war/test-war2/src/main/bundles/
+flow-tests/test-no-theme/src/main/bundles/
+flow-tests/test-npm-only-features/test-npm-bytecode-scanning/src/main/bundles/
+flow-tests/test-npm-only-features/test-npm-general/src/main/bundles/
+flow-tests/test-pwa-disabled-offline/src/main/bundles/
+flow-tests/test-pwa/src/main/bundles/
+flow-tests/test-root-context/src/main/bundles/
+flow-tests/test-theme-no-polymer/src/main/bundles/
+flow-tests/test-themes/src/main/bundles/
+
+.flow-node-tasks.lock
 
 # Exclude generated vaadin dev tools frontend
 vaadin-dev-server/src/main/resources/META-INF/frontend
 vaadin-dev-server/src/main/resources/META-INF/metadata
+
+/flow-tests/**/frontend/App.tsx
+/flow-tests/**/frontend/routes.tsx

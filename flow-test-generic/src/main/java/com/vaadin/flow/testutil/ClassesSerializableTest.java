@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -137,7 +137,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.ServerRpcHandler\\$LazyInvocationHandlers",
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletRequest",
                 "com\\.vaadin\\.flow\\.server\\.VaadinServletResponse",
-                "com\\.vaadin\\.flow\\.server\\.auth\\.NavigationAccessChecker\\$NavigationContext",
+                "com\\.vaadin\\.flow\\.server\\.auth\\.NavigationContext",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.AnnotationValidator",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.AppShellPredicate",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ApplicationConfigurationFactory",

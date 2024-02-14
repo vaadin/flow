@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -59,6 +59,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void embeddedComponent_expressBuild_componentRendered() {
         open();
+        waitForWebComponentsBootstrap();
 
         TestBenchElement themedComponent = $("themed-component").waitForFirst();
 
@@ -90,6 +91,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void applicationTheme_GlobalCss_isUsedOnlyInEmbeddedComponent() {
         open();
+        waitForWebComponentsBootstrap();
         checkLogsForErrors();
 
         validateEmbeddedComponent($("themed-component").id("first"), "first");
@@ -122,6 +124,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     private void validateEmbeddedComponent(TestBenchElement themedComponent,
             String target) {
         String imageUrl = themedComponent.getCssValue("background-image");
+
         Assert.assertTrue(target + " didn't contain the background image",
                 imageUrl.contains("VAADIN/themes/embedded-theme/img/bg.jpg"));
 
@@ -144,6 +147,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void componentThemeIsApplied() {
         open();
+        waitForWebComponentsBootstrap();
 
         final TestBenchElement themedComponent = $("themed-component").first();
         final TestBenchElement embeddedComponent = themedComponent
@@ -160,6 +164,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void documentCssFonts_fontsAreAppliedAndAvailable() {
         open();
+        waitForWebComponentsBootstrap();
         checkLogsForErrors();
         final TestBenchElement themedComponent = $("themed-component").first();
         final TestBenchElement embeddedComponent = themedComponent
@@ -182,6 +187,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
     public void documentCssFonts_fromLocalCssFile_fontAppliedToDocumentRoot() {
         open();
+        waitForWebComponentsBootstrap();
 
         Object ostrichFontStylesFound = getCommandExecutor().executeScript(
                 "let target = document;" + FIND_FONT_FACE_RULE_SCRIPT);
@@ -194,6 +200,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void documentCssFonts_fromLocalCssFile_fontNotAppliedToEmbeddedComponent() {
         open();
+        waitForWebComponentsBootstrap();
 
         Object ostrichFontStylesFoundForEmbedded = getCommandExecutor()
                 .executeScript("let target = document.getElementsByTagName"
@@ -208,6 +215,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void documentCssLinkAddedToHead() {
         open();
+        waitForWebComponentsBootstrap();
 
         final WebElement documentHead = getDriver()
                 .findElement(By.xpath("/html/head"));

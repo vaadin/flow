@@ -24,9 +24,11 @@ import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.auth.AccessCheckDecision;
+import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
@@ -49,6 +51,8 @@ public class RequestUtil {
 
     @Autowired
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
+
+    private WebIconsRequestMatcher webIconsRequestMatcher;
 
     /**
      * Checks whether the request is an internal request.
@@ -122,6 +126,23 @@ public class RequestUtil {
         // this matcher should be considered only once, since for alias check
         // we are interested only in the other matchers
         return false;
+    }
+
+    /**
+     * Checks whether the request targets a custom PWA icon or Favicon path.
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting a custom PWA icon or a
+     *         custom favicon path, {@code false} otherwise
+     */
+    public boolean isCustomWebIcon(HttpServletRequest request) {
+        if (webIconsRequestMatcher == null) {
+            webIconsRequestMatcher = new WebIconsRequestMatcher(
+                    springServletRegistration.getServlet().getService(),
+                    configurationProperties.getUrlMapping());
+        }
+        return webIconsRequestMatcher.matches(request);
     }
 
     /**
@@ -207,16 +228,15 @@ public class RequestUtil {
             return false;
         }
 
-        NavigationAccessChecker.NavigationContext navigationContext = new NavigationAccessChecker.NavigationContext(
-                router, targetView,
+        NavigationContext navigationContext = new NavigationContext(router,
+                targetView,
                 new Location(path,
                         QueryParameters.full(request.getParameterMap())),
                 target.getRouteParameters(), null, role -> false, false);
 
-        NavigationAccessChecker.AccessCheckResult result = navigationAccessControl
+        AccessCheckResult result = navigationAccessControl
                 .checkAccess(navigationContext, productionMode);
-        boolean isAllowed = result
-                .decision() == NavigationAccessChecker.Decision.ALLOW;
+        boolean isAllowed = result.decision() == AccessCheckDecision.ALLOW;
         if (isAllowed) {
             getLogger().debug("{} refers to a public view", path);
         } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -276,11 +276,9 @@ public class NodeTasksViteTest {
             bundleUtils.verify(
                     () -> BundleUtils.copyPackageLockFromBundle(options),
                     Mockito.times(1));
-            validationUtil.verify(
-                    () -> BundleValidationUtil.needsBuild(any(Options.class),
-                            any(FrontendDependenciesScanner.class),
-                            any(ClassFinder.class), any(Mode.class)),
-                    Mockito.never());
+            validationUtil.verify(() -> BundleValidationUtil.needsBuild(
+                    any(Options.class), any(FrontendDependenciesScanner.class),
+                    any(Mode.class)), Mockito.never());
         }
     }
 

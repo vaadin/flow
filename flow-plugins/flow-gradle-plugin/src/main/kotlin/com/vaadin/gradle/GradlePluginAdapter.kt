@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd
+ * Copyright 2000-2024 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -198,4 +198,5 @@ internal class GradlePluginAdapter(
 
     override fun isPrepareFrontendCacheDisabled(): Boolean = config.alwaysExecutePrepareFrontend.get()
 
+    override fun isReactEnabled(): Boolean = config.reactEnabled.get()
 }

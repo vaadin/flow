@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,7 +52,7 @@ public class TestUtil {
                 .thenReturn(new File(baseDir, "src/main/resources"));
         Mockito.when(adapter.openApiJsonFile())
                 .thenReturn(new File(new File(baseDir, Constants.TARGET),
-                        "classes/dev/hilla/openapi.json"));
+                        "classes/com/vaadin/hilla/openapi.json"));
         Mockito.when(adapter.getClassFinder())
                 .thenReturn(new ClassFinder.DefaultClassFinder(
                         TestUtil.class.getClassLoader()));

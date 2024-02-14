@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -286,6 +287,42 @@ public class HierarchyMapperWithDataTest {
 
         Collection<TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
         expandedItems.add(new TreeNode("third-1"));
+    }
+
+    @Test
+    public void fetchHierarchyItems_streamIsClosed() {
+        AtomicBoolean streamIsClosed = new AtomicBoolean();
+        mapper = new HierarchyMapper<>(new TreeDataProvider<>(data) {
+            @Override
+            public Stream<Node> fetchChildren(
+                    HierarchicalQuery<Node, SerializablePredicate<Node>> query) {
+                return super.fetchChildren(query)
+                        .onClose(() -> streamIsClosed.set(true));
+            }
+        });
+        Node rootNode = testData.get(0);
+        mapper.expand(rootNode);
+        mapper.fetchHierarchyItems(rootNode, Range.between(0, 10)).count();
+
+        Assert.assertTrue(streamIsClosed.get());
+    }
+
+    @Test
+    public void fetchChildItems_streamIsClosed() {
+        AtomicBoolean streamIsClosed = new AtomicBoolean();
+        mapper = new HierarchyMapper<>(new TreeDataProvider<>(data) {
+            @Override
+            public Stream<Node> fetchChildren(
+                    HierarchicalQuery<Node, SerializablePredicate<Node>> query) {
+                return super.fetchChildren(query)
+                        .onClose(() -> streamIsClosed.set(true));
+            }
+        });
+        Node rootNode = testData.get(0);
+        mapper.expand(rootNode);
+        mapper.fetchChildItems(rootNode, Range.between(0, 10));
+
+        Assert.assertTrue(streamIsClosed.get());
     }
 
     private void expand(Node node) {

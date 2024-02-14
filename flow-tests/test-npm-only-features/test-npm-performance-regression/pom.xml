@@ -3,7 +3,7 @@
     <parent>
         <artifactId>flow-test-npm-only-features</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.3-SNAPSHOT</version>
+        <version>24.4-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -67,7 +67,7 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.22</version>
+            <version>4.2.25</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>

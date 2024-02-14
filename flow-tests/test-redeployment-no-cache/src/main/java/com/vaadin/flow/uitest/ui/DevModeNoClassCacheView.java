@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,16 +31,6 @@ public class DevModeNoClassCacheView extends Div {
         try {
             Class<?> reloadCacheClass = Class
                     .forName("com.vaadin.flow.spring.ReloadCache");
-
-            // appShellClasses;
-            Field appShellClassesField = reloadCacheClass
-                    .getDeclaredField("appShellClasses");
-            appShellClassesField.setAccessible(true);
-            Set<Class<?>> appShellClasses = (Set<Class<?>>) appShellClassesField
-                    .get(null);
-            add(new Span(
-                    "appshell class count:" + (appShellClasses == null ? "0"
-                            : appShellClasses.size())));
 
             // lookupClasses;
             Field lookupClassesField = reloadCacheClass

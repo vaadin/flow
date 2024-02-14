@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,6 +41,17 @@ public class DnDIT extends ChromeBrowserTest {
         dragBoxToLanes(boxElement, getLaneElement("MOVE"), false);
         dragBoxToLanes(boxElement, getLaneElement("LINK"), false);
         dragBoxToLanes(boxElement, getLaneElement("NONE"), false);
+    }
+
+    @Test
+    public void testUndefinedEffectElement_allLanesGetDropTargetClass() {
+        open();
+
+        TestBenchElement boxElement = getBoxElement("no-effect");
+        checkDragOverClassName(boxElement, getLaneElement("no-effect"));
+        checkDragOverClassName(boxElement, getLaneElement("COPY"));
+        checkDragOverClassName(boxElement, getLaneElement("MOVE"));
+        checkDragOverClassName(boxElement, getLaneElement("LINK"));
     }
 
     @Test
@@ -149,6 +160,12 @@ public class DnDIT extends ChromeBrowserTest {
 
     private TestBenchElement getBoxElement(String effectAllowed) {
         return $(TestBenchElement.class).id("box-" + effectAllowed);
+    }
+
+    private void checkDragOverClassName(TestBenchElement dragged,
+            TestBenchElement target) {
+        dragElementOver(dragged, target);
+        Assert.assertTrue(target.hasClassName("v-drag-over-target"));
     }
 
 }

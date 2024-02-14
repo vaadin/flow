@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,6 +31,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -64,6 +67,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
@@ -118,7 +122,14 @@ public abstract class VaadinWebSecurity {
     private String servletContextPath;
 
     @Autowired
+    private ObjectProvider<NavigationAccessControl> accessControlProvider;
+
     private NavigationAccessControl accessControl;
+
+    @PostConstruct
+    void afterPropertiesSet() {
+        accessControl = accessControlProvider.getIfAvailable();
+    }
 
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
@@ -204,10 +215,12 @@ public abstract class VaadinWebSecurity {
                     .permitAll();
             urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
                     requestUtil.getUrlMapping())).permitAll();
-
             // matcher for Vaadin static (public) resources
             urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(
                     requestUtil.getUrlMapping())).permitAll();
+            // matcher for custom PWA icons and favicon
+            urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
+                    .permitAll();
 
             // all other requests require authentication
             urlRegistry.anyRequest().authenticated();
@@ -585,13 +598,18 @@ public abstract class VaadinWebSecurity {
      *         configuration.
      * @deprecated ViewAccessChecker is not used anymore by VaadinWebSecurity,
      *             and has been replaced by {@link NavigationAccessControl}.
-     *             Calling this method will throw an exception.
+     *             Calling this method will get a stub implementation that
+     *             delegates to the {@link NavigationAccessControl} instance.
      */
     @Deprecated(forRemoval = true, since = "24.3")
     protected ViewAccessChecker getViewAccessChecker() {
-        throw new UnsupportedOperationException(
+        LoggerFactory.getLogger(getClass()).warn(
                 "ViewAccessChecker is not used anymore by VaadinWebSecurity "
-                        + "and has been replaced by NavigationAccessControl");
+                        + "and has been replaced by NavigationAccessControl. "
+                        + "'VaadinWebSecurity.getViewAccessChecker()' returns a stub instance that "
+                        + "delegates calls to NavigationAccessControl. "
+                        + "Usages of 'getViewAccessChecker()' should be replaced by calls to 'getNavigationAccessControl()'.");
+        return new DeprecateViewAccessCheckerDelegator(accessControl);
     }
 
     /**
@@ -678,4 +696,36 @@ public abstract class VaadinWebSecurity {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
+
+    private static class DeprecateViewAccessCheckerDelegator
+            extends ViewAccessChecker {
+
+        private final NavigationAccessControl accessControl;
+
+        public DeprecateViewAccessCheckerDelegator(
+                NavigationAccessControl acc) {
+            this.accessControl = acc;
+        }
+
+        @Override
+        public void enable() {
+            accessControl.setEnabled(true);
+        }
+
+        @Override
+        public void setLoginView(Class<? extends Component> loginView) {
+            accessControl.setLoginView(loginView);
+        }
+
+        @Override
+        public void setLoginView(String loginUrl) {
+            accessControl.setLoginView(loginUrl);
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+            accessControl.beforeEnter(beforeEnterEvent);
+        }
+    }
+
 }

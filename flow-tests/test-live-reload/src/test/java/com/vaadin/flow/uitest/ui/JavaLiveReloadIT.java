@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,31 +26,6 @@ import org.openqa.selenium.WebElement;
 
 @NotThreadSafe
 public class JavaLiveReloadIT extends AbstractLiveReloadIT {
-
-    @Test
-    public void overlayShouldRender() {
-        open();
-
-        // Upon opening, the LiveReloadUI should show the indicator but not the
-        // message window
-        DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
-
-        TestBenchElement window = devTools.$("*")
-                .attributeContains("class", "window").first();
-        Assert.assertFalse(window.isDisplayed());
-
-        // After clicking the icon in the indicator, the live-reload message
-        // window should appear
-        WebElement liveReloadIcon = devTools.$("*")
-                .attributeContains("class", "dev-tools").first();
-        liveReloadIcon.click();
-
-        waitForElementPresent(By.tagName("vaadin-dev-tools"));
-
-        WebElement window2 = devTools.$("*")
-                .attributeContains("class", "dev-tools").first();
-        Assert.assertTrue(window2.isDisplayed());
-    }
 
     @Test
     public void splashMessageShownOnAutoReloadAndClosedOnBodyClick() {

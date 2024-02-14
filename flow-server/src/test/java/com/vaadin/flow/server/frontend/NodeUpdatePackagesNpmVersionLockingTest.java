@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -162,11 +163,10 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        Options options = new Options(Mockito.mock(Lookup.class), baseDir)
-                .withEnablePnpm(enablePnpm).withBuildDirectory(TARGET)
-                .withProductionMode(true);
+        Options options = new MockOptions(baseDir).withEnablePnpm(enablePnpm)
+                .withBuildDirectory(TARGET).withProductionMode(true);
 
-        return new TaskUpdatePackages(classFinder, scanner, options);
+        return new TaskUpdatePackages(scanner, options);
     }
 
     private TaskUpdatePackages createPackageUpdater() {

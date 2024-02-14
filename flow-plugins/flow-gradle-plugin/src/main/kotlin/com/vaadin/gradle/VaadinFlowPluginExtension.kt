@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2023 Vaadin Ltd
+ *    Copyright 2000-2024 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.vaadin.gradle
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
+import com.vaadin.flow.server.frontend.FrontendUtils
 import com.vaadin.flow.server.frontend.installer.NodeInstaller
 import com.vaadin.flow.server.frontend.installer.Platform
 import groovy.lang.Closure
@@ -271,6 +272,8 @@ public abstract class VaadinFlowPluginExtension {
      */
     public abstract val alwaysExecutePrepareFrontend: Property<Boolean>
 
+    public abstract val reactEnabled: Property<Boolean>
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter
         block.resolveStrategy = Closure.DELEGATE_FIRST
@@ -394,8 +397,9 @@ internal class PluginEffectiveConfiguration(
             }
         })
 
-    val frontendHotdeploy: Property<Boolean> = extension.frontendHotdeploy
-        .convention(false)
+    val frontendHotdeploy: Provider<Boolean> = extension.frontendHotdeploy
+        .convention(FrontendUtils.isHillaUsed(frontendDirectory.get()))
+        .overrideWithSystemProperty(InitParameters.FRONTEND_HOTDEPLOY)
 
     val ciBuild: Provider<Boolean> = extension.ciBuild
         .convention(false)
@@ -410,6 +414,10 @@ internal class PluginEffectiveConfiguration(
 
     val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
         .convention(false)
+
+    val reactEnabled: Provider<Boolean> = extension.reactEnabled
+        .convention(FrontendUtils.isReactRouterRequired(frontendDirectory.get()))
+        .overrideWithSystemProperty(InitParameters.REACT_ENABLE)
 
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
@@ -457,7 +465,8 @@ internal class PluginEffectiveConfiguration(
             "processResourcesTaskName=${processResourcesTaskName.get()}, " +
             "skipDevBundleBuild=${skipDevBundleBuild.get()}, " +
             "alwaysExecutePrepareFrontend=${alwaysExecutePrepareFrontend.get()}, " +
-            "frontendHotdeploy=${frontendHotdeploy.get()}" +
+            "frontendHotdeploy=${frontendHotdeploy.get()}," +
+            "reactRouterEnabled=${reactEnabled.get()}" +
             ")"
     companion object {
         internal fun get(project: Project): PluginEffectiveConfiguration =

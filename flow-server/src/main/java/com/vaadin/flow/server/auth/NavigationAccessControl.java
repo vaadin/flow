@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,46 +35,52 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.WrappedSession;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.AccessCheckResult;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.Decision;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.DecisionResolver;
-import com.vaadin.flow.server.auth.NavigationAccessChecker.NavigationContext;
 
 /**
  * A {@link BeforeEnterListener} implementation that contains logic to perform
  * access checks before entering a view.
  * <p>
+ * </p>
  *
  * Access rules are defined by providing one or more
  * {@link NavigationAccessChecker} instances, that are responsible for deciding
  * if a navigation should be allowed or not. The final navigation grant decision
- * is taken by a pluggable {@link DecisionResolver} component, based on the
- * results of all access checkers.
+ * is taken by a pluggable {@link AccessCheckDecisionResolver} component, based
+ * on the results of all access checkers.
  * <p>
+ * </p>
  * If access is allowed, the navigation continues to the target component.
  * Otherwise, for not authenticated requests, a redirect is performed to the
  * login page (if configured) or to the {@literal not found} error view.
  * <p>
+ * </p>
  * In development mode, the access check failure reason is forwarded to the
  * {@literal not found} error view, for debugging purpose. In addition, an
  * exception will be thrown if the decision resolver determines the navigation
  * should be rejected because of misconfigurations.
  * <p>
+ * </p>
  * In production mode, for security reasons, the failure message is never
  * exposed and rejection is treated as a normal deny, without any exception
  * being thrown.
  * <p>
+ * </p>
  * Before redirecting to the login page, the route path and its absolute URL are
  * stored in the HTTP session, to allow the authentication logic to access the
  * requested resource ( {@link #SESSION_STORED_REDIRECT},
  * {@link #SESSION_STORED_REDIRECT_ABSOLUTE} ).
- *
- *
+ * <p>
+ * </p>
+ * The default constructor create an instance pre-configured with
+ * {@link AnnotatedViewAccessChecker}.
+ * <p>
+ * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @see NavigationAccessChecker
- * @see DecisionResolver
- * @see Decision
+ * @see AccessCheckDecisionResolver
+ * @see AccessCheckDecision
+ * @see AnnotatedViewAccessChecker
  * @see #setLoginView(String)
  * @see #setLoginView(Class)
  */
@@ -95,7 +101,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
 
     private final List<NavigationAccessChecker> checkerList;
 
-    private final DecisionResolver decisionResolver;
+    private final AccessCheckDecisionResolver decisionResolver;
 
     private Class<? extends Component> loginView;
     private String loginUrl;
@@ -107,7 +113,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * decision resolver.
      *
      * @see AnnotatedViewAccessChecker
-     * @see DefaultNavigationCheckDecisionResolver
+     * @see DefaultAccessCheckDecisionResolver
      */
     public NavigationAccessControl() {
         this(List.of(new AnnotatedViewAccessChecker()));
@@ -123,7 +129,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
      */
     public NavigationAccessControl(
             Collection<NavigationAccessChecker> checkerList,
-            DecisionResolver decisionResolver) {
+            AccessCheckDecisionResolver decisionResolver) {
         this.decisionResolver = Objects.requireNonNull(decisionResolver,
                 "decision resolver must not be null");
         this.checkerList = List.copyOf(checkerList);
@@ -135,11 +141,11 @@ public class NavigationAccessControl implements BeforeEnterListener {
      *
      * @param checkerList
      *            collection of navigation access checker.
-     * @see DefaultNavigationCheckDecisionResolver
+     * @see DefaultAccessCheckDecisionResolver
      */
     protected NavigationAccessControl(
             Collection<NavigationAccessChecker> checkerList) {
-        this(checkerList, new DefaultNavigationCheckDecisionResolver());
+        this(checkerList, new DefaultAccessCheckDecisionResolver());
     }
 
     /**
@@ -233,7 +239,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
                 getPrincipal(request), getRolesChecker(request));
         AccessCheckResult result = checkAccess(context,
                 isProductionMode(event));
-        if (result.decision() != Decision.ALLOW) {
+        if (result.decision() != AccessCheckDecision.ALLOW) {
             if (context.getPrincipal() == null) {
                 storeRedirectURL(event, request);
                 if (loginView != null) {
@@ -281,7 +287,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
         } else if (loginUrl != null && PathUtil.trimPath(loginUrl)
                 .equals(context.getLocation().getPath())) {
             getLogger().debug("Allowing access for login URL {}", loginUrl);
-            return AccessCheckResult.ALLOW;
+            return AccessCheckResult.allow();
         }
 
         List<AccessCheckResult> results = checkerList.stream()
@@ -290,7 +296,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
         getLogger().debug("Decision against {} checker results: {}",
                 results.size(), decision);
 
-        if (decision.decision() == Decision.REJECT && !productionMode) {
+        if (decision.decision() == AccessCheckDecision.REJECT
+                && !productionMode) {
             throw new IllegalStateException(decision.reason());
         }
         if (productionMode) {

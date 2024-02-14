@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -65,16 +65,14 @@ public class TaskUpdatePackages extends NodeUpdater {
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param finder
-     *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
      * @param options
      *            the task options
      */
-    TaskUpdatePackages(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, Options options) {
-        super(finder, frontendDependencies, options);
+    TaskUpdatePackages(FrontendDependenciesScanner frontendDependencies,
+            Options options) {
+        super(frontendDependencies, options);
         this.jarResourcesFolder = options.getJarFrontendResourcesFolder();
         this.forceCleanUp = options.isCleanNpmFiles();
         this.enablePnpm = options.isEnablePnpm();

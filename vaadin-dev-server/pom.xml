@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.3-SNAPSHOT</version>
+        <version>24.4-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-dev-server</artifactId>
     <name>Vaadin Development Mode Server</name>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
-            <version>3.25.6</version>
+            <version>3.25.8</version>
         </dependency>
         <dependency>
             <groupId>io.methvin</groupId>

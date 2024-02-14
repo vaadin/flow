@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
@@ -27,6 +28,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -34,14 +36,18 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static org.mockito.Mockito.times;
+
 public class DebugWindowConnectionTest {
 
-    private DebugWindowConnection reload = new DebugWindowConnection(
+    private final DebugWindowConnection reload = new DebugWindowConnection(
             getMockContext());
 
     @Test
     public void onConnect_suspend_sayHello() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        createMockRequestWithToken(resource, DevToolsToken.getToken());
+
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
 
@@ -54,9 +60,71 @@ public class DebugWindowConnectionTest {
     }
 
     @Test
+    public void onconnect_should_allow_connection_if_valid_token_is_present() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        createMockRequestWithToken(resource, DevToolsToken.getToken());
+
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+
+        reload.onConnect(resource);
+
+        Assert.assertTrue(reload.isLiveReload(resource));
+        Mockito.verify(resource, times(1)).suspend(-1);
+        Mockito.verify(broadcaster, times(1))
+                .broadcast("{\"command\": \"hello\"}", resource);
+    }
+
+    @Test
+    public void onconnect_should_prevent_connection_if_invalid_token_is_present() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        createMockRequestWithToken(resource, "invalidToken");
+
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+
+        reload.onConnect(resource);
+
+        Assert.assertFalse(reload.isLiveReload(resource));
+        Mockito.verify(resource, times(0)).suspend(-1);
+        Mockito.verify(broadcaster, times(0))
+                .broadcast("{\"command\": \"hello\"}", resource);
+
+    }
+
+    @Test
+    public void onconnect_should_prevent_connection_if_no_token_at_all() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        AtmosphereRequest request = createMockRequestWithToken(resource, "");
+
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+
+        reload.onConnect(resource);
+
+        Assert.assertFalse(reload.isLiveReload(resource));
+        Mockito.verify(resource, times(0)).suspend(-1);
+        Mockito.verify(broadcaster, times(0))
+                .broadcast("{\"command\": \"hello\"}", resource);
+
+        Mockito.when(request.getParameter("token")).thenReturn(null);
+
+        reload.onConnect(resource);
+
+        Assert.assertFalse(reload.isLiveReload(resource));
+        Mockito.verify(resource, times(0)).suspend(-1);
+        Mockito.verify(broadcaster, times(0))
+                .broadcast("{\"command\": \"hello\"}", resource);
+    }
+
+    @Test
     public void reload_twoConnections_sendReloadCommand() {
         AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
+        createMockRequestWithToken(resource1, DevToolsToken.getToken());
+
         AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
+        createMockRequestWithToken(resource2, DevToolsToken.getToken());
+
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource1.getBroadcaster()).thenReturn(broadcaster);
         Mockito.when(resource2.getBroadcaster()).thenReturn(broadcaster);
@@ -117,6 +185,8 @@ public class DebugWindowConnectionTest {
     @Test
     public void reload_resourceIsDisconnected_reloadCommandIsNotSent() {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        createMockRequestWithToken(resource, DevToolsToken.getToken());
+
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
         reload.onConnect(resource);
@@ -228,6 +298,14 @@ public class DebugWindowConnectionTest {
         context.setAttribute(Lookup.class,
                 Lookup.of(appConfig, ApplicationConfiguration.class));
         return context;
+    }
+
+    private AtmosphereRequest createMockRequestWithToken(
+            AtmosphereResource resource, String tokenToGiveBack) {
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource.getRequest()).thenReturn(request);
+        Mockito.when(request.getParameter("token")).thenReturn(tokenToGiveBack);
+        return request;
     }
 
 }

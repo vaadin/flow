@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -169,6 +169,8 @@ public class StateNode implements Serializable {
 
     private boolean hasBeenAttached;
     private boolean hasBeenDetached;
+
+    private boolean detaching;
 
     private boolean isInactiveSelf;
 
@@ -345,7 +347,12 @@ public class StateNode implements Serializable {
         for (StateNode node : nodes) {
             if (node.hasBeenAttached) {
                 node.hasBeenDetached = true;
-                node.fireDetachListeners();
+                detaching = true;
+                try {
+                    node.fireDetachListeners();
+                } finally {
+                    detaching = false;
+                }
             }
         }
     }
@@ -786,6 +793,11 @@ public class StateNode implements Serializable {
             } else {
                 id = -1;
             }
+        } else if (id > -1 && getOwner() == NullOwner.get()) {
+            // When id is set but owner is NullOwner, removeFromTree has been
+            // called, so we should clear node id and attached state, thus allow
+            // moving the node to another StateTree
+            reset(false);
         }
         owner = tree;
     }
@@ -956,9 +968,8 @@ public class StateNode implements Serializable {
      *            the command to run immediately or when the node is attached
      */
     public void runWhenAttached(SerializableConsumer<UI> command) {
-        // Execute immediately only if the node han not been detached
-        // during current roundtrip
-        if (isAttached() && (!wasAttached || !hasBeenDetached)) {
+
+        if (isAttached() && !detaching) {
             command.accept(getUI());
         } else {
             addAttachListener(new Command() {

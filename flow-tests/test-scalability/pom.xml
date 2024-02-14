@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.3-SNAPSHOT</version>
+        <version>24.4-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-scalability</artifactId>
     <name>Flow scalability tests</name>
@@ -15,7 +15,7 @@
         <!-- Skip scalability tests by default, explicitly enabled on build
             server -->
         <gatling.skip>true</gatling.skip>
-        <gatling.version>3.9.5</gatling.version>
+        <gatling.version>3.10.3</gatling.version>
         <scala-maven-plugin.version>4.8.0</scala-maven-plugin.version>
     </properties>
 
@@ -106,7 +106,7 @@
             <plugin>
                 <groupId>io.gatling</groupId>
                 <artifactId>gatling-maven-plugin</artifactId>
-                <version>4.6.0</version>
+                <version>4.8.2</version>
                 <executions>
                     <!-- Warmup for Jetty -->
                     <execution>

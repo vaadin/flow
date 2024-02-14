@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -317,4 +318,25 @@ public interface DeploymentConfiguration
      */
     boolean isDevToolsEnabled();
 
+    /**
+     * Returns the strategy for Vaadin session lock checking in production mode.
+     * Ignored in development mode.
+     *
+     * By default, it returns {@link SessionLockCheckStrategy#ASSERT}.
+     *
+     * @return the lock checking strategy, never null.
+     */
+    default SessionLockCheckStrategy getSessionLockCheckStrategy() {
+        return SessionLockCheckStrategy.ASSERT;
+    }
+
+    /**
+     * Check if the React is enabled for the project, including React router
+     * instead of Vaadin router.
+     *
+     * @return {@code true} if React is used, default is {@code true}
+     */
+    default boolean isReactEnabled() {
+        return getBooleanProperty(InitParameters.REACT_ENABLE, true);
+    }
 }

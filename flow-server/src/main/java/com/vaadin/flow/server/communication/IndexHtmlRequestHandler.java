@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,11 +18,13 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
@@ -42,9 +44,12 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DevToolsToken;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -55,6 +60,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -171,6 +177,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             catchErrorsInDevMode(indexDocument);
 
             addLicenseChecker(indexDocument);
+        } else if (!config.isProductionMode()) {
+            // If a dev-tools plugin tries to register itself with disabled
+            // dev-tools, the application completely breaks with a JS error
+            addScript(indexDocument,
+                    """
+                            window.Vaadin = window.Vaadin || {};
+                            window.Vaadin.devToolsPlugins = {
+                                push: function(plugin) {
+                                    window.console.debug("Vaadin Dev Tools disabled. Plugin cannot be registered.", plugin);
+                                }
+                            };
+                            """);
         }
 
         // this invokes any custom listeners and should be run when the whole
@@ -205,8 +223,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void applyThemeVariant(Document indexDocument,
             VaadinContext context) throws IOException {
-        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> indexDocument
-                .head().parent().attr("theme", theme.variant()));
+        ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
+            String variant = theme.variant();
+            if (!variant.isEmpty()) {
+                indexDocument.head().parent().attr("theme", variant);
+            }
+        });
     }
 
     private void addStyleTagReferences(Document indexDocument,
@@ -311,6 +333,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         indexDocument.head().insertChildren(0, elm);
     }
 
+    private static void addScriptSrc(Document indexDocument, String scriptUrl) {
+        Element elm = new Element(SCRIPT);
+        elm.attr(SCRIPT_INITIAL, "");
+        elm.attr("src", scriptUrl);
+        indexDocument.head().appendChild(elm);
+    }
+
     private void storeAppShellTitleToUI(Document indexDocument) {
         if (UI.getCurrent() != null) {
             Element elm = indexDocument.head().selectFirst("title");
@@ -349,13 +378,79 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         maybeBackend.ifPresent(
                 backend -> devToolsConf.put("backend", backend.toString()));
         devToolsConf.put("liveReloadPort", liveReloadPort);
-
+        if (isAllowedDevToolsHost(config, request)) {
+            devToolsConf.put("token", DevToolsToken.getToken());
+        }
         addScript(indexDocument, String.format("""
                 window.Vaadin.devToolsPlugins = [];
                 window.Vaadin.devToolsConf = %s;
                     """, devToolsConf.toJson()));
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
+
+        String pushUrl = BootstrapHandlerHelper.getServiceUrl(request) + "/"
+                + ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+        addScriptSrc(indexDocument, pushUrl);
+    }
+
+    static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
+            VaadinRequest request) {
+        String remoteAddress = request.getRemoteAddr();
+        String hostsAllowed = configuration.getStringProperty(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null);
+
+        if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed)) {
+            return false;
+        }
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null) {
+            if (forwardedFor.contains(",")) {
+                // X-Forwarded-For: <client>, <proxy1>, <proxy2>
+                // Elements are comma-separated, with optional whitespace
+                // surrounding the commas.
+                forwardedFor = forwardedFor.split(",")[0];
+            }
+            if (!isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed)) {
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
+    private static boolean isAllowedDevToolsHost(String remoteAddress,
+            String hostsAllowed) {
+        if (remoteAddress == null) {
+            // No remote address available so we cannot check...
+            return false;
+        }
+        // Always allow localhost
+        try {
+            InetAddress inetAddress = InetAddress.getByName(remoteAddress);
+            if (inetAddress.isLoopbackAddress()) {
+                return true;
+            }
+        } catch (Exception e) {
+            getLogger().debug(
+                    "Unable to resolve remote address: '{}', so we are preventing the web socket connection",
+                    remoteAddress, e);
+            return false;
+        }
+
+        if (hostsAllowed != null) {
+            // Allowed hosts set
+            String[] allowedHosts = hostsAllowed.split(",");
+
+            for (String allowedHost : allowedHosts) {
+                if (FilenameUtils.wildcardMatch(remoteAddress,
+                        allowedHost.trim())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,

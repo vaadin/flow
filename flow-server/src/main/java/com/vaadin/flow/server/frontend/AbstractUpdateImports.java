@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -110,11 +110,11 @@ abstract class AbstractUpdateImports implements Runnable {
     private final File generatedFlowDefinitions;
     private File chunkFolder;
 
-    AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
-            ClassFinder classFinder) {
+    AbstractUpdateImports(Options options,
+            FrontendDependenciesScanner scanner) {
         this.options = options;
         this.scanner = scanner;
-        this.classFinder = classFinder;
+        this.classFinder = options.getClassFinder();
         this.themeToLocalPathConverter = createThemeToLocalPathConverter(
                 scanner.getTheme());
 
