@@ -688,4 +688,38 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         testProject.build("build")
     }
+
+    /**
+     * Tests https://github.com/vaadin/flow/issues/18572
+     */
+    @Test
+    fun testPluginEffectiveConfiguration() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'java'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion") {
+                    println("!!!effective1.productionMode=" + vaadin.effective.productionMode.get() + "!!!")
+                    afterEvaluate {
+                        println("!!!cfg2.productionMode=" + vaadin.productionMode.get() + "!!!")
+                        println("!!!effective2.productionMode=" + vaadin.effective.productionMode.get() + "!!!")
+                    }
+                }
+            }
+        """.trimIndent()
+        )
+
+        val buildResult = testProject.build("assemble", "-Pvaadin.productionMode")
+        expect(true, buildResult.output) { buildResult.output.contains("!!!cfg2.productionMode=false!!!") }
+        expect(true, buildResult.output) { buildResult.output.contains("!!!effective1.productionMode=true!!!") }
+        expect(true, buildResult.output) { buildResult.output.contains("!!!effective2.productionMode=true!!!") }
+    }
 }
