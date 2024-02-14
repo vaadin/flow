@@ -16,7 +16,6 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -45,8 +44,6 @@ import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
@@ -1383,10 +1380,15 @@ public class Element extends Node<Element> {
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser in the
-     * context of this element. The returned
-     * <code>PendingJavaScriptResult</code> can be used to retrieve any
-     * <code>return</code> value from the JavaScript expression. If no return
-     * value handler is registered, the return value will be ignored.
+     * context of this element. The expression is executed in an
+     * <code>async</code> JavaScript method, so you can utilize
+     * <code>await</code> syntax when consuming JavaScript API returning a
+     * <code>Promise</code>. The returned <code>PendingJavaScriptResult</code>
+     * can be used to retrieve the <code>return</code> value from the JavaScript
+     * expression. If a <code>Promise</code> is returned in the JavaScript
+     * expression, <code>PendingJavaScriptResult</code> will report the resolved
+     * value once it becomes available. If no return value handler is
+     * registered, the return value will be ignored.
      * <p>
      * This element will be available to the expression as <code>this</code>.
      * The given parameters will be available as variables named

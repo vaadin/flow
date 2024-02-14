@@ -292,9 +292,15 @@ public class Page implements Serializable {
     /**
      * Asynchronously runs the given JavaScript expression in the browser.
      * <p>
-     * The returned <code>PendingJavaScriptResult</code> can be used to retrieve
-     * any <code>return</code> value from the JavaScript expression. If no
-     * return value handler is registered, the return value will be ignored.
+     * The expression is executed in an <code>async</code> JavaScript method, so
+     * you can utilize <code>await</code> syntax when consuming JavaScript API
+     * returning a <code>Promise</code>. The returned
+     * <code>PendingJavaScriptResult</code> can be used to retrieve the
+     * <code>return</code> value from the JavaScript expression. If a
+     * <code>Promise</code> is returned in the JavaScript expression,
+     * <code>PendingJavaScriptResult</code> will report the resolved value once
+     * it becomes available. If no return value handler is registered, the
+     * return value will be ignored.
      * <p>
      * The given parameters will be available to the expression as variables
      * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
