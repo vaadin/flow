@@ -67,6 +67,9 @@ public class TaskUpdatePackagesNpmTest {
     private static final String VAADIN_ELEMENT_MIXIN = "@vaadin/vaadin-element-mixin";
     private static final String VAADIN_DIALOG = "@vaadin/vaadin-dialog";
     private static final String VAADIN_OVERLAY = "@vaadin/vaadin-overlay";
+
+    private static final String REACT_COMPONENTS = "@vaadin/react-components";
+
     private static final String PLATFORM_ELEMENT_MIXIN_VERSION = "2.4.2";
     private static final String PLATFORM_OVERLAY_VERSION = "3.5.1";
 
@@ -644,6 +647,68 @@ public class TaskUpdatePackagesNpmTest {
         verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
+    @Test
+    public void reactEnabled_coreDependenciesNotAdded() throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        final FrontendDependencies frontendDependenciesScanner = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages())
+                .thenReturn(createApplicationDependencies());
+        Options options = new MockOptions(finder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(false)
+                .withBundleBuild(true).withReact(true);
+        final TaskUpdatePackages task = new TaskUpdatePackages(
+                frontendDependenciesScanner, options) {
+        };
+        task.execute();
+        final JsonObject newPackageJson = getOrCreatePackageJson();
+
+        Assert.assertFalse(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertFalse(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(REACT_COMPONENTS));
+        Assert.assertTrue(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(REACT_COMPONENTS));
+    }
+
+    @Test
+    public void reactDisabled_coreDependenciesAdded() throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        final FrontendDependencies frontendDependenciesScanner = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages())
+                .thenReturn(createApplicationDependencies());
+        Options options = new MockOptions(finder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(false)
+                .withBundleBuild(true).withReact(false);
+        final TaskUpdatePackages task = new TaskUpdatePackages(
+                frontendDependenciesScanner, options) {
+        };
+        task.execute();
+        final JsonObject newPackageJson = getOrCreatePackageJson();
+
+        Assert.assertTrue(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(VAADIN_DIALOG));
+        Assert.assertFalse(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(REACT_COMPONENTS));
+        Assert.assertFalse(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(REACT_COMPONENTS));
+    }
+
     private void createBasicVaadinVersionsJson() {
         createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
                 PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
@@ -668,7 +733,13 @@ public class TaskUpdatePackagesNpmTest {
                         + "    \"jsVersion\": \"" + overlayVersion + "\",\n"
                         + "    \"npmName\": \"" + VAADIN_OVERLAY + "\",\n"
                         + "    \"releasenotes\": true\n"
-                        + "}}},\n";//@formatter:on
+                        + "}},\n"
+                        + "\"react\": {\n" +
+                        "        \"react-components\": {\n" +
+                        "            \"jsVersion\": \"24.4.0-alpha13\",\n" +
+                        "            \"npmName\": \"@vaadin/react-components\"\n" +
+                        "        }\n" +
+                        "    }}\n";//@formatter:on
         try {
             FileUtils.write(versionJsonFile, versionJsonString,
                     StandardCharsets.UTF_8);
@@ -697,7 +768,7 @@ public class TaskUpdatePackagesNpmTest {
                 .thenReturn(applicationDependencies);
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
-                .withBundleBuild(true);
+                .withBundleBuild(true).withReact(false);
 
         return new TaskUpdatePackages(frontendDependenciesScanner, options) {
         };

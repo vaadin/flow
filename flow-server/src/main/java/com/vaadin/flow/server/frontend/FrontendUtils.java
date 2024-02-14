@@ -1347,4 +1347,15 @@ public class FrontendUtils {
         return false;
     }
 
+    /**
+     * Checks if the given key is a package key for a Vaadin react components.
+     *
+     * @param key
+     *            the key to check
+     * @return {@code true} if the key is a package key for a Vaadin react
+     *         components, {@code false} otherwise
+     */
+    static boolean isPackageKeyReactComponents(String key) {
+        return key.equals("@vaadin/react-components");
+    }
 }

@@ -23,6 +23,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -205,8 +206,18 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> applicationDevDependencies) throws IOException {
         int added = 0;
 
+        List<String> pinnedPlatformDependencies = new ArrayList<>();
+        final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
+        Collections.addAll(pinnedPlatformDependencies,
+                platformPinnedDependencies.keys());
+
         // Add application dependencies
         for (Entry<String, String> dep : applicationDependencies.entrySet()) {
+            if (options.isReactEnabled()
+                    && !FrontendUtils.isPackageKeyReactComponents(dep.getKey())
+                    && pinnedPlatformDependencies.contains(dep.getKey())) {
+                continue;
+            }
             added += addDependency(packageJson, DEPENDENCIES, dep.getKey(),
                     dep.getValue());
         }
@@ -221,9 +232,12 @@ public class TaskUpdatePackages extends NodeUpdater {
         /*
          * #10572 lock all platform internal versions
          */
-        List<String> pinnedPlatformDependencies = new ArrayList<>();
-        final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
         for (String key : platformPinnedDependencies.keys()) {
+            if (options.isReactEnabled()
+                    && !FrontendUtils.isPackageKeyReactComponents(key)
+                    && pinnedPlatformDependencies.contains(key)) {
+                continue;
+            }
             // need to double check that not overriding a scanned
             // dependency since add-ons should be able to downgrade
             // version through exclusion
@@ -232,8 +246,6 @@ public class TaskUpdatePackages extends NodeUpdater {
                             platformPinnedDependencies, key)) {
                 added++;
             }
-            // make sure platform pinned dependency is not cleared
-            pinnedPlatformDependencies.add(key);
         }
 
         if (added > 0) {
