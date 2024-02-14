@@ -41,6 +41,14 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         Assert.assertEquals("Value from js", findElement.getAttribute("value"));
     }
 
+    @Test
+    public void testExecuteJavaScriptWithAwait() {
+        open();
+        getButton("awaitButton").click();
+        WebElement result = findElement(By.id("awaitResult"));
+        Assert.assertEquals("await result: true", result.getText());
+    }
+
     private WebElement getButton(String id) {
         return findElement(By.id(id));
     }

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -42,6 +43,23 @@ public class ExecJavaScriptView extends AbstractDivView {
                 "console.log($0)", JsonUtils.createArray(
                         Json.create("Hello world"), Json.create(true)));
 
+        NativeButton awaitButton = createButton("await button", "awaitButton",
+                e -> e.getSource().getElement().executeJs("""
+                            const response = await fetch("/plain-script.js");
+                            const text = await response.text();
+                            return text.indexOf("Hello from src script") != -1;
+                        """).then(Boolean.class, success -> {
+                    Span span = new Span();
+                    span.setId("awaitResult");
+                    span.setText("await result: " + success);
+                    add(span);
+                }, error -> {
+                    Span span = new Span();
+                    span.setId("awaitResult");
+                    span.setText("await error: " + error);
+                    add(span);
+                }));
+
         NativeButton createElementButton = createButton(
                 "Create and update element", "createButton", e -> {
                     Input input = new Input();
@@ -51,7 +69,8 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(input);
                 });
 
-        add(alertButton, focusButton, swapText, logButton, createElementButton);
+        add(alertButton, focusButton, swapText, logButton, createElementButton,
+                awaitButton);
     }
 
     private NativeButton createJsButton(String text, String id, String script,
