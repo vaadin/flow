@@ -129,6 +129,7 @@ public abstract class VaadinWebSecurity {
     @PostConstruct
     void afterPropertiesSet() {
         accessControl = accessControlProvider.getIfAvailable();
+        authenticationContext.setRolePrefixHolder(vaadinRolePrefixHolder);
     }
 
     private final AuthenticationContext authenticationContext = new AuthenticationContext();

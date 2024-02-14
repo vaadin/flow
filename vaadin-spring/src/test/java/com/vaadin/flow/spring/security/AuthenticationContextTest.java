@@ -201,10 +201,10 @@ public class AuthenticationContextTest {
     }
 
     @Test
-   public void hasAnyAuthority_notAuthenticated_false() {
-       Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
-       Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_READ")));
-   }
+    public void hasAnyAuthority_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
+        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_READ")));
+    }
 
     @Test
     @WithAnonymousUser()
@@ -220,7 +220,7 @@ public class AuthenticationContextTest {
         Assert.assertTrue(authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
 
     }
-    
+
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAnyAuthority_lacksAuthority_false() {
@@ -235,39 +235,48 @@ public class AuthenticationContextTest {
         Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_WRITE")));
     }
 
-    
     @Test
     public void hasAllAuthorities_notAuthenticated_false() {
-        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+        Assert.assertFalse(
+                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext
+                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
     @WithAnonymousUser()
     public void hasAllAuthorities_anonymous_false() {
-        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+        Assert.assertFalse(
+                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext
+                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
     @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
     public void hasAllAuthorities_hasAuthorities_true() {
-        Assert.assertTrue(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertTrue(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+        Assert.assertTrue(
+                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertTrue(authContext
+                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
-    
+
     @Test
     @WithMockUser(authorities = { "AUTH_READ" })
     public void hasAllAuthorities_lacksAuthority_false() {
-        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+        Assert.assertFalse(
+                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext
+                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
     @WithMockUser(roles = {})
     public void hasAllAuthorities_noAuthorities_false() {
-        Assert.assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext.hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+        Assert.assertFalse(
+                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
+        Assert.assertFalse(authContext
+                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
     }
 
     @Test
@@ -368,4 +377,13 @@ public class AuthenticationContextTest {
                 exception.getMessage());
     }
 
+    @Test
+    @WithMockUser(authorities = { "FOO_USER", "FOO_ADMIN" })
+    public void supportsCustomRolePrefixes() {
+        var prefixHolder = new VaadinRolePrefixHolder("FOO_");
+        var authContext = new AuthenticationContext();
+        authContext.setRolePrefixHolder(prefixHolder);
+        Assert.assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
+        Assert.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
+    }
 }

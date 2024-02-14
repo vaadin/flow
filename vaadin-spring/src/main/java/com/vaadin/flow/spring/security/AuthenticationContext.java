@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,7 +68,7 @@ public class AuthenticationContext {
 
     private CompositeLogoutHandler logoutHandler;
 
-    private static final String ROLE_PREFIX = "ROLE_";
+    private VaadinRolePrefixHolder rolePrefixHolder;
 
     /**
      * Gets an {@link Optional} with an instance of the current user if it has
@@ -189,7 +188,7 @@ public class AuthenticationContext {
     }
 
     private boolean hasAnyRole(Stream<String> roles) {
-        return hasAnyAuthority(roles.map(role -> ROLE_PREFIX + role));
+        return hasAnyAuthority(roles.map(role -> getRolePrefix() + role));
     }
 
     /**
@@ -221,7 +220,7 @@ public class AuthenticationContext {
     }
 
     private boolean hasAllRoles(Stream<String> roles) {
-        return hasAllAuthorities(roles.map(role -> ROLE_PREFIX + role));
+        return hasAllAuthorities(roles.map(role -> getRolePrefix() + role));
     }
 
     /**
@@ -321,6 +320,18 @@ public class AuthenticationContext {
         this.logoutHandler = new CompositeLogoutHandler(logoutHandlers);
     }
 
+    /**
+     * Sets the role prefix holder to use when checking the current user's
+     * roles.
+     * 
+     * @param rolePrefixHolder
+     *            {@link VaadinRolePrefixHolder} instance, or {@literal null} to
+     *            revert to the default {@code ROLE_} prefix.
+     */
+    void setRolePrefixHolder(VaadinRolePrefixHolder rolePrefixHolder) {
+        this.rolePrefixHolder = rolePrefixHolder;
+    }
+
     private static Optional<Authentication> getAuthentication() {
         return Optional.of(SecurityContextHolder.getContext())
                 .map(SecurityContext::getAuthentication)
@@ -335,6 +346,11 @@ public class AuthenticationContext {
     /* For testing purposes */
     CompositeLogoutHandler getLogoutHandler() {
         return logoutHandler;
+    }
+
+    private String getRolePrefix() {
+        return Optional.ofNullable(rolePrefixHolder)
+                .map(VaadinRolePrefixHolder::getRolePrefix).orElse("ROLE_");
     }
 
     /**
@@ -355,7 +371,6 @@ public class AuthenticationContext {
                 .getConfigurer(LogoutConfigurer.class);
         authCtx.setLogoutHandlers(logoutConfigurer.getLogoutSuccessHandler(),
                 logoutConfigurer.getLogoutHandlers());
-
     }
 
 }
