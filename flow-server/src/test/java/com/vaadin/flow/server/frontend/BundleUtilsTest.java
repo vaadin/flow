@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.tests.util.MockOptions;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -148,18 +148,14 @@ public class BundleUtilsTest {
     @Test
     public void noPackageLockExists_devBundleLockIsCopied_notJarLock()
             throws IOException {
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-
-        Options options = new Options(lookup, temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder.getRoot())
                 .withBuildDirectory("target");
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(finder
+        Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -187,18 +183,14 @@ public class BundleUtilsTest {
     @Test
     public void noPackageLockExists_jarDevBundleLockIsCopied()
             throws IOException {
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-
-        Options options = new Options(lookup, temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder.getRoot())
                 .withBuildDirectory("target");
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(finder
+        Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
@@ -215,18 +207,14 @@ public class BundleUtilsTest {
     @Test
     public void pnpm_noPackageLockExists_devBundleLockYamlIsCopied_notJarLockOrJson()
             throws IOException {
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(lookup.lookup(ClassFinder.class)).thenReturn(finder);
-
-        Options options = new Options(lookup, temporaryFolder.getRoot())
+        Options options = new MockOptions(temporaryFolder.getRoot())
                 .withBuildDirectory("target").withEnablePnpm(true);
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(finder
+        Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_YAML))
                 .thenReturn(jarPackageLock.toURI().toURL());
 

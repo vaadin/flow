@@ -40,6 +40,7 @@ import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -220,14 +221,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * <p>
      * By default, the frontend server is not used.
      */
-    @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "false")
-    private boolean frontendHotdeploy;
+    @Parameter(property = InitParameters.FRONTEND_HOTDEPLOY, defaultValue = "${null}")
+    private Boolean frontendHotdeploy;
 
     @Parameter(property = InitParameters.SKIP_DEV_BUNDLE_REBUILD, defaultValue = "false")
     private boolean skipDevBundleRebuild;
 
-    @Parameter(property = InitParameters.REACT_ROUTER_ENABLED, defaultValue = "true")
-    private boolean reactRouterEnabled;
+    @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
+    private Boolean reactRouterEnabled;
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -250,6 +251,37 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                     "Failed to retrieve runtime classpath elements from project '%s'",
                     project), e);
         }
+    }
+
+    /**
+     * Checks if Hilla is available based on the Maven project's classpath.
+     *
+     * @param mavenProject
+     *            Target Maven project
+     * @return true if Hilla is available, false otherwise
+     */
+    public static boolean isHillaAvailable(MavenProject mavenProject) {
+        List<String> classpathElements = FlowModeAbstractMojo
+                .getClasspathElements(mavenProject);
+        return BuildFrontendUtil.getClassFinder(classpathElements).getResource(
+                "com/vaadin/hilla/EndpointController.class") != null;
+    }
+
+    /**
+     * Checks if Hilla is available and Hilla views are used in the Maven
+     * project based on what is in routes.ts or routes.tsx file.
+     *
+     * @param mavenProject
+     *            Target Maven project
+     * @param frontendDirectory
+     *            Target frontend directory.
+     * @return {@code true} if Hilla is available and Hilla views are used,
+     *         {@code false} otherwise
+     */
+    public static boolean isHillaUsed(MavenProject mavenProject,
+            File frontendDirectory) {
+        return isHillaAvailable(mavenProject)
+                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
     @Override
@@ -446,7 +478,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public boolean isFrontendHotdeploy() {
-        return frontendHotdeploy;
+        if (frontendHotdeploy != null) {
+            return frontendHotdeploy;
+        }
+        return FrontendUtils.isHillaUsed(frontendDirectory());
     }
 
     @Override
@@ -460,7 +495,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isReactRouterEnabled() {
-        return reactRouterEnabled;
+    public boolean isReactEnabled() {
+        if (reactRouterEnabled != null) {
+            return reactRouterEnabled;
+        }
+        return FrontendUtils.isReactRouterRequired(frontendDirectory());
     }
 }

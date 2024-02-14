@@ -193,7 +193,7 @@ public class TaskGenerateTsDefinitionsTest {
                             [Ref in string]?: SchemaObject;
                         };
                         declare module '*.css?inline' {
-                          import { CSSResultGroup } from 'lit';
+                          import type { CSSResultGroup } from 'lit';
                           const content: CSSResultGroup;
                           export default content;
                         }
@@ -220,7 +220,7 @@ public class TaskGenerateTsDefinitionsTest {
                             [Ref in string]?: SchemaObject;
                         };
                         declare module '*.css?inline' {
-                          import { CSSResultGroup } from 'lit';
+                          import type { CSSResultGroup } from 'lit';
                           const content: CSSResultGroup;
                           export default content;
                         }
@@ -249,7 +249,7 @@ public class TaskGenerateTsDefinitionsTest {
                         };
                         declare module '*.css?inline' {
 
-                          import { CSSResultGroup } from 'lit';
+                          import type { CSSResultGroup } from 'lit';
 
                           const content: CSSResultGroup;
 

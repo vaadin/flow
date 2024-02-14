@@ -23,6 +23,7 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -106,9 +107,11 @@ public class BuildFrontendMojoTest {
 
     @Before
     public void setup() throws Exception {
+        projectBase = temporaryFolder.getRoot();
+
         MavenProject project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements())
-                .thenReturn(getClassPath());
+                .thenReturn(getClassPath(projectBase.toPath()));
 
         List<String> packages = Arrays
                 .stream(System.getProperty("java.class.path")
@@ -118,8 +121,6 @@ public class BuildFrontendMojoTest {
                 .thenReturn(packages);
         Mockito.when(project.getCompileClasspathElements())
                 .thenReturn(Collections.emptyList());
-
-        projectBase = temporaryFolder.getRoot();
 
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
@@ -236,7 +237,8 @@ public class BuildFrontendMojoTest {
         MavenProject project = mock(MavenProject.class);
         when(project.getBasedir()).thenReturn(baseFolder);
         when(project.getBuild()).thenReturn(buildMock);
-        when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
+        when(project.getRuntimeClasspathElements())
+                .thenReturn(getClassPath(baseFolder.toPath()));
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
     }
 
@@ -523,6 +525,21 @@ public class BuildFrontendMojoTest {
     @Test
     public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
             throws Exception {
+        // Enable Hilla to generate openApi
+        FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
+                """
+                        import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+                        export const routes = [
+                            {
+                                element: <MainLayout />,
+                                handle: { title: 'Main' }
+                            }
+                        ] as RouteObject[];
+
+
+                        export const router = createBrowserRouter(...routes]);
+                        """);
+
         Assert.assertFalse(
                 FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
         mojo.execute();
@@ -532,6 +549,21 @@ public class BuildFrontendMojoTest {
 
     @Test
     public void mavenGoal_generateTsFiles_when_enabled() throws Exception {
+        // Enable Hilla to generate ts files
+        FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
+                """
+                        import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+                        export const routes = [
+                            {
+                                element: <MainLayout />,
+                                handle: { title: 'Main' }
+                            }
+                        ] as RouteObject[];
+
+
+                        export const router = createBrowserRouter(...routes]);
+                        """);
+
         File connectClientApi = new File(generatedTsFolder,
                 "connect-client.default.ts");
         File endpointClientApi = new File(generatedTsFolder, "MyEndpoint.ts");
@@ -659,14 +691,15 @@ public class BuildFrontendMojoTest {
         }
     }
 
-    static List<String> getClassPath() {
+    static List<String> getClassPath(Path projectFolder) {
         // Add folder with test classes
-        List<String> classPaths = new ArrayList<>(
-                Arrays.asList("target/test-classes",
-                        // Add this test jar which has some frontend resources
-                        // used in tests
-                        TestUtils.getTestJar("jar-with-frontend-resources.jar")
-                                .getPath()));
+        List<String> classPaths = new ArrayList<>(Arrays.asList(
+                projectFolder.resolve("target").resolve("test-classes")
+                        .toString(),
+                // Add this test jar which has some frontend resources
+                // used in tests
+                TestUtils.getTestJar("jar-with-frontend-resources.jar")
+                        .getPath()));
 
         // Add other paths already present in the system classpath
         ClassLoader classLoader = ClassLoader.getSystemClassLoader();

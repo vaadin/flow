@@ -45,9 +45,9 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
 
             ***************************************************************************
-            *  TypeScript type declaration file 'types.d.ts' has been updated to the  *
-            *  latest version by Vaadin. Previous content has been backed up on       *
-            *  'types.d.ts.flowBackup' file. Please verify that the updated           *
+            *  The TypeScript type declaration file 'types.d.ts' has been updated     *
+            *  to the latest version by Vaadin. Previous content has been backed up   *
+            *  on 'types.d.ts.flowBackup' file. Please verify that the updated        *
             *  'types.d.ts' file contains configuration needed for your project, and  *
             *  then delete the backup file.                                           *
             ***************************************************************************
@@ -58,17 +58,15 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     static final String CHECK_CONTENT_MESSAGE = """
 
 
-            ************************************************************************
-            *  TypeScript type declaration file 'types.d.ts' have been customized  *
-            *  but is seems to contain the configuration required by Vaadin.       *
-            *  Please make sure the following configuration is present in the      *
-            *  'types.d.ts' file exactly as show below. As an alternative you can  *
-            *  rename the 'types.d.ts', make Vaadin re-generate it, and then       *
-            *  update it with your custom contents.                                *
-            *  ------------------------------------------------------------------  *
+            ****************************************************************************
+            *  The TypeScript type declaration file 'types.d.ts' has been customized.  *
+            *  Make sure the exact following configuration is present in that file:    *
+            *                                                                          *
             %s
-            *  ------------------------------------------------------------------  *
-            ************************************************************************"
+            *                                                                          *
+            *  As an alternative you can rename the file, make Vaadin re-generate it,  *
+            *  and then update it with your custom contents.                           *
+            ****************************************************************************"
 
 
             """;

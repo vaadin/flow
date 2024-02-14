@@ -201,8 +201,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .equals(resource.getRequest().getParameter("token"))) {
             handleConnect(resource);
         } else {
-            getLogger().warn(
-                    "Connection denied because of a missing or invalid token. The host is probably not on the allow list");
+            getLogger().debug(
+                    "Connection denied because of a missing or invalid token. Either the host is not on the 'vaadin.devmode.hosts-allowed' list or it is using an outdated token");
             try {
                 resource.close();
             } catch (IOException e) {

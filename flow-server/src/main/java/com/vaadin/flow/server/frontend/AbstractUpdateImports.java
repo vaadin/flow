@@ -110,11 +110,11 @@ abstract class AbstractUpdateImports implements Runnable {
     private final File generatedFlowDefinitions;
     private File chunkFolder;
 
-    AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
-            ClassFinder classFinder) {
+    AbstractUpdateImports(Options options,
+            FrontendDependenciesScanner scanner) {
         this.options = options;
         this.scanner = scanner;
-        this.classFinder = classFinder;
+        this.classFinder = options.getClassFinder();
         this.themeToLocalPathConverter = createThemeToLocalPathConverter(
                 scanner.getTheme());
 

@@ -158,6 +158,22 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
+    public void tokenFileShouldExist_hotdeployIsTrueTokenVisible()
+            throws IOException, MojoExecutionException, MojoFailureException,
+            IllegalAccessException {
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendHotdeploy",
+                Boolean.TRUE);
+        mojo.execute();
+        Assert.assertTrue("No token file could be found", tokenFile.exists());
+
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertTrue("HotDeploy should be enabled",
+                buildInfo.getBoolean(FRONTEND_HOTDEPLOY));
+    }
+
+    @Test
     public void existingTokenFile_defaultFrontendHotdeployShouldBeRemoved()
             throws IOException, MojoExecutionException, MojoFailureException {
 
@@ -238,7 +254,7 @@ public class PrepareFrontendMojoTest {
     }
 
     @Test
-    public void should_updateAndkeepDependencies_when_packageJsonExists()
+    public void should_updateAndKeepDependencies_when_packageJsonExists()
             throws Exception {
         JsonObject json = TestUtils.getInitialPackageJson();
         json.put("dependencies", Json.createObject());

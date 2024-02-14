@@ -36,9 +36,9 @@ import com.vaadin.flow.theme.Theme;
 public class TaskUpdateImports extends NodeUpdater {
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
-        UpdateMainImportsFile(ClassFinder classFinder, Options options,
+        UpdateMainImportsFile(Options options,
                 FrontendDependenciesScanner scanner) {
-            super(options, scanner, classFinder);
+            super(options, scanner);
         }
 
         @Override
@@ -56,22 +56,20 @@ public class TaskUpdateImports extends NodeUpdater {
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param finder
-     *            a reusable class finder
      * @param frontendDepScanner
      *            a reusable frontend dependencies scanner
      * @param options
      *            options for the task
      */
-    TaskUpdateImports(ClassFinder finder,
-            FrontendDependenciesScanner frontendDepScanner, Options options) {
-        super(finder, frontendDepScanner, options);
+    TaskUpdateImports(FrontendDependenciesScanner frontendDepScanner,
+            Options options) {
+        super(frontendDepScanner, options);
     }
 
     @Override
     public void execute() {
-        UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
-                options, frontDeps);
+        UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(options,
+                frontDeps);
         mainUpdate.run();
     }
 

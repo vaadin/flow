@@ -637,20 +637,11 @@ public class VaadinServletContextInitializer
                 initializeDevModeClassCache();
             }
 
-            Set<Class<?>> classes = null;
-            if (devModeCachingEnabled) {
-                classes = ReloadCache.appShellClasses;
-            }
-            if (classes == null) {
-                classes = findByAnnotationOrSuperType(
-                        getVerifiableAnnotationPackages(), customLoader,
-                        VaadinAppShellInitializer.getValidAnnotations(),
-                        VaadinAppShellInitializer.getValidSupers())
-                        .collect(Collectors.toSet());
-                if (devModeCachingEnabled) {
-                    ReloadCache.appShellClasses = classes;
-                }
-            }
+            Set<Class<?>> classes = findByAnnotationOrSuperType(
+                    getVerifiableAnnotationPackages(), customLoader,
+                    VaadinAppShellInitializer.getValidAnnotations(),
+                    VaadinAppShellInitializer.getValidSupers())
+                    .collect(Collectors.toSet());
 
             VaadinAppShellInitializer.init(classes,
                     new VaadinServletContext(event.getServletContext()));

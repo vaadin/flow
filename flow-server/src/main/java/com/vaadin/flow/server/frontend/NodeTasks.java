@@ -106,8 +106,7 @@ public class NodeTasks implements FallibleCommand {
         lockFile = new File(options.getNpmFolder(), ".flow-node-tasks.lock")
                 .toPath();
 
-        ClassFinder classFinder = new ClassFinder.CachedClassFinder(
-                options.getClassFinder());
+        ClassFinder classFinder = options.getClassFinder();
         FrontendDependenciesScanner frontendDependencies = null;
 
         Set<String> webComponentTags = new HashSet<>();
@@ -127,7 +126,7 @@ public class NodeTasks implements FallibleCommand {
 
             if (options.isProductionMode()) {
                 boolean needBuild = BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, classFinder,
+                        frontendDependencies,
                         Mode.PRODUCTION_PRECOMPILED_BUNDLE);
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
@@ -152,10 +151,10 @@ public class NodeTasks implements FallibleCommand {
                 // immediately
                 // and no update tasks are executed before it.
                 if (BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, classFinder,
-                        Mode.DEVELOPMENT_BUNDLE)) {
-                    commands.add(
-                            new TaskCleanFrontendFiles(options.getNpmFolder()));
+                        frontendDependencies, Mode.DEVELOPMENT_BUNDLE)) {
+                    commands.add(new TaskCleanFrontendFiles(
+                            options.getNpmFolder(),
+                            options.getFrontendDirectory(), classFinder));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
                     BundleUtils.copyPackageLockFromBundle(options);
@@ -198,8 +197,8 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdatePackages packageUpdater = null;
             if (options.isEnablePackagesUpdate()
                     && options.getJarFrontendResourcesFolder() != null) {
-                packageUpdater = new TaskUpdatePackages(classFinder,
-                        frontendDependencies, options);
+                packageUpdater = new TaskUpdatePackages(frontendDependencies,
+                        options);
                 commands.add(packageUpdater);
             }
 
@@ -266,8 +265,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (options.isEnableImportsUpdate()) {
-            commands.add(new TaskUpdateImports(classFinder,
-                    frontendDependencies, options));
+            commands.add(new TaskUpdateImports(frontendDependencies, options));
 
             commands.add(new TaskUpdateThemeImport(
                     frontendDependencies.getThemeDefinition(), options));
@@ -284,7 +282,7 @@ public class NodeTasks implements FallibleCommand {
         if (options.isProductionMode() || options.isFrontendHotdeploy()
                 || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
-            if (options.isReactRouterEnabled()) {
+            if (options.isReactEnabled()) {
                 commands.add(new TaskGenerateReactFiles(options));
             }
             if (!options.isProductionMode()) {
@@ -313,6 +311,10 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addEndpointServicesTasks(Options options) {
+        if (!FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                options.getClassFinder())) {
+            return;
+        }
         Lookup lookup = options.getLookup();
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);

@@ -37,7 +37,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -83,6 +82,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
+    private static final String FRONTEND_RESOURCES_PATH = NodeUpdater.class
+            .getPackage().getName().replace('.', '/') + "/";
     @Deprecated
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     @Deprecated
@@ -108,16 +109,14 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Constructor.
      *
-     * @param finder
-     *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
      * @param options
      *            the task options
      */
-    protected NodeUpdater(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, Options options) {
-        this.finder = finder;
+    protected NodeUpdater(FrontendDependenciesScanner frontendDependencies,
+            Options options) {
+        this.finder = options.getClassFinder();
         this.frontDeps = frontendDependencies;
         this.options = options;
     }
@@ -173,8 +172,10 @@ public abstract class NodeUpdater implements FallibleCommand {
             String versionsOrigin) throws IOException {
         JsonObject versionsJson;
         try (InputStream content = versionsResource.openStream()) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(Json
-                    .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
+            VersionsJsonConverter convert = new VersionsJsonConverter(
+                    Json.parse(
+                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    options.isReactEnabled());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)
@@ -295,22 +296,28 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDependencies() {
         Map<String, String> dependencies = readDependencies("default",
                 "dependencies");
-        if (options.isReactRouterEnabled()) {
+        if (options.isReactEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
         } else {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
         }
+        putHillaComponentsDependencies(dependencies, "dependencies");
         return dependencies;
     }
 
-    static Map<String, String> readDependencies(String id,
-            String packageJsonKey) {
+    Map<String, String> readDependencies(String id, String packageJsonKey) {
         try {
             Map<String, String> map = new HashMap<>();
             JsonObject dependencies = readPackageJson(id)
                     .getObject(packageJsonKey);
+            if (dependencies == null) {
+                LoggerFactory.getLogger(NodeUpdater.class)
+                        .error("Unable to find " + packageJsonKey + " from '"
+                                + id + "'");
+                return new HashMap<>();
+            }
             for (String key : dependencies.keys()) {
                 map.put(key, dependencies.getString(key));
             }
@@ -325,20 +332,27 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     }
 
-    private static JsonObject readPackageJson(String id) throws IOException {
-        try (InputStream packageJson = NodeUpdater.class
-                .getResourceAsStream("dependencies/" + id + "/package.json")) {
-            JsonObject content = Json.parse(
-                    IOUtils.toString(packageJson, StandardCharsets.UTF_8));
-            return content;
+    JsonObject readPackageJson(String id) throws IOException {
+        URL resource = options.getClassFinder()
+                .getResource(FRONTEND_RESOURCES_PATH + "dependencies/" + id
+                        + "/package.json");
+        if (resource == null) {
+            LoggerFactory.getLogger(NodeUpdater.class)
+                    .error("Unable to find package.json from '" + id + "'");
+            return Json.createObject();
         }
-
+        return Json.parse(IOUtils.toString(resource, StandardCharsets.UTF_8));
     }
 
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
         defaults.putAll(readDependencies("default", "devDependencies"));
         defaults.putAll(readDependencies("vite", "devDependencies"));
+        putHillaComponentsDependencies(defaults, "devDependencies");
+        if (options.isReactEnabled()) {
+            defaults.putAll(
+                    readDependencies("react-router", "devDependencies"));
+        }
 
         return defaults;
     }
@@ -568,5 +582,30 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
 
         return versionsJson;
+    }
+
+    /**
+     * Adds Hilla components to package.json if Hilla is used in the project.
+     *
+     * @param dependencies
+     *            to be added into package.json
+     * @param packageJsonKey
+     *            the key inside package.json containing the sub-list of
+     *            dependencies to read and add
+     * @see <a href=
+     *      "https://github.com/vaadin/hilla/tree/main/packages/java/hilla/src/main/resources/com/vaadin/flow/server/frontend/dependencies/hilla/components</a>
+     */
+    private void putHillaComponentsDependencies(
+            Map<String, String> dependencies, String packageJsonKey) {
+        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                options.getClassFinder())) {
+            if (options.isReactEnabled()) {
+                dependencies.putAll(readDependencies("hilla/components/react",
+                        packageJsonKey));
+            } else {
+                dependencies.putAll(readDependencies("hilla/components/lit",
+                        packageJsonKey));
+            }
+        }
     }
 }

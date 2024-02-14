@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Clean any frontend files generated for creation on a new development or
@@ -60,8 +61,11 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
      *
      * @param projectRoot
      *            project root folder
+     * @param frontendDirectory
+     *            frontend directory
      */
-    public TaskCleanFrontendFiles(File projectRoot) {
+    public TaskCleanFrontendFiles(File projectRoot, File frontendDirectory,
+            ClassFinder classFinder) {
         this.projectRoot = projectRoot;
 
         Arrays.stream(projectRoot
@@ -72,7 +76,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
         // node_modules
         if (existingFiles
                 .contains(new File(projectRoot, Constants.PACKAGE_JSON))
-                || EndpointRequestUtil.isHillaAvailable()) {
+                || FrontendUtils.isHillaUsed(frontendDirectory, classFinder)) {
             existingFiles.add(new File(projectRoot, NODE_MODULES));
         }
     }

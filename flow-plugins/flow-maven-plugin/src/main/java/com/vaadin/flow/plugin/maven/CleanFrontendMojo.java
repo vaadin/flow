@@ -132,7 +132,11 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        runCleaning(new Options());
+        Options options = new Options();
+        if (isHillaUsed(project, frontendDirectory())) {
+            options.withRemovePackageLock(false).withRemoveNodeModules(false);
+        }
+        runCleaning(options);
     }
 
     protected void runCleaning(Options options) throws MojoFailureException {
