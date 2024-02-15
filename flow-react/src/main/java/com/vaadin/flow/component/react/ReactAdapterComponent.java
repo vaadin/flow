@@ -15,16 +15,18 @@
  */
 package com.vaadin.flow.component.react;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
+
 import elemental.json.Json;
 import elemental.json.JsonValue;
-
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * An abstract implementation of an adapter for integrating with React
