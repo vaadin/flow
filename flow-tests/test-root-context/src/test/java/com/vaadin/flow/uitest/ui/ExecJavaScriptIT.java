@@ -47,7 +47,7 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         getButton("elementAwaitButton").click();
         WebElement result = waitUntil(
                 d -> findElement(By.id("elementAwaitResult")));
-        Assert.assertEquals("Element execute JS await result: true",
+        Assert.assertEquals("Element execute JS await result: 42",
                 result.getText());
     }
 
@@ -57,7 +57,7 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         getButton("pageAwaitButton").click();
         WebElement result = waitUntil(
                 d -> findElement(By.id("pageAwaitResult")));
-        Assert.assertEquals("Page execute JS await result: true",
+        Assert.assertEquals("Page execute JS await result: 72",
                 result.getText());
     }
 

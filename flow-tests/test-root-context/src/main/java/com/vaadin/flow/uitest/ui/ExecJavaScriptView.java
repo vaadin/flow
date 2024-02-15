@@ -47,10 +47,11 @@ public class ExecJavaScriptView extends AbstractDivView {
         NativeButton elementAwaitButton = createButton("Element await button",
                 "elementAwaitButton",
                 e -> e.getSource().getElement().executeJs("""
-                            const response = await fetch("/plain-script.js");
-                            const text = await response.text();
-                            return text.indexOf("Hello from src script") != -1;
-                        """).then(Boolean.class, success -> {
+                        const result = new Promise((resolve) => {
+                          setTimeout(() => resolve(42), 10);
+                        });
+                        return await result;
+                        """).then(Integer.class, success -> {
                     Span span = new Span();
                     span.setId("elementAwaitResult");
                     span.setText("Element execute JS await result: " + success);
@@ -64,10 +65,11 @@ public class ExecJavaScriptView extends AbstractDivView {
 
         NativeButton pageAwaitButton = createButton("Page await button",
                 "pageAwaitButton", e -> UI.getCurrent().getPage().executeJs("""
-                            const response = await fetch("/plain-script.js");
-                            const text = await response.text();
-                            return text.indexOf("Hello from src script") != -1;
-                        """).then(Boolean.class, success -> {
+                        const result = new Promise((resolve) => {
+                          setTimeout(() => resolve(72), 10);
+                        });
+                        return await result;
+                        """).then(Integer.class, success -> {
                     Span span = new Span();
                     span.setId("pageAwaitResult");
                     span.setText("Page execute JS await result: " + success);
