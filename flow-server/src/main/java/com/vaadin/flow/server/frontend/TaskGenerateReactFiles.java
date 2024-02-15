@@ -60,6 +60,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskGenerateReactFiles implements FallibleCommand {
 
+    public static final String CLASS_PACKAGE = "com/vaadin/flow/server/frontend/%s";
     private Options options;
     protected static String NO_IMPORT = """
             Faulty configuration of serverSideRoutes.
@@ -138,7 +139,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     }
 
     private boolean fileAvailable(String fileName) {
-        return getClass().getResource(fileName) != null;
+        return options.getClassFinder().getClassLoader()
+                .getResource(CLASS_PACKAGE.formatted(fileName)) != null;
     }
 
     private boolean missingServerImport(String routesContent) {
@@ -165,8 +167,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
     protected String getFileContent(String fileName) throws IOException {
         String indexTemplate;
-        try (InputStream indexTsStream = getClass()
-                .getResourceAsStream(fileName)) {
+        try (InputStream indexTsStream = options.getClassFinder()
+                .getClassLoader()
+                .getResourceAsStream(CLASS_PACKAGE.formatted(fileName))) {
             indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
         }
         return indexTemplate;
