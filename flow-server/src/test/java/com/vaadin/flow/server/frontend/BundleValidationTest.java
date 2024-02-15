@@ -2089,6 +2089,37 @@ public class BundleValidationTest {
     }
 
     @Test
+    public void defaultDevBundleExists_noCompressedDevBundleFile_reactDisabled_buildRequired()
+            throws IOException {
+        options.withReact(false);
+        Assume.assumeTrue(!mode.isProduction());
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+
+        URL url = Mockito.mock(URL.class);
+        Mockito.when(
+                finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
+                .thenReturn(url);
+        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+                .thenReturn(stats.toJson());
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "Dev bundle build is expected when react is disabled and using otherwise default dev bundle.",
+                needsBuild);
+    }
+
+    @Test
     public void defaultProdBundleExists_noCompressedProdBundleFile_noBuildRequired()
             throws IOException {
         Assume.assumeTrue(mode.isProduction());
@@ -2118,6 +2149,37 @@ public class BundleValidationTest {
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         Assert.assertFalse("Jar frontend file content hash should match.",
+                needsBuild);
+    }
+
+    @Test
+    public void defaultProdBundleExists_noCompressedProdBundleFile_reactDisabled_noBuildRequired()
+            throws IOException {
+        options.withReact(false);
+        Assume.assumeTrue(mode.isProduction());
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        JsonObject stats = getBasicStats();
+
+        URL url = Mockito.mock(URL.class);
+        Mockito.when(
+                finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+                .thenReturn(url);
+        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+                .thenReturn(stats.toJson());
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "Prod bundle build is expected when react is disabled and using otherwise default prod bundle.",
                 needsBuild);
     }
 
