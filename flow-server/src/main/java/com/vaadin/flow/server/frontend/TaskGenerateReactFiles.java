@@ -60,6 +60,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskGenerateReactFiles implements FallibleCommand {
 
+    public static final String CLASS_PACKAGE = "com/vaadin/flow/server/frontend/%s";
     private Options options;
     protected static String NO_IMPORT = """
             Faulty configuration of serverSideRoutes.
@@ -110,7 +111,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         File routesTsx = new File(frontendDirectory, "routes.tsx");
         try {
             writeFile(flowTsx, getFileContent("Flow.tsx"));
-            writeFile(reactAdapterTsx, getFileContent("ReactAdapter.tsx"));
+            if (fileAvailable("ReactAdapter.tsx")) {
+                writeFile(reactAdapterTsx, getFileContent("ReactAdapter.tsx"));
+            }
             if (!appTsx.exists()) {
                 writeFile(appTsx, getFileContent("App.tsx"));
             }
@@ -133,6 +136,11 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             throw new ExecutionFailedException("Failed to read file content",
                     e);
         }
+    }
+
+    private boolean fileAvailable(String fileName) {
+        return options.getClassFinder().getClassLoader()
+                .getResource(CLASS_PACKAGE.formatted(fileName)) != null;
     }
 
     private boolean missingServerImport(String routesContent) {
@@ -159,8 +167,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
     protected String getFileContent(String fileName) throws IOException {
         String indexTemplate;
-        try (InputStream indexTsStream = getClass()
-                .getResourceAsStream(fileName)) {
+        try (InputStream indexTsStream = options.getClassFinder()
+                .getClassLoader()
+                .getResourceAsStream(CLASS_PACKAGE.formatted(fileName))) {
             indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
         }
         return indexTemplate;
