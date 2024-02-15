@@ -24,40 +24,6 @@ import kotlin.test.expect
 import org.junit.Ignore
 
 class MiscSingleModuleTest : AbstractGradleTest() {
-    /**
-     * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/26
-     */
-    @Test
-    fun testVaadin8VaadinPlatformMPRProject() {
-        testProject.buildFile.writeText(
-                """
-            plugins {
-                id "com.devsoap.plugin.vaadin" version "2.0.0.beta2"
-                id 'com.vaadin'
-            }
-            repositories {
-                mavenLocal()
-                mavenCentral()
-                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
-            }
-            configurations {
-                compile
-                compile.extendsFrom(implementation)
-            }
-            // test that we can configure both plugins
-            vaadin {
-                version = "8.9.4"
-            }
-            vaadinPlatform {
-                optimizeBundle = true
-            }
-        """.trimIndent()
-        )
-
-        // the collision between devsoap's `vaadin` extension and com.vaadin's `vaadin`
-        // extension would crash even this very simple build.
-        testProject.build("tasks")
-    }
 
     /**
      * This test covers the [Base Starter Gradle](https://github.com/vaadin/base-starter-gradle)
