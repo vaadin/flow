@@ -213,7 +213,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         // Add application dependencies
         for (Entry<String, String> dep : applicationDependencies.entrySet()) {
-            if (options.isReactEnabled()
+            if (options.isReactEnabled() && isReactModuleAvailable()
                     && !FrontendUtils.isPackageKeyReactComponents(dep.getKey())
                     && pinnedPlatformDependencies.contains(dep.getKey())) {
                 continue;
@@ -233,7 +233,7 @@ public class TaskUpdatePackages extends NodeUpdater {
          * #10572 lock all platform internal versions
          */
         for (String key : platformPinnedDependencies.keys()) {
-            if (options.isReactEnabled()
+            if (options.isReactEnabled() && isReactModuleAvailable()
                     && !FrontendUtils.isPackageKeyReactComponents(key)
                     && pinnedPlatformDependencies.contains(key)) {
                 continue;
@@ -296,6 +296,16 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         return added > 0 || removed > 0 || removedDev > 0
                 || !oldHash.equals(newHash);
+    }
+
+    private boolean isReactModuleAvailable() {
+        try {
+            options.getClassFinder().loadClass(
+                    "com.vaadin.flow.component.react.ReactAdapterComponent");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     private int cleanDependencies(List<String> dependencyCollection,
