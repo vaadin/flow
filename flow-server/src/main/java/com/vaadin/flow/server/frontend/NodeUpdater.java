@@ -175,13 +175,23 @@ public abstract class NodeUpdater implements FallibleCommand {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     Json.parse(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    options.isReactEnabled());
+                    options.isReactEnabled() && isReactModuleAvailable());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)
                     .getFilteredVersions(versionsJson, versionsOrigin);
         }
         return versionsJson;
+    }
+
+    private boolean isReactModuleAvailable() {
+        try {
+            options.getClassFinder().loadClass(
+                    "com.vaadin.flow.component.react.ReactAdapterComponent");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {
