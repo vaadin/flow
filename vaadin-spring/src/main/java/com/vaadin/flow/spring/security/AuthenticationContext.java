@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,6 +170,18 @@ public class AuthenticationContext {
     }
 
     /**
+     * Checks whether the current authenticated user has the given role.
+     *
+     * @param role
+     *            the role to check.
+     * @return {@literal true} if the user holds the given role, otherwise
+     *         {@literal false}.
+     */
+    public boolean hasRole(String role) {
+        return getGrantedRoles().contains(role);
+    }
+
+    /**
      * Checks whether the current authenticated user has any of the given roles.
      *
      * @param roles
@@ -239,6 +250,19 @@ public class AuthenticationContext {
      */
     public boolean hasAllRoles(String... roles) {
         return hasAllRoles(Set.of(roles));
+    }
+
+    /**
+     * Checks whether the current authenticated user has the given authority.
+     *
+     * @param authority
+     *            the authority to check.
+     * @return {@literal true} if the user holds the given authority, otherwise
+     *         {@literal false}.
+     */
+    public boolean hasAuthority(String authority) {
+        return getGrantedAuthorities().stream()
+                .anyMatch(ga -> ga.getAuthority().equals(authority));
     }
 
     /**

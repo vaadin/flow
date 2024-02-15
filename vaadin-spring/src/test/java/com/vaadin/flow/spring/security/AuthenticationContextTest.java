@@ -131,6 +131,30 @@ public class AuthenticationContextTest {
     }
 
     @Test
+    public void hasRole_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasRole("USER"));
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void hasRole_anonymous_false() {
+        Assert.assertFalse(authContext.hasRole("ANONYMOUS"));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasRole_hasRole_true() {
+        Assert.assertTrue(authContext.hasRole("USER"));
+        Assert.assertTrue(authContext.hasRole("ADMIN"));
+    }
+
+    @Test
+    @WithMockUser(roles = { "USER", "ADMIN" })
+    public void hasRole_lacksRole_false() {
+        Assert.assertFalse(authContext.hasRole("SUPERADMIN"));
+    }
+
+    @Test
     public void hasAnyRole_notAuthenticated_false() {
         Assert.assertFalse(authContext.hasAnyRole("USER"));
         Assert.assertFalse(authContext.hasAnyRole(List.of("USER")));
@@ -139,8 +163,8 @@ public class AuthenticationContextTest {
     @Test
     @WithAnonymousUser()
     public void hasAnyRole_anonymous_false() {
-        Assert.assertFalse(authContext.hasAnyRole("USER"));
-        Assert.assertFalse(authContext.hasAnyRole(List.of("USER")));
+        Assert.assertFalse(authContext.hasAnyRole("ANONYMOUS"));
+        Assert.assertFalse(authContext.hasAnyRole(List.of("ANONYMOUS")));
     }
 
     @Test
@@ -148,7 +172,6 @@ public class AuthenticationContextTest {
     public void hasAnyRole_hasRole_true() {
         Assert.assertTrue(authContext.hasAnyRole("USER"));
         Assert.assertTrue(authContext.hasAnyRole(List.of("ADMIN")));
-
     }
 
     @Test
@@ -174,8 +197,8 @@ public class AuthenticationContextTest {
     @Test
     @WithAnonymousUser()
     public void hasAllRoles_anonymous_false() {
-        Assert.assertFalse(authContext.hasAllRoles("USER", "ADMIN"));
-        Assert.assertFalse(authContext.hasAllRoles(List.of("USER", "ADMIN")));
+        Assert.assertFalse(authContext.hasAllRoles("ANONYMOUS"));
+        Assert.assertFalse(authContext.hasAllRoles(List.of("ANONYMOUS")));
     }
 
     @Test
@@ -201,6 +224,30 @@ public class AuthenticationContextTest {
     }
 
     @Test
+    public void hasAuthority_notAuthenticated_false() {
+        Assert.assertFalse(authContext.hasAuthority("AUTH_READ"));
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void hasAuthority_anonymous_false() {
+        Assert.assertFalse(authContext.hasAuthority("ROLE_ANONYMOUS"));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAuthority_hasAuthority_true() {
+        Assert.assertTrue(authContext.hasAuthority("AUTH_READ"));
+        Assert.assertTrue(authContext.hasAuthority("AUTH_WRITE"));
+    }
+
+    @Test
+    @WithMockUser(authorities = { "AUTH_READ", "AUTH_WRITE" })
+    public void hasAuthority_lacksAuthority_false() {
+        Assert.assertFalse(authContext.hasAuthority("AUTH_MANAGE"));
+    }
+
+    @Test
     public void hasAnyAuthority_notAuthenticated_false() {
         Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
         Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_READ")));
@@ -209,8 +256,9 @@ public class AuthenticationContextTest {
     @Test
     @WithAnonymousUser()
     public void hasAnyAuthority_anonymous_false() {
-        Assert.assertFalse(authContext.hasAnyAuthority("AUTH_READ"));
-        Assert.assertFalse(authContext.hasAnyAuthority(List.of("AUTH_READ")));
+        Assert.assertFalse(authContext.hasAnyAuthority("ROLE_ANONYMOUS"));
+        Assert.assertFalse(
+                authContext.hasAnyAuthority(List.of("ROLE_ANONYMOUS")));
     }
 
     @Test
@@ -246,10 +294,9 @@ public class AuthenticationContextTest {
     @Test
     @WithAnonymousUser()
     public void hasAllAuthorities_anonymous_false() {
+        Assert.assertFalse(authContext.hasAllAuthorities("ROLE_ANONYMOUS"));
         Assert.assertFalse(
-                authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
-        Assert.assertFalse(authContext
-                .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+                authContext.hasAllAuthorities(List.of("ROLE_ANONYMOUS")));
     }
 
     @Test
