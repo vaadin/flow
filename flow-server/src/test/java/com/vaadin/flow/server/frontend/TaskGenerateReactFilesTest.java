@@ -52,6 +52,8 @@ public class TaskGenerateReactFilesTest {
 
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
+        Mockito.when(classFinder.getClassLoader())
+                .thenReturn(getClass().getClassLoader());
 
         options = new MockOptions(classFinder, temporaryFolder.getRoot())
                 .withBuildDirectory("target");
