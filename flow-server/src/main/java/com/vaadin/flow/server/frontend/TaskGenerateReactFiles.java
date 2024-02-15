@@ -110,7 +110,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         File routesTsx = new File(frontendDirectory, "routes.tsx");
         try {
             writeFile(flowTsx, getFileContent("Flow.tsx"));
-            writeFile(reactAdapterTsx, getFileContent("ReactAdapter.tsx"));
+            if (fileAvailable("ReactAdapter.tsx")) {
+                writeFile(reactAdapterTsx, getFileContent("ReactAdapter.tsx"));
+            }
             if (!appTsx.exists()) {
                 writeFile(appTsx, getFileContent("App.tsx"));
             }
@@ -133,6 +135,10 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             throw new ExecutionFailedException("Failed to read file content",
                     e);
         }
+    }
+
+    private boolean fileAvailable(String fileName) {
+        return getClass().getResource(fileName) != null;
     }
 
     private boolean missingServerImport(String routesContent) {
