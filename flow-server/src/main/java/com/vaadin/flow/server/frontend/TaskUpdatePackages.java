@@ -298,16 +298,6 @@ public class TaskUpdatePackages extends NodeUpdater {
                 || !oldHash.equals(newHash);
     }
 
-    private boolean isReactModuleAvailable() {
-        try {
-            options.getClassFinder().loadClass(
-                    "com.vaadin.flow.component.react.ReactAdapterComponent");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
     private int cleanDependencies(List<String> dependencyCollection,
             JsonObject packageJson, String dependencyKey) {
         int removed = 0;
