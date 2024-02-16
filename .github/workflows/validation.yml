@@ -162,7 +162,7 @@ jobs:
         with:
           bun-version: '1.0.7'
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -250,7 +250,7 @@ jobs:
         with:
           junit_files: "**/target/*-reports/TEST*.xml"
           check_run_annotations: all tests, skipped tests
-      - uses: geekyeggo/delete-artifact@v2
+      - uses: geekyeggo/delete-artifact@v4
         with:
           name: |
             saved-workspace
