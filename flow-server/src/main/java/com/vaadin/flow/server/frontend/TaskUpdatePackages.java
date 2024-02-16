@@ -212,7 +212,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 platformPinnedDependencies.keys());
         boolean reactComponents = pinnedPlatformDependencies
                 .contains(FrontendUtils.REACT_COMPONENTS_KEY);
-        
+
         // Add application dependencies
         for (Entry<String, String> dep : applicationDependencies.entrySet()) {
             if (reactComponents
