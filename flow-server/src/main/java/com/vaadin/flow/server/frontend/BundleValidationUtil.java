@@ -143,6 +143,7 @@ public final class BundleValidationUtil {
             // Using default dev bundle in a Jar.
             // Default dev bundle is packaged with react router only. With react
             // disabled, let's rebuild bundle to get vaadin router instead.
+            getLogger().info("Bundle build required for non default router.");
             return true;
         }
 
@@ -170,6 +171,7 @@ public final class BundleValidationUtil {
             // Default prod bundle is packaged with react router only. With
             // react disabled, let's rebuild bundle to get vaadin router
             // instead.
+            getLogger().info("Bundle build required for non default router.");
             return true;
         }
         String statsJsonContent = ProdBundleUtils.findBundleStatsJson(
