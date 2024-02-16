@@ -140,6 +140,7 @@ jobs:
         with:
           name: tests-output
           path: tests-report-*.tgz
+          overwrite: true
   it-tests:
     needs: build
     timeout-minutes: 30
@@ -226,6 +227,7 @@ jobs:
         with:
           name: tests-output
           path: tests-report-*.tgz
+          overwrite: true
   test-results:
     permissions:
       issues: read
