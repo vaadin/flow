@@ -280,7 +280,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         }
         expect(true) {
             // Only generated for executing project or building bundle
-            File(testProject.dir, "src/main/frontend/generated/index.ts").exists()
+            File(testProject.dir, "src/main/frontend/generated/index.tsx").exists()
         }
     }
 
