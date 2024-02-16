@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -158,6 +159,11 @@ public class AuthenticationContext {
                 .orElse(Collections.emptyList());
     }
 
+    private Stream<String> getGrantedAuthoritiesStream() {
+        return getGrantedAuthorities().stream()
+                .map(GrantedAuthority::getAuthority);
+    }
+
     /**
      * Gets the roles granted to the current authenticated user.
      *
@@ -165,11 +171,14 @@ public class AuthenticationContext {
      *         prefix) or an empty collection if there is no authenticated user.
      */
     public Collection<String> getGrantedRoles() {
+        return getGrantedRolesStream().collect(Collectors.toSet());
+    }
+
+    private Stream<String> getGrantedRolesStream() {
         var rolePrefix = getRolePrefix();
-        return getGrantedAuthorities().stream()
-                .filter(ga -> ga.getAuthority().startsWith(rolePrefix))
-                .map(ga -> ga.getAuthority().substring(rolePrefix.length()))
-                .collect(Collectors.toSet());
+        return getGrantedAuthoritiesStream()
+                .filter(ga -> ga.startsWith(rolePrefix))
+                .map(ga -> ga.substring(rolePrefix.length()));
     }
 
     /**
@@ -181,7 +190,7 @@ public class AuthenticationContext {
      *         {@literal false}.
      */
     public boolean hasRole(String role) {
-        return getGrantedRoles().contains(role);
+        return getGrantedRolesStream().anyMatch(role::equals);
     }
 
     /**
@@ -199,13 +208,7 @@ public class AuthenticationContext {
             throw new IllegalArgumentException(
                     "Must provide at least one role to check");
         }
-        var grantedRoles = getGrantedRoles();
-        for (var role : roles) {
-            if (grantedRoles.contains(role)) {
-                return true;
-            }
-        }
-        return false;
+        return getGrantedRolesStream().anyMatch(roles::contains);
     }
 
     /**
@@ -237,8 +240,8 @@ public class AuthenticationContext {
             throw new IllegalArgumentException(
                     "Must provide at least one role to check");
         }
-        var grantedRoles = getGrantedRoles();
-        return grantedRoles.containsAll(roles);
+        return getGrantedRolesStream().collect(Collectors.toSet())
+                .containsAll(roles);
     }
 
     /**
@@ -264,8 +267,7 @@ public class AuthenticationContext {
      *         {@literal false}.
      */
     public boolean hasAuthority(String authority) {
-        return getGrantedAuthorities().stream()
-                .anyMatch(ga -> ga.getAuthority().equals(authority));
+        return getGrantedAuthoritiesStream().anyMatch(authority::equals);
     }
 
     /**
@@ -284,15 +286,7 @@ public class AuthenticationContext {
             throw new IllegalArgumentException(
                     "Must provide at least one authority to check");
         }
-        var grantedAuthorities = getGrantedAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-        for (var authority : authorities) {
-            if (grantedAuthorities.contains(authority)) {
-                return true;
-            }
-        }
-        return false;
+        return getGrantedAuthoritiesStream().anyMatch(authorities::contains);
     }
 
     /**
@@ -326,10 +320,8 @@ public class AuthenticationContext {
             throw new IllegalArgumentException(
                     "Must provide at least one authority to check");
         }
-        var grantedAuthorities = getGrantedAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-        return grantedAuthorities.containsAll(authorities);
+        return getGrantedAuthoritiesStream().collect(Collectors.toSet())
+                .containsAll(authorities);
     }
 
     /**
