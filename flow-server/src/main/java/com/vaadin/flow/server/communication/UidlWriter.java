@@ -140,11 +140,6 @@ public class UidlWriter implements Serializable {
         // Paints components
         getLogger().debug("* Creating response to client");
 
-        int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
-                ? uiInternals.getServerSyncId()
-                : -1;
-
-        response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
         if (resync) {
             response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
         }
@@ -186,6 +181,14 @@ public class UidlWriter implements Serializable {
         if (service.getDeploymentConfiguration().isRequestTiming()) {
             response.put("timings", createPerformanceData(ui));
         }
+
+        // Get serverSyncId after all changes has been computed, as push may
+        // have been invoked, thus incrementing the counter.
+        // This way the client will receive messages in the correct order
+        int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
+                ? uiInternals.getServerSyncId()
+                : -1;
+        response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
         uiInternals.incrementServerId();
         return response;
     }
