@@ -311,6 +311,8 @@ public class FrontendUtils {
     static final String SYSTEM_NOPROXY_PROPERTY_KEY = "NOPROXY";
     static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
+    
+    public static final String REACT_COMPONENTS_KEY = "@vaadin/react-components";
 
     public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
 
@@ -1356,6 +1358,6 @@ public class FrontendUtils {
      *         components, {@code false} otherwise
      */
     static boolean isPackageKeyReactComponents(String key) {
-        return key.equals("@vaadin/react-components");
+        return key.equals(REACT_COMPONENTS_KEY);
     }
 }

@@ -210,11 +210,12 @@ public class TaskUpdatePackages extends NodeUpdater {
         final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
         Collections.addAll(pinnedPlatformDependencies,
                 platformPinnedDependencies.keys());
-
+        boolean reactComponents = pinnedPlatformDependencies
+                .contains(FrontendUtils.REACT_COMPONENTS_KEY);
+        
         // Add application dependencies
         for (Entry<String, String> dep : applicationDependencies.entrySet()) {
-            if (options.isReactEnabled() && isReactModuleAvailable()
-                    && !FrontendUtils.isPackageKeyReactComponents(dep.getKey())
+            if (reactComponents
                     && pinnedPlatformDependencies.contains(dep.getKey())) {
                 continue;
             }
@@ -233,9 +234,8 @@ public class TaskUpdatePackages extends NodeUpdater {
          * #10572 lock all platform internal versions
          */
         for (String key : platformPinnedDependencies.keys()) {
-            if (options.isReactEnabled() && isReactModuleAvailable()
-                    && !FrontendUtils.isPackageKeyReactComponents(key)
-                    && pinnedPlatformDependencies.contains(key)) {
+            if (reactComponents
+                    && !FrontendUtils.isPackageKeyReactComponents(key)) {
                 continue;
             }
             // need to double check that not overriding a scanned
