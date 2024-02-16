@@ -2153,7 +2153,7 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void defaultProdBundleExists_noCompressedProdBundleFile_reactDisabled_noBuildRequired()
+    public void defaultProdBundleExists_noCompressedProdBundleFile_reactDisabled_buildRequired()
             throws IOException {
         options.withReact(false);
         Assume.assumeTrue(mode.isProduction());
