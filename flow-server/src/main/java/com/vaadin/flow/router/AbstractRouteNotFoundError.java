@@ -84,14 +84,8 @@ public abstract class AbstractRouteNotFoundError extends Component {
         if (productionMode) {
             template = AbstractRouteNotFoundError.LazyInit.PRODUCTION_MODE_TEMPLATE;
         } else if (routes.isEmpty()) {
-            // The idea of showing a different error page when there are no
-            // routes comes from application generated from start.spring.io, see
-            // https://github.com/vaadin/flow/issues/16432
-            template = readHtmlFile(FrontendUtils.isHillaUsed(
-                    FrontendUtils.getProjectFrontendDir(VaadinService
-                            .getCurrent().getDeploymentConfiguration()))
-                                    ? "NoRoutesError_hilla.html"
-                                    : "NoRoutesError_dev.html");
+            // Offer a way for people to get started
+            template = readHtmlFile("NoRoutesError_dev.html");
         } else {
             template = readHtmlFile("RouteNotFoundError_dev.html");
         }
