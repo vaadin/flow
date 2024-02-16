@@ -273,7 +273,7 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      */
     public abstract val alwaysExecutePrepareFrontend: Property<Boolean>
 
-    public abstract val reactEnable: Property<Boolean>
+    public abstract val reactEnabled: Property<Boolean>
 
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter
@@ -469,7 +469,7 @@ public class PluginEffectiveConfiguration(
             "skipDevBundleBuild=${skipDevBundleBuild.get()}, " +
             "alwaysExecutePrepareFrontend=${alwaysExecutePrepareFrontend.get()}, " +
             "frontendHotdeploy=${frontendHotdeploy.get()}," +
-            "reactEnable=${reactEnable.get()}" +
+            "reactEnabled=${reactEnabled.get()}" +
             ")"
     public companion object {
         public fun get(project: Project): PluginEffectiveConfiguration =
