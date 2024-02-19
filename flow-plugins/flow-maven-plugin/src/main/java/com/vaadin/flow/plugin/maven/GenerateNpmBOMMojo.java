@@ -103,6 +103,12 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     private boolean validate;
 
     /**
+     * Mark as production mode.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean productionMode;
+
+    /**
      * Type of the main component. (choices: "application", "firmware",
      * "library")
      */
@@ -169,8 +175,10 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .setNodeAutoUpdate(nodeAutoUpdate())
                         .withHomeNodeExecRequired(requireHomeNodeExec())
                         .setJavaResourceFolder(javaResourceFolder())
-                        .withProductionMode(false);
+                        .withProductionMode(productionMode);
                 new NodeTasks(options).execute();
+                logInfo("SBOM generation created node_modules and all needed metadata. " +
+                        "If you don't need it, please run mvn vaadin:clean-frontend");
             }
 
             InvocationResult result = invoker.execute(request);

@@ -95,6 +95,8 @@ public class GenerateNpmBOMMojoTest {
                 FrontendTools.DEFAULT_NODE_VERSION);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
                 projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "productionMode",
+                false);
         Mockito.when(mojo.getJarFiles()).thenReturn(
                 Set.of(jarResourcesSource.getParentFile().getParentFile()));
 
