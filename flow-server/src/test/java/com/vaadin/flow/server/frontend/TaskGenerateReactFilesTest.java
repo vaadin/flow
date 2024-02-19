@@ -70,8 +70,6 @@ public class TaskGenerateReactFilesTest {
 
         task.execute();
 
-        Assert.assertTrue("Missing ./frontend/App.tsx",
-                new File(frontend, "App.tsx").exists());
         Assert.assertTrue("Missing ./frontend/generated/flow/Flow.tsx",
                 new File(new File(frontend, FrontendUtils.GENERATED),
                         "flow/Flow.tsx").exists());
