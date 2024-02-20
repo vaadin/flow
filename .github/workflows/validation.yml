@@ -138,7 +138,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output-${{ matrix.module }}
+          name: tests-output-unit-${{ matrix.current }}
           path: tests-report-*.tgz
   it-tests:
     needs: build
@@ -224,7 +224,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output-${{ matrix.module }}
+          name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
   test-results:
     permissions:
