@@ -11,7 +11,7 @@
     <packaging>pom</packaging>
     <name>Flow</name>
     <description>Flow</description>
-// test PR
+<!-- test PR -->
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
