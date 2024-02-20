@@ -1,9 +1,8 @@
 package com.vaadin.flow.server.frontend;
 
-import org.junit.Assert;
 import org.junit.Test;
 
-import static com.helger.commons.mock.CommonsAssert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -264,16 +263,13 @@ public class FrontendVersionTest {
 
     private void assertVersion(FrontendVersion version, int major, int minor,
             int revision, String build) {
-        Assert.assertEquals(
-                "Major version was wrong for " + version.getFullVersion(),
+        assertEquals("Major version was wrong for " + version.getFullVersion(),
                 version.getMajorVersion(), major);
-        Assert.assertEquals(
-                "Minor version was wrong for " + version.getFullVersion(),
+        assertEquals("Minor version was wrong for " + version.getFullVersion(),
                 version.getMinorVersion(), minor);
-        Assert.assertEquals(
-                "Revision was wrong for " + version.getFullVersion(),
+        assertEquals("Revision was wrong for " + version.getFullVersion(),
                 version.getRevision(), revision);
-        Assert.assertEquals(
+        assertEquals(
                 "Build identifier was wrong for " + version.getFullVersion(),
                 version.getBuildIdentifier(), build);
     }
