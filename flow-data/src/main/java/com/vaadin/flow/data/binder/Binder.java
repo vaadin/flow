@@ -1920,10 +1920,24 @@ public class Binder<BEAN> implements Serializable {
      */
     protected void handleFieldValueChange(Binding<BEAN, ?> binding) {
         changedBindings.add(binding);
-        if (getBean() != null) {
-            doWriteIfValid(getBean(), changedBindings);
+
+        if (getBean() == null) {
+            binding.validate();
         } else {
-            validate(binding);
+            BinderValidationStatus<BEAN> status = validateBindingsAndBean();
+            if (status.isOk()) {
+                doWriteIfValid(getBean(), changedBindings);
+            } else {
+                // Fire status change for changed bindings only
+                getValidationStatusHandler()
+                        .statusChange(new BinderValidationStatus<>(this,
+                                status.getFieldValidationStatuses().stream()
+                                        .filter(s -> changedBindings
+                                                .contains(s.getBinding()))
+                                        .collect(Collectors.toList()),
+                                status.getBeanValidationErrors()));
+                fireStatusChangeEvent(status.hasErrors());
+            }
         }
     }
 
@@ -2512,9 +2526,10 @@ public class Binder<BEAN> implements Serializable {
                 bindings);
 
         // First run fields level validation, if no validation errors then
-        // update bean. Note that this will validate all bindings.
-        List<BindingValidationStatus<?>> bindingResults = getBindings().stream()
-                .map(b -> b.validate(false)).collect(Collectors.toList());
+        // update bean.
+        List<BindingValidationStatus<?>> bindingResults = currentBindings
+                .stream().map(b -> b.validate(false))
+                .collect(Collectors.toList());
 
         if (bindingResults.stream()
                 .noneMatch(BindingValidationStatus::isError)) {
@@ -2781,35 +2796,25 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Validates the target binding. Also runs validation for all other
-     * bindings, and if possible, bean-level validations as well.
+     * Runs validation for all bindings to determine binder's validity state. If
+     * a bean has been set and all bindings pass validation, bean-level
+     * validations are run as well.
      *
-     * {@link BinderValidationStatusHandler} is called with only the status of
-     * the target binding.
-     *
-     * {@link StatusChangeEvent} is fired with current binder validation status
-     *
-     * @param targetBinding
-     *            target binding for validation
+     * @return BinderValidationStatus for the validation run
      */
-    private void validate(Binding<BEAN, ?> targetBinding) {
-        List<BindingValidationStatus<?>> bindingValidationStatuses = validateBindings();
+    private BinderValidationStatus<BEAN> validateBindingsAndBean() {
+        List<BindingValidationStatus<?>> bindingStatuses = validateBindings();
+        boolean bindingsInError = bindingStatuses.stream()
+                .anyMatch(BindingValidationStatus::isError);
 
         List<ValidationResult> beanStatuses = new ArrayList<>();
-        if (getBean() != null) {
+        // Only execute bean-level validation when binding validators pass
+        if (!bindingsInError) {
             beanStatuses.addAll(validateBean(getBean()));
         }
-        BindingValidationStatus<?> status = bindingValidationStatuses.stream()
-                .filter(s -> targetBinding.equals(s.getBinding())).findFirst()
-                .orElse(null);
 
-        getValidationStatusHandler().statusChange(new BinderValidationStatus<>(
-                this, Collections.singletonList(status),
-                Collections.emptyList()));
-
-        fireStatusChangeEvent(bindingValidationStatuses.stream()
-                .anyMatch(BindingValidationStatus::isError)
-                || beanStatuses.stream().anyMatch(ValidationResult::isError));
+        return new BinderValidationStatus<>(this, bindingStatuses,
+                beanStatuses);
     }
 
     /**

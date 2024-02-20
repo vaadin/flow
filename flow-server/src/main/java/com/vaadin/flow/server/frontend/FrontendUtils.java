@@ -1246,21 +1246,22 @@ public class FrontendUtils {
     public static boolean isHillaViewsUsed(File frontendDirectory) {
         Objects.requireNonNull(frontendDirectory);
         File viewsDirectory = new File(frontendDirectory, "views");
-
-        try {
-            Collection<Path> views = getFilePathsByPattern(
-                    viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
-            for (Path view : views) {
-                String viewContent = IOUtils.toString(view.toUri(), UTF_8);
-                viewContent = StringUtil.removeComments(viewContent);
-                if (!viewContent.isBlank()) {
-                    return true;
+        if (viewsDirectory.exists()) {
+            try {
+                Collection<Path> views = getFilePathsByPattern(
+                        viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
+                for (Path view : views) {
+                    String viewContent = IOUtils.toString(view.toUri(), UTF_8);
+                    viewContent = StringUtil.removeComments(viewContent);
+                    if (!viewContent.isBlank()) {
+                        return true;
+                    }
                 }
+            } catch (IOException e) {
+                getLogger().error(
+                        "Couldn't scan Hilla views directory for hilla auto-detection",
+                        e);
             }
-        } catch (IOException e) {
-            getLogger().error(
-                    "Couldn't scan Hilla views directory for hilla auto-detection",
-                    e);
         }
 
         var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.INDEX_TSX,
