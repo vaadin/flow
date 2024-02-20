@@ -308,7 +308,7 @@ function statsExtracterPlugin(): PluginOption {
 
       const isFrontendResourceCollected = (id: string) =>
           !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
-          || isThemeComponentsResource(id) 
+          || isThemeComponentsResource(id)
           || isGeneratedWebComponentResource(id);
 
       // collects project's frontend resources in frontend folder, excluding
@@ -345,7 +345,7 @@ function statsExtracterPlugin(): PluginOption {
           const fileKey = line.substring(line.indexOf('jar-resources/') + 14);
           frontendFiles[fileKey] = hash;
         });
-      // collects and hash rest of the Frontend resources excluding files in /generated/ and /themes/ 
+      // collects and hash rest of the Frontend resources excluding files in /generated/ and /themes/
       // and files already in frontendFiles.
       let frontendFolderAlias = "Frontend";
       generatedImports
@@ -360,7 +360,7 @@ function statsExtracterPlugin(): PluginOption {
             const fileBuffer = readFileSync(filePath, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
             frontendFiles[line] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
           }
-        });        
+        });
       // If a index.ts exists hash it to be able to see if it changes.
       if (existsSync(path.resolve(frontendFolder, 'index.ts'))) {
         const fileBuffer = readFileSync(path.resolve(frontendFolder, 'index.ts'), { encoding: 'utf-8' }).replace(
@@ -772,14 +772,16 @@ export const vaadinConfig: UserConfigFn = (env) => {
         ]
       }),
       // The React plugin provides fast refresh and debug source info
-      devMode && reactPlugin({
+      reactPlugin({
         include: '**/*.tsx',
         babel: {
           // We need to use babel to provide the source information for it to be correct
           // (otherwise Babel will slightly rewrite the source file and esbuild generate source info for the modified file)
           presets: [['@babel/preset-react', { runtime: 'automatic', development: devMode }]],
           // React writes the source location for where components are used, this writes for where they are defined
-          plugins: [addFunctionComponentSourceLocationBabel()]
+          plugins: [
+              devMode && addFunctionComponentSourceLocationBabel()
+          ].filter(Boolean)
         }
       }),
       {
