@@ -138,9 +138,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output
+          name: tests-output-unit-${{ matrix.current }}
           path: tests-report-*.tgz
-          overwrite: true
   it-tests:
     needs: build
     timeout-minutes: 30
@@ -225,9 +224,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output
+          name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
-          overwrite: true
   test-results:
     permissions:
       actions: write
@@ -238,6 +236,11 @@ jobs:
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-22.04
     steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: tests-output
+          pattern: tests-output-*
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
