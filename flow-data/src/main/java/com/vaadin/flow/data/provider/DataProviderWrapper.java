@@ -100,4 +100,9 @@ public abstract class DataProviderWrapper<T, F, M>
      * @return filter for the modified Query
      */
     protected abstract M getFilter(Query<T, F> query);
+
+    @Override
+    public String toString() {
+        return "DataProviderWrapper(" + dataProvider + ')';
+    }
 }
