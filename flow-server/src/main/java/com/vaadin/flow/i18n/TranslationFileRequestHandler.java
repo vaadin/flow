@@ -26,9 +26,7 @@ import java.util.*;
 
 public class TranslationFileRequestHandler implements RequestHandler {
 
-    static final String LANGUAGE_PARAMETER_NAME = "lang";
-
-    static final String COUNTRY_PARAMETER_NAME = "country";
+    static final String LANGUAGE_TAG_PARAMETER_NAME = "langtag";
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
@@ -67,11 +65,9 @@ public class TranslationFileRequestHandler implements RequestHandler {
     }
 
     private Locale getLocale(VaadinRequest request) {
-        String language = Objects.requireNonNullElse(
-                request.getParameter(LANGUAGE_PARAMETER_NAME), "");
-        String country = Objects.requireNonNullElse(
-                request.getParameter(COUNTRY_PARAMETER_NAME), "");
-        return new Locale(language, country);
+        String languageTag = Objects.requireNonNullElse(
+                request.getParameter(LANGUAGE_TAG_PARAMETER_NAME), "");
+        return Locale.forLanguageTag(languageTag);
     }
 
     private ResourceBundle getTranslationPropertyFile(Locale locale) {

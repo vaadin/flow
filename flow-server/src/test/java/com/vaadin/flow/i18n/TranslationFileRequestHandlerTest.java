@@ -85,56 +85,55 @@ public class TranslationFileRequestHandlerTest {
         try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
                 Mockito.CALLS_REAL_METHODS)) {
             util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            setRequestParams(null, "", "other");
+            setRequestParams(null, "other");
             Assert.assertFalse(
                     handler.handleRequest(session, request, response));
         }
     }
 
     @Test
-    public void withDefaultFile_langParameterIsNull_responseIsDefault()
+    public void withDefaultFile_languageTagIsNull_responseIsDefault()
             throws IOException {
-        testResponseContent(true, null, "", "{\"title\":\"Default lang\"}");
+        testResponseContent(true, null, "{\"title\":\"Default lang\"}");
     }
 
     @Test
-    public void withoutDefaultFile_langParameterIsNull_responseIsEmpty()
+    public void withoutDefaultFile_languageTagIsNull_responseIsEmpty()
             throws IOException {
-        testResponseContent(false, null, "", "");
+        testResponseContent(false, null, "");
     }
 
     @Test
-    public void langWithoutCountryAvailable_responseIsCorrect()
+    public void languageTagWithoutCountryAvailable_responseIsCorrect()
             throws IOException {
-        testResponseContent(true, "fi", "", "{\"title\":\"Suomi\"}");
+        testResponseContent(true, "fi", "{\"title\":\"Suomi\"}");
     }
 
     @Test
-    public void withDefaultFile_langWithoutCountryNotAvailable_responseIsDefault()
+    public void withDefaultFile_languageTagWithoutCountryNotAvailable_responseIsDefault()
             throws IOException {
-        testResponseContent(true, "es", "", "{\"title\":\"Default lang\"}");
+        testResponseContent(true, "es", "{\"title\":\"Default lang\"}");
     }
 
     @Test
-    public void withoutDefaultFile_langWithoutCountryNotAvailable_responseIsEmpty()
+    public void withoutDefaultFile_languageTagWithoutCountryNotAvailable_responseIsEmpty()
             throws IOException {
-        testResponseContent(false, "es", "", "");
+        testResponseContent(false, "es", "");
     }
 
     @Test
-    public void withoutDefaultFile_langWithCountryAvailable_responseIsCorrect()
+    public void withoutDefaultFile_languageTagWithCountryAvailable_responseIsCorrect()
             throws IOException {
-        testResponseContent(false, "es", "ES",
-                "{\"title\":\"Espanol (Spain)\"}");
+        testResponseContent(false, "es-ES", "{\"title\":\"Espanol (Spain)\"}");
     }
 
-    private void testResponseContent(boolean withDefault, String lang,
-            String country, String expectedResponseContent) throws IOException {
+    private void testResponseContent(boolean withDefault, String langtag,
+            String expectedResponseContent) throws IOException {
         createTranslationFiles(withDefault);
         try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
                 Mockito.CALLS_REAL_METHODS)) {
             util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            setRequestParams(lang, country,
+            setRequestParams(langtag,
                     HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier());
             Assert.assertTrue(
                     handler.handleRequest(session, request, response));
@@ -147,14 +146,10 @@ public class TranslationFileRequestHandlerTest {
         return out.toString();
     }
 
-    private void setRequestParams(String lang, String country,
-            String requestTypeId) {
+    private void setRequestParams(String langtag, String requestTypeId) {
         Mockito.when(request.getParameter(
-                TranslationFileRequestHandler.LANGUAGE_PARAMETER_NAME))
-                .thenReturn(lang);
-        Mockito.when(request.getParameter(
-                TranslationFileRequestHandler.COUNTRY_PARAMETER_NAME))
-                .thenReturn(country);
+                TranslationFileRequestHandler.LANGUAGE_TAG_PARAMETER_NAME))
+                .thenReturn(langtag);
         Mockito.when(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
                 .thenReturn(requestTypeId);
