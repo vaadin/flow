@@ -230,6 +230,7 @@ jobs:
           overwrite: true
   test-results:
     permissions:
+      actions: write
       issues: read
       checks: write
       pull-requests: write
