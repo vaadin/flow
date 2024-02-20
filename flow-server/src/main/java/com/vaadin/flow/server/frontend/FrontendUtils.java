@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import jakarta.servlet.ServletContext;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,11 +23,18 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,6 +45,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import jakarta.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -48,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
@@ -60,7 +67,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -1239,8 +1245,26 @@ public class FrontendUtils {
      */
     public static boolean isHillaViewsUsed(File frontendDirectory) {
         Objects.requireNonNull(frontendDirectory);
-        var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.ROUTES_TS,
-                FrontendUtils.ROUTES_TSX);
+        File viewsDirectory = new File(frontendDirectory, "views");
+
+        try {
+            Collection<Path> views = getFilePathsByPattern(
+                    viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
+            for (Path view : views) {
+                String viewContent = IOUtils.toString(view.toUri(), UTF_8);
+                viewContent = StringUtil.removeComments(viewContent);
+                if (!viewContent.isBlank()) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            getLogger().error(
+                    "Couldn't scan Hilla views directory for hilla auto-detection",
+                    e);
+        }
+
+        var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.INDEX_TSX,
+                FrontendUtils.ROUTES_TS, FrontendUtils.ROUTES_TSX);
         for (String fileName : files) {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {
@@ -1256,6 +1280,46 @@ public class FrontendUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Get a list of files in a given directory that match a given glob pattern.
+     *
+     * @param baseDir
+     *            a directory to walk in
+     * @param pattern
+     *            glob pattern to filter files, e.g. "*.js".
+     * @return a list of files matching a given pattern
+     * @throws IOException
+     *             if an I/O error is thrown while walking through the tree in
+     *             base directory
+     */
+    public static List<Path> getFilePathsByPattern(Path baseDir, String pattern)
+            throws IOException {
+        if (baseDir == null || !baseDir.toFile().exists()) {
+            throw new IllegalArgumentException(
+                    "Base directory is empty or doesn't exist: " + baseDir);
+        }
+
+        if (pattern == null || pattern.isBlank()) {
+            pattern = "*";
+        }
+
+        PathMatcher matcher = FileSystems.getDefault()
+                .getPathMatcher("glob:" + pattern);
+
+        List<Path> matchingPaths = new ArrayList<>();
+        Files.walkFileTree(baseDir, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file,
+                    BasicFileAttributes attrs) {
+                if (matcher.matches(file)) {
+                    matchingPaths.add(file);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        return matchingPaths;
     }
 
     /**
