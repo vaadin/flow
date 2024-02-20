@@ -46,9 +46,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Generate default files for react-router if missing from the frontend folder.
  * <p>
  * </p>
- * The generated files are <code>App.tsx</code>, <code>Flow.tsx</code> and
- * <code>routes.tsx</code>. Where <code>Flow.tsx</code> is for communication
- * between the Flow and the router and contains the server side route target
+ * The generated files are <code>Flow.tsx</code> and <code>routes.tsx</code>.
+ * Where <code>Flow.tsx</code> is for communication between the Flow and the
+ * router and contains the server side route target
  * <code>serverSideRoutes</code> to be used in <code>routes.tsx</code>.
  * <p>
  * <code>Flow.tsx</code> is always written and thus updates automatically if
@@ -60,6 +60,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskGenerateReactFiles implements FallibleCommand {
 
+    public static final String CLASS_PACKAGE = "com/vaadin/flow/server/frontend/%s";
     private Options options;
     protected static String NO_IMPORT = """
             Faulty configuration of serverSideRoutes.
@@ -100,7 +101,6 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         File frontendDirectory = options.getFrontendDirectory();
-        File appTsx = new File(frontendDirectory, "App.tsx");
         File flowTsx = new File(
                 new File(frontendDirectory, FrontendUtils.GENERATED),
                 "flow/Flow.tsx");
@@ -110,9 +110,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         File routesTsx = new File(frontendDirectory, "routes.tsx");
         try {
             writeFile(flowTsx, getFileContent("Flow.tsx"));
-            writeFile(reactAdapterTsx, getFileContent("ReactAdapter.tsx"));
-            if (!appTsx.exists()) {
-                writeFile(appTsx, getFileContent("App.tsx"));
+            if (fileAvailable("ReactAdapter.tsx")) {
+                writeFile(reactAdapterTsx, getFileContent("ReactAdapter.tsx"));
             }
 
             if (!routesTsx.exists()) {
@@ -133,6 +132,11 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             throw new ExecutionFailedException("Failed to read file content",
                     e);
         }
+    }
+
+    private boolean fileAvailable(String fileName) {
+        return options.getClassFinder().getClassLoader()
+                .getResource(CLASS_PACKAGE.formatted(fileName)) != null;
     }
 
     private boolean missingServerImport(String routesContent) {
@@ -159,8 +163,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
     protected String getFileContent(String fileName) throws IOException {
         String indexTemplate;
-        try (InputStream indexTsStream = getClass()
-                .getResourceAsStream(fileName)) {
+        try (InputStream indexTsStream = options.getClassFinder()
+                .getClassLoader()
+                .getResourceAsStream(CLASS_PACKAGE.formatted(fileName))) {
             indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
         }
         return indexTemplate;

@@ -175,13 +175,23 @@ public abstract class NodeUpdater implements FallibleCommand {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     Json.parse(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    options.isReactEnabled());
+                    options.isReactEnabled() && isReactModuleAvailable());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)
                     .getFilteredVersions(versionsJson, versionsOrigin);
         }
         return versionsJson;
+    }
+
+    private boolean isReactModuleAvailable() {
+        try {
+            options.getClassFinder().loadClass(
+                    "com.vaadin.flow.component.react.ReactAdapterComponent");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {
@@ -313,9 +323,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             JsonObject dependencies = readPackageJson(id)
                     .getObject(packageJsonKey);
             if (dependencies == null) {
-                LoggerFactory.getLogger(NodeUpdater.class)
-                        .error("Unable to find " + packageJsonKey + " from '"
-                                + id + "'");
+                log().error("Unable to find " + packageJsonKey + " from '" + id
+                        + "'");
                 return new HashMap<>();
             }
             for (String key : dependencies.keys()) {
@@ -324,7 +333,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
             return map;
         } catch (IOException e) {
-            LoggerFactory.getLogger(NodeUpdater.class).error(
+            log().error(
                     "Unable to read " + packageJsonKey + " from '" + id + "'",
                     e);
             return new HashMap<>();
@@ -337,11 +346,25 @@ public abstract class NodeUpdater implements FallibleCommand {
                 .getResource(FRONTEND_RESOURCES_PATH + "dependencies/" + id
                         + "/package.json");
         if (resource == null) {
-            LoggerFactory.getLogger(NodeUpdater.class)
-                    .error("Unable to find package.json from '" + id + "'");
-            return Json.createObject();
+            log().error("Unable to find package.json from '" + id + "'");
+
+            return Json.parse("{\"%s\":{},\"%s\":{}}".formatted(DEPENDENCIES,
+                    DEV_DEPENDENCIES));
         }
         return Json.parse(IOUtils.toString(resource, StandardCharsets.UTF_8));
+    }
+
+    boolean hasPackageJson(String id) {
+        return options.getClassFinder().getResource(FRONTEND_RESOURCES_PATH
+                + "dependencies/" + id + "/package.json") != null;
+    }
+
+    Map<String, String> readDependenciesIfAvailable(String id,
+            String packageJsonKey) {
+        if (hasPackageJson(id)) {
+            return readDependencies(id, packageJsonKey);
+        }
+        return new HashMap<>();
     }
 
     Map<String, String> getDefaultDevDependencies() {
@@ -600,11 +623,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
             if (options.isReactEnabled()) {
-                dependencies.putAll(readDependencies("hilla/components/react",
-                        packageJsonKey));
+                dependencies.putAll(readDependenciesIfAvailable(
+                        "hilla/components/react", packageJsonKey));
             } else {
-                dependencies.putAll(readDependencies("hilla/components/lit",
-                        packageJsonKey));
+                dependencies.putAll(readDependenciesIfAvailable(
+                        "hilla/components/lit", packageJsonKey));
             }
         }
     }

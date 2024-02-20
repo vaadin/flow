@@ -56,6 +56,11 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
+        if (options.isReactEnabled()) {
+            return new File(
+                    new File(frontendDirectory, FrontendUtils.GENERATED),
+                    INDEX_TSX);
+        }
         return new File(new File(frontendDirectory, FrontendUtils.GENERATED),
                 INDEX_TS);
     }
@@ -74,7 +79,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         String indexTemplate;
         String indexFile = INDEX_TS;
         if (options.isReactEnabled()) {
-            indexFile = "index-react.ts";
+            indexFile = "index-react.tsx";
         }
         try (InputStream indexTsStream = getClass()
                 .getResourceAsStream(indexFile)) {

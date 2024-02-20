@@ -117,6 +117,7 @@ public final class BundleValidationUtil {
             getLogger().info("No dev-bundle found.");
             return true;
         }
+
         if (!DevBundleUtils
                 .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
                 .exists() && compressedDevBundle.exists()) {
@@ -125,6 +126,7 @@ public final class BundleValidationUtil {
                             new File(npmFolder,
                                     options.getBuildDirectoryName()),
                             Constants.DEV_BUNDLE_LOCATION));
+
         }
 
         if (options.isSkipDevBundle()) {
@@ -133,6 +135,16 @@ public final class BundleValidationUtil {
             getLogger()
                     .info("Skip dev bundle requested. Using existing bundle.");
             return false;
+        }
+
+        if (!DevBundleUtils
+                .getDevBundleFolder(npmFolder, options.getBuildDirectoryName())
+                .exists() && !options.isReactEnabled()) {
+            // Using default dev bundle in a Jar.
+            // Default dev bundle is packaged with react router only. With react
+            // disabled, let's rebuild bundle to get vaadin router instead.
+            getLogger().info("Bundle build required for non default router.");
+            return true;
         }
 
         String statsJsonContent = DevBundleUtils.findBundleStatsJson(npmFolder,
@@ -152,6 +164,16 @@ public final class BundleValidationUtil {
     private static boolean needsBuildProdBundle(Options options,
             FrontendDependenciesScanner frontendDependencies)
             throws IOException {
+
+        if (!options.isReactEnabled() && !ProdBundleUtils
+                .getProdBundle(options.getNpmFolder()).exists()) {
+            // Using default prod bundle in a Jar.
+            // Default prod bundle is packaged with react router only. With
+            // react disabled, let's rebuild bundle to get vaadin router
+            // instead.
+            getLogger().info("Bundle build required for non default router.");
+            return true;
+        }
         String statsJsonContent = ProdBundleUtils.findBundleStatsJson(
                 options.getNpmFolder(), options.getClassFinder());
 

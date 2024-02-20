@@ -162,7 +162,7 @@ public class BuildDevBundleMojo extends AbstractMojo
     private List<String> postinstallPackages;
 
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "true")
-    private boolean reactRouterEnabled;
+    private boolean reactEnable;
 
     @Override
     public void execute() throws MojoFailureException {
@@ -436,7 +436,7 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public boolean isReactEnabled() {
-        return reactRouterEnabled;
+        return reactEnable;
     }
 
 }

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -28,6 +29,7 @@ import elemental.json.Json;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ExecJavaScriptView", layout = ViewTestLayout.class)
 public class ExecJavaScriptView extends AbstractDivView {
+
     @Override
     protected void onShow() {
         NativeButton alertButton = createJsButton("Alert", "alertButton",
@@ -42,6 +44,43 @@ public class ExecJavaScriptView extends AbstractDivView {
                 "console.log($0)", JsonUtils.createArray(
                         Json.create("Hello world"), Json.create(true)));
 
+        NativeButton elementAwaitButton = createButton("Element await button",
+                "elementAwaitButton",
+                e -> e.getSource().getElement().executeJs("""
+                        const result = new Promise((resolve) => {
+                          setTimeout(() => resolve(42), 10);
+                        });
+                        return await result;
+                        """).then(Integer.class, success -> {
+                    Span span = new Span();
+                    span.setId("elementAwaitResult");
+                    span.setText("Element execute JS await result: " + success);
+                    add(span);
+                }, error -> {
+                    Span span = new Span();
+                    span.setId("elementAwaitResult");
+                    span.setText("Element execute JS await error: " + error);
+                    add(span);
+                }));
+
+        NativeButton pageAwaitButton = createButton("Page await button",
+                "pageAwaitButton", e -> UI.getCurrent().getPage().executeJs("""
+                        const result = new Promise((resolve) => {
+                          setTimeout(() => resolve(72), 10);
+                        });
+                        return await result;
+                        """).then(Integer.class, success -> {
+                    Span span = new Span();
+                    span.setId("pageAwaitResult");
+                    span.setText("Page execute JS await result: " + success);
+                    add(span);
+                }, error -> {
+                    Span span = new Span();
+                    span.setId("pageAwaitResult");
+                    span.setText("Page execute JS await error: " + error);
+                    add(span);
+                }));
+
         NativeButton createElementButton = createButton(
                 "Create and update element", "createButton", e -> {
                     Input input = new Input();
@@ -51,7 +90,8 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(input);
                 });
 
-        add(alertButton, focusButton, swapText, logButton, createElementButton);
+        add(alertButton, focusButton, swapText, logButton, createElementButton,
+                elementAwaitButton, pageAwaitButton);
     }
 
     private NativeButton createJsButton(String text, String id, String script,

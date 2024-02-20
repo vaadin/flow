@@ -280,7 +280,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         }
         expect(true) {
             // Only generated for executing project or building bundle
-            File(testProject.dir, "src/main/frontend/generated/index.ts").exists()
+            File(testProject.dir, "src/main/frontend/generated/index.tsx").exists()
         }
     }
 
@@ -338,27 +338,13 @@ class VaadinSmokeTest : AbstractGradleTest() {
             setup()
         }
 
-        if(JavaVersion.current().majorVersion.toInt() >= 20) {
-            // JDK 20 needs 8.3+
-            setupProjectForGradleVersion("8.3")
-            val result = testProject.build("vaadinClean")
-            result.expectTaskSucceded("vaadinClean")
-        } else {
-            // Works with supported versions
-            for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "7.6.2", "8.1", "8.2", "8.3") ) {
+        for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.5", "8.6") ) {
                 setupProjectForGradleVersion(supportedVersion)
                 val result = testProject.build("vaadinClean")
                 result.expectTaskSucceded("vaadinClean")
-            }
         }
 
-        // Cannot test versions older than 7.6 because of Java version
-        // incompatibilities with dependencies thar makes the build fail before
-        // the plugin is applied
-        // Code below is left here for future usage, when gradle supported
-        // version will be greater than 7.6
-        // emptyArray<String>() should be replaced by arrayOf("7.6")
-        for (unsupportedVersion in emptyArray<String>()) {
+        for (unsupportedVersion in arrayOf("8.3")) {
             setupProjectForGradleVersion(unsupportedVersion)
             val result = testProject.buildAndFail("vaadinClean")
             assertContains(

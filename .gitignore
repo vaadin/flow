@@ -97,5 +97,4 @@ flow-tests/test-themes/src/main/bundles/
 vaadin-dev-server/src/main/resources/META-INF/frontend
 vaadin-dev-server/src/main/resources/META-INF/metadata
 
-/flow-tests/**/frontend/App.tsx
 /flow-tests/**/frontend/routes.tsx

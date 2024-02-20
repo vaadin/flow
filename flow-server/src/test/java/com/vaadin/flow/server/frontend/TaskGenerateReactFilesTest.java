@@ -52,6 +52,8 @@ public class TaskGenerateReactFilesTest {
 
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
+        Mockito.when(classFinder.getClassLoader())
+                .thenReturn(getClass().getClassLoader());
 
         options = new MockOptions(classFinder, temporaryFolder.getRoot())
                 .withBuildDirectory("target");
@@ -68,8 +70,6 @@ public class TaskGenerateReactFilesTest {
 
         task.execute();
 
-        Assert.assertTrue("Missing ./frontend/App.tsx",
-                new File(frontend, "App.tsx").exists());
         Assert.assertTrue("Missing ./frontend/generated/flow/Flow.tsx",
                 new File(new File(frontend, FrontendUtils.GENERATED),
                         "flow/Flow.tsx").exists());

@@ -17,6 +17,7 @@
     <modules>
         <module>flow</module>
         <module>flow-server</module>
+        <module>flow-react</module>
         <module>flow-polymer-template</module>
         <module>flow-lit-template</module>
         <module>flow-push</module>
@@ -89,7 +90,7 @@
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.12</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.16.0</jackson.version>
+        <jackson.version>2.16.1</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
@@ -250,7 +251,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.12.7</version>
+                <version>1.12.8</version>
             </dependency>
 
             <!-- Test dependencies -->
