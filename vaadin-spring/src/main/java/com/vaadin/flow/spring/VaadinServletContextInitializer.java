@@ -993,6 +993,11 @@ public class VaadinServletContextInitializer
 
                 if (devModeCachingEnabled && valid.contains(originalPath)) {
                     resourcesList.add(resource);
+                    // Restore root paths to ensure new resources are correctly
+                    // validate and cached after a reload
+                    if (originalPath.endsWith("/")) {
+                        rootPaths.add(originalPath);
+                    }
                 } else {
                     if (path.endsWith(".jar!/")) {
                         resourcesList.add(resource);

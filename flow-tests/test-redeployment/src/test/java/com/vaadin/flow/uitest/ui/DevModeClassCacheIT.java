@@ -15,21 +15,47 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 
 import com.vaadin.testbench.TestBenchElement;
 
 @NotThreadSafe
 public class DevModeClassCacheIT extends AbstractReloadIT {
 
+    private static final Path VIEW_PATH = Path.of("com", "vaadin", "flow",
+            "uitest", "ui", "reloadaddedviews");
+
     @Override
     protected String getTestPath() {
         return super.getTestPath().replace("/view", "");
+    }
+
+    @Before
+    @After
+    public void removeTemporaryView() throws IOException {
+        Path baseDir = new File(System.getProperty("user.dir", ".")).toPath();
+        FileUtils.deleteDirectory(baseDir.resolve(Path.of("target", "classes"))
+                .resolve(VIEW_PATH).toFile());
+        FileUtils
+                .deleteDirectory(baseDir.resolve(Path.of("src", "main", "java"))
+                        .resolve(VIEW_PATH).toFile());
     }
 
     @Test
@@ -53,5 +79,58 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
         Assert.assertEquals("Unexpected cached route packages.",
                 "com.vaadin.flow.uitest.ui",
                 allSpans.get(5).getText().split(":")[1]);
+
+        // Ensure newly created classes are correctly added to the cache
+        createNewViewReloadAndWait();
+
+        waitForElementPresent(By.id("last-span"));
+
+        allSpans = $("span").all();
+
+        for (int i = 1; i < 5; i++) {
+            String[] value = allSpans.get(i).getText().split(":");
+            Assert.assertTrue("Expected " + value[0] + " to be greater than 0.",
+                    Integer.parseInt(value[1]) > 0);
+        }
+
+        Assert.assertEquals("Unexpected cached route packages.",
+                "com.vaadin.flow.uitest.ui,com.vaadin.flow.uitest.ui.reloadaddedviews",
+                allSpans.get(5).getText().split(":")[1]);
     }
+
+    // create class on the fly
+    protected void createNewViewReloadAndWait() {
+        String viewId = getViewId();
+
+        Path baseDir = new File(System.getProperty("user.dir", ".")).toPath();
+        Path outputPath = baseDir.resolve(Path.of("target", "classes"));
+        Path sourcePath = baseDir.resolve(Path.of("src", "main", "java"))
+                .resolve(VIEW_PATH);
+        Path sourceFile = sourcePath.resolve("MyView.java");
+        try {
+            Files.createDirectories(sourcePath);
+            Files.writeString(sourceFile, """
+                    package com.vaadin.flow.uitest.ui.reloadaddedviews;
+                    import com.vaadin.flow.component.html.Div;
+                    import com.vaadin.flow.router.Route;
+                    @Route("compiled-at-runtime")
+                    public class MyView extends Div {}
+                    """);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        int result = compiler.run(null, null, null, "-d", outputPath.toString(),
+                "-sourcepath", sourcePath.toString(), sourceFile.toString());
+        Assert.assertEquals("Failed to compile " + sourceFile, 0, result);
+
+        waitUntil(driver -> {
+            try {
+                return !getViewId().equals(viewId);
+            } catch (StaleElementReferenceException e) {
+                return false;
+            }
+        });
+    }
+
 }
