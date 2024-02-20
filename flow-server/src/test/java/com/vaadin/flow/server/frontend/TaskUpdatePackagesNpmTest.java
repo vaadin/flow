@@ -648,13 +648,52 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    public void reactEnabled_coreDependenciesNotAdded() throws IOException {
+    public void reactEnabled_scannerDependencies_coreDependenciesNotAdded()
+            throws IOException {
         createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
                 PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(createApplicationDependencies());
+        Options options = new MockOptions(finder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(false)
+                .withBundleBuild(true).withReact(true);
+        final TaskUpdatePackages task = new TaskUpdatePackages(
+                frontendDependenciesScanner, options) {
+        };
+        task.execute();
+        final JsonObject newPackageJson = getOrCreatePackageJson();
+
+        Assert.assertTrue(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(VAADIN_OVERLAY));
+        Assert.assertTrue(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(VAADIN_OVERLAY));
+        Assert.assertTrue(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(REACT_COMPONENTS));
+        Assert.assertTrue(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(REACT_COMPONENTS));
+    }
+
+    @Test
+    public void reactEnabled_noScannerDependencies_coreDependenciesNotAdded()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        final FrontendDependencies frontendDependenciesScanner = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages())
+                .thenReturn(new HashMap<>());
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(true);
