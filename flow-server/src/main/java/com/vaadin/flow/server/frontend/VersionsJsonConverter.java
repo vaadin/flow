@@ -38,6 +38,11 @@ class VersionsJsonConverter {
     private static final String JS_VERSION = "jsVersion";
     private static final String NPM_NAME = "npmName";
     private static final String NPM_VERSION = "npmVersion";
+    private static final String MODE = "mode";
+    private static final String MODE_LIT = "lit";
+    private static final String MODE_REACT = "react";
+    private static final String MODE_ALL = "all"; // same as empty string
+
     private final JsonObject convertedObject;
 
     private boolean reactEnabled;
@@ -68,11 +73,28 @@ class VersionsJsonConverter {
                 continue;
             }
             JsonObject json = (JsonObject) value;
+            if (!isIncludedByMode(json)) {
+                continue;
+            }
             if (json.hasKey(NPM_NAME)) {
                 addDependency(json);
             } else {
                 collectDependencies(json);
             }
+        }
+    }
+
+    private boolean isIncludedByMode(JsonObject json) {
+        if (!json.hasKey(MODE)) {
+            return true;
+        }
+        String mode = json.getString(MODE);
+        if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)) {
+            return true;
+        } else if (reactEnabled) {
+            return MODE_REACT.equalsIgnoreCase(mode);
+        } else {
+            return MODE_LIT.equalsIgnoreCase(mode);
         }
     }
 

@@ -672,6 +672,12 @@ public class TaskUpdatePackagesNpmTest {
                         .hasKey(VAADIN_DIALOG));
         Assert.assertTrue(
                 newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(VAADIN_OVERLAY));
+        Assert.assertTrue(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(VAADIN_OVERLAY));
+        Assert.assertTrue(
+                newPackageJson.hasKey("dependencies") && newPackageJson
                         .getObject("dependencies").hasKey(REACT_COMPONENTS));
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
                 && newPackageJson.getObject("vaadin").getObject("dependencies")
@@ -701,6 +707,12 @@ public class TaskUpdatePackagesNpmTest {
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
                 && newPackageJson.getObject("vaadin").getObject("dependencies")
                         .hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(VAADIN_OVERLAY));
+        Assert.assertTrue(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(VAADIN_OVERLAY));
         Assert.assertFalse(
                 newPackageJson.hasKey("dependencies") && newPackageJson
                         .getObject("dependencies").hasKey(REACT_COMPONENTS));
@@ -723,7 +735,8 @@ public class TaskUpdatePackagesNpmTest {
                         + "   \"component\": true,\n"
                         + "   \"javaVersion\": \"{{version}}\",\n"
                         + "    \"jsVersion\": \"" + dialogVersion + "\",\n"
-                        + "    \"npmName\": \"" + VAADIN_DIALOG + "\"\n"
+                        + "    \"npmName\": \"" + VAADIN_DIALOG + "\",\n"
+                        + "    \"mode\": \"lit\"\n"
                         + "},\n"
                         + "\"vaadin-element-mixin\": {\n"
                         + "    \"jsVersion\": \"" + elementMixinVersion
