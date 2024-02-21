@@ -141,7 +141,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
     private boolean missingServerImport(String routesContent) {
         Pattern serverImport = Pattern.compile(
-                "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow\\1;");
+                "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
         return !serverImport.matcher(routesContent).find();
     }
 
