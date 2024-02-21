@@ -23,16 +23,10 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -54,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
@@ -263,6 +256,12 @@ public class FrontendUtils {
      */
     public static final String FRONTEND_GENERATED_FLOW_IMPORT_PATH = FRONTEND_FOLDER_ALIAS
             + "generated/flow/";
+
+    /**
+     * The default directory in frontend directory, where Hilla views are
+     * located.
+     */
+    public static final String HILLA_VIEWS_PATH = "views";
 
     /**
      * File used to enable npm mode.
@@ -1245,10 +1244,10 @@ public class FrontendUtils {
      */
     public static boolean isHillaViewsUsed(File frontendDirectory) {
         Objects.requireNonNull(frontendDirectory);
-        File viewsDirectory = new File(frontendDirectory, "views");
+        File viewsDirectory = new File(frontendDirectory, HILLA_VIEWS_PATH);
         if (viewsDirectory.exists()) {
             try {
-                Collection<Path> views = getFilePathsByPattern(
+                Collection<Path> views = FileIOUtils.getFilesByPattern(
                         viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
                 for (Path view : views) {
                     String viewContent = IOUtils.toString(view.toUri(), UTF_8);
@@ -1281,46 +1280,6 @@ public class FrontendUtils {
             }
         }
         return false;
-    }
-
-    /**
-     * Get a list of files in a given directory that match a given glob pattern.
-     *
-     * @param baseDir
-     *            a directory to walk in
-     * @param pattern
-     *            glob pattern to filter files, e.g. "*.js".
-     * @return a list of files matching a given pattern
-     * @throws IOException
-     *             if an I/O error is thrown while walking through the tree in
-     *             base directory
-     */
-    public static List<Path> getFilePathsByPattern(Path baseDir, String pattern)
-            throws IOException {
-        if (baseDir == null || !baseDir.toFile().exists()) {
-            throw new IllegalArgumentException(
-                    "Base directory is empty or doesn't exist: " + baseDir);
-        }
-
-        if (pattern == null || pattern.isBlank()) {
-            pattern = "*";
-        }
-
-        PathMatcher matcher = FileSystems.getDefault()
-                .getPathMatcher("glob:" + pattern);
-
-        List<Path> matchingPaths = new ArrayList<>();
-        Files.walkFileTree(baseDir, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file,
-                    BasicFileAttributes attrs) {
-                if (matcher.matches(file)) {
-                    matchingPaths.add(file);
-                }
-                return FileVisitResult.CONTINUE;
-            }
-        });
-        return matchingPaths;
     }
 
     /**
