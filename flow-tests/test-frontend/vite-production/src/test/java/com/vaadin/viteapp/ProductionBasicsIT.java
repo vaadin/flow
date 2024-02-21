@@ -60,8 +60,12 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
 
     @Test
     public void toplevelAwaitWorks() {
-        Assert.assertEquals("This is the value set in other.js",
-                executeScript("return window.topLevelAwaitValue"));
+        getDriver().get(getRootURL());
+        waitForDevServer();
+        String value = waitUntil(driver -> (String) executeScript(
+                "return window.topLevelAwaitValue"));
+
+        Assert.assertEquals("This is the value set in other.js", value);
     }
 
 }
