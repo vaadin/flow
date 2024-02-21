@@ -60,6 +60,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 class JwtSecurityContextRepository implements SecurityContextRepository {
     private static final String ROLES_CLAIM = "roles";
     private static final String ROLE_AUTHORITY_PREFIX = "ROLE_";
+    private static final String DETAILS_CLAIM = "details";
     private final Log logger = LogFactory.getLog(this.getClass());
     private final SerializedJwtSplitCookieRepository serializedJwtSplitCookieRepository;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
@@ -153,7 +154,9 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(authentication.getName()).issuer(issuer).issueTime(now)
                 .expirationTime(new Date(now.getTime() + expiresIn * 1000))
-                .claim(ROLES_CLAIM, roles).build();
+                .claim(ROLES_CLAIM, roles)
+                .claim(DETAILS_CLAIM, authentication.getDetails())
+                .build();
         signedJWT = new SignedJWT(jwsHeader, claimsSet);
         signedJWT.sign(signer);
 
