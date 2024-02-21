@@ -57,4 +57,10 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
         Assert.assertEquals(200, size.getWidth());
         Assert.assertEquals(200, size.getHeight());
     }
+
+    @Test  
+    public void toplevelAwaitWorks() {
+        Assert.assertEquals("This is the value set in other.js", executeScript("return window.topLevelAwaitValue"));
+    }
+
 }

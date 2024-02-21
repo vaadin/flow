@@ -72,4 +72,9 @@ public class BasicsIT extends ViteDevModeIT {
     public void bootstrapTsCanBeModified() {
         Assert.assertEquals(1L, executeScript("return window.bootstrapMod"));
     }
+
+    @Test  
+    public void toplevelAwaitWorks() {
+        Assert.assertEquals("This is the value set in other.js", executeScript("return window.topLevelAwaitValue"));
+    }
 }
