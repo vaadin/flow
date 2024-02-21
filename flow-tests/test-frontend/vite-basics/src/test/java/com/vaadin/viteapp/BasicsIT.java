@@ -73,8 +73,9 @@ public class BasicsIT extends ViteDevModeIT {
         Assert.assertEquals(1L, executeScript("return window.bootstrapMod"));
     }
 
-    @Test  
+    @Test
     public void toplevelAwaitWorks() {
-        Assert.assertEquals("This is the value set in other.js", executeScript("return window.topLevelAwaitValue"));
+        Assert.assertEquals("This is the value set in other.js",
+                executeScript("return window.topLevelAwaitValue"));
     }
 }
