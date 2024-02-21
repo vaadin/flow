@@ -16,9 +16,9 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
-import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -31,11 +31,18 @@ import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+
 /**
  * Goal that generates a CycloneDX SBOM file focused on frontend dependencies.
  */
 @Mojo(name = "generate-npm-sbom", requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
-public class GenerateNpmBOMMojo extends AbstractMojo {
+public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
 
     private static final String GROUP = "org.codehaus.mojo";
     private static final String ARTIFACT = "exec-maven-plugin";
@@ -96,6 +103,12 @@ public class GenerateNpmBOMMojo extends AbstractMojo {
     private boolean validate;
 
     /**
+     * Mark as production mode.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean productionMode;
+
+    /**
      * Type of the main component. (choices: "application", "firmware",
      * "library")
      */
@@ -138,12 +151,44 @@ public class GenerateNpmBOMMojo extends AbstractMojo {
         try {
             // the execution will fail if the directory does not exist
             createDirectoryIfNotExists();
+
+            // node_modules dir is required
+            File nodeModulesDir = new File(this.npmFolder(), "/node_modules");
+            if (!nodeModulesDir.exists()) {
+                logInfo("No node_modules directory found. Running npm install.");
+                ClassFinder classFinder = getClassFinder();
+                Lookup lookup = createLookup(classFinder);
+                File jarFrontendResourcesFolder = new File(
+                        new File(frontendDirectory(), FrontendUtils.GENERATED),
+                        FrontendUtils.JAR_RESOURCES_FOLDER);
+                Options options = new Options(lookup, npmFolder())
+                        .withFrontendDirectory(frontendDirectory())
+                        .withBuildDirectory(buildFolder())
+                        .withJarFrontendResourcesFolder(
+                                jarFrontendResourcesFolder)
+                        .createMissingPackageJson(true)
+                        .enableImportsUpdate(true).enablePackagesUpdate(true)
+                        .withRunNpmInstall(true)
+                        .withFrontendGeneratedFolder(generatedTsFolder())
+                        .withNodeVersion(nodeVersion())
+                        .withNodeDownloadRoot(nodeDownloadRoot())
+                        .setNodeAutoUpdate(nodeAutoUpdate())
+                        .withHomeNodeExecRequired(requireHomeNodeExec())
+                        .setJavaResourceFolder(javaResourceFolder())
+                        .withProductionMode(productionMode);
+                new NodeTasks(options).execute();
+                logInfo("SBOM generation created node_modules and all needed metadata. "
+                        + "If you don't need it, please run mvn vaadin:clean-frontend");
+            }
+
             InvocationResult result = invoker.execute(request);
             if (result.getExitCode() != 0) {
                 throw new MojoFailureException(
-                        "Frontend SBOM generation failed.");
+                        "Frontend SBOM generation failed.",
+                        result.getExecutionException());
             }
-        } catch (MavenInvocationException e) {
+        } catch (MavenInvocationException | ExecutionFailedException
+                | URISyntaxException e) {
             throw new MojoExecutionException(
                     "Error during Frontend SBOM generation", e);
         }
