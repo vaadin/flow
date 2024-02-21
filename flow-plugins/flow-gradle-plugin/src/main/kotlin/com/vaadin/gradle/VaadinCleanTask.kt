@@ -29,7 +29,6 @@ import org.gradle.api.tasks.TaskAction
  * * `node_modules`
  * * `package.json`
  * * `package-lock.json`
- * * `webpack.generated.js`
  * * `package-lock.yaml` (used by Vaadin 14.2+ pnpm)
  *
  * Doesn't delete `webpack.config.js` since it is intended to contain
@@ -46,7 +45,7 @@ public open class VaadinCleanTask : DefaultTask() {
 
     init {
         group = "Vaadin"
-        description = "Cleans the project completely and removes 'generated' folders, node_modules, src/main/bundles/, webpack.generated.js, " +
+        description = "Cleans the project completely and removes 'generated' folders, node_modules, src/main/bundles/, " +
                 "vite.generated.js, pnpm-lock.yaml, .pnpmfile.cjs and package-lock.json"
 
         dependsOn("clean")

@@ -26,6 +26,8 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
 import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 
 /**
@@ -255,10 +257,13 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 mavenLocal()
                 mavenCentral()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                flatDir {
+                   dirs("libs")
+                }
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
-                implementation("com.vaadin.hilla:endpoint:$flowVersion")
+                implementation name:'hilla-endpoint-stub'
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -266,6 +271,12 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
             }
         """)
+        testProject.newFolder("libs")
+        // hilla-endpoint-stub.jar contains only stub for com.vaadin.hilla.EndpointController.class
+        val hillaEndpointJar: File = testProject.newFile("libs/hilla-endpoint-stub.jar")
+        Files.copy(
+                File(javaClass.classLoader.getResource("hilla-endpoint-stub.jar").path).toPath(),
+                hillaEndpointJar.toPath(),  StandardCopyOption.REPLACE_EXISTING)
         enableHilla()
         val nodeModules: File = testProject.newFolder(FrontendUtils.NODE_MODULES)
         val packageLock: File = testProject.newFile("package-lock.json")
