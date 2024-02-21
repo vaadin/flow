@@ -79,9 +79,12 @@ public class TranslationFileRequestHandler implements RequestHandler {
             return ResourceBundle.getBundle(DefaultI18NProvider.BUNDLE_PREFIX,
                     locale, I18NUtil.getClassLoader());
         } catch (MissingResourceException e) {
-            getLogger().warn("Missing resource bundle for "
-                    + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
-                    + locale.getDisplayName(), e);
+            getLogger().warn(
+                    "Missing resource bundle for "
+                            + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
+                            + locale.getDisplayName()
+                            + ". There is no default bundle to fall back on.",
+                    e);
             return null;
         }
     }
