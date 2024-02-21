@@ -28,6 +28,8 @@ public class TranslationFileRequestHandler implements RequestHandler {
 
     static final String LANGUAGE_TAG_PARAMETER_NAME = "langtag";
 
+    static final String RETRIEVED_LOCALE_HEADER_NAME = "Retrieved-Locale";
+
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
@@ -49,6 +51,8 @@ public class TranslationFileRequestHandler implements RequestHandler {
     private void handleFound(VaadinResponse response,
             ResourceBundle translationPropertyFile) throws IOException {
         response.setStatus(HttpStatusCode.OK.getCode());
+        response.setHeader(RETRIEVED_LOCALE_HEADER_NAME,
+                translationPropertyFile.getLocale().toLanguageTag());
         writeFileToResponse(response, translationPropertyFile);
     }
 

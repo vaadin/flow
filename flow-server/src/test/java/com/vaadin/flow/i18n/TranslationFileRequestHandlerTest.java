@@ -23,6 +23,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -59,6 +60,8 @@ public class TranslationFileRequestHandlerTest {
 
     private File translationsFolder;
 
+    private ArgumentCaptor<String> retrievedLocaleCapture;
+
     @Before
     public void init()
             throws IOException, NoSuchFieldException, IllegalAccessException {
@@ -72,6 +75,10 @@ public class TranslationFileRequestHandlerTest {
         out = new StringWriter();
         writer = new PrintWriter(out);
         Mockito.when(response.getWriter()).thenReturn(writer);
+        retrievedLocaleCapture = ArgumentCaptor.forClass(String.class);
+        Mockito.doNothing().when(response).setHeader(Mockito
+                .eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
+                retrievedLocaleCapture.capture());
     }
 
     @After
@@ -94,50 +101,59 @@ public class TranslationFileRequestHandlerTest {
     @Test
     public void withDefaultFile_languageTagIsNull_responseIsDefault()
             throws IOException {
-        testResponseContent(true, null, "{\"title\":\"Default lang\"}");
+        testResponseContent(true, null, "{\"title\":\"Default lang\"}", "und");
     }
 
     @Test
     public void withoutDefaultFile_languageTagIsNull_responseIsEmpty()
             throws IOException {
-        testResponseContent(false, null, "");
+        testResponseContent(false, null, "", null);
     }
 
     @Test
     public void languageTagWithoutCountryAvailable_responseIsCorrect()
             throws IOException {
-        testResponseContent(true, "fi", "{\"title\":\"Suomi\"}");
+        testResponseContent(true, "fi", "{\"title\":\"Suomi\"}", "fi");
     }
 
     @Test
     public void withDefaultFile_languageTagWithoutCountryNotAvailable_responseIsDefault()
             throws IOException {
-        testResponseContent(true, "es", "{\"title\":\"Default lang\"}");
+        testResponseContent(true, "es", "{\"title\":\"Default lang\"}", "und");
     }
 
     @Test
     public void withoutDefaultFile_languageTagWithoutCountryNotAvailable_responseIsEmpty()
             throws IOException {
-        testResponseContent(false, "es", "");
+        testResponseContent(false, "es", "", null);
     }
 
     @Test
     public void withoutDefaultFile_languageTagWithCountryAvailable_responseIsCorrect()
             throws IOException {
-        testResponseContent(false, "es-ES", "{\"title\":\"Espanol (Spain)\"}");
+        testResponseContent(false, "es-ES", "{\"title\":\"Espanol (Spain)\"}",
+                "es-ES");
     }
 
-    private void testResponseContent(boolean withDefault, String langtag,
-            String expectedResponseContent) throws IOException {
-        createTranslationFiles(withDefault);
+    private void testResponseContent(boolean withDefaultFile,
+            String requestedLanguageTag, String expectedResponseContent,
+            String expectedResponseLanguageTag) throws IOException {
+        createTranslationFiles(withDefaultFile);
         try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
                 Mockito.CALLS_REAL_METHODS)) {
             util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            setRequestParams(langtag,
+            setRequestParams(requestedLanguageTag,
                     HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier());
             Assert.assertTrue(
                     handler.handleRequest(session, request, response));
             Assert.assertEquals(expectedResponseContent, getResponseContent());
+            if (expectedResponseLanguageTag == null) {
+                Assert.assertEquals(0,
+                        retrievedLocaleCapture.getAllValues().size());
+            } else {
+                Assert.assertEquals(expectedResponseLanguageTag,
+                        retrievedLocaleCapture.getValue());
+            }
         }
     }
 
