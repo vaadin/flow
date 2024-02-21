@@ -1871,7 +1871,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 nameField.getValue());
 
         binder.setBean(item); // refreshFields would read the values again from
-        // bean
+                              // bean
         item.setFirstName("bar");
         binder.refreshFields();
 
@@ -2551,8 +2551,6 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
             return value != null ? value.toString() : null;
         }
     }
-
-    ;
 
     /**
      * A converter that adds/removes the euro sign and formats currencies with
