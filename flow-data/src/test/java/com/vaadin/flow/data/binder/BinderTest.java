@@ -1481,7 +1481,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    public void two_asRequired_fields_without_initial_values() {
+    public void two_asRequired_fields_without_initial_values_setBean() {
         binder.forField(nameField).asRequired("Empty name").bind(p -> "",
                 (p, s) -> {
                 });
@@ -1499,16 +1499,17 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertThat("Name with a value should not be an error",
                 nameField.getErrorMessage(), isEmptyString());
 
-        assertNotNull(
-                "Age field should now be in error, since setBean is used.",
-                ageField.getErrorMessage());
+        assertTrue(
+                "Age field should not be in error, since it was not modified.",
+                StringUtils.isEmpty(ageField.getErrorMessage()));
 
         nameField.setValue("");
-        assertNotNull("Empty name should now be in error.",
-                nameField.getErrorMessage());
 
-        assertNotNull("Age field should still be in error.",
-                ageField.getErrorMessage());
+        assertFalse("Empty name should now be in error.",
+                StringUtils.isEmpty(nameField.getErrorMessage()));
+        assertTrue(
+                "Age field should still not be in error, since it was not modified.",
+                StringUtils.isEmpty(ageField.getErrorMessage()));
     }
 
     @Test
@@ -1530,16 +1531,99 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertThat("Name with a value should not be an error",
                 nameField.getErrorMessage(), isEmptyString());
 
-        assertThat(
-                "Age field should not be in error, since it has not been modified.",
-                ageField.getErrorMessage(), isEmptyString());
+        assertTrue(
+                "Age field should not be in error, since it was not modified.",
+                StringUtils.isEmpty(ageField.getErrorMessage()));
 
         nameField.setValue("");
-        assertNotNull("Empty name should now be in error.",
-                nameField.getErrorMessage());
+        assertFalse("Empty name should now be in error.",
+                StringUtils.isEmpty(nameField.getErrorMessage()));
 
-        assertThat("Age field should still be ok.", ageField.getErrorMessage(),
-                isEmptyString());
+        assertTrue(
+                "Age field should still not be in error, since it was not modified.",
+                StringUtils.isEmpty(ageField.getErrorMessage()));
+    }
+
+    @Test
+    public void validated_and_asRequired_fields_without_initial_values_setBean() {
+        binder.forField(nameField).asRequired("Empty name")
+                .bind(Person::getFirstName, Person::setFirstName);
+        TestTextField lastNameField = new TestTextField();
+        binder.forField(lastNameField)
+                .withValidator((v, c) -> StringUtils.isEmpty(v)
+                        ? ValidationResult.error("Empty last name")
+                        : ValidationResult.ok())
+                .bind(Person::getLastName, Person::setLastName);
+
+        binder.setBean(item);
+        assertFalse("Initially there should be no errors",
+                nameField.isInvalid());
+        assertFalse("Initially there should be no errors",
+                lastNameField.isInvalid());
+
+        nameField.setValue("Foo");
+        assertFalse("Name with a value should not be an error",
+                nameField.isInvalid());
+        assertFalse(
+                "Last name field should not be in error, since it was not modified.",
+                lastNameField.isInvalid());
+
+        nameField.setValue("");
+
+        assertTrue("Empty name should now be in error.", nameField.isInvalid());
+        assertFalse(
+                "Last name field should not be in error, since it was not modified.",
+                lastNameField.isInvalid());
+
+        nameField.setValue("Bar");
+        lastNameField.setValue("Bar");
+        lastNameField.setValue("");
+
+        assertFalse("Name with a value should not be an error",
+                nameField.isInvalid());
+        assertTrue("Empty last name field should now be in error.",
+                lastNameField.isInvalid());
+    }
+
+    @Test
+    public void validated_and_asRequired_fields_without_initial_values_readBean() {
+        binder.forField(nameField).asRequired("Empty name")
+                .bind(Person::getFirstName, Person::setFirstName);
+        TestTextField lastNameField = new TestTextField();
+        binder.forField(lastNameField)
+                .withValidator((v, c) -> StringUtils.isEmpty(v)
+                        ? ValidationResult.error("Empty last name")
+                        : ValidationResult.ok())
+                .bind(Person::getLastName, Person::setLastName);
+
+        binder.readBean(item);
+        assertFalse("Initially there should be no errors",
+                nameField.isInvalid());
+        assertFalse("Initially there should be no errors",
+                lastNameField.isInvalid());
+
+        nameField.setValue("Foo");
+        assertFalse("Name with a value should not be an error",
+                nameField.isInvalid());
+        assertFalse(
+                "Last name field should not be in error, since it was not modified.",
+                lastNameField.isInvalid());
+
+        nameField.setValue("");
+
+        assertTrue("Empty name should now be in error.", nameField.isInvalid());
+        assertFalse(
+                "Last name field should not be in error, since it was not modified.",
+                lastNameField.isInvalid());
+
+        nameField.setValue("Bar");
+        lastNameField.setValue("Bar");
+        lastNameField.setValue("");
+
+        assertFalse("Name with a value should not be an error",
+                nameField.isInvalid());
+        assertTrue("Empty last name field should now be in error.",
+                lastNameField.isInvalid());
     }
 
     @Test
@@ -2272,7 +2356,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 ValueContext context) {
             return value != null ? value.toString() : null;
         }
-    };
+    }
 
     /**
      * A converter that adds/removes the euro sign and formats currencies with
