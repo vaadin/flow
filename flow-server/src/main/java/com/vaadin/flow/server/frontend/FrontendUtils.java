@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import jakarta.servlet.ServletContext;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,6 +28,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,6 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import jakarta.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -60,7 +60,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -257,6 +256,12 @@ public class FrontendUtils {
      */
     public static final String FRONTEND_GENERATED_FLOW_IMPORT_PATH = FRONTEND_FOLDER_ALIAS
             + "generated/flow/";
+
+    /**
+     * The default directory in frontend directory, where Hilla views are
+     * located.
+     */
+    public static final String HILLA_VIEWS_PATH = "views";
 
     /**
      * File used to enable npm mode.
@@ -1239,8 +1244,27 @@ public class FrontendUtils {
      */
     public static boolean isHillaViewsUsed(File frontendDirectory) {
         Objects.requireNonNull(frontendDirectory);
-        var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.ROUTES_TS,
-                FrontendUtils.ROUTES_TSX);
+        File viewsDirectory = new File(frontendDirectory, HILLA_VIEWS_PATH);
+        if (viewsDirectory.exists()) {
+            try {
+                Collection<Path> views = FileIOUtils.getFilesByPattern(
+                        viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
+                for (Path view : views) {
+                    String viewContent = IOUtils.toString(view.toUri(), UTF_8);
+                    viewContent = StringUtil.removeComments(viewContent);
+                    if (!viewContent.isBlank()) {
+                        return true;
+                    }
+                }
+            } catch (IOException e) {
+                getLogger().error(
+                        "Couldn't scan Hilla views directory for hilla auto-detection",
+                        e);
+            }
+        }
+
+        var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.INDEX_TSX,
+                FrontendUtils.ROUTES_TS, FrontendUtils.ROUTES_TSX);
         for (String fileName : files) {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {

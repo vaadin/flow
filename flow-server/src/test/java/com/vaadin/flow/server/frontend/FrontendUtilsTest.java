@@ -37,7 +37,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -175,6 +174,17 @@ public class FrontendUtilsTest {
                           ],
                       },
                   ];
+            """;
+
+    private static final String HILLA_VIEW_TSX = """
+                import { VerticalLayout } from "@vaadin/react-components/VerticalLayout.js";
+                export default function AboutView() {
+                    return (
+                        <VerticalLayout theme="padding">
+                            <p>This is a Hilla view</p>
+                        </VerticalLayout>
+                    );
+                }
             """;
 
     @Test
@@ -601,6 +611,43 @@ public class FrontendUtilsTest {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
                 ROUTES_CONTENT_WITH_SERVER_SIDE_ROUTES_MAINLAYOUT_TSX);
         Assert.assertTrue("hilla-views are expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_nonEmptyHillaViewInViews_true()
+            throws IOException {
+        File frontend = null;
+        for (String ext : Arrays.asList(".js", ".jsx", ".ts", ".tsx")) {
+            try {
+                frontend = prepareFrontendForRoutesFile(
+                        FrontendUtils.HILLA_VIEWS_PATH + "/HillaView" + ext,
+                        HILLA_VIEW_TSX);
+                Assert.assertTrue(
+                        "hilla view is present, thus Hilla is expected",
+                        FrontendUtils.isHillaViewsUsed(frontend));
+            } finally {
+                if (frontend != null && frontend.exists()) {
+                    FileUtils.deleteQuietly(frontend);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void isHillaViewsUsed_emptyHillaViewContent_false()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(
+                FrontendUtils.HILLA_VIEWS_PATH + "/HillaView.ts", "//comment");
+        Assert.assertFalse("empty Hilla view, Hilla not expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_noViews_false() throws IOException {
+        File frontend = prepareFrontendForRoutesFile(
+                FrontendUtils.HILLA_VIEWS_PATH + "/foo.css", "some css");
+        Assert.assertFalse("no Hilla views, Hilla not expected",
                 FrontendUtils.isHillaViewsUsed(frontend));
     }
 
