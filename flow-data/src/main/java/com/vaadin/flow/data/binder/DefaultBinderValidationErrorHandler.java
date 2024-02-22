@@ -76,6 +76,7 @@ public class DefaultBinderValidationErrorHandler
         if (field instanceof HasValidation) {
             HasValidation fieldWithValidation = (HasValidation) field;
             fieldWithValidation.setInvalid(false);
+            fieldWithValidation.setErrorMessage(null);
         }
         clearErrorTheme(field);
     }
