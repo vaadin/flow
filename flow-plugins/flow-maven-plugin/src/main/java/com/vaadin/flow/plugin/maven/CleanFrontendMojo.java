@@ -21,6 +21,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 
 import com.vaadin.flow.plugin.base.CleanFrontendUtil;
 import com.vaadin.flow.plugin.base.CleanFrontendUtil.CleanFrontendException;
+import com.vaadin.flow.plugin.base.CleanOptions;
 
 /**
  * Goal that cleans the frontend files to a clean state.
@@ -41,8 +42,7 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
     @Override
     public void execute() throws MojoFailureException {
         try {
-            CleanFrontendUtil.runCleaning(this,
-                    new CleanFrontendUtil.Options());
+            CleanFrontendUtil.runCleaning(this, new CleanOptions());
         } catch (CleanFrontendException e) {
             throw new MojoFailureException(e.getMessage(), e.getCause());
         }

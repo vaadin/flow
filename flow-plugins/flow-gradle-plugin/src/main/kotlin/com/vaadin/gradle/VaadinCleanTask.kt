@@ -16,6 +16,7 @@
 package com.vaadin.gradle
 
 import com.vaadin.flow.plugin.base.CleanFrontendUtil
+import com.vaadin.flow.plugin.base.CleanOptions
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -55,6 +56,6 @@ public open class VaadinCleanTask : DefaultTask() {
     public fun clean() {
         CleanFrontendUtil.runCleaning(
                 GradlePluginAdapter(project, config, false),
-                CleanFrontendUtil.Options())
+                CleanOptions())
     }
 }

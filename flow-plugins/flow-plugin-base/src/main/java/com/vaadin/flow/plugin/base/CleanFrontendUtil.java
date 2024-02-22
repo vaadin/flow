@@ -40,82 +40,6 @@ public class CleanFrontendUtil {
     public static final String DEV_DEPENDENCIES = "devDependencies";
     public static final String OVERRIDES = "overrides";
 
-    public static class Options {
-        private boolean cleanPackageJson = true;
-
-        private boolean removeDevBundle = true;
-        private boolean removeFrontendGeneratedFolder = true;
-        private boolean removeGeneratedTSFolder = true;
-        private boolean removeNodeModules = true;
-        private boolean removePackageLock = true;
-        private boolean removePnpmFile = true;
-
-        public Options withRemovePackageLock(boolean removePackageLock) {
-            this.removePackageLock = removePackageLock;
-            return this;
-        }
-
-        public Options withRemovePnpmFile(boolean removePnpmFile) {
-            this.removePnpmFile = removePnpmFile;
-            return this;
-        }
-
-        public Options withRemoveGeneratedTSFolder(
-                boolean removeGeneratedTSFolder) {
-            this.removeGeneratedTSFolder = removeGeneratedTSFolder;
-            return this;
-        }
-
-        public Options withRemoveFrontendGeneratedFolder(
-                boolean removeFrontendGeneratedFolder) {
-            this.removeFrontendGeneratedFolder = removeFrontendGeneratedFolder;
-            return this;
-        }
-
-        public Options withCleanPackageJson(boolean cleanPackageJson) {
-            this.cleanPackageJson = cleanPackageJson;
-            return this;
-        }
-
-        public Options withRemoveDevBundle(boolean removeDevBundle) {
-            this.removeDevBundle = removeDevBundle;
-            return this;
-        }
-
-        public Options withRemoveNodeModules(boolean removeNodeModules) {
-            this.removeNodeModules = removeNodeModules;
-            return this;
-        }
-
-        public boolean isRemovePackageLock() {
-            return removePackageLock;
-        }
-
-        public boolean isRemovePnpmFile() {
-            return removePnpmFile;
-        }
-
-        public boolean isRemoveGeneratedTSFolder() {
-            return removeGeneratedTSFolder;
-        }
-
-        public boolean isRemoveFrontendGeneratedFolder() {
-            return removeFrontendGeneratedFolder;
-        }
-
-        public boolean isCleanPackageJson() {
-            return cleanPackageJson;
-        }
-
-        public boolean isRemoveDevBundle() {
-            return removeDevBundle;
-        }
-
-        public boolean isRemoveNodeModules() {
-            return removeNodeModules;
-        }
-    }
-
     /**
      * Exception thrown when cleaning the frontend fails.
      */
@@ -136,8 +60,8 @@ public class CleanFrontendUtil {
      * <li>package-lock.json
      * </ul>
      */
-    public static void runCleaning(PluginAdapterBase adapter, Options options)
-            throws CleanFrontendException {
+    public static void runCleaning(PluginAdapterBase adapter,
+            CleanOptions options) throws CleanFrontendException {
         if (FrontendUtils.isHillaUsed(adapter.frontendDirectory(),
                 adapter.getClassFinder())) {
             options.withRemovePackageLock(false).withRemoveNodeModules(false);
@@ -219,7 +143,7 @@ public class CleanFrontendUtil {
                     "Failed to clean 'package.json' file", e);
         }
 
-        if (options.removeDevBundle) {
+        if (options.isRemoveDevBundle()) {
             removeDevBundle(adapter);
         }
     }
