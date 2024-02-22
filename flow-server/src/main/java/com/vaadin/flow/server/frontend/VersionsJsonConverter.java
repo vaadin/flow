@@ -91,8 +91,7 @@ class VersionsJsonConverter {
     private void collectDependencies(JsonObject obj) {
         for (String key : obj.keys()) {
             JsonValue value = obj.get(key);
-            if (!(value instanceof JsonObject)
-                    || (!reactEnabled && isReactObject(key))) {
+            if (!(value instanceof JsonObject)) {
                 continue;
             }
             JsonObject json = (JsonObject) value;
@@ -114,20 +113,16 @@ class VersionsJsonConverter {
         }
     }
 
-    private boolean isReactObject(String key) {
-        return key.equals("react") || key.equals("react-pro");
-    }
-
     private void addDependency(JsonObject obj) {
         assert obj.hasKey(NPM_NAME);
         String npmName = obj.getString(NPM_NAME);
-        Sring mode = json.hasKey(MODE) ? json.getString(MODE) : null;
+        String mode = obj.hasKey(MODE) ? obj.getString(MODE) : null;
         String version;
         // #11025
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
             return;
         }
-        if (!isIncludedByMode(npmName, json)) {
+        if (!isIncludedByMode(npmName, mode)) {
             return;
         }
         if (obj.hasKey(NPM_VERSION)) {

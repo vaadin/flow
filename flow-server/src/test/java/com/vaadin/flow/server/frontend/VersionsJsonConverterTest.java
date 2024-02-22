@@ -186,13 +186,15 @@ public class VersionsJsonConverterTest {
                   "react": {
                     "react-components": {
                       "jsVersion": "24.4.0-alpha7",
-                      "npmName": "@vaadin/react-components"
+                      "npmName": "@vaadin/react-components",
+                      "mode": "react"
                     }
                   },
                   "react-pro": {
                     "react-components-pro": {
                       "jsVersion": "24.4.0-alpha7",
-                      "npmName": "@vaadin/react-components-pro"
+                      "npmName": "@vaadin/react-components-pro",
+                      "mode": "react"
                     }
                   },
                   "platform": "foo"
@@ -266,7 +268,8 @@ public class VersionsJsonConverterTest {
                   "react-pro": {
                     "react-components-pro": {
                       "jsVersion": "24.4.0-alpha7",
-                      "npmName": "@vaadin/react-components-pro"
+                      "npmName": "@vaadin/react-components-pro",
+                      "mode": "react"
                     }
                   },
                   "platform": "foo"

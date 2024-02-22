@@ -789,7 +789,8 @@ public class TaskUpdatePackagesNpmTest {
                         + "\"react\": {\n" +
                         "        \"react-components\": {\n" +
                         "            \"jsVersion\": \"24.4.0-alpha13\",\n" +
-                        "            \"npmName\": \"@vaadin/react-components\"\n" +
+                        "            \"npmName\": \"@vaadin/react-components\",\n" +
+                        "            \"mode\": \"react\"\n" +
                         "        }\n" +
                         "    }}\n";//@formatter:on
         try {
