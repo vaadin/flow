@@ -78,7 +78,7 @@ public class TranslationFileRequestHandlerTest {
         Mockito.when(response.getWriter()).thenReturn(writer);
         retrievedLocaleCapture = ArgumentCaptor.forClass(String.class);
         Mockito.doNothing().when(response).setHeader(Mockito
-                        .eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
+                .eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
                 retrievedLocaleCapture.capture());
     }
 
@@ -174,8 +174,8 @@ public class TranslationFileRequestHandlerTest {
     }
 
     private void testResponseContent(boolean withRootBundleFile,
-                                     String requestedLanguageTag, String expectedResponseContent,
-                                     String expectedResponseLanguageTag) throws IOException {
+            String requestedLanguageTag, String expectedResponseContent,
+            String expectedResponseLanguageTag) throws IOException {
         createTranslationFiles(withRootBundleFile);
         try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
                 Mockito.CALLS_REAL_METHODS)) {
@@ -202,10 +202,10 @@ public class TranslationFileRequestHandlerTest {
 
     private void setRequestParams(String langtag, String requestTypeId) {
         Mockito.when(request.getParameter(
-                        TranslationFileRequestHandler.LANGUAGE_TAG_PARAMETER_NAME))
+                TranslationFileRequestHandler.LANGUAGE_TAG_PARAMETER_NAME))
                 .thenReturn(langtag);
         Mockito.when(request
-                        .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
                 .thenReturn(requestTypeId);
     }
 
