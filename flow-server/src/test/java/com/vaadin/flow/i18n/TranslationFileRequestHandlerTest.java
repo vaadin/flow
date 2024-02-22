@@ -139,24 +139,17 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withRootBundle_defaultLocaleBundleAvailable_requestedLocaleBundleNotAvailable_responseIsDefault()
+    public void withRootBundle_systemDefaultLocaleBundleAvailable_requestedLocaleBundleNotAvailable_responseIsRootBundle()
             throws IOException {
         testResponseContentWithMockedDefaultLocale("es-ES", true, "en-US",
-                "{\"title\":\"Espanol (Spain)\"}", "es-ES");
-    }
-
-    @Test
-    public void withoutRootBundle_defaultLocaleBundleAvailable_requestedLocaleBundleNotAvailable_responseIsDefault()
-            throws IOException {
-        testResponseContentWithMockedDefaultLocale("es-ES", false, "en-US",
-                "{\"title\":\"Espanol (Spain)\"}", "es-ES");
-    }
-
-    @Test
-    public void withRootBundle_defaultLocaleBundleNotAvailable_requestedLocaleBundleNotAvailable_responseIsRootBundle()
-            throws IOException {
-        testResponseContentWithMockedDefaultLocale("en-US", true, "en-US",
                 "{\"title\":\"Root bundle lang\"}", "und");
+    }
+
+    @Test
+    public void withoutRootBundle_systemDefaultLocaleBundleAvailable_requestedLocaleBundleNotAvailable_responseIsEmpty()
+            throws IOException {
+        testResponseContentWithMockedDefaultLocale("es-ES", false, "en-US", "",
+                null);
     }
 
     private void testResponseContentWithMockedDefaultLocale(

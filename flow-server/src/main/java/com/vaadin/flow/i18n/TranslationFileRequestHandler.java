@@ -30,6 +30,8 @@ public class TranslationFileRequestHandler implements RequestHandler {
 
     static final String RETRIEVED_LOCALE_HEADER_NAME = "Retrieved-Locale";
 
+    private static final Locale FALLBACK_LOCALE = Locale.ROOT;
+
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
@@ -77,16 +79,25 @@ public class TranslationFileRequestHandler implements RequestHandler {
     private ResourceBundle getTranslationPropertyFile(Locale locale) {
         try {
             return ResourceBundle.getBundle(DefaultI18NProvider.BUNDLE_PREFIX,
-                    locale, I18NUtil.getClassLoader());
+                    locale, I18NUtil.getClassLoader(),
+                    ResourceBundle.Control.getNoFallbackControl(
+                            ResourceBundle.Control.FORMAT_PROPERTIES));
         } catch (MissingResourceException e) {
-            getLogger().warn(
-                    "Missing resource bundle for "
-                            + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
-                            + locale.getDisplayName()
-                            + ". There is no default bundle to fall back on.",
-                    e);
-            return null;
+            getLogger().info("Missing resource bundle for "
+                    + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
+                    + locale.getDisplayName() + ".", e);
         }
+        try {
+            return ResourceBundle.getBundle(DefaultI18NProvider.BUNDLE_PREFIX,
+                    FALLBACK_LOCALE, I18NUtil.getClassLoader(),
+                    ResourceBundle.Control.getNoFallbackControl(
+                            ResourceBundle.Control.FORMAT_PROPERTIES));
+        } catch (MissingResourceException e) {
+            getLogger().warn("Missing fallback resource bundle for "
+                    + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
+                    + FALLBACK_LOCALE.getDisplayName() + ".", e);
+        }
+        return null;
     }
 
     private Logger getLogger() {
