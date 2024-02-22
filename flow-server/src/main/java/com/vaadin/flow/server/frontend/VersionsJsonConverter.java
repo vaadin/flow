@@ -17,6 +17,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -38,14 +41,34 @@ class VersionsJsonConverter {
     private static final String JS_VERSION = "jsVersion";
     private static final String NPM_NAME = "npmName";
     private static final String NPM_VERSION = "npmVersion";
-    private static final String MODE = "mode";
-    private static final String MODE_LIT = "lit";
-    private static final String MODE_REACT = "react";
-    private static final String MODE_ALL = "all"; // same as empty string
+
+    /**
+     * Key for mode in the versions file.
+     */
+    public static final String MODE = "mode";
+
+    /**
+     * Mode value for dependency for Lit.
+     */
+    public static final String MODE_LIT = "lit";
+
+    /**
+     * Mode value for dependency for React.
+     */
+    public static final String MODE_REACT = "react";
+
+    /**
+     * Mode value for dependency for all modes.
+     */
+    public static final String MODE_ALL = "all"; // same as empty string
 
     private final JsonObject convertedObject;
 
     private boolean reactEnabled;
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(VersionsJsonConverter.class);
+    }
 
     VersionsJsonConverter(JsonObject platformVersions,
             boolean collectReactComponents) {
@@ -73,9 +96,6 @@ class VersionsJsonConverter {
                 continue;
             }
             JsonObject json = (JsonObject) value;
-            if (!isIncludedByMode(json)) {
-                continue;
-            }
             if (json.hasKey(NPM_NAME)) {
                 addDependency(json);
             } else {
@@ -84,11 +104,7 @@ class VersionsJsonConverter {
         }
     }
 
-    private boolean isIncludedByMode(JsonObject json) {
-        if (!json.hasKey(MODE)) {
-            return true;
-        }
-        String mode = json.getString(MODE);
+    private boolean isIncludedByMode(String npmName, String mode) {
         if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)) {
             return true;
         } else if (reactEnabled) {
@@ -105,20 +121,28 @@ class VersionsJsonConverter {
     private void addDependency(JsonObject obj) {
         assert obj.hasKey(NPM_NAME);
         String npmName = obj.getString(NPM_NAME);
+        Sring mode = json.hasKey(MODE) ? json.getString(MODE) : null;
+        String version;
         // #11025
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
             return;
         }
+        if (!isIncludedByMode(npmName, json)) {
+            return;
+        }
         if (obj.hasKey(NPM_VERSION)) {
-            convertedObject.put(npmName, obj.getString(NPM_VERSION));
+            version = obj.getString(NPM_VERSION);
         } else if (obj.hasKey(JS_VERSION)) {
-            convertedObject.put(npmName, obj.getString(JS_VERSION));
+            version = obj.getString(JS_VERSION);
         } else {
             throw new IllegalStateException("Vaadin code versions file "
                     + "contains unexpected data: dependency '" + npmName
                     + "' has" + " no 'npmVersion'/'jsVersion' . "
                     + "Please report a bug in https://github.com/vaadin/platform/issues/new");
         }
+        convertedObject.put(npmName, version);
+        getLogger().debug("versions.json adds dependency {} with version {}{}",
+                npmName, version, (mode != null ? " for mode " + mode : ""));
     }
 
 }
