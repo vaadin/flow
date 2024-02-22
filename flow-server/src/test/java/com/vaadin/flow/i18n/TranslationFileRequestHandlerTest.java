@@ -36,6 +36,7 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 @NotThreadSafe
@@ -77,7 +78,7 @@ public class TranslationFileRequestHandlerTest {
         Mockito.when(response.getWriter()).thenReturn(writer);
         retrievedLocaleCapture = ArgumentCaptor.forClass(String.class);
         Mockito.doNothing().when(response).setHeader(Mockito
-                .eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
+                        .eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
                 retrievedLocaleCapture.capture());
     }
 
@@ -99,13 +100,14 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withDefaultFile_languageTagIsNull_responseIsDefault()
+    public void withRootBundle_languageTagIsNull_responseIsRootBundle()
             throws IOException {
-        testResponseContent(true, null, "{\"title\":\"Default lang\"}", "und");
+        testResponseContent(true, null, "{\"title\":\"Root bundle lang\"}",
+                "und");
     }
 
     @Test
-    public void withoutDefaultFile_languageTagIsNull_responseIsEmpty()
+    public void withoutRootBundle_languageTagIsNull_responseIsEmpty()
             throws IOException {
         testResponseContent(false, null, "", null);
     }
@@ -117,28 +119,64 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withDefaultFile_languageTagWithoutCountryNotAvailable_responseIsDefault()
+    public void withRootBundle_languageTagWithoutCountryNotAvailable_responseIsRootBundle()
             throws IOException {
-        testResponseContent(true, "es", "{\"title\":\"Default lang\"}", "und");
+        testResponseContent(true, "es", "{\"title\":\"Root bundle lang\"}",
+                "und");
     }
 
     @Test
-    public void withoutDefaultFile_languageTagWithoutCountryNotAvailable_responseIsEmpty()
+    public void withoutRootBundle_languageTagWithoutCountryNotAvailable_responseIsEmpty()
             throws IOException {
         testResponseContent(false, "es", "", null);
     }
 
     @Test
-    public void withoutDefaultFile_languageTagWithCountryAvailable_responseIsCorrect()
+    public void withoutRootBundle_languageTagWithCountryAvailable_responseIsCorrect()
             throws IOException {
         testResponseContent(false, "es-ES", "{\"title\":\"Espanol (Spain)\"}",
                 "es-ES");
     }
 
-    private void testResponseContent(boolean withDefaultFile,
+    @Test
+    public void withRootBundle_defaultLocaleBundleAvailable_requestedLocaleBundleNotAvailable_responseIsDefault()
+            throws IOException {
+        testResponseContentWithMockedDefaultLocale("es-ES", true, "en-US",
+                "{\"title\":\"Espanol (Spain)\"}", "es-ES");
+    }
+
+    @Test
+    public void withoutRootBundle_defaultLocaleBundleAvailable_requestedLocaleBundleNotAvailable_responseIsDefault()
+            throws IOException {
+        testResponseContentWithMockedDefaultLocale("es-ES", false, "en-US",
+                "{\"title\":\"Espanol (Spain)\"}", "es-ES");
+    }
+
+    @Test
+    public void withRootBundle_defaultLocaleBundleNotAvailable_requestedLocaleBundleNotAvailable_responseIsRootBundle()
+            throws IOException {
+        testResponseContentWithMockedDefaultLocale("en-US", true, "en-US",
+                "{\"title\":\"Root bundle lang\"}", "und");
+    }
+
+    private void testResponseContentWithMockedDefaultLocale(
+            String defaultLocaleLanguageTag, boolean withRootBundleFile,
             String requestedLanguageTag, String expectedResponseContent,
             String expectedResponseLanguageTag) throws IOException {
-        createTranslationFiles(withDefaultFile);
+        try (MockedStatic<Locale> locale = Mockito.mockStatic(Locale.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            Locale defaultLocale = Locale
+                    .forLanguageTag(defaultLocaleLanguageTag);
+            locale.when(Locale::getDefault).thenReturn(defaultLocale);
+            testResponseContent(withRootBundleFile, requestedLanguageTag,
+                    expectedResponseContent, expectedResponseLanguageTag);
+        }
+    }
+
+    private void testResponseContent(boolean withRootBundleFile,
+                                     String requestedLanguageTag, String expectedResponseContent,
+                                     String expectedResponseLanguageTag) throws IOException {
+        createTranslationFiles(withRootBundleFile);
         try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
                 Mockito.CALLS_REAL_METHODS)) {
             util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
@@ -164,17 +202,17 @@ public class TranslationFileRequestHandlerTest {
 
     private void setRequestParams(String langtag, String requestTypeId) {
         Mockito.when(request.getParameter(
-                TranslationFileRequestHandler.LANGUAGE_TAG_PARAMETER_NAME))
+                        TranslationFileRequestHandler.LANGUAGE_TAG_PARAMETER_NAME))
                 .thenReturn(langtag);
         Mockito.when(request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                        .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
                 .thenReturn(requestTypeId);
     }
 
-    private void createTranslationFiles(boolean withDefault)
+    private void createTranslationFiles(boolean withRootBundleFile)
             throws IOException {
-        if (withDefault) {
-            createTranslationFile("title=Default lang", "");
+        if (withRootBundleFile) {
+            createTranslationFile("title=Root bundle lang", "");
         }
         createTranslationFile("title=Suomi", "_fi");
         createTranslationFile("title=Espanol (Spain)", "_es_ES");
