@@ -72,7 +72,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             """;
 
     static final String TS_DEFINITIONS = "types.d.ts";
-    static final Pattern COMMENT_LINE = Pattern.compile("(?m)//.*\\R");
+    static final Pattern COMMENT_LINE = Pattern.compile("(?m)^/[/*].*\\R");
     private final Options options;
 
     /**
@@ -131,11 +131,11 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                         "Cannot read " + TS_DEFINITIONS + " contents", ex);
             }
 
-            String uncommentedDefaultContent = COMMENT_LINE
-                    .matcher(defaultContent).replaceAll("");
-            if (compareIgnoringEOL(content, defaultContent, String::equals)
-                    || compareIgnoringEOL(content, uncommentedDefaultContent,
-                            String::contains)) {
+            String uncommentedDefaultContent = removeComments(defaultContent);
+            if (compareIgnoringIndentationAndEOL(content, defaultContent,
+                    String::equals)
+                    || compareIgnoringIndentationAndEOL(content,
+                            uncommentedDefaultContent, String::contains)) {
                 log().debug("{} is up-to-date", TS_DEFINITIONS);
             } else if (content.contains(DECLARE_CSS_MODULE)) {
                 log().debug(
@@ -147,8 +147,8 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                 log().debug(
                         "Updating custom {} to add '*.css?inline' module declaration",
                         TS_DEFINITIONS);
-                boolean customContent = hasCustomContent(content);
-                if (customContent) {
+                UpdateMode updateMode = computeUpdateMode(content);
+                if (updateMode == UpdateMode.UPDATE_AND_THROW) {
                     try {
                         Path backupFile = tsDefinitions.toPath().getParent()
                                 .resolve(TS_DEFINITIONS + ".flowBackup");
@@ -163,15 +163,17 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                     }
                 }
                 try {
-                    if (customContent) {
-                        Files.writeString(tsDefinitions.toPath(),
-                                uncommentedDefaultContent,
-                                StandardOpenOption.APPEND);
-                        throw new ExecutionFailedException(UPDATE_MESSAGE);
-                    } else {
+                    if (updateMode == UpdateMode.REPLACE) {
                         Files.writeString(tsDefinitions.toPath(),
                                 defaultContent,
                                 StandardOpenOption.TRUNCATE_EXISTING);
+                    } else {
+                        Files.writeString(tsDefinitions.toPath(),
+                                uncommentedDefaultContent,
+                                StandardOpenOption.APPEND);
+                        if (updateMode == UpdateMode.UPDATE_AND_THROW) {
+                            throw new ExecutionFailedException(UPDATE_MESSAGE);
+                        }
                     }
                 } catch (IOException ex) {
                     throw new ExecutionFailedException(
@@ -182,24 +184,60 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
         }
     }
 
-    private boolean hasCustomContent(String content)
+    private enum UpdateMode {
+        REPLACE, UPDATE, UPDATE_AND_THROW
+    }
+
+    private UpdateMode computeUpdateMode(String content)
             throws ExecutionFailedException {
         try {
-            return !compareIgnoringEOL(content, getTemplateContent(".v1"),
-                    String::equals);
+            String templateContent = getTemplateContent(".v1");
+            if (compareIgnoringIndentationAndEOL(content, templateContent,
+                    String::equals)) {
+                // Current content has been written by Flow, can be replaced
+                return UpdateMode.REPLACE;
+            }
         } catch (IOException ex) {
             throw new ExecutionFailedException(
                     "Cannot read default " + TS_DEFINITIONS + ".v1 contents",
                     ex);
         }
+
+        try {
+            String templateContent = getTemplateContent(".hilla");
+            String uncommentedContent = removeComments(content);
+            if (compareIgnoringIndentationAndEOL(uncommentedContent,
+                    templateContent, String::equals)) {
+                // Current content is compatible with what we expect to be in a
+                // Hilla application. Flow contents can be appended silently.
+                return UpdateMode.UPDATE;
+            }
+        } catch (IOException ex) {
+            throw new ExecutionFailedException(
+                    "Cannot read default " + TS_DEFINITIONS + ".hilla contents",
+                    ex);
+        }
+        // types.d.ts has been customized, but does not seem to contain content
+        // required by flow. Append what is needed and throw an exception so
+        // that developer can check the changes are ok
+        return UpdateMode.UPDATE_AND_THROW;
     }
 
-    // Normalize EOL and removes potential EOL at the end of the FILE
-    private static boolean compareIgnoringEOL(String content1, String content2,
-            BiPredicate<String, String> compareFn) {
-        return compareFn.test(
-                content1.replace("\r\n", "\n").replaceFirst("\n$", ""),
-                content2.replace("\r\n", "\n").replaceFirst("\n$", ""));
+    private static String removeComments(String content) {
+        return COMMENT_LINE.matcher(content).replaceAll("");
+    }
+
+    private static boolean compareIgnoringIndentationAndEOL(String content1,
+            String content2, BiPredicate<String, String> compareFn) {
+        return compareFn.test(replaceIndentationAndEOL(content1),
+                replaceIndentationAndEOL(content2));
+    }
+
+    // Normalize EOL and removes indentation and potential EOL at the end of the
+    // FILE
+    static String replaceIndentationAndEOL(String text) {
+        return text.replace("\r\n", "\n").replaceFirst("\n$", "")
+                .replaceAll("(?m)^\\s+", "");
     }
 
     private String getTemplateContent(String suffix) throws IOException {
