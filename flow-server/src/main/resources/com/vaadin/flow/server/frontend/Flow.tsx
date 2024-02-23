@@ -281,74 +281,69 @@ export const serverSideRoutes = [
 (function () {
     "use strict";
     [Document, Window].forEach((cst) => {
-        // save the original methods before overwriting them
         if (typeof cst === "function") {
-            // @ts-ignore
-            cst.prototype._addEventListener = cst.prototype.addEventListener;
-            // @ts-ignore
-            cst.prototype._removeEventListener = cst.prototype.removeEventListener;
-
-            cst.prototype.addEventListener = function (type: string, listener: EventListener,
-                                                       useCapture: boolean = false) {
-                // declare listener
+            const eventListenerList = {};
+            function pushEventListener(type: string, listener: EventListener,
+                                       useCapture: boolean = false) {
                 // @ts-ignore
-                this._addEventListener(type, listener, useCapture);
-
+                if (!eventListenerList[type]) {
+                    // @ts-ignore
+                    eventListenerList[type] = [];
+                }
                 // @ts-ignore
-                if (!this.eventListenerList) this.eventListenerList = {};
-                // @ts-ignore
-                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
-
-                // add listener to  event tracking list
-                // @ts-ignore
-                this.eventListenerList[type].push({ type, listener, useCapture });
-            };
-
-            cst.prototype.removeEventListener = function (type: string, listener: EventListener,
-                                                          useCapture: boolean = false) {
-                // remove listener
-                // @ts-ignore
-                this._removeEventListener(type, listener, useCapture);
-
-                // @ts-ignore
-                if (!this.eventListenerList) this.eventListenerList = {};
-                // @ts-ignore
-                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
-
+                eventListenerList[type].push({ type, listener, useCapture });
+            }
+            function removeEventListener(type: string, listener: EventListener,
+                                         useCapture: boolean = false) {
                 // Find the event in the list, If a listener is registered twice, one
                 // with capture and one without, remove each one separately. Removal of
                 // a capturing listener does not affect a non-capturing version of the
                 // same listener, and vice versa.
                 // @ts-ignore
-                for (let i = 0; i < this.eventListenerList[type].length; i++) {
+                for (let i = 0; i < eventListenerList[type].length; i++) {
                     if (
                         // @ts-ignore
-                        this.eventListenerList[type][i].listener === listener &&
+                        eventListenerList[type][i].listener === listener &&
                         // @ts-ignore
-                        this.eventListenerList[type][i].useCapture === useCapture
+                        eventListenerList[type][i].useCapture === useCapture
                     ) {
                         // @ts-ignore
-                        this.eventListenerList[type].splice(i, 1);
+                        eventListenerList[type].splice(i, 1);
                         break;
                     }
                 }
                 // if no more events of the removed event type are left,remove the group
                 // @ts-ignore
-                if (this.eventListenerList[type].length == 0)
+                if (eventListenerList[type].length == 0)
                     // @ts-ignore
-                    delete this.eventListenerList[type];
+                    delete eventListenerList[type];
+            }
+            function getEventListener(type: string) {
+                if (!eventListenerList) return [];
+                if (type == undefined) return eventListenerList;
+                // @ts-ignore
+                return eventListenerList[type];
+            }
+
+            // save the original methods before overwriting them
+            const originalAddEventListener = cst.prototype.addEventListener;
+            const originalRemoveEventListener = cst.prototype.removeEventListener;
+
+            cst.prototype.addEventListener = function (type: string, listener: EventListener,
+                                                       useCapture: boolean = false) {
+                originalAddEventListener.call(this || window, type, listener, useCapture);
+                pushEventListener(type, listener, useCapture);
+            };
+
+            cst.prototype.removeEventListener = function (type: string, listener: EventListener,
+                                                          useCapture: boolean = false) {
+                originalRemoveEventListener.call(this || window, type, listener, useCapture);
+                removeEventListener(type, listener, useCapture);
             };
 
             // @ts-ignore
             cst.prototype.getEventListeners = function (type: string) {
-                // @ts-ignore
-                if (!this.eventListenerList) this.eventListenerList = {};
-
-                // return reqested listeners type or all them
-                // @ts-ignore
-                if (type === undefined) return this.eventListenerList;
-                // @ts-ignore
-                return this.eventListenerList[type];
+                return getEventListener(type);
             };
         }
     });
