@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-project</artifactId>
+        <version>24.4-SNAPSHOT</version>
+    </parent>
+
+    <groupId>com.vaadin</groupId>
+    <artifactId>vaadin-versions</artifactId>
+    <packaging>jar</packaging>
+
+    <properties>
+        <versions.file>${project.artifactId}.json</versions.file>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                  <execution>
+                    <id>copy-and-rename-file</id>
+                    <phase>process-resources</phase>
+                    <goals>
+                      <goal>copy</goal>
+                    </goals>
+                    <configuration>
+                      <sourceFile>${maven.multiModuleProjectDirectory}/${versions.file}</sourceFile>
+                      <destinationFile>${basedir}/target/classes/${versions.file}</destinationFile>
+                    </configuration>
+                  </execution>
+                </executions>
+              </plugin>
+              <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                  <execution>
+                    <phase>prepare-package</phase>
+                    <configuration>
+                      <target>
+                        <replace token="{{version}}" value="${project.version}" dir="target/classes">
+                          <include name="${versions.file}" />
+                        </replace>
+                      </target>
+                    </configuration>
+                    <goals>
+                      <goal>run</goal>
+                    </goals>
+                  </execution>
+                </executions>
+              </plugin>
+        </plugins>
+    </build>
+</project>

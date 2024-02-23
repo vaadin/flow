@@ -15,6 +15,7 @@
     </parent>
 
     <modules>
+        <module>vaadin-versions</module>
         <module>flow</module>
         <module>flow-server</module>
         <module>flow-react</module>
