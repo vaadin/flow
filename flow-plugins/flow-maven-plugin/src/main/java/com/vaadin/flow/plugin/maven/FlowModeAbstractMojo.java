@@ -352,6 +352,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
+    public void logDebug(CharSequence debugMessage, Throwable e) {
+
+        getLog().debug(debugMessage, e);
+
+    }
+
+    @Override
     public void logInfo(CharSequence infoMessage) {
 
         getLog().info(infoMessage);
@@ -365,6 +372,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
+    public void logError(CharSequence error) {
+
+        getLog().error(error);
+    }
+
+    @Override
     public void logWarn(CharSequence warning, Throwable e) {
 
         getLog().warn(warning, e);
@@ -372,9 +385,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public void logError(CharSequence warning, Throwable e) {
+    public void logError(CharSequence error, Throwable e) {
 
-        getLog().error(warning, e);
+        getLog().error(error, e);
 
     }
 
