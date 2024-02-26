@@ -424,7 +424,7 @@ public class PluginEffectiveConfiguration(
         .convention(FrontendUtils.isReactRouterRequired(frontendDirectory.get()))
         .overrideWithSystemProperty(InitParameters.REACT_ENABLE)
 
-    var cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
+    public val cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
             .convention(true)
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
