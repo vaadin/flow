@@ -203,8 +203,8 @@ public class AuthenticationContext {
      * <p>
      * </p>
      * Roles must be provided without the role prefix, for example
-     * {@code hasAnyRole("USER", "ADMIN")} instead of
-     * {@code hasAnyRole("ROLE_USER", "ROLE_ADMIN)}.
+     * {@code hasAnyRole(Set.of("USER", "ADMIN"))} instead of
+     * {@code hasAnyRole(Set.of("ROLE_USER", "ROLE_ADMIN"))}.
      *
      * @param roles
      *            a collection containing at least one role, without the role
@@ -228,7 +228,7 @@ public class AuthenticationContext {
      * </p>
      * Roles must be provided without the role prefix, for example
      * {@code hasAnyRole("USER", "ADMIN")} instead of
-     * {@code hasAnyRole("ROLE_USER", "ROLE_ADMIN)}.
+     * {@code hasAnyRole("ROLE_USER", "ROLE_ADMIN")}.
      *
      * @param roles
      *            an array containing at least one role, without the role
@@ -247,8 +247,8 @@ public class AuthenticationContext {
      * <p>
      * </p>
      * Roles must be provided without the role prefix, for example
-     * {@code hasAllRoles("USER", "ADMIN")} instead of
-     * {@code hasAllRoles("ROLE_USER", "ROLE_ADMIN)}.
+     * {@code hasAllRoles(Set.of("USER", "ADMIN"))} instead of
+     * {@code hasAllRoles(Set.of("ROLE_USER", "ROLE_ADMIN"))}.
      *
      * @param roles
      *            a collection containing at least one role, without the role
@@ -273,7 +273,7 @@ public class AuthenticationContext {
      * </p>
      * Roles must be provided without the role prefix, for example
      * {@code hasAllRoles("USER", "ADMIN")} instead of
-     * {@code hasAllRoles("ROLE_USER", "ROLE_ADMIN)}.
+     * {@code hasAllRoles("ROLE_USER", "ROLE_ADMIN")}.
      *
      * @param roles
      *            an array containing at least one role, without the role
