@@ -41,7 +41,8 @@ public class VersionsJsonConverterTest {
                             + "}, "
                         + " \"vaadin-progress-bar\": { "
                             + " \"npmName\": \"@vaadin/vaadin-progress-bar\", "
-                            + "\"jsVersion\": \"1.1.2\" "
+                            + "\"jsVersion\": \"1.1.2\", "
+                            + "\"mode\": \"lit\" "
                           + "},"
                        + "},"  //core
                 + "\"vaadin-upload\": { "
@@ -63,7 +64,7 @@ public class VersionsJsonConverterTest {
         // @formatter:on
 
         VersionsJsonConverter convert = new VersionsJsonConverter(
-                Json.parse(json), true);
+                Json.parse(json), false);
         JsonObject convertedJson = convert.getConvertedJson();
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -92,18 +93,18 @@ public class VersionsJsonConverterTest {
                     },
                     "vaadin-progress-bar": {
                       "npmName": "@vaadin/vaadin-progress-bar",
-                      "jsVersion": "1.1.2"
+                      "jsVersion": "1.1.2",
                     },
                   },
                   "vaadin-upload": {
                     "npmName": "@vaadin/vaadin-upload",
-                    "jsVersion": "4.2.2"
+                    "jsVersion": "4.2.2",
                   },
                   "iron-list": {
                     "npmName": "@polymer/iron-list",
                     "npmVersion": "3.0.2",
                     "javaVersion": "3.0.0.beta1",
-                    "jsVersion": "2.0.19"
+                    "jsVersion": "2.0.19",
                   },
                   "vaadin-core": {
                       "jsVersion": "21.0.0.alpha1",
@@ -112,7 +113,7 @@ public class VersionsJsonConverterTest {
                   "react": {
                     "react-components": {
                       "jsVersion": "24.4.0-alpha7",
-                      "npmName": "@vaadin/react-components"
+                      "npmName": "@vaadin/react-components",
                     }
                   },
                   "react-pro": {
@@ -185,13 +186,15 @@ public class VersionsJsonConverterTest {
                   "react": {
                     "react-components": {
                       "jsVersion": "24.4.0-alpha7",
-                      "npmName": "@vaadin/react-components"
+                      "npmName": "@vaadin/react-components",
+                      "mode": "react"
                     }
                   },
                   "react-pro": {
                     "react-components-pro": {
                       "jsVersion": "24.4.0-alpha7",
-                      "npmName": "@vaadin/react-components-pro"
+                      "npmName": "@vaadin/react-components-pro",
+                      "mode": "react"
                     }
                   },
                   "platform": "foo"
@@ -223,5 +226,92 @@ public class VersionsJsonConverterTest {
                 convertedJson.getString("@vaadin/vaadin-upload"));
         Assert.assertEquals("3.0.2",
                 convertedJson.getString("@polymer/iron-list"));
+    }
+
+    @Test
+    public void testModeProperty() {
+        String json = """
+                {
+                  "core": {
+                    "flow": {
+                      "javaVersion": "3.0.0.alpha17"
+                    },
+                    "vaadin-progress-bar": {
+                      "npmName": "@vaadin/vaadin-progress-bar",
+                      "jsVersion": "1.1.2",
+                      "mode": "lit"
+                    },
+                  },
+                  "vaadin-upload": {
+                    "npmName": "@vaadin/vaadin-upload",
+                    "jsVersion": "4.2.2",
+                    "mode": ""
+                  },
+                  "iron-list": {
+                    "npmName": "@polymer/iron-list",
+                    "npmVersion": "3.0.2",
+                    "javaVersion": "3.0.0.beta1",
+                    "jsVersion": "2.0.19",
+                    "mode": "all"
+                  },
+                  "vaadin-core": {
+                      "jsVersion": "21.0.0.alpha1",
+                      "npmName": "%s"
+                  },
+                  "react": {
+                    "react-components": {
+                      "jsVersion": "24.4.0-alpha7",
+                      "npmName": "@vaadin/react-components",
+                      "mode": "react"
+                    }
+                  },
+                  "react-pro": {
+                    "react-components-pro": {
+                      "jsVersion": "24.4.0-alpha7",
+                      "npmName": "@vaadin/react-components-pro",
+                      "mode": "react"
+                    }
+                  },
+                  "platform": "foo"
+                }
+                """.formatted(VAADIN_CORE_NPM_PACKAGE);
+
+        // react enabled
+        VersionsJsonConverter convert = new VersionsJsonConverter(
+                Json.parse(json), true);
+        JsonObject convertedJson = convert.getConvertedJson();
+        Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
+        Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertTrue(convertedJson.hasKey("@polymer/iron-list"));
+        Assert.assertTrue(convertedJson.hasKey("@vaadin/react-components-pro"));
+        Assert.assertTrue(convertedJson.hasKey("@vaadin/react-components"));
+
+        Assert.assertFalse(convertedJson.hasKey("flow"));
+        Assert.assertFalse(convertedJson.hasKey("core"));
+        Assert.assertFalse(convertedJson.hasKey(VAADIN_CORE_NPM_PACKAGE));
+        Assert.assertFalse(convertedJson.hasKey("platform"));
+        Assert.assertFalse(convertedJson.hasKey("react"));
+        Assert.assertFalse(convertedJson.hasKey("react-pro"));
+        Assert.assertFalse(convertedJson.hasKey("react-components"));
+        Assert.assertFalse(convertedJson.hasKey("react-components-pro"));
+
+        // react disabled
+        convert = new VersionsJsonConverter(Json.parse(json), false);
+        convertedJson = convert.getConvertedJson();
+        Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
+        Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertTrue(convertedJson.hasKey("@polymer/iron-list"));
+        Assert.assertFalse(
+                convertedJson.hasKey("@vaadin/react-components-pro"));
+        Assert.assertFalse(convertedJson.hasKey("@vaadin/react-components"));
+
+        Assert.assertFalse(convertedJson.hasKey("flow"));
+        Assert.assertFalse(convertedJson.hasKey("core"));
+        Assert.assertFalse(convertedJson.hasKey(VAADIN_CORE_NPM_PACKAGE));
+        Assert.assertFalse(convertedJson.hasKey("platform"));
+        Assert.assertFalse(convertedJson.hasKey("react"));
+        Assert.assertFalse(convertedJson.hasKey("react-pro"));
+        Assert.assertFalse(convertedJson.hasKey("react-components"));
+        Assert.assertFalse(convertedJson.hasKey("react-components-pro"));
     }
 }

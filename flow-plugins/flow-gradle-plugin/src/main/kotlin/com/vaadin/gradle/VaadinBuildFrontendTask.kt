@@ -103,5 +103,18 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
      *
      * @return `true` to remove created files, `false` to keep the files
      */
-    protected open fun cleanFrontendFiles(): Boolean = true
+    protected open fun cleanFrontendFiles(): Boolean {
+        val adapter = GradlePluginAdapter(project, config, false)
+        if (FrontendUtils.isHillaUsed(adapter.frontendDirectory(),
+                        adapter.classFinder)) {
+            /*
+             * Override this to not clean generated frontend files after the
+             * build. For Hilla, the generated files can still be useful for
+             * developers after the build. For example, a developer can use
+             * {@code vite.generated.ts} to run tests with vitest in CI.
+             */
+            return false
+        }
+        return config.cleanFrontendFiles.get()
+    }
 }

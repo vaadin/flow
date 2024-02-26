@@ -433,6 +433,77 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void testGetPlatformPinnedDependencies_reactNotAvailable_noReactComponents()
+            throws IOException, ClassNotFoundException {
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+                ".json", temporaryFolder.newFolder());
+        JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+
+        JsonObject reactComponents = Json.createObject();
+        JsonObject reactData = Json.createObject();
+        reactData.put("jsVersion", "24.4.0-alpha13");
+        reactData.put("npmName", "@vaadin/react-components");
+
+        reactComponents.put("react-components", reactData);
+
+        mockedVaadinCoreJson.put("react", reactComponents);
+
+        Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
+        Assert.assertTrue(
+                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
+
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
+                StandardCharsets.UTF_8);
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(coreVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(null);
+
+        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+        Assert.assertFalse(pinnedVersions.hasKey("react-components"));
+    }
+
+    @Test
+    public void testGetPlatformPinnedDependencies_reactAvailable_containsReactComponents()
+            throws IOException, ClassNotFoundException {
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+                ".json", temporaryFolder.newFolder());
+        JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+
+        JsonObject reactComponents = Json.createObject();
+        JsonObject reactData = Json.createObject();
+        reactData.put("jsVersion", "24.4.0-alpha13");
+        reactData.put("npmName", "@vaadin/react-components");
+
+        reactComponents.put("react-components", reactData);
+
+        mockedVaadinCoreJson.put("react", reactComponents);
+
+        Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
+        Assert.assertTrue(
+                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
+
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
+                StandardCharsets.UTF_8);
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(coreVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(null);
+        Class clazz = FeatureFlags.class; // actual class doesn't matter
+        Mockito.doReturn(clazz).when(finder).loadClass(
+                "com.vaadin.flow.component.react.ReactAdapterComponent");
+
+        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/react-components"));
+    }
+
+    @Test
     public void testGetPlatformPinnedDependencies_VaadinAndVaadinCoreVersionsArePresent_outputContainsBothCoreAndCommercialVersions()
             throws IOException {
         File coreVersionsFile = File.createTempFile("vaadin-core-versions",

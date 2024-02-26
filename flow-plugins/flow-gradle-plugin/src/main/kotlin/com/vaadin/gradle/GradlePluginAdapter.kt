@@ -106,6 +106,10 @@ internal class GradlePluginAdapter(
         project.logger.debug(debugMessage.toString())
     }
 
+    override fun logDebug(debugMessage: CharSequence, throwable: Throwable?) {
+        project.logger.debug(debugMessage.toString(), throwable)
+    }
+
     override fun logInfo(infoMessage: CharSequence) {
         project.logger.info(infoMessage.toString())
     }
@@ -116,6 +120,10 @@ internal class GradlePluginAdapter(
 
     override fun logWarn(warningMessage: CharSequence, throwable: Throwable?) {
         project.logger.warn(warningMessage.toString(), throwable)
+    }
+
+    override fun logError(errorMessage: CharSequence) {
+        project.logger.error(errorMessage.toString())
     }
 
     override fun logError(warning: CharSequence, e: Throwable?) {

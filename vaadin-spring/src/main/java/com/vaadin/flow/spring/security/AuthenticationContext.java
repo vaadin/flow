@@ -18,23 +18,28 @@ package com.vaadin.flow.spring.security;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -62,6 +67,8 @@ public class AuthenticationContext {
     private LogoutSuccessHandler logoutSuccessHandler;
 
     private CompositeLogoutHandler logoutHandler;
+
+    private VaadinRolePrefixHolder rolePrefixHolder;
 
     /**
      * Gets an {@link Optional} with an instance of the current user if it has
@@ -141,6 +148,198 @@ public class AuthenticationContext {
     }
 
     /**
+     * Gets the authorities granted to the current authenticated user.
+     *
+     * @return an unmodifiable collection of {@link GrantedAuthority}s or an
+     *         empty collection if there is no authenticated user.
+     */
+    public Collection<? extends GrantedAuthority> getGrantedAuthorities() {
+        return getAuthentication().filter(Authentication::isAuthenticated)
+                .map(Authentication::getAuthorities)
+                .orElse(Collections.emptyList());
+    }
+
+    private Stream<String> getGrantedAuthoritiesStream() {
+        return getGrantedAuthorities().stream()
+                .map(GrantedAuthority::getAuthority);
+    }
+
+    /**
+     * Gets the roles granted to the current authenticated user.
+     *
+     * @return an unmodifiable collection of role names (without the role
+     *         prefix) or an empty collection if there is no authenticated user.
+     */
+    public Collection<String> getGrantedRoles() {
+        return getGrantedRolesStream().collect(Collectors.toSet());
+    }
+
+    private Stream<String> getGrantedRolesStream() {
+        var rolePrefix = getRolePrefix();
+        return getGrantedAuthoritiesStream()
+                .filter(ga -> ga.startsWith(rolePrefix))
+                .map(ga -> ga.substring(rolePrefix.length()));
+    }
+
+    /**
+     * Checks whether the current authenticated user has the given role.
+     *
+     * @param role
+     *            the role to check.
+     * @return {@literal true} if the user holds the given role, otherwise
+     *         {@literal false}.
+     */
+    public boolean hasRole(String role) {
+        return getGrantedRolesStream().anyMatch(role::equals);
+    }
+
+    /**
+     * Checks whether the current authenticated user has any of the given roles.
+     *
+     * @param roles
+     *            a collection containing at least one role.
+     * @return {@literal true} if the user holds at least one of the given
+     *         roles, otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given collection is empty.
+     */
+    public boolean hasAnyRole(Collection<String> roles) {
+        if (roles.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one role to check");
+        }
+        return getGrantedRolesStream().anyMatch(roles::contains);
+    }
+
+    /**
+     * Checks whether the current authenticated user has any of the given roles.
+     *
+     * @param roles
+     *            an array containing at least one role.
+     * @return {@literal true} if the user holds at least one of the given
+     *         roles, otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given array is empty.
+     */
+    public boolean hasAnyRole(String... roles) {
+        return hasAnyRole(Set.of(roles));
+    }
+
+    /**
+     * Checks whether the current authenticated user has all the given roles.
+     *
+     * @param roles
+     *            a collection containing at least one role.
+     * @return {@literal true} if the user holds all the given roles, otherwise
+     *         {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given collection is empty.
+     */
+    public boolean hasAllRoles(Collection<String> roles) {
+        if (roles.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one role to check");
+        }
+        return getGrantedRolesStream().collect(Collectors.toSet())
+                .containsAll(roles);
+    }
+
+    /**
+     * Checks whether the current authenticated user has all the given roles.
+     *
+     * @param roles
+     *            an array containing at least one role.
+     * @return {@literal true} if the user holds all the given roles, otherwise
+     *         {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given array is empty.
+     */
+    public boolean hasAllRoles(String... roles) {
+        return hasAllRoles(Set.of(roles));
+    }
+
+    /**
+     * Checks whether the current authenticated user has the given authority.
+     *
+     * @param authority
+     *            the authority to check.
+     * @return {@literal true} if the user holds the given authority, otherwise
+     *         {@literal false}.
+     */
+    public boolean hasAuthority(String authority) {
+        return getGrantedAuthoritiesStream().anyMatch(authority::equals);
+    }
+
+    /**
+     * Checks whether the current authenticated user has any of the given
+     * authorities.
+     *
+     * @param authorities
+     *            a collection containing at least one authority.
+     * @return {@literal true} if the user holds at least one of the given
+     *         authorities, otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given collection is empty.
+     */
+    public boolean hasAnyAuthority(Collection<String> authorities) {
+        if (authorities.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one authority to check");
+        }
+        return getGrantedAuthoritiesStream().anyMatch(authorities::contains);
+    }
+
+    /**
+     * Checks whether the current authenticated user has any of the given
+     * authorities.
+     *
+     * @param authorities
+     *            an array containing at least one authority.
+     * @return {@literal true} if the user holds at least one of the given
+     *         authorities, otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given array is empty.
+     */
+    public boolean hasAnyAuthority(String... authorities) {
+        return hasAnyAuthority(Set.of(authorities));
+    }
+
+    /**
+     * Checks whether the current authenticated user has all the given
+     * authorities.
+     *
+     * @param authorities
+     *            a collection containing at least one authority.
+     * @return {@literal true} if the user holds all the given authorities,
+     *         otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given collection is empty.
+     */
+    public boolean hasAllAuthorities(Collection<String> authorities) {
+        if (authorities.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Must provide at least one authority to check");
+        }
+        return getGrantedAuthoritiesStream().collect(Collectors.toSet())
+                .containsAll(authorities);
+    }
+
+    /**
+     * Checks whether the current authenticated user has all the given
+     * authorities.
+     *
+     * @param authorities
+     *            an array containing at least one authority.
+     * @return {@literal true} if the user holds all the given authorities,
+     *         otherwise {@literal false}.
+     * @throws IllegalArgumentException
+     *             if the given array is empty.
+     */
+    public boolean hasAllAuthorities(String... authorities) {
+        return hasAllAuthorities(Set.of(authorities));
+    }
+
+    /**
      * Sets component to handle logout process.
      *
      * @param logoutSuccessHandler
@@ -152,6 +351,18 @@ public class AuthenticationContext {
             List<LogoutHandler> logoutHandlers) {
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.logoutHandler = new CompositeLogoutHandler(logoutHandlers);
+    }
+
+    /**
+     * Sets the role prefix holder to use when checking the current user's
+     * roles.
+     *
+     * @param rolePrefixHolder
+     *            {@link VaadinRolePrefixHolder} instance, or {@literal null} to
+     *            revert to the default {@code ROLE_} prefix.
+     */
+    void setRolePrefixHolder(VaadinRolePrefixHolder rolePrefixHolder) {
+        this.rolePrefixHolder = rolePrefixHolder;
     }
 
     private static Optional<Authentication> getAuthentication() {
@@ -168,6 +379,11 @@ public class AuthenticationContext {
     /* For testing purposes */
     CompositeLogoutHandler getLogoutHandler() {
         return logoutHandler;
+    }
+
+    private String getRolePrefix() {
+        return Optional.ofNullable(rolePrefixHolder)
+                .map(VaadinRolePrefixHolder::getRolePrefix).orElse("ROLE_");
     }
 
     /**
@@ -188,7 +404,6 @@ public class AuthenticationContext {
                 .getConfigurer(LogoutConfigurer.class);
         authCtx.setLogoutHandlers(logoutConfigurer.getLogoutSuccessHandler(),
                 logoutConfigurer.getLogoutHandlers());
-
     }
 
 }

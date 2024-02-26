@@ -275,6 +275,8 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     public abstract val reactEnable: Property<Boolean>
 
+    public abstract val cleanFrontendFiles: Property<Boolean>
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter
         block.resolveStrategy = Closure.DELEGATE_FIRST
@@ -422,6 +424,8 @@ public class PluginEffectiveConfiguration(
         .convention(FrontendUtils.isReactRouterRequired(frontendDirectory.get()))
         .overrideWithSystemProperty(InitParameters.REACT_ENABLE)
 
+    var cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
+            .convention(true)
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
      *
@@ -469,7 +473,8 @@ public class PluginEffectiveConfiguration(
             "skipDevBundleBuild=${skipDevBundleBuild.get()}, " +
             "alwaysExecutePrepareFrontend=${alwaysExecutePrepareFrontend.get()}, " +
             "frontendHotdeploy=${frontendHotdeploy.get()}," +
-            "reactEnable=${reactEnable.get()}" +
+            "reactEnable=${reactEnable.get()}," +
+            "cleanFrontendFiles=${cleanFrontendFiles.get()}" +
             ")"
     public companion object {
         public fun get(project: Project): PluginEffectiveConfiguration =

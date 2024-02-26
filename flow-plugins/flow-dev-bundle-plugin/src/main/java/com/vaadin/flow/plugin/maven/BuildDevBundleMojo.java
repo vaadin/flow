@@ -309,6 +309,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
+    public void logDebug(CharSequence debugMessage, Throwable e) {
+        getLog().debug(debugMessage, e);
+    }
+
+    @Override
     public void logInfo(CharSequence infoMessage) {
         getLog().info(infoMessage);
     }
@@ -319,13 +324,18 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
+    public void logError(CharSequence error) {
+        getLog().error(error);
+    }
+
+    @Override
     public void logWarn(CharSequence warning, Throwable e) {
         getLog().warn(warning, e);
     }
 
     @Override
-    public void logError(CharSequence warning, Throwable e) {
-        getLog().error(warning, e);
+    public void logError(CharSequence error, Throwable e) {
+        getLog().error(error, e);
     }
 
     @Override

@@ -19,13 +19,16 @@ import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.expect
 import com.vaadin.flow.server.InitParameters
+import com.vaadin.flow.server.frontend.FrontendUtils
 import elemental.json.JsonObject
 import elemental.json.impl.JsonUtil
-import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
 import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
 
 /**
  * The most basic tests. If these fail, the plugin is completely broken and all
@@ -149,27 +152,13 @@ class VaadinSmokeTest : AbstractGradleTest() {
     @Test
     fun vaadinCleanDoesntDeletePnpmFiles() {
         val pnpmLockYaml = testProject.newFile("pnpm-lock.yaml")
-        val pnpmFileJs = testProject.newFile("pnpmfile.js")
         val pnpmFileCjs = testProject.newFile(".pnpmfile.cjs")
         val webpackConfigJs = testProject.newFile("webpack.config.js")
         testProject.build("vaadinClean")
         expect(false) { pnpmLockYaml.exists() }
-        expect(false) { pnpmFileJs.exists() }
         expect(false) { pnpmFileCjs.exists() }
         // don't delete webpack.config.js: https://github.com/vaadin/vaadin-gradle-plugin/pull/74#discussion_r444457296
         expect(true) { webpackConfigJs.exists() }
-    }
-
-    /**
-     * Tests that VaadinClean task removes TS-related files.
-     */
-    @Test
-    fun vaadinCleanDeletesTsFiles() {
-        val tsconfigJson = testProject.newFile("tsconfig.json")
-        val typesDTs = testProject.newFile("types.d.ts")
-        testProject.build("vaadinClean")
-        expect(false) { tsconfigJson.exists() }
-        expect(false) { typesDTs.exists() }
     }
 
     /**
@@ -246,6 +235,58 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(false) { generatedTsFolder.exists() }
     }
 
+    @Test
+    fun vaadinCleanShouldRemoveNodeModulesAndPackageLock() {
+        val nodeModules: File = testProject.newFolder(FrontendUtils.NODE_MODULES)
+        val packageLock: File = testProject.newFile("package-lock.json")
+        expect(true) { nodeModules.exists() }
+        expect(true) { packageLock.exists() }
+        testProject.build("vaadinClean")
+        expect(false) { nodeModules.exists() }
+        expect(false) { packageLock.exists() }
+    }
+
+    @Test
+    fun vaadinCleanShouldNotRemoveNodeModulesAndPackageLockWithHilla() {
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                flatDir {
+                   dirs("libs")
+                }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation name:'hilla-endpoint-stub'
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+            vaadin {
+                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+            }
+        """)
+        testProject.newFolder("libs")
+        // hilla-endpoint-stub.jar contains only stub for com.vaadin.hilla.EndpointController.class
+        val hillaEndpointJar: File = testProject.newFile("libs/hilla-endpoint-stub.jar")
+        Files.copy(
+                File(javaClass.classLoader.getResource("hilla-endpoint-stub.jar").path).toPath(),
+                hillaEndpointJar.toPath(),  StandardCopyOption.REPLACE_EXISTING)
+        enableHilla()
+        val nodeModules: File = testProject.newFolder(FrontendUtils.NODE_MODULES)
+        val packageLock: File = testProject.newFile("package-lock.json")
+        expect(true) { nodeModules.exists() }
+        expect(true) { packageLock.exists() }
+        testProject.build("vaadinClean")
+        expect(true) { nodeModules.exists() }
+        expect(true) { packageLock.exists() }
+    }
+
     /**
      * Tests that build works with a custom frontend directory
      */
@@ -280,7 +321,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         }
         expect(true) {
             // Only generated for executing project or building bundle
-            File(testProject.dir, "src/main/frontend/generated/index.ts").exists()
+            File(testProject.dir, "src/main/frontend/generated/index.tsx").exists()
         }
     }
 
@@ -359,5 +400,10 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 "current version is ${unsupportedVersion}"
             )
         }
+    }
+
+    private fun enableHilla() {
+        testProject.newFolder("frontend")
+        testProject.newFile("frontend/index.ts")
     }
 }

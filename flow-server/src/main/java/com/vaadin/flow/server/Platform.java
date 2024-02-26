@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.Properties;
 
-import com.helger.commons.annotation.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +35,12 @@ public class Platform implements Serializable {
      * Memoized Hilla version. null if not yet calculated, empty string if Hilla
      * is not present on the classpath.
      */
-    @VisibleForTesting
     static String hillaVersion = null;
 
     /**
      * Memoized Vaadin version. null if not yet calculated, empty string if
      * Vaadin is not present on the classpath.
      */
-    @VisibleForTesting
     static String vaadinVersion = null;
 
     /**
