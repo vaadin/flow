@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.i18n;
 
+import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import net.jcip.annotations.NotThreadSafe;
@@ -66,6 +68,7 @@ public class TranslationFileRequestHandlerTest {
     @Before
     public void init()
             throws IOException, NoSuchFieldException, IllegalAccessException {
+        mockService();
         File resources = temporaryFolder.newFolder();
         translationsFolder = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
@@ -219,5 +222,12 @@ public class TranslationFileRequestHandlerTest {
                         + ".properties");
         Files.writeString(file.toPath(), content, StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE);
+    }
+
+    private void mockService() {
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getInstantiator())
+                .thenReturn(new DefaultInstantiator(service));
+        Mockito.when(session.getService()).thenReturn(service);
     }
 }
