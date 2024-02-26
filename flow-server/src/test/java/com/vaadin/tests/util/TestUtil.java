@@ -15,6 +15,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandlerTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
@@ -100,7 +101,8 @@ public class TestUtil {
                 .getResourceAsStream("frontend/" + stubFileName)) {
             String indexHtmlContent = IOUtils
                     .toString(Objects.requireNonNull(indexStream), UTF_8);
-            File indexHtml = new File(new File(projectRootFolder, "frontend"),
+            File indexHtml = new File(
+                    new File(projectRootFolder, DEFAULT_FRONTEND_DIR),
                     stubFileName);
             FileUtils.forceMkdirParent(indexHtml);
             FileUtils.writeStringToFile(indexHtml, indexHtmlContent, UTF_8);
