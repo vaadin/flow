@@ -314,7 +314,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     private String getFlowGeneratedImports() throws IOException {
         return FileUtils.readFileToString(
                 FrontendUtils.getFlowGeneratedImports(
-                        new File(npmFolder, "frontend")),
+                        new File(npmFolder, FrontendUtils.DEFAULT_FRONTEND_DIR)),
                 StandardCharsets.UTF_8);
     }
 
