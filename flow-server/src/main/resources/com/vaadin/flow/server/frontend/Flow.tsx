@@ -295,6 +295,7 @@ export const serverSideRoutes = [
             }
             function removeEventListener(type: string, listener: EventListener,
                                          useCapture: boolean = false) {
+                // @ts-ignore
                 if (!eventListenerList[type]) {
                     return;
                 }
