@@ -137,7 +137,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     public fun getForceProductionBuild(): Provider<Boolean> = config.forceProductionBuild
 
     @Input
-    public fun getReactEnabled(): Provider<Boolean> = config.reactEnable
+    public fun getReactEnable(): Provider<Boolean> = config.reactEnable
 
     @Input
     @Optional

@@ -29,8 +29,9 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import java.io.File
+import javax.inject.Inject
 
-public abstract class VaadinFlowPluginExtension {
+public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
     /**
      * Whether we are running in productionMode or not. Defaults to false.
      * Responds to the `-Pvaadin.productionMode` property.
@@ -286,102 +287,104 @@ public abstract class VaadinFlowPluginExtension {
         block.execute(classpathFilter)
     }
 
+    public val effective: PluginEffectiveConfiguration get() = PluginEffectiveConfiguration.get(project)
+
     public companion object {
         public fun get(project: Project): VaadinFlowPluginExtension =
                 project.extensions.getByType(VaadinFlowPluginExtension::class.java)
     }
 }
 
-internal class PluginEffectiveConfiguration(
+public class PluginEffectiveConfiguration(
     private val project: Project,
     extension: VaadinFlowPluginExtension
 ) {
-    val productionMode: Provider<Boolean> = extension.productionMode
+    public val productionMode: Provider<Boolean> = extension.productionMode
         .convention(false)
         .overrideWithSystemProperty("vaadin.productionMode")
 
-    val sourceSetName: Property<String> = extension.sourceSetName
+    public val sourceSetName: Property<String> = extension.sourceSetName
         .convention("main")
 
-    val webpackOutputDirectory: Provider<File> = extension.webpackOutputDirectory
+    public val webpackOutputDirectory: Provider<File> = extension.webpackOutputDirectory
         .convention(sourceSetName.map { File(project.getBuildResourcesDir(it), Constants.VAADIN_WEBAPP_RESOURCES) })
 
-    val npmFolder: Provider<File> = extension.npmFolder
+    public val npmFolder: Provider<File> = extension.npmFolder
         .convention(project.projectDir)
 
-    val frontendDirectory: Provider<File> = extension.frontendDirectory
+    public val frontendDirectory: Provider<File> = extension.frontendDirectory
         .convention(File(project.projectDir, "frontend"))
 
-    val generateBundle: Provider<Boolean> = extension.generateBundle
+    public val generateBundle: Provider<Boolean> = extension.generateBundle
         .convention(true)
 
-    val runNpmInstall: Provider<Boolean> = extension.runNpmInstall
+    public val runNpmInstall: Provider<Boolean> = extension.runNpmInstall
         .convention(true)
 
-    val generateEmbeddableWebComponents: Provider<Boolean> = extension.generateEmbeddableWebComponents
+    public val generateEmbeddableWebComponents: Provider<Boolean> = extension.generateEmbeddableWebComponents
         .convention(true)
 
-    val frontendResourcesDirectory: Property<File> = extension.frontendResourcesDirectory
+    public val frontendResourcesDirectory: Property<File> = extension.frontendResourcesDirectory
         .convention(File(project.projectDir, Constants.LOCAL_FRONTEND_RESOURCES_PATH))
 
-    val optimizeBundle: Property<Boolean> = extension.optimizeBundle
+    public val optimizeBundle: Property<Boolean> = extension.optimizeBundle
         .convention(true)
 
-    val pnpmEnable: Provider<Boolean> = extension.pnpmEnable
+    public val pnpmEnable: Provider<Boolean> = extension.pnpmEnable
         .convention(Constants.ENABLE_PNPM_DEFAULT)
         .overrideWithSystemProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)
 
-    val bunEnable: Provider<Boolean> = extension.bunEnable
+    public val bunEnable: Provider<Boolean> = extension.bunEnable
         .convention(Constants.ENABLE_BUN_DEFAULT)
         .overrideWithSystemProperty(InitParameters.SERVLET_PARAMETER_ENABLE_BUN)
 
-    val useGlobalPnpm: Provider<Boolean> = extension.useGlobalPnpm
+    public val useGlobalPnpm: Provider<Boolean> = extension.useGlobalPnpm
         .convention(Constants.GLOBAL_PNPM_DEFAULT)
         .overrideWithSystemProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)
 
-    val requireHomeNodeExec: Property<Boolean> = extension.requireHomeNodeExec
+    public val requireHomeNodeExec: Property<Boolean> = extension.requireHomeNodeExec
         .convention(false)
 
-    val eagerServerLoad: Provider<Boolean> = extension.eagerServerLoad
+    public val eagerServerLoad: Provider<Boolean> = extension.eagerServerLoad
         .convention(false)
         .overrideWithSystemProperty("vaadin.eagerServerLoad")
 
-    val applicationProperties: Property<File> = extension.applicationProperties
+    public val applicationProperties: Property<File> = extension.applicationProperties
         .convention(File(project.projectDir, "src/main/resources/application.properties"))
 
-    val openApiJsonFile: Property<File> = extension.openApiJsonFile
+    public val openApiJsonFile: Property<File> = extension.openApiJsonFile
         .convention(project.layout.buildDirectory.file("generated-resources/openapi.json").asFile())
 
-    val javaSourceFolder: Property<File> = extension.javaSourceFolder
+    public val javaSourceFolder: Property<File> = extension.javaSourceFolder
         .convention(File(project.projectDir, "src/main/java"))
 
-    val javaResourceFolder: Property<File> = extension.javaResourceFolder
+    public val javaResourceFolder: Property<File> = extension.javaResourceFolder
         .convention(File(project.projectDir, "src/main/resources"))
 
-    val generatedTsFolder: Property<File> = extension.generatedTsFolder
+    public val generatedTsFolder: Property<File> = extension.generatedTsFolder
         .convention(File(project.projectDir, "frontend/generated"))
 
-    val nodeVersion: Property<String> = extension.nodeVersion
+    public val nodeVersion: Property<String> = extension.nodeVersion
         .convention(FrontendTools.DEFAULT_NODE_VERSION)
 
-    val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
+    public val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
         .convention(Platform.guess().nodeDownloadRoot)
 
-    val nodeAutoUpdate: Property<Boolean> = extension.nodeAutoUpdate
+    public val nodeAutoUpdate: Property<Boolean> = extension.nodeAutoUpdate
         .convention(false)
 
-    val resourceOutputDirectory: Property<File> = extension.resourceOutputDirectory
+    public val resourceOutputDirectory: Property<File> = extension.resourceOutputDirectory
         .convention(project.layout.buildDirectory.dir("vaadin-generated").asFile())
 
-    val projectBuildDir: Property<String> = extension.projectBuildDir
+    public val projectBuildDir: Property<String> = extension.projectBuildDir
         .convention(project.layout.buildDirectory.map { it.asFile.toString() })
 
-    val postinstallPackages: ListProperty<String> = extension.postinstallPackages
+    public val postinstallPackages: ListProperty<String> = extension.postinstallPackages
         .convention(listOf())
 
-    val classpathFilter = extension.classpathFilter
+    public val classpathFilter: ClasspathFilter = extension.classpathFilter
 
-    val dependencyScope: Property<String> = extension.dependencyScope
+    public val dependencyScope: Property<String> = extension.dependencyScope
         .convention(sourceSetName.map {
             if (it == "main") {
                 "runtimeClasspath"
@@ -390,7 +393,7 @@ internal class PluginEffectiveConfiguration(
             }
         })
 
-    val processResourcesTaskName: Property<String> = extension.processResourcesTaskName
+    public val processResourcesTaskName: Property<String> = extension.processResourcesTaskName
         .convention(sourceSetName.map {
             if (it == "main") {
                 "processResources"
@@ -399,29 +402,29 @@ internal class PluginEffectiveConfiguration(
             }
         })
 
-    val frontendHotdeploy: Provider<Boolean> = extension.frontendHotdeploy
+    public val frontendHotdeploy: Provider<Boolean> = extension.frontendHotdeploy
         .convention(FrontendUtils.isHillaUsed(frontendDirectory.get()))
         .overrideWithSystemProperty(InitParameters.FRONTEND_HOTDEPLOY)
 
-    val ciBuild: Provider<Boolean> = extension.ciBuild
+    public val ciBuild: Provider<Boolean> = extension.ciBuild
         .convention(false)
         .overrideWithSystemProperty(InitParameters.CI_BUILD)
 
-    val skipDevBundleBuild: Property<Boolean> = extension.skipDevBundleBuild
+    public val skipDevBundleBuild: Property<Boolean> = extension.skipDevBundleBuild
         .convention(false)
 
-    val forceProductionBuild: Provider<Boolean> = extension.forceProductionBuild
+    public val forceProductionBuild: Provider<Boolean> = extension.forceProductionBuild
         .convention(false)
         .overrideWithSystemProperty(InitParameters.FORCE_PRODUCTION_BUILD)
 
-    val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
+    public val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
         .convention(false)
 
-    val reactEnable: Provider<Boolean> = extension.reactEnable
+    public val reactEnable: Provider<Boolean> = extension.reactEnable
         .convention(FrontendUtils.isReactRouterRequired(frontendDirectory.get()))
         .overrideWithSystemProperty(InitParameters.REACT_ENABLE)
 
-    var cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
+    public val cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
             .convention(true)
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
@@ -436,7 +439,7 @@ internal class PluginEffectiveConfiguration(
         project.getBooleanProperty(propertyName) ?: originalValue
     }
 
-    override fun toString(): String = "VaadinFlowPluginExtension(" +
+    override fun toString(): String = "PluginEffectiveConfiguration(" +
             "productionMode=${productionMode.get()}, " +
             "webpackOutputDirectory=${webpackOutputDirectory.get()}, " +
             "npmFolder=${npmFolder.get()}, " +
@@ -473,8 +476,8 @@ internal class PluginEffectiveConfiguration(
             "reactEnable=${reactEnable.get()}," +
             "cleanFrontendFiles=${cleanFrontendFiles.get()}" +
             ")"
-    companion object {
-        internal fun get(project: Project): PluginEffectiveConfiguration =
+    public companion object {
+        public fun get(project: Project): PluginEffectiveConfiguration =
             PluginEffectiveConfiguration(project, VaadinFlowPluginExtension.get(project))
     }
 }
