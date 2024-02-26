@@ -16,6 +16,8 @@
 package com.vaadin.flow.i18n;
 
 import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -225,9 +227,11 @@ public class TranslationFileRequestHandlerTest {
     }
 
     private void mockService() {
+        I18NProvider i18NProvider = Mockito.mock(DefaultI18NProvider.class);
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
         VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getInstantiator())
-                .thenReturn(new DefaultInstantiator(service));
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         Mockito.when(session.getService()).thenReturn(service);
     }
 }
