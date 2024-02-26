@@ -48,7 +48,8 @@ public class DefaultBinderValidationErrorHandler
 
     /**
      * Handles a validation error emitted when trying to write the value of the
-     * given field.
+     * given field. The field will be set to invalid state only if
+     * {@code result.isError()} returns {@literal true}.
      *
      * @param field
      *            the field with the invalid value
@@ -59,7 +60,7 @@ public class DefaultBinderValidationErrorHandler
     public void handleError(HasValue<?, ?> field, ValidationResult result) {
         if (field instanceof HasValidation) {
             HasValidation fieldWithValidation = (HasValidation) field;
-            fieldWithValidation.setInvalid(true);
+            fieldWithValidation.setInvalid(result.isError());
             fieldWithValidation.setErrorMessage(result.getErrorMessage());
         }
         setErrorTheme(field, result);

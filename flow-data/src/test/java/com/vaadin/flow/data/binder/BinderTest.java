@@ -1568,8 +1568,78 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(item);
         ageField.setValue("3");
         Assert.assertEquals(infoMessage, ageField.getErrorMessage());
-
+        // Field should not be invalid since error level is INFO
+        Assert.assertFalse(ageField.isInvalid());
+        Assert.assertTrue(binder.isValid());
         Assert.assertEquals(3, item.getAge());
+    }
+
+    @Test
+    public void warning_validator_not_considered_error() {
+        String infoMessage = "Young";
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .withValidator(i -> i > 5, infoMessage, ErrorLevel.WARNING)
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+        ageField.setValue("3");
+        Assert.assertEquals(infoMessage, ageField.getErrorMessage());
+        // Field should not be invalid since error level is WARNING
+        Assert.assertFalse(ageField.isInvalid());
+        Assert.assertTrue(binder.isValid());
+        Assert.assertEquals(3, item.getAge());
+    }
+
+    @Test
+    public void error_validator_considered_error() {
+        String infoMessage = "Young";
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .withValidator(i -> i > 5, infoMessage, ErrorLevel.ERROR)
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+        ageField.setValue("3");
+        Assert.assertEquals(infoMessage, ageField.getErrorMessage());
+        // Field should be invalid since error level is ERROR
+        Assert.assertTrue(ageField.isInvalid());
+        Assert.assertFalse(binder.isValid());
+        Assert.assertEquals(32, item.getAge());
+    }
+
+    @Test
+    public void critical_validator_considered_error() {
+        String infoMessage = "Young";
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .withValidator(i -> i > 5, infoMessage, ErrorLevel.CRITICAL)
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+        ageField.setValue("3");
+        Assert.assertEquals(infoMessage, ageField.getErrorMessage());
+        // Field should be invalid since error level is CRITICAL
+        Assert.assertTrue(ageField.isInvalid());
+        Assert.assertFalse(binder.isValid());
+        Assert.assertEquals(32, item.getAge());
+    }
+
+    @Test
+    public void system_validator_considered_error() {
+        String infoMessage = "Young";
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .withValidator(i -> i > 5, infoMessage, ErrorLevel.SYSTEM)
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+        ageField.setValue("3");
+        Assert.assertEquals(infoMessage, ageField.getErrorMessage());
+        // Field should be invalid since error level is SYSTEM
+        Assert.assertTrue(ageField.isInvalid());
+        Assert.assertFalse(binder.isValid());
+        Assert.assertEquals(32, item.getAge());
     }
 
     @Test
