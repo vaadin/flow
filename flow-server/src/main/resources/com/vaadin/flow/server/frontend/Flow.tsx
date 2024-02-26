@@ -295,6 +295,9 @@ export const serverSideRoutes = [
             }
             function removeEventListener(type: string, listener: EventListener,
                                          useCapture: boolean = false) {
+                if (!eventListenerList[type]) {
+                    return;
+                }
                 // Find the event in the list, If a listener is registered twice, one
                 // with capture and one without, remove each one separately. Removal of
                 // a capturing listener does not affect a non-capturing version of the
@@ -314,9 +317,10 @@ export const serverSideRoutes = [
                 }
                 // if no more events of the removed event type are left,remove the group
                 // @ts-ignore
-                if (eventListenerList[type].length == 0)
+                if (eventListenerList[type].length == 0) {
                     // @ts-ignore
                     delete eventListenerList[type];
+                }
             }
             function getEventListener(type: string) {
                 if (!eventListenerList) return [];
@@ -331,13 +335,13 @@ export const serverSideRoutes = [
 
             cst.prototype.addEventListener = function (type: string, listener: EventListener,
                                                        useCapture: boolean = false) {
-                originalAddEventListener.call(this || window, type, listener, useCapture);
+                originalAddEventListener.call(this, type, listener, useCapture);
                 pushEventListener(type, listener, useCapture);
             };
 
             cst.prototype.removeEventListener = function (type: string, listener: EventListener,
                                                           useCapture: boolean = false) {
-                originalRemoveEventListener.call(this || window, type, listener, useCapture);
+                originalRemoveEventListener.call(this, type, listener, useCapture);
                 removeEventListener(type, listener, useCapture);
             };
 
