@@ -418,7 +418,7 @@ public class PluginEffectiveConfiguration(
     public val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
         .convention(false)
 
-    public val reactEnabled: Provider<Boolean> = extension.reactEnabled
+    public val reactEnable: Provider<Boolean> = extension.reactEnable
         .convention(FrontendUtils.isReactRouterRequired(frontendDirectory.get()))
         .overrideWithSystemProperty(InitParameters.REACT_ENABLE)
 
