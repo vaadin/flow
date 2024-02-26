@@ -43,8 +43,7 @@ public class TranslationFileRequestHandler implements RequestHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.TRANSLATION_FILE)) {
+        if (!shouldHandle(session, request)) {
             return false;
         }
         Locale locale = getLocale(request);
@@ -56,6 +55,13 @@ public class TranslationFileRequestHandler implements RequestHandler {
             handleFound(response, translationPropertyFile);
         }
         return true;
+    }
+
+    private boolean shouldHandle(VaadinSession session, VaadinRequest request) {
+        return HandlerHelper.isRequestType(request,
+                HandlerHelper.RequestType.TRANSLATION_FILE)
+                && session.getService().getInstantiator()
+                        .getI18NProvider() instanceof DefaultI18NProvider;
     }
 
     private void handleFound(VaadinResponse response,
