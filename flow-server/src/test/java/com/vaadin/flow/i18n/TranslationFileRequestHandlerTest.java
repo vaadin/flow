@@ -15,9 +15,7 @@
  */
 package com.vaadin.flow.i18n;
 
-import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
