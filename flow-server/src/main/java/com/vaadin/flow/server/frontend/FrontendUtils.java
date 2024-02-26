@@ -505,8 +505,7 @@ public class FrontendUtils {
 
     private static InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
-        File file = new File(new File(config.getProjectFolder(), "frontend"),
-                path);
+        File file = new File(getProjectFrontendDir(config), path);
         if (file.exists()) {
             try {
                 return Files.newInputStream(file.toPath());
