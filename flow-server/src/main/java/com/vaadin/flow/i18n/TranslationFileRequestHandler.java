@@ -36,7 +36,7 @@ public class TranslationFileRequestHandler implements RequestHandler {
 
     static final String LANGUAGE_TAG_PARAMETER_NAME = "langtag";
 
-    static final String RETRIEVED_LOCALE_HEADER_NAME = "Retrieved-Locale";
+    static final String RETRIEVED_LOCALE_HEADER_NAME = "X-Vaadin-Retrieved-Locale";
 
     private static final Locale FALLBACK_LOCALE = Locale.ROOT;
 
