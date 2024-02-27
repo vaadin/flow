@@ -184,7 +184,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         return versionsJson;
     }
 
-    private boolean isReactModuleAvailable() {
+    /**
+     * Is the React module available in the classpath.
+     *
+     * @return true if the React module is available, false otherwise
+     */
+    boolean isReactModuleAvailable() {
         try {
             options.getClassFinder().loadClass(
                     "com.vaadin.flow.component.react.ReactAdapterComponent");

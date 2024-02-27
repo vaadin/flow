@@ -36,6 +36,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -686,6 +688,45 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    public void reactEnabled_scannerDependenciesAndExclusions_excludedDependenciesNotAdded()
+            throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
+                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+                Set.of(VAADIN_DIALOG, VAADIN_OVERLAY));
+        final FrontendDependencies frontendDependenciesScanner = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages())
+                .thenReturn(createApplicationDependencies());
+        Options options = new MockOptions(finder, npmFolder)
+                .withBuildDirectory(TARGET).withEnablePnpm(false)
+                .withBundleBuild(true).withReact(true);
+        final TaskUpdatePackages task = new TaskUpdatePackages(
+                frontendDependenciesScanner, options) {
+        };
+        task.execute();
+        final JsonObject newPackageJson = getOrCreatePackageJson();
+
+        Assert.assertFalse(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertFalse(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(VAADIN_DIALOG));
+        Assert.assertFalse(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(VAADIN_OVERLAY));
+        Assert.assertFalse(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(VAADIN_OVERLAY));
+        Assert.assertTrue(
+                newPackageJson.hasKey("dependencies") && newPackageJson
+                        .getObject("dependencies").hasKey(REACT_COMPONENTS));
+        Assert.assertTrue(newPackageJson.hasKey("vaadin")
+                && newPackageJson.getObject("vaadin").getObject("dependencies")
+                        .hasKey(REACT_COMPONENTS));
+    }
+
+    @Test
     public void reactEnabled_noScannerDependencies_coreDependenciesNotAdded()
             throws IOException {
         createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
@@ -758,6 +799,7 @@ public class TaskUpdatePackagesNpmTest {
         Assert.assertFalse(newPackageJson.hasKey("vaadin")
                 && newPackageJson.getObject("vaadin").getObject("dependencies")
                         .hasKey(REACT_COMPONENTS));
+
     }
 
     private void createBasicVaadinVersionsJson() {
@@ -767,6 +809,19 @@ public class TaskUpdatePackagesNpmTest {
 
     private void createVaadinVersionsJson(String dialogVersion,
             String elementMixinVersion, String overlayVersion) {
+        createVaadinVersionsJson(dialogVersion, elementMixinVersion,
+                overlayVersion, null);
+    }
+
+    private void createVaadinVersionsJson(String dialogVersion,
+            String elementMixinVersion, String overlayVersion,
+            Set<String> exclusions) {
+        String exclusionsString = exclusions != null
+                ? ",\"exclusions\": ["
+                        + exclusions.stream().map(str -> "\"" + str + "\"")
+                                .collect(Collectors.joining(","))
+                        + "]\n"
+                : "";
         // testing with exact versions json content instead of mocking parsing
         String versionJsonString = //@formatter:off
                 "{ \"core\": {"
@@ -790,7 +845,7 @@ public class TaskUpdatePackagesNpmTest {
                         "        \"react-components\": {\n" +
                         "            \"jsVersion\": \"24.4.0-alpha13\",\n" +
                         "            \"npmName\": \"@vaadin/react-components\",\n" +
-                        "            \"mode\": \"react\"\n" +
+                        "            \"mode\": \"react\"\n" + exclusionsString +
                         "        }\n" +
                         "    }}\n";//@formatter:on
         try {

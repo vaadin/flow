@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -42,6 +46,10 @@ class VersionsJsonConverter {
     private static final String NPM_NAME = "npmName";
     private static final String NPM_VERSION = "npmVersion";
 
+    /**
+     * Key for exclusions array.
+     */
+    public static final String EXCLUSIONS = "exclusions";
     /**
      * Key for mode in the versions file.
      */
@@ -66,6 +74,8 @@ class VersionsJsonConverter {
 
     private boolean reactEnabled;
 
+    private Set<String> exclusions;
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VersionsJsonConverter.class);
     }
@@ -73,9 +83,11 @@ class VersionsJsonConverter {
     VersionsJsonConverter(JsonObject platformVersions,
             boolean collectReactComponents) {
         this.reactEnabled = collectReactComponents;
+        exclusions = new HashSet<>();
         convertedObject = Json.createObject();
 
         collectDependencies(platformVersions);
+        excludeDependencies();
     }
 
     /**
@@ -86,6 +98,15 @@ class VersionsJsonConverter {
      */
     JsonObject getConvertedJson() {
         return convertedObject;
+    }
+
+    /**
+     * Get the exclusions set of npm package names.
+     *
+     * @return the exclusions set
+     */
+    Set<String> getExclusions() {
+        return exclusions;
     }
 
     private void collectDependencies(JsonObject obj) {
@@ -99,6 +120,14 @@ class VersionsJsonConverter {
                 addDependency(json);
             } else {
                 collectDependencies(json);
+            }
+        }
+    }
+
+    private void excludeDependencies() {
+        for (String key : convertedObject.keys()) {
+            if (exclusions.contains(key)) {
+                convertedObject.remove(key);
             }
         }
     }
@@ -136,6 +165,14 @@ class VersionsJsonConverter {
                     + "Please report a bug in https://github.com/vaadin/platform/issues/new");
         }
         convertedObject.put(npmName, version);
+
+        if (obj.hasKey(EXCLUSIONS)) {
+            JsonArray array = obj.getArray(EXCLUSIONS);
+            if (array != null) {
+                IntStream.range(0, array.length())
+                        .forEach(i -> exclusions.add(array.getString(i)));
+            }
+        }
         getLogger().debug("versions.json adds dependency {} with version {}{}",
                 npmName, version, (mode != null ? " for mode " + mode : ""));
     }
