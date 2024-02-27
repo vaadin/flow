@@ -18,7 +18,7 @@ public class FileAccessIT extends ViteDevModeIT {
          * This just tests a few sample folders to see that there is not a
          * fundamental problem
          */
-        assertAllowed(FrontendUtils.DEFAULT_FRONTEND_DIR + "/jsonloader.js");
+        assertAllowed(FrontendUtils.DEFAULT_FRONTEND_DIR + "jsonloader.js");
     }
 
     private void assertAllowed(String fileInProject) throws IOException {
@@ -62,6 +62,9 @@ public class FileAccessIT extends ViteDevModeIT {
                 .replace("\\", "/");
         if (!currentPath.startsWith("/")) {
             currentPath = "/" + currentPath;
+        }
+        if (currentPath.endsWith("/")) {
+            currentPath = currentPath.substring(0, currentPath.length()-1);
         }
         return new URL("http://localhost:8888/VAADIN/@fs" + currentPath + "/"
                 + fileInProject);
