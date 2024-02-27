@@ -288,7 +288,7 @@ public class ThemeIT extends ChromeBrowserTest {
         File expectedGeneratedFolder = new File(baseDir,
                 "side-src/main/frontend/generated");
         File defaultGeneratedFolder = new File(baseDir,
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "/generated");
+                FrontendUtils.DEFAULT_FRONTEND_DIR + "generated");
 
         String[] generatedFiles = { "theme.d.ts", "theme.js",
                 "theme-app-theme.generated.js",

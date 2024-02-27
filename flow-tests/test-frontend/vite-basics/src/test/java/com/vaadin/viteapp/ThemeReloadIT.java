@@ -23,7 +23,7 @@ public class ThemeReloadIT extends ViteDevModeIT {
 
         File baseDir = new File(System.getProperty("user.dir", "."));
         File themeFolder = new File(baseDir,
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "/themes/vite-basics/");
+                FrontendUtils.DEFAULT_FRONTEND_DIR + "themes/vite-basics/");
         File stylesCss = new File(themeFolder, "styles.css");
         final String stylesContent = FileUtils.readFileToString(stylesCss,
                 StandardCharsets.UTF_8);
