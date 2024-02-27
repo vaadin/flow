@@ -40,11 +40,23 @@ public class TranslationFileRequestHandler implements RequestHandler {
 
     private static final Locale FALLBACK_LOCALE = Locale.ROOT;
 
+    private final I18NProvider i18NProvider;
+
+    public TranslationFileRequestHandler(I18NProvider i18NProvider) {
+        this.i18NProvider = i18NProvider;
+    }
+
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!shouldHandle(session, request)) {
+        if (!HandlerHelper.isRequestType(request,
+                HandlerHelper.RequestType.TRANSLATION_FILE)) {
             return false;
+        }
+        if (!(i18NProvider instanceof DefaultI18NProvider)) {
+            response.sendError(HttpStatusCode.METHOD_NOT_ALLOWED.getCode(),
+                    "Loading translations is not supported when using a custom i18n provider.");
+            return true;
         }
         Locale locale = getLocale(request);
         ResourceBundle translationPropertyFile = getTranslationPropertyFile(
@@ -55,13 +67,6 @@ public class TranslationFileRequestHandler implements RequestHandler {
             handleFound(response, translationPropertyFile);
         }
         return true;
-    }
-
-    private boolean shouldHandle(VaadinSession session, VaadinRequest request) {
-        return HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.TRANSLATION_FILE)
-                && session.getService().getInstantiator()
-                        .getI18NProvider() instanceof DefaultI18NProvider;
     }
 
     private void handleFound(VaadinResponse response,
@@ -92,8 +97,7 @@ public class TranslationFileRequestHandler implements RequestHandler {
 
     private ResourceBundle getTranslationPropertyFile(Locale locale) {
         try {
-            return ResourceBundle.getBundle(DefaultI18NProvider.BUNDLE_PREFIX,
-                    locale, I18NUtil.getClassLoader(),
+            return ((DefaultI18NProvider) i18NProvider).getBundle(locale,
                     ResourceBundle.Control.getNoFallbackControl(
                             ResourceBundle.Control.FORMAT_PROPERTIES));
         } catch (MissingResourceException e) {
@@ -102,8 +106,8 @@ public class TranslationFileRequestHandler implements RequestHandler {
                     + locale.getDisplayName() + ".", e);
         }
         try {
-            return ResourceBundle.getBundle(DefaultI18NProvider.BUNDLE_PREFIX,
-                    FALLBACK_LOCALE, I18NUtil.getClassLoader(),
+            return ((DefaultI18NProvider) i18NProvider).getBundle(
+                    FALLBACK_LOCALE,
                     ResourceBundle.Control.getNoFallbackControl(
                             ResourceBundle.Control.FORMAT_PROPERTIES));
         } catch (MissingResourceException e) {

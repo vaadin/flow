@@ -68,14 +68,20 @@ public class TranslationFileRequestHandlerTest {
     @Before
     public void init()
             throws IOException, NoSuchFieldException, IllegalAccessException {
-        mockService();
+        I18NProvider i18NProvider = Mockito.mock(DefaultI18NProvider.class,
+                Mockito.CALLS_REAL_METHODS);
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+        Mockito.when(session.getService()).thenReturn(service);
         File resources = temporaryFolder.newFolder();
         translationsFolder = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
         translationsFolder.mkdirs();
         urlClassLoader = new URLClassLoader(
                 new URL[] { resources.toURI().toURL() });
-        handler = new TranslationFileRequestHandler();
+        handler = new TranslationFileRequestHandler(i18NProvider);
         out = new StringWriter();
         writer = new PrintWriter(out);
         Mockito.when(response.getWriter()).thenReturn(writer);
@@ -222,14 +228,5 @@ public class TranslationFileRequestHandlerTest {
                         + ".properties");
         Files.writeString(file.toPath(), content, StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE);
-    }
-
-    private void mockService() {
-        I18NProvider i18NProvider = Mockito.mock(DefaultI18NProvider.class);
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
-        Mockito.when(session.getService()).thenReturn(service);
     }
 }
