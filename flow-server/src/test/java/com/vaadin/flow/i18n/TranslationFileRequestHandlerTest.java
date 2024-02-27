@@ -68,7 +68,14 @@ public class TranslationFileRequestHandlerTest {
     @Before
     public void init()
             throws IOException, NoSuchFieldException, IllegalAccessException {
-        I18NProvider i18NProvider = Mockito.mock(DefaultI18NProvider.class,
+        init(false);
+    }
+
+    private void init(boolean useCustomI18nProvider) throws IOException {
+        Class<? extends I18NProvider> i18NProviderClass = useCustomI18nProvider
+                ? I18NProvider.class
+                : DefaultI18NProvider.class;
+        I18NProvider i18NProvider = Mockito.mock(i18NProviderClass,
                 Mockito.CALLS_REAL_METHODS);
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
@@ -159,6 +166,14 @@ public class TranslationFileRequestHandlerTest {
             throws IOException {
         testResponseContentWithMockedDefaultLocale("es-ES", false, "en-US", "",
                 null);
+    }
+
+    @Test
+    public void withCustomI18nProvider_withRootBundle_requestedLocaleBundleAvailable_responseIsEmpty()
+            throws IOException {
+        init(true);
+        createTranslationFiles(true);
+        testResponseContent(true, "fi", "", null);
     }
 
     private void testResponseContentWithMockedDefaultLocale(
