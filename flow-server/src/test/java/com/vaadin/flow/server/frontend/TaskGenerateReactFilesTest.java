@@ -57,7 +57,8 @@ public class TaskGenerateReactFilesTest {
 
         options = new MockOptions(classFinder, temporaryFolder.getRoot())
                 .withBuildDirectory("target");
-        frontend = temporaryFolder.newFolder("frontend");
+        frontend = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
         options.withFrontendDirectory(frontend);
         routesTsx = new File(frontend, "routes.tsx");
     }

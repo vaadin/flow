@@ -54,9 +54,9 @@ public class DevModeInitializerClassLoaderTest {
 
         customLoader.close();
 
-        List<String> files = TestUtils.listFilesRecursively(
-                Paths.get(baseDir, "frontend", FrontendUtils.GENERATED,
-                        FrontendUtils.JAR_RESOURCES_FOLDER).toFile());
+        List<String> files = TestUtils.listFilesRecursively(Paths.get(baseDir,
+                FrontendUtils.DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED,
+                FrontendUtils.JAR_RESOURCES_FOLDER).toFile());
         Assert.assertEquals(5, files.size());
 
         Assert.assertTrue("A package.json file should be created",

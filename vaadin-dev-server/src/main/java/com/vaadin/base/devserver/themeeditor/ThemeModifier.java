@@ -189,8 +189,10 @@ public class ThemeModifier {
     }
 
     protected File getFrontendFolder() {
-        return new File(ApplicationConfiguration.get(context).getStringProperty(
-                FrontendUtils.PROJECT_BASEDIR, null), "frontend");
+        return new File(
+                ApplicationConfiguration.get(context)
+                        .getStringProperty(FrontendUtils.PROJECT_BASEDIR, null),
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
     }
 
     protected File getThemeFile() {

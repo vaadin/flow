@@ -85,11 +85,11 @@ class ThemeLiveReloadPlugin {
             "Custom theme component style sheet '" +
               deletedComponentStyleFile +
               "' has been deleted.\n\n" +
-              "You should also delete './frontend/generated/theme-" +
+              "You should also delete './src/main/frontend/generated/theme-" +
               themeName +
               ".generated.js' (simultaneously) with the component stylesheet'.\n" +
               "Otherwise it will cause a webpack compilation error 'no such file or directory', as component style sheets are referenced from " +
-              "'./frontend/generated/theme-" +
+              "'./src/main/frontend/generated/theme-" +
               themeName +
               ".generated.js'.\n\n" +
               "If you encounter a 'no such file or directory' error in your application, just click on the overlay (or refresh the browser page), and it should disappear.\n\n" +

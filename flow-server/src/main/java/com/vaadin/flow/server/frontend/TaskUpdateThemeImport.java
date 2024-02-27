@@ -36,7 +36,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  * Task generating the theme definition file 'theme.js' for importing
  * application theme into the generated frontend directory.
  *
- * Default directory is ' ./frontend/generated'
+ * Default directory is ' ./src/main/frontend/generated'
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.

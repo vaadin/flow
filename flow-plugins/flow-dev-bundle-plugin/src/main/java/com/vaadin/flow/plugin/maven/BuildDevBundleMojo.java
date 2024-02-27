@@ -164,6 +164,12 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "true")
     private boolean reactEnable;
 
+    /**
+     * A directory with project's frontend source files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
+    private File frontendDirectory;
+
     @Override
     public void execute() throws MojoFailureException {
         long start = System.nanoTime();
@@ -262,7 +268,7 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public File frontendDirectory() {
-        return new File(projectBasedir, "src/main/" + FRONTEND);
+        return frontendDirectory;
     }
 
     @Override

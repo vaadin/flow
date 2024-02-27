@@ -149,7 +149,7 @@ public class BuildFrontendMojoTest {
         defaultJavaSource = new File(".", "src/test/java");
         openApiJsonFile = new File(npmFolder,
                 "target/classes/com/vaadin/hilla/openapi.json");
-        generatedTsFolder = new File(npmFolder, "frontend/generated");
+        generatedTsFolder = new File(npmFolder, "src/main/frontend/generated");
 
         Assert.assertTrue("Failed to create a test project resources",
                 projectFrontendResourcesDirectory.mkdirs());
@@ -469,7 +469,7 @@ public class BuildFrontendMojoTest {
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         initialBuildInfo.put(Constants.NPM_TOKEN, "npm");
-        initialBuildInfo.put(Constants.FRONTEND_TOKEN, "frontend");
+        initialBuildInfo.put(Constants.FRONTEND_TOKEN, "src/main/frontend");
 
         initialBuildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 true);

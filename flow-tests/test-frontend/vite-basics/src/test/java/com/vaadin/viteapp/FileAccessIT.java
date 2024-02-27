@@ -8,6 +8,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
 public class FileAccessIT extends ViteDevModeIT {
 
     @Test
@@ -16,7 +18,7 @@ public class FileAccessIT extends ViteDevModeIT {
          * This just tests a few sample folders to see that there is not a
          * fundamental problem
          */
-        assertAllowed("frontend/jsonloader.js");
+        assertAllowed(FrontendUtils.DEFAULT_FRONTEND_DIR + "/jsonloader.js");
     }
 
     private void assertAllowed(String fileInProject) throws IOException {

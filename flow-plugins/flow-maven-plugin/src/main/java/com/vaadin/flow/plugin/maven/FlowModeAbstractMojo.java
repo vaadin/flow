@@ -80,7 +80,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * The folder where flow will put TS API files for client projects.
      */
-    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
+    @Parameter(defaultValue = "${null}")
     private File generatedTsFolder;
 
     /**
@@ -304,8 +304,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File generatedTsFolder() {
-
-        return generatedTsFolder;
+        if (generatedTsFolder != null) {
+            return generatedTsFolder;
+        }
+        return new File(frontendDirectory(), "/generated");
     }
 
     @Override

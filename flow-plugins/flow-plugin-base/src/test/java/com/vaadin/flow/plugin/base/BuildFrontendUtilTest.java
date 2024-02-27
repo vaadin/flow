@@ -61,7 +61,7 @@ public class BuildFrontendUtilTest {
         adapter = Mockito.mock(PluginAdapterBuild.class);
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
         Mockito.when(adapter.generatedTsFolder())
-                .thenReturn(new File(baseDir, "frontend/generated"));
+                .thenReturn(new File(baseDir, "src/main/frontend/generated"));
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
         ClassFinder classFinder = Mockito.mock(ClassFinder.class);
