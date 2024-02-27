@@ -555,7 +555,8 @@ public class FrontendUtils {
         if (devModeHandler.isPresent()) {
             try {
                 File frontendFile = resolveFrontendPath(
-                        devModeHandler.get().getProjectRoot(), path);
+                        devModeHandler.get().getProjectRoot(),
+                        service.getDeploymentConfiguration(), path);
                 return frontendFile == null ? null
                         : new FileInputStream(frontendFile);
             } catch (IOException e) {
@@ -567,19 +568,33 @@ public class FrontendUtils {
 
     /**
      * Looks up the frontend resource at the given path. If the path starts with
-     * {@code ./}, first look in {@code frontend}, then in
-     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
-     * with {@code ./}, look in {@code node_modules} instead.
+     * {@code ./}, first look in {@value FrontendUtils#DEFAULT_FRONTEND_DIR},
+     * then in {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not
+     * start with {@code ./}, look in {@code node_modules} instead.
      *
      * @param projectRoot
      *            the project root folder.
+     * @param deploymentConfiguration
+     *            the active deployment configuration
      * @param path
      *            the file path.
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
-    public static File resolveFrontendPath(File projectRoot, String path) {
+    public static File resolveFrontendPath(File projectRoot,
+            DeploymentConfiguration deploymentConfiguration, String path) {
         return resolveFrontendPath(projectRoot, path,
-                new File(projectRoot, FrontendUtils.FRONTEND));
+                getFrontendFolder(projectRoot, deploymentConfiguration));
+    }
+
+    private static File getFrontendFolder(File projectRoot,
+            DeploymentConfiguration deploymentConfiguration) {
+        String frontendFolderPath = deploymentConfiguration.getStringProperty(
+                FrontendUtils.PARAM_FRONTEND_DIR,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
+        if (frontendFolderPath.startsWith("./")) {
+            return new File(projectRoot, frontendFolderPath);
+        }
+        return new File(frontendFolderPath);
     }
 
     /**
