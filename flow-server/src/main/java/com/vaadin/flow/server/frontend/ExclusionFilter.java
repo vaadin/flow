@@ -34,13 +34,14 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import elemental.json.Json;
 
 /**
- * Filter for excluding dependencies from vaadin-*versions.json files.
+ * Excludes dependencies listed in an "exclusions" array of
+ * vaadin-*versions.json file from a package.json.
  */
 public class ExclusionFilter implements Serializable {
 
     private final ClassFinder finder;
 
-    private boolean reactEnabled;
+    private final boolean reactEnabled;
 
     /**
      * Create a new exclusion filter.

@@ -232,7 +232,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             // need to double check that not overriding a scanned
             // dependency since add-ons should be able to downgrade
             // version through exclusion
-            if (!applicationDependencies.containsKey(key)
+            if (!filteredApplicationDependencies.containsKey(key)
                     && pinPlatformDependency(packageJson,
                             platformPinnedDependencies, key)) {
                 added++;
