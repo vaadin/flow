@@ -79,7 +79,7 @@ public abstract class AbstractThemeEditorIT extends ChromeDeviceTest {
 
     private static File getProjectFolder() {
         File currentFolder = TestUtils.getTestFolder("com");
-        while (!new File(currentFolder, FrontendUtils.FRONTEND).exists()) {
+        while (!new File(currentFolder, FrontendUtils.DEFAULT_FRONTEND_DIR).exists()) {
             currentFolder = currentFolder.getParentFile();
         }
         return currentFolder;
@@ -93,7 +93,7 @@ public abstract class AbstractThemeEditorIT extends ChromeDeviceTest {
 
         @Override
         protected File getFrontendFolder() {
-            return new File(getProjectFolder(), FrontendUtils.FRONTEND);
+            return new File(getProjectFolder(), FrontendUtils.DEFAULT_FRONTEND_DIR);
         }
 
         public File getStyleSheetFileWithoutSideEffects() {
