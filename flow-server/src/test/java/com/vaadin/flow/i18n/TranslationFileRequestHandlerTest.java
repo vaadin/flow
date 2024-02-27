@@ -129,7 +129,7 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void languageTagWithoutCountryAvailable_responseIsCorrect()
+    public void withRootBundle_languageTagWithoutCountryAvailable_responseIsCorrect()
             throws IOException {
         testResponseContent(true, "fi", "{\"title\":\"Suomi\"}", "fi");
     }
@@ -155,14 +155,14 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withRootBundle_systemDefaultLocaleBundleAvailable_requestedLocaleBundleNotAvailable_responseIsRootBundle()
+    public void withRootBundle_requestedLocaleBundleNotAvailable_responseIsRootBundle()
             throws IOException {
         testResponseContentWithMockedDefaultLocale("es-ES", true, "en-US",
                 "{\"title\":\"Root bundle lang\"}", "und");
     }
 
     @Test
-    public void withoutRootBundle_systemDefaultLocaleBundleAvailable_requestedLocaleBundleNotAvailable_responseIsEmpty()
+    public void withoutRootBundle_requestedLocaleBundleNotAvailable_responseIsEmpty()
             throws IOException {
         testResponseContentWithMockedDefaultLocale("es-ES", false, "en-US", "",
                 null);
