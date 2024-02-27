@@ -84,6 +84,9 @@
 
         <!-- Dependencies -->
         <spring.boot.version>2.7.18</spring.boot.version>
+        <!-- spring-framework 5.3.32 has security fixes -->
+        <spring-framework.version>5.3.32</spring-framework.version>
+
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>6.2.5.Final</hibernate.validator.version>
         <slf4j.version>1.7.36</slf4j.version>
