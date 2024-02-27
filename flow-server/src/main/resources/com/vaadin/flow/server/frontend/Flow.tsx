@@ -193,6 +193,10 @@ function navigateEventHandler(event) {
 }
 
 function popstateHandler(event: PopStateEvent) {
+    fireRouterEvent('location-changed', {
+        location: window.location
+    });
+
     if (event.state === 'vaadin-router-ignore') {
         return;
     }
