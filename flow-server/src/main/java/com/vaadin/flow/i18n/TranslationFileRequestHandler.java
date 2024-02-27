@@ -54,8 +54,7 @@ public class TranslationFileRequestHandler implements RequestHandler {
             return false;
         }
         if (!(i18NProvider instanceof DefaultI18NProvider)) {
-            response.sendError(HttpStatusCode.METHOD_NOT_ALLOWED.getCode(),
-                    "Loading translations is not supported when using a custom i18n provider.");
+            handleCustomI18NProvider(session, response);
             return true;
         }
         Locale locale = getLocale(request);
@@ -79,6 +78,18 @@ public class TranslationFileRequestHandler implements RequestHandler {
 
     private void handleNotFound(VaadinResponse response) {
         response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
+    }
+
+    private void handleCustomI18NProvider(VaadinSession session,
+            VaadinResponse response) throws IOException {
+        String errorMessage = "Loading translations is not supported when using a custom i18n provider.";
+        if (session.getConfiguration().isProductionMode()) {
+            response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
+        } else {
+            response.sendError(HttpStatusCode.BAD_REQUEST.getCode(),
+                    errorMessage);
+        }
+        getLogger().warn(errorMessage);
     }
 
     private void writeFileToResponse(VaadinResponse response,

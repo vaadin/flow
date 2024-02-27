@@ -16,6 +16,7 @@
 package com.vaadin.flow.i18n;
 
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -82,6 +83,10 @@ public class TranslationFileRequestHandlerTest {
         VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         Mockito.when(session.getService()).thenReturn(service);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(session.getConfiguration()).thenReturn(configuration);
         File resources = temporaryFolder.newFolder();
         translationsFolder = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
