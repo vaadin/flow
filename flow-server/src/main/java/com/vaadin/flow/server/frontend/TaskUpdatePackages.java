@@ -205,8 +205,13 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> applicationDevDependencies) throws IOException {
         int added = 0;
 
+        Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
+                finder, options.isReactEnabled() && isReactModuleAvailable())
+                .exclude(applicationDependencies);
+
         // Add application dependencies
-        for (Entry<String, String> dep : applicationDependencies.entrySet()) {
+        for (Entry<String, String> dep : filteredApplicationDependencies
+                .entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, dep.getKey(),
                     dep.getValue());
         }
@@ -242,7 +247,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         // Remove obsolete dependencies
         List<String> dependencyCollection = Stream
-                .concat(applicationDependencies.entrySet().stream(),
+                .concat(filteredApplicationDependencies.entrySet().stream(),
                         getDefaultDependencies().entrySet().stream())
                 .map(Entry::getKey).collect(Collectors.toList());
         dependencyCollection.addAll(pinnedPlatformDependencies);
