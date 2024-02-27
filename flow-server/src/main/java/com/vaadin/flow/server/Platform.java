@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * @since 23.0
  */
 public class Platform implements Serializable {
-    static final String HILLA_POM_PROPERTIES = "META-INF/maven/com.vaadin.hilla/hilla/pom.properties";
+    static final String HILLA_POM_PROPERTIES = "META-INF/maven/com.vaadin/hilla/pom.properties";
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Platform.class);
     /**
