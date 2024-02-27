@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ import elemental.json.Json;
 /**
  * Filter for excluding dependencies from vaadin-*versions.json files.
  */
-public class ExclusionFilter {
+public class ExclusionFilter implements Serializable {
 
     private final ClassFinder finder;
 
