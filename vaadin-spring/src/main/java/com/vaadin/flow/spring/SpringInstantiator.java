@@ -47,8 +47,10 @@ public class SpringInstantiator extends DefaultInstantiator {
     /**
      * Creates a new spring instantiator instance.
      *
-     * @param service the service to use
-     * @param context the application context
+     * @param service
+     *            the service to use
+     * @param context
+     *            the application context
      */
     public SpringInstantiator(VaadinService service,
             ApplicationContext context) {
@@ -66,14 +68,13 @@ public class SpringInstantiator extends DefaultInstantiator {
 
     @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
-        Stream<VaadinServiceInitListener> springListeners
-                = Stream.concat(Stream.of(event -> {
+        Stream<VaadinServiceInitListener> springListeners = Stream
+                .concat(Stream.of(event -> {
                     // make ServiceInitEvent listenable with @EventListener
                     context.getBean(ApplicationEventPublisher.class)
                             .publishEvent(event);
-                }), context
-                        .getBeansOfType(VaadinServiceInitListener.class).values()
-                        .stream());
+                }), context.getBeansOfType(VaadinServiceInitListener.class)
+                        .values().stream());
         return Stream.concat(super.getServiceInitListeners(), springListeners);
     }
 
