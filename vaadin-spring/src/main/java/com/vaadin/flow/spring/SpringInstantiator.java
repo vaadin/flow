@@ -31,6 +31,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * Default Spring instantiator that is used if no other instantiator has been
@@ -46,10 +47,8 @@ public class SpringInstantiator extends DefaultInstantiator {
     /**
      * Creates a new spring instantiator instance.
      *
-     * @param service
-     *            the service to use
-     * @param context
-     *            the application context
+     * @param service the service to use
+     * @param context the application context
      */
     public SpringInstantiator(VaadinService service,
             ApplicationContext context) {
@@ -67,9 +66,14 @@ public class SpringInstantiator extends DefaultInstantiator {
 
     @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
-        Stream<VaadinServiceInitListener> springListeners = context
-                .getBeansOfType(VaadinServiceInitListener.class).values()
-                .stream();
+        Stream<VaadinServiceInitListener> springListeners
+                = Stream.concat(Stream.of(event -> {
+                    // make ServiceInitEvent listenable with @EventListener
+                    context.getBean(ApplicationEventPublisher.class)
+                            .publishEvent(event);
+                }), context
+                        .getBeansOfType(VaadinServiceInitListener.class).values()
+                        .stream());
         return Stream.concat(super.getServiceInitListeners(), springListeners);
     }
 
