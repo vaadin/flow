@@ -71,8 +71,7 @@ public class SpringInstantiator extends DefaultInstantiator {
         Stream<VaadinServiceInitListener> springListeners = Stream
                 .concat(Stream.of(event -> {
                     // make ServiceInitEvent listenable with @EventListener
-                    context.getBean(ApplicationEventPublisher.class)
-                            .publishEvent(event);
+                    context.publishEvent(event);
                 }), context.getBeansOfType(VaadinServiceInitListener.class)
                         .values().stream());
         return Stream.concat(super.getServiceInitListeners(), springListeners);
