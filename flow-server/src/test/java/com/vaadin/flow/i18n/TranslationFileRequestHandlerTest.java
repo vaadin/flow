@@ -18,6 +18,7 @@ package com.vaadin.flow.i18n;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -27,6 +28,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
@@ -72,10 +74,11 @@ public class TranslationFileRequestHandlerTest {
     @Before
     public void init()
             throws IOException, NoSuchFieldException, IllegalAccessException {
-        init(false);
+        init(false, false);
     }
 
-    private void init(boolean useCustomI18nProvider) throws IOException {
+    private void init(boolean useCustomI18nProvider, boolean isProductionMode)
+            throws IOException {
         Class<? extends I18NProvider> i18NProviderClass = useCustomI18nProvider
                 ? I18NProvider.class
                 : DefaultI18NProvider.class;
@@ -85,11 +88,13 @@ public class TranslationFileRequestHandlerTest {
         Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
         VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
-        Mockito.when(session.getService()).thenReturn(service);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.isProductionMode())
+                .thenReturn(isProductionMode);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        Mockito.when(session.getService()).thenReturn(service);
         File resources = temporaryFolder.newFolder();
         translationsFolder = new File(resources,
                 DefaultI18NProvider.BUNDLE_FOLDER);
@@ -128,19 +133,21 @@ public class TranslationFileRequestHandlerTest {
             throws IOException {
         testResponseContent(true, null, "{\"title\":\"Root bundle lang\"}",
                 "und");
+        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
     public void withoutRootBundle_languageTagIsNull_responseIsEmpty()
             throws IOException {
         testResponseContent(false, null, "", null);
-        Mockito.verify(response).setStatus(404);
+        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
     public void withRootBundle_languageTagWithoutCountryAvailable_responseIsCorrect()
             throws IOException {
         testResponseContent(true, "fi", "{\"title\":\"Suomi\"}", "fi");
+        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -148,12 +155,14 @@ public class TranslationFileRequestHandlerTest {
             throws IOException {
         testResponseContent(true, "es", "{\"title\":\"Root bundle lang\"}",
                 "und");
+        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
     public void withoutRootBundle_languageTagWithoutCountryNotAvailable_responseIsEmpty()
             throws IOException {
         testResponseContent(false, "es", "", null);
+        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
@@ -161,6 +170,7 @@ public class TranslationFileRequestHandlerTest {
             throws IOException {
         testResponseContent(false, "es-ES", "{\"title\":\"Espanol (Spain)\"}",
                 "es-ES");
+        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -168,6 +178,7 @@ public class TranslationFileRequestHandlerTest {
             throws IOException {
         testResponseContentWithMockedDefaultLocale("es-ES", true, "en-US",
                 "{\"title\":\"Root bundle lang\"}", "und");
+        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -175,14 +186,27 @@ public class TranslationFileRequestHandlerTest {
             throws IOException {
         testResponseContentWithMockedDefaultLocale("es-ES", false, "en-US", "",
                 null);
+        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
-    public void withCustomI18nProvider_withRootBundle_requestedLocaleBundleAvailable_responseIsEmpty()
+    public void withCustomI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
             throws IOException {
-        init(true);
+        init(true, false);
         createTranslationFiles(true);
         testResponseContent(true, "fi", "", null);
+        Mockito.verify(response).sendError(
+                Mockito.eq(HttpStatusCode.NOT_IMPLEMENTED.getCode()),
+                Mockito.anyString());
+    }
+
+    @Test
+    public void productionMode_withCustomI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
+            throws IOException {
+        init(true, true);
+        createTranslationFiles(true);
+        testResponseContent(true, "fi", "", null);
+        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     private void testResponseContentWithMockedDefaultLocale(
