@@ -89,7 +89,7 @@ public class TranslationFileRequestHandler implements RequestHandler {
             response.sendError(HttpStatusCode.BAD_REQUEST.getCode(),
                     errorMessage);
         }
-        getLogger().warn(errorMessage);
+        getLogger().debug(errorMessage);
     }
 
     private void writeFileToResponse(VaadinResponse response,
