@@ -310,7 +310,7 @@ internal class PluginEffectiveConfiguration(
         .convention(project.projectDir)
 
     val frontendDirectory: Provider<File> = extension.frontendDirectory
-        .convention(File(project.projectDir, "frontend"))
+        .convention(File(project.projectDir, FrontendUtils.DEFAULT_FRONTEND_DIR))
 
     val generateBundle: Provider<Boolean> = extension.generateBundle
         .convention(true)
@@ -359,7 +359,7 @@ internal class PluginEffectiveConfiguration(
         .convention(File(project.projectDir, "src/main/resources"))
 
     val generatedTsFolder: Property<File> = extension.generatedTsFolder
-        .convention(File(project.projectDir, "frontend/generated"))
+        .convention(File(project.projectDir, FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR))
 
     val nodeVersion: Property<String> = extension.nodeVersion
         .convention(FrontendTools.DEFAULT_NODE_VERSION)
