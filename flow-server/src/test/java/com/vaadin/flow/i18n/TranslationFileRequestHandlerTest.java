@@ -131,6 +131,7 @@ public class TranslationFileRequestHandlerTest {
     public void withoutRootBundle_languageTagIsNull_responseIsEmpty()
             throws IOException {
         testResponseContent(false, null, "", null);
+        Mockito.verify(response).setStatus(404);
     }
 
     @Test
