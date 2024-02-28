@@ -85,13 +85,13 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     private void handleCustomI18NProvider(VaadinSession session,
             VaadinResponse response) throws IOException {
         String errorMessage = "Loading translations is not supported when using a custom i18n provider.";
-        if (session.getConfiguration().isProductionMode()) {
+        if (session.getService().getDeploymentConfiguration().isProductionMode()) {
             response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
         } else {
             response.sendError(HttpStatusCode.BAD_REQUEST.getCode(),
                     errorMessage);
         }
-        getLogger().warn(errorMessage);
+        getLogger().debug(errorMessage);
     }
 
     private void writeFileToResponse(VaadinResponse response,
@@ -114,7 +114,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
                     ResourceBundle.Control.getNoFallbackControl(
                             ResourceBundle.Control.FORMAT_PROPERTIES));
         } catch (MissingResourceException e) {
-            getLogger().info("Missing resource bundle for "
+            getLogger().debug("Missing resource bundle for "
                     + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
                     + locale.getDisplayName() + ".", e);
         }
@@ -124,7 +124,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
                     ResourceBundle.Control.getNoFallbackControl(
                             ResourceBundle.Control.FORMAT_PROPERTIES));
         } catch (MissingResourceException e) {
-            getLogger().warn("Missing fallback resource bundle for "
+            getLogger().debug("Missing fallback resource bundle for "
                     + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
                     + FALLBACK_LOCALE.getDisplayName() + ".", e);
         }
