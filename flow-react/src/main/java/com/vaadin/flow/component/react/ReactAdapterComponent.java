@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.component.react;
 
-import java.util.function.Function;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
 
@@ -198,7 +197,7 @@ public abstract class ReactAdapterComponent extends Component {
     }
 
     private <T> DomListenerRegistration addJsonReaderStateChangeListener(
-            String stateName, Function<JsonValue, T> jsonReader,
+            String stateName, SerializableFunction<JsonValue, T> jsonReader,
             SerializableConsumer<T> listener) {
         return getElement().addPropertyChangeListener(stateName,
                 stateName + "-changed", (event -> {
