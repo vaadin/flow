@@ -57,6 +57,18 @@ public class ComponentEvent<T extends Component> extends EventObject {
     }
 
     /**
+     * A shorthand to get the active UI where this component event is fired.
+     * By default the active UI is detected through the source component, but
+     * in case the component is not attached, a thread local UI is returned 
+     * instead.
+     * 
+     * @return the active UI within this event occurred 
+     */
+    public UI getUI() {
+        return getSource().getUI().orElseGet(() -> UI.getCurrent());
+    }
+
+    /**
      * Checks if this event originated from the client side.
      *
      * @return <code>true</code> if the event originated from the client side,
