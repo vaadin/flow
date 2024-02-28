@@ -109,10 +109,20 @@ public class FrontendUtils {
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
      *
-     * By default it is <code>/frontend</code> in the project folder.
+     * By default it is <code>/src/main/frontend</code> in the project folder.
      */
     public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR
             + "src/main/" + FRONTEND;
+
+    /**
+     * Path of the old folder containing application frontend source files, it
+     * needs to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
+     *
+     * By default the old folder is <code>/frontend</code> in the project
+     * folder.
+     */
+    public static final String LEGACY_FRONTEND_DIR = DEFAULT_NODE_DIR
+            + FRONTEND;
 
     /**
      * The name of the vite configuration file.
@@ -587,14 +597,17 @@ public class FrontendUtils {
     }
 
     private static File getFrontendFolder(File projectRoot,
-            DeploymentConfiguration deploymentConfiguration) {
+            AbstractConfiguration deploymentConfiguration) {
         String frontendFolderPath = deploymentConfiguration.getStringProperty(
                 FrontendUtils.PARAM_FRONTEND_DIR,
                 FrontendUtils.DEFAULT_FRONTEND_DIR);
-        if (frontendFolderPath.startsWith("./")) {
-            return new File(projectRoot, frontendFolderPath);
+
+        File f = new File(frontendFolderPath);
+        if (f.isAbsolute()) {
+            return f;
         }
-        return new File(frontendFolderPath);
+
+        return new File(projectRoot, frontendFolderPath);
     }
 
     /**
@@ -683,13 +696,8 @@ public class FrontendUtils {
      */
     public static File getProjectFrontendDir(
             AbstractConfiguration configuration) {
-        String propertyValue = configuration
-                .getStringProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
-        File f = new File(propertyValue);
-        if (f.isAbsolute()) {
-            return f;
-        }
-        return new File(configuration.getProjectFolder(), propertyValue);
+        return getFrontendFolder(configuration.getProjectFolder(),
+                configuration);
     }
 
     /**

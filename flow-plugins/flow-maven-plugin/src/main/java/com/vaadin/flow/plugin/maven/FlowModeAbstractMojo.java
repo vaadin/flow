@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 import java.io.File;
 import java.net.URI;
@@ -298,7 +299,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File frontendDirectory() {
-
         return frontendDirectory;
     }
 
@@ -307,7 +307,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (generatedTsFolder != null) {
             return generatedTsFolder;
         }
-        return new File(frontendDirectory(), "/generated");
+        return new File(frontendDirectory(), GENERATED);
     }
 
     @Override
