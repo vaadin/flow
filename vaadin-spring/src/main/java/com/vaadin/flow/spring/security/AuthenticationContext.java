@@ -18,6 +18,17 @@ package com.vaadin.flow.spring.security;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -30,16 +41,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-
-import java.io.IOException;
-import java.security.Principal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -183,9 +184,13 @@ public class AuthenticationContext {
 
     /**
      * Checks whether the current authenticated user has the given role.
+     * <p>
+     * </p>
+     * The role must be provided without the role prefix, for example
+     * {@code hasRole("USER")} instead of {@code hasRole("ROLE_USER")}.
      *
      * @param role
-     *            the role to check.
+     *            the role to check, without the role prefix.
      * @return {@literal true} if the user holds the given role, otherwise
      *         {@literal false}.
      */
@@ -195,9 +200,15 @@ public class AuthenticationContext {
 
     /**
      * Checks whether the current authenticated user has any of the given roles.
+     * <p>
+     * </p>
+     * Roles must be provided without the role prefix, for example
+     * {@code hasAnyRole(Set.of("USER", "ADMIN"))} instead of
+     * {@code hasAnyRole(Set.of("ROLE_USER", "ROLE_ADMIN"))}.
      *
      * @param roles
-     *            a collection containing at least one role.
+     *            a collection containing at least one role, without the role
+     *            prefix.
      * @return {@literal true} if the user holds at least one of the given
      *         roles, otherwise {@literal false}.
      * @throws IllegalArgumentException
@@ -213,9 +224,15 @@ public class AuthenticationContext {
 
     /**
      * Checks whether the current authenticated user has any of the given roles.
+     * <p>
+     * </p>
+     * Roles must be provided without the role prefix, for example
+     * {@code hasAnyRole("USER", "ADMIN")} instead of
+     * {@code hasAnyRole("ROLE_USER", "ROLE_ADMIN")}.
      *
      * @param roles
-     *            an array containing at least one role.
+     *            an array containing at least one role, without the role
+     *            prefix.
      * @return {@literal true} if the user holds at least one of the given
      *         roles, otherwise {@literal false}.
      * @throws IllegalArgumentException
@@ -227,9 +244,15 @@ public class AuthenticationContext {
 
     /**
      * Checks whether the current authenticated user has all the given roles.
+     * <p>
+     * </p>
+     * Roles must be provided without the role prefix, for example
+     * {@code hasAllRoles(Set.of("USER", "ADMIN"))} instead of
+     * {@code hasAllRoles(Set.of("ROLE_USER", "ROLE_ADMIN"))}.
      *
      * @param roles
-     *            a collection containing at least one role.
+     *            a collection containing at least one role, without the role
+     *            prefix.
      * @return {@literal true} if the user holds all the given roles, otherwise
      *         {@literal false}.
      * @throws IllegalArgumentException
@@ -246,9 +269,15 @@ public class AuthenticationContext {
 
     /**
      * Checks whether the current authenticated user has all the given roles.
+     * <p>
+     * </p>
+     * Roles must be provided without the role prefix, for example
+     * {@code hasAllRoles("USER", "ADMIN")} instead of
+     * {@code hasAllRoles("ROLE_USER", "ROLE_ADMIN")}.
      *
      * @param roles
-     *            an array containing at least one role.
+     *            an array containing at least one role, without the role
+     *            prefix.
      * @return {@literal true} if the user holds all the given roles, otherwise
      *         {@literal false}.
      * @throws IllegalArgumentException
