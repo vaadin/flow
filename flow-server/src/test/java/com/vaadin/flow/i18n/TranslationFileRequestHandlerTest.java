@@ -104,7 +104,7 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @After
-    public void cleanup() throws NoSuchFieldException, IllegalAccessException {
+    public void cleanup() {
         ResourceBundle.clearCache(urlClassLoader);
     }
 
