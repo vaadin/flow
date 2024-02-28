@@ -17,7 +17,7 @@ package com.vaadin.flow.i18n;
 
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -32,7 +32,7 @@ import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
-public class TranslationFileRequestHandler implements RequestHandler {
+public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     static final String LANGUAGE_TAG_PARAMETER_NAME = "langtag";
 
@@ -47,12 +47,8 @@ public class TranslationFileRequestHandler implements RequestHandler {
     }
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
-        if (!HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.TRANSLATION_FILE)) {
-            return false;
-        }
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
         if (!(i18NProvider instanceof DefaultI18NProvider)) {
             handleCustomI18NProvider(session, response);
             return true;
@@ -66,6 +62,12 @@ public class TranslationFileRequestHandler implements RequestHandler {
             handleFound(response, translationPropertyFile);
         }
         return true;
+    }
+
+    @Override
+    protected boolean canHandleRequest(VaadinRequest request) {
+        return HandlerHelper.isRequestType(request,
+                HandlerHelper.RequestType.TRANSLATION_FILE);
     }
 
     private void handleFound(VaadinResponse response,
