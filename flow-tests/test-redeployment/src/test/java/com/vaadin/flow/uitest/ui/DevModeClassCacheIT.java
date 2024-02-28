@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -41,6 +42,20 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
     private static final Path VIEW_PATH = Path.of("com", "vaadin", "flow",
             "uitest", "ui", "reloadaddedviews");
+
+    private static final String NEW_CLASS_WITH_ROUTE = """
+            package com.vaadin.flow.uitest.ui.reloadaddedviews;
+            import com.vaadin.flow.component.html.Div;
+            import com.vaadin.flow.router.Route;
+            @Route("compiled-at-runtime")
+            public class MyView extends Div {}
+            """;
+
+    private static final String NEW_CLASS_WITHOUT_ROUTE = """
+            package com.vaadin.flow.uitest.ui.reloadaddedviews;
+            import com.vaadin.flow.component.html.Div;
+            public class MyView extends Div {}
+            """;
 
     @Override
     protected String getTestPath() {
@@ -80,8 +95,9 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
                 "com.vaadin.flow.uitest.ui",
                 allSpans.get(5).getText().split(":")[1]);
 
-        // Ensure newly created classes are correctly added to the cache
-        createNewViewReloadAndWait();
+        // Ensure newly created classes in packages not previously used for
+        // routes are correctly added to the cache
+        createNewViewReloadAndWait(true);
 
         waitForElementPresent(By.id("last-span"));
 
@@ -96,10 +112,28 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
         Assert.assertEquals("Unexpected cached route packages.",
                 "com.vaadin.flow.uitest.ui,com.vaadin.flow.uitest.ui.reloadaddedviews",
                 allSpans.get(5).getText().split(":")[1]);
+
+        // Modify the class to remove Route annotation and ensure the package is
+        // removed from route packages
+        createNewViewReloadAndWait(false);
+        waitForElementPresent(By.id("last-span"));
+        allSpans = $("span").all();
+        Assert.assertEquals("Unexpected cached route packages.",
+                "com.vaadin.flow.uitest.ui",
+                allSpans.get(5).getText().split(":")[1]);
+
+        // Modify the class to add Route annotation and ensure the package is
+        // once again added to route packages
+        createNewViewReloadAndWait(true);
+        waitForElementPresent(By.id("last-span"));
+        allSpans = $("span").all();
+        Assert.assertEquals("Unexpected cached route packages.",
+                "com.vaadin.flow.uitest.ui,com.vaadin.flow.uitest.ui.reloadaddedviews",
+                allSpans.get(5).getText().split(":")[1]);
     }
 
     // create class on the fly
-    protected void createNewViewReloadAndWait() {
+    protected void createNewViewReloadAndWait(boolean withRoute) {
         String viewId = getViewId();
 
         Path baseDir = new File(System.getProperty("user.dir", ".")).toPath();
@@ -109,13 +143,10 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
         Path sourceFile = sourcePath.resolve("MyView.java");
         try {
             Files.createDirectories(sourcePath);
-            Files.writeString(sourceFile, """
-                    package com.vaadin.flow.uitest.ui.reloadaddedviews;
-                    import com.vaadin.flow.component.html.Div;
-                    import com.vaadin.flow.router.Route;
-                    @Route("compiled-at-runtime")
-                    public class MyView extends Div {}
-                    """);
+            Files.writeString(sourceFile,
+                    withRoute ? NEW_CLASS_WITH_ROUTE : NEW_CLASS_WITHOUT_ROUTE,
+                    StandardOpenOption.WRITE, StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -132,5 +163,4 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
             }
         });
     }
-
 }
