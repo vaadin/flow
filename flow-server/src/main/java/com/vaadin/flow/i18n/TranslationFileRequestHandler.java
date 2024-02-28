@@ -106,6 +106,13 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     private Locale getLocale(VaadinRequest request) {
         String languageTag = Objects.requireNonNullElse(
                 request.getParameter(LANGUAGE_TAG_PARAMETER_NAME), "");
+        if (languageTag.contains("_")) {
+            String[] tokens = languageTag.split("_",-1);
+            String language = tokens[0];
+            String country = tokens.length > 1 ? tokens[1] : "";
+            String variant = tokens.length > 2 ? tokens[2] : "";
+            return new Locale(language, country, variant);
+        }
         return Locale.forLanguageTag(languageTag);
     }
 

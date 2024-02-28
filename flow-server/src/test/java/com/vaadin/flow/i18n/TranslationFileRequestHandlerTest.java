@@ -190,6 +190,14 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
+    public void languageTagWithUnderscoresAvailable_responseIsCorrect()
+            throws IOException {
+        testResponseContent(false, "es_ES", "{\"title\":\"Espanol (Spain)\"}",
+                "es-ES");
+        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+    }
+
+    @Test
     public void withCustomI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
             throws IOException {
         init(true, false);
