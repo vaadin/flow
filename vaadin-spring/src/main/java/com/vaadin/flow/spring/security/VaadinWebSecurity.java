@@ -211,6 +211,16 @@ public abstract class VaadinWebSecurity {
             // Public endpoints are OK to access
             urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
                     .permitAll();
+            // Public hilla routes are OK to access
+            urlRegistry.requestMatchers(requestUtil::isAnonymousHillaRoute)
+                    .permitAll();
+
+            // Authenticated hilla routes are needs proper access control
+            //TODO test
+            urlRegistry.requestMatchers(requestUtil::isAuthenticatedHillaRoute)
+                            .access((auth, request) ->
+                                    requestUtil.isHillaRouteAllowed(request));
+
             // Public routes are OK to access
             urlRegistry.requestMatchers(requestUtil::isAnonymousRoute)
                     .permitAll();

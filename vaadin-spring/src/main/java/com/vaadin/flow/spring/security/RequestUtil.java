@@ -3,6 +3,7 @@ package com.vaadin.flow.spring.security;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -11,11 +12,15 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.internal.hilla.RouteRequestUtil;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
@@ -48,6 +53,9 @@ public class RequestUtil {
 
     @Autowired(required = false)
     private EndpointRequestUtil endpointRequestUtil;
+
+    @Autowired(required = false)
+    private RouteRequestUtil routeRequestUtil;
 
     @Autowired
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
@@ -94,7 +102,7 @@ public class RequestUtil {
      *
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is targeting an anonymous enpoint,
+     * @return {@code true} if the request is targeting an anonymous endpoint,
      *         {@code false} otherwise
      */
     public boolean isAnonymousEndpoint(HttpServletRequest request) {
@@ -102,6 +110,44 @@ public class RequestUtil {
             return endpointRequestUtil.isAnonymousEndpoint(request);
         }
         return false;
+    }
+
+    /**
+     * Checks whether the request targets a client route that is public
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting an anonymous route,
+     *         {@code false} otherwise
+     */
+    public boolean isAnonymousHillaRoute(HttpServletRequest request) {
+        if (routeRequestUtil != null) {
+            return routeRequestUtil.isAnonymousRoute(request);
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the request targets a client route that is public
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting an anonymous route,
+     *         {@code false} otherwise
+     */
+    public boolean isAuthenticatedHillaRoute(HttpServletRequest request) {
+        if (routeRequestUtil != null) {
+            return routeRequestUtil.isAuthenticatedRoute(request);
+        }
+        return false;
+    }
+
+
+    public AuthorizationDecision isHillaRouteAllowed(final RequestAuthorizationContext request) {
+        if (routeRequestUtil != null) {
+            return new AuthorizationDecision(routeRequestUtil.isRouteAllowed(request.getRequest()));
+        }
+        return new AuthorizationDecision(false);
     }
 
     /**
