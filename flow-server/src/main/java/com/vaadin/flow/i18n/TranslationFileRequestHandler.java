@@ -28,9 +28,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.MissingResourceException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
@@ -117,24 +118,46 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     }
 
     private ResourceBundle getTranslationPropertyFile(Locale locale) {
-        try {
-            return ((DefaultI18NProvider) i18NProvider).getBundle(locale,
-                    ResourceBundle.Control.getNoFallbackControl(
-                            ResourceBundle.Control.FORMAT_PROPERTIES));
-        } catch (MissingResourceException e) {
+        Locale bestMatchLocale = getBestMatchLocale(locale);
+        if (!locale.equals(bestMatchLocale)) {
             getLogger().debug("Missing resource bundle for "
                     + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
-                    + locale.getDisplayName() + ".", e);
+                    + locale.getDisplayName() + ".");
         }
-        try {
-            return ((DefaultI18NProvider) i18NProvider).getBundle(
-                    FALLBACK_LOCALE,
-                    ResourceBundle.Control.getNoFallbackControl(
-                            ResourceBundle.Control.FORMAT_PROPERTIES));
-        } catch (MissingResourceException e) {
+        if (bestMatchLocale == null) {
             getLogger().debug("Missing fallback resource bundle for "
                     + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
-                    + FALLBACK_LOCALE.getDisplayName() + ".", e);
+                    + FALLBACK_LOCALE.getDisplayName() + ".");
+            return null;
+        }
+        return ((DefaultI18NProvider) i18NProvider).getBundle(bestMatchLocale,
+                ResourceBundle.Control.getNoFallbackControl(
+                        ResourceBundle.Control.FORMAT_PROPERTIES));
+    }
+
+    private Locale getBestMatchLocale(Locale locale) {
+        Set<Locale> providedLocales = Set.copyOf(i18NProvider.getProvidedLocales());
+        if (providedLocales.contains(locale)) {
+            return locale;
+        }
+        Optional<Locale> languageAndCountryMatch = providedLocales.stream()
+                .filter(providedLocale -> providedLocale.getLanguage()
+                        .equals(locale.getLanguage())
+                        && providedLocale.getCountry()
+                                .equals(locale.getCountry()))
+                .findAny();
+        if (languageAndCountryMatch.isPresent()) {
+            return languageAndCountryMatch.get();
+        }
+        Optional<Locale> languageMatch = providedLocales.stream()
+                .filter(providedLocale -> providedLocale.getLanguage()
+                        .equals(locale.getLanguage()))
+                .findAny();
+        if (languageMatch.isPresent()) {
+            return languageMatch.get();
+        }
+        if (providedLocales.contains(FALLBACK_LOCALE)) {
+            return FALLBACK_LOCALE;
         }
         return null;
     }

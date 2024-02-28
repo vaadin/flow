@@ -44,6 +44,8 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -71,6 +73,8 @@ public class TranslationFileRequestHandlerTest {
 
     private ArgumentCaptor<String> retrievedLocaleCapture;
 
+    private List<Locale> providedLocales = new ArrayList<>();
+
     @Before
     public void init()
             throws IOException, NoSuchFieldException, IllegalAccessException {
@@ -84,6 +88,7 @@ public class TranslationFileRequestHandlerTest {
                 : DefaultI18NProvider.class;
         I18NProvider i18NProvider = Mockito.mock(i18NProviderClass,
                 Mockito.CALLS_REAL_METHODS);
+        Mockito.when(i18NProvider.getProvidedLocales()).thenReturn(providedLocales);
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
         VaadinService service = Mockito.mock(VaadinService.class);
@@ -144,29 +149,22 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
-    public void withRootBundle_languageTagWithoutCountryAvailable_responseIsCorrect()
+    public void languageTagWithoutCountryAvailable_responseIsCorrect()
             throws IOException {
         testResponseContent(true, "fi", "{\"title\":\"Suomi\"}", "fi");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
-    public void withRootBundle_languageTagWithoutCountryNotAvailable_responseIsRootBundle()
+    public void tagContainsOnlyLanguage_languageOnlyAvailableWithCountry_responseHasTheCorrectLanguage()
             throws IOException {
-        testResponseContent(true, "es", "{\"title\":\"Root bundle lang\"}",
-                "und");
+        testResponseContent(false, "es", "{\"title\":\"Espanol (Spain)\"}",
+                "es-ES");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
-    public void withoutRootBundle_languageTagWithoutCountryNotAvailable_responseIsEmpty()
-            throws IOException {
-        testResponseContent(false, "es", "", null);
-        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
-    }
-
-    @Test
-    public void withoutRootBundle_languageTagWithCountryAvailable_responseIsCorrect()
+    public void languageTagWithCountryAvailable_responseIsCorrect()
             throws IOException {
         testResponseContent(false, "es-ES", "{\"title\":\"Espanol (Spain)\"}",
                 "es-ES");
@@ -274,11 +272,13 @@ public class TranslationFileRequestHandlerTest {
     private void createTranslationFiles(boolean withRootBundleFile)
             throws IOException {
         if (withRootBundleFile) {
+            providedLocales.add(Locale.ROOT);
             createTranslationFile("title=Root bundle lang", "");
         }
+        providedLocales.add(Locale.forLanguageTag("fi"));
         createTranslationFile("title=Suomi", "_fi");
+        providedLocales.add(Locale.forLanguageTag("es-ES"));
         createTranslationFile("title=Espanol (Spain)", "_es_ES");
-        createTranslationFile("title=Espanol (Argentina)", "_es_AR");
     }
 
     private void createTranslationFile(String content, String fileNameSuffix)
