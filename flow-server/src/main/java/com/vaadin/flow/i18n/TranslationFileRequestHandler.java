@@ -88,7 +88,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         if (session.getService().getDeploymentConfiguration().isProductionMode()) {
             response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
         } else {
-            response.sendError(HttpStatusCode.BAD_REQUEST.getCode(),
+            response.sendError(HttpStatusCode.NOT_IMPLEMENTED.getCode(),
                     errorMessage);
         }
         getLogger().debug(errorMessage);
