@@ -83,7 +83,7 @@ public class TranslationFileRequestHandler implements RequestHandler {
     private void handleCustomI18NProvider(VaadinSession session,
             VaadinResponse response) throws IOException {
         String errorMessage = "Loading translations is not supported when using a custom i18n provider.";
-        if (session.getConfiguration().isProductionMode()) {
+        if (session.getService().getDeploymentConfiguration().isProductionMode()) {
             response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
         } else {
             response.sendError(HttpStatusCode.BAD_REQUEST.getCode(),
