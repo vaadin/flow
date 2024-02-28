@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.component.react;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
 
@@ -65,7 +65,8 @@ public abstract class ReactAdapterComponent extends Component {
      *            type of the state value
      */
     protected <T> DomListenerRegistration addStateChangeListener(
-            String stateName, Class<T> typeClass, Consumer<T> listener) {
+            String stateName, Class<T> typeClass,
+            SerializableConsumer<T> listener) {
         return addJsonReaderStateChangeListener(stateName,
                 (jsonValue -> readFromJson(jsonValue, typeClass)), listener);
     }
@@ -86,7 +87,7 @@ public abstract class ReactAdapterComponent extends Component {
      */
     protected <T> DomListenerRegistration addStateChangeListener(
             String stateName, TypeReference<T> typeReference,
-            Consumer<T> listener) {
+            SerializableConsumer<T> listener) {
         return addJsonReaderStateChangeListener(stateName,
                 (jsonValue -> readFromJson(jsonValue, typeReference)),
                 listener);
@@ -198,7 +199,7 @@ public abstract class ReactAdapterComponent extends Component {
 
     private <T> DomListenerRegistration addJsonReaderStateChangeListener(
             String stateName, Function<JsonValue, T> jsonReader,
-            Consumer<T> listener) {
+            SerializableConsumer<T> listener) {
         return getElement().addPropertyChangeListener(stateName,
                 stateName + "-changed", (event -> {
                     JsonValue newStateJson = JsonCodec
