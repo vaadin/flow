@@ -97,7 +97,7 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
         // Ensure newly created classes in packages not previously used for
         // routes are correctly added to the cache
-        createNewViewReloadAndWait(true);
+        createOrUpdateViewReloadAndWait(true);
 
         waitForElementPresent(By.id("last-span"));
 
@@ -115,7 +115,7 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
         // Modify the class to remove Route annotation and ensure the package is
         // removed from route packages
-        createNewViewReloadAndWait(false);
+        createOrUpdateViewReloadAndWait(false);
         waitForElementPresent(By.id("last-span"));
         allSpans = $("span").all();
         Assert.assertEquals("Unexpected cached route packages.",
@@ -124,7 +124,7 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
 
         // Modify the class to add Route annotation and ensure the package is
         // once again added to route packages
-        createNewViewReloadAndWait(true);
+        createOrUpdateViewReloadAndWait(true);
         waitForElementPresent(By.id("last-span"));
         allSpans = $("span").all();
         Assert.assertEquals("Unexpected cached route packages.",
@@ -132,8 +132,8 @@ public class DevModeClassCacheIT extends AbstractReloadIT {
                 allSpans.get(5).getText().split(":")[1]);
     }
 
-    // create class on the fly
-    protected void createNewViewReloadAndWait(boolean withRoute) {
+    // create or modify class on the fly
+    protected void createOrUpdateViewReloadAndWait(boolean withRoute) {
         String viewId = getViewId();
 
         Path baseDir = new File(System.getProperty("user.dir", ".")).toPath();
