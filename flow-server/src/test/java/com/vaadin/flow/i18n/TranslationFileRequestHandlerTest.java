@@ -232,14 +232,18 @@ public class TranslationFileRequestHandlerTest {
             util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
             setRequestParams(requestedLanguageTag,
                     HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier());
-            Assert.assertTrue(
+            Assert.assertTrue("The request was not handled by the handler.",
                     handler.handleRequest(session, request, response));
-            Assert.assertEquals(expectedResponseContent, getResponseContent());
+            Assert.assertEquals(
+                    "The expected response content does not match the actual response content.",
+                    expectedResponseContent, getResponseContent());
             if (expectedResponseLanguageTag == null) {
-                Assert.assertEquals(0,
-                        retrievedLocaleCapture.getAllValues().size());
+                Assert.assertEquals("The response language tag was not found.",
+                        0, retrievedLocaleCapture.getAllValues().size());
             } else {
-                Assert.assertEquals(expectedResponseLanguageTag,
+                Assert.assertEquals(
+                        "The expected response language tag does not match the actual response language tag.",
+                        expectedResponseLanguageTag,
                         retrievedLocaleCapture.getValue());
             }
         }
