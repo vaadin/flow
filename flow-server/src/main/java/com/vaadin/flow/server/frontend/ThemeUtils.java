@@ -77,10 +77,18 @@ public class ThemeUtils {
         if (config.isProductionMode()) {
             return getThemeAnnotation(context).map(Theme::value);
         } else {
-            File themeJs = new File(config.getProjectFolder(),
-                    FrontendUtils.FRONTEND + FrontendUtils.GENERATED
-                            + FrontendUtils.THEME_IMPORTS_NAME);
-
+            File themeJs;
+            String frontendFolderPath = config.getStringProperty(
+                    FrontendUtils.PARAM_FRONTEND_DIR,
+                    FrontendUtils.DEFAULT_FRONTEND_DIR);
+            if (frontendFolderPath.startsWith("./")) {
+                themeJs = Paths.get(config.getProjectFolder().getPath(),
+                        frontendFolderPath, FrontendUtils.GENERATED,
+                        FrontendUtils.THEME_IMPORTS_NAME).toFile();
+            } else {
+                themeJs = Paths.get(frontendFolderPath, FrontendUtils.GENERATED,
+                        FrontendUtils.THEME_IMPORTS_NAME).toFile();
+            }
             if (!themeJs.exists()) {
                 return Optional.empty();
             }
