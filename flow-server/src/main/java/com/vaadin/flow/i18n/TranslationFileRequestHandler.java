@@ -112,7 +112,7 @@ public class TranslationFileRequestHandler implements RequestHandler {
                     ResourceBundle.Control.getNoFallbackControl(
                             ResourceBundle.Control.FORMAT_PROPERTIES));
         } catch (MissingResourceException e) {
-            getLogger().info("Missing resource bundle for "
+            getLogger().debug("Missing resource bundle for "
                     + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
                     + locale.getDisplayName() + ".", e);
         }
