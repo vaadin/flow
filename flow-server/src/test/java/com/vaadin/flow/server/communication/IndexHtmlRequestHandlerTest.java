@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -51,7 +52,6 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -73,11 +73,15 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -990,11 +994,12 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(request.getRemoteAddr()).thenReturn(remoteAddr);
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(
-                configuration.getStringProperty("devmode.hostsAllowed", null))
-                .thenAnswer(q -> {
-                    return hostsAllowedProperty;
-                });
+        Mockito.doAnswer(q -> hostsAllowedProperty).when(configuration)
+                .getStringProperty(SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED,
+                        null);
+        // Mockito.when(configuration.getStringProperty(
+        // SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null))
+        // .thenAnswer(q -> hostsAllowedProperty);
         Mockito.when(request.getHeader("X-Forwarded-For"))
                 .thenReturn(forwardedForHeader);
         return IndexHtmlRequestHandler.isAllowedDevToolsHost(configuration,
@@ -1040,15 +1045,89 @@ public class IndexHtmlRequestHandlerTest {
         // Local proxy
         Assert.assertTrue(
                 isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", "1.2.3.4"));
-        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
+        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
                 "1.2.3.4, 3.4.5.6"));
-        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
+        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4", "127.0.0.1",
+                "   1.2.3.4 , 3.4.5.6   "));
+        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6", "127.0.0.1",
+                "1.2.3.4, 3.4.5.6"));
+        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6", "127.0.0.1",
                 "   1.2.3.4 , 3.4.5.6   "));
 
         // Non local proxy
-
         Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4, 5.5.5.5", "5.5.5.5",
                 "   1.2.3.4    "));
+        Assert.assertTrue(
+                isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5", "1.2.3.4"));
+        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5",
+                "1.2.3.4, 3.4.5.6"));
+        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.*", "5.5.5.5",
+                "   1.2.3.4 , 3.4.5.6   "));
+        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*",
+                "5.5.5.5", "1.2.3.4, 3.4.5.6"));
+        Assert.assertTrue(isAllowedDevToolsHost("1.2.3.4,3.4.5.6,5.5.*",
+                "5.5.5.5", "   1.2.3.4 , 3.4.5.6   "));
+
+        // Verify full chain
+        String forwardedChain = "1.2.3.4,5.5.5.5,6.6.6.6,7.7.7.7";
+        Assert.assertFalse(
+                isAllowedDevToolsHost("1.2.3.4", "127.0.0.1", forwardedChain));
+        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5", "127.0.0.1",
+                forwardedChain));
+        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,6.6.6.6",
+                "127.0.0.1", forwardedChain));
+        Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4,5.5.5.5,7.7.7.7",
+                "127.0.0.1", forwardedChain));
+        Assert.assertTrue(
+                isAllowedDevToolsHost("1.2.3.4,5.5.5.5,6.6.6.6,7.7.7.7",
+                        "127.0.0.1", forwardedChain));
+
+    }
+
+    @Test
+    public void devTools_forwardedForIsLocal_denyAccess() {
+        Assert.assertFalse(
+                isAllowedDevToolsHost(null, "127.0.0.1", "127.0.0.1"));
+        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "::1"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost(null, "127.0.0.1", "0:0:0:0:0:0:0:1"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost(null, "127.0.0.1", "172.16.0.4"));
+    }
+
+    @Test
+    public void devTools_customRemoteIPHeader_allowedIfIpMatches() {
+
+        BiPredicate<String, String> verifier = (remoteIp,
+                spoofedForwarderFor) -> {
+            String customClientIpHeaderName = "Some-Proxy-Client-IP";
+
+            VaadinRequest request = Mockito.mock(VaadinRequest.class);
+            Mockito.when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+            ApplicationConfiguration configuration = Mockito
+                    .mock(ApplicationConfiguration.class);
+            Mockito.when(configuration.getStringProperty("devmode.hostsAllowed",
+                    null)).thenAnswer(q -> "1.2.3.4,5.6.7.8");
+            Mockito.when(configuration.getStringProperty(
+                    eq(SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER), any()))
+                    .thenAnswer(q -> customClientIpHeaderName);
+            Mockito.when(request.getHeader(customClientIpHeaderName))
+                    .thenReturn(remoteIp);
+            Mockito.when(request.getHeader("X-Forwarded-For"))
+                    .thenReturn(spoofedForwarderFor);
+            return IndexHtmlRequestHandler.isAllowedDevToolsHost(configuration,
+                    request);
+        };
+
+        // remote ip header is mandatory
+        Assert.assertFalse(verifier.test(null, null));
+        Assert.assertFalse(verifier.test(null, "1.2.3.4"));
+
+        // Should verify only remote ip header value
+        Assert.assertFalse(verifier.test("5.5.5.5", null));
+        Assert.assertFalse(verifier.test("5.5.5.5", "1.2.3.4,5.5.5.5"));
+        Assert.assertTrue(verifier.test("1.2.3.4", null));
+        Assert.assertTrue(verifier.test("5.6.7.8", "5.5.5.5,5.6.7.8"));
     }
 
 }
