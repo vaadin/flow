@@ -34,7 +34,7 @@ public class ReactComponentsIT extends ChromeBrowserTest {
             Long line = Long.parseLong(expected.split("_")[0]);
             Long column = Long.parseLong(expected.split("_")[1]);
             String filenameEnd = "vite-basics/src/main/frontend/ReactComponents.tsx";
-            if(FrontendUtils.isWindows()) {
+            if (FrontendUtils.isWindows()) {
                 filenameEnd = filenameEnd.replaceAll("/", "\\\\");
             }
 

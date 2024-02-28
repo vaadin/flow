@@ -34,8 +34,8 @@ public class ClientResourceIT extends ChromeBrowserTest {
                 FrontendUtils.DEFAULT_FRONTEND_DIR + "Flow.js");
         assertResourceIsUnavailable(
                 FrontendUtils.DEFAULT_FRONTEND_DIR + "Flow.js.map");
-        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR
-                + "vaadin-dev-tools.js.map");
+        assertResourceIsUnavailable(
+                FrontendUtils.DEFAULT_FRONTEND_DIR + "vaadin-dev-tools.js.map");
         assertResourceIsUnavailable(
                 FrontendUtils.DEFAULT_FRONTEND_DIR + "vaadin-dev-tools.d.ts");
         assertResourceIsUnavailable(

@@ -64,7 +64,7 @@ public class FileAccessIT extends ViteDevModeIT {
             currentPath = "/" + currentPath;
         }
         if (currentPath.endsWith("/")) {
-            currentPath = currentPath.substring(0, currentPath.length()-1);
+            currentPath = currentPath.substring(0, currentPath.length() - 1);
         }
         return new URL("http://localhost:8888/VAADIN/@fs" + currentPath + "/"
                 + fileInProject);
