@@ -20,7 +20,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -65,8 +67,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
@@ -1407,6 +1409,48 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         assertEquals("Binding still affects bean even after unbind",
                 ageBeforeUnbind, String.valueOf(item.getAge()));
+
+    }
+
+    @Test
+    public void replace_binding_previousBindingUnbound() {
+        List<String> bindingCalls = new ArrayList<>();
+        Binding<Person, Integer> binding1 = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(p -> {
+                    bindingCalls.add("READ FIRST");
+                    return p.getAge();
+                }, (p, v) -> {
+                    bindingCalls.add("WRITE FIRST");
+                    p.setAge(v);
+                });
+
+        binder.setBean(item);
+        Assert.assertEquals(List.of("READ FIRST"), bindingCalls);
+
+        bindingCalls.clear();
+        ageField.setValue("99");
+        Assert.assertEquals(List.of("READ FIRST", "WRITE FIRST"), bindingCalls);
+
+        Binding<Person, Integer> binding2 = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(p -> {
+                    bindingCalls.add("READ SECOND");
+                    return p.getAge();
+                }, (p, v) -> {
+                    bindingCalls.add("WRITE SECOND");
+                    p.setAge(v);
+                });
+
+        bindingCalls.clear();
+        ageField.setValue("33");
+        Assert.assertEquals(List.of("READ SECOND", "WRITE SECOND"),
+                bindingCalls);
+
+        assertNull("Expecting first binding to be unbound",
+                binding1.getField());
+        assertSame("Expecting second binding to be bound", ageField,
+                binding2.getField());
 
     }
 
