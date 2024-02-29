@@ -440,11 +440,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             // rules defined
             return false;
         }
-        // Always allow localhost
         try {
             InetAddress inetAddress = InetAddress.getByName(remoteAddress);
-            if (inetAddress.isLoopbackAddress() && allowLocal) {
-                return true;
+            if (inetAddress.isLoopbackAddress()) {
+                return allowLocal;
             }
         } catch (Exception e) {
             getLogger().debug(
@@ -453,7 +452,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
 
-        if (hostsAllowed != null) {
+        if (hostsAllowed != null && !hostsAllowed.isBlank()) {
             // Allowed hosts set
             String[] allowedHosts = hostsAllowed.split(",");
 

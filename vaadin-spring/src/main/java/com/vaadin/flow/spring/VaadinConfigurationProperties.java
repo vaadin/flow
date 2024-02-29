@@ -214,10 +214,11 @@ public class VaadinConfigurationProperties {
 
         /**
          * Gets the name of the custom HTTP header that contains the client IP
-         * address.
+         * address that is checked to allow access to the dev mode server.
          *
          * @return the name of the custom HTTP header that contains the client
-         *         IP address.
+         *         IP address that is checked to allow access to the dev mode
+         *         server.
          */
         public String getRemoteAddressHeader() {
             return remoteAddressHeader;
@@ -225,11 +226,14 @@ public class VaadinConfigurationProperties {
 
         /**
          * Sets the name of the custom HTTP header that contains the client IP
-         * address.
+         * address that is checked to allow access to the dev mode server.
+         *
+         * If not specified {@literal X-Forwarded-For} is used.
          *
          * @param remoteAddressHeader
          *            the name of the custom HTTP header that contains the
-         *            client IP address.
+         *            client IP address that is checked to allow access to the
+         *            dev mode server.
          */
         public void setRemoteAddressHeader(String remoteAddressHeader) {
             this.remoteAddressHeader = remoteAddressHeader;

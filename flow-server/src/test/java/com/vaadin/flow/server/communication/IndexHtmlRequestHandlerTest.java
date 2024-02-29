@@ -1012,6 +1012,14 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertTrue(isAllowedDevToolsHost(null, "127.0.0.1"));
         Assert.assertTrue(isAllowedDevToolsHost(null, "0:0:0:0:0:0:0:1"));
         Assert.assertTrue(isAllowedDevToolsHost(null, "::1"));
+
+        Assert.assertTrue(isAllowedDevToolsHost("", "127.0.0.1"));
+        Assert.assertTrue(isAllowedDevToolsHost("", "0:0:0:0:0:0:0:1"));
+        Assert.assertTrue(isAllowedDevToolsHost("", "::1"));
+
+        Assert.assertTrue(isAllowedDevToolsHost("   ", "127.0.0.1"));
+        Assert.assertTrue(isAllowedDevToolsHost("   ", "0:0:0:0:0:0:0:1"));
+        Assert.assertTrue(isAllowedDevToolsHost("   ", "::1"));
     }
 
     @Test
@@ -1019,6 +1027,14 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(isAllowedDevToolsHost(null, "192.168.1.1"));
         Assert.assertFalse(isAllowedDevToolsHost(null, "1.2.3.4"));
         Assert.assertFalse(isAllowedDevToolsHost(null, null));
+
+        Assert.assertFalse(isAllowedDevToolsHost("", "192.168.1.1"));
+        Assert.assertFalse(isAllowedDevToolsHost("", "1.2.3.4"));
+        Assert.assertFalse(isAllowedDevToolsHost("", null));
+
+        Assert.assertFalse(isAllowedDevToolsHost("   ", "192.168.1.1"));
+        Assert.assertFalse(isAllowedDevToolsHost("   ", "1.2.3.4"));
+        Assert.assertFalse(isAllowedDevToolsHost("   ", null));
     }
 
     @Test
@@ -1037,8 +1053,14 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void devTools_allowedHostsMatchesIpAndForwardedFor() {
         Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4"));
+        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4"));
+        Assert.assertFalse(isAllowedDevToolsHost("  ", "127.0.0.1", "1.2.3.4"));
         Assert.assertFalse(
                 isAllowedDevToolsHost(null, "127.0.0.1", "1.2.3.4, 3.4.5.6"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("", "127.0.0.1", "1.2.3.4, 3.4.5.6"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("   ", "127.0.0.1", "1.2.3.4, 3.4.5.6"));
         Assert.assertFalse(isAllowedDevToolsHost("1.2.3.4", "5.5.5.5",
                 "1.2.3.4, 3.4.5.6"));
 
@@ -1093,6 +1115,38 @@ public class IndexHtmlRequestHandlerTest {
                 isAllowedDevToolsHost(null, "127.0.0.1", "0:0:0:0:0:0:0:1"));
         Assert.assertFalse(
                 isAllowedDevToolsHost(null, "127.0.0.1", "172.16.0.4"));
+
+        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
+        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "::1"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("", "127.0.0.1", "0:0:0:0:0:0:0:1"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("", "127.0.0.1", "172.16.0.4"));
+
+        Assert.assertFalse(
+                isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
+        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "::1"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("   ", "127.0.0.1", "0:0:0:0:0:0:0:1"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("   ", "127.0.0.1", "172.16.0.4"));
+
+        // Access for local addresses in forwarded-for for should be denied
+        // disregarding hostsAllow property
+        Assert.assertFalse(
+                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", "127.0.0.1"));
+        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "127.0.0.1"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("   ", "127.0.0.1", "127.0.0.1"));
+
+    }
+
+    @Test
+    public void devTools_forwardedForIsEmpty_denyAccess() {
+        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ""));
+        Assert.assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ""));
+        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ""));
+        Assert.assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ""));
     }
 
     @Test
@@ -1106,8 +1160,9 @@ public class IndexHtmlRequestHandlerTest {
             Mockito.when(request.getRemoteAddr()).thenReturn("127.0.0.1");
             ApplicationConfiguration configuration = Mockito
                     .mock(ApplicationConfiguration.class);
-            Mockito.when(configuration.getStringProperty("devmode.hostsAllowed",
-                    null)).thenAnswer(q -> "1.2.3.4,5.6.7.8");
+            Mockito.when(configuration.getStringProperty(
+                    SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null))
+                    .thenAnswer(q -> "1.2.3.4,5.6.7.8");
             Mockito.when(configuration.getStringProperty(
                     eq(SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER), any()))
                     .thenAnswer(q -> customClientIpHeaderName);

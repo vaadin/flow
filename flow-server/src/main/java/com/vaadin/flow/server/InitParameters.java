@@ -110,8 +110,9 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
 
     /**
-     * The name of the custom HTTP header that contains the client IP address.
-     * If not specified, {@literal X-Forwarded-For} will be checked.
+     * The name of the custom HTTP header that contains the client IP address
+     * that is checked to allow access to the dev mode server. If not specified,
+     * {@literal X-Forwarded-For} will be checked.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER = "devmode.remoteAddressHeader";
 
