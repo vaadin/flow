@@ -56,7 +56,7 @@ public class TranslationFileRequestHandlerTest {
 
     private final VaadinRequest request = Mockito.mock(VaadinRequest.class);
 
-    private final VaadinResponse response = Mockito.mock(VaadinResponse.class);
+    private VaadinResponse response;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -73,48 +73,14 @@ public class TranslationFileRequestHandlerTest {
 
     private ArgumentCaptor<String> retrievedLocaleCapture;
 
-    private List<Locale> providedLocales = new ArrayList<>();
+    private final List<Locale> providedLocales = new ArrayList<>();
+
+    private I18NProvider i18NProvider;
 
     @Before
     public void init()
             throws IOException, NoSuchFieldException, IllegalAccessException {
-        init(false, false);
-    }
-
-    private void init(boolean useCustomI18nProvider, boolean isProductionMode)
-            throws IOException {
-        Class<? extends I18NProvider> i18NProviderClass = useCustomI18nProvider
-                ? I18NProvider.class
-                : DefaultI18NProvider.class;
-        I18NProvider i18NProvider = Mockito.mock(i18NProviderClass,
-                Mockito.CALLS_REAL_METHODS);
-        Mockito.when(i18NProvider.getProvidedLocales())
-                .thenReturn(providedLocales);
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode())
-                .thenReturn(isProductionMode);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(session.getService()).thenReturn(service);
-        File resources = temporaryFolder.newFolder();
-        translationsFolder = new File(resources,
-                DefaultI18NProvider.BUNDLE_FOLDER);
-        translationsFolder.mkdirs();
-        urlClassLoader = new URLClassLoader(
-                new URL[] { resources.toURI().toURL() });
-        handler = new TranslationFileRequestHandler(i18NProvider);
-        out = new StringWriter();
-        writer = new PrintWriter(out);
-        Mockito.when(response.getWriter()).thenReturn(writer);
-        retrievedLocaleCapture = ArgumentCaptor.forClass(String.class);
-        Mockito.doNothing().when(response).setHeader(Mockito
-                .eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
-                retrievedLocaleCapture.capture());
+        init(DefaultI18NProvider.class, false);
     }
 
     @After
@@ -214,7 +180,7 @@ public class TranslationFileRequestHandlerTest {
     @Test
     public void withCustomI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
             throws IOException {
-        init(true, false);
+        init(I18NProvider.class, false);
         createTranslationFiles(true);
         testResponseContent(true, "fi", "", null);
         Mockito.verify(response).sendError(
@@ -225,7 +191,7 @@ public class TranslationFileRequestHandlerTest {
     @Test
     public void productionMode_withCustomI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
             throws IOException {
-        init(true, true);
+        init(I18NProvider.class, true);
         createTranslationFiles(true);
         testResponseContent(true, "fi", "", null);
         Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
@@ -304,5 +270,56 @@ public class TranslationFileRequestHandlerTest {
                         + ".properties");
         Files.writeString(file.toPath(), content, StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE);
+    }
+
+    private void init(Class<? extends I18NProvider> i18NProviderClass,
+            boolean isProductionMode) throws IOException {
+        mockI18nProvider(i18NProviderClass);
+        mockService(isProductionMode);
+        initHandler();
+        mockResponse();
+    }
+
+    private void mockI18nProvider(
+            Class<? extends I18NProvider> i18NProviderClass) {
+        i18NProvider = Mockito.mock(i18NProviderClass,
+                Mockito.CALLS_REAL_METHODS);
+        Mockito.when(i18NProvider.getProvidedLocales())
+                .thenReturn(providedLocales);
+    }
+
+    private void initHandler() throws IOException {
+        File resources = temporaryFolder.newFolder();
+        translationsFolder = new File(resources,
+                DefaultI18NProvider.BUNDLE_FOLDER);
+        translationsFolder.mkdirs();
+        urlClassLoader = new URLClassLoader(
+                new URL[] { resources.toURI().toURL() });
+        handler = new TranslationFileRequestHandler(i18NProvider);
+    }
+
+    private void mockResponse() throws IOException {
+        response = Mockito.mock(VaadinResponse.class);
+        out = new StringWriter();
+        writer = new PrintWriter(out);
+        Mockito.when(response.getWriter()).thenReturn(writer);
+        retrievedLocaleCapture = ArgumentCaptor.forClass(String.class);
+        Mockito.doNothing().when(response).setHeader(Mockito
+                .eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
+                retrievedLocaleCapture.capture());
+    }
+
+    private void mockService(boolean isProductionMode) {
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode())
+                .thenReturn(isProductionMode);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        Mockito.when(session.getService()).thenReturn(service);
     }
 }
