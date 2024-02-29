@@ -145,7 +145,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                         getFileContent(FrontendUtils.ROUTES_TSX),
                         String::equals)) {
                     routesTsx.delete();
-                    log().debug("Default routes.tsx file has been removed.");
+                    log().debug("Default {} file has been removed.",
+                            FrontendUtils.ROUTES_TSX);
                 } else {
                     Files.copy(routesTsx.toPath(),
                             new File(frontendDirectory,
@@ -159,7 +160,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 }
             }
         } catch (IOException e) {
-            throw new ExecutionFailedException("Failed to clean routes.tsx", e);
+            throw new ExecutionFailedException(
+                    "Failed to clean " + FrontendUtils.ROUTES_TSX, e);
         }
     }
 
