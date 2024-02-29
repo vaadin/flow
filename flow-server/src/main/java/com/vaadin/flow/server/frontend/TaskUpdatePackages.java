@@ -206,7 +206,9 @@ public class TaskUpdatePackages extends NodeUpdater {
         int added = 0;
 
         Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
-                finder, options.isReactEnabled() && isReactModuleAvailable())
+                finder,
+                options.isReactEnabled()
+                        && FrontendUtils.isReactModuleAvailable(options))
                 .exclude(applicationDependencies);
 
         // Add application dependencies
