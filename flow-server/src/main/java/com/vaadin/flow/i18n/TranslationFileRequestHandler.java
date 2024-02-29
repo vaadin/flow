@@ -108,7 +108,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         String languageTag = Objects.requireNonNullElse(
                 request.getParameter(LANGUAGE_TAG_PARAMETER_NAME), "");
         if (languageTag.contains("_")) {
-            String[] tokens = languageTag.split("_",-1);
+            String[] tokens = languageTag.split("_");
             String language = tokens[0];
             String country = tokens.length > 1 ? tokens[1] : "";
             String variant = tokens.length > 2 ? tokens[2] : "";
@@ -136,7 +136,8 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     }
 
     private Locale getBestMatchLocale(Locale locale) {
-        Set<Locale> providedLocales = Set.copyOf(i18NProvider.getProvidedLocales());
+        Set<Locale> providedLocales = Set
+                .copyOf(i18NProvider.getProvidedLocales());
         if (providedLocales.contains(locale)) {
             return locale;
         }

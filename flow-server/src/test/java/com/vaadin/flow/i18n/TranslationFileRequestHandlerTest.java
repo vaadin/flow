@@ -88,7 +88,8 @@ public class TranslationFileRequestHandlerTest {
                 : DefaultI18NProvider.class;
         I18NProvider i18NProvider = Mockito.mock(i18NProviderClass,
                 Mockito.CALLS_REAL_METHODS);
-        Mockito.when(i18NProvider.getProvidedLocales()).thenReturn(providedLocales);
+        Mockito.when(i18NProvider.getProvidedLocales())
+                .thenReturn(providedLocales);
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
         VaadinService service = Mockito.mock(VaadinService.class);
