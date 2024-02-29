@@ -111,7 +111,7 @@ public class FeatureFlags implements Serializable {
         assert context != null;
 
         FeatureFlagsWrapper attribute;
-        synchronized (context) {
+        synchronized (FeatureFlags.class) {
             attribute = context.getAttribute(FeatureFlagsWrapper.class);
 
             if (attribute == null) {
