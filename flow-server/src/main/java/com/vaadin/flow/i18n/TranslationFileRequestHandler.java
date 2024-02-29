@@ -50,7 +50,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        if (!(i18NProvider instanceof DefaultI18NProvider)) {
+        if (!DefaultI18NProvider.class.equals(i18NProvider.getClass())) {
             handleCustomI18NProvider(session, response);
             return true;
         }
