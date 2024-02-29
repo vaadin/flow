@@ -282,9 +282,7 @@ public class NodeTasks implements FallibleCommand {
         if (options.isProductionMode() || options.isFrontendHotdeploy()
                 || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
-            if (options.isReactEnabled()) {
-                commands.add(new TaskGenerateReactFiles(options));
-            }
+            commands.add(new TaskGenerateReactFiles(options));
             if (!options.isProductionMode()) {
                 commands.add(new TaskGenerateViteDevMode(options));
             }
