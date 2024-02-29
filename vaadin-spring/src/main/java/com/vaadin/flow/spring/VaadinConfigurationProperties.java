@@ -228,7 +228,11 @@ public class VaadinConfigurationProperties {
          * Sets the name of the custom HTTP header that contains the client IP
          * address that is checked to allow access to the dev mode server.
          *
-         * If not specified {@literal X-Forwarded-For} is used.
+         * The HTTP header is supposed to contain a single address, and the HTTP
+         * request to have a single occurrence of the header.
+         *
+         * If not specified, remote address are read from the
+         * {@literal X-Forwarded-For} header.
          *
          * @param remoteAddressHeader
          *            the name of the custom HTTP header that contains the

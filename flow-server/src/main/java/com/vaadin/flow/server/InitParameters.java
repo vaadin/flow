@@ -111,8 +111,10 @@ public class InitParameters implements Serializable {
 
     /**
      * The name of the custom HTTP header that contains the client IP address
-     * that is checked to allow access to the dev mode server. If not specified,
-     * {@literal X-Forwarded-For} will be checked.
+     * that is checked to allow access to the dev mode server. The HTTP header
+     * is supposed to contain a single address, and the HTTP request to have a
+     * single occurrence of the header. If not specified, remote address are
+     * read from the {@literal X-Forwarded-For} header.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER = "devmode.remoteAddressHeader";
 
