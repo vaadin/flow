@@ -109,9 +109,19 @@ public class FrontendUtils {
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
      *
-     * By default it is <code>/frontend</code> in the project folder.
+     * By default it is <code>/src/main/frontend</code> in the project folder.
      */
     public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR
+            + "src/main/" + FRONTEND;
+
+    /**
+     * Path of the old folder containing application frontend source files, it
+     * needs to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
+     *
+     * By default the old folder is <code>/frontend</code> in the project
+     * folder.
+     */
+    public static final String LEGACY_FRONTEND_DIR = DEFAULT_NODE_DIR
             + FRONTEND;
 
     /**
@@ -505,8 +515,7 @@ public class FrontendUtils {
 
     private static InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
-        File file = new File(new File(config.getProjectFolder(), "frontend"),
-                path);
+        File file = new File(getProjectFrontendDir(config), path);
         if (file.exists()) {
             try {
                 return Files.newInputStream(file.toPath());
@@ -556,7 +565,8 @@ public class FrontendUtils {
         if (devModeHandler.isPresent()) {
             try {
                 File frontendFile = resolveFrontendPath(
-                        devModeHandler.get().getProjectRoot(), path);
+                        devModeHandler.get().getProjectRoot(),
+                        service.getDeploymentConfiguration(), path);
                 return frontendFile == null ? null
                         : new FileInputStream(frontendFile);
             } catch (IOException e) {
@@ -568,19 +578,36 @@ public class FrontendUtils {
 
     /**
      * Looks up the frontend resource at the given path. If the path starts with
-     * {@code ./}, first look in {@code frontend}, then in
-     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
-     * with {@code ./}, look in {@code node_modules} instead.
+     * {@code ./}, first look in {@value FrontendUtils#DEFAULT_FRONTEND_DIR},
+     * then in {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not
+     * start with {@code ./}, look in {@code node_modules} instead.
      *
      * @param projectRoot
      *            the project root folder.
+     * @param deploymentConfiguration
+     *            the active deployment configuration
      * @param path
      *            the file path.
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
-    public static File resolveFrontendPath(File projectRoot, String path) {
+    public static File resolveFrontendPath(File projectRoot,
+            DeploymentConfiguration deploymentConfiguration, String path) {
         return resolveFrontendPath(projectRoot, path,
-                new File(projectRoot, FrontendUtils.FRONTEND));
+                getFrontendFolder(projectRoot, deploymentConfiguration));
+    }
+
+    private static File getFrontendFolder(File projectRoot,
+            AbstractConfiguration deploymentConfiguration) {
+        String frontendFolderPath = deploymentConfiguration.getStringProperty(
+                FrontendUtils.PARAM_FRONTEND_DIR,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
+
+        File f = new File(frontendFolderPath);
+        if (f.isAbsolute()) {
+            return f;
+        }
+
+        return new File(projectRoot, frontendFolderPath);
     }
 
     /**
@@ -669,13 +696,8 @@ public class FrontendUtils {
      */
     public static File getProjectFrontendDir(
             AbstractConfiguration configuration) {
-        String propertyValue = configuration
-                .getStringProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
-        File f = new File(propertyValue);
-        if (f.isAbsolute()) {
-            return f;
-        }
-        return new File(configuration.getProjectFolder(), propertyValue);
+        return getFrontendFolder(configuration.getProjectFolder(),
+                configuration);
     }
 
     /**

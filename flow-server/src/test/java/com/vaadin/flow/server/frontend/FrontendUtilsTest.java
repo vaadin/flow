@@ -501,7 +501,7 @@ public class FrontendUtilsTest {
 
     @Test
     public void isReactRouterRequired_noIndexTsFile_true() throws IOException {
-        File frontend = tmpDir.newFolder("frontend");
+        File frontend = tmpDir.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
         Assert.assertTrue("react-router expected when index.ts isn't there",
                 FrontendUtils.isReactRouterRequired(frontend));
     }
@@ -653,7 +653,7 @@ public class FrontendUtilsTest {
 
     private File prepareFrontendForRoutesFile(String fileName, String content)
             throws IOException {
-        File frontend = tmpDir.newFolder("frontend");
+        File frontend = tmpDir.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
         FileUtils.write(new File(frontend, fileName), content,
                 StandardCharsets.UTF_8);
         return frontend;

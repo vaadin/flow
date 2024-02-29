@@ -27,6 +27,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -286,7 +287,8 @@ public class ThemeIT extends ChromeBrowserTest {
         File baseDir = new File(System.getProperty("user.dir", "."));
         File expectedGeneratedFolder = new File(baseDir,
                 "side-src/main/frontend/generated");
-        File defaultGeneratedFolder = new File(baseDir, "frontend/generated");
+        File defaultGeneratedFolder = new File(baseDir,
+                FrontendUtils.DEFAULT_FRONTEND_DIR + "generated");
 
         String[] generatedFiles = { "theme.d.ts", "theme.js",
                 "theme-app-theme.generated.js",

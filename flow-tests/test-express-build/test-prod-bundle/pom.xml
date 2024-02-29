@@ -101,6 +101,7 @@
                     <filesets>
                         <fileset>
                             <directory>${project.basedir}/frontend/generated</directory>
+                            <directory>${project.basedir}/src/main/frontend/generated</directory>
                         </fileset>
                     </filesets>
                 </configuration>

@@ -96,7 +96,8 @@ public class TaskUpdateViteTest {
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
-        options.withFrontendDirectory(temporaryFolder.newFolder("frontend"))
+        options.withFrontendDirectory(
+                temporaryFolder.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR))
                 .withBuildDirectory("target").withJarFrontendResourcesFolder(
                         temporaryFolder.newFolder("resources"));
 
