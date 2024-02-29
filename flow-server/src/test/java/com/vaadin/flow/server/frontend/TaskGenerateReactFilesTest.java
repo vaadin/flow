@@ -265,6 +265,40 @@ public class TaskGenerateReactFilesTest {
                 exception.getMessage());
     }
 
+    @Test
+    public void frontendReactFilesAreCleanedWhenReactIsDisabled()
+            throws ExecutionFailedException {
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+        task.execute();
+
+        options.withReact(false);
+        task.execute();
+
+        Assert.assertFalse(
+                "./frontend/routes.tsx should be removed when react is disabled",
+                new File(frontend, "routes.tsx").exists());
+        Assert.assertFalse(
+                "./frontend/routes.tsx.flowBackup should not be created with default content",
+                new File(frontend, "routes.tsx.flowBackup").exists());
+    }
+
+    @Test
+    public void frontendCustomReactFilesAreCleanedAndBackUppedWhenReactIsDisabled()
+            throws ExecutionFailedException, IOException {
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+        task.execute();
+        FileUtils.write(routesTsx, "Custom content", StandardCharsets.UTF_8);
+
+        options.withReact(false);
+        task.execute();
+
+        Assert.assertFalse(
+                "./frontend/routes.tsx should be removed when react is disabled",
+                new File(frontend, "routes.tsx").exists());
+        Assert.assertTrue("./frontend/routes.tsx.flowBackup should exist",
+                new File(frontend, "routes.tsx.flowBackup").exists());
+    }
+
     @Tag("div")
     @Route("test")
     private class TestRoute extends Component {
