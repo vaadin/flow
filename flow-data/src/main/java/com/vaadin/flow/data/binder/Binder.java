@@ -976,9 +976,15 @@ public class Binder<BEAN> implements Serializable {
                     this, getter, setter);
 
             // Remove existing binding for same field to avoid potential
-            // multiple application of converter
-            getBinder().bindings.removeIf(
-                    registeredBinding -> registeredBinding.getField() == field);
+            // multiple application of converter and value change listeners
+            List<Binding<BEAN, ?>> bindingsToRemove = getBinder().bindings
+                    .stream().filter(registeredBinding -> registeredBinding
+                            .getField() == field)
+                    .toList();
+            if (!bindingsToRemove.isEmpty()) {
+                bindingsToRemove.forEach(Binding::unbind);
+                getBinder().bindings.removeAll(bindingsToRemove);
+            }
             getBinder().bindings.add(binding);
             if (getBinder().getBean() != null) {
                 binding.initFieldValue(getBinder().getBean(), true);
