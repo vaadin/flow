@@ -37,8 +37,9 @@ import java.util.Set;
  * Handles translation file requests. Translation file requests are internal
  * requests sent by the client-side to retrieve the translation file for the
  * specified language tag. The response contains the translations in JSON
- * format. The language tag parameter supports both dash and underscore as
- * separators.
+ * format. Also, the language tag of the retrieved translation file is included
+ * as a header with the name {@code X-Vaadin-Retrieved-Locale}. The language tag
+ * parameter {@code langtag} supports both dash and underscore as separators.
  * <p>
  * The translation file to return is determined by matching the requested locale
  * to the available bundles with the following prioritization order:
