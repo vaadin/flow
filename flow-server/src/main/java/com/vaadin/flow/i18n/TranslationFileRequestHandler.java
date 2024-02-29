@@ -33,6 +33,27 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+/**
+ * Handles translation file requests. Translation file requests are internal
+ * requests sent by the client-side to retrieve the translation file for the
+ * specified language tag. The response contains the translations in JSON
+ * format. The language tag parameter supports both dash and underscore as
+ * separators.
+ * <p>
+ * The translation file to return is determined by matching the requested locale
+ * to the available bundles with the following prioritization order:
+ * <ul>
+ * <li>Exact match</li>
+ * <li>Language and country match</li>
+ * <li>Language match</li>
+ * <li>Default bundle (root bundle)</li>
+ * </ul>
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @author Vaadin Ltd
+ * @since 1.0
+ */
 public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     static final String LANGUAGE_TAG_PARAMETER_NAME = "langtag";
