@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -985,11 +986,18 @@ public class IndexHtmlRequestHandlerTest {
 
     private boolean isAllowedDevToolsHost(String hostsAllowedProperty,
             String remoteAddr) {
-        return isAllowedDevToolsHost(hostsAllowedProperty, remoteAddr, null);
+        return isAllowedDevToolsHost(hostsAllowedProperty, remoteAddr,
+                (List) null);
     }
 
     private boolean isAllowedDevToolsHost(String hostsAllowedProperty,
             String remoteAddr, String forwardedForHeader) {
+        return isAllowedDevToolsHost(hostsAllowedProperty, remoteAddr,
+                Collections.singletonList(forwardedForHeader));
+    }
+
+    private boolean isAllowedDevToolsHost(String hostsAllowedProperty,
+            String remoteAddr, List<String> forwardedForHeader) {
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         Mockito.when(request.getRemoteAddr()).thenReturn(remoteAddr);
         ApplicationConfiguration configuration = Mockito
@@ -997,11 +1005,16 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.doAnswer(q -> hostsAllowedProperty).when(configuration)
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED,
                         null);
-        // Mockito.when(configuration.getStringProperty(
-        // SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null))
-        // .thenAnswer(q -> hostsAllowedProperty);
-        Mockito.when(request.getHeader("X-Forwarded-For"))
-                .thenReturn(forwardedForHeader);
+        if (forwardedForHeader == null) {
+            Mockito.when(request.getHeader("X-Forwarded-For")).thenReturn(null);
+            Mockito.when(request.getHeaders("X-Forwarded-For"))
+                    .thenReturn(Collections.emptyEnumeration());
+        } else {
+            Mockito.when(request.getHeader("X-Forwarded-For"))
+                    .thenReturn(forwardedForHeader.get(0));
+            Mockito.when(request.getHeaders("X-Forwarded-For"))
+                    .thenReturn(Collections.enumeration(forwardedForHeader));
+        }
         return IndexHtmlRequestHandler.isAllowedDevToolsHost(configuration,
                 request);
 
@@ -1147,6 +1160,47 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ""));
         Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ""));
         Assert.assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ""));
+
+        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", "   "));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", "   "));
+        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", "   "));
+        Assert.assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", "   "));
+
+        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ","));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ","));
+        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ","));
+        Assert.assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ","));
+
+        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1", ", ,, ,"));
+        Assert.assertFalse(
+                isAllowedDevToolsHost("127.0.0.1", "127.0.0.1", ", ,, ,"));
+        Assert.assertFalse(isAllowedDevToolsHost("", "127.0.0.1", ", ,, ,"));
+        Assert.assertFalse(isAllowedDevToolsHost("   ", "127.0.0.1", ", ,, ,"));
+    }
+
+    @Test
+    public void devTools_multipleForwardedForHeader_allChecked() {
+        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
+                List.of("1.1.1.1", "2.2.2.2")));
+        Assert.assertFalse(isAllowedDevToolsHost("1.1.1.1", "127.0.0.1",
+                List.of("1.1.1.1", "2.2.2.2")));
+        Assert.assertFalse(isAllowedDevToolsHost("2.2.2.2", "127.0.0.1",
+                List.of("1.1.1.1", "2.2.2.2")));
+
+        Assert.assertFalse(
+                isAllowedDevToolsHost(null, "127.0.0.1", List.of("", "")));
+        Assert.assertFalse(
+                isAllowedDevToolsHost(null, "127.0.0.1", List.of("  ", "   ")));
+        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
+                List.of("1.1.1.1", "", "2.2.2.2")));
+        Assert.assertFalse(isAllowedDevToolsHost(null, "127.0.0.1",
+                List.of("1.1.1.1", "  ", "2.2.2.2")));
+
+        Assert.assertTrue(isAllowedDevToolsHost("1.1.1.1, 2.2.2.2", "127.0.0.1",
+                List.of("1.1.1.1", "2.2.2.2")));
+
     }
 
     @Test

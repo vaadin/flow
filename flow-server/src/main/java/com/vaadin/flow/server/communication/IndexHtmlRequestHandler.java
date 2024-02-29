@@ -20,6 +20,8 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -411,16 +413,28 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     hostsAllowed, false);
         }
 
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null) {
+        Enumeration<String> allForwardedForHeaders = request
+                .getHeaders("X-Forwarded-For");
+        if (allForwardedForHeaders != null
+                && allForwardedForHeaders.hasMoreElements()) {
+            String forwardedFor = String.join(",",
+                    Collections.list(allForwardedForHeaders));
+
             if (forwardedFor.contains(",")) {
                 // X-Forwarded-For: <client>, <proxy1>, <proxy2>
                 // Elements are comma-separated, with optional whitespace
                 // surrounding the commas.
                 // Validate all hops
-                return Stream.of(forwardedFor.split(",")).map(String::trim)
-                        .allMatch(ip -> isAllowedDevToolsHost(ip, hostsAllowed,
-                                false));
+                String[] hops = forwardedFor.split(",");
+                if (hops.length > 0) {
+                    return Stream.of(hops).map(String::trim)
+                            .allMatch(ip -> isAllowedDevToolsHost(ip,
+                                    hostsAllowed, false));
+                } else {
+                    // Potential fake header with no addresses, e.g.
+                    // 'X-Forwarded-For: ,,,'
+                    return false;
+                }
 
             } else {
                 return isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed,
@@ -434,7 +448,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static boolean isAllowedDevToolsHost(String remoteAddress,
             String hostsAllowed, boolean allowLocal) {
-        if (remoteAddress == null || (hostsAllowed == null && !allowLocal)) {
+        if (remoteAddress == null || remoteAddress.isBlank()
+                || (hostsAllowed == null && !allowLocal)) {
             // No check needed if the remote address is not available
             // or if local addresses must be rejected and there are no host
             // rules defined
