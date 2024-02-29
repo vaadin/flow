@@ -1369,4 +1369,18 @@ public class FrontendUtils {
         return false;
     }
 
+    /**
+     * Is the React module available in the classpath.
+     *
+     * @return true if the React module is available, false otherwise
+     */
+    public static boolean isReactModuleAvailable(Options options) {
+        try {
+            options.getClassFinder().loadClass(
+                    "com.vaadin.flow.component.react.ReactAdapterComponent");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 }

@@ -735,19 +735,14 @@ public class VaadinServletContextInitializer
                     ((ConfigurableApplicationContext) appContext)
                             .addApplicationListener(new ReloadListener(e -> {
                                 // Updates cached white list and route packages
-                                Set<String> addedPackages = new HashSet<>();
-                                e.getAddedClasses().forEach(c -> {
-                                    if (c.contains("/")) {
-                                        c = c.replaceAll("/", ".");
-                                    }
-                                    if (c.contains(".")) {
-                                        addedPackages.add(c.substring(0,
-                                                c.lastIndexOf(".")));
-                                    }
-                                });
                                 ReloadCache.dynamicWhiteList
-                                        .addAll(addedPackages);
-                                ReloadCache.routePackages.addAll(addedPackages);
+                                        .addAll(e.getAddedPackages());
+                                ReloadCache.dynamicWhiteList
+                                        .addAll(e.getChangedPackages());
+                                ReloadCache.routePackages
+                                        .addAll(e.getAddedPackages());
+                                ReloadCache.routePackages
+                                        .addAll(e.getChangedPackages());
                             }));
                 }
             }
