@@ -155,8 +155,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                             StandardCopyOption.REPLACE_EXISTING);
                     routesTsx.delete();
                     log().warn(
-                            "Custom routes.tsx file has been removed. Backup is created in {}.flowBackup file.",
-                            FrontendUtils.ROUTES_TSX);
+                            "Custom {} file has been removed. Backup is created in {}.flowBackup file.",
+                            FrontendUtils.ROUTES_TSX, FrontendUtils.ROUTES_TSX);
                 }
             }
         } catch (IOException e) {
