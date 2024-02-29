@@ -197,6 +197,21 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
+    public void withRootBundle_languageTagWithUnderscoresNotAvailable_responseIsRootBundle()
+            throws IOException {
+        testResponseContent(true, "it_IT", "{\"title\":\"Root bundle lang\"}",
+                "und");
+        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+    }
+
+    @Test
+    public void withoutRootBundle_languageTagWithUnderscoresNotAvailable_responseIsEmpty()
+            throws IOException {
+        testResponseContent(false, "it_IT", "", null);
+        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+    }
+
+    @Test
     public void withCustomI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
             throws IOException {
         init(true, false);
