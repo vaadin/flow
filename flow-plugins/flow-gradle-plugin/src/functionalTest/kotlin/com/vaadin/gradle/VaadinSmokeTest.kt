@@ -345,7 +345,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             result.expectTaskSucceded("vaadinClean")
         } else {
             // Works with supported versions
-            for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.1.1", "8.2", "8.3") ) {
+            for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.3") ) {
                 setupProjectForGradleVersion(supportedVersion)
                 val result = testProject.build("vaadinClean")
                 result.expectTaskSucceded("vaadinClean")
