@@ -2153,6 +2153,72 @@ public class BundleValidationTest {
     }
 
     @Test
+    public void defaultProdBundleExists_noCompressedProdBundleFileAndWithVersionsJsonExclusions_noBuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        frontendUtils
+                .when(() -> FrontendUtils.isReactModuleAvailable(Mockito.any()))
+                .thenAnswer(q -> true);
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "    \"react\": \"18.2.0\",\n"
+                        + "    \"react-dom\": \"18.2.0\",\n"
+                        + "    \"react-router-dom\": \"6.18.0\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages()).thenReturn(
+                Collections.singletonMap("@vaadin/button", "2.0.0"));
+
+        File versions = new File(temporaryFolder.getRoot(),
+                Constants.VAADIN_CORE_VERSIONS_JSON);
+        versions.createNewFile();
+        // @formatter:off
+        FileUtils.write(versions, "{"
+                + "  \"core\": {\n"
+                + "    \"vaadin-button\": {\n"
+                + "      \"jsVersion\": \"2.0.0\",\n"
+                + "      \"npmName\": \"@vaadin/button\",\n"
+                + "    },"
+                + "  },"
+                + "  react: {\n"
+                + "    \"react-components\": {\n"
+                + "         \"exclusions\": [\"@vaadin/button\"],\n"
+                + "         \"jsVersion\": \"24.4.0\",\n"
+                + "         \"mode\": \"react\",\n"
+                + "         \"npmName\": \"@vaadin/react-components\"\n"
+                + "    }"
+                + "  },\n"
+                + "  \"platform\": \"123-SNAPSHOT\""
+                + "}");
+        // @formatter:on
+
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(versions.toURI().toURL());
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES)
+                .put("@vaadin/react-components", "24.4.0");
+
+        URL url = Mockito.mock(URL.class);
+        Mockito.when(
+                finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+                .thenReturn(url);
+        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+                .thenReturn(stats.toJson());
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse("Jar frontend file content hash should match.",
+                needsBuild);
+    }
+
+    @Test
     public void defaultProdBundleExists_noCompressedProdBundleFile_reactDisabled_buildRequired()
             throws IOException {
         options.withReact(false);
