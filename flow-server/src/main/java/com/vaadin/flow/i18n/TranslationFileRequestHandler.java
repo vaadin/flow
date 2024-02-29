@@ -119,16 +119,19 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     private ResourceBundle getTranslationPropertyFile(Locale locale) {
         Locale bestMatchLocale = getBestMatchLocale(locale);
+        if (bestMatchLocale == null) {
+            getLogger().debug("Missing resource bundle for "
+                    + DefaultI18NProvider.BUNDLE_PREFIX
+                    + ", for both the requested locale "
+                    + locale.getDisplayName() + " and the fallback locale "
+                    + FALLBACK_LOCALE.getDisplayName() + ".");
+            return null;
+        }
         if (!locale.equals(bestMatchLocale)) {
             getLogger().debug("Missing resource bundle for "
                     + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
-                    + locale.getDisplayName() + ".");
-        }
-        if (bestMatchLocale == null) {
-            getLogger().debug("Missing fallback resource bundle for "
-                    + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
+                    + locale.getDisplayName() + ". Using the fallback locale "
                     + FALLBACK_LOCALE.getDisplayName() + ".");
-            return null;
         }
         return ((DefaultI18NProvider) i18NProvider).getBundle(bestMatchLocale,
                 ResourceBundle.Control.getNoFallbackControl(
