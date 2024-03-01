@@ -64,16 +64,17 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     private static final Locale FALLBACK_LOCALE = Locale.ROOT;
 
-    private DefaultI18NProvider i18NProvider;
+    private final DefaultI18NProvider i18NProvider;
 
-    private boolean hasFallbackBundle;
+    private final boolean hasFallbackBundle;
 
     public TranslationFileRequestHandler(I18NProvider i18NProvider) {
-        if (i18NProvider != null
-                && DefaultI18NProvider.class.equals(i18NProvider.getClass())) {
-            this.i18NProvider = (DefaultI18NProvider) i18NProvider;
-            this.hasFallbackBundle = hasFallbackBundle();
-        }
+        boolean hasDefaultI18NProvider = i18NProvider != null
+                && DefaultI18NProvider.class.equals(i18NProvider.getClass());
+        this.i18NProvider = hasDefaultI18NProvider
+                ? (DefaultI18NProvider) i18NProvider
+                : null;
+        this.hasFallbackBundle = hasFallbackBundle();
     }
 
     @Override
