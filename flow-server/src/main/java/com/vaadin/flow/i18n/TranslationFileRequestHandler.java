@@ -150,30 +150,24 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     private ResourceBundle getTranslationPropertyFile(Locale locale) {
         Locale bestMatchLocale = getBestMatchLocale(locale);
         if (bestMatchLocale == null) {
-            String fallbackString = FALLBACK_LOCALE.getDisplayName().isEmpty()
-                    ? ""
-                    : (" " + FALLBACK_LOCALE.getDisplayName());
             if (FALLBACK_LOCALE.equals(locale)) {
                 getLogger().debug(
-                        "Missing the requested fallback resource bundle for {} and locale{}.",
-                        DefaultI18NProvider.BUNDLE_PREFIX, fallbackString);
+                        "Missing the requested default bundle for {}.",
+                        DefaultI18NProvider.BUNDLE_PREFIX);
             } else {
                 getLogger().debug(
-                        "Missing resource bundles for {}, both the requested locale {} and the fallback locale{}.",
+                        "Missing resource bundles for {}, both the requested locale {} and the default bundle.",
                         DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName(), fallbackString);
+                        locale.getDisplayName());
             }
             return null;
         }
         if (!locale.equals(bestMatchLocale)) {
             if (FALLBACK_LOCALE.equals(bestMatchLocale)) {
-                String fallbackString = FALLBACK_LOCALE.getDisplayName()
-                        .isEmpty() ? ""
-                                : (" " + FALLBACK_LOCALE.getDisplayName());
                 getLogger().debug(
-                        "Missing resource bundle for {} and locale {}. Using the fallback locale{}.",
+                        "Missing resource bundle for {} and locale {}. Using the default bundle.",
                         DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName(), fallbackString);
+                        locale.getDisplayName());
             } else {
                 getLogger().debug(
                         "Missing resource bundle for {} and locale {}. Using the best match locale {}.",
