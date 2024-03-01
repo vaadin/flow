@@ -22,8 +22,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,13 +65,18 @@ public class ReflectionsClassFinder implements ClassFinder {
         configurationBuilder
                 .setInputsFilter(resourceName -> resourceName.endsWith(".class")
                         && !resourceName.endsWith("module-info.class"));
-        if (!Vfs.getDefaultUrlTypes().contains(IGNORE_NOT_HANDLED_FILES)) {
-            Vfs.addDefaultURLTypes(IGNORE_NOT_HANDLED_FILES);
+
+        // Adding the custom URL type handler at the end, as a last resort to
+        // prevent warning messages on server logs
+        // Vfs.getDefaultUrlTypes() gets the internal mutable collection
+        List<Vfs.UrlType> defaultUrlTypes = Vfs.getDefaultUrlTypes();
+        if (!defaultUrlTypes.contains(IGNORE_NOT_HANDLED_FILES)) {
+            defaultUrlTypes.add(IGNORE_NOT_HANDLED_FILES);
         }
         try {
             reflections = new LoggingReflections(configurationBuilder);
         } finally {
-            Vfs.getDefaultUrlTypes().remove(IGNORE_NOT_HANDLED_FILES);
+            defaultUrlTypes.remove(IGNORE_NOT_HANDLED_FILES);
         }
     }
 
@@ -177,21 +182,10 @@ public class ReflectionsClassFinder implements ClassFinder {
     private static final Vfs.UrlType IGNORE_NOT_HANDLED_FILES = new Vfs.UrlType() {
 
         public boolean matches(URL url) {
-            if (!"file".equals(url.getProtocol())) {
-                return false;
-            }
-            for (Vfs.DefaultUrlTypes urlTypes : EnumSet.of(
-                    Vfs.DefaultUrlTypes.directory,
-                    Vfs.DefaultUrlTypes.jarFile)) {
-                try {
-                    if (urlTypes.matches(url)) {
-                        return false;
-                    }
-                } catch (Exception ex) {
-                    // ignore
-                }
-            }
-            return true;
+            // This handler is the last one to be checked.
+            // Valid "file:" URLs should have already been handled by default
+            // URL type handlers.
+            return "file".equals(url.getProtocol());
         }
 
         public Vfs.Dir createDir(final URL url) {
