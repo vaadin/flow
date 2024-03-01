@@ -18,6 +18,7 @@ package com.vaadin.flow.server.scanner;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -34,6 +35,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -116,6 +123,30 @@ public class ReflectionsClassFinderTest {
                         .getAnnotatedClasses(NpmPackage.class)),
                 toList(new ReflectionsClassFinder(urls)
                         .getAnnotatedClasses(NpmPackage.class)));
+    }
+
+    @Test
+    public void reflections_notExistingDirectory_warningMessageNotLogged()
+            throws Exception {
+        Path notExistingDir = Files.createTempDirectory("test")
+                .resolve(Path.of("target", "classes"));
+        Logger logger = LoggerFactory.getLogger("mockLogger");
+        Logger spy = Mockito.spy(logger);
+        Logger mocked = Mockito.mock(Logger.class);
+        try (MockedStatic<LoggerFactory> mockStatic = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            mockStatic
+                    .when(() -> LoggerFactory
+                            .getLogger(ArgumentMatchers.any(Class.class)))
+                    .thenReturn(mocked);
+            mockStatic.when(() -> LoggerFactory.getLogger(Reflections.class))
+                    .thenReturn(spy);
+            Logger x = LoggerFactory.getLogger(ReflectionsClassFinder.class);
+            new ReflectionsClassFinder(notExistingDir.toUri().toURL());
+            Mockito.verify(spy, Mockito.never()).warn(ArgumentMatchers.contains(
+                    "could not create Vfs.Dir from url. ignoring the exception and continuing"),
+                    ArgumentMatchers.any(Exception.class));
+        }
     }
 
     private <X extends Class<?>> List<String> toList(Set<X> classes) {

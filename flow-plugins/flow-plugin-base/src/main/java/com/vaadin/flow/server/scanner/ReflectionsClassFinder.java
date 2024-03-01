@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.reflections.vfs.Vfs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +65,14 @@ public class ReflectionsClassFinder implements ClassFinder {
         configurationBuilder
                 .setInputsFilter(resourceName -> resourceName.endsWith(".class")
                         && !resourceName.endsWith("module-info.class"));
-        reflections = new LoggingReflections(configurationBuilder);
+        if (!Vfs.getDefaultUrlTypes().contains(IGNORE_NOT_HANDLED_FILES)) {
+            Vfs.addDefaultURLTypes(IGNORE_NOT_HANDLED_FILES);
+        }
+        try {
+            reflections = new LoggingReflections(configurationBuilder);
+        } finally {
+            Vfs.getDefaultUrlTypes().remove(IGNORE_NOT_HANDLED_FILES);
+        }
     }
 
     @Override
@@ -164,4 +173,43 @@ public class ReflectionsClassFinder implements ClassFinder {
             }
         }
     }
+
+    private static final Vfs.UrlType IGNORE_NOT_HANDLED_FILES = new Vfs.UrlType() {
+
+        public boolean matches(URL url) {
+            if (!"file".equals(url.getProtocol())) {
+                return false;
+            }
+            for (Vfs.DefaultUrlTypes urlTypes : EnumSet.of(
+                    Vfs.DefaultUrlTypes.directory,
+                    Vfs.DefaultUrlTypes.jarFile)) {
+                try {
+                    if (urlTypes.matches(url)) {
+                        return false;
+                    }
+                } catch (Exception ex) {
+                    // ignore
+                }
+            }
+            return true;
+        }
+
+        public Vfs.Dir createDir(final URL url) {
+            LOGGER.debug(
+                    "Class finder cannot scan {} URL. Probably pointing to a not existing folder.",
+                    url);
+            return new Vfs.Dir() {
+                @Override
+                public String getPath() {
+                    return url.getPath().replace("\\", "/");
+                }
+
+                @Override
+                public Iterable<Vfs.File> getFiles() {
+                    return Collections.emptyList();
+                }
+            };
+        }
+    };
+
 }
