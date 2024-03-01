@@ -7,6 +7,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -17,8 +18,9 @@ public class ThemeLiveReloadView extends AbstractLiveReloadView {
         ApplicationConfiguration appConf = ApplicationConfiguration
                 .get(VaadinService.getCurrent().getContext());
         Path stylesPath = Paths.get(
-                appConf.getProjectFolder().getAbsolutePath(), "frontend",
-                "themes", "mytheme", "styles.css");
+                appConf.getProjectFolder().getAbsolutePath(),
+                FrontendUtils.DEFAULT_FRONTEND_DIR, "themes", "mytheme",
+                "styles.css");
         Span span = new Span(stylesPath.toString());
         span.setId("styles.css");
         add(span);

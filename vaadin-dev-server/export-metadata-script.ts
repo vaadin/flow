@@ -11,14 +11,14 @@ async function main() {
 
     mkdirSync(metadataFolder);
 
-    const fileNames = readdirSync(join('.', 'frontend', 'theme-editor', 'metadata', 'components'));
+    const fileNames = readdirSync(join('.', 'src', 'main', 'frontend', 'theme-editor', 'metadata', 'components'));
     for (const fileName of fileNames) {
         if (!fileName.startsWith('vaadin-')) {
             continue;
         }
         const tagName = fileName.split('.')[0];
 
-        const metadata = (await import(`./frontend/theme-editor/metadata/components/${tagName}`)).default
+        const metadata = (await import(`./src/main/frontend/theme-editor/metadata/components/${tagName}`)).default
 
         const metadataString = JSON.stringify(metadata.elements, null, 2);
         writeFile(join(metadataFolder, `${tagName}.json`), metadataString, (err) => {

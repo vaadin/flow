@@ -85,6 +85,8 @@ import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.LEGACY_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 
 /**
@@ -209,12 +211,23 @@ public class DevModeInitializer implements Serializable {
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
+        // If new default frontend folder not exists check for legacy folder.
+        if (frontendFolder.endsWith(DEFAULT_FRONTEND_DIR)
+                && !new File(frontendFolder).exists()) {
+            File legacy = new File(baseDir, LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                frontendFolder = LEGACY_FRONTEND_DIR;
+            }
+        }
+
         Lookup lookupFromContext = context.getAttribute(Lookup.class);
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
         Options options = new Options(lookup, baseDir)
                 .withFrontendDirectory(new File(frontendFolder))
+                .withFrontendGeneratedFolder(
+                        new File(frontendFolder + GENERATED))
                 .withBuildDirectory(config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -471,7 +484,8 @@ public class DevModeInitializer implements Serializable {
             // Creating a temporary jar file out of the vfs files
             String vfsJarPath = url.toString();
             String fileNamePrefix = vfsJarPath.substring(
-                    vfsJarPath.lastIndexOf('/') + 1,
+                    vfsJarPath.lastIndexOf(
+                            FrontendUtils.isWindows() ? '\\' : '/') + 1,
                     vfsJarPath.lastIndexOf(".jar"));
             Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
 

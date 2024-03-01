@@ -31,6 +31,7 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import elemental.json.Json;
@@ -42,7 +43,8 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
     private static final String GREEN_COLOR = "rgba(0, 255, 0, 1)";
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
-    private static final String THEME_FOLDER = "frontend/themes/my-theme/";
+    private static final String THEME_FOLDER = FrontendUtils.DEFAULT_FRONTEND_DIR
+            + "themes/my-theme/";
 
     private File fontFile;
 
@@ -57,8 +59,7 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         File bundle = new File(baseDir,
                 "target/" + Constants.DEV_BUNDLE_LOCATION);
         statsJson = new File(bundle, "config/stats.json");
-        themeAssetsInBundle = new File(baseDir, "target/"
-                + Constants.DEV_BUNDLE_LOCATION + "/assets/themes/my-theme");
+        themeAssetsInBundle = new File(bundle, "/assets/themes/my-theme");
         final File themeFolder = new File(baseDir, THEME_FOLDER);
         fontFile = new File(themeFolder, "fonts/ostrich-sans-regular.ttf");
         stylesCss = new File(themeFolder, "styles.css");

@@ -37,6 +37,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -110,9 +111,8 @@ public class ThemeIT extends ChromeBrowserTest {
         // Note themes/app-theme resources are served from VAADIN/build in
         // production mode
         String imageUrl = body.getCssValue("background-image");
-        assertImageEquals(
-                Paths.get("frontend", "themes", "app-theme", "img", "bg.jpg"),
-                imageUrl);
+        assertImageEquals(Paths.get(FrontendUtils.DEFAULT_FRONTEND_DIR,
+                "themes", "app-theme", "img", "bg.jpg"), imageUrl);
 
         Assert.assertEquals("body font-family should come from styles.css",
                 "Ostrich", body.getCssValue("font-family"));
@@ -167,9 +167,8 @@ public class ThemeIT extends ChromeBrowserTest {
 
         String backgroundUrl = $(SpanElement.class).id(SUB_COMPONENT_ID)
                 .getCssValue("background-image");
-        assertImageEquals(
-                Paths.get("frontend/themes/app-theme/icons/archive.png"),
-                backgroundUrl);
+        assertImageEquals(Paths.get(FrontendUtils.DEFAULT_FRONTEND_DIR
+                + "themes/app-theme/icons/archive.png"), backgroundUrl);
     }
 
     @Test

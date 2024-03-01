@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
@@ -29,6 +28,7 @@ import org.apache.commons.io.IOUtils;
 import com.vaadin.flow.server.ExecutionFailedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationAndEOL;
 
 /**
  * Generate <code>types.d.ts</code> if it is missing in project folder and
@@ -225,19 +225,6 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
     private static String removeComments(String content) {
         return COMMENT_LINE.matcher(content).replaceAll("");
-    }
-
-    private static boolean compareIgnoringIndentationAndEOL(String content1,
-            String content2, BiPredicate<String, String> compareFn) {
-        return compareFn.test(replaceIndentationAndEOL(content1),
-                replaceIndentationAndEOL(content2));
-    }
-
-    // Normalize EOL and removes indentation and potential EOL at the end of the
-    // FILE
-    static String replaceIndentationAndEOL(String text) {
-        return text.replace("\r\n", "\n").replaceFirst("\n$", "")
-                .replaceAll("(?m)^\\s+", "");
     }
 
     private String getTemplateContent(String suffix) throws IOException {

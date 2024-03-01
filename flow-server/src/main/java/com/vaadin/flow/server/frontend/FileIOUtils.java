@@ -29,6 +29,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -180,6 +181,30 @@ public class FileIOUtils {
             }
         });
         return matchingPaths;
+    }
+
+    /**
+     * Compare two file content strings ignoring indentation and EOL characters.
+     *
+     * @param content1
+     *            the first file content to compare
+     * @param content2
+     *            the second file content to compare
+     * @param compareFn
+     *            a function to compare the normalized strings
+     * @return true if the normalized strings are equal, false otherwise
+     */
+    public static boolean compareIgnoringIndentationAndEOL(String content1,
+            String content2, BiPredicate<String, String> compareFn) {
+        return compareFn.test(replaceIndentationAndEOL(content1),
+                replaceIndentationAndEOL(content2));
+    }
+
+    // Normalize EOL and removes indentation and potential EOL at the end of the
+    // FILE
+    private static String replaceIndentationAndEOL(String text) {
+        return text.replace("\r\n", "\n").replaceFirst("\n$", "")
+                .replaceAll("(?m)^\\s+", "");
     }
 
 }
