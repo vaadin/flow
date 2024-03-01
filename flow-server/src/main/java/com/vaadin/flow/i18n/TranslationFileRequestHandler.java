@@ -54,7 +54,7 @@ import java.util.Set;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 1.0
+ * @since 24.4
  */
 public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
