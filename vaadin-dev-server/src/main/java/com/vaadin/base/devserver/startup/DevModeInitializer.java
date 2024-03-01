@@ -275,7 +275,8 @@ public class DevModeInitializer implements Serializable {
 
         String frontendGeneratedFolderName = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                Paths.get(frontendFolder, GENERATED).toString());
+                Paths.get(baseDir.getAbsolutePath(), frontendFolder, GENERATED)
+                        .toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
