@@ -150,29 +150,36 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     private ResourceBundle getTranslationPropertyFile(Locale locale) {
         Locale bestMatchLocale = getBestMatchLocale(locale);
         if (bestMatchLocale == null) {
-            getLogger().debug("Missing resource bundle for "
-                    + DefaultI18NProvider.BUNDLE_PREFIX
-                    + ", for both the requested locale "
-                    + locale.getDisplayName() + " and the fallback locale "
-                    + FALLBACK_LOCALE.getDisplayName() + ".");
+            String fallbackString = FALLBACK_LOCALE.getDisplayName().isEmpty()
+                    ? ""
+                    : (" " + FALLBACK_LOCALE.getDisplayName());
+            if (FALLBACK_LOCALE.equals(locale)) {
+                getLogger().debug(
+                        "Missing the requested fallback resource bundle for {} and locale{}.",
+                        DefaultI18NProvider.BUNDLE_PREFIX, fallbackString);
+            } else {
+                getLogger().debug(
+                        "Missing resource bundles for {}, both the requested locale {} and the fallback locale{}.",
+                        DefaultI18NProvider.BUNDLE_PREFIX,
+                        locale.getDisplayName(), fallbackString);
+            }
             return null;
         }
         if (!locale.equals(bestMatchLocale)) {
             if (FALLBACK_LOCALE.equals(bestMatchLocale)) {
-                String fallbackLocaleName = FALLBACK_LOCALE.getDisplayName();
-                getLogger().debug("Missing resource bundle for "
-                        + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
-                        + locale.getDisplayName()
-                        + ". Using the fallback locale"
-                        + (fallbackLocaleName.isEmpty() ? ""
-                                : (" " + fallbackLocaleName))
-                        + ".");
+                String fallbackString = FALLBACK_LOCALE.getDisplayName()
+                        .isEmpty() ? ""
+                                : (" " + FALLBACK_LOCALE.getDisplayName());
+                getLogger().debug(
+                        "Missing resource bundle for {} and locale {}. Using the fallback locale{}.",
+                        DefaultI18NProvider.BUNDLE_PREFIX,
+                        locale.getDisplayName(), fallbackString);
             } else {
-                getLogger().debug("Missing resource bundle for "
-                        + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
-                        + locale.getDisplayName()
-                        + ". Using the best match locale "
-                        + bestMatchLocale.getDisplayName() + ".");
+                getLogger().debug(
+                        "Missing resource bundle for {} and locale {}. Using the best match locale {}.",
+                        DefaultI18NProvider.BUNDLE_PREFIX,
+                        locale.getDisplayName(),
+                        bestMatchLocale.getDisplayName());
             }
         }
         return i18NProvider.getBundle(bestMatchLocale,
