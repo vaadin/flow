@@ -186,6 +186,13 @@ public class VaadinConfigurationProperties {
         private String hostsAllowed = "";
 
         /**
+         * The name of the custom HTTP header that contains the client IP
+         * address. If not specified, {@literal X-Forwarded-For} will be
+         * checked.
+         */
+        private String remoteAddressHeader;
+
+        /**
          * Gets the hosts allowed to connect to the dev mode server.
          *
          * @return the hosts allowed to connect to the dev mode server
@@ -205,6 +212,36 @@ public class VaadinConfigurationProperties {
             this.hostsAllowed = hostsAllowed;
         }
 
+        /**
+         * Gets the name of the custom HTTP header that contains the client IP
+         * address that is checked to allow access to the dev mode server.
+         *
+         * @return the name of the custom HTTP header that contains the client
+         *         IP address that is checked to allow access to the dev mode
+         *         server.
+         */
+        public String getRemoteAddressHeader() {
+            return remoteAddressHeader;
+        }
+
+        /**
+         * Sets the name of the custom HTTP header that contains the client IP
+         * address that is checked to allow access to the dev mode server.
+         *
+         * The HTTP header is supposed to contain a single address, and the HTTP
+         * request to have a single occurrence of the header.
+         *
+         * If not specified, remote address are read from the
+         * {@literal X-Forwarded-For} header.
+         *
+         * @param remoteAddressHeader
+         *            the name of the custom HTTP header that contains the
+         *            client IP address that is checked to allow access to the
+         *            dev mode server.
+         */
+        public void setRemoteAddressHeader(String remoteAddressHeader) {
+            this.remoteAddressHeader = remoteAddressHeader;
+        }
     }
 
     /**

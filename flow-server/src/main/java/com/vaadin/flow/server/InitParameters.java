@@ -110,6 +110,15 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
 
     /**
+     * The name of the custom HTTP header that contains the client IP address
+     * that is checked to allow access to the dev mode server. The HTTP header
+     * is supposed to contain a single address, and the HTTP request to have a
+     * single occurrence of the header. If not specified, remote address are
+     * read from the {@literal X-Forwarded-For} header.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER = "devmode.remoteAddressHeader";
+
+    /**
      * Configuration parameter name for enabling pnpm.
      *
      * @since 2.2
