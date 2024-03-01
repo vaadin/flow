@@ -43,7 +43,7 @@ public class TaskGenerateReactFilesTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     Options options;
-    File routesTsx, frontend;
+    File routesTsx, frontend, frontendGenerated;
     ClassFinder classFinder;
 
     @Before
@@ -60,6 +60,9 @@ public class TaskGenerateReactFilesTest {
         frontend = temporaryFolder
                 .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
         options.withFrontendDirectory(frontend);
+        frontendGenerated = temporaryFolder.newFolder(
+                FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
+        options.withFrontendGeneratedFolder(frontendGenerated);
         routesTsx = new File(frontend, "routes.tsx");
     }
 
@@ -278,6 +281,15 @@ public class TaskGenerateReactFilesTest {
         Assert.assertFalse(
                 "./frontend/routes.tsx should be removed when react is disabled",
                 new File(frontend, "routes.tsx").exists());
+        Assert.assertFalse(
+                "./frontend/generated/flow/Flow.tsx should be removed when react is disabled",
+                new File(frontendGenerated,
+                        TaskGenerateReactFiles.FLOW_FLOW_TSX).exists());
+        Assert.assertFalse(
+                "./frontend/generated/flow/ReactAdapter.tsx should be removed when react is disabled",
+                new File(frontendGenerated,
+                        TaskGenerateReactFiles.FLOW_REACT_ADAPTER_TSX)
+                        .exists());
         Assert.assertFalse(
                 "./frontend/routes.tsx.flowBackup should not be created with default content",
                 new File(frontend, "routes.tsx.flowBackup").exists());
