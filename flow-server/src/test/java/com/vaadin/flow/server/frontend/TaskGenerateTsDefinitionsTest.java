@@ -133,6 +133,72 @@ public class TaskGenerateTsDefinitionsTest {
     }
 
     @Test
+    public void tsDefinition_oldHillaContents_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla"),
+                UTF_8);
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                updatedContent,
+                CoreMatchers.containsString(readExpectedContent(true)));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaContents_ignoringMultilineComments_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla"),
+                UTF_8);
+        // do not care about comment type (single or multi line)
+        hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
+                "/* a comment */\n$1\n");
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                updatedContent,
+                CoreMatchers.containsString(readExpectedContent(true)));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaContents_ignoringSingleLineComments_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla"),
+                UTF_8);
+        // do not care about comment type (single or multi line)
+        hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
+                "// a comment\n$1\n");
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                updatedContent,
+                CoreMatchers.containsString(readExpectedContent(true)));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
     public void customTsDefinition_missingFlowContents_tsDefinitionUpdatedAndExceptionThrown()
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
@@ -248,11 +314,11 @@ public class TaskGenerateTsDefinitionsTest {
                             [Ref in string]?: SchemaObject;
                         };
                         declare module '*.css?inline' {
-
+                          something
                           import type { CSSResultGroup } from 'lit';
-
+                          custom
                           const content: CSSResultGroup;
-
+                          added
                           export default content;
                         }
                         export declare const jtdForms: readonly ["elements", "values", "discriminator", "properties", "optionalProperties", "enum", "type", "ref"];

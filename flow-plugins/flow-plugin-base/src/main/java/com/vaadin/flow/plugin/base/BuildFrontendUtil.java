@@ -22,7 +22,6 @@ import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
@@ -30,6 +29,9 @@ import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.LEGACY_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -145,13 +147,14 @@ public class BuildFrontendUtil {
         Lookup lookup = adapter.createLookup(classFinder);
 
         Options options = new Options(lookup, adapter.npmFolder())
-                .withFrontendDirectory(adapter.frontendDirectory())
+                .withFrontendDirectory(getFrontendDirectory(adapter))
                 .withBuildDirectory(adapter.buildFolder())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
                 .createMissingPackageJson(true).enableImportsUpdate(false)
                 .enablePackagesUpdate(false).withRunNpmInstall(false)
-                .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                .withFrontendGeneratedFolder(
+                        getGeneratedFrontendDirectory(adapter))
                 .withNodeVersion(adapter.nodeVersion())
                 .withNodeDownloadRoot(nodeDownloadRootURI)
                 .setNodeAutoUpdate(adapter.nodeAutoUpdate())
@@ -179,7 +182,8 @@ public class BuildFrontendUtil {
     private static File getJarFrontendResourcesFolder(
             PluginAdapterBase adapter) {
         return new File(
-                new File(adapter.frontendDirectory(), FrontendUtils.GENERATED),
+                new File(getFrontendDirectory(adapter),
+                        FrontendUtils.GENERATED),
                 FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
@@ -228,7 +232,7 @@ public class BuildFrontendUtil {
                     e);
         }
         buildInfo.put(FRONTEND_TOKEN,
-                adapter.frontendDirectory().getAbsolutePath());
+                getFrontendDirectory(adapter).getAbsolutePath());
         buildInfo.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                 adapter.javaSourceFolder().getAbsolutePath());
         buildInfo.put(JAVA_RESOURCE_FOLDER_TOKEN,
@@ -238,7 +242,7 @@ public class BuildFrontendUtil {
         buildInfo.put(CONNECT_OPEN_API_FILE_TOKEN,
                 adapter.openApiJsonFile().getAbsolutePath());
         buildInfo.put(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                adapter.generatedTsFolder().getAbsolutePath());
+                getGeneratedFrontendDirectory(adapter).getAbsolutePath());
 
         buildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 adapter.pnpmEnable());
@@ -302,7 +306,7 @@ public class BuildFrontendUtil {
         try {
             Options options = new com.vaadin.flow.server.frontend.Options(
                     lookup, adapter.npmFolder())
-                    .withFrontendDirectory(adapter.frontendDirectory())
+                    .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
@@ -320,7 +324,8 @@ public class BuildFrontendUtil {
                     .withEnablePnpm(adapter.pnpmEnable())
                     .withEnableBun(adapter.bunEnable())
                     .useGlobalPnpm(adapter.useGlobalPnpm())
-                    .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                    .withFrontendGeneratedFolder(
+                            getGeneratedFrontendDirectory(adapter))
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
@@ -367,7 +372,7 @@ public class BuildFrontendUtil {
         try {
             Options options = new com.vaadin.flow.server.frontend.Options(
                     lookup, adapter.npmFolder()).withProductionMode(false)
-                    .withFrontendDirectory(adapter.frontendDirectory())
+                    .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
@@ -384,7 +389,8 @@ public class BuildFrontendUtil {
                     .withEnablePnpm(adapter.pnpmEnable())
                     .withEnableBun(adapter.bunEnable())
                     .useGlobalPnpm(adapter.useGlobalPnpm())
-                    .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                    .withFrontendGeneratedFolder(
+                            getGeneratedFrontendDirectory(adapter))
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
@@ -405,6 +411,45 @@ public class BuildFrontendUtil {
                             + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
                     throwable);
         }
+    }
+
+    /**
+     * Get the legacy frontend folder if available and new folder doesn't exist.
+     *
+     * @param adapter
+     *            PluginAdapterBase
+     * @return correct folder or legacy folder if not user defined
+     */
+    private static File getFrontendDirectory(PluginAdapterBase adapter) {
+        File frontendDir = adapter.frontendDirectory();
+        if (!frontendDir.exists() && frontendDir.toPath()
+                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
+            File legacy = new File(adapter.npmFolder(), LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                return legacy;
+            }
+        }
+        return frontendDir;
+    }
+
+    /**
+     * The generated folder should be under frontend folder and will be moved to
+     * the legacy package if not changed by the user.
+     *
+     * @param adapter
+     *            PluginAdapterBase
+     * @return correct generated folder as child to frontend
+     */
+    private static File getGeneratedFrontendDirectory(
+            PluginAdapterBase adapter) {
+        if (adapter.generatedTsFolder().toPath()
+                .startsWith(adapter.frontendDirectory().toPath())) {
+            // Possibly move frontend folder.
+            File frontendDirectory = getFrontendDirectory(adapter);
+            return new File(frontendDirectory, GENERATED);
+        }
+        // Return given generated folder
+        return adapter.generatedTsFolder();
     }
 
     /**

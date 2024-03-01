@@ -78,7 +78,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
 
     private File getJarFrontendResourcesFolder() {
         return new File(npmFolder,
-                Paths.get("frontend", FrontendUtils.GENERATED,
+                Paths.get(FrontendUtils.DEFAULT_FRONTEND_DIR,
+                        FrontendUtils.GENERATED,
                         FrontendUtils.JAR_RESOURCES_FOLDER).toString());
     }
 

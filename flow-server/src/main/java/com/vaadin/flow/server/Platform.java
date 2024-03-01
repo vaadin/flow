@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
  * @since 23.0
  */
 public class Platform implements Serializable {
+    static final String HILLA_POM_PROPERTIES = "META-INF/maven/com.vaadin/hilla/pom.properties";
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Platform.class);
     /**
@@ -87,15 +88,15 @@ public class Platform implements Serializable {
         // immutable and thread-safe.
         if (hillaVersion == null) {
             try (final InputStream hillaPomProperties = Thread.currentThread()
-                    .getContextClassLoader().getResourceAsStream(
-                            "META-INF/maven/com.vaadin.hilla/hilla/pom.properties")) {
+                    .getContextClassLoader()
+                    .getResourceAsStream(HILLA_POM_PROPERTIES)) {
                 if (hillaPomProperties != null) {
                     final Properties properties = new Properties();
                     properties.load(hillaPomProperties);
                     hillaVersion = properties.getProperty("version", "");
                 } else {
                     LOGGER.info("Unable to determine Hilla version. "
-                            + "No META-INF/maven/com.vaadin.hilla/hilla/pom.properties found");
+                            + "No {} found", HILLA_POM_PROPERTIES);
                     hillaVersion = "";
                 }
             } catch (Exception e) {

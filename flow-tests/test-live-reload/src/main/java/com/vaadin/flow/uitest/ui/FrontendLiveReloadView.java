@@ -91,7 +91,8 @@ public class FrontendLiveReloadView extends AbstractLiveReloadView {
         try {
             if (frontendFileBackup == null) {
                 // make a backup so it can be restored at teardown
-                frontendFileBackup = File.createTempFile("frontend", "ts");
+                frontendFileBackup = File.createTempFile(
+                        FrontendUtils.DEFAULT_FRONTEND_DIR, "ts");
                 FileUtils.copyFile(frontendFile, frontendFileBackup);
             }
             FileUtils.write(frontendFile, code, StandardCharsets.UTF_8);

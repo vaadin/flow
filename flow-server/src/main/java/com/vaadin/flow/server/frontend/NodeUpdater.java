@@ -171,27 +171,19 @@ public abstract class NodeUpdater implements FallibleCommand {
     private JsonObject getFilteredVersionsFromResource(URL versionsResource,
             String versionsOrigin) throws IOException {
         JsonObject versionsJson;
+
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     Json.parse(
                             IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    options.isReactEnabled() && isReactModuleAvailable());
+                    options.isReactEnabled()
+                            && FrontendUtils.isReactModuleAvailable(options));
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
                     DEPENDENCIES)
                     .getFilteredVersions(versionsJson, versionsOrigin);
         }
         return versionsJson;
-    }
-
-    private boolean isReactModuleAvailable() {
-        try {
-            options.getClassFinder().loadClass(
-                    "com.vaadin.flow.component.react.ReactAdapterComponent");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {

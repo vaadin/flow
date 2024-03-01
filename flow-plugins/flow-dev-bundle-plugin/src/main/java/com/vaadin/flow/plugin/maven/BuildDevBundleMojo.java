@@ -164,6 +164,12 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "true")
     private boolean reactEnable;
 
+    /**
+     * A directory with project's frontend source files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
+    private File frontendDirectory;
+
     @Override
     public void execute() throws MojoFailureException {
         long start = System.nanoTime();
@@ -262,12 +268,12 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public File frontendDirectory() {
-        return new File(projectBasedir, FRONTEND);
+        return frontendDirectory;
     }
 
     @Override
     public File generatedTsFolder() {
-        return new File(projectBasedir, FRONTEND + "/generated");
+        return new File(frontendDirectory(), "generated");
     }
 
     @Override
@@ -309,6 +315,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
+    public void logDebug(CharSequence debugMessage, Throwable e) {
+        getLog().debug(debugMessage, e);
+    }
+
+    @Override
     public void logInfo(CharSequence infoMessage) {
         getLog().info(infoMessage);
     }
@@ -319,13 +330,18 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
+    public void logError(CharSequence error) {
+        getLog().error(error);
+    }
+
+    @Override
     public void logWarn(CharSequence warning, Throwable e) {
         getLog().warn(warning, e);
     }
 
     @Override
-    public void logError(CharSequence warning, Throwable e) {
-        getLog().error(warning, e);
+    public void logError(CharSequence error, Throwable e) {
+        getLog().error(error, e);
     }
 
     @Override

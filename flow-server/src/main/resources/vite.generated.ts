@@ -719,6 +719,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       outDir: buildOutputFolder,
       emptyOutDir: devBundle,
       assetsDir: 'VAADIN/build',
+      target: ["esnext", "safari15"],
       rollupOptions: {
         input: {
           indexhtml: projectIndexHtml,
