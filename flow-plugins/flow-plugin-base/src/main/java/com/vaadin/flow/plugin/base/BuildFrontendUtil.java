@@ -420,7 +420,7 @@ public class BuildFrontendUtil {
      *            PluginAdapterBase
      * @return correct folder or legacy folder if not user defined
      */
-    private static File getFrontendDirectory(PluginAdapterBase adapter) {
+    public static File getFrontendDirectory(PluginAdapterBase adapter) {
         File frontendDir = adapter.frontendDirectory();
         if (!frontendDir.exists() && frontendDir.toPath()
                 .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
@@ -440,7 +440,7 @@ public class BuildFrontendUtil {
      *            PluginAdapterBase
      * @return correct generated folder as child to frontend
      */
-    private static File getGeneratedFrontendDirectory(
+    public static File getGeneratedFrontendDirectory(
             PluginAdapterBase adapter) {
         if (adapter.generatedTsFolder().toPath()
                 .startsWith(adapter.frontendDirectory().toPath())) {

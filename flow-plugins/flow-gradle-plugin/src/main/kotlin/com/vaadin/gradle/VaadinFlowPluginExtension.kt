@@ -15,6 +15,7 @@
  */
 package com.vaadin.gradle
 
+import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
@@ -421,7 +422,7 @@ public class PluginEffectiveConfiguration(
         .convention(false)
 
     public val reactEnable: Provider<Boolean> = extension.reactEnable
-        .convention(FrontendUtils.isReactRouterRequired(frontendDirectory.get()))
+        .convention(FrontendUtils.isReactRouterRequired(BuildFrontendUtil.getGeneratedFrontendDirectory(GradlePluginAdapter(project, this, true))))
         .overrideWithSystemProperty(InitParameters.REACT_ENABLE)
 
     public val cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
