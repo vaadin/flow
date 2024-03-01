@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -63,16 +64,22 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     private static final Locale FALLBACK_LOCALE = Locale.ROOT;
 
-    private final I18NProvider i18NProvider;
+    private DefaultI18NProvider i18NProvider;
+
+    private boolean hasFallbackBundle;
 
     public TranslationFileRequestHandler(I18NProvider i18NProvider) {
-        this.i18NProvider = i18NProvider;
+        if (i18NProvider != null
+                && DefaultI18NProvider.class.equals(i18NProvider.getClass())) {
+            this.i18NProvider = (DefaultI18NProvider) i18NProvider;
+            this.hasFallbackBundle = hasFallbackBundle();
+        }
     }
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        if (!DefaultI18NProvider.class.equals(i18NProvider.getClass())) {
+        if (i18NProvider == null) {
             handleCustomI18NProvider(session, response);
             return true;
         }
@@ -155,7 +162,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
                     + locale.getDisplayName() + ". Using the fallback locale "
                     + FALLBACK_LOCALE.getDisplayName() + ".");
         }
-        return ((DefaultI18NProvider) i18NProvider).getBundle(bestMatchLocale,
+        return i18NProvider.getBundle(bestMatchLocale,
                 ResourceBundle.Control.getNoFallbackControl(
                         ResourceBundle.Control.FORMAT_PROPERTIES));
     }
@@ -182,10 +189,24 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         if (languageMatch.isPresent()) {
             return languageMatch.get();
         }
-        if (providedLocales.contains(FALLBACK_LOCALE)) {
+        if (hasFallbackBundle) {
             return FALLBACK_LOCALE;
         }
         return null;
+    }
+
+    private boolean hasFallbackBundle() {
+        if (this.i18NProvider != null) {
+            try {
+                this.i18NProvider.getBundle(FALLBACK_LOCALE,
+                        ResourceBundle.Control.getNoFallbackControl(
+                                ResourceBundle.Control.FORMAT_PROPERTIES));
+                return true;
+            } catch (MissingResourceException e) {
+                // NO-OP
+            }
+        }
+        return false;
     }
 
     private Logger getLogger() {
