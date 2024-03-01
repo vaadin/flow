@@ -112,6 +112,22 @@ public class TranslationFileRequestHandlerTest {
     }
 
     @Test
+    public void withRootBundle_languageTagIsEmpty_responseIsRootBundle()
+            throws IOException {
+        configure(true);
+        testResponseContent("", "{\"title\":\"Root bundle lang\"}", "und");
+        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+    }
+
+    @Test
+    public void withoutRootBundle_languageTagIsEmpty_responseIsEmpty()
+            throws IOException {
+        configure(false);
+        testResponseContent("", "", null);
+        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+    }
+
+    @Test
     public void languageTagWithoutCountryAvailable_responseIsCorrect()
             throws IOException {
         configure(true);
