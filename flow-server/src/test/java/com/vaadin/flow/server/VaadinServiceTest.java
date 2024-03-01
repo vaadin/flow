@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.i18n.DefaultI18NProvider;
+import com.vaadin.flow.i18n.I18NProvider;
 import net.jcip.annotations.NotThreadSafe;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -365,6 +367,10 @@ public class VaadinServiceTest {
     public void createRequestHandlers_pwaHandlerIsInList_webComponentHandlersAreInList()
             throws ServiceException {
         TestVaadinService service = Mockito.mock(TestVaadinService.class);
+        I18NProvider i18NProvider = Mockito.mock(DefaultI18NProvider.class);
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         Mockito.doCallRealMethod().when(service).createRequestHandlers();
 
         List<RequestHandler> handlers = service.createRequestHandlers();

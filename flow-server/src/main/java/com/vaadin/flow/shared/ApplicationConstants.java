@@ -194,6 +194,12 @@ public class ApplicationConstants implements Serializable {
     public static final String REQUEST_TYPE_WEBCOMPONENT_RESYNC = "webcomponent-resync";
 
     /**
+     * Request type parameter value indicating a translation properties file
+     * request.
+     */
+    public static final String REQUEST_TYPE_TRANSLATION_FILE = "i18n";
+
+    /**
      * Attribute name for marking internal router link anchors.
      */
     public static final String ROUTER_LINK_ATTRIBUTE = "router-link";

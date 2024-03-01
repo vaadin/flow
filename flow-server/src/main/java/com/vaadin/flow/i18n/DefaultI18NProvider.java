@@ -84,13 +84,21 @@ public class DefaultI18NProvider implements I18NProvider {
 
     private ResourceBundle getBundle(Locale locale) {
         try {
-            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
-                    I18NUtil.getClassLoader());
+            return getBundle(locale, null);
         } catch (final MissingResourceException e) {
             getLogger().warn("Missing resource bundle for " + BUNDLE_PREFIX
                     + " and locale " + locale.getDisplayName(), e);
         }
         return null;
+    }
+
+    ResourceBundle getBundle(Locale locale, ResourceBundle.Control control) {
+        if (control == null) {
+            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
+                    I18NUtil.getClassLoader());
+        }
+        return ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
+                I18NUtil.getClassLoader(), control);
     }
 
     static Logger getLogger() {
