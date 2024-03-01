@@ -84,13 +84,22 @@ public class VaadinConfigurationProperties {
     /**
      * Devmode configuration options.
      */
-
     private Devmode devmode = new Devmode();
 
     /**
      * Pnpm configuration options.
      **/
     private Pnpm pnpm = new Pnpm();
+
+    /**
+     * Bun configuration options.
+     **/
+    private Bun bun = new Bun();
+
+    /**
+     * React configuration options.
+     **/
+    private React react = new React();
 
     /**
      * Frontend configuration options.
@@ -164,10 +173,64 @@ public class VaadinConfigurationProperties {
         }
 
         /**
-         * Enables/disabled pnp support.
+         * Enables/disabled pnpm support.
          *
          * @param enable
          *            if {@code true} then pnpm support is enabled, otherwise
+         *            it's disabled
+         *
+         */
+        public void setEnable(boolean enable) {
+            this.enable = enable;
+        }
+
+    }
+
+    public static class Bun {
+
+        private boolean enable;
+
+        /**
+         * Returns if bun support is enabled.
+         *
+         * @return if bun is enabled
+         */
+        public boolean isEnable() {
+            return enable;
+        }
+
+        /**
+         * Enables/disabled bun support.
+         *
+         * @param enable
+         *            if {@code true} then bun support is enabled, otherwise
+         *            it's disabled
+         *
+         */
+        public void setEnable(boolean enable) {
+            this.enable = enable;
+        }
+
+    }
+
+    public static class React {
+
+        private boolean enable = true;
+
+        /**
+         * Returns if react support is enabled.
+         *
+         * @return if react is enabled
+         */
+        public boolean isEnable() {
+            return enable;
+        }
+
+        /**
+         * Enables/disabled react support.
+         *
+         * @param enable
+         *            if {@code true} then react support is enabled, otherwise
          *            it's disabled
          *
          */
@@ -482,6 +545,24 @@ public class VaadinConfigurationProperties {
      */
     public Pnpm getPnpm() {
         return pnpm;
+    }
+
+    /**
+     * Gets the bun specific configuration.
+     *
+     * @return the bun configuration
+     */
+    public Bun getBun() {
+        return bun;
+    }
+
+    /**
+     * Gets the react specific configuration.
+     *
+     * @return the react configuration
+     */
+    public React getReact() {
+        return react;
     }
 
     /**
