@@ -158,10 +158,22 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
             return null;
         }
         if (!locale.equals(bestMatchLocale)) {
-            getLogger().debug("Missing resource bundle for "
-                    + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
-                    + locale.getDisplayName() + ". Using the fallback locale "
-                    + FALLBACK_LOCALE.getDisplayName() + ".");
+            if (FALLBACK_LOCALE.equals(bestMatchLocale)) {
+                String fallbackLocaleName = FALLBACK_LOCALE.getDisplayName();
+                getLogger().debug("Missing resource bundle for "
+                        + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
+                        + locale.getDisplayName()
+                        + ". Using the fallback locale"
+                        + (fallbackLocaleName.isEmpty() ? ""
+                                : (" " + fallbackLocaleName))
+                        + ".");
+            } else {
+                getLogger().debug("Missing resource bundle for "
+                        + DefaultI18NProvider.BUNDLE_PREFIX + " and locale "
+                        + locale.getDisplayName()
+                        + ". Using the best match locale "
+                        + bestMatchLocale.getDisplayName() + ".");
+            }
         }
         return i18NProvider.getBundle(bestMatchLocale,
                 ResourceBundle.Control.getNoFallbackControl(
