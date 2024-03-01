@@ -396,7 +396,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("typescript", "4.4.3");
+        defaults.put("typescript", "4.9.5");
 
         final String WORKBOX_VERSION = "6.4.2";
 
