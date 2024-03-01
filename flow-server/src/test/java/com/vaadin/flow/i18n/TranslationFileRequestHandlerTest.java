@@ -78,9 +78,9 @@ public class TranslationFileRequestHandlerTest {
     private I18NProvider i18NProvider;
 
     @Before
-    public void init()
+    public void configure()
             throws IOException, NoSuchFieldException, IllegalAccessException {
-        init(DefaultI18NProvider.class, false);
+        initTranslationsFolder();
     }
 
     @After
@@ -90,50 +90,48 @@ public class TranslationFileRequestHandlerTest {
 
     @Test
     public void pathDoesNotMatch_requestNotHandled() throws IOException {
-        createTranslationFiles(true);
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            setRequestParams(null, "other");
-            Assert.assertFalse(
-                    handler.handleRequest(session, request, response));
-        }
+        configure(true);
+        setRequestParams(null, "other");
+        Assert.assertFalse(handler.handleRequest(session, request, response));
     }
 
     @Test
     public void withRootBundle_languageTagIsNull_responseIsRootBundle()
             throws IOException {
-        testResponseContent(true, null, "{\"title\":\"Root bundle lang\"}",
-                "und");
+        configure(true);
+        testResponseContent(null, "{\"title\":\"Root bundle lang\"}", "und");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
     public void withoutRootBundle_languageTagIsNull_responseIsEmpty()
             throws IOException {
-        testResponseContent(false, null, "", null);
+        configure(false);
+        testResponseContent(null, "", null);
         Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
     public void languageTagWithoutCountryAvailable_responseIsCorrect()
             throws IOException {
-        testResponseContent(true, "fi", "{\"title\":\"Suomi\"}", "fi");
+        configure(true);
+        testResponseContent("fi", "{\"title\":\"Suomi\"}", "fi");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
     public void tagContainsOnlyLanguage_languageOnlyAvailableWithCountry_responseHasTheCorrectLanguage()
             throws IOException {
-        testResponseContent(false, "es", "{\"title\":\"Espanol (Spain)\"}",
-                "es-ES");
+        configure(false);
+        testResponseContent("es", "{\"title\":\"Espanol (Spain)\"}", "es-ES");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
     public void languageTagWithCountryAvailable_responseIsCorrect()
             throws IOException {
-        testResponseContent(false, "es-ES", "{\"title\":\"Espanol (Spain)\"}",
+        configure(false);
+        testResponseContent("es-ES", "{\"title\":\"Espanol (Spain)\"}",
                 "es-ES");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
@@ -141,7 +139,8 @@ public class TranslationFileRequestHandlerTest {
     @Test
     public void withRootBundle_requestedLocaleBundleNotAvailable_responseIsRootBundle()
             throws IOException {
-        testResponseContentWithMockedDefaultLocale("es-ES", true, "en-US",
+        configure(true);
+        testResponseContentWithMockedDefaultLocale("es-ES", "en-US",
                 "{\"title\":\"Root bundle lang\"}", "und");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
@@ -149,15 +148,16 @@ public class TranslationFileRequestHandlerTest {
     @Test
     public void withoutRootBundle_requestedLocaleBundleNotAvailable_responseIsEmpty()
             throws IOException {
-        testResponseContentWithMockedDefaultLocale("es-ES", false, "en-US", "",
-                null);
+        configure(false);
+        testResponseContentWithMockedDefaultLocale("es-ES", "en-US", "", null);
         Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
     public void languageTagWithUnderscoresAvailable_responseIsCorrect()
             throws IOException {
-        testResponseContent(false, "es_ES", "{\"title\":\"Espanol (Spain)\"}",
+        configure(false);
+        testResponseContent("es_ES", "{\"title\":\"Espanol (Spain)\"}",
                 "es-ES");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
@@ -165,24 +165,24 @@ public class TranslationFileRequestHandlerTest {
     @Test
     public void withRootBundle_languageTagWithUnderscoresNotAvailable_responseIsRootBundle()
             throws IOException {
-        testResponseContent(true, "it_IT", "{\"title\":\"Root bundle lang\"}",
-                "und");
+        configure(true);
+        testResponseContent("it_IT", "{\"title\":\"Root bundle lang\"}", "und");
         Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
     public void withoutRootBundle_languageTagWithUnderscoresNotAvailable_responseIsEmpty()
             throws IOException {
-        testResponseContent(false, "it_IT", "", null);
+        configure(false);
+        testResponseContent("it_IT", "", null);
         Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
     public void withCustomI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
             throws IOException {
-        init(I18NProvider.class, false);
-        createTranslationFiles(true);
-        testResponseContent(true, "fi", "", null);
+        configure(true, I18NProvider.class, false);
+        testResponseContent("fi", "", null);
         Mockito.verify(response).sendError(
                 Mockito.eq(HttpStatusCode.NOT_IMPLEMENTED.getCode()),
                 Mockito.anyString());
@@ -191,18 +191,16 @@ public class TranslationFileRequestHandlerTest {
     @Test
     public void productionMode_withCustomI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
             throws IOException {
-        init(I18NProvider.class, true);
-        createTranslationFiles(true);
-        testResponseContent(true, "fi", "", null);
+        configure(true, I18NProvider.class, true);
+        testResponseContent("fi", "", null);
         Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
     public void withCustomizedDefaultI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
             throws IOException {
-        init(CustomizedDefaultI18NProvider.class, false);
-        createTranslationFiles(true);
-        testResponseContent(true, "fi", "", null);
+        configure(true, CustomizedDefaultI18NProvider.class, false);
+        testResponseContent("fi", "", null);
         Mockito.verify(response).sendError(
                 Mockito.eq(HttpStatusCode.NOT_IMPLEMENTED.getCode()),
                 Mockito.anyString());
@@ -211,49 +209,47 @@ public class TranslationFileRequestHandlerTest {
     @Test
     public void productionMode_withCustomizedDefaultI18nProvider_requestedLocaleBundleAvailable_responseIsEmpty()
             throws IOException {
-        init(CustomizedDefaultI18NProvider.class, true);
-        createTranslationFiles(true);
-        testResponseContent(true, "fi", "", null);
+        configure(true, CustomizedDefaultI18NProvider.class, true);
+        testResponseContent("fi", "", null);
         Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     private void testResponseContentWithMockedDefaultLocale(
-            String defaultLocaleLanguageTag, boolean withRootBundleFile,
-            String requestedLanguageTag, String expectedResponseContent,
-            String expectedResponseLanguageTag) throws IOException {
+            String defaultLocaleLanguageTag, String requestedLanguageTag,
+            String expectedResponseContent, String expectedResponseLanguageTag)
+            throws IOException {
         try (MockedStatic<Locale> locale = Mockito.mockStatic(Locale.class,
                 Mockito.CALLS_REAL_METHODS)) {
             Locale defaultLocale = Locale
                     .forLanguageTag(defaultLocaleLanguageTag);
             locale.when(Locale::getDefault).thenReturn(defaultLocale);
-            testResponseContent(withRootBundleFile, requestedLanguageTag,
-                    expectedResponseContent, expectedResponseLanguageTag);
+            testResponseContent(requestedLanguageTag, expectedResponseContent,
+                    expectedResponseLanguageTag);
         }
     }
 
-    private void testResponseContent(boolean withRootBundleFile,
-            String requestedLanguageTag, String expectedResponseContent,
-            String expectedResponseLanguageTag) throws IOException {
-        createTranslationFiles(withRootBundleFile);
+    private void testResponseContent(String requestedLanguageTag,
+            String expectedResponseContent, String expectedResponseLanguageTag)
+            throws IOException {
+        setRequestParams(requestedLanguageTag,
+                HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier());
         try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
                 Mockito.CALLS_REAL_METHODS)) {
             util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            setRequestParams(requestedLanguageTag,
-                    HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier());
             Assert.assertTrue("The request was not handled by the handler.",
                     handler.handleRequest(session, request, response));
+        }
+        Assert.assertEquals(
+                "The expected response content does not match the actual response content.",
+                expectedResponseContent, getResponseContent());
+        if (expectedResponseLanguageTag == null) {
+            Assert.assertEquals("The response language tag was not found.", 0,
+                    retrievedLocaleCapture.getAllValues().size());
+        } else {
             Assert.assertEquals(
-                    "The expected response content does not match the actual response content.",
-                    expectedResponseContent, getResponseContent());
-            if (expectedResponseLanguageTag == null) {
-                Assert.assertEquals("The response language tag was not found.",
-                        0, retrievedLocaleCapture.getAllValues().size());
-            } else {
-                Assert.assertEquals(
-                        "The expected response language tag does not match the actual response language tag.",
-                        expectedResponseLanguageTag,
-                        retrievedLocaleCapture.getValue());
-            }
+                    "The expected response language tag does not match the actual response language tag.",
+                    expectedResponseLanguageTag,
+                    retrievedLocaleCapture.getValue());
         }
     }
 
@@ -274,7 +270,6 @@ public class TranslationFileRequestHandlerTest {
     private void createTranslationFiles(boolean withRootBundleFile)
             throws IOException {
         if (withRootBundleFile) {
-            providedLocales.add(Locale.ROOT);
             createTranslationFile("title=Root bundle lang", "");
         }
         providedLocales.add(Locale.forLanguageTag("fi"));
@@ -292,12 +287,31 @@ public class TranslationFileRequestHandlerTest {
                 StandardOpenOption.CREATE);
     }
 
-    private void init(Class<? extends I18NProvider> i18NProviderClass,
+    private void configure(boolean withRootBundle) throws IOException {
+        configure(withRootBundle, DefaultI18NProvider.class, false);
+    }
+
+    private void configure(boolean withRootBundle,
+            Class<? extends I18NProvider> i18NProviderClass,
             boolean isProductionMode) throws IOException {
+        createTranslationFiles(withRootBundle);
         mockI18nProvider(i18NProviderClass);
         mockService(isProductionMode);
-        initHandler();
+        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
+                Mockito.CALLS_REAL_METHODS)) {
+            util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
+            handler = new TranslationFileRequestHandler(i18NProvider);
+        }
         mockResponse();
+    }
+
+    private void initTranslationsFolder() throws IOException {
+        File resources = temporaryFolder.newFolder();
+        translationsFolder = new File(resources,
+                DefaultI18NProvider.BUNDLE_FOLDER);
+        translationsFolder.mkdirs();
+        urlClassLoader = new URLClassLoader(
+                new URL[] { resources.toURI().toURL() });
     }
 
     private void mockI18nProvider(
@@ -306,16 +320,6 @@ public class TranslationFileRequestHandlerTest {
                 Mockito.CALLS_REAL_METHODS);
         Mockito.when(i18NProvider.getProvidedLocales())
                 .thenReturn(providedLocales);
-    }
-
-    private void initHandler() throws IOException {
-        File resources = temporaryFolder.newFolder();
-        translationsFolder = new File(resources,
-                DefaultI18NProvider.BUNDLE_FOLDER);
-        translationsFolder.mkdirs();
-        urlClassLoader = new URLClassLoader(
-                new URL[] { resources.toURI().toURL() });
-        handler = new TranslationFileRequestHandler(i18NProvider);
     }
 
     private void mockResponse() throws IOException {
