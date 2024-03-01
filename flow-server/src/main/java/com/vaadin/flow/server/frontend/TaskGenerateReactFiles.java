@@ -79,6 +79,11 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             but can have react routes also defined.
             """;
 
+    private static final String FLOW_TSX = "Flow.tsx";
+    private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
+    static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
+    static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
+
     /**
      * Create a task to generate <code>index.js</code> if necessary.
      *
@@ -100,17 +105,15 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
     private void doExecute() throws ExecutionFailedException {
         File frontendDirectory = options.getFrontendDirectory();
-        File flowTsx = new File(
-                new File(frontendDirectory, FrontendUtils.GENERATED),
-                "flow/Flow.tsx");
-        File reactAdapterTsx = new File(
-                new File(frontendDirectory, FrontendUtils.GENERATED),
-                "flow/ReactAdapter.tsx");
+        File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
+        File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+        File reactAdapterTsx = new File(frontendGeneratedFolder,
+                FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFileContent("Flow.tsx"));
-            if (fileAvailable("ReactAdapter.tsx")) {
-                writeFile(reactAdapterTsx, getFileContent("ReactAdapter.tsx"));
+            writeFile(flowTsx, getFileContent(FLOW_TSX));
+            if (fileAvailable(REACT_ADAPTER_TSX)) {
+                writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
             }
 
             if (!routesTsx.exists()) {
@@ -136,6 +139,13 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private void cleanup() throws ExecutionFailedException {
         try {
             File frontendDirectory = options.getFrontendDirectory();
+            File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
+            File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+            File reactAdapterTsx = new File(frontendGeneratedFolder,
+                    FLOW_REACT_ADAPTER_TSX);
+            FileUtils.deleteQuietly(flowTsx);
+            FileUtils.deleteQuietly(reactAdapterTsx);
+
             File routesTsx = new File(frontendDirectory,
                     FrontendUtils.ROUTES_TSX);
             if (routesTsx.exists()) {
@@ -160,8 +170,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 }
             }
         } catch (IOException e) {
-            throw new ExecutionFailedException(
-                    "Failed to clean " + FrontendUtils.ROUTES_TSX, e);
+            throw new ExecutionFailedException("Failed to clean up .tsx files",
+                    e);
         }
     }
 
