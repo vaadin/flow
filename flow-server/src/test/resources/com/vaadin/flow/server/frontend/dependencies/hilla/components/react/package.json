@@ -15,7 +15,6 @@
     "@vaadin/hilla-file-router": "24.4.0-alpha2"
   },
   "devDependencies": {
-    "react-dev-dependency": "1.0.0",
-    "@vaadin/hilla-file-router": "24.4.0-alpha2"
+    "react-dev-dependency": "1.0.0"
   }
 }
