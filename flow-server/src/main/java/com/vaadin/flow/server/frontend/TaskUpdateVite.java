@@ -43,6 +43,8 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
             getSimplifiedTemplate("vite.config-react.ts"),
             getSimplifiedTemplate("vite.config-react-swc.ts") };
 
+    private static final String FILE_SYSTEM_ROUTER_DEPENDENCY = "@vaadin/hilla-file-router/vite-plugin.js";
+
     TaskUpdateVite(Options options, Set<String> webComponentTags) {
         this.options = options;
         this.webComponentTags = webComponentTags;
@@ -126,9 +128,25 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                         webComponentTags == null || webComponentTags.isEmpty()
                                 ? ""
                                 : String.join(";", webComponentTags));
+        template = updateFileSystemRouterVitePlugin(template);
+
         FileIOUtils.writeIfChanged(generatedConfigFile, template);
         log().debug("Created vite generated configuration file: '{}'",
                 generatedConfigFile);
+    }
+
+    private String updateFileSystemRouterVitePlugin(String template) {
+        if (options.isReactEnabled() && FrontendUtils.isHillaUsed(
+                options.getFrontendDirectory(), options.getClassFinder())) {
+            return template
+                    .replace("//#vitePluginFileSystemRouterImport#",
+                            "import vitePluginFileSystemRouter from '"
+                                    + FILE_SYSTEM_ROUTER_DEPENDENCY + "';")
+                    .replace("//#vitePluginFileSystemRouter#",
+                            ", vitePluginFileSystemRouter()");
+        }
+        return template.replace("//#vitePluginFileSystemRouterImport#", "")
+                .replace("//#vitePluginFileSystemRouter#", "");
     }
 
     private Logger log() {

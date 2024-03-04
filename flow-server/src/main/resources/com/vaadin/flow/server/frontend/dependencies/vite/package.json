@@ -19,6 +19,7 @@
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.6.4",
     "workbox-build": "7.0.0",
-    "transform-ast": "2.4.4"
+    "transform-ast": "2.4.4",
+    "@vaadin/hilla-file-router": "24.4.0-alpha7"
   }
 }
