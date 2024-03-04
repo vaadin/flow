@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;

@@ -73,7 +73,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
         val cleanTask = TaskCleanFrontendFiles(config.npmFolder.get(),
-            config.frontendDirectory.get(), adapter.classFinder
+                BuildFrontendUtil.getGeneratedFrontendDirectory(adapter), adapter.classFinder
         )
         BuildFrontendUtil.runNodeUpdater(adapter)
 
@@ -105,7 +105,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
      */
     protected open fun cleanFrontendFiles(): Boolean {
         val adapter = GradlePluginAdapter(project, config, false)
-        if (FrontendUtils.isHillaUsed(adapter.frontendDirectory(),
+        if (FrontendUtils.isHillaUsed(BuildFrontendUtil.getGeneratedFrontendDirectory(adapter),
                         adapter.classFinder)) {
             /*
              * Override this to not clean generated frontend files after the

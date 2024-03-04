@@ -33,6 +33,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_COUNT_MAX;
 import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_FILE_SIZE_MAX;
@@ -159,7 +160,7 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     private static Optional<URI> getPathUri(String path) {
-        int index = path.lastIndexOf('/');
+        int index = path.lastIndexOf(FrontendUtils.isWindows() ? '\\' : '/');
         boolean hasPrefix = index >= 0;
         if (!hasPrefix) {
             getLogger().info("Unsupported path structure, path={}", path);

@@ -18,28 +18,19 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.Version;
-import com.vaadin.open.App;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
+import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationAndEOL;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -88,6 +79,11 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             but can have react routes also defined.
             """;
 
+    private static final String FLOW_TSX = "Flow.tsx";
+    private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
+    static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
+    static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
+
     /**
      * Create a task to generate <code>index.js</code> if necessary.
      *
@@ -100,22 +96,28 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
+        if (options.isReactEnabled()) {
+            doExecute();
+        } else {
+            cleanup();
+        }
+    }
+
+    private void doExecute() throws ExecutionFailedException {
         File frontendDirectory = options.getFrontendDirectory();
-        File flowTsx = new File(
-                new File(frontendDirectory, FrontendUtils.GENERATED),
-                "flow/Flow.tsx");
-        File reactAdapterTsx = new File(
-                new File(frontendDirectory, FrontendUtils.GENERATED),
-                "flow/ReactAdapter.tsx");
-        File routesTsx = new File(frontendDirectory, "routes.tsx");
+        File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
+        File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+        File reactAdapterTsx = new File(frontendGeneratedFolder,
+                FLOW_REACT_ADAPTER_TSX);
+        File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFileContent("Flow.tsx"));
-            if (fileAvailable("ReactAdapter.tsx")) {
-                writeFile(reactAdapterTsx, getFileContent("ReactAdapter.tsx"));
+            writeFile(flowTsx, getFileContent(FLOW_TSX));
+            if (fileAvailable(REACT_ADAPTER_TSX)) {
+                writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
             }
 
             if (!routesTsx.exists()) {
-                writeFile(routesTsx, getFileContent("routes.tsx"));
+                writeFile(routesTsx, getFileContent(FrontendUtils.ROUTES_TSX));
             } else {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
@@ -130,6 +132,45 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             }
         } catch (IOException e) {
             throw new ExecutionFailedException("Failed to read file content",
+                    e);
+        }
+    }
+
+    private void cleanup() throws ExecutionFailedException {
+        try {
+            File frontendDirectory = options.getFrontendDirectory();
+            File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
+            File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+            File reactAdapterTsx = new File(frontendGeneratedFolder,
+                    FLOW_REACT_ADAPTER_TSX);
+            FileUtils.deleteQuietly(flowTsx);
+            FileUtils.deleteQuietly(reactAdapterTsx);
+
+            File routesTsx = new File(frontendDirectory,
+                    FrontendUtils.ROUTES_TSX);
+            if (routesTsx.exists()) {
+                String defaultRoutesContent = FileUtils
+                        .readFileToString(routesTsx, UTF_8);
+                if (compareIgnoringIndentationAndEOL(defaultRoutesContent,
+                        getFileContent(FrontendUtils.ROUTES_TSX),
+                        String::equals)) {
+                    routesTsx.delete();
+                    log().debug("Default {} file has been removed.",
+                            FrontendUtils.ROUTES_TSX);
+                } else {
+                    Files.copy(routesTsx.toPath(),
+                            new File(frontendDirectory,
+                                    FrontendUtils.ROUTES_TSX + ".flowBackup")
+                                    .toPath(),
+                            StandardCopyOption.REPLACE_EXISTING);
+                    routesTsx.delete();
+                    log().warn(
+                            "Custom {} file has been removed. Backup is created in {}.flowBackup file.",
+                            FrontendUtils.ROUTES_TSX, FrontendUtils.ROUTES_TSX);
+                }
+            }
+        } catch (IOException e) {
+            throw new ExecutionFailedException("Failed to clean up .tsx files",
                     e);
         }
     }
@@ -169,5 +210,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
         }
         return indexTemplate;
+    }
+
+    private Logger log() {
+        return LoggerFactory.getLogger(getClass());
     }
 }

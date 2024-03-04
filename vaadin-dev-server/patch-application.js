@@ -15,7 +15,7 @@ if (!appPath) {
 const vaadinFilePath = path.join(appPath, 'frontend', 'generated', 'vaadin.ts');
 if (!fs.existsSync(vaadinFilePath)) {
   throw new Error(
-    `Application path does not contain a ./frontend/generated directory: ${vaadinFilePath}. Make sure to start the app first.`
+    `Application path does not contain a ./src/main/frontend/generated directory: ${vaadinFilePath}. Make sure to start the app first.`
   );
 }
 
@@ -41,7 +41,7 @@ document.body.append(hmrScript);
 
 const devToolsScript = document.createElement("script");
 devToolsScript.setAttribute("type", "module");
-devToolsScript.setAttribute("src", "${webDevServerUrl}/frontend/vaadin-dev-tools.ts");
+devToolsScript.setAttribute("src", "${webDevServerUrl}/src/main/frontend/vaadin-dev-tools.ts");
 document.body.append(devToolsScript);
 `;
 

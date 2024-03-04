@@ -36,7 +36,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  * Task generating the theme definition file 'theme.js' for importing
  * application theme into the generated frontend directory.
  *
- * Default directory is ' ./frontend/generated'
+ * Default directory is ' ./src/main/frontend/generated'
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -45,14 +45,13 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  */
 public class TaskUpdateThemeImport implements FallibleCommand {
 
-    private static final String JAR_RESOURCES = "frontend/"
-            + FrontendUtils.GENERATED + FrontendUtils.JAR_RESOURCES_FOLDER;
     public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources";
     public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static";
     private static final String EXPORT_MODULES_DEF = "export declare const applyTheme: (target: Node) => void;";
 
     private final File themeImportFile;
     private final File themeImportFileDefinition;
+    private final String generatedFolder;
     private final ThemeDefinition theme;
     private final Options options;
 
@@ -61,6 +60,9 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         this.options = options;
         File frontendGeneratedFolder = new File(options.getFrontendDirectory(),
                 GENERATED);
+        generatedFolder = options.getNpmFolder().toPath()
+                .relativize(frontendGeneratedFolder.toPath()).toString()
+                .replaceAll("\\\\", "/");
         themeImportFile = new File(frontendGeneratedFolder, THEME_IMPORTS_NAME);
         themeImportFileDefinition = new File(frontendGeneratedFolder,
                 THEME_IMPORTS_D_TS_NAME);
@@ -125,8 +127,11 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         if (existingAppThemeDirectories.size() >= 2) {
 
             boolean themeFoundInJar = existingAppThemeDirectories.stream()
-                    .map(File::getPath).anyMatch(path -> path
-                            .contains(Paths.get(JAR_RESOURCES).toString()));
+                    .map(File::getPath)
+                    .anyMatch(path -> path.contains(Paths
+                            .get(generatedFolder,
+                                    FrontendUtils.JAR_RESOURCES_FOLDER)
+                            .toString()));
 
             if (themeFoundInJar) {
                 String errorMessage = "Theme '%s' should not exist inside a "
@@ -154,7 +159,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     private List<String> getAppThemePossiblePaths(String themePath) {
         String frontendTheme = String.join("/", options.getNpmFolder().toPath()
                 .relativize(options.getFrontendDirectory().toPath()).toString(),
-                themePath);
+                themePath).replaceAll("\\\\", "/");
 
         String themePathInMetaInfResources = String.join("/",
                 APPLICATION_META_INF_RESOURCES, themePath);
@@ -162,8 +167,9 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         String themePathInStaticResources = String.join("/",
                 APPLICATION_STATIC_RESOURCES, themePath);
 
-        String themePathInClassPathResources = String.join("", JAR_RESOURCES,
-                "/", themePath);
+        String themePathInClassPathResources = String.join("",
+                generatedFolder + "/" + FrontendUtils.JAR_RESOURCES_FOLDER, "/",
+                themePath);
 
         return Arrays.asList(frontendTheme, themePathInMetaInfResources,
                 themePathInStaticResources, themePathInClassPathResources);

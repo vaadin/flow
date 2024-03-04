@@ -20,9 +20,12 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
@@ -49,7 +52,6 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevToolsToken;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -67,6 +69,8 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -396,22 +400,47 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
             VaadinRequest request) {
         String remoteAddress = request.getRemoteAddr();
-        String hostsAllowed = configuration.getStringProperty(
-                InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null);
+        String hostsAllowedFromCfg = configuration.getStringProperty(
+                SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null);
+        String hostsAllowed = (hostsAllowedFromCfg != null
+                && !hostsAllowedFromCfg.isBlank()) ? hostsAllowedFromCfg : null;
 
-        if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed)) {
+        if (!isAllowedDevToolsHost(remoteAddress, hostsAllowed, true)) {
             return false;
         }
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-        if (forwardedFor != null) {
+        String remoteHeaderIp = configuration.getStringProperty(
+                SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER, null);
+        if (remoteHeaderIp != null) {
+            return isAllowedDevToolsHost(request.getHeader(remoteHeaderIp),
+                    hostsAllowed, false);
+        }
+
+        Enumeration<String> allForwardedForHeaders = request
+                .getHeaders("X-Forwarded-For");
+        if (allForwardedForHeaders != null
+                && allForwardedForHeaders.hasMoreElements()) {
+            String forwardedFor = String.join(",",
+                    Collections.list(allForwardedForHeaders));
+
             if (forwardedFor.contains(",")) {
                 // X-Forwarded-For: <client>, <proxy1>, <proxy2>
                 // Elements are comma-separated, with optional whitespace
                 // surrounding the commas.
-                forwardedFor = forwardedFor.split(",")[0];
-            }
-            if (!isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed)) {
-                return false;
+                // Validate all hops
+                String[] hops = forwardedFor.split(",");
+                if (hops.length > 0) {
+                    return Stream.of(hops).map(String::trim)
+                            .allMatch(ip -> isAllowedDevToolsHost(ip,
+                                    hostsAllowed, false));
+                } else {
+                    // Potential fake header with no addresses, e.g.
+                    // 'X-Forwarded-For: ,,,'
+                    return false;
+                }
+
+            } else {
+                return isAllowedDevToolsHost(forwardedFor.trim(), hostsAllowed,
+                        false);
             }
         }
 
@@ -420,16 +449,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private static boolean isAllowedDevToolsHost(String remoteAddress,
-            String hostsAllowed) {
-        if (remoteAddress == null) {
-            // No remote address available so we cannot check...
+            String hostsAllowed, boolean allowLocal) {
+        if (remoteAddress == null || remoteAddress.isBlank()
+                || (hostsAllowed == null && !allowLocal)) {
+            // No check needed if the remote address is not available
+            // or if local addresses must be rejected and there are no host
+            // rules defined
             return false;
         }
-        // Always allow localhost
         try {
             InetAddress inetAddress = InetAddress.getByName(remoteAddress);
             if (inetAddress.isLoopbackAddress()) {
-                return true;
+                return allowLocal;
             }
         } catch (Exception e) {
             getLogger().debug(

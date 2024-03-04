@@ -313,8 +313,14 @@ public final class BundleValidationUtil {
             final Map<String, String> applicationDependencies = frontendDependencies
                     .getPackages();
 
+            Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
+                    options.getClassFinder(),
+                    options.isReactEnabled()
+                            && FrontendUtils.isReactModuleAvailable(options))
+                    .exclude(applicationDependencies);
+
             // Add application dependencies
-            for (Map.Entry<String, String> dep : applicationDependencies
+            for (Map.Entry<String, String> dep : filteredApplicationDependencies
                     .entrySet()) {
                 nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
                         dep.getKey(), dep.getValue());
@@ -331,7 +337,7 @@ public final class BundleValidationUtil {
                 // need to double check that not overriding a scanned
                 // dependency since add-ons should be able to downgrade
                 // version through exclusion
-                if (!applicationDependencies.containsKey(key)) {
+                if (!filteredApplicationDependencies.containsKey(key)) {
                     TaskUpdatePackages.pinPlatformDependency(packageJson,
                             platformPinnedDependencies, key);
                 }
