@@ -421,15 +421,8 @@ public class BuildFrontendUtil {
      * @return correct folder or legacy folder if not user defined
      */
     public static File getFrontendDirectory(PluginAdapterBase adapter) {
-        File frontendDir = adapter.frontendDirectory();
-        if (!frontendDir.exists() && frontendDir.toPath()
-                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
-            File legacy = new File(adapter.npmFolder(), LEGACY_FRONTEND_DIR);
-            if (legacy.exists()) {
-                return legacy;
-            }
-        }
-        return frontendDir;
+        return FrontendUtils.getLegacyFrontendFolderIfExists(
+                adapter.npmFolder(), adapter.frontendDirectory());
     }
 
     /**
