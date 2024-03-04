@@ -75,6 +75,13 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
+    fun testPrepareFrontend_legacyFrontendFolder_usesLegacy() {
+        testProject.newFolder("frontend");
+        testProject.build("vaadinPrepareFrontend")
+        expect(true) { File(testProject.dir, "frontend/generated").exists() }
+    }
+
+    @Test
     fun `vaadinBuildFrontend not ran by default in development mode`() {
         val result: BuildResult = testProject.build("build")
         // let's explicitly check that vaadinPrepareFrontend has been run.
