@@ -208,26 +208,19 @@ public class DevModeInitializer implements Serializable {
                     new StatisticsSender(storage));
         }
 
-        String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
-                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
-
-        // If new default frontend folder not exists check for legacy folder.
-        if (frontendFolder.endsWith(DEFAULT_FRONTEND_DIR)
-                && !new File(frontendFolder).exists()) {
-            File legacy = new File(baseDir, LEGACY_FRONTEND_DIR);
-            if (legacy.exists()) {
-                frontendFolder = LEGACY_FRONTEND_DIR;
-            }
-        }
+        File frontendFolder = FrontendUtils.getProjectFrontendDir(config);
+        String frontendGeneratedFolderPath = config.getStringProperty(
+                PROJECT_FRONTEND_GENERATED_DIR_TOKEN, FrontendUtils
+                        .getFrontendGeneratedFolder(frontendFolder).getPath());
+        File frontendGeneratedFolder = new File(frontendGeneratedFolderPath);
 
         Lookup lookupFromContext = context.getAttribute(Lookup.class);
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
         Options options = new Options(lookup, baseDir)
-                .withFrontendDirectory(new File(frontendFolder))
-                .withFrontendGeneratedFolder(
-                        new File(frontendFolder + GENERATED))
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(frontendGeneratedFolder)
                 .withBuildDirectory(config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -273,13 +266,6 @@ public class DevModeInitializer implements Serializable {
                         InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
                 .split(",");
 
-        String frontendGeneratedFolderName = config.getStringProperty(
-                PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                new File(frontendFolder).isAbsolute()
-                        ? Paths.get(frontendFolder, GENERATED).toString()
-                        : Paths.get(baseDir.getAbsolutePath(), frontendFolder,
-                                GENERATED).toString());
-        File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
         JsonObject tokenFileData = Json.createObject();

@@ -78,9 +78,8 @@ public class ThemeUtils {
             return getThemeAnnotation(context).map(Theme::value);
         } else {
             File themeJs;
-            String frontendFolderPath = config.getStringProperty(
-                    FrontendUtils.PARAM_FRONTEND_DIR,
-                    FrontendUtils.DEFAULT_FRONTEND_DIR);
+            String frontendFolderPath = FrontendUtils
+                    .getProjectFrontendDir(config).getPath();
             if (frontendFolderPath.startsWith("./")) {
                 themeJs = Paths.get(config.getProjectFolder().getPath(),
                         frontendFolderPath, FrontendUtils.GENERATED,

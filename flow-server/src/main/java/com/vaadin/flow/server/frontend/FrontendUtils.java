@@ -596,18 +596,50 @@ public class FrontendUtils {
                 getFrontendFolder(projectRoot, deploymentConfiguration));
     }
 
-    private static File getFrontendFolder(File projectRoot,
+    /**
+     * Get the frontend folder location from configuration and fallbacks to
+     * {@link #LEGACY_FRONTEND_DIR} if it doesn't exist.
+     *
+     * @param projectRoot
+     *            project's root directory
+     * @param deploymentConfiguration
+     *            applications' configuration
+     * @return frontend folder location that is used by application to look for
+     *         frontend files
+     */
+    public static File getFrontendFolder(File projectRoot,
             AbstractConfiguration deploymentConfiguration) {
         String frontendFolderPath = deploymentConfiguration.getStringProperty(
-                FrontendUtils.PARAM_FRONTEND_DIR,
-                FrontendUtils.DEFAULT_FRONTEND_DIR);
+                PARAM_FRONTEND_DIR,
+                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
-        File f = new File(frontendFolderPath);
-        if (f.isAbsolute()) {
-            return f;
+        File frontendFolderFile = new File(frontendFolderPath);
+        if (!frontendFolderFile.isAbsolute()) {
+            frontendFolderFile = new File(projectRoot, frontendFolderPath);
         }
 
-        return new File(projectRoot, frontendFolderPath);
+        return getLegacyFrontendFolderIfExists(projectRoot, frontendFolderFile);
+    }
+
+    /**
+     * Get the legacy frontend folder if available and new folder doesn't exist.
+     *
+     * @param projectRoot
+     *            project's root directory
+     * @param frontendDir
+     *            the frontend directory location from project's configuration
+     * @return correct folder or legacy folder if not user defined
+     */
+    public static File getLegacyFrontendFolderIfExists(File projectRoot,
+            File frontendDir) {
+        if (!frontendDir.exists() && frontendDir.toPath()
+                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
+            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                return legacy;
+            }
+        }
+        return frontendDir;
     }
 
     /**
