@@ -30,7 +30,8 @@ public class ComponentAddedViaInitListenerIT extends AbstractSpringTest {
         TestBenchElement div = component.$("div").first();
         Assert.assertEquals("Init Listener Component", div.getText());
         TestBenchElement d2 = $("p").id("event-listener");
-        Assert.assertEquals("Init Listener Component via EventListener", d2.getText());
+        Assert.assertEquals("Init Listener Component via EventListener",
+                d2.getText());
     }
 
     @Override

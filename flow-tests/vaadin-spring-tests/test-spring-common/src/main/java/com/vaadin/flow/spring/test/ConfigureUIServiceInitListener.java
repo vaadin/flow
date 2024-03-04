@@ -15,12 +15,11 @@ public class ConfigureUIServiceInitListener
         event.getSource().addUIInitListener(uiEvent -> uiEvent.getUI()
                 .add(new ComponentAddedViaInitListenerView()));
     }
-    
+
     @EventListener
     public void myListener(ServiceInitEvent event) {
-        var p  = new Paragraph("Init Listener Component via EventListener");
+        var p = new Paragraph("Init Listener Component via EventListener");
         p.setId("event-listener");
-        event.getSource().addUIInitListener(uiEvent -> uiEvent.getUI()
-                .add(p));
+        event.getSource().addUIInitListener(uiEvent -> uiEvent.getUI().add(p));
     }
 }
