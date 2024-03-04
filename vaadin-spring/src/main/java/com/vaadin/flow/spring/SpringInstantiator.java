@@ -31,7 +31,6 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * Default Spring instantiator that is used if no other instantiator has been
