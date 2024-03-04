@@ -43,7 +43,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
             getSimplifiedTemplate("vite.config-react.ts"),
             getSimplifiedTemplate("vite.config-react-swc.ts") };
 
-    private static final String FILE_SYSTEM_ROUTER_DEPENDENCY = "@vaadin/hilla-file-router/vite-plugin.js";
+    static final String FILE_SYSTEM_ROUTER_DEPENDENCY = "@vaadin/hilla-file-router/vite-plugin.js";
 
     TaskUpdateVite(Options options, Set<String> webComponentTags) {
         this.options = options;

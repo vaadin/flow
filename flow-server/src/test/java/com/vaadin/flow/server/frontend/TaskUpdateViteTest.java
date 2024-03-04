@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.PwaConfiguration;
@@ -125,5 +126,50 @@ public class TaskUpdateViteTest {
                 "Configuration uses settings keys\n" + faulty
                         + "that are not generated in settings file.",
                 faulty.toString().isEmpty());
+    }
+
+    @Test
+    public void generatedTemplate_reactAndHillaUsed_correctFileRouterImport()
+            throws IOException {
+        TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null);
+        try (MockedStatic<FrontendUtils> util = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+                    Mockito.any())).thenReturn(true);
+            task.execute();
+        }
+
+        File configFile = new File(temporaryFolder.getRoot(),
+                FrontendUtils.VITE_GENERATED_CONFIG);
+
+        String template = IOUtils.toString(configFile.toURI(),
+                StandardCharsets.UTF_8);
+
+        Assert.assertTrue("vitePluginFileSystemRouter should be imported.",
+                template.contains("import vitePluginFileSystemRouter from '"
+                        + TaskUpdateVite.FILE_SYSTEM_ROUTER_DEPENDENCY + "';"));
+        Assert.assertTrue("vitePluginFileSystemRouter() should be used.",
+                template.contains(", vitePluginFileSystemRouter()"));
+    }
+
+    @Test
+    public void generatedTemplate_reactDisabled_correctFileRouterImport()
+            throws IOException {
+        TaskUpdateVite task = new TaskUpdateVite(options.withReact(false),
+                null);
+        task.execute();
+
+        File configFile = new File(temporaryFolder.getRoot(),
+                FrontendUtils.VITE_GENERATED_CONFIG);
+
+        String template = IOUtils.toString(configFile.toURI(),
+                StandardCharsets.UTF_8);
+
+        Assert.assertFalse("vitePluginFileSystemRouter should not be imported.",
+                template.contains("import vitePluginFileSystemRouter from '"
+                        + TaskUpdateVite.FILE_SYSTEM_ROUTER_DEPENDENCY + "';"));
+        Assert.assertFalse("vitePluginFileSystemRouter() should be used.",
+                template.contains(", vitePluginFileSystemRouter()"));
+
     }
 }
