@@ -180,7 +180,12 @@ function navigateEventHandler(event) {
         // navigation. If not postponed clear + navigate will be executed.
         if (mountedContainer?.onBeforeLeave) {
             mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
-                prevent() {}
+                prevent() {},
+                continue() {
+                    mountedContainer?.parentNode?.removeChild(mountedContainer);
+                    mountedContainer = undefined;
+                    navigation(event.detail.pathname, {replace: false});
+                }
             }, router);
         } else {
             // Navigate to a non flow view. Clean nodes and undefine container.

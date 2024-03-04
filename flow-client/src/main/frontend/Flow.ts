@@ -50,6 +50,7 @@ export interface NavigationParameters {
 
 export interface PreventCommands {
   prevent: () => any;
+  continue?: () => any;
 }
 
 export interface PreventAndRedirectCommands extends PreventCommands {
@@ -226,7 +227,7 @@ export class Flow {
       this.loadingStarted();
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = (cancel) => {
-        resolve(cmd && cancel ? cmd.prevent() : {});
+        resolve(cmd && cancel ? cmd.prevent() : cmd?.continue?.());
         this.loadingFinished();
       };
 
