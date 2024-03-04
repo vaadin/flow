@@ -314,7 +314,7 @@ public class PluginEffectiveConfiguration(
         .convention(project.projectDir)
 
     public val frontendDirectory: Provider<File> = extension.frontendDirectory
-        .convention(FrontendUtils.getLegacyFrontendFolderIfExists(project.projectDir, File(FrontendUtils.DEFAULT_FRONTEND_DIR)))
+        .convention(FrontendUtils.getLegacyFrontendFolderIfExists(project.projectDir, File(project.projectDir, FrontendUtils.DEFAULT_FRONTEND_DIR)))
 
     public val generateBundle: Provider<Boolean> = extension.generateBundle
         .convention(true)
