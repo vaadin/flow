@@ -54,9 +54,10 @@ public interface AbstractConfiguration extends Serializable {
         if (isProductionMode()) {
             return false;
         }
+        File frontendDirectory = FrontendUtils.getLegacyFrontendFolderIfExists(
+                getProjectFolder(), FrontendUtils.getProjectFrontendDir(this));
         return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
-                FrontendUtils.isHillaUsed(
-                        FrontendUtils.getProjectFrontendDir(this)));
+                FrontendUtils.isHillaUsed(frontendDirectory));
     }
 
     /**

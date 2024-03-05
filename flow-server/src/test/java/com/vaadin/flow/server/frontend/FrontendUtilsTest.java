@@ -38,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.Pair;
-import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -650,22 +649,6 @@ public class FrontendUtilsTest {
                 FrontendUtils.HILLA_VIEWS_PATH + "/foo.css", "some css");
         Assert.assertFalse("no Hilla views, Hilla not expected",
                 FrontendUtils.isHillaViewsUsed(frontend));
-    }
-
-    @Test
-    public void getFrontendFolder_hasLegacyFolder_returnsLegacyFolder()
-            throws IOException {
-        File frontend = tmpDir.newFolder(FrontendUtils.LEGACY_FRONTEND_DIR);
-        AbstractConfiguration config = Mockito
-                .mock(AbstractConfiguration.class);
-        Mockito.when(config.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(FrontendUtils.DEFAULT_FRONTEND_DIR);
-        File resolvedFrontend = FrontendUtils
-                .getFrontendFolder(tmpDir.getRoot(), config);
-        Assert.assertEquals(
-                "Expected legacy frontend folder to be used if exists",
-                frontend, resolvedFrontend);
     }
 
     private File prepareFrontendForRoutesFile(String fileName, String content)
