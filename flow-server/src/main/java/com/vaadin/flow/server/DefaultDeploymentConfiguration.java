@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -438,9 +439,14 @@ public class DefaultDeploymentConfiguration
         } else {
             frontendHotdeploy = getBooleanProperty(
                     InitParameters.FRONTEND_HOTDEPLOY,
-                    FrontendUtils.isHillaUsed(
-                            FrontendUtils.getProjectFrontendDir(this)));
+                    automaticHotdeployDefault());
         }
+    }
+
+    private boolean automaticHotdeployDefault() {
+        File frontendDir = FrontendUtils.getLegacyFrontendFolderIfExists(
+                getProjectFolder(), FrontendUtils.getProjectFrontendDir(this));
+        return FrontendUtils.isHillaUsed(frontendDir);
     }
 
 }

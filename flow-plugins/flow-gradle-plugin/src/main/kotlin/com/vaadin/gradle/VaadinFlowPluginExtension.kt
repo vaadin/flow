@@ -314,7 +314,7 @@ public class PluginEffectiveConfiguration(
         .convention(project.projectDir)
 
     public val frontendDirectory: Provider<File> = extension.frontendDirectory
-        .convention(FrontendUtils.getLegacyFrontendFolderIfExists(project.projectDir, File(project.projectDir, FrontendUtils.DEFAULT_FRONTEND_DIR)))
+        .convention(File(project.projectDir, FrontendUtils.DEFAULT_FRONTEND_DIR))
 
     public val generateBundle: Provider<Boolean> = extension.generateBundle
         .convention(true)
@@ -404,7 +404,7 @@ public class PluginEffectiveConfiguration(
         })
 
     public val frontendHotdeploy: Provider<Boolean> = extension.frontendHotdeploy
-        .convention(FrontendUtils.isHillaUsed(frontendDirectory.get()))
+        .convention(FrontendUtils.isHillaUsed(BuildFrontendUtil.getGeneratedFrontendDirectory(GradlePluginAdapter(project, this, true))))
         .overrideWithSystemProperty(InitParameters.FRONTEND_HOTDEPLOY)
 
     public val ciBuild: Provider<Boolean> = extension.ciBuild

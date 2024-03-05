@@ -597,31 +597,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the frontend folder location from configuration and fallbacks to
-     * {@link #LEGACY_FRONTEND_DIR} if it doesn't exist.
-     *
-     * @param projectRoot
-     *            project's root directory
-     * @param deploymentConfiguration
-     *            applications' configuration
-     * @return frontend folder location that is used by application to look for
-     *         frontend files
-     */
-    public static File getFrontendFolder(File projectRoot,
-            AbstractConfiguration deploymentConfiguration) {
-        String frontendFolderPath = deploymentConfiguration.getStringProperty(
-                PARAM_FRONTEND_DIR,
-                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
-
-        File frontendFolderFile = new File(frontendFolderPath);
-        if (!frontendFolderFile.isAbsolute()) {
-            frontendFolderFile = new File(projectRoot, frontendFolderPath);
-        }
-
-        return getLegacyFrontendFolderIfExists(projectRoot, frontendFolderFile);
-    }
-
-    /**
      * Get the legacy frontend folder if available and new folder doesn't exist.
      *
      * @param projectRoot
@@ -640,6 +615,20 @@ public class FrontendUtils {
             }
         }
         return frontendDir;
+    }
+
+    private static File getFrontendFolder(File projectRoot,
+            AbstractConfiguration deploymentConfiguration) {
+        String frontendFolderPath = deploymentConfiguration.getStringProperty(
+                FrontendUtils.PARAM_FRONTEND_DIR,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
+
+        File f = new File(frontendFolderPath);
+        if (f.isAbsolute()) {
+            return f;
+        }
+
+        return new File(projectRoot, frontendFolderPath);
     }
 
     /**
