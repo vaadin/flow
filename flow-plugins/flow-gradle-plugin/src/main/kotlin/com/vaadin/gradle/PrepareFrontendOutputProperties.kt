@@ -15,6 +15,7 @@
  */
 package com.vaadin.gradle
 
+import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.Project
@@ -70,8 +71,8 @@ internal class PrepareFrontendOutputProperties(
     }
 
     @OutputDirectory
-    public fun getGeneratedTsFolder(): Property<File> =
-        config.generatedTsFolder
+    public fun getGeneratedTsFolder(): File =
+            BuildFrontendUtil.getGeneratedFrontendDirectory(GradlePluginAdapter(project, config, true))
 
     @OutputDirectory
     public fun getResourceOutputDirectory(): Property<File> = config.resourceOutputDirectory

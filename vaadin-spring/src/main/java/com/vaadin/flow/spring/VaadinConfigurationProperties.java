@@ -84,13 +84,22 @@ public class VaadinConfigurationProperties {
     /**
      * Devmode configuration options.
      */
-
     private Devmode devmode = new Devmode();
 
     /**
      * Pnpm configuration options.
      **/
     private Pnpm pnpm = new Pnpm();
+
+    /**
+     * Bun configuration options.
+     **/
+    private Bun bun = new Bun();
+
+    /**
+     * React configuration options.
+     **/
+    private React react = new React();
 
     /**
      * Frontend configuration options.
@@ -164,10 +173,64 @@ public class VaadinConfigurationProperties {
         }
 
         /**
-         * Enables/disabled pnp support.
+         * Enables/disabled pnpm support.
          *
          * @param enable
          *            if {@code true} then pnpm support is enabled, otherwise
+         *            it's disabled
+         *
+         */
+        public void setEnable(boolean enable) {
+            this.enable = enable;
+        }
+
+    }
+
+    public static class Bun {
+
+        private boolean enable;
+
+        /**
+         * Returns if bun support is enabled.
+         *
+         * @return if bun is enabled
+         */
+        public boolean isEnable() {
+            return enable;
+        }
+
+        /**
+         * Enables/disabled bun support.
+         *
+         * @param enable
+         *            if {@code true} then bun support is enabled, otherwise
+         *            it's disabled
+         *
+         */
+        public void setEnable(boolean enable) {
+            this.enable = enable;
+        }
+
+    }
+
+    public static class React {
+
+        private boolean enable = true;
+
+        /**
+         * Returns if react support is enabled.
+         *
+         * @return if react is enabled
+         */
+        public boolean isEnable() {
+            return enable;
+        }
+
+        /**
+         * Enables/disabled react support.
+         *
+         * @param enable
+         *            if {@code true} then react support is enabled, otherwise
          *            it's disabled
          *
          */
@@ -184,6 +247,13 @@ public class VaadinConfigurationProperties {
          * connections are allowed.
          */
         private String hostsAllowed = "";
+
+        /**
+         * The name of the custom HTTP header that contains the client IP
+         * address. If not specified, {@literal X-Forwarded-For} will be
+         * checked.
+         */
+        private String remoteAddressHeader;
 
         /**
          * Gets the hosts allowed to connect to the dev mode server.
@@ -205,6 +275,36 @@ public class VaadinConfigurationProperties {
             this.hostsAllowed = hostsAllowed;
         }
 
+        /**
+         * Gets the name of the custom HTTP header that contains the client IP
+         * address that is checked to allow access to the dev mode server.
+         *
+         * @return the name of the custom HTTP header that contains the client
+         *         IP address that is checked to allow access to the dev mode
+         *         server.
+         */
+        public String getRemoteAddressHeader() {
+            return remoteAddressHeader;
+        }
+
+        /**
+         * Sets the name of the custom HTTP header that contains the client IP
+         * address that is checked to allow access to the dev mode server.
+         *
+         * The HTTP header is supposed to contain a single address, and the HTTP
+         * request to have a single occurrence of the header.
+         *
+         * If not specified, remote address are read from the
+         * {@literal X-Forwarded-For} header.
+         *
+         * @param remoteAddressHeader
+         *            the name of the custom HTTP header that contains the
+         *            client IP address that is checked to allow access to the
+         *            dev mode server.
+         */
+        public void setRemoteAddressHeader(String remoteAddressHeader) {
+            this.remoteAddressHeader = remoteAddressHeader;
+        }
     }
 
     /**
@@ -445,6 +545,24 @@ public class VaadinConfigurationProperties {
      */
     public Pnpm getPnpm() {
         return pnpm;
+    }
+
+    /**
+     * Gets the bun specific configuration.
+     *
+     * @return the bun configuration
+     */
+    public Bun getBun() {
+        return bun;
+    }
+
+    /**
+     * Gets the react specific configuration.
+     *
+     * @return the react configuration
+     */
+    public React getReact() {
+        return react;
     }
 
     /**

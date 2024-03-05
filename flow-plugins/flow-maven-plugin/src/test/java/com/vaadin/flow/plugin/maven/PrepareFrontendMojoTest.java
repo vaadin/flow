@@ -42,6 +42,7 @@ import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import elemental.json.Json;
@@ -102,7 +103,8 @@ public class PrepareFrontendMojoTest {
                 VAADIN_SERVLET_RESOURCES);
         defaultJavaSource = new File(".", "src/test/java");
         defaultJavaResource = new File(".", "src/test/resources");
-        generatedTsFolder = new File(projectBase, "frontend/generated");
+        generatedTsFolder = new File(projectBase,
+                "src/main/frontend/generated");
 
         ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
                 projectBase);
@@ -111,7 +113,7 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo,
                 "resourceOutputDirectory", resourceOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
-                new File(projectBase, "frontend"));
+                new File(projectBase, "src/main/frontend"));
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 new File(projectBase,
@@ -279,6 +281,24 @@ public class PrepareFrontendMojoTest {
         mojo.execute();
 
         Mockito.verify(project, Mockito.atLeastOnce()).getArtifacts();
+    }
+
+    @Test
+    public void getFrontendFolder_legacyExists_propertyNotSet_returnsLegacy()
+            throws IllegalAccessException {
+        Assert.assertFalse(
+                new File(projectBase, FrontendUtils.DEFAULT_FRONTEND_DIR)
+                        .exists());
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+                null);
+        File legacyFrontend = new File(projectBase,
+                FrontendUtils.LEGACY_FRONTEND_DIR);
+        if (!legacyFrontend.mkdir()) {
+            Assert.fail("Failed to generate legacy frontend folder");
+        }
+        Assert.assertEquals(
+                "Expected legacy frontend folder to be used if exists",
+                legacyFrontend, mojo.frontendDirectory());
     }
 
     private void assertPackageJsonContent() throws IOException {

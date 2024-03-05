@@ -12,7 +12,7 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        devTools: fileURLToPath(new URL('./frontend/vaadin-dev-tools.ts', import.meta.url))
+        devTools: fileURLToPath(new URL('./src/main/frontend/vaadin-dev-tools.ts', import.meta.url))
       },
       output: {
         // Ensure consistent file name for dev tools bundle

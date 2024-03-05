@@ -43,6 +43,7 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 
 @RunWith(Parameterized.class)
 public class BundleValidationTest {
@@ -977,7 +978,7 @@ public class BundleValidationTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
         File stylesheetFile = new File(temporaryFolder.getRoot(),
-                "frontend/my-styles.css");
+                DEFAULT_FRONTEND_DIR + "my-styles.css");
         FileUtils.forceMkdir(stylesheetFile.getParentFile());
         boolean created = stylesheetFile.createNewFile();
         Assert.assertTrue(created);
@@ -1107,7 +1108,8 @@ public class BundleValidationTest {
 
         // create custom-theme folder with no theme.json
         File jarResourcesFolder = new File(temporaryFolder.getRoot(),
-                "frontend/generated/jar-resources/themes/custom-theme");
+                DEFAULT_FRONTEND_DIR
+                        + "generated/jar-resources/themes/custom-theme");
         boolean created = jarResourcesFolder.mkdirs();
         Assert.assertTrue(created);
 
@@ -1265,8 +1267,8 @@ public class BundleValidationTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectThemeJsonStub("{\"parent\": \"my-parent-theme\"}",
                 "my-theme");
-        new File(temporaryFolder.getRoot(), "frontend/themes/my-parent-theme")
-                .mkdirs();
+        new File(temporaryFolder.getRoot(),
+                DEFAULT_FRONTEND_DIR + "themes/my-parent-theme").mkdirs();
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1301,8 +1303,8 @@ public class BundleValidationTest {
         Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
         Mockito.when(depScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
-        new File(temporaryFolder.getRoot(), "frontend/themes/my-theme")
-                .mkdirs();
+        new File(temporaryFolder.getRoot(),
+                DEFAULT_FRONTEND_DIR + "themes/my-theme").mkdirs();
 
         JsonObject stats = getBasicStats();
         stats.getObject(THEME_JSON_CONTENTS).put(bundleLocation,
@@ -1488,7 +1490,8 @@ public class BundleValidationTest {
                 false, false);
         Assert.assertTrue(
                 "Should rebuild when Shadow DOM Stylesheets are present "
-                        + " in 'frontend/<theme>/components' folder",
+                        + " in '" + DEFAULT_FRONTEND_DIR
+                        + "<theme>/components' folder",
                 needsBuild);
     }
 
@@ -1649,7 +1652,8 @@ public class BundleValidationTest {
     public void indexTsAdded_rebuildRequired() throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        File frontendFolder = temporaryFolder.newFolder(FrontendUtils.FRONTEND);
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
 
         File indexTs = new File(frontendFolder, FrontendUtils.INDEX_TS);
         indexTs.createNewFile();
@@ -1673,7 +1677,8 @@ public class BundleValidationTest {
     public void changeInIndexTs_rebuildRequired() throws IOException {
         createPackageJsonStub("{\"dependencies\": {}, "
                 + "\"vaadin\": { \"hash\": \"aHash\"} }");
-        File frontendFolder = temporaryFolder.newFolder(FrontendUtils.FRONTEND);
+        File frontendFolder = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
 
         File indexTs = new File(frontendFolder, FrontendUtils.INDEX_TS);
         indexTs.createNewFile();
@@ -2153,6 +2158,72 @@ public class BundleValidationTest {
     }
 
     @Test
+    public void defaultProdBundleExists_noCompressedProdBundleFileAndWithVersionsJsonExclusions_noBuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        frontendUtils
+                .when(() -> FrontendUtils.isReactModuleAvailable(Mockito.any()))
+                .thenAnswer(q -> true);
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "    \"react\": \"18.2.0\",\n"
+                        + "    \"react-dom\": \"18.2.0\",\n"
+                        + "    \"react-router-dom\": \"6.18.0\"}, "
+                        + "\"vaadin\": { \"hash\": \"aHash\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages()).thenReturn(
+                Collections.singletonMap("@vaadin/button", "2.0.0"));
+
+        File versions = new File(temporaryFolder.getRoot(),
+                Constants.VAADIN_CORE_VERSIONS_JSON);
+        versions.createNewFile();
+        // @formatter:off
+        FileUtils.write(versions, "{"
+                + "  \"core\": {\n"
+                + "    \"vaadin-button\": {\n"
+                + "      \"jsVersion\": \"2.0.0\",\n"
+                + "      \"npmName\": \"@vaadin/button\",\n"
+                + "    },"
+                + "  },"
+                + "  react: {\n"
+                + "    \"react-components\": {\n"
+                + "         \"exclusions\": [\"@vaadin/button\"],\n"
+                + "         \"jsVersion\": \"24.4.0\",\n"
+                + "         \"mode\": \"react\",\n"
+                + "         \"npmName\": \"@vaadin/react-components\"\n"
+                + "    }"
+                + "  },\n"
+                + "  \"platform\": \"123-SNAPSHOT\""
+                + "}");
+        // @formatter:on
+
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(versions.toURI().toURL());
+
+        JsonObject stats = getBasicStats();
+        stats.getObject(PACKAGE_JSON_DEPENDENCIES)
+                .put("@vaadin/react-components", "24.4.0");
+
+        URL url = Mockito.mock(URL.class);
+        Mockito.when(
+                finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+                .thenReturn(url);
+        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+                .thenReturn(stats.toJson());
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse("Jar frontend file content hash should match.",
+                needsBuild);
+    }
+
+    @Test
     public void defaultProdBundleExists_noCompressedProdBundleFile_reactDisabled_buildRequired()
             throws IOException {
         options.withReact(false);
@@ -2199,8 +2270,9 @@ public class BundleValidationTest {
     private void createThemeJsonStub(String content, String theme,
             boolean projectTheme) throws IOException {
         String themeLocation = projectTheme ? "" : "generated/jar-resources/";
-        File themeJson = new File(temporaryFolder.getRoot(), "frontend/"
-                + themeLocation + "themes/" + theme + "/theme.json");
+        File themeJson = new File(temporaryFolder.getRoot(),
+                DEFAULT_FRONTEND_DIR + themeLocation + "themes/" + theme
+                        + "/theme.json");
         FileUtils.forceMkdir(themeJson.getParentFile());
         boolean created = themeJson.createNewFile();
         Assert.assertTrue(created);
@@ -2209,7 +2281,7 @@ public class BundleValidationTest {
 
     private void createProjectFrontendFileStub() throws IOException {
         File frontendFile = new File(temporaryFolder.getRoot(),
-                "frontend/views/lit-view.ts");
+                DEFAULT_FRONTEND_DIR + "views/lit-view.ts");
         FileUtils.forceMkdir(frontendFile.getParentFile());
         boolean created = frontendFile.createNewFile();
         Assert.assertTrue(created);
@@ -2293,7 +2365,7 @@ public class BundleValidationTest {
                 + "themes/" + ((useParentTheme) ? "parent-theme" : "my-theme")
                 + "/components/";
         File stylesheetFile = new File(temporaryFolder.getRoot(),
-                "frontend/" + themeLocation + "vaadin-text-field.css");
+                DEFAULT_FRONTEND_DIR + themeLocation + "vaadin-text-field.css");
         FileUtils.forceMkdir(stylesheetFile.getParentFile());
         boolean created = stylesheetFile.createNewFile();
         Assert.assertTrue(created);

@@ -211,7 +211,8 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
     }
 
     private boolean createDirectoryIfNotExists() {
-        int lastIndex = outputFilePath.lastIndexOf('/');
+        int lastIndex = outputFilePath
+                .lastIndexOf(FrontendUtils.isWindows() ? '\\' : '/');
         File directory = new File(outputFilePath.substring(0, lastIndex));
         return directory.exists() || directory.mkdirs();
     }

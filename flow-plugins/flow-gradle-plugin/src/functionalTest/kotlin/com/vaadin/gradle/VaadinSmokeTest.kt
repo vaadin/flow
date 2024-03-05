@@ -75,6 +75,13 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
+    fun testPrepareFrontend_legacyFrontendFolder_usesLegacy() {
+        testProject.newFolder("frontend");
+        testProject.build("vaadinPrepareFrontend")
+        expect(true) { File(testProject.dir, "frontend/generated").exists() }
+    }
+
+    @Test
     fun `vaadinBuildFrontend not ran by default in development mode`() {
         val result: BuildResult = testProject.build("build")
         // let's explicitly check that vaadinPrepareFrontend has been run.
@@ -135,10 +142,10 @@ class VaadinSmokeTest : AbstractGradleTest() {
      */
     @Test
     fun vaadinPrepareFrontendDeletesFrontendGeneratedFolder() {
-        val generatedFolder = testProject.newFolder("frontend/generated")
-        val generatedFile = testProject.newFile("frontend/generated/index.ts")
-        val generatedFlowFolder = testProject.newFolder("frontend/generated/flow")
-        val generatedOldFlowFile = testProject.newFolder("frontend/generated/flow/extra.js")
+        val generatedFolder = testProject.newFolder(FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
+        val generatedFile = testProject.newFile(FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "index.ts")
+        val generatedFlowFolder = testProject.newFolder(FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "flow")
+        val generatedOldFlowFile = testProject.newFolder(FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "/flow/extra.js")
         testProject.build("vaadinPrepareFrontend")
         expect(true) { generatedFolder.exists() }
         expect(false) { generatedFile.exists() }
@@ -166,8 +173,8 @@ class VaadinSmokeTest : AbstractGradleTest() {
      */
     @Test
     fun vaadinCleanDeletesGeneratedFolder() {
-        val generatedFolder = testProject.newFolder("frontend/generated")
-        val generatedFile = testProject.newFile("frontend/generated/index.ts")
+        val generatedFolder = testProject.newFolder(FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
+        val generatedFile = testProject.newFile(FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "index.ts")
         testProject.build("vaadinClean")
         expect(false) { generatedFile.exists() }
         expect(false) { generatedFolder.exists() }
@@ -317,11 +324,11 @@ class VaadinSmokeTest : AbstractGradleTest() {
         result.expectTaskSucceded("vaadinBuildFrontend")
 
         expect(false) {
-            File(testProject.dir, "frontend/generated/index.ts").exists()
+            File(testProject.dir, FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "index.ts").exists()
         }
         expect(true) {
             // Only generated for executing project or building bundle
-            File(testProject.dir, "src/main/frontend/generated/index.tsx").exists()
+            File(testProject.dir, FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "index.tsx").exists()
         }
     }
 
@@ -365,7 +372,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         result.expectTaskSucceded("vaadinPrepareFrontend")
         result.expectTaskSucceded("vaadinBuildFrontend")
 
-        val cssFile = File(testProject.dir, "frontend/generated/jar-resources/mystyle.css")
+        val cssFile = File(testProject.dir, FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "jar-resources/mystyle.css")
         expect(true, cssFile.toString()) { cssFile.exists() }
 
     }
@@ -403,7 +410,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     private fun enableHilla() {
-        testProject.newFolder("frontend")
-        testProject.newFile("frontend/index.ts")
+        testProject.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR)
+        testProject.newFile(FrontendUtils.DEFAULT_FRONTEND_DIR + "index.ts")
     }
 }

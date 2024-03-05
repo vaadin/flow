@@ -109,9 +109,19 @@ public class FrontendUtils {
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
      *
-     * By default it is <code>/frontend</code> in the project folder.
+     * By default it is <code>/src/main/frontend</code> in the project folder.
      */
     public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR
+            + "src/main/" + FRONTEND;
+
+    /**
+     * Path of the old folder containing application frontend source files, it
+     * needs to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
+     *
+     * By default the old folder is <code>/frontend</code> in the project
+     * folder.
+     */
+    public static final String LEGACY_FRONTEND_DIR = DEFAULT_NODE_DIR
             + FRONTEND;
 
     /**
@@ -505,8 +515,7 @@ public class FrontendUtils {
 
     private static InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
-        File file = new File(new File(config.getProjectFolder(), "frontend"),
-                path);
+        File file = new File(getProjectFrontendDir(config), path);
         if (file.exists()) {
             try {
                 return Files.newInputStream(file.toPath());
@@ -556,7 +565,8 @@ public class FrontendUtils {
         if (devModeHandler.isPresent()) {
             try {
                 File frontendFile = resolveFrontendPath(
-                        devModeHandler.get().getProjectRoot(), path);
+                        devModeHandler.get().getProjectRoot(),
+                        service.getDeploymentConfiguration(), path);
                 return frontendFile == null ? null
                         : new FileInputStream(frontendFile);
             } catch (IOException e) {
@@ -568,19 +578,68 @@ public class FrontendUtils {
 
     /**
      * Looks up the frontend resource at the given path. If the path starts with
-     * {@code ./}, first look in {@code frontend}, then in
-     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
-     * with {@code ./}, look in {@code node_modules} instead.
+     * {@code ./}, first look in {@value FrontendUtils#DEFAULT_FRONTEND_DIR},
+     * then in {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not
+     * start with {@code ./}, look in {@code node_modules} instead.
      *
      * @param projectRoot
      *            the project root folder.
+     * @param deploymentConfiguration
+     *            the active deployment configuration
      * @param path
      *            the file path.
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
-    public static File resolveFrontendPath(File projectRoot, String path) {
+    public static File resolveFrontendPath(File projectRoot,
+            DeploymentConfiguration deploymentConfiguration, String path) {
         return resolveFrontendPath(projectRoot, path,
-                new File(projectRoot, FrontendUtils.FRONTEND));
+                getFrontendFolder(projectRoot, deploymentConfiguration));
+    }
+
+    /**
+     * Get the frontend folder location from configuration and fallbacks to
+     * {@link #LEGACY_FRONTEND_DIR} if it doesn't exist.
+     *
+     * @param projectRoot
+     *            project's root directory
+     * @param deploymentConfiguration
+     *            applications' configuration
+     * @return frontend folder location that is used by application to look for
+     *         frontend files
+     */
+    public static File getFrontendFolder(File projectRoot,
+            AbstractConfiguration deploymentConfiguration) {
+        String frontendFolderPath = deploymentConfiguration.getStringProperty(
+                PARAM_FRONTEND_DIR,
+                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
+
+        File frontendFolderFile = new File(frontendFolderPath);
+        if (!frontendFolderFile.isAbsolute()) {
+            frontendFolderFile = new File(projectRoot, frontendFolderPath);
+        }
+
+        return getLegacyFrontendFolderIfExists(projectRoot, frontendFolderFile);
+    }
+
+    /**
+     * Get the legacy frontend folder if available and new folder doesn't exist.
+     *
+     * @param projectRoot
+     *            project's root directory
+     * @param frontendDir
+     *            the frontend directory location from project's configuration
+     * @return correct folder or legacy folder if not user defined
+     */
+    public static File getLegacyFrontendFolderIfExists(File projectRoot,
+            File frontendDir) {
+        if (!frontendDir.exists() && frontendDir.toPath()
+                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
+            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                return legacy;
+            }
+        }
+        return frontendDir;
     }
 
     /**
@@ -669,13 +728,8 @@ public class FrontendUtils {
      */
     public static File getProjectFrontendDir(
             AbstractConfiguration configuration) {
-        String propertyValue = configuration
-                .getStringProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
-        File f = new File(propertyValue);
-        if (f.isAbsolute()) {
-            return f;
-        }
-        return new File(configuration.getProjectFolder(), propertyValue);
+        return getFrontendFolder(configuration.getProjectFolder(),
+                configuration);
     }
 
     /**
@@ -1347,4 +1401,18 @@ public class FrontendUtils {
         return false;
     }
 
+    /**
+     * Is the React module available in the classpath.
+     *
+     * @return true if the React module is available, false otherwise
+     */
+    public static boolean isReactModuleAvailable(Options options) {
+        try {
+            options.getClassFinder().loadClass(
+                    "com.vaadin.flow.component.react.ReactAdapterComponent");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 }

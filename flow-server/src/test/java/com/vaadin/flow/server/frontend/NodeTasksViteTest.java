@@ -228,7 +228,7 @@ public class NodeTasksViteTest {
     }
 
     private File getFrontendFolder() {
-        return new File(userDir, "frontend");
+        return new File(userDir, FrontendUtils.DEFAULT_FRONTEND_DIR);
     }
 
     private File getJarFrontendResourcesFolder() {
