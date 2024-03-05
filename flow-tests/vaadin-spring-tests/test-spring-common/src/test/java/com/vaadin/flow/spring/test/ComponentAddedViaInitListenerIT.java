@@ -30,7 +30,7 @@ public class ComponentAddedViaInitListenerIT extends AbstractSpringTest {
         TestBenchElement component = $("init-listener-component").first();
         TestBenchElement div = component.$("div").first();
         Assert.assertEquals("Init Listener Component", div.getText());
-        
+
         // Ensure the class name set by @EventListener style listener is there
         getDriver().findElement(By.cssSelector(".event-listener-was-here"));
     }

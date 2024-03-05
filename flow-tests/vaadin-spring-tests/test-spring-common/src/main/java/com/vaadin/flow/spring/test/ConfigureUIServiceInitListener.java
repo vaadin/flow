@@ -17,6 +17,7 @@ public class ConfigureUIServiceInitListener
 
     @EventListener
     public void myListener(ServiceInitEvent event) {
-        event.getSource().addUIInitListener(uiEvent -> uiEvent.getUI().addClassName("event-listener-was-here"));
+        event.getSource().addUIInitListener(uiEvent -> uiEvent.getUI()
+                .addClassName("event-listener-was-here"));
     }
 }
