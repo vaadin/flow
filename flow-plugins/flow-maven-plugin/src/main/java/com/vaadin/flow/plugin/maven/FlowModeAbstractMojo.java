@@ -496,7 +496,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (frontendHotdeploy != null) {
             return frontendHotdeploy;
         }
-        return FrontendUtils.isHillaUsed(frontendDirectory());
+        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
+        return FrontendUtils.isHillaUsed(frontendDirectory);
     }
 
     @Override
@@ -514,6 +515,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (reactEnable != null) {
             return reactEnable;
         }
-        return FrontendUtils.isReactRouterRequired(frontendDirectory());
+        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
+        return FrontendUtils.isReactRouterRequired(frontendDirectory);
     }
 }

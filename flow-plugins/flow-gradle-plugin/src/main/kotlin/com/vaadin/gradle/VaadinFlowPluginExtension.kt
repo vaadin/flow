@@ -404,7 +404,7 @@ public class PluginEffectiveConfiguration(
         })
 
     public val frontendHotdeploy: Provider<Boolean> = extension.frontendHotdeploy
-        .convention(FrontendUtils.isHillaUsed(frontendDirectory.get()))
+        .convention(FrontendUtils.isHillaUsed(BuildFrontendUtil.getGeneratedFrontendDirectory(GradlePluginAdapter(project, this, true))))
         .overrideWithSystemProperty(InitParameters.FRONTEND_HOTDEPLOY)
 
     public val ciBuild: Provider<Boolean> = extension.ciBuild

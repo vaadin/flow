@@ -596,6 +596,27 @@ public class FrontendUtils {
                 getFrontendFolder(projectRoot, deploymentConfiguration));
     }
 
+    /**
+     * Get the legacy frontend folder if available and new folder doesn't exist.
+     *
+     * @param projectRoot
+     *            project's root directory
+     * @param frontendDir
+     *            the frontend directory location from project's configuration
+     * @return correct folder or legacy folder if not user defined
+     */
+    public static File getLegacyFrontendFolderIfExists(File projectRoot,
+            File frontendDir) {
+        if (!frontendDir.exists() && frontendDir.toPath()
+                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
+            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                return legacy;
+            }
+        }
+        return frontendDir;
+    }
+
     private static File getFrontendFolder(File projectRoot,
             AbstractConfiguration deploymentConfiguration) {
         String frontendFolderPath = deploymentConfiguration.getStringProperty(
