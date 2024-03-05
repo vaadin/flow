@@ -147,7 +147,7 @@ public class BuildFrontendUtil {
         Lookup lookup = adapter.createLookup(classFinder);
 
         Options options = new Options(lookup, adapter.npmFolder())
-                .withFrontendDirectory(adapter.frontendDirectory())
+                .withFrontendDirectory(getFrontendDirectory(adapter))
                 .withBuildDirectory(adapter.buildFolder())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
@@ -182,7 +182,8 @@ public class BuildFrontendUtil {
     private static File getJarFrontendResourcesFolder(
             PluginAdapterBase adapter) {
         return new File(
-                new File(adapter.frontendDirectory(), FrontendUtils.GENERATED),
+                new File(getFrontendDirectory(adapter),
+                        FrontendUtils.GENERATED),
                 FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
@@ -231,7 +232,7 @@ public class BuildFrontendUtil {
                     e);
         }
         buildInfo.put(FRONTEND_TOKEN,
-                adapter.frontendDirectory().getAbsolutePath());
+                getFrontendDirectory(adapter).getAbsolutePath());
         buildInfo.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                 adapter.javaSourceFolder().getAbsolutePath());
         buildInfo.put(JAVA_RESOURCE_FOLDER_TOKEN,
@@ -305,7 +306,7 @@ public class BuildFrontendUtil {
         try {
             Options options = new com.vaadin.flow.server.frontend.Options(
                     lookup, adapter.npmFolder())
-                    .withFrontendDirectory(adapter.frontendDirectory())
+                    .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
@@ -371,7 +372,7 @@ public class BuildFrontendUtil {
         try {
             Options options = new com.vaadin.flow.server.frontend.Options(
                     lookup, adapter.npmFolder()).withProductionMode(false)
-                    .withFrontendDirectory(adapter.frontendDirectory())
+                    .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
@@ -413,6 +414,25 @@ public class BuildFrontendUtil {
     }
 
     /**
+     * Get the legacy frontend folder if available and new folder doesn't exist.
+     *
+     * @param adapter
+     *            PluginAdapterBase
+     * @return correct folder or legacy folder if not user defined
+     */
+    public static File getFrontendDirectory(PluginAdapterBase adapter) {
+        File frontendDir = adapter.frontendDirectory();
+        if (!frontendDir.exists() && frontendDir.toPath()
+                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
+            File legacy = new File(adapter.npmFolder(), LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                return legacy;
+            }
+        }
+        return frontendDir;
+    }
+
+    /**
      * The generated folder should be under frontend folder and will be moved to
      * the legacy package if not changed by the user.
      *
@@ -425,7 +445,8 @@ public class BuildFrontendUtil {
         if (adapter.generatedTsFolder().toPath()
                 .startsWith(adapter.frontendDirectory().toPath())) {
             // Possibly move frontend folder.
-            return new File(adapter.frontendDirectory(), GENERATED);
+            File frontendDirectory = getFrontendDirectory(adapter);
+            return new File(frontendDirectory, GENERATED);
         }
         // Return given generated folder
         return adapter.generatedTsFolder();

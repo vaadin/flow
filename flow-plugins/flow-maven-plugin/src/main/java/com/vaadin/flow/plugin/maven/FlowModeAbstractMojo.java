@@ -75,7 +75,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * A directory with project's frontend source files.
      */
-    @Parameter(defaultValue = "${null}")
+    @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
     private File frontendDirectory;
 
     /**
@@ -299,13 +299,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File frontendDirectory() {
-        if (frontendDirectory != null) {
-            return frontendDirectory;
-        }
-        File defaultFrontendFolder = new File(projectBasedir,
-                FrontendUtils.DEFAULT_FRONTEND_DIR);
-        return FrontendUtils.getLegacyFrontendFolderIfExists(projectBasedir,
-                defaultFrontendFolder);
+        return frontendDirectory;
     }
 
     @Override
