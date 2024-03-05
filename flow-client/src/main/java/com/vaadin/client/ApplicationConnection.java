@@ -27,6 +27,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.util.NativeFunction;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -166,6 +167,12 @@ public class ApplicationConnection {
         client.getByNodeId = $entry(function(nodeId) {
             return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
         });
+        client.getNodeInfo = $entry(function(nodeId) {
+            return {
+                element: ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId),
+                javaClass: ap.@ApplicationConnection::getJavaClass(*)(nodeId)
+            };
+        });
         client.getNodeId = $entry(function(element) {
             return ap.@ApplicationConnection::getNodeId(*)(element);
         });
@@ -222,6 +229,14 @@ public class ApplicationConnection {
     private Node getDomElementByNodeId(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         return node == null ? null : node.getDomNode();
+
+    }
+
+    private String getJavaClass(int id) {
+        StateNode node = registry.getStateTree().getNode(id);
+        return node == null ? null
+                : node.getMap(NodeFeatures.ELEMENT_DATA).getProperty("jc")
+                        .getValueOrDefault(null);
     }
 
     private int getNodeId(Element element) {

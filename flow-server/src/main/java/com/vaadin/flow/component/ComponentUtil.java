@@ -40,6 +40,7 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
@@ -245,6 +246,18 @@ public class ComponentUtil {
                         component.getElement().isEnabled());
             }
         }
+
+        boolean isUI = ui.isPresent() && ui.get() == component;
+        if (!isUI && !attachEvent.getUI().getSession().getConfiguration()
+                .isProductionMode()) {
+            StateNode n = component.getElement().getNode();
+            if (n.hasFeature(ElementData.class)) {
+                n.getFeature(ElementData.class)
+                        .setJavaClass(component.getClass());
+            }
+
+        }
+
     }
 
     /**
