@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.testbench.TestBenchElement;
+import org.openqa.selenium.By;
 
 public class ComponentAddedViaInitListenerIT extends AbstractSpringTest {
 
@@ -29,9 +30,9 @@ public class ComponentAddedViaInitListenerIT extends AbstractSpringTest {
         TestBenchElement component = $("init-listener-component").first();
         TestBenchElement div = component.$("div").first();
         Assert.assertEquals("Init Listener Component", div.getText());
-        TestBenchElement d2 = $("p").id("event-listener");
-        Assert.assertEquals("Init Listener Component via EventListener",
-                d2.getText());
+        
+        // Ensure the class name set by @EventListener style listener is there
+        getDriver().findElement(By.cssSelector(".event-listener-was-here"));
     }
 
     @Override

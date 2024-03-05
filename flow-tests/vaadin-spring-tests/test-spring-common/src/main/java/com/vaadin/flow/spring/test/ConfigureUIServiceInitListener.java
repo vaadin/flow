@@ -1,6 +1,5 @@
 package com.vaadin.flow.spring.test;
 
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.spring.annotation.SpringComponent;
@@ -18,8 +17,6 @@ public class ConfigureUIServiceInitListener
 
     @EventListener
     public void myListener(ServiceInitEvent event) {
-        var p = new Paragraph("Init Listener Component via EventListener");
-        p.setId("event-listener");
-        event.getSource().addUIInitListener(uiEvent -> uiEvent.getUI().add(p));
+        event.getSource().addUIInitListener(uiEvent -> uiEvent.getUI().addClassName("event-listener-was-here"));
     }
 }
