@@ -159,6 +159,11 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public File getFrontendFolder() {
+        return parentConfig.getFrontendFolder();
+    }
+
+    @Override
     public boolean isPnpmEnabled() {
         if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
             return super.isPnpmEnabled();
