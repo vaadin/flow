@@ -369,10 +369,13 @@ export const serverSideRoutes = [
  *
  * @param tag name of the exported web-component to load
  */
-export const loadComponentScript = (tag: String) => {
+export const loadComponentScript = (tag: String, onload?: () => void) => {
     useEffect(() => {
         const script = document.createElement('script');
         script.src = `/web-component/${tag}.js`;
+        if(onload) {
+            script.onload = onload;
+        }
         document.head.appendChild(script);
 
         return () => {
@@ -381,12 +384,20 @@ export const loadComponentScript = (tag: String) => {
     }, []);
 };
 
+interface Properties {
+    [key: string]: string;
+}
+
 /**
  * Load WebComponent script and create a React element for the WebComponent.
  *
  * @param tag custom web-component tag name.
  */
-export const createWebComponent = (tag: string) => {
-    loadComponentScript(tag);
+export const createWebComponent = (tag: string, props?: Properties, onload?: () => void) => {
+    loadComponentScript(tag, onload);
+    if(props) {
+        return React.createElement(tag, props);
+    }
     return React.createElement(tag);
 };
+
