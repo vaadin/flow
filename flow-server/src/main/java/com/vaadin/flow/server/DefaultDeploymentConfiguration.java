@@ -444,9 +444,7 @@ public class DefaultDeploymentConfiguration
     }
 
     private boolean automaticHotdeployDefault() {
-        File frontendDir = FrontendUtils.getLegacyFrontendFolderIfExists(
-                getProjectFolder(), FrontendUtils.getProjectFrontendDir(this));
-        return FrontendUtils.isHillaUsed(frontendDir);
+        return FrontendUtils.isHillaUsed(getFrontendFolder());
     }
 
 }
