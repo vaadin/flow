@@ -83,11 +83,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.LEGACY_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 
 /**
  * Initializer for starting node updaters as well as the dev mode server.
@@ -208,24 +204,14 @@ public class DevModeInitializer implements Serializable {
                     new StatisticsSender(storage));
         }
 
-        String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
-                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
-
-        // If new default frontend folder not exists check for legacy folder.
-        if (frontendFolder.endsWith(DEFAULT_FRONTEND_DIR)
-                && !new File(frontendFolder).exists()) {
-            File legacy = new File(baseDir, LEGACY_FRONTEND_DIR);
-            if (legacy.exists()) {
-                frontendFolder = LEGACY_FRONTEND_DIR;
-            }
-        }
+        File frontendFolder = config.getFrontendFolder();
 
         Lookup lookupFromContext = context.getAttribute(Lookup.class);
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
         Options options = new Options(lookup, baseDir)
-                .withFrontendDirectory(new File(frontendFolder))
+                .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(
                         new File(frontendFolder + GENERATED))
                 .withBuildDirectory(config.getBuildFolder());
@@ -275,10 +261,7 @@ public class DevModeInitializer implements Serializable {
 
         String frontendGeneratedFolderName = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                new File(frontendFolder).isAbsolute()
-                        ? Paths.get(frontendFolder, GENERATED).toString()
-                        : Paths.get(baseDir.getAbsolutePath(), frontendFolder,
-                                GENERATED).toString());
+                Paths.get(frontendFolder.getPath(), GENERATED).toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
