@@ -2231,6 +2231,62 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void setBean_oneBindingValidationFails_otherBindingValueShouldBeSet() {
+        binder.forField(nameField).withValidator(
+                (value, context) -> ValidationResult.error("Always fails"))
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+
+        ageField.setValue("15");
+
+        assertEquals(
+                "Age should have been set regardless of invalid name field.",
+                15, item.getAge());
+    }
+
+    @Test
+    public void setBean_oneBindingRequiredButEmpty_otherBindingValueShouldBeSet() {
+        item.setFirstName(null);
+
+        binder.forField(nameField).asRequired("Name is required")
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        binder.setBean(item);
+
+        ageField.setValue("15");
+
+        assertEquals(
+                "Age should have been set regardless of required but empty name field.",
+                15, item.getAge());
+    }
+
+    @Test
+    public void setBean_binderValidationFails_noValueShouldBeSet() {
+        binder.forField(nameField).bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        binder.withValidator(
+                (value, context) -> ValidationResult.error("Always fails"));
+        binder.setBean(item);
+
+        ageField.setValue("15");
+
+        assertEquals(
+                "Age should not have been set since binder validation fails.",
+                32, item.getAge());
+    }
+
+    @Test
     public void invalidUsage_modifyFieldsInsideValidator_binderDoesNotThrow() {
         TestTextField field = new TestTextField();
 
