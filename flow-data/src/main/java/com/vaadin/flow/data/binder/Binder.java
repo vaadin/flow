@@ -1829,10 +1829,15 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Informs the Binder that a value in Binding was changed. This method will
-     * trigger validating and writing of the whole bean if using
-     * {@link #setBean(Object)}. If using {@link #readBean(Object)} only the
-     * field validation for the given Binding is run.
+     * Informs the Binder that a value in Binding was changed.
+     *
+     * If {@link #readBean(Object)} was used, this method will only validate the
+     * changed binding and ignore state of other bindings.
+     *
+     * If {@link #setBean(Object)} was used, all pending changed bindings will
+     * be validated and non-changed ones will be ignored. The changed value will
+     * be written to the bean immediately, assuming that Binder-level validators
+     * also pass.
      *
      * @param binding
      *            the binding whose value has been changed
@@ -1843,20 +1848,7 @@ public class Binder<BEAN> implements Serializable {
         if (getBean() == null) {
             binding.validate();
         } else {
-            BinderValidationStatus<BEAN> status = validateBindingsAndBean();
-            if (status.isOk()) {
-                doWriteIfValid(getBean(), changedBindings);
-            } else {
-                // Fire status change for changed bindings only
-                getValidationStatusHandler()
-                        .statusChange(new BinderValidationStatus<>(this,
-                                status.getFieldValidationStatuses().stream()
-                                        .filter(s -> changedBindings
-                                                .contains(s.getBinding()))
-                                        .collect(Collectors.toList()),
-                                status.getBeanValidationErrors()));
-                fireStatusChangeEvent(status.hasErrors());
-            }
+            doWriteIfValid(getBean(), changedBindings);
         }
     }
 
@@ -2146,9 +2138,17 @@ public class Binder<BEAN> implements Serializable {
      * back to their corresponding property values of the bean as long as the
      * bean is bound.
      * <p>
-     * Any change made in one of the fields also runs validation for all the
-     * fields {@link Binding} and bean level validation for this binder (bean
-     * level validators are added using {@link Binder#withValidator(Validator)}.
+     * Note: Any change made in one of the bound fields runs validation for only
+     * the changed {@link Binding}, and additionally any bean level validation
+     * for this binder (bean level validators are added using
+     * {@link Binder#withValidator(Validator)}. As a result, the bean set via
+     * this method is not guaranteed to always be in a valid state. This means
+     * also that possible {@link StatusChangeListener} and
+     * {@link BinderValidationStatusHandler} are called indicating a successful
+     * validation, even though some bindings can be in a state that would not
+     * pass validation. If bean validity is required at all times,
+     * {@link #readBean(Object)} and {@link #writeBean(Object)} should be used
+     * instead.
      * <p>
      * After updating each field, the value is read back from the field and the
      * bean's property value is updated if it has been changed from the original
@@ -2634,28 +2634,6 @@ public class Binder<BEAN> implements Serializable {
             fireStatusChangeEvent(validationStatus.hasErrors());
         }
         return validationStatus;
-    }
-
-    /**
-     * Runs validation for all bindings to determine binder's validity state. If
-     * a bean has been set and all bindings pass validation, bean-level
-     * validations are run as well.
-     *
-     * @return BinderValidationStatus for the validation run
-     */
-    private BinderValidationStatus<BEAN> validateBindingsAndBean() {
-        List<BindingValidationStatus<?>> bindingStatuses = validateBindings();
-        boolean bindingsInError = bindingStatuses.stream()
-                .anyMatch(BindingValidationStatus::isError);
-
-        List<ValidationResult> beanStatuses = new ArrayList<>();
-        // Only execute bean-level validation when binding validators pass
-        if (!bindingsInError) {
-            beanStatuses.addAll(validateBean(getBean()));
-        }
-
-        return new BinderValidationStatus<>(this, bindingStatuses,
-                beanStatuses);
     }
 
     /**
