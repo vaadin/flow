@@ -1916,11 +1916,15 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Informs the Binder that a value in Binding was changed. This method will
-     * only validate the changed binding and ignore state of other bindings.
+     * Informs the Binder that a value in Binding was changed.
      *
-     * If {@link #setBean(Object)} was used, the changed value will be written
-     * to the bean immediately, assuming that Binder-level validators also pass.
+     * If {@link #readBean(Object)} was used, this method will only validate the
+     * changed binding and ignore state of other bindings.
+     *
+     * If {@link #setBean(Object)} was used, all pending changed bindings will
+     * be validated and non-changed ones will be ignored. The changed value will
+     * be written to the bean immediately, assuming that Binder-level validators
+     * also pass.
      *
      * @param binding
      *            the binding whose value has been changed
