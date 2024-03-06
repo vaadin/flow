@@ -2232,6 +2232,11 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void setBean_oneBindingValidationFails_otherBindingValueShouldBeSet() {
+        AtomicBoolean validationStatusErrors = new AtomicBoolean();
+        AtomicBoolean statusChangeListenerErrors = new AtomicBoolean();
+        AtomicInteger validationStatusCalls = new AtomicInteger();
+        AtomicInteger statusChangeListenerCalls = new AtomicInteger();
+
         binder.forField(nameField).withValidator(
                 (value, context) -> ValidationResult.error("Always fails"))
                 .bind(Person::getFirstName, Person::setFirstName);
@@ -2241,15 +2246,37 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.setBean(item);
 
+        binder.setValidationStatusHandler(status -> {
+            validationStatusCalls.incrementAndGet();
+            validationStatusErrors.set(status.hasErrors());
+        });
+        binder.addStatusChangeListener(e -> {
+            statusChangeListenerCalls.incrementAndGet();
+            statusChangeListenerErrors.set(e.hasValidationErrors());
+        });
+
         ageField.setValue("15");
 
         assertEquals(
                 "Age should have been set regardless of invalid name field.",
                 15, item.getAge());
+        assertEquals("Validation status should not have errors.", false,
+                validationStatusErrors.get());
+        assertEquals("Status change listener should not report errors.", false,
+                statusChangeListenerErrors.get());
+        assertEquals("Validation status should get one call.", 1,
+                validationStatusCalls.get());
+        assertEquals("Status change listener should get one call.", 1,
+                statusChangeListenerCalls.get());
     }
 
     @Test
     public void setBean_oneBindingRequiredButEmpty_otherBindingValueShouldBeSet() {
+        AtomicBoolean validationStatusErrors = new AtomicBoolean();
+        AtomicBoolean statusChangeListenerErrors = new AtomicBoolean();
+        AtomicInteger validationStatusCalls = new AtomicInteger();
+        AtomicInteger statusChangeListenerCalls = new AtomicInteger();
+
         item.setFirstName(null);
 
         binder.forField(nameField).asRequired("Name is required")
@@ -2260,15 +2287,37 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binder.setBean(item);
 
+        binder.setValidationStatusHandler(status -> {
+            validationStatusCalls.incrementAndGet();
+            validationStatusErrors.set(status.hasErrors());
+        });
+        binder.addStatusChangeListener(e -> {
+            statusChangeListenerCalls.incrementAndGet();
+            statusChangeListenerErrors.set(e.hasValidationErrors());
+        });
+
         ageField.setValue("15");
 
         assertEquals(
                 "Age should have been set regardless of required but empty name field.",
                 15, item.getAge());
+        assertEquals("Validation status should not have errors.", false,
+                validationStatusErrors.get());
+        assertEquals("Status change listener should not report errors.", false,
+                statusChangeListenerErrors.get());
+        assertEquals("Validation status should get one call.", 1,
+                validationStatusCalls.get());
+        assertEquals("Status change listener should get one call.", 1,
+                statusChangeListenerCalls.get());
     }
 
     @Test
     public void setBean_binderValidationFails_noValueShouldBeSet() {
+        AtomicBoolean validationStatusErrors = new AtomicBoolean();
+        AtomicBoolean statusChangeListenerErrors = new AtomicBoolean();
+        AtomicInteger validationStatusCalls = new AtomicInteger();
+        AtomicInteger statusChangeListenerCalls = new AtomicInteger();
+
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
@@ -2279,11 +2328,28 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 (value, context) -> ValidationResult.error("Always fails"));
         binder.setBean(item);
 
+        binder.setValidationStatusHandler(status -> {
+            validationStatusCalls.incrementAndGet();
+            validationStatusErrors.set(status.hasErrors());
+        });
+        binder.addStatusChangeListener(e -> {
+            statusChangeListenerCalls.incrementAndGet();
+            statusChangeListenerErrors.set(e.hasValidationErrors());
+        });
+
         ageField.setValue("15");
 
         assertEquals(
                 "Age should not have been set since binder validation fails.",
                 32, item.getAge());
+        assertEquals("Validation status should have errors.", true,
+                validationStatusErrors.get());
+        assertEquals("Status change listener should report errors.", true,
+                statusChangeListenerErrors.get());
+        assertEquals("Validation status should get one call.", 1,
+                validationStatusCalls.get());
+        assertEquals("Status change listener should get one call.", 1,
+                statusChangeListenerCalls.get());
     }
 
     @Test

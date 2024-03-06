@@ -2225,9 +2225,13 @@ public class Binder<BEAN> implements Serializable {
      * the changed {@link Binding}, and additionally any bean level validation
      * for this binder (bean level validators are added using
      * {@link Binder#withValidator(Validator)}. As a result, the bean set via
-     * this method is not guaranteed to always be in a valid state. If bean
-     * validity is required at all times, {@link #readBean(Object)} and
-     * {@link #writeBean(Object)} should be used instead.
+     * this method is not guaranteed to always be in a valid state. This means
+     * also that possible {@link StatusChangeListener} and
+     * {@link BinderValidationStatusHandler} are called indicating a successful
+     * validation, even though some bindings can be in a state that would not
+     * pass validation. If bean validity is required at all times,
+     * {@link #readBean(Object)} and {@link #writeBean(Object)} should be used
+     * instead.
      * <p>
      * After updating each field, the value is read back from the field and the
      * bean's property value is updated if it has been changed from the original
