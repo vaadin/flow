@@ -111,13 +111,20 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFileContent(FLOW_TSX));
+            writeFile(flowTsx, getFlowTsxContent());
             if (fileAvailable(REACT_ADAPTER_TSX)) {
                 writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
             }
 
             if (!routesTsx.exists()) {
-                writeFile(routesTsx, getFileContent(FrontendUtils.ROUTES_TSX));
+                if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                        options.getClassFinder())) {
+                    writeFile(routesTsx,
+                            getFileContent(FrontendUtils.ROUTES_FS_TSX));
+                } else {
+                    writeFile(routesTsx,
+                            getFileContent(FrontendUtils.ROUTES_TSX));
+                }
             } else {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
@@ -173,6 +180,31 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             throw new ExecutionFailedException("Failed to clean up .tsx files",
                     e);
         }
+    }
+
+    private String getFlowTsxContent() throws IOException {
+        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                options.getClassFinder())) {
+            return getFileContent(FLOW_TSX)
+                    .replace("//#importFileRouterViews#",
+                            """
+                                    import { toReactRouter } from '@vaadin/hilla-file-router/runtime.js';
+                                    import views from 'Frontend/generated/views.js';
+                                    """)
+                    .replace("//#getDefaultReactRoutesFunction#", """
+                            export const getDefaultReactRoutes = () => {
+                                  // @ts-ignore
+                                  const route = toReactRouter(views);
+                                  if(route.children) {
+                                      route.children?.push(...serverSideRoutes);
+                                  } else {
+                                      return [route, ...serverSideRoutes];
+                                  }
+                                  return [route];
+                              };
+                            """);
+        }
+        return getFileContent(FLOW_TSX);
     }
 
     private boolean fileAvailable(String fileName) {
