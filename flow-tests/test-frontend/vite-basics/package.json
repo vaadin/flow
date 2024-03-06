@@ -10,9 +10,9 @@
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
     "@testscope/map": "../vite-test-assets/packages/@testscope/map",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
-    "@vaadin/common-frontend": "0.0.17",
+    "@vaadin/common-frontend": "0.0.18",
     "@vaadin/polymer-legacy-adapter": "23.3.0-alpha2",
-    "@vaadin/router": "1.7.4",
+    "@vaadin/router": "1.7.5",
     "@vaadin/vaadin-lumo-styles": "23.3.0-alpha2",
     "@vaadin/vaadin-text-field": "23.3.0-alpha2",
     "@vaadin/vaadin-themable-mixin": "23.3.0-alpha2",
@@ -31,12 +31,12 @@
     "rollup-plugin-brotli": "3.1.0",
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
-    "typescript": "4.7.4",
-    "vite": "v3.2.3",
-    "vite-plugin-checker": "0.4.9",
-    "workbox-build": "6.5.0",
-    "workbox-core": "6.5.0",
-    "workbox-precaching": "6.5.0"
+    "typescript": "4.9.5",
+    "vite": "3.2.8",
+    "vite-plugin-checker": "0.6.4",
+    "workbox-build": "6.5.4",
+    "workbox-core": "6.5.4",
+    "workbox-precaching": "6.5.4"
   },
   "overrides": {
     "@testscope/all": "$@testscope/all",
@@ -59,9 +59,9 @@
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.1",
-      "@vaadin/common-frontend": "0.0.17",
+      "@vaadin/common-frontend": "0.0.18",
       "@vaadin/polymer-legacy-adapter": "23.3.0-alpha2",
-      "@vaadin/router": "1.7.4",
+      "@vaadin/router": "1.7.5",
       "@vaadin/vaadin-lumo-styles": "23.3.0-alpha2",
       "@vaadin/vaadin-text-field": "23.3.0-alpha2",
       "@vaadin/vaadin-themable-mixin": "23.3.0-alpha2",
@@ -77,13 +77,13 @@
       "rollup-plugin-brotli": "3.1.0",
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
-      "typescript": "4.7.4",
-      "vite": "v3.2.3",
-      "vite-plugin-checker": "0.4.9",
-      "workbox-build": "6.5.0",
-      "workbox-core": "6.5.0",
-      "workbox-precaching": "6.5.0"
+      "typescript": "4.9.5",
+      "vite": "3.2.8",
+      "vite-plugin-checker": "0.6.4",
+      "workbox-build": "6.5.4",
+      "workbox-core": "6.5.4",
+      "workbox-precaching": "6.5.4"
     },
-    "hash": "e754f39771a40db99825f9a1ac5f1b0410805614ed8d41076b74eb77a6693bd2"
+    "hash": "8dec626dcbf9bebf81927335afb9585440d6f66f4d6fb84c53640544ad9ca475"
   }
 }

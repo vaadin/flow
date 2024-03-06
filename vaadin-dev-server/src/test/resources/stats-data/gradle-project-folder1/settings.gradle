@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2000-2024 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 // Vaadin project from https://start.vaadin.com/test/3
 rootProject.name = 'GradleProjectName1'
 version = '0.1'

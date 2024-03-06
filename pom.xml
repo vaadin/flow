@@ -43,9 +43,8 @@
     <url>https://vaadin.com/flow</url>
     <licenses>
         <license>
-            <name>Apache License Version 2.0</name>
-            <distribution>repo</distribution>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <name>Vaadin Commercial License and Service Terms</name>
+            <url>https://vaadin.com/commercial-license-and-service-terms</url>
         </license>
     </licenses>
     <inceptionYear>2000</inceptionYear>
@@ -141,6 +140,8 @@
         <!-- Skip these categories in validation, use -Pslow-tests to run them
             and override slow-tests profile to add more categories -->
         <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
+
+        <currentYear>2024</currentYear>
     </properties>
 
     <repositories>
@@ -639,6 +640,46 @@
 					<artifactId>bridger</artifactId>
 					<version>1.6.Final</version>
 				</plugin>
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>4.3</version>
+                    <configuration>
+                        <licenseSets>
+                            <licenseSet>
+                                <header>src/license/vclst/header.txt</header>
+                                <useDefaultExcludes>true</useDefaultExcludes>
+                                <properties>
+                                    <year>${currentYear}</year>
+                                </properties>
+                                <excludes>
+                                    <exclude>eclipse/flow.importorder</exclude>
+                                    <exclude>checkstyle/header</exclude>
+                                    <exclude>**/target/**</exclude>
+                                    <exclude>**/frontend/generated/**</exclude>
+                                    <exclude>**/*.xml</exclude>
+                                    <exclude>**/*.properties</exclude>
+                                    <exclude>src/license/**/*</exclude>
+                                    <exclude>**/*.txt</exclude>
+                                    <exclude>scripts/*</exclude>
+                                    <exclude>.github/*</exclude>
+                                    <exclude>.dtrack.yml</exclude>
+                                    <exclude>**/.dtrackignore</exclude>
+                                    <exclude>.prettierrc.js</exclude>
+                                    <exclude>.lift.toml</exclude>
+                                </excludes>
+                            </licenseSet>
+                        </licenseSets>
+                        <mapping>
+                            <ts>SLASHSTAR_STYLE</ts>
+                        </mapping>
+                        <quiet>false</quiet>
+                        <failIfMissing>true</failIfMissing>
+                        <aggregate>false</aggregate>
+                        <useDefaultMapping>true</useDefaultMapping>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>

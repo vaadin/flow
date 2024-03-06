@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2000-2024 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 // A custom element that isn't using Polymer
 class CustomCustomElement extends HTMLElement {
   static get is() { return 'custom-custom-element' }
