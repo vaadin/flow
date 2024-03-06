@@ -118,7 +118,7 @@ public abstract class AbstractDevModeTest {
     private void mockApplicationConfiguration(
             ApplicationConfiguration appConfig, boolean enablePnpm) {
         Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
-                        Mockito.anyString()))
+                Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
         try (MockedStatic<FrontendUtils> util = Mockito
