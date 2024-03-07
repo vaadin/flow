@@ -29,8 +29,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-
 /**
  * Updates the Vite configuration files according with current project settings.
  * <p>
@@ -138,8 +136,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private String updateFileSystemRouterVitePlugin(String template) {
-        if (options.isReactEnabled() && EndpointRequestUtil
-                .isHillaAvailable(options.getClassFinder())) {
+        if (options.isReactEnabled()) {
             return template
                     .replace("//#vitePluginFileSystemRouterImport#",
                             "import vitePluginFileSystemRouter from '"

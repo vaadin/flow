@@ -130,15 +130,10 @@ public class TaskUpdateViteTest {
     }
 
     @Test
-    public void generatedTemplate_reactEnabledAndHillaAvailable_correctFileRouterImport()
+    public void generatedTemplate_reactEnabled_correctFileRouterImport()
             throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null);
-        try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
-                EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
-                    .thenReturn(true);
-            task.execute();
-        }
+        task.execute();
 
         File configFile = new File(temporaryFolder.getRoot(),
                 FrontendUtils.VITE_GENERATED_CONFIG);
