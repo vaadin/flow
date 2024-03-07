@@ -85,7 +85,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
 
     static final String VIEWS_TS_FALLBACK = """
-            const routes = undefined;
+            import { createRoute } from "@vaadin/hilla-file-router/runtime.js";
+            const routes = createRoute("");
             export default routes;
             """;
 
