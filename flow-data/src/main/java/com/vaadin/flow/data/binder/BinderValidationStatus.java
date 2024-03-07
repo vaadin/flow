@@ -34,6 +34,10 @@ import com.vaadin.flow.function.SerializablePredicate;
  * Note: if there are any field level validation errors, the bean level
  * validation is not run.
  * <p>
+ * Note: if the status change is triggered via automatic validation due to a
+ * changed field value, the field validation statuses will only cover the
+ * changed fields.
+ * <p>
  * Use {@link Binder#setValidationStatusHandler(BinderValidationStatusHandler)}
  * to handle form level validation status changes.
  *

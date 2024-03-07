@@ -1210,8 +1210,8 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
         Mockito.when(configuration.getBuildFolder()).thenReturn("target");
-        Mockito.when(configuration.getStringProperty(PARAM_FRONTEND_DIR,
-                DEFAULT_FRONTEND_DIR)).thenReturn(DEFAULT_FRONTEND_DIR);
+        Mockito.when(configuration.getFrontendFolder())
+                .thenReturn(new File(projectRootFolder, DEFAULT_FRONTEND_DIR));
 
         setupRequestURI("", "", "/VAADIN/themes/my-theme/styles.css");
         Assert.assertTrue(fileServer.serveStaticResource(request, response));

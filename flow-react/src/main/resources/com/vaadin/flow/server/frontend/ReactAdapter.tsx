@@ -47,7 +47,7 @@ const emptyAction: Dispatch<unknown> = () => {};
  * An object with APIs exposed for using in the {@link ReactAdapterElement#render}
  * implementation.
  */
-export type RenderHooks = Readonly<{
+export type RenderHooks = {
     /**
      * A hook API for using stateful JS properties of the Web Component from
      * the React `render()`.
@@ -63,7 +63,7 @@ export type RenderHooks = Readonly<{
      * 2. The `set` function for changing the state and triggering render
      * @protected
      */
-    useState: ReactAdapterElement["useState"]
+    readonly useState: ReactAdapterElement["useState"]
 
     /**
      * A hook helper to simplify dispatching a `CustomEvent` on the Web
@@ -79,8 +79,8 @@ export type RenderHooks = Readonly<{
      * - For other types, has one parameter for the `event.detail` value of that type.
      * @protected
      */
-    useCustomEvent: ReactAdapterElement["useCustomEvent"]
-}>;
+    readonly useCustomEvent: ReactAdapterElement["useCustomEvent"]
+};
 
 /**
  * A base class for Web Components that render using React. Enables creating
