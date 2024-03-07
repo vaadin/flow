@@ -30,19 +30,7 @@
         <dependency>
             <groupId>dev.blanke.webpush.jwt</groupId>
             <artifactId>webpush-jwt-jose4j</artifactId>
-            <version>6.1.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bitbucket.b_c</groupId>
-                    <artifactId>jose4j</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.bitbucket.b_c</groupId>
-            <artifactId>jose4j</artifactId>
-            <version>0.9.5</version>
+            <version>6.1.2</version>
         </dependency>
 
         <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
