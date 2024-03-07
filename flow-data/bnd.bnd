@@ -2,7 +2,7 @@ Bundle-SymbolicName: ${project.groupId}.flow.data
 Bundle-Name: Vaadin Flow Data
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-License: https://vaadin.com/commercial-license-and-service-terms
 Import-Package: javax.validation*;resolution:=optional;version='${javax.validation.version}',\
     com.vaadin.flow*;version='[${osgi.bundle.version},${osgi.bundle.version}]',\
     *

@@ -2,6 +2,6 @@ Bundle-SymbolicName: ${project.groupId}.flow.client
 Bundle-Name: Flow Client Engine
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-License: https://vaadin.com/commercial-license-and-service-terms
 Import-Package: !*
 Export-Package: !*

@@ -2,6 +2,6 @@ Bundle-SymbolicName: ${project.groupId}.flow.dnd
 Bundle-Name: Vaadin Flow DnD Support
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-License: https://vaadin.com/commercial-license-and-service-terms
 Export-Package: !com.vaadin.flow.component.dnd.internal*,\
         com.vaadin.flow.component.dnd*;-noimport:=true

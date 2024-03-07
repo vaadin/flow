@@ -2,7 +2,7 @@ Bundle-SymbolicName: ${project.groupId}.flow.server
 Bundle-Name: Vaadin Flow Server
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-License: https://vaadin.com/commercial-license-and-service-terms
 Import-Package: org.atmosphere*;resolution:=optional;bundle-version='${atmosphere.runtime.version}',\
     org.apache.http*;resolution:=optional;,*
 Export-Package: !com.vaadin.flow.push*, com.vaadin.flow*;-noimport:=true, com.vaadin.experimental*
