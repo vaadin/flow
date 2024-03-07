@@ -21,7 +21,7 @@
     <parent>
         <artifactId>test-embedding</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>23.4-SNAPSHOT</version>
+        <version>23.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
