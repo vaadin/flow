@@ -22,7 +22,6 @@ import {
     useNavigate
 } from "react-router-dom";
 import { routes } from "Frontend/routes.js";
-//#importFileRouterViews#
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -418,5 +417,3 @@ export const createWebComponent = (tag: string, props?: Properties, onload?: () 
     }
     return React.createElement(tag);
 };
-
-//#getDefaultReactRoutesFunction#
