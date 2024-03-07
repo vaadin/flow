@@ -237,12 +237,6 @@ public class FrontendUtils {
     public static final String ROUTES_TSX = "routes.tsx";
 
     /**
-     * Template file name for the default {@link #ROUTES_TSX} with support for
-     * file system routes.
-     */
-    public static final String ROUTES_FS_TSX = "routes-fs.tsx";
-
-    /**
      * Default generated path for generated frontend files.
      */
     public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR

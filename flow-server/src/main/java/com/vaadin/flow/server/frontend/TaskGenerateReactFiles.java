@@ -83,6 +83,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
+    static final String FRONTEND_VIEWS_FOLDER = "views";
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -106,25 +107,25 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private void doExecute() throws ExecutionFailedException {
         File frontendDirectory = options.getFrontendDirectory();
         File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
+        File frontendViewsDirectory = new File(frontendDirectory,
+                FRONTEND_VIEWS_FOLDER);
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFlowTsxContent());
+            writeFile(flowTsx, getFileContent(FLOW_TSX));
             if (fileAvailable(REACT_ADAPTER_TSX)) {
                 writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
             }
-
-            if (!routesTsx.exists()) {
-                if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                        options.getClassFinder())) {
-                    writeFile(routesTsx,
-                            getFileContent(FrontendUtils.ROUTES_FS_TSX));
-                } else {
-                    writeFile(routesTsx,
-                            getFileContent(FrontendUtils.ROUTES_TSX));
+            if (!frontendViewsDirectory.exists()) {
+                if (frontendViewsDirectory.mkdirs()) {
+                    log().debug("Created Frontend/'{}' directory.",
+                            FRONTEND_VIEWS_FOLDER);
                 }
+            }
+            if (!routesTsx.exists()) {
+                writeFile(routesTsx, getFileContent(FrontendUtils.ROUTES_TSX));
             } else {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
@@ -180,31 +181,6 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             throw new ExecutionFailedException("Failed to clean up .tsx files",
                     e);
         }
-    }
-
-    private String getFlowTsxContent() throws IOException {
-        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                options.getClassFinder())) {
-            return getFileContent(FLOW_TSX)
-                    .replace("//#importFileRouterViews#",
-                            """
-                                    import { toReactRouter } from '@vaadin/hilla-file-router/runtime.js';
-                                    import views from 'Frontend/generated/views.js';
-                                    """)
-                    .replace("//#getDefaultReactRoutesFunction#", """
-                            export const getDefaultReactRoutes = () => {
-                                  // @ts-ignore
-                                  const route = toReactRouter(views);
-                                  if(route.children) {
-                                      route.children?.push(...serverSideRoutes);
-                                  } else {
-                                      return [route, ...serverSideRoutes];
-                                  }
-                                  return [route];
-                              };
-                            """);
-        }
-        return getFileContent(FLOW_TSX);
     }
 
     private boolean fileAvailable(String fileName) {

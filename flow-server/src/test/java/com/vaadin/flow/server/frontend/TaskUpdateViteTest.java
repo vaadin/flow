@@ -16,6 +16,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
@@ -129,13 +130,13 @@ public class TaskUpdateViteTest {
     }
 
     @Test
-    public void generatedTemplate_reactAndHillaUsed_correctFileRouterImport()
+    public void generatedTemplate_reactEnabledAndHillaAvailable_correctFileRouterImport()
             throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null);
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+        try (MockedStatic<EndpointRequestUtil> util = Mockito.mockStatic(
+                EndpointRequestUtil.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> EndpointRequestUtil.isHillaAvailable(Mockito.any()))
+                    .thenReturn(true);
             task.execute();
         }
 

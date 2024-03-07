@@ -147,6 +147,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@babel/preset-react");
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
+        expectedDependencies.add("@vaadin/hilla-file-router");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
