@@ -1,13 +1,12 @@
 {
   "name": "no-name",
   "license": "UNLICENSED",
+  "type": "module",
   "dependencies": {
     "@polymer/polymer": "3.5.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
     "@testscope/map": "../vite-test-assets/packages/@testscope/map",
-    "@types/react": "18.2.50",
-    "@types/react-dom": "18.2.18",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.19",
     "@vaadin/polymer-legacy-adapter": "24.3.2",
@@ -20,12 +19,15 @@
     "package2-outside-npm": "../vite-test-assets/packages/package2-outside-npm",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-router-dom": "6.21.3"
+    "react-router-dom": "6.22.2"
   },
   "devDependencies": {
     "@babel/preset-react": "^7",
     "@rollup/plugin-replace": "5.0.5",
     "@rollup/pluginutils": "5.1.0",
+    "@types/react": "18.2.60",
+    "@types/react-dom": "18.2.19",
+    "@vaadin/hilla-file-router": "24.4.0-alpha10",
     "@vitejs/plugin-react": "4.2.1",
     "async": "3.2.5",
     "glob": "10.3.10",
@@ -33,8 +35,8 @@
     "rollup-plugin-visualizer": "5.12.0",
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
-    "typescript": "5.3.3",
-    "vite": "5.0.12",
+    "typescript": "5.4.2",
+    "vite": "5.1.4",
     "vite-plugin-checker": "0.6.4",
     "workbox-build": "7.0.0",
     "workbox-core": "7.0.0",
@@ -43,8 +45,6 @@
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.1",
-      "@types/react": "18.2.50",
-      "@types/react-dom": "18.2.18",
       "@vaadin/common-frontend": "0.0.19",
       "@vaadin/polymer-legacy-adapter": "24.3.2",
       "@vaadin/text-field": "24.3.2",
@@ -54,12 +54,15 @@
       "lit": "3.1.2",
       "react": "18.2.0",
       "react-dom": "18.2.0",
-      "react-router-dom": "6.21.3"
+      "react-router-dom": "6.22.2"
     },
     "devDependencies": {
       "@babel/preset-react": "^7",
       "@rollup/plugin-replace": "5.0.5",
       "@rollup/pluginutils": "5.1.0",
+      "@types/react": "18.2.60",
+      "@types/react-dom": "18.2.19",
+      "@vaadin/hilla-file-router": "24.4.0-alpha10",
       "@vitejs/plugin-react": "4.2.1",
       "async": "3.2.5",
       "glob": "10.3.10",
@@ -67,14 +70,14 @@
       "rollup-plugin-visualizer": "5.12.0",
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
-      "typescript": "5.3.3",
-      "vite": "5.0.12",
+      "typescript": "5.4.2",
+      "vite": "5.1.4",
       "vite-plugin-checker": "0.6.4",
       "workbox-build": "7.0.0",
       "workbox-core": "7.0.0",
       "workbox-precaching": "7.0.0"
     },
-    "hash": "bcd4964e052b1fede5a31a3fa419ca6e01cd4d9fa713db0e28fc71543890dbe5"
+    "hash": "3e6f5eb375e26456a9dd6ef61bb3b9cd65d133ad45ee8e1c5bc98cfef2de0dfa"
   },
   "overrides": {
     "@polymer/polymer": "$@polymer/polymer",

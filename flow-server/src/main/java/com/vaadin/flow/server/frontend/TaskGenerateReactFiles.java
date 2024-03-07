@@ -84,6 +84,11 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
 
+    static final String VIEWS_TS_FALLBACK = """
+            const routes = undefined;
+            export default routes;
+            """;
+
     /**
      * Create a task to generate <code>index.js</code> if necessary.
      *
@@ -109,6 +114,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         File frontendViewsDirectory = new File(frontendDirectory,
                 FrontendUtils.HILLA_VIEWS_PATH);
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+        File viewsTs = new File(frontendGeneratedFolder,
+                FrontendUtils.VIEWS_TS);
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
@@ -122,6 +129,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                     log().debug("Created Frontend/'{}' directory.",
                             FrontendUtils.HILLA_VIEWS_PATH);
                 }
+            }
+            if (!viewsTs.exists()) {
+                writeFile(viewsTs, VIEWS_TS_FALLBACK);
             }
             if (!routesTsx.exists()) {
                 writeFile(routesTsx, getFileContent(FrontendUtils.ROUTES_TSX));

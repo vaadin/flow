@@ -6,13 +6,13 @@ import views from 'Frontend/generated/views.js';
 // @ts-ignore
 const route = toReactRouter(views);
 export const routes = [...serverSideRoutes] as RouteObject[]
-if(route.children && route.children.length > 0) {
-  route.children?.push(...serverSideRoutes);
+if(route && route.children && route.children.length > 0) {
+  route.children.push(...serverSideRoutes);
   routes.pop();
   routes.push(route);
 }
 
-// To define routes manually, use the following code as a example and remove the above code:
+// To define routes manually, use the following code as an example and remove the above code:
 // export const routes = [
 //  {
 //    element: <MainLayout />,
