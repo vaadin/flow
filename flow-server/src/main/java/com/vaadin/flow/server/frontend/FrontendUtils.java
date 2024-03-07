@@ -593,7 +593,7 @@ public class FrontendUtils {
     public static File resolveFrontendPath(File projectRoot,
             DeploymentConfiguration deploymentConfiguration, String path) {
         return resolveFrontendPath(projectRoot, path,
-                getFrontendFolder(projectRoot, deploymentConfiguration));
+                deploymentConfiguration.getFrontendFolder());
     }
 
     /**
@@ -615,20 +615,6 @@ public class FrontendUtils {
             }
         }
         return frontendDir;
-    }
-
-    private static File getFrontendFolder(File projectRoot,
-            AbstractConfiguration deploymentConfiguration) {
-        String frontendFolderPath = deploymentConfiguration.getStringProperty(
-                FrontendUtils.PARAM_FRONTEND_DIR,
-                FrontendUtils.DEFAULT_FRONTEND_DIR);
-
-        File f = new File(frontendFolderPath);
-        if (f.isAbsolute()) {
-            return f;
-        }
-
-        return new File(projectRoot, frontendFolderPath);
     }
 
     /**
@@ -717,8 +703,7 @@ public class FrontendUtils {
      */
     public static File getProjectFrontendDir(
             AbstractConfiguration configuration) {
-        return getFrontendFolder(configuration.getProjectFolder(),
-                configuration);
+        return configuration.getFrontendFolder();
     }
 
     /**
