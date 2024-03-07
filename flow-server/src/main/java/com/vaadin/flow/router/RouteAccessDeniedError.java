@@ -36,7 +36,8 @@ public class RouteAccessDeniedError extends Component
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<AccessDeniedException> parameter) {
-        event.rerouteToError(NotFoundException.class);
+        event.rerouteToError(NotFoundException.class,
+                parameter.getCustomMessage());
         return HttpStatusCode.NOT_FOUND.getCode();
     }
 }
