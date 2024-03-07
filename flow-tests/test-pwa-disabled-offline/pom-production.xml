@@ -4,7 +4,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>23.4-SNAPSHOT</version>
+        <version>23.5-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-pwa-disabled-offline-prod</artifactId>
     <name>Flow tests for PWA annotation with disabled offline (production mode)</name>
