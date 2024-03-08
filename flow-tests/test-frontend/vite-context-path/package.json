@@ -37,8 +37,7 @@
     "vite-plugin-checker": "0.6.4",
     "workbox-build": "7.0.0",
     "workbox-core": "7.0.0",
-    "workbox-precaching": "7.0.0",
-    "@vaadin/hilla-file-router": "24.4.0-alpha10"
+    "workbox-precaching": "7.0.0"
   },
   "vaadin": {
     "dependencies": {
@@ -72,8 +71,7 @@
       "vite-plugin-checker": "0.6.4",
       "workbox-build": "7.0.0",
       "workbox-core": "7.0.0",
-      "workbox-precaching": "7.0.0",
-      "@vaadin/hilla-file-router": "24.4.0-alpha10"
+      "workbox-precaching": "7.0.0"
     },
     "hash": "42b329c0496d035ac665b14342e70adcabb9da860f090fd050d89d40d2dc672d"
   },

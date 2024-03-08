@@ -136,7 +136,8 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private String updateFileSystemRouterVitePlugin(String template) {
-        if (options.isReactEnabled()) {
+        if (options.isReactEnabled() && FrontendUtils.isHillaUsed(
+                options.getFrontendDirectory(), options.getClassFinder())) {
             return template
                     .replace("//#vitePluginFileSystemRouterImport#",
                             "import vitePluginFileSystemRouter from '"

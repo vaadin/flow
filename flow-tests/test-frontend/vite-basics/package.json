@@ -43,8 +43,7 @@
     "vite-plugin-checker": "0.6.4",
     "workbox-build": "7.0.0",
     "workbox-core": "7.0.0",
-    "workbox-precaching": "7.0.0",
-    "@vaadin/hilla-file-router": "24.4.0-alpha10"
+    "workbox-precaching": "7.0.0"
   },
   "overrides": {
     "@testscope/all": "$@testscope/all",
@@ -108,8 +107,7 @@
       "vite-plugin-checker": "0.6.4",
       "workbox-build": "7.0.0",
       "workbox-core": "7.0.0",
-      "workbox-precaching": "7.0.0",
-      "@vaadin/hilla-file-router": "24.4.0-alpha10"
+      "workbox-precaching": "7.0.0"
     },
     "hash": "e90bc4a4ce1033473f055c0de880879f451c8c914377d7161e427eabede4c550"
   }
