@@ -368,21 +368,27 @@ export const serverSideRoutes = [
  * Load the script for an exported WebComponent with the given tag
  *
  * @param tag name of the exported web-component to load
- * @param onload optional callback to be called for script onload
+ *
+ * @returns Promise(resolve, reject) that is fulfilled on script load
  */
-export const loadComponentScript = (tag: String, onload?: () => void) => {
-    useEffect(() => {
-        const script = document.createElement('script');
-        script.src = `/web-component/${tag}.js`;
-        if(onload) {
-            script.onload = onload;
-        }
-        document.head.appendChild(script);
+export const loadComponentScript = (tag: String): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        useEffect(() => {
+            const script = document.createElement('script');
+            script.src = `/web-component/${tag}.js`;
+            script.onload = function() {
+                resolve();
+            };
+            script.onerror = function(err) {
+                reject(err);
+            };
+            document.head.appendChild(script);
 
-        return () => {
-            document.head.removeChild(script);
-        }
-    }, []);
+            return () => {
+                document.head.removeChild(script);
+            }
+        }, []);
+    });
 };
 
 interface Properties {
@@ -395,9 +401,17 @@ interface Properties {
  * @param tag custom web-component tag name.
  * @param props optional Properties object to create element attributes with
  * @param onload optional callback to be called for script onload
+ * @param onerror optional callback for error loading the script
  */
-export const createWebComponent = (tag: string, props?: Properties, onload?: () => void) => {
-    loadComponentScript(tag, onload);
+export const createWebComponent = (tag: string, props?: Properties, onload?: () => void, onerror?: (err:any) => void) => {
+    loadComponentScript(tag).then(() => onload?.(), (err) => {
+        if(onerror) {
+            onerror(err);
+        } else {
+            console.error(`Failed to load script for ${tag}.`, err);
+        }
+    });
+
     if(props) {
         return React.createElement(tag, props);
     }
