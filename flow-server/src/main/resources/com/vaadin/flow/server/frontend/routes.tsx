@@ -9,7 +9,11 @@ export const routes = [...serverSideRoutes] as RouteObject[]
 if(route.children && route.children.length > 0) {
   route.children.push(...serverSideRoutes);
   routes.pop();
-  routes.push(route);
+  if (route.element) {
+    routes.push(route);
+  } else {
+    routes.push(...route.children);
+  }
 }
 
 // To define routes manually, use the following code as an example and remove the above code:
