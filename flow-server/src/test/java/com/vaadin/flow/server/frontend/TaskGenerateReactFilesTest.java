@@ -77,7 +77,11 @@ public class TaskGenerateReactFilesTest {
         Assert.assertTrue("Missing ./frontend/generated/flow/Flow.tsx",
                 new File(new File(frontend, FrontendUtils.GENERATED),
                         "flow/Flow.tsx").exists());
-        Assert.assertTrue("Missing ./frontend/routes.tsx",
+        Assert.assertTrue(
+                "Missing ./frontend/" + FrontendUtils.GENERATED + "routes.tsx",
+                new File(new File(frontend, FrontendUtils.GENERATED),
+                        "routes.tsx").exists());
+        Assert.assertFalse("Missing ./frontend/routes.tsx",
                 new File(frontend, "routes.tsx").exists());
     }
 
@@ -308,6 +312,11 @@ public class TaskGenerateReactFilesTest {
         Assert.assertFalse(
                 "./frontend/routes.tsx should be removed when react is disabled",
                 new File(frontend, "routes.tsx").exists());
+        Assert.assertFalse(
+                "./frontend/" + FrontendUtils.GENERATED
+                        + "routes.tsx should be removed when react is disabled",
+                new File(new File(frontend, FrontendUtils.GENERATED),
+                        "routes.tsx").exists());
         Assert.assertTrue("./frontend/routes.tsx.flowBackup should exist",
                 new File(frontend, "routes.tsx.flowBackup").exists());
     }

@@ -97,7 +97,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
-
+    private static final String ROUTES_JS_IMPORT_PATH_TOKEN = "%routesJsImportPath%";
     static final String VIEWS_TS_FALLBACK = """
             const routes = { path: "", module: undefined, children: [] };
             export default routes;
@@ -136,8 +136,10 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
+        File frontendGeneratedFolderRoutesTsx = new File(
+                frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFlowTsFileContent());
+            writeFile(flowTsx, getFlowTsxFileContent(routesTsx.exists()));
             if (fileAvailable(REACT_ADAPTER_TSX)) {
                 writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
             }
@@ -145,7 +147,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 writeFile(viewsTs, VIEWS_TS_FALLBACK);
             }
             if (!routesTsx.exists()) {
-                writeFile(routesTsx, getFileContent(FrontendUtils.ROUTES_TSX));
+                writeFile(frontendGeneratedFolderRoutesTsx,
+                        getFileContent(FrontendUtils.ROUTES_TSX));
             } else {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
@@ -172,8 +175,11 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
             File reactAdapterTsx = new File(frontendGeneratedFolder,
                     FLOW_REACT_ADAPTER_TSX);
+            File frontendGeneratedFolderRoutesTsx = new File(
+                    frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
             FileUtils.deleteQuietly(flowTsx);
             FileUtils.deleteQuietly(reactAdapterTsx);
+            FileUtils.deleteQuietly(frontendGeneratedFolderRoutesTsx);
 
             File routesTsx = new File(frontendDirectory,
                     FrontendUtils.ROUTES_TSX);
@@ -204,8 +210,14 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         }
     }
 
-    private String getFlowTsFileContent() throws IOException {
-        String content = getFileContent(FLOW_TSX);
+    private String getFlowTsxFileContent(boolean frontendRoutesTsExists) throws IOException {
+        String content = getFileContent(FLOW_TSX).replace(ROUTES_JS_IMPORT_PATH_TOKEN,
+                (frontendRoutesTsExists)
+                        ? FrontendUtils.FRONTEND_FOLDER_ALIAS
+                        + FrontendUtils.ROUTES_JS
+                        : FrontendUtils.FRONTEND_FOLDER_ALIAS
+                        + FrontendUtils.GENERATED
+                        + FrontendUtils.ROUTES_JS);;
         if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
             return content.replace("//%toReactRouterImport%",
