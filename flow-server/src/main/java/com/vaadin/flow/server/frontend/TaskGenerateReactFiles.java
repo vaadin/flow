@@ -112,8 +112,6 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private void doExecute() throws ExecutionFailedException {
         File frontendDirectory = options.getFrontendDirectory();
         File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
-        File frontendViewsDirectory = new File(frontendDirectory,
-                FrontendUtils.HILLA_VIEWS_PATH);
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
         File viewsTs = new File(frontendGeneratedFolder,
                 FrontendUtils.VIEWS_TS);
@@ -124,12 +122,6 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             writeFile(flowTsx, getFileContent(FLOW_TSX));
             if (fileAvailable(REACT_ADAPTER_TSX)) {
                 writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
-            }
-            if (!frontendViewsDirectory.exists()) {
-                if (frontendViewsDirectory.mkdirs()) {
-                    log().debug("Created Frontend/'{}' directory.",
-                            FrontendUtils.HILLA_VIEWS_PATH);
-                }
             }
             if (!viewsTs.exists()) {
                 writeFile(viewsTs, VIEWS_TS_FALLBACK);
