@@ -85,8 +85,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
 
     static final String VIEWS_TS_FALLBACK = """
-            import { createRoute } from "@vaadin/hilla-file-router/runtime.js";
-            const routes = createRoute("");
+            const routes = { path: "", module: undefined, children: [] };
             export default routes;
             """;
 
@@ -119,7 +118,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFileContent(FLOW_TSX));
+            writeFile(flowTsx, getFlowTsFileContent());
             if (fileAvailable(REACT_ADAPTER_TSX)) {
                 writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
             }
@@ -182,6 +181,29 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         } catch (IOException e) {
             throw new ExecutionFailedException("Failed to clean up .tsx files",
                     e);
+        }
+    }
+
+    private String getFlowTsFileContent() throws IOException {
+        String content = getFileContent(FLOW_TSX);
+        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                options.getClassFinder())) {
+            return content.replace("//%toReactRouterImport%",
+                    "import { toReactRouter } from '@vaadin/hilla-file-router/runtime.js';")
+                    .replace("//%buildRouteFunction%", """
+                            export const buildRoute = (views: any): any => {
+                                // @ts-ignore
+                                return toReactRouter(views);
+                            };
+                            """);
+        } else {
+            return content.replace("//%toReactRouterImport%", "")
+                    .replace("//%buildRouteFunction%", """
+                            export const buildRoute = (views: any): any => {
+                                // @ts-ignore
+                                return views;
+                            };
+                            """);
         }
     }
 

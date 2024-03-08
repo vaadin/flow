@@ -1,10 +1,11 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 import { serverSideRoutes } from "Frontend/generated/flow/Flow";
-import { toReactRouter } from '@vaadin/hilla-file-router/runtime.js';
+import { buildRoute } from "Frontend/generated/flow/Flow";
+
 import views from 'Frontend/generated/views.js';
 
 // @ts-ignore
-const route = toReactRouter(views);
+const route = buildRoute(views);
 export const routes = [...serverSideRoutes] as RouteObject[]
 if(route.children && route.children.length > 0) {
   route.children.push(...serverSideRoutes);
