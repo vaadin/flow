@@ -65,11 +65,20 @@ public class SpringInstantiator extends DefaultInstantiator {
         }
     }
 
+    /**
+     * Gets all service init listeners to use. Registers by default an init
+     * listener that publishes ServiceInitEvent to application context.
+     *
+     * @return stream of service init listeners, not <code>null</code>
+     */
     @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
-        Stream<VaadinServiceInitListener> springListeners = context
-                .getBeansOfType(VaadinServiceInitListener.class).values()
-                .stream();
+        Stream<VaadinServiceInitListener> springListeners = Stream
+                .concat(Stream.of(event -> {
+                    // make ServiceInitEvent listenable with @EventListener
+                    context.publishEvent(event);
+                }), context.getBeansOfType(VaadinServiceInitListener.class)
+                        .values().stream());
         return Stream.concat(super.getServiceInitListeners(), springListeners);
     }
 

@@ -56,6 +56,7 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
 import com.vaadin.flow.spring.SpringServlet;
+import org.springframework.context.event.EventListener;
 
 @RunWith(SpringRunner.class)
 @Import(SpringInstantiatorTest.TestConfiguration.class)
@@ -88,6 +89,17 @@ public class SpringInstantiatorTest {
         public void serviceInit(ServiceInitEvent event) {
         }
 
+    }
+
+    @Component
+    public static class ServiceInitListenerWithSpringEvent {
+
+        boolean called;
+
+        @EventListener
+        public void init(ServiceInitEvent event) {
+            called = true;
+        }
     }
 
     @Component
@@ -126,6 +138,15 @@ public class SpringInstantiatorTest {
 
         Assert.assertTrue(set.contains(TestVaadinServiceInitListener.class));
         Assert.assertTrue(set.contains(JavaSPIVaadinServiceInitListener.class));
+    }
+
+    @Test
+    public void getServiceInitListeners_springEventListener()
+            throws ServletException {
+        getInstantiator(context);
+
+        Assert.assertTrue(context
+                .getBean(ServiceInitListenerWithSpringEvent.class).called);
     }
 
     @Test
