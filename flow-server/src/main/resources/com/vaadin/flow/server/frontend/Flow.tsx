@@ -403,7 +403,7 @@ interface Properties {
  * @param onload optional callback to be called for script onload
  * @param onerror optional callback for error loading the script
  */
-export const createWebComponent = (tag: string, props?: Properties, onload?: () => void, onerror?: (err) => void) => {
+export const createWebComponent = (tag: string, props?: Properties, onload?: () => void, onerror?: (err:any) => void) => {
     loadComponentScript(tag).then(() => onload?.(), (err) => {
         if(onerror) {
             onerror(err);
