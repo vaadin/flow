@@ -46,6 +46,15 @@ public class TaskGeneratePackageJson extends NodeUpdater {
             JsonObject mainContent = getPackageJson();
             modified = updateDefaultDependencies(mainContent);
             if (modified) {
+                if (!mainContent.hasKey("type")
+                        || !mainContent.getString("type").equals("module")) {
+                    mainContent.put("type", "module");
+                    log().info(
+                            """
+                                    Adding package.json type as module to enable ES6 modules which is now required.
+                                    With this change sources need to use 'import' instead of 'require' for imports.
+                                    """);
+                }
                 writePackageFile(mainContent);
             }
         } catch (IOException e) {
