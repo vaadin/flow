@@ -39,6 +39,7 @@ public interface TypeScriptBootstrapModifier extends Serializable {
     @Deprecated
     default void modify(List<String> bootstrapTypeScript,
             boolean productionMode, ThemeDefinition themeDefinition) {
+        modify(bootstrapTypeScript, productionMode);
     }
 
     /**
