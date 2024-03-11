@@ -93,6 +93,15 @@ public class TaskUpdatePackages extends NodeUpdater {
             boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
             if (modified || npmVersionLockingUpdated) {
+                if (!packageJson.hasKey("type")
+                        || !packageJson.getString("type").equals("module")) {
+                    packageJson.put("type", "module");
+                    log().info(
+                            """
+                                    Adding package.json type as module to enable ES6 modules which is now required.
+                                    With this change sources need to use 'import' instead of 'require' for imports.
+                                    """);
+                }
                 writePackageFile(packageJson);
             }
 
