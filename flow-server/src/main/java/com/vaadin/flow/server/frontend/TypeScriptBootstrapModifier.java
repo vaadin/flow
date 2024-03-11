@@ -36,9 +36,25 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      * @param themeDefinition
      *            the theme used by the application
      */
+    @Deprecated
     default void modify(List<String> bootstrapTypeScript,
             boolean productionMode, ThemeDefinition themeDefinition) {
-        modify(bootstrapTypeScript, productionMode);
+    }
+
+    /**
+     * Modifies the bootstrap typescript by mutating the parameter.
+     *
+     * @param bootstrapTypeScript
+     *            the input typescript split into lines
+     * @param options
+     *            options used by the build
+     * @param frontendDependenciesScanner
+     *            the frontend dependencies scanner
+     */
+    default void modify(List<String> bootstrapTypeScript, Options options,
+            FrontendDependenciesScanner frontendDependenciesScanner) {
+        modify(bootstrapTypeScript, options.isProductionMode(),
+                frontendDependenciesScanner.getThemeDefinition());
     }
 
 }
