@@ -242,8 +242,12 @@ public interface AbstractConfiguration extends Serializable {
      *         {@code src/main/resources}.
      */
     default File getJavaResourceFolder() {
-        return new File(getStringProperty(Constants.JAVA_RESOURCE_FOLDER_TOKEN,
-                "src/main/resources"));
+        File folder = new File(getStringProperty(
+                Constants.JAVA_RESOURCE_FOLDER_TOKEN, "src/main/resources"));
+        if (!folder.isAbsolute()) {
+            folder = new File(getProjectFolder(), folder.getPath());
+        }
+        return folder.getAbsoluteFile();
     }
 
     /**
@@ -255,8 +259,11 @@ public interface AbstractConfiguration extends Serializable {
      *         {@code src/main/java}.
      */
     default File getJavaSourceFolder() {
-        return new File(getStringProperty(
-                Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN, "src/main/java"))
-                .getAbsoluteFile();
+        File folder = new File(getStringProperty(
+                Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN, "src/main/java"));
+        if (!folder.isAbsolute()) {
+            folder = new File(getProjectFolder(), folder.getPath());
+        }
+        return folder.getAbsoluteFile();
     }
 }
