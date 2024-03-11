@@ -210,14 +210,17 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         }
     }
 
-    private String getFlowTsxFileContent(boolean frontendRoutesTsExists) throws IOException {
-        String content = getFileContent(FLOW_TSX).replace(ROUTES_JS_IMPORT_PATH_TOKEN,
+    private String getFlowTsxFileContent(boolean frontendRoutesTsExists)
+            throws IOException {
+        String content = getFileContent(FLOW_TSX).replace(
+                ROUTES_JS_IMPORT_PATH_TOKEN,
                 (frontendRoutesTsExists)
                         ? FrontendUtils.FRONTEND_FOLDER_ALIAS
-                        + FrontendUtils.ROUTES_JS
+                                + FrontendUtils.ROUTES_JS
                         : FrontendUtils.FRONTEND_FOLDER_ALIAS
-                        + FrontendUtils.GENERATED
-                        + FrontendUtils.ROUTES_JS);;
+                                + FrontendUtils.GENERATED
+                                + FrontendUtils.ROUTES_JS);
+        ;
         if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
             return content.replace("//%toReactRouterImport%",
