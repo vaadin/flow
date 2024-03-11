@@ -6,7 +6,9 @@ import views from 'Frontend/generated/views.js';
 
 // @ts-ignore
 const route = buildRoute(views);
-export const routes = [...serverSideRoutes] as RouteObject[]
+export const routes = [
+  ...serverSideRoutes
+] as RouteObject[];
 if(route.children && route.children.length > 0) {
   route.children.push(...serverSideRoutes);
   routes.pop();
