@@ -160,7 +160,7 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     private static Optional<URI> getPathUri(String path) {
-        int index = path.lastIndexOf(FrontendUtils.isWindows() ? '\\' : '/');
+        int index = path.lastIndexOf('/');
         boolean hasPrefix = index >= 0;
         if (!hasPrefix) {
             getLogger().info("Unsupported path structure, path={}", path);
