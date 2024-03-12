@@ -349,6 +349,13 @@ public class DefaultDeploymentConfigurationTest {
     private ApplicationConfiguration setupAppConfig() {
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getFrontendFolder()).thenCallRealMethod();
+        Mockito.when(
+                appConfig.getStringProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                        FrontendUtils.DEFAULT_FRONTEND_DIR))
+                .thenReturn(FrontendUtils.DEFAULT_FRONTEND_DIR);
+        Mockito.when(appConfig.getProjectFolder())
+                .thenReturn(tempFolder.getRoot());
         Mockito.when(appConfig.getContext()).thenReturn(context);
         return appConfig;
     }
