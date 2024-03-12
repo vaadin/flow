@@ -383,7 +383,7 @@ public class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void frontendHotDeploy_legacyFrontendFolderExists_usesLegacy()
+    public void frontendHotDeploy_hillaInLegacyFrontendFolderExists_usesLegacyAndHotdeploy()
             throws IOException {
         File projectRoot = tempFolder.getRoot();
         File legacyFrontend = tempFolder
