@@ -16,7 +16,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;

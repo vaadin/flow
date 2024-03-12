@@ -19,9 +19,11 @@ import {
     matchRoutes,
     NavigateFunction,
     useLocation,
-    useNavigate
+    useNavigate,
+    RouteObject
 } from "react-router-dom";
 import { routes } from "Frontend/routes.js";
+import views from 'Frontend/generated/views.js';
 //%toReactRouterImport%
 
 const flow = new _Flow({
@@ -419,4 +421,16 @@ export const createWebComponent = (tag: string, props?: Properties, onload?: () 
     return React.createElement(tag);
 };
 
-//%buildRouteFunction%
+export const buildRoute = (routes?: RouteObject[], serverSidePosition?: RouteObject[]): RouteObject[] => {
+    let combinedRoutes = [] as RouteObject[];
+    //%buildRouteFunction%
+    if(serverSidePosition) {
+        serverSidePosition.push(...serverSideRoutes);
+    } else {
+        combinedRoutes.push(...serverSideRoutes);
+    }
+    if(routes) {
+        combinedRoutes.push(...routes);
+    }
+    return combinedRoutes;
+};
