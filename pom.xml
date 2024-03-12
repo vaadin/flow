@@ -172,10 +172,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>Atm-test</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/comvaadin-2552/</url>
-        </repository>
     </repositories>
 
     <pluginRepositories>
