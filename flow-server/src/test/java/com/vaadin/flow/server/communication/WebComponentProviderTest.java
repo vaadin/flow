@@ -184,7 +184,8 @@ public class WebComponentProviderTest {
                 provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response).getOutputStream();
-        Mockito.verify(out).write(Mockito.any());
+        Mockito.verify(out).write(Mockito.any(), Mockito.anyInt(),
+                Mockito.anyInt());
 
     }
 
@@ -215,7 +216,8 @@ public class WebComponentProviderTest {
                 provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response, times(2)).getOutputStream();
-        Mockito.verify(out, times(2)).write(captor.capture());
+        Mockito.verify(out, times(2)).write(captor.capture(), Mockito.anyInt(),
+                Mockito.anyInt());
 
         byte[] first = captor.getAllValues().get(0);
         byte[] second = captor.getAllValues().get(1);
@@ -243,6 +245,8 @@ public class WebComponentProviderTest {
         WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
+        Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
+                .isPresent());
         Assert.assertEquals(PushMode.AUTOMATIC, registry
                 .getEmbeddedApplicationAnnotation(Push.class).get().value());
     }
@@ -284,7 +288,7 @@ public class WebComponentProviderTest {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @SafeVarargs
-    private final WebComponentConfigurationRegistry setupConfigurations(
+    private WebComponentConfigurationRegistry setupConfigurations(
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
         WebComponentConfigurationRegistry registry = setUpRegistry();
 
