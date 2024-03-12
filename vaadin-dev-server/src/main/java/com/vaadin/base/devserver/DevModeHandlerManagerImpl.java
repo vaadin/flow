@@ -107,6 +107,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
             startWatchingThemeFolder(context, config);
             watchExternalDependencies(context, config);
+            watchers.add(new TranslationsLiveUpdater(context));
         });
         setDevModeStarted(context);
         this.browserLauncher = new BrowserLauncher(context);

@@ -923,12 +923,22 @@ export class VaadinDevTools extends LitElement {
       window.location.reload();
     };
     const onUpdate = (path: string, content: string) => {
-      let styleTag = document.head.querySelector(`style[data-file-path='${path}']`);
-      if (styleTag) {
-        this.log(MessageType.INFORMATION, 'Hot update of ' + path);
-        styleTag.textContent = content;
-        document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
-      } else {
+      let handled = false;
+      if (path.endsWith('.css')) {
+        let styleTag = document.head.querySelector(`style[data-file-path='${path}']`);
+        if (styleTag) {
+          this.log(MessageType.INFORMATION, 'Hot update of ' + path);
+          styleTag.textContent = content;
+          document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
+          handled = true;
+        }
+      }
+      if (path.match(/translations[_a-zA-Z]*\.properties$/)) {
+        window.dispatchEvent(new CustomEvent('vaadin-translation-updated', { detail: { path, content } }));
+        handled = true;
+      }
+
+      if (!handled) {
         onReload();
       }
     };
