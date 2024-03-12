@@ -57,7 +57,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
 
     @Test
     public void session_resynced_webcomponent_is_active() throws Exception {
-        waitForWebComponentsBootstrap();
+        waitForWebComponent("login-form");
         // check if web component works
         clickButton();
         Assert.assertEquals("Authentication failure",
@@ -65,7 +65,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
 
         // simulate expired session by invalidating current session
         session.invalidate();
-        waitForWebComponentsBootstrap();
+        waitForWebComponent("login-form");
 
         // init request to resynchronize expired session and recreate components
         clickButton();
