@@ -371,6 +371,51 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    public void missingTypeInPackageJson_typeModuleIsAdded()
+            throws IOException {
+        JsonObject packageJson = getOrCreatePackageJson();
+        Assert.assertFalse("No type should be available",
+                packageJson.hasKey("type"));
+
+        createBasicVaadinVersionsJson();
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+
+        // get latest package.json file
+        packageJson = getOrCreatePackageJson();
+
+        Assert.assertTrue("Type should have been addded.",
+                packageJson.hasKey("type"));
+        Assert.assertEquals("Type should be module", "module",
+                packageJson.getString("type"));
+    }
+
+    @Test
+    public void faultyTypeInPackageJson_typeModuleIsAdded() throws IOException {
+        JsonObject packageJson = getOrCreatePackageJson();
+        packageJson.put("type", "commonjs");
+
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toJson(), StandardCharsets.UTF_8);
+
+        createBasicVaadinVersionsJson();
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+
+        // get latest package.json file
+        packageJson = getOrCreatePackageJson();
+
+        Assert.assertTrue("Type should not have been removed",
+                packageJson.hasKey("type"));
+        Assert.assertEquals("Type should have been updated to 'module'",
+                "module", packageJson.getString("type"));
+    }
+
+    @Test
     public void npmIsInUse_packageJsonVersionIsUpdated_vaadinSectionIsNotChanged()
             throws IOException {
         final JsonObject packageJson = getOrCreatePackageJson();
@@ -456,6 +501,7 @@ public class TaskUpdatePackagesNpmTest {
         packageJson.put("name", "a");
         packageJson.put("license", "b");
         packageJson.put("version", "c");
+        packageJson.put("type", "module");
 
         LinkedHashSet<String> mainKeys = new LinkedHashSet<>(
                 Arrays.asList(packageJson.keys()));
