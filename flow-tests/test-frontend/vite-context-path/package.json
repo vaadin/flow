@@ -1,6 +1,7 @@
 {
   "name": "no-name",
   "license": "UNLICENSED",
+  "type": "module",
   "dependencies": {
     "@polymer/polymer": "3.5.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",

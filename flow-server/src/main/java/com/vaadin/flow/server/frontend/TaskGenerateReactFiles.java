@@ -58,6 +58,20 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             The server route definition is missing from the '%1$s' file
 
             To have working Flow routes add the following to the '%1$s' file:
+            - import { buildRoute } from "Frontend/generated/flow/Flow";
+            - call buildRoute optionally with routes and position for server side routes as shown below:
+
+                let routing = [
+                     {
+                         element: <MainLayout />,
+                         handle: { title: 'Main' },
+                         children: [
+                             { path: '/hilla', element: <HillaView />, handle: { title: 'Hilla' } }
+                         ],
+                     },
+                 ] as RouteObject[];
+                 export const routes = buildRoute(routing, routing[0].children);
+            OR
             - import { serverSideRoutes } from "Frontend/generated/flow/Flow";
             - route '...serverSideRoutes' into the routes definition as shown below:
 
@@ -84,6 +98,16 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
 
+    static final String VIEWS_TS_FALLBACK = """
+            const routes = { path: "", module: undefined, children: [] };
+            export default routes;
+            """;
+
+    private static Pattern SERVER_IMPORT_PATTERN = Pattern.compile(
+            "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
+    private static Pattern BUILDROUTE_PATTERN = Pattern.compile(
+            "import[\\s\\S]?\\{[\\s\\S]?buildRoute[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
+
     /**
      * Create a task to generate <code>index.js</code> if necessary.
      *
@@ -107,21 +131,26 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         File frontendDirectory = options.getFrontendDirectory();
         File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+        File viewsTs = new File(frontendGeneratedFolder,
+                FrontendUtils.VIEWS_TS);
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFileContent(FLOW_TSX));
+            writeFile(flowTsx, getFlowTsFileContent());
             if (fileAvailable(REACT_ADAPTER_TSX)) {
                 writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
             }
-
+            if (!viewsTs.exists()) {
+                writeFile(viewsTs, VIEWS_TS_FALLBACK);
+            }
             if (!routesTsx.exists()) {
                 writeFile(routesTsx, getFileContent(FrontendUtils.ROUTES_TSX));
             } else {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
                 if (missingServerImport(routesContent)
+                        && missingBuildRoute(routesContent)
                         && serverRoutesAvailable()) {
                     throw new ExecutionFailedException(
                             String.format(NO_IMPORT, routesTsx.getPath()));
@@ -175,15 +204,44 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         }
     }
 
+    private String getFlowTsFileContent() throws IOException {
+        String content = getFileContent(FLOW_TSX);
+        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+                options.getClassFinder())) {
+            return content.replace("//%toReactRouterImport%",
+                    "import { toReactRouter } from '@vaadin/hilla-file-router/runtime.js';")
+                    .replace("//%viewsJsImport%",
+                            "import views from 'Frontend/generated/views.js';")
+                    .replace("//%buildRouteFunction%",
+                            """
+                                    if(!routes) {
+                                        // @ts-ignore
+                                        const route: RouteObject = toReactRouter(views);
+                                        if(route.children && route.children.length > 0) {
+                                            serverSidePosition = route.children;
+                                            if (route.element) {
+                                                routes = [route];
+                                            } else {
+                                                routes = route.children;
+                                            }
+                                        }
+                                    }
+                                    """);
+        }
+        return content;
+    }
+
     private boolean fileAvailable(String fileName) {
         return options.getClassFinder().getClassLoader()
                 .getResource(CLASS_PACKAGE.formatted(fileName)) != null;
     }
 
     private boolean missingServerImport(String routesContent) {
-        Pattern serverImport = Pattern.compile(
-                "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
-        return !serverImport.matcher(routesContent).find();
+        return !SERVER_IMPORT_PATTERN.matcher(routesContent).find();
+    }
+
+    private boolean missingBuildRoute(String routesContent) {
+        return !BUILDROUTE_PATTERN.matcher(routesContent).find();
     }
 
     private boolean serverRoutesAvailable() {

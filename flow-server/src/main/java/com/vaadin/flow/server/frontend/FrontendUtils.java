@@ -236,6 +236,8 @@ public class FrontendUtils {
 
     public static final String ROUTES_TSX = "routes.tsx";
 
+    public static final String VIEWS_TS = "views.ts";
+
     /**
      * Default generated path for generated frontend files.
      */
@@ -333,6 +335,15 @@ public class FrontendUtils {
     // Regex pattern matches "...serverSideRoutes"
     private static final Pattern SERVER_SIDE_ROUTES_PATTERN = Pattern.compile(
             "(?<=\\s|^)\\.{3}serverSideRoutes(?=\\s|$)", Pattern.MULTILINE);
+
+    // Regex pattern matches "buildRoute("
+    private static final Pattern BUILDROUTE_FUNCTION_PATTERN = Pattern.compile(
+            "(?<=\\s|^)buildRoute\\((?=[\\s\\S]*|$)", Pattern.MULTILINE);
+
+    // Regex pattern matches "buildRoute()"
+    private static final Pattern BUILDROUTE_FUNCTION_NOARGS_PATTERN = Pattern
+            .compile("(?<=\\s|^)buildRoute\\(\\)(?=[\\s\\S]*|$)",
+                    Pattern.MULTILINE);
 
     // Regex pattern matches everything between "const|let|var routes = [" (or
     // "const routes: RouteObject[] = [") and "...serverSideRoutes"
@@ -1292,7 +1303,7 @@ public class FrontendUtils {
         }
 
         var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.INDEX_TSX,
-                FrontendUtils.ROUTES_TS, FrontendUtils.ROUTES_TSX);
+                FrontendUtils.ROUTES_TS);
         for (String fileName : files) {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {
@@ -1305,6 +1316,18 @@ public class FrontendUtils {
                             "Couldn't read {} for hilla views auto-detection",
                             routesFile.getName(), e);
                 }
+            }
+        }
+        File routesFile = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
+        if (routesFile.exists()) {
+            try {
+                String routesTsContent = IOUtils.toString(routesFile.toURI(),
+                        UTF_8);
+                return isRoutesTsxContentUsingHillaViews(routesTsContent);
+            } catch (IOException e) {
+                getLogger().error(
+                        "Couldn't read {} for hilla views auto-detection",
+                        routesFile.getName(), e);
             }
         }
         return false;
@@ -1351,8 +1374,28 @@ public class FrontendUtils {
         return mayHaveClientSideRoutes(routesContent);
     }
 
+    private static boolean isRoutesTsxContentUsingHillaViews(
+            String routesContent) {
+        routesContent = StringUtil.removeComments(routesContent);
+        // Note that here we assume that Frontend/views doesn't have views.
+        // buildRoute() adds therefore only server side routes.
+        if (hasBuildRouteFunction(routesContent)) {
+            return !hasBuildRouteFunctionWithoutArguments(routesContent);
+        }
+        return isRoutesContentUsingHillaViews(routesContent);
+    }
+
     private static boolean missingServerSideRoutes(String routesContent) {
         return !SERVER_SIDE_ROUTES_PATTERN.matcher(routesContent).find();
+    }
+
+    private static boolean hasBuildRouteFunctionWithoutArguments(
+            String routesContent) {
+        return BUILDROUTE_FUNCTION_NOARGS_PATTERN.matcher(routesContent).find();
+    }
+
+    private static boolean hasBuildRouteFunction(String routesContent) {
+        return BUILDROUTE_FUNCTION_PATTERN.matcher(routesContent).find();
     }
 
     private static boolean mayHaveClientSideRoutes(String routesContent) {

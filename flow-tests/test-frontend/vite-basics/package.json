@@ -1,6 +1,7 @@
 {
   "name": "no-name",
   "license": "UNLICENSED",
+  "type": "module",
   "scripts": {
     "postinstall": "node -e \"fs.writeFileSync('target/classes/main.postinstall', 'hello')\""
   },
