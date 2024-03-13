@@ -210,6 +210,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 options.getClassFinder())) {
             return content.replace("//%toReactRouterImport%",
                     "import { toReactRouter } from '@vaadin/hilla-file-router/runtime.js';")
+                    .replace("//%viewsJsImport%",
+                            "import views from 'Frontend/generated/views.js';")
                     .replace("//%buildRouteFunction%",
                             """
                                     if(!routes) {
@@ -225,10 +227,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                                         }
                                     }
                                     """);
-        } else {
-            return content.replace("//%toReactRouterImport%", "")
-                    .replace("//%buildRouteFunction%", "");
         }
+        return content;
     }
 
     private boolean fileAvailable(String fileName) {

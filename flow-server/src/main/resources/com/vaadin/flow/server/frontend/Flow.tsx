@@ -23,7 +23,7 @@ import {
     RouteObject
 } from "react-router-dom";
 import { routes } from "Frontend/routes.js";
-import views from 'Frontend/generated/views.js';
+//%viewsJsImport%
 //%toReactRouterImport%
 
 const flow = new _Flow({
@@ -421,6 +421,15 @@ export const createWebComponent = (tag: string, props?: Properties, onload?: () 
     return React.createElement(tag);
 };
 
+/**
+ * Build routes for the application. Combines server side routes and FS routes.
+ *
+ * @param routes optional routes are for adding own route definition, giving routes will skip FS routes
+ * @param serverSidePosition optional position where server routes should be put.
+  *                          If non given they go to the root of the routes [].
+ *
+ * @returns RouteObject[] with combined routes
+ */
 export const buildRoute = (routes?: RouteObject[], serverSidePosition?: RouteObject[]): RouteObject[] => {
     let combinedRoutes = [] as RouteObject[];
     //%buildRouteFunction%
