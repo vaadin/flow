@@ -28,6 +28,7 @@ import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -235,7 +236,8 @@ public class ApplicationConnection {
     private String getJavaClass(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         return node == null ? null
-                : node.getMap(NodeFeatures.ELEMENT_DATA).getProperty("jc")
+                : node.getMap(NodeFeatures.ELEMENT_DATA)
+                        .getProperty(NodeProperties.JAVA_CLASS)
                         .getValueOrDefault(null);
     }
 
