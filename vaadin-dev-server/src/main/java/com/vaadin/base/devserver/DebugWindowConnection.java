@@ -35,9 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
-import com.vaadin.base.devserver.themeeditor.ThemeEditorCommand;
-import com.vaadin.base.devserver.themeeditor.ThemeEditorMessageHandler;
-import com.vaadin.base.devserver.themeeditor.messages.BaseResponse;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -77,8 +74,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private IdeIntegration ideIntegration;
 
-    private ThemeEditorMessageHandler themeEditorMessageHandler;
-
     private List<DevToolsMessageHandler> plugins;
 
     static {
@@ -100,7 +95,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
         this.context = context;
         this.ideIntegration = new IdeIntegration(
                 ApplicationConfiguration.get(context));
-        this.themeEditorMessageHandler = new ThemeEditorMessageHandler(context);
 
         findPlugins();
     }
@@ -228,10 +222,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
                 .collect(Collectors.toList())));
 
-        if (themeEditorMessageHandler.isEnabled()) {
-            send(resource, ThemeEditorCommand.STATE,
-                    themeEditorMessageHandler.getState());
-        }
     }
 
     private void send(AtmosphereResource resource, String command,
@@ -353,10 +343,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
                             "Only component locations are tracked. The given node id refers to an element and not a component");
                 }
             });
-        } else if (themeEditorMessageHandler.canHandle(command, data)) {
-            BaseResponse resultData = themeEditorMessageHandler
-                    .handleDebugMessageData(command, data);
-            send(resource, ThemeEditorCommand.RESPONSE, resultData);
         } else {
             boolean handled = false;
             for (DevToolsMessageHandler plugin : plugins) {

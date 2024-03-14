@@ -4,13 +4,10 @@ import { LitElement, PropertyValueMap, TemplateResult, css, html, nothing, rende
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Product, handleLicenseMessage, licenseCheckFailed, licenseInit } from './License';
-import { ComponentPicker } from './component-picker';
 import { ComponentReference, deepContains } from './component-util';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { popupStyles } from './styles';
-import './theme-editor/editor';
-import { ThemeEditorState } from './theme-editor/model';
 import './vaadin-dev-tools-info';
 import './vaadin-dev-tools-log';
 import { WebSocketConnection } from './websocket-connection';
@@ -861,14 +858,8 @@ export class VaadinDevTools extends LitElement {
   @query('.window')
   private root!: HTMLElement;
 
-  @query('vaadin-dev-tools-component-picker')
-  private componentPicker!: ComponentPicker;
-
   @state()
   componentPickActive: boolean = false;
-
-  @state()
-  themeEditorState: ThemeEditorState = ThemeEditorState.disabled;
 
   private javaConnection?: LiveReloadConnection;
   private frontendConnection?: WebSocketConnection;
@@ -997,17 +988,6 @@ export class VaadinDevTools extends LitElement {
 
     if (message.command === 'featureFlags') {
       this.features = message.data.features as Feature[];
-    } else if (message.command === 'themeEditorState') {
-      const isFlowApp = !!(window as any).Vaadin.Flow;
-      this.themeEditorState = message.data;
-      if (isFlowApp && this.themeEditorState !== ThemeEditorState.disabled) {
-        this.tabs.push({
-          id: 'theme-editor',
-          title: 'Theme Editor (Preview)',
-          render: () => this.renderThemeEditor()
-        });
-        this.requestUpdate();
-      }
     } else if (handleLicenseMessage(message)) {
     } else {
       this.unhandledMessages.push(message);
@@ -1046,13 +1026,6 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  constructor() {
-    super();
-
-    if ((window as any).Vaadin.Flow) {
-      this.tabs.push({ id: 'code', title: 'Code', render: () => this.renderCode() });
-    }
-  }
   connectedCallback() {
     super.connectedCallback();
     this.catchErrors();
@@ -1545,48 +1518,6 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  renderCode() {
-    return html`<div class="info-tray">
-      <div>
-        <select id="locationType">
-          <option value="create" selected>Create</option>
-          <option value="attach">Attach</option>
-        </select>
-        <button
-          class="button pick"
-          @click=${async () => {
-            await import('./component-picker.js');
-            this.componentPicker.open({
-              infoTemplate: html`
-                <div>
-                  <h3>Locate a component in source code</h3>
-                  <p>Use the mouse cursor to highlight components in the UI.</p>
-                  <p>Use arrow down/up to cycle through and highlight specific components under the cursor.</p>
-                  <p>
-                    Click the primary mouse button to open the corresponding source code line of the highlighted
-                    component in your IDE.
-                  </p>
-                </div>
-              `,
-              pickCallback: (component) => {
-                const serializableComponentRef: ComponentReference = { nodeId: component.nodeId, uiId: component.uiId };
-                const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
-                if (locationType === 'create') {
-                  this.frontendConnection!.send('showComponentCreateLocation', serializableComponentRef);
-                } else {
-                  this.frontendConnection!.send('showComponentAttachLocation', serializableComponentRef);
-                }
-              }
-            });
-          }}
-        >
-          Find component in code
-        </button>
-      </div>
-      </div>
-    </div>`;
-  }
-
   private renderFeatures() {
     return html`<div class="features-tray">
       ${this.features.map(
@@ -1615,17 +1546,6 @@ export class VaadinDevTools extends LitElement {
     } else {
       this.frontendConnection?.setActive(active);
     }
-  }
-
-  renderThemeEditor() {
-    return html` <vaadin-dev-tools-theme-editor
-      .expanded=${this.expanded}
-      .themeEditorState=${this.themeEditorState}
-      .pickerProvider=${() => this.componentPicker}
-      .connection=${this.frontendConnection}
-      @before-open=${() => this.setJavaLiveReloadActive(false)}
-      @after-close=${() => this.setJavaLiveReloadActive(true)}
-    ></vaadin-dev-tools-theme-editor>`;
   }
 
   toggleFeatureFlag(e: Event, feature: Feature) {
