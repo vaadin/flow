@@ -206,7 +206,8 @@ public class UITest {
 
     private static MockUI createAccessableTestUI() {
         // Needs a service to be able to do service.accessSession
-        MockVaadinSession session = new MockVaadinSession(new MockVaadinServletService());
+        MockVaadinSession session = new MockVaadinSession(
+                new MockVaadinServletService());
         session.lock();
         MockUI ui = new MockUI(session);
         session.unlock();
