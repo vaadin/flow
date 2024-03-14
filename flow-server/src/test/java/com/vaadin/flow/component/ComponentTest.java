@@ -61,6 +61,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
@@ -836,8 +837,9 @@ public class ComponentTest {
         });
 
         MockDeploymentConfiguration config = new MockDeploymentConfiguration();
-        ui.getInternals().setSession(
-                new VaadinSession(new MockVaadinServletService(config)));
+        VaadinSession session = new AlwaysLockedVaadinSession(
+                new MockVaadinServletService(config));
+        ui.getInternals().setSession(session);
         Assert.assertTrue(initialAttach.get());
         // UI is never detached and reattached
     }
