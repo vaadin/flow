@@ -245,9 +245,6 @@ export default function Flow() {
                 window.addEventListener('popstate', popstateHandler);
             }
         }
-        if(lastNavigation === pathname) {
-            return;
-        }
         flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
