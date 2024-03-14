@@ -103,10 +103,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             export default routes;
             """;
 
-    private static Pattern SERVER_IMPORT_PATTERN = Pattern.compile(
-            "import[\\s\\S]?\\{[\\s\\S]?serverSideRoutes[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
-    private static Pattern BUILDROUTE_PATTERN = Pattern.compile(
-            "import[\\s\\S]?\\{[\\s\\S]?buildRoute[\\s\\S]?\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
+    private static Pattern SERVER_ROUTE_PATTERN = Pattern.compile(
+            "import[\\s\\S]?\\{[\\s\\S]*(?:serverSideRoutes|buildRoute)+[\\s\\S]*\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -152,8 +150,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             } else {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
-                if (missingServerImport(routesContent)
-                        && missingBuildRoute(routesContent)
+                if (missingServerRouteImport(routesContent)
                         && serverRoutesAvailable()) {
                     throw new ExecutionFailedException(
                             String.format(NO_IMPORT, routesTsx.getPath()));
@@ -251,12 +248,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 .getResource(CLASS_PACKAGE.formatted(fileName)) != null;
     }
 
-    private boolean missingServerImport(String routesContent) {
-        return !SERVER_IMPORT_PATTERN.matcher(routesContent).find();
-    }
-
-    private boolean missingBuildRoute(String routesContent) {
-        return !BUILDROUTE_PATTERN.matcher(routesContent).find();
+    private boolean missingServerRouteImport(String routesContent) {
+        return !SERVER_ROUTE_PATTERN.matcher(routesContent).find();
     }
 
     private boolean serverRoutesAvailable() {
