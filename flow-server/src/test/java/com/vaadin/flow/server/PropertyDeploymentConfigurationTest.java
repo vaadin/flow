@@ -15,17 +15,28 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class PropertyDeploymentConfigurationTest {
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Test
     public void isProductionMode_modeIsProvidedViaParentOnly_valueFromParentIsReturned() {
@@ -368,6 +379,71 @@ public class PropertyDeploymentConfigurationTest {
                     + ", so every API method should call parent config and may not use just default implementation of "
                     + AbstractConfiguration.class, AbstractConfiguration.class,
                     method.getDeclaringClass());
+        }
+    }
+
+    @Test
+    public void frontendHotDeploy_hillaInLegacyFrontendFolderExists_usesLegacyAndHotdeploy()
+            throws IOException {
+        File projectRoot = tempFolder.getRoot();
+        File legacyFrontend = tempFolder
+                .newFolder(FrontendUtils.LEGACY_FRONTEND_DIR);
+
+        File legacyFrontendViews = new File(legacyFrontend,
+                FrontendUtils.HILLA_VIEWS_PATH);
+        if (!legacyFrontendViews.mkdir()) {
+            Assert.fail("Failed to generate legacy frontend views folder");
+        }
+
+        File viewFile = new File(legacyFrontendViews, "MyView.tsx");
+        org.apache.commons.io.FileUtils.writeStringToFile(viewFile,
+                "export default function MyView(){}", "UTF-8");
+
+        ApplicationConfiguration appConfig = new ApplicationConfiguration() {
+
+            @Override
+            public File getProjectFolder() {
+                return projectRoot;
+            }
+
+            @Override
+            public Enumeration<String> getPropertyNames() {
+                return Collections.emptyEnumeration();
+            }
+
+            @Override
+            public VaadinContext getContext() {
+                return null;
+            }
+
+            @Override
+            public boolean isDevModeSessionSerializationEnabled() {
+                return false;
+            }
+
+            @Override
+            public boolean isProductionMode() {
+                return false;
+            }
+
+            @Override
+            public String getStringProperty(String name, String defaultValue) {
+                return defaultValue;
+            }
+
+            @Override
+            public boolean getBooleanProperty(String name,
+                    boolean defaultValue) {
+                return defaultValue;
+            }
+        };
+
+        try (MockedStatic<EndpointRequestUtil> util = Mockito
+                .mockStatic(EndpointRequestUtil.class)) {
+            util.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
+            boolean hotdeploy = appConfig.frontendHotdeploy();
+            Assert.assertTrue("Should use the legacy frontend folder",
+                    hotdeploy);
         }
     }
 
