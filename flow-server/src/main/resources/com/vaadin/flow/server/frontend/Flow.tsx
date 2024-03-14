@@ -22,9 +22,8 @@ import {
     useNavigate,
     RouteObject
 } from "react-router-dom";
-import { routes } from "%routesJsImportPath%";
-//%viewsJsImport%
-//%toReactRouterImport%
+//%fsRouterImports%
+//%routesImport%
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -146,6 +145,7 @@ let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action
 let lastNavigation: string;
 let prevNavigation: string;
 let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
+let routes: RouteObject[];
 
 // @ts-ignore
 function navigateEventHandler(event) {
@@ -424,13 +424,13 @@ export const createWebComponent = (tag: string, props?: Properties, onload?: () 
 /**
  * Build routes for the application. Combines server side routes and FS routes.
  *
- * @param routes optional routes are for adding own route definition, giving routes will skip FS routes
+ * @param routesArray optional routes are for adding own route definition, giving routes will skip FS routes
  * @param serverSidePosition optional position where server routes should be put.
   *                          If non given they go to the root of the routes [].
  *
  * @returns RouteObject[] with combined routes
  */
-export const buildRoute = (routes?: RouteObject[], serverSidePosition?: RouteObject[]): RouteObject[] => {
+export const buildRoute = (routesArray?: RouteObject[], serverSidePosition?: RouteObject[]): RouteObject[] => {
     let combinedRoutes = [] as RouteObject[];
     //%buildRouteFunction%
     if(serverSidePosition) {
@@ -438,8 +438,9 @@ export const buildRoute = (routes?: RouteObject[], serverSidePosition?: RouteObj
     } else {
         combinedRoutes.push(...serverSideRoutes);
     }
-    if(routes) {
-        combinedRoutes.push(...routes);
+    if(routesArray) {
+        combinedRoutes.push(...routesArray);
     }
+    routes = combinedRoutes;
     return combinedRoutes;
 };

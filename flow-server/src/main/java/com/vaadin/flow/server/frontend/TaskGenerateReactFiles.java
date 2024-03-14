@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
 
@@ -91,13 +92,14 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             routes.tsx should at least contain
             'export const routes = [...serverSideRoutes] as RouteObject[];'
             but can have react routes also defined.
+
+            Or 'buildRoute()' method should be used for setting up routes.
             """;
 
     private static final String FLOW_TSX = "Flow.tsx";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
-    private static final String ROUTES_JS_IMPORT_PATH_TOKEN = "%routesJsImportPath%";
     static final String VIEWS_TS_FALLBACK = """
             const routes = { path: "", module: undefined, children: [] };
             export default routes;
@@ -129,20 +131,15 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         File frontendDirectory = options.getFrontendDirectory();
         File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
-        File viewsTs = new File(frontendGeneratedFolder,
-                FrontendUtils.VIEWS_TS);
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         File frontendGeneratedFolderRoutesTsx = new File(
                 frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFlowTsxFileContent(routesTsx.exists()));
+            writeFile(flowTsx, getFlowTsxFileContent(routesTsx));
             if (fileAvailable(REACT_ADAPTER_TSX)) {
                 writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
-            }
-            if (!viewsTs.exists()) {
-                writeFile(viewsTs, VIEWS_TS_FALLBACK);
             }
             if (!routesTsx.exists()) {
                 writeFile(frontendGeneratedFolderRoutesTsx,
@@ -155,7 +152,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                     throw new ExecutionFailedException(
                             String.format(NO_IMPORT, routesTsx.getPath()));
                 }
-                if (!routesContent.contains("export const routes")) {
+                if (!routesContent.contains("export const routes")
+                        && !routesContent.contains("buildRoute(")) {
                     throw new ExecutionFailedException(MISSING_ROUTES_EXPORT);
                 }
             }
@@ -207,37 +205,52 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         }
     }
 
-    private String getFlowTsxFileContent(boolean frontendRoutesTsExists)
-            throws IOException {
-        String content = getFileContent(FLOW_TSX).replace(
-                ROUTES_JS_IMPORT_PATH_TOKEN,
-                (frontendRoutesTsExists)
-                        ? FrontendUtils.FRONTEND_FOLDER_ALIAS
-                                + FrontendUtils.ROUTES_JS
-                        : FrontendUtils.FRONTEND_FOLDER_ALIAS
-                                + FrontendUtils.GENERATED
-                                + FrontendUtils.ROUTES_JS);
-        ;
+    private String getFlowTsxFileContent(File customRoutesTsx)
+            throws IOException, ExecutionFailedException {
+        String content = getFileContent(FLOW_TSX);
+
+        // To accept usage of serverSideRoutes without using buildRoute by the
+        // user handle import.
+        if (customRoutesTsx.exists()) {
+            String customRoutes = StringUtil.removeComments(
+                    FileUtils.readFileToString(customRoutesTsx, UTF_8));
+            // If there is a manual serverSideRoutes used, but no buildRoute,
+            // import routes from routes file.
+            if (customRoutes.contains("serverSideRoutes")
+                    && !customRoutes.contains("buildRoute")) {
+                content = content
+                        .replace("//%routesImport%",
+                                "import { routes } from 'Frontend/routes.js';")
+                        .replace("let routes: RouteObject[];", "")
+                        .replace("routes = combinedRoutes;", "");
+            }
+        }
+
         if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
-            return content.replace("//%toReactRouterImport%",
-                    "import { toReactRouter } from '@vaadin/hilla-file-router/runtime.js';")
-                    .replace("//%viewsJsImport%",
-                            "import views from 'Frontend/generated/views.js';")
+            File viewsTs = new File(options.getFrontendGeneratedFolder(),
+                    FrontendUtils.VIEWS_TS);
+            if (!viewsTs.exists()) {
+                writeFile(viewsTs, VIEWS_TS_FALLBACK);
+            }
+
+            return content.replace("//%fsRouterImports%",
+                    "import { toReactRouter } from '@vaadin/hilla-file-router/runtime.js';\n"
+                            + "import views from 'Frontend/generated/views.js';")
                     .replace("//%buildRouteFunction%",
                             """
-                                    if(!routes) {
-                                        // @ts-ignore
-                                        const route: RouteObject = toReactRouter(views);
-                                        if(route.children && route.children.length > 0) {
-                                            serverSidePosition = route.children;
-                                            if (route.element) {
-                                                routes = [route];
-                                            } else {
-                                                routes = route.children;
+                                    if(!routesArray) {
+                                            // @ts-ignore
+                                            const route: RouteObject = toReactRouter(views);
+                                            if(route.children && route.children.length > 0) {
+                                                serverSidePosition = route.children;
+                                                if (route.element) {
+                                                    routesArray = [route];
+                                                } else {
+                                                    routesArray = route.children;
+                                                }
                                             }
                                         }
-                                    }
                                     """);
         }
         return content;
