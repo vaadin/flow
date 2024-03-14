@@ -22,7 +22,7 @@ import {
     useNavigate,
     RouteObject
 } from "react-router-dom";
-import { routes } from "Frontend/routes.js";
+import { routes } from "%routesJsImportPath%";
 //%viewsJsImport%
 //%toReactRouterImport%
 

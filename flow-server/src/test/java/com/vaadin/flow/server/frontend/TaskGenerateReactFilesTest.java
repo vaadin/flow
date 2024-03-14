@@ -77,12 +77,16 @@ public class TaskGenerateReactFilesTest {
         Assert.assertTrue("Missing ./frontend/generated/flow/Flow.tsx",
                 new File(new File(frontend, FrontendUtils.GENERATED),
                         "flow/Flow.tsx").exists());
-        Assert.assertTrue("Missing ./frontend/routes.tsx",
+        Assert.assertTrue(
+                "Missing ./frontend/" + FrontendUtils.GENERATED + "routes.tsx",
+                new File(new File(frontend, FrontendUtils.GENERATED),
+                        "routes.tsx").exists());
+        Assert.assertFalse("Missing ./frontend/routes.tsx",
                 new File(frontend, "routes.tsx").exists());
     }
 
     @Test
-    public void routesContainsImport_noExpectionThrown()
+    public void routesContainImport_serverSideRoutes_noExceptionThrown()
             throws IOException, ExecutionFailedException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
@@ -95,17 +99,17 @@ public class TaskGenerateReactFilesTest {
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
 
-                                export const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } },
                               ...serverSideRoutes
                             ],
                           },
-                                { path: '/login', element: <LoginView />},
+                          { path: '/login', element: <LoginView />},
                         ]);
 
                         export default createBrowserRouter(routes);
@@ -119,27 +123,90 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesMissingImport_expectionThrown() throws IOException {
+    public void routesContainImport_buildRoutes_noExceptionThrown()
+            throws IOException, ExecutionFailedException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
-                        import { lazy } from 'react';
                         import { createBrowserRouter, RouteObject } from 'react-router-dom';
-                        import {protectRoutes} from "@hilla/react-auth";
+                        import { buildRoutes } from "Frontend/generated/flow/Flow";
                         import LoginView from "Frontend/views/LoginView";
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
 
-                                export const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } }
+                        export const routes: RouteObject[] = buildRoutes(
+                          [
+                            { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                            { path: '/about', element: <AboutView />, handle: { title: 'About' } }
+                          ]);
+
+                        export default createBrowserRouter(routes);
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
+    public void routesContainMultipleFlowImports_noExceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { tea, buildRoutes, serverSideRoutes, coffee } from "Frontend/generated/flow/Flow";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                              ...serverSideRoutes
                             ],
                           },
-                                { path: '/login', element: <LoginView />},
+                          { path: '/login', element: <LoginView />},
+                        ]);
+
+                        export default createBrowserRouter(routes);
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
+    public void routesMissingImport_noBuildOrServerSideRoutes_exceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { tea, coffee } from "Frontend/generated/flow/Flow";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } }
+                            ],
+                          },
+                          { path: '/login', element: <LoginView />},
                         ]);
 
                         export default createBrowserRouter(routes);
@@ -156,7 +223,44 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesContainsRoutesExport_noExpectionThrown()
+    public void routesMissingImport_expectionThrown() throws IOException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { lazy } from 'react';
+                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import {protectRoutes} from "@hilla/react-auth";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } }
+                            ],
+                          },
+                          { path: '/login', element: <LoginView />},
+                        ]);
+
+                        export default createBrowserRouter(routes);
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
+    public void routesContainsRoutesExport_noExceptionThrown()
             throws IOException, ExecutionFailedException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
@@ -169,17 +273,17 @@ public class TaskGenerateReactFilesTest {
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
 
-                                export const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } },
                               ...serverSideRoutes
                             ],
                           },
-                                { path: '/login', element: <LoginView />},
+                          { path: '/login', element: <LoginView />},
                         ]);
 
                         export default createBrowserRouter(routes);
@@ -193,7 +297,7 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void missingImport_noServerRoutesDefined_noExpectionThrown()
+    public void missingImport_noServerRoutesDefined_noExceptionThrown()
             throws IOException, ExecutionFailedException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
@@ -205,16 +309,16 @@ public class TaskGenerateReactFilesTest {
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
 
-                                export const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } }
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } }
                             ],
                           },
-                                { path: '/login', element: <LoginView />},
+                          { path: '/login', element: <LoginView />},
                         ]);
 
                         export default createBrowserRouter(routes);
@@ -243,17 +347,17 @@ public class TaskGenerateReactFilesTest {
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
 
-                                const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                        const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } },
                               ...serverSideRoutes
                             ],
                           },
-                                { path: '/login', element: <LoginView />},
+                          { path: '/login', element: <LoginView />},
                         ]);
 
                         export default createBrowserRouter(routes);
@@ -308,6 +412,11 @@ public class TaskGenerateReactFilesTest {
         Assert.assertFalse(
                 "./frontend/routes.tsx should be removed when react is disabled",
                 new File(frontend, "routes.tsx").exists());
+        Assert.assertFalse(
+                "./frontend/" + FrontendUtils.GENERATED
+                        + "routes.tsx should be removed when react is disabled",
+                new File(new File(frontend, FrontendUtils.GENERATED),
+                        "routes.tsx").exists());
         Assert.assertTrue("./frontend/routes.tsx.flowBackup should exist",
                 new File(frontend, "routes.tsx.flowBackup").exists());
     }

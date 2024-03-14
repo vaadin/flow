@@ -404,7 +404,7 @@ public class PluginEffectiveConfiguration(
         })
 
     public val frontendHotdeploy: Provider<Boolean> = extension.frontendHotdeploy
-        .convention(FrontendUtils.isHillaUsed(BuildFrontendUtil.getGeneratedFrontendDirectory(GradlePluginAdapter(project, this, true))))
+        .convention(FrontendUtils.isHillaUsed(BuildFrontendUtil.getFrontendDirectory(GradlePluginAdapter(project, this, true))))
         .overrideWithSystemProperty(InitParameters.FRONTEND_HOTDEPLOY)
 
     public val ciBuild: Provider<Boolean> = extension.ciBuild
@@ -422,7 +422,7 @@ public class PluginEffectiveConfiguration(
         .convention(false)
 
     public val reactEnable: Provider<Boolean> = extension.reactEnable
-        .convention(FrontendUtils.isReactRouterRequired(BuildFrontendUtil.getGeneratedFrontendDirectory(GradlePluginAdapter(project, this, true))))
+        .convention(FrontendUtils.isReactRouterRequired(BuildFrontendUtil.getFrontendDirectory(GradlePluginAdapter(project, this, true))))
         .overrideWithSystemProperty(InitParameters.REACT_ENABLE)
 
     public val cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
