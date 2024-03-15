@@ -209,22 +209,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             throws IOException, ExecutionFailedException {
         String content = getFileContent(FLOW_TSX);
 
-        // To accept usage of serverSideRoutes without using buildRoute by the
-        // user handle import.
-        if (customRoutesTsx.exists()) {
-            String customRoutes = StringUtil.removeComments(
-                    FileUtils.readFileToString(customRoutesTsx, UTF_8));
-            // If there is a manual serverSideRoutes used, but no buildRoute,
-            // import routes from routes file.
-            if (customRoutes.contains("serverSideRoutes")
-                    && !customRoutes.contains("buildRoute")) {
-                content = content
-                        .replace("//%routesImport%",
-                                "import { routes } from 'Frontend/routes.js';")
-                        .replace("let routes: RouteObject[];", "")
-                        .replace("routes = combinedRoutes;", "");
-            }
-        }
+        content = handlePossibleRoutesImport(customRoutesTsx, content);
 
         if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
@@ -252,6 +237,35 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                                             }
                                         }
                                     """);
+        }
+        return content;
+    }
+
+    private String handlePossibleRoutesImport(File customRoutesTsx,
+            String content) throws IOException {
+        // To accept usage of serverSideRoutes without using buildRoute by the
+        // user handle import.
+        if (customRoutesTsx.exists()) {
+            String customRoutes = StringUtil.removeComments(
+                    FileUtils.readFileToString(customRoutesTsx, UTF_8));
+            // If there is a manual serverSideRoutes used, but no buildRoute,
+            // import routes from routes file.
+            if (customRoutes.contains("serverSideRoutes")
+                    && !customRoutes.contains("buildRoute")) {
+                content = content
+                        .replace("//%routesImport%",
+                                "import { routes } from 'Frontend/routes';")
+                        .replace("let routes: RouteObject[];", "")
+                        .replace("routes = combinedRoutes;", "");
+            }
+        } else if (options.isFrontendHotdeploy()
+                && !options.isProductionMode()) {
+            // For frontendHotdeploy we read the routes from file as re-loading
+            // has some sideffect to the stored data?
+            content = content.replace("//%routesImport%",
+                    "import { routes } from 'Frontend/generated/routes';")
+                    .replace("let routes: RouteObject[];", "")
+                    .replace("routes = combinedRoutes;", "");
         }
         return content;
     }
