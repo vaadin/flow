@@ -160,8 +160,6 @@ function navigateEventHandler(event) {
     // target path. Server will then handle updates and postpone as needed.
     if(matched && matched.length > 0 && matched[matched.length - 1].route.path === "/*") {
         if (mountedContainer?.onBeforeEnter) {
-            // ensure that menu highlighting is updated by calling navigation
-            navigation(event.detail.pathname, {replace: false});
             // onBeforeEvent call will handle the Flow navigation
             mountedContainer.onBeforeEnter(
                 {
