@@ -8,21 +8,12 @@
   },
   "devDependencies": {
     "@koa/cors": "^5.0.0",
+    "@open-wc/dev-server-hmr": "^0.1.2-next.0",
     "@rollup/plugin-typescript": "^11.1.1",
-    "@types/chai": "^4.3.4",
-    "@types/sinon": "^10.0.13",
-    "@vaadin/combo-box": "24.2.0-alpha9",
-    "@vaadin/multi-select-combo-box": "24.2.0-alpha9",
-    "@vaadin/date-picker": "24.2.0-alpha9",
-    "@vaadin/menu-bar": "24.2.0-alpha9",
     "@vaadin/overlay": "24.2.0-alpha9",
-    "@vaadin/select": "24.2.0-alpha9",
-    "@vaadin/time-picker": "24.2.0-alpha9",
-    "@vaadin/component-base": "24.2.0-alpha9",
     "@web/dev-server": "^0.1.35",
     "@web/dev-server-esbuild": "^0.3.3",
     "prettier": "^2.8.4",
-    "sinon": "^15.0.1",
     "tslib": "^2.5.3",
     "vite": "^4.1.4"
   },
@@ -31,7 +22,6 @@
     "@vaadin/overlay": "24.2.0-alpha9",
     "@vaadin/select": "24.2.0-alpha9",
     "construct-style-sheets-polyfill": "^3.1.0",
-    "lit": "^2.6.1",
-    "vanilla-colorful": "^0.7.2"
+    "lit": "^2.6.1"
   }
 }
