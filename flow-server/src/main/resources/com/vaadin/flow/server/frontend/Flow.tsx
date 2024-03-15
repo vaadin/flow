@@ -158,8 +158,11 @@ function navigateEventHandler(event) {
 
     // if navigation event route targets a flow view do beforeEnter for the
     // target path. Server will then handle updates and postpone as needed.
-    if(matched?.length == 1 && matched[0].route.path === "/*") {
+    if(matched && matched.length > 0 && matched[matched.length - 1].route.path === "/*") {
         if (mountedContainer?.onBeforeEnter) {
+            // ensure that menu highlighting is updated by calling navigation
+            navigation(event.detail.pathname, {replace: false});
+            // onBeforeEvent call will handle the Flow navigation
             mountedContainer.onBeforeEnter(
                 {
                     pathname: event.detail.pathname,
@@ -274,7 +277,7 @@ export default function Flow() {
 
             // if router force navigated using 'Link' we will need to remove
             // flow from the view
-            if(matched && matched[0].route.path !== "/*") {
+            if(matched && matched[matched.length - 1].route.path === "/*") {
                 mountedContainer?.parentNode?.removeChild(mountedContainer);
                 mountedContainer = undefined;
             }
