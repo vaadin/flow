@@ -35,7 +35,10 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.tests.PublicApiAnalyzer;
+import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -520,17 +523,13 @@ public class AbstractSinglePropertyFieldTest {
         Element element = new Element("tag");
         element.setProperty("property", "foo");
 
-        UI ui = new UI();
+        UI ui = new MockUI();
         UI.setCurrent(ui);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        ui.getInternals().setSession(session);
-
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(session.getService()).thenReturn(service);
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
-
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+        TestVaadinServletService service = (TestVaadinServletService) ui
+                .getSession().getService();
+        service.setInstantiator(instantiator);
 
         Mockito.when(instantiator.createComponent(StringField.class))
                 .thenAnswer(a -> new StringField());

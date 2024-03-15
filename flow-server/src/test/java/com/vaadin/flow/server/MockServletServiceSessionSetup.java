@@ -6,7 +6,9 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
@@ -50,6 +52,7 @@ public class MockServletServiceSessionSetup {
         private List<IndexHtmlRequestListener> indexHtmlRequestListeners = new ArrayList<>();
         private VaadinContext context;
         private List<RequestHandler> handlers;
+        private Instantiator overriddenInstantiator;
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
                 DeploymentConfiguration deploymentConfiguration) {
@@ -133,6 +136,18 @@ public class MockServletServiceSessionSetup {
         @Override
         protected Instantiator createInstantiator() throws ServiceException {
             return Mockito.spy(super.createInstantiator());
+        }
+
+        @Override
+        public Instantiator getInstantiator() {
+            if (this.overriddenInstantiator != null) {
+                return overriddenInstantiator;
+            }
+            return super.getInstantiator();
+        }
+
+        public void setInstantiator(Instantiator instantiator) {
+            this.overriddenInstantiator = instantiator;
         }
     }
 
@@ -296,12 +311,12 @@ public class MockServletServiceSessionSetup {
     @Mock
     private StaticFileHandlerFactory staticFileHandlerFactory;
 
-    public MockServletServiceSessionSetup() throws Exception {
+    public MockServletServiceSessionSetup() throws RuntimeException {
         this(true);
     }
 
     public MockServletServiceSessionSetup(boolean sessionAvailable)
-            throws Exception {
+            throws RuntimeException {
         MockitoAnnotations.initMocks(this);
         servlet = createVaadinServlet();
 
@@ -317,14 +332,22 @@ public class MockServletServiceSessionSetup {
                 .thenReturn(lookup);
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
+        DefaultRoutePathProvider routePathProvider = new DefaultRoutePathProvider();
+        Mockito.when(lookup.lookup(RoutePathProvider.class))
+                .thenReturn(routePathProvider);
         Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
                 .thenReturn(staticFileHandlerFactory);
 
-        Mockito.when(resourceProvider.getClientResourceAsStream(
-                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                        + "/compile.properties"))
-                .thenAnswer(invocation -> new ByteArrayInputStream(
-                        "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
+        try {
+            Mockito.when(resourceProvider
+                    .getClientResourceAsStream("META-INF/resources/"
+                            + ApplicationConstants.CLIENT_ENGINE_PATH
+                            + "/compile.properties"))
+                    .thenAnswer(invocation -> new ByteArrayInputStream(
+                            "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         Mockito.when(
                 resourceProvider.getApplicationResource(Mockito.anyString()))
@@ -335,7 +358,11 @@ public class MockServletServiceSessionSetup {
 
         configureLookup(lookup);
 
-        servlet.init(servletConfig);
+        try {
+            servlet.init(servletConfig);
+        } catch (ServletException e) {
+            throw new RuntimeException(e);
+        }
 
         if (sessionAvailable) {
             Mockito.when(session.getConfiguration())
