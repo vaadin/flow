@@ -277,7 +277,9 @@ export default function Flow() {
 
             // if router force navigated using 'Link' we will need to remove
             // flow from the view
-            if(matched && matched[matched.length - 1].route.path === "/*") {
+            // If we are going to a non Flow view then we need to clean the Flow
+            // view from the dom as we will not be getting a uidl response.
+            if(matched && matched[matched.length - 1].route.path !== "/*") {
                 mountedContainer?.parentNode?.removeChild(mountedContainer);
                 mountedContainer = undefined;
             }
