@@ -69,6 +69,11 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/form-filler-addon", true,
             "com.vaadin.flow.ai.formfiller.FormFiller");
 
+    public static final Feature HILLA_I18N = new Feature("Hilla I18n API",
+            "hillaI18n",
+            "https://github.com/vaadin/hilla/tree/main/packages/ts/react-i18n",
+            true, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -89,6 +94,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(WEB_PUSH));
         features.add(new Feature(FORM_FILLER_ADDON));
+        features.add(new Feature(HILLA_I18N));
         loadProperties();
     }
 
