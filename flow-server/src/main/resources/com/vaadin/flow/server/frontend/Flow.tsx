@@ -177,7 +177,10 @@ function navigateEventHandler(event) {
                     }
                 },
                 router,
-            );
+            ).then((response) => {
+                // ensures that react router is aware of the navigation
+                navigation(event.detail.pathname, {replace: true});
+            });
         }
     } else {
         // Navigating to a non flow view. If beforeLeave set call that before
@@ -246,23 +249,26 @@ export default function Flow() {
                 window.addEventListener('popstate', popstateHandler);
             }
         }
-        flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
-            const outlet = ref.current?.parentNode;
-            if (outlet && outlet !== container.parentNode) {
-                outlet.append(container);
-            }
-            mountedContainer = container;
-            if (container.onBeforeEnter) {
-                container.onBeforeEnter(
-                    {pathname, search},
-                    {
-                        prevent() {},
-                        redirect: navigate
-                    },
-                    router,
-                );
-            }
-        });
+        if(lastNavigation !== pathname) {
+            // only update Flow view content if pathname has changed
+            flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
+                const outlet = ref.current?.parentNode;
+                if (outlet && outlet !== container.parentNode) {
+                    outlet.append(container);
+                }
+                mountedContainer = container;
+                if (container.onBeforeEnter) {
+                    container.onBeforeEnter(
+                        {pathname, search},
+                        {
+                            prevent() {},
+                            redirect: navigate
+                        },
+                        router,
+                    );
+                }
+            });
+        }
         return () => {
             window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
             window.removeEventListener('vaadin-router-go', navigateEventHandler);
@@ -280,6 +286,7 @@ export default function Flow() {
             if(matched && matched[matched.length - 1].route.path !== "/*") {
                 mountedContainer?.parentNode?.removeChild(mountedContainer);
                 mountedContainer = undefined;
+                lastNavigation = undefined;
             }
         };
     }, [pathname, search, hash]);

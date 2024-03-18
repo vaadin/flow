@@ -207,7 +207,9 @@ export class Flow {
       }
 
       // When an action happens, navigation will be resolved `onBeforeEnter`
-      this.container.onBeforeEnter = (ctx, cmd) => this.flowNavigate(ctx, cmd);
+      this.container.onBeforeEnter = (ctx, cmd) => {
+        return this.flowNavigate(ctx, cmd);
+      };
       // For covering the 'server -> client' use case
       this.container.onBeforeLeave = (ctx, cmd) => this.flowLeave(ctx, cmd);
       return this.container;
