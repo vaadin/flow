@@ -18,6 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.StateNode;
 
 import elemental.json.JsonValue;
@@ -104,5 +105,13 @@ public class ElementData extends NodeMap {
     @Override
     public boolean allowsChanges() {
         return isVisible();
+    }
+
+    public void setJavaClass(Class<? extends Component> componentClass) {
+        put(NodeProperties.JAVA_CLASS, componentClass.getName());
+    }
+
+    public String getJavaClass() {
+        return getOrDefault(NodeProperties.JAVA_CLASS, (String) null);
     }
 }

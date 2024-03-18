@@ -70,6 +70,7 @@ public class BootstrapContextTest {
     @Before
     public void setUp() throws ServiceException {
         MockVaadinSession session = new MockVaadinSession();
+        session.lock();
         ui = new UI();
         ui.getInternals().setSession(session);
     }

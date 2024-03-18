@@ -91,6 +91,11 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         try (InputStream tsConfStream = getClass()
                 .getResourceAsStream(fileName)) {
             String config = IOUtils.toString(tsConfStream, UTF_8);
+
+            config = config.replaceAll("%FRONTEND%",
+                    options.getNpmFolder().toPath()
+                            .relativize(options.getFrontendDirectory().toPath())
+                            .toString().replaceAll("\\\\", "/"));
             return config;
         }
     }
