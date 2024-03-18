@@ -15,7 +15,14 @@
  */
 package com.vaadin.flow.spring.security.stateless;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import javax.crypto.SecretKey;
+
+import java.io.IOException;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -29,16 +36,22 @@ import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.csrf.LazyCsrfTokenRepository;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.savedrequest.CookieRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.util.OnCommittedResponseWrapper;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSuccessHandler;
@@ -84,18 +97,32 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
     private SecretKeyConfigurer secretKeyConfigurer;
 
-    public void setSharedObjects(HttpSecurity http) {
+    public static void apply(HttpSecurity http,
+            Customizer<VaadinStatelessSecurityConfigurer<HttpSecurity>> customizer)
+            throws Exception {
+
         JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
                 new SerializedJwtSplitCookieRepository());
-        http.setSharedObject(SecurityContextRepository.class,
+        http.setSharedObject(JwtSecurityContextRepository.class,
                 jwtSecurityContextRepository);
+        http.securityContext(cfg -> {
+            DelegatingSecurityContextRepository repository = new DelegatingSecurityContextRepository(
+                    jwtSecurityContextRepository,
+                    new RequestAttributeSecurityContextRepository());
+            cfg.securityContextRepository(repository);
+        });
+
+        VaadinStatelessSecurityConfigurer<HttpSecurity> vaadinStatelessSecurityConfigurer = new VaadinStatelessSecurityConfigurer<>();
+        http.with(vaadinStatelessSecurityConfigurer, customizer);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void init(H http) {
+
         CsrfConfigurer<H> csrf = http.getConfigurer(CsrfConfigurer.class);
         if (csrf != null) {
+
             // Use cookie for storing CSRF token, as it does not require a
             // session (double-submit cookie pattern)
             CsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository
@@ -111,18 +138,15 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             http.getSharedObject(
                     VaadinSavedRequestAwareAuthenticationSuccessHandler.class)
                     .setCsrfTokenRepository(csrfTokenRepository);
-
         }
     }
 
     @Override
     public void configure(H http) {
-        SecurityContextRepository securityContextRepository = http
-                .getSharedObject(SecurityContextRepository.class);
 
-        if (securityContextRepository instanceof JwtSecurityContextRepository) {
-            JwtSecurityContextRepository jwtSecurityContextRepository = (JwtSecurityContextRepository) securityContextRepository;
-
+        JwtSecurityContextRepository jwtSecurityContextRepository = http
+                .getSharedObject(JwtSecurityContextRepository.class);
+        if (jwtSecurityContextRepository != null) {
             jwtSecurityContextRepository
                     .setJwsAlgorithm(secretKeyConfigurer.getAlgorithm());
             jwtSecurityContextRepository
@@ -136,6 +160,9 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
                 trustResolver = new AuthenticationTrustResolverImpl();
             }
             jwtSecurityContextRepository.setTrustResolver(trustResolver);
+            http.addFilterBefore(
+                    new UpdateJwtCookiesFilter(jwtSecurityContextRepository),
+                    HeaderWriterFilter.class);
         }
 
         RequestCache requestCache = http.getSharedObject(RequestCache.class);
@@ -143,6 +170,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             ((VaadinDefaultRequestCache) requestCache)
                     .setDelegateRequestCache(new CookieRequestCache());
         }
+
     }
 
     /**
@@ -260,6 +288,68 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
         JWSAlgorithm getAlgorithm() {
             return JWSAlgorithm.parse(jwsAlgorithm.getName());
+        }
+    }
+
+    // Inspired by Spring HeaderWriterFilter. Updates JWT cookies at every
+    // request, just before HTTP response is commit.
+    private static final class UpdateJwtCookiesFilter
+            extends OncePerRequestFilter {
+
+        private final JwtSecurityContextRepository jwtSecurityContextRepository;
+
+        private UpdateJwtCookiesFilter(
+                JwtSecurityContextRepository jwtSecurityContextRepository) {
+            this.jwtSecurityContextRepository = jwtSecurityContextRepository;
+        }
+
+        @Override
+        protected void doFilterInternal(HttpServletRequest request,
+                HttpServletResponse response, FilterChain filterChain)
+                throws ServletException, IOException {
+            UpdateJWTCookieOnCommitResponseWrapper responseWrapper = new UpdateJWTCookieOnCommitResponseWrapper(
+                    request, response, jwtSecurityContextRepository);
+            try {
+                filterChain.doFilter(request, responseWrapper);
+            } finally {
+                // Force write, in case the response has not been flushed
+                responseWrapper.writeCookies();
+            }
+        }
+    }
+
+    private static final class UpdateJWTCookieOnCommitResponseWrapper
+            extends OnCommittedResponseWrapper {
+
+        private final JwtSecurityContextRepository jwtSecurityContextRepository;
+
+        private final HttpServletRequest request;
+
+        UpdateJWTCookieOnCommitResponseWrapper(HttpServletRequest request,
+                HttpServletResponse response,
+                JwtSecurityContextRepository jwtSecurityContextRepository) {
+            super(response);
+            this.request = request;
+            this.jwtSecurityContextRepository = jwtSecurityContextRepository;
+        }
+
+        @Override
+        protected void onResponseCommitted() {
+            writeCookies();
+            disableOnResponseCommitted();
+        }
+
+        private void writeCookies() {
+            if (isDisableOnResponseCommitted()) {
+                return;
+            }
+            org.springframework.security.core.context.SecurityContext context = SecurityContextHolder
+                    .getContextHolderStrategy().getContext();
+            if (context != null && !SerializedJwtSplitCookieRepository
+                    .containsCookie(this)) {
+                jwtSecurityContextRepository.saveContext(context, request,
+                        this);
+            }
         }
     }
 }
