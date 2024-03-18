@@ -39,7 +39,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
 public class TaskGenerateTsConfigTest {
-    static private String LATEST_VERSION = "9";
+    static private String LATEST_VERSION = "9.1";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
