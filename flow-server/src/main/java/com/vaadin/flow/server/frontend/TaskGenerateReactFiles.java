@@ -248,24 +248,24 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         if (customRoutesTsx.exists()) {
             String customRoutes = StringUtil.removeComments(
                     FileUtils.readFileToString(customRoutesTsx, UTF_8));
-            // If there is a manual serverSideRoutes used, but no buildRoute,
-            // import routes from routes file.
+            // If there is a manual serverSideRoutes used, but no buildRoute
+            // method call, import routes from routes file.
             if (customRoutes.contains("serverSideRoutes")
-                    && !customRoutes.contains("buildRoute")) {
+                    && !customRoutes.contains("buildRoute(")) {
                 content = content
                         .replace("//%routesImport%",
                                 "import { routes } from 'Frontend/routes';")
-                        .replace("let routes: RouteObject[];", "")
-                        .replace("routes = combinedRoutes;", "");
+                        .replace("const routes: RouteObject[] = props.routes;",
+                                "");
             }
-        } else if (options.isFrontendHotdeploy()
-                && !options.isProductionMode()) {
-            // For frontendHotdeploy we read the routes from file as re-loading
-            // has some sideffect to the stored data?
-            content = content.replace("//%routesImport%",
-                    "import { routes } from 'Frontend/generated/routes';")
-                    .replace("let routes: RouteObject[];", "")
-                    .replace("routes = combinedRoutes;", "");
+            // } else if (options.isFrontendHotdeploy()
+            // && !options.isProductionMode()) {
+            // // For frontendHotdeploy we read the routes from file as
+            // re-loading
+            // // has some sideffect to the stored data?
+            // content = content.replace("//%routesImport%",
+            // "import { routes } from 'Frontend/generated/routes';")
+            // .replace("const routes: RouteObject[] = props.routes;", "");
         }
         return content;
     }

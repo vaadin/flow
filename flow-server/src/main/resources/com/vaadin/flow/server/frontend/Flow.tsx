@@ -145,15 +145,14 @@ let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action
 let lastNavigation: string;
 let prevNavigation: string;
 let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
-let routes: RouteObject[];
 
 // @ts-ignore
-function navigateEventHandler(event) {
+function navigateEventHandler(event, routes: RouteObject[]) {
     if (event && event.preventDefault) {
         event.preventDefault();
     }
     // @ts-ignore
-    let matched = matchRoutes(Array.from(routes), event.detail.pathname);
+    let matched = matchRoutes(routes, event.detail.pathname);
     prevNavigation = lastNavigation;
 
     // if navigation event route targets a flow view do beforeEnter for the
@@ -219,17 +218,17 @@ function popstateHandler(event: PopStateEvent) {
     }));
 }
 
-export default function Flow() {
+export default function Flow(props:any) {
     const ref = useRef<HTMLOutputElement>(null);
     const {pathname, search, hash} = useLocation();
     const navigate = useNavigate();
 
     navigation = navigate;
     useEffect(() => {
+        const routes: RouteObject[] = props.routes;
 
         window.document.addEventListener('click', vaadinRouterGlobalClickHandler);
-        window.addEventListener('vaadin-router-go', navigateEventHandler);
-
+        window.addEventListener('vaadin-router-go', (event) => navigateEventHandler(event, routes));
         if(popstateListener) {
             // If we have gotten the router popstate handle that
             window.removeEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
@@ -267,13 +266,14 @@ export default function Flow() {
         });
         return () => {
             window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
-            window.removeEventListener('vaadin-router-go', navigateEventHandler);
+            //@ts-ignore
+            window.getEventListeners('vaadin-router-go').forEach((listener) => window.removeEventListener(listener.type, listener.listener));
             if (popstateListener) {
                 window.removeEventListener('popstate', popstateHandler);
                 window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
             }
 
-            let matched = matchRoutes(Array.from(routes), pathname);
+            let matched = matchRoutes(routes, pathname);
 
             // if router force navigated using 'Link' we will need to remove
             // flow from the view
@@ -285,9 +285,14 @@ export default function Flow() {
     }, [pathname, search, hash]);
     return <output ref={ref} />;
 }
-
+function getServerSideRoutes(combinedRoutes?:RouteObject[]) {
+    if(combinedRoutes) {
+        return {path: '/*', element: <Flow routes={combinedRoutes}/>}
+    }
+    return { path: '/*', element: <Flow/> }
+}
 export const serverSideRoutes = [
-    { path: '/*', element: <Flow/> },
+    getServerSideRoutes()
 ];
 
 (function () {
@@ -434,13 +439,12 @@ export const buildRoute = (routesArray?: RouteObject[], serverSidePosition?: Rou
     let combinedRoutes = [] as RouteObject[];
     //%buildRouteFunction%
     if(serverSidePosition) {
-        serverSidePosition.push(...serverSideRoutes);
+        serverSidePosition.push(getServerSideRoutes(combinedRoutes));
     } else {
-        combinedRoutes.push(...serverSideRoutes);
+        combinedRoutes.push(getServerSideRoutes(combinedRoutes));
     }
     if(routesArray) {
         combinedRoutes.push(...routesArray);
     }
-    routes = combinedRoutes;
     return combinedRoutes;
 };
