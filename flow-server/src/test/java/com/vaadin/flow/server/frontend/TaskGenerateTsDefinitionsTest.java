@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -39,6 +40,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import static com.vaadin.flow.server.frontend.TaskGenerateTsDefinitions.TS_DEFINITIONS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+@NotThreadSafe
 public class TaskGenerateTsDefinitionsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -51,6 +53,7 @@ public class TaskGenerateTsDefinitionsTest {
         Options options = new Options(Mockito.mock(Lookup.class), outputFolder);
 
         taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(options);
+        taskGenerateTsDefinitions.warningEmitted = false;
     }
 
     @Test

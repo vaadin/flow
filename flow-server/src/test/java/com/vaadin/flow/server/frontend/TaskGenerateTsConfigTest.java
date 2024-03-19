@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -40,6 +41,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
+@NotThreadSafe
 public class TaskGenerateTsConfigTest {
     static private String LATEST_VERSION = "9.1";
 
@@ -59,6 +61,7 @@ public class TaskGenerateTsConfigTest {
                 .withFeatureFlags(featureFlags);
 
         taskGenerateTsConfig = new TaskGenerateTsConfig(options);
+        taskGenerateTsConfig.warningEmitted = false;
     }
 
     @Test
