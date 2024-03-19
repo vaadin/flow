@@ -40,10 +40,12 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -244,6 +246,26 @@ public class ComponentUtil {
                 component.onEnabledStateChanged(
                         component.getElement().isEnabled());
             }
+        }
+
+        ComponentUtil.setJavaClassNameInDevelopment(component);
+    }
+
+    private static void setJavaClassNameInDevelopment(Component component) {
+        Optional<UI> ui = component.getUI();
+        if (ui.isEmpty()) {
+            return;
+        }
+        VaadinSession session = ui.get().getSession();
+        if (session == null || session.getConfiguration() == null
+                || session.getConfiguration().isProductionMode()) {
+            return;
+        }
+
+        StateNode n = component.getElement().getNode();
+        if (n.hasFeature(ElementData.class)) {
+            n.getFeature(ElementData.class).setJavaClass(component.getClass());
+
         }
     }
 

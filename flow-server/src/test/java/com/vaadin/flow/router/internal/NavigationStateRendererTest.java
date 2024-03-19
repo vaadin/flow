@@ -202,7 +202,7 @@ public class NavigationStateRendererTest {
                 return (T) new Text("foo");
             }
         });
-        MockUI ui = new MockUI(new MockVaadinSession(service));
+        MockUI ui = new MockUI(new AlwaysLockedVaadinSession(service));
 
         NavigationEvent event = new NavigationEvent(
                 new Router(new TestRouteRegistry()), new Location(""), ui,
