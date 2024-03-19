@@ -158,8 +158,9 @@ function navigateEventHandler(event) {
 
     // if navigation event route targets a flow view do beforeEnter for the
     // target path. Server will then handle updates and postpone as needed.
-    if(matched?.length == 1 && matched[0].route.path === "/*") {
+    if(matched && matched.length > 0 && matched[matched.length - 1].route.path === "/*") {
         if (mountedContainer?.onBeforeEnter) {
+            // onBeforeEvent call will handle the Flow navigation
             mountedContainer.onBeforeEnter(
                 {
                     pathname: event.detail.pathname,
@@ -245,9 +246,6 @@ export default function Flow() {
                 window.addEventListener('popstate', popstateHandler);
             }
         }
-        if(lastNavigation === pathname) {
-            return;
-        }
         flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
@@ -273,11 +271,13 @@ export default function Flow() {
                 window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
             }
 
-            let matched = matchRoutes(Array.from(routes), pathname);
+            let matched = matchRoutes(Array.from(routes), window.location.pathname);
 
             // if router force navigated using 'Link' we will need to remove
             // flow from the view
-            if(matched && matched[0].route.path !== "/*") {
+            // If we are going to a non Flow view then we need to clean the Flow
+            // view from the dom as we will not be getting a uidl response.
+            if(matched && matched[matched.length - 1].route.path !== "/*") {
                 mountedContainer?.parentNode?.removeChild(mountedContainer);
                 mountedContainer = undefined;
             }
