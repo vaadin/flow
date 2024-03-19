@@ -52,15 +52,17 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi", "v23.3.4",
             "v23.3.4-hilla" };
 
-    //@formatter:off
-    static final String ERROR_MESSAGE =
-            "%n%n**************************************************************************"
-            + "%n*  TypeScript config file 'tsconfig.json' has been updated to the latest *"
-            + "%n*  version by Vaadin. Please verify that the updated 'tsconfig.json'     *"
-            + "%n*  file contains configuration needed for your project (add missing part *"
-            + "%n*  from the old file if necessary) and restart the application.          *"
-            + "%n**************************************************************************%n%n";
-    //@formatter:on
+    static final String ERROR_MESSAGE = """
+
+            **************************************************************************
+            *  TypeScript config file 'tsconfig.json' has been updated to the latest *
+            *  version by Vaadin. Please verify that the updated 'tsconfig.json'     *
+            *  file contains configuration needed for your project (add any missing  *
+            *  parts from the old file if necessary) and restart the application.    *
+            *  Old configuration is stored as a '.bak' file.                         *
+            **************************************************************************
+
+            """;
 
     private Options options;
 
@@ -216,11 +218,14 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
                 }
             }
 
+            File backupFile = File.createTempFile(projectTsConfigFile.getName(),
+                    ".bak", projectTsConfigFile.getParentFile());
+            FileIOUtils.writeIfChanged(backupFile, projectTsConfigAsString);
             // Project's TS config has a custom content -
             // rewrite and throw an exception with explanations
             FileIOUtils.writeIfChanged(projectTsConfigFile,
                     latestTsConfigTemplate);
-            throw new ExecutionFailedException(String.format(ERROR_MESSAGE));
+            log().info(String.format(ERROR_MESSAGE));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

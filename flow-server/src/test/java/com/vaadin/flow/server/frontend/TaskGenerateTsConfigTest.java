@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.frontend.TaskGenerateTsConfig.ERROR_MESSAGE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
@@ -32,6 +33,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -204,20 +206,22 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void tsConfigHasCustomCodes_updatesAndThrows() throws IOException {
+    public void tsConfigHasCustomCodes_updatesAndThrows()
+            throws IOException, ExecutionFailedException {
         File tsconfig = writeTestTsConfigContent(
                 "tsconfig-custom-content.json");
-        try {
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
             taskGenerateTsConfig.execute();
-        } catch (Exception e) {
-            Assert.assertTrue(e.getMessage().contains(
-                    "TypeScript config file 'tsconfig.json' has been updated to the latest"));
-            String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
-            Assert.assertTrue(tsConfigString.contains(
-                    "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
-            return;
         }
-        Assert.fail("Expected exception to be thrown");
+        String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
+        Assert.assertTrue(tsConfigString.contains(
+                "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
+        Assert.assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
     }
 
     @Test
