@@ -143,8 +143,8 @@ function vaadinRouterGlobalClickHandler(event) {
 // We can't initiate useNavigate() from outside React component, so we store it here for use in the navigateEvent.
 let navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
 let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>> | undefined = undefined;
-let lastNavigation: string;
-let prevNavigation: string;
+let lastNavigation: string | undefined;
+let prevNavigation: string | undefined;
 let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
 
 // @ts-ignore
@@ -161,23 +161,30 @@ function navigateEventHandler(event) {
     if(matched && matched.length > 0 && matched[matched.length - 1].route.path === "/*") {
         if (mountedContainer?.onBeforeEnter) {
             // onBeforeEvent call will handle the Flow navigation
-            mountedContainer.onBeforeEnter(
+            let promiseCancelled: boolean = false;
+            let promise = mountedContainer.onBeforeEnter(
                 {
                     pathname: event.detail.pathname,
                     search: event.detail.search
                 },
                 {
                     prevent() {
+                        promiseCancelled = true;
                         window.history.pushState(window.history.state, '', prevNavigation);
                         window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
                     },
                     // @ts-ignore
                     redirect: (path) => {
+                        promiseCancelled = true;
                         navigation(path, {replace: false});
                     }
                 },
                 router,
-            ).then((response) => {
+            );
+            promise?.then((response: any) => {
+                if(promiseCancelled) {
+                    return;
+                }
                 // ensures that react router is aware of the navigation
                 navigation(event.detail.pathname, {replace: true});
             });
