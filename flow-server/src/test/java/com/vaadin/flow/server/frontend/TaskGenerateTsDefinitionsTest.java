@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -211,11 +212,17 @@ public class TaskGenerateTsDefinitionsTest {
                 export type JTDForm = typeof jtdForms[number];
                 """;
         Files.writeString(typesTSfile, originalContent);
-        ExecutionFailedException exception = Assert.assertThrows(
-                ExecutionFailedException.class,
-                taskGenerateTsDefinitions::execute);
-        MatcherAssert.assertThat(exception.getMessage(), CoreMatchers
-                .containsString(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
+
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
+            taskGenerateTsDefinitions.execute();
+        }
+        Assert.assertTrue(logger.getLogs()
+                .contains(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
                 taskGenerateTsDefinitions.shouldGenerate());
@@ -233,11 +240,23 @@ public class TaskGenerateTsDefinitionsTest {
         String originalContent = "import type { SchemaObject } from \"../../types\";"
                 + System.lineSeparator() + readPreviousContent();
         Files.writeString(typesTSfile, originalContent);
-        ExecutionFailedException exception = Assert.assertThrows(
-                ExecutionFailedException.class,
-                taskGenerateTsDefinitions::execute);
-        MatcherAssert.assertThat(exception.getMessage(), CoreMatchers
-                .containsString(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
+
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
+            taskGenerateTsDefinitions.execute();
+        }
+        Assert.assertTrue(logger.getLogs()
+                .contains(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
+
+        // ExecutionFailedException exception = Assert.assertThrows(
+        // ExecutionFailedException.class,
+        // taskGenerateTsDefinitions::execute);
+        // MatcherAssert.assertThat(exception.getMessage(), CoreMatchers
+        // .containsString(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
                 taskGenerateTsDefinitions.shouldGenerate());
@@ -366,9 +385,12 @@ public class TaskGenerateTsDefinitionsTest {
 
     private void assertBackupFileCreated(String originalContent)
             throws IOException {
-        File backupFile = new File(
-                taskGenerateTsDefinitions.getGeneratedFile().getParent(),
-                TS_DEFINITIONS + ".flowBackup");
+        File[] backups = taskGenerateTsDefinitions.getGeneratedFile()
+                .getParentFile()
+                .listFiles(file -> file.getName().endsWith(".bak"));
+        Assert.assertEquals(1, backups.length);
+
+        File backupFile = backups[0];
         Assert.assertTrue("Original types.d.ts backup should exist",
                 backupFile.exists());
         Assert.assertEquals(originalContent,

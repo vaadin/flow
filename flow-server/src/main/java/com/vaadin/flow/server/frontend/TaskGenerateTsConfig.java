@@ -218,14 +218,15 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
                 }
             }
 
-            File backupFile = File.createTempFile(projectTsConfigFile.getName(),
-                    ".bak", projectTsConfigFile.getParentFile());
+            File backupFile = File.createTempFile(
+                    projectTsConfigFile.getName() + ".", ".bak",
+                    projectTsConfigFile.getParentFile());
             FileIOUtils.writeIfChanged(backupFile, projectTsConfigAsString);
             // Project's TS config has a custom content -
             // rewrite and throw an exception with explanations
             FileIOUtils.writeIfChanged(projectTsConfigFile,
                     latestTsConfigTemplate);
-            log().info(String.format(ERROR_MESSAGE));
+            log().warn(String.format(ERROR_MESSAGE));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

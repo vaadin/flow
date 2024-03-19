@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.regex.Pattern;
 
@@ -148,11 +147,12 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                         "Updating custom {} to add '*.css?inline' module declaration",
                         TS_DEFINITIONS);
                 UpdateMode updateMode = computeUpdateMode(content);
-                if (updateMode == UpdateMode.UPDATE_AND_THROW) {
+                if (updateMode == UpdateMode.UPDATE_AND_BACKUP) {
                     try {
-                        Path backupFile = tsDefinitions.toPath().getParent()
-                                .resolve(TS_DEFINITIONS + ".flowBackup");
-                        Files.copy(tsDefinitions.toPath(), backupFile);
+                        File backupFile = File.createTempFile(
+                                tsDefinitions.getName() + ".", ".bak",
+                                tsDefinitions.getParentFile());
+                        FileIOUtils.writeIfChanged(backupFile, content);
                         log().debug("Created {} backup copy on {}",
                                 TS_DEFINITIONS, backupFile);
                     } catch (IOException ex) {
@@ -171,8 +171,8 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                         Files.writeString(tsDefinitions.toPath(),
                                 uncommentedDefaultContent,
                                 StandardOpenOption.APPEND);
-                        if (updateMode == UpdateMode.UPDATE_AND_THROW) {
-                            throw new ExecutionFailedException(UPDATE_MESSAGE);
+                        if (updateMode == UpdateMode.UPDATE_AND_BACKUP) {
+                            log().warn(UPDATE_MESSAGE);
                         }
                     }
                 } catch (IOException ex) {
@@ -185,7 +185,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     }
 
     private enum UpdateMode {
-        REPLACE, UPDATE, UPDATE_AND_THROW
+        REPLACE, UPDATE, UPDATE_AND_BACKUP
     }
 
     private UpdateMode computeUpdateMode(String content)
@@ -220,7 +220,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
         // types.d.ts has been customized, but does not seem to contain content
         // required by flow. Append what is needed and throw an exception so
         // that developer can check the changes are ok
-        return UpdateMode.UPDATE_AND_THROW;
+        return UpdateMode.UPDATE_AND_BACKUP;
     }
 
     private static String removeComments(String content) {
