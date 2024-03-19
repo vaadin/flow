@@ -40,6 +40,12 @@ import elemental.json.JsonObject;
  */
 public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
+    /**
+     * Keeps track of whether a warning update has already been logged. This is
+     * used to avoid spamming the log with the same message.
+     */
+    private static boolean warningEmitted = false;
+
     private static final String COMPILER_OPTIONS = "compilerOptions";
 
     static final String TSCONFIG_JSON = "tsconfig.json";
@@ -226,7 +232,10 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             // rewrite and throw an exception with explanations
             FileIOUtils.writeIfChanged(projectTsConfigFile,
                     latestTsConfigTemplate);
-            log().warn(String.format(ERROR_MESSAGE));
+            if (!warningEmitted) {
+                log().warn(String.format(ERROR_MESSAGE));
+                warningEmitted = true;
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

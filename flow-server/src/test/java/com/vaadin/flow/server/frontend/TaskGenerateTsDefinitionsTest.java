@@ -200,7 +200,7 @@ public class TaskGenerateTsDefinitionsTest {
     }
 
     @Test
-    public void customTsDefinition_missingFlowContents_tsDefinitionUpdatedAndExceptionThrown()
+    public void customTsDefinition_missingFlowContents_tsDefinitionUpdatedAndWarningLogged()
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         String originalContent = """
@@ -234,7 +234,7 @@ public class TaskGenerateTsDefinitionsTest {
     }
 
     @Test
-    public void customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndExceptionThrown()
+    public void customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndWarningLogged()
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         String originalContent = "import type { SchemaObject } from \"../../types\";"
@@ -252,11 +252,6 @@ public class TaskGenerateTsDefinitionsTest {
         Assert.assertTrue(logger.getLogs()
                 .contains(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
 
-        // ExecutionFailedException exception = Assert.assertThrows(
-        // ExecutionFailedException.class,
-        // taskGenerateTsDefinitions::execute);
-        // MatcherAssert.assertThat(exception.getMessage(), CoreMatchers
-        // .containsString(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
                 taskGenerateTsDefinitions.shouldGenerate());
@@ -265,6 +260,35 @@ public class TaskGenerateTsDefinitionsTest {
                 updatedContent,
                 CoreMatchers.containsString(readExpectedContent(true)));
         assertBackupFileCreated(originalContent);
+    }
+
+    @Test
+    public void contentUpdateForSecondTime_tsDefinitionUpdatedAndWarningLoggedOnce()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String originalContent = "import type { SchemaObject } from \"../../types\";"
+                + System.lineSeparator() + readPreviousContent();
+        Files.writeString(typesTSfile, originalContent);
+
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
+            taskGenerateTsDefinitions.execute();
+
+            Assert.assertTrue(logger.getLogs()
+                    .contains(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
+
+            logger.clearLogs();
+
+            Files.writeString(typesTSfile, originalContent);
+
+            taskGenerateTsDefinitions.execute();
+        }
+        Assert.assertFalse(logger.getLogs()
+                .contains(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
     }
 
     @Test

@@ -206,7 +206,7 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void tsConfigHasCustomCodes_updatesAndThrows()
+    public void tsConfigHasCustomCodes_updatesAndLogsWarning()
             throws IOException, ExecutionFailedException {
         File tsconfig = writeTestTsConfigContent(
                 "tsconfig-custom-content.json");
@@ -222,6 +222,27 @@ public class TaskGenerateTsConfigTest {
         Assert.assertTrue(tsConfigString.contains(
                 "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
         Assert.assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
+    }
+
+    @Test
+    public void warningIsLoggedOnlyOncePerRun()
+            throws IOException, ExecutionFailedException {
+        File tsconfig = writeTestTsConfigContent(
+                "tsconfig-custom-content.json");
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
+            taskGenerateTsConfig.execute();
+            Assert.assertTrue(logger.getLogs().contains(ERROR_MESSAGE));
+            logger.clearLogs();
+            tsconfig.delete();
+            writeTestTsConfigContent("tsconfig-custom-content.json");
+            taskGenerateTsConfig.execute();
+            Assert.assertFalse(logger.getLogs().contains(ERROR_MESSAGE));
+        }
     }
 
     @Test
