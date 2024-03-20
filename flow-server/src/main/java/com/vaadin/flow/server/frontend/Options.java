@@ -362,6 +362,9 @@ public class Options implements Serializable {
      * @return folder to generate frontend files in
      */
     public File getFrontendGeneratedFolder() {
+        if (frontendGeneratedFolder == null) {
+            return new File(getFrontendDirectory(), FrontendUtils.GENERATED);
+        }
         return frontendGeneratedFolder;
     }
 

@@ -86,13 +86,15 @@ public class NodeTasksHillaTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(lookup).lookup(ClassFinder.class);
-        return new Options(lookup, new File(userDir)).withBuildDirectory(TARGET)
+        File npmFolder = new File(userDir);
+        return new Options(lookup, npmFolder).withBuildDirectory(TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .withRunNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(new File(userDir,
                         FrontendUtils.GENERATED
                                 + FrontendUtils.JAR_RESOURCES_FOLDER))
                 .withFrontendGeneratedFolder(new File(userDir))
+                .withWebpack(npmFolder, npmFolder)
                 .setJavaResourceFolder(propertiesDir);
     }
 
