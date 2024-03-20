@@ -233,7 +233,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             FileIOUtils.writeIfChanged(projectTsConfigFile,
                     latestTsConfigTemplate);
             if (!warningEmitted) {
-                log().warn(String.format(ERROR_MESSAGE));
+                log().warn(ERROR_MESSAGE);
                 warningEmitted = true;
             }
         } catch (IOException e) {

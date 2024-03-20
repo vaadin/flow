@@ -42,7 +42,6 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     private static final String DECLARE_CSS_MODULE = "declare module '*.css?inline' {";
     static final String UPDATE_MESSAGE = """
 
-
             ***************************************************************************
             *  The TypeScript type declaration file 'types.d.ts' has been updated     *
             *  to the latest version by Vaadin. Previous content has been backed up   *
@@ -51,11 +50,9 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             *  then delete the backup file.                                           *
             ***************************************************************************
 
-
             """;
 
     static final String CHECK_CONTENT_MESSAGE = """
-
 
             ****************************************************************************
             *  The TypeScript type declaration file 'types.d.ts' has been customized.  *
@@ -66,7 +63,6 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             *  As an alternative you can rename the file, make Vaadin re-generate it,  *
             *  and then update it with your custom contents.                           *
             ****************************************************************************"
-
 
             """;
     /**
