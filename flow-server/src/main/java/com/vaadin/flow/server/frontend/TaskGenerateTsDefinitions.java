@@ -45,9 +45,9 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             ***************************************************************************
             *  The TypeScript type declaration file 'types.d.ts' has been updated     *
             *  to the latest version by Vaadin. Previous content has been backed up   *
-            *  on 'types.d.ts.flowBackup' file. Please verify that the updated        *
-            *  'types.d.ts' file contains configuration needed for your project, and  *
-            *  then delete the backup file.                                           *
+            *  as a '.bak' file.. Please verify that the updated 'types.d.ts' file    *
+            *  contains configuration needed for your project, and then delete the    *
+            *  backup file.                                                           *
             ***************************************************************************
 
             """;
