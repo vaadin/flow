@@ -45,7 +45,7 @@ public class DevToolsPluginIT extends ChromeBrowserTest {
         Assert.assertEquals("Hello from dev tools plugin",
                 $("div").id("injected").getText());
 
-        devTools.showTab("code");
+        devTools.showTab("info");
         devTools.showTab("Hello");
         assertMessages(myTool, "plugin-init", "activate called",
                 "Response for Hello from dev tools plugin", "deactivate called",
