@@ -116,8 +116,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                 .enableNpmFileCleaning(true).withFrontendDirectory(npmFolder)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .copyResources(Collections.emptySet())
-                .withWebpack(npmFolder, npmFolder)
-                .enablePackagesUpdate(true);
+                .withWebpack(npmFolder, npmFolder).enablePackagesUpdate(true);
         new NodeTasks(options).execute();
     }
 }
