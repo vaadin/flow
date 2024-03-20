@@ -16,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentMatchers;
@@ -43,8 +44,12 @@ import com.vaadin.pro.licensechecker.Product;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+
 public class BuildFrontendUtilTest {
 
+    @Rule
+    public TemporaryFolder tmpDir = new TemporaryFolder();
     private File baseDir;
 
     private PluginAdapterBuild adapter;
@@ -52,11 +57,10 @@ public class BuildFrontendUtilTest {
     private Lookup lookup;
 
     private File statsJson;
+    private File resourceOutput;
 
     @Before
     public void setup() throws Exception {
-        TemporaryFolder tmpDir = new TemporaryFolder();
-        tmpDir.create();
         baseDir = tmpDir.newFolder();
 
         adapter = Mockito.mock(PluginAdapterBuild.class);
@@ -78,7 +82,7 @@ public class BuildFrontendUtilTest {
         File viteExecutableMock = new File(viteBin, "vite.js");
         Assert.assertTrue(viteExecutableMock.createNewFile());
 
-        File resourceOutput = new File(baseDir, "resOut");
+        resourceOutput = new File(baseDir, "resOut");
         Mockito.when(adapter.servletResourceOutputDirectory())
                 .thenReturn(resourceOutput);
         statsJson = new File(new File(resourceOutput, "config"), "stats.json");
@@ -198,6 +202,74 @@ public class BuildFrontendUtilTest {
         Assert.assertEquals(1, components.size());
         Assert.assertEquals("comm-comp", components.get(0).getName());
         Assert.assertEquals("4.6.5", components.get(0).getVersion());
+    }
+
+    @Test
+    public void propagateBuildInfo_tokenFileNotExisting_createTokenFile()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have not been written",
+                tokenFile.exists());
+    }
+
+    @Test
+    public void propagateBuildInfo_existingTokenFileWithDifferentContent_overwritesTokenFile()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been written",
+                tokenFile.exists());
+        long lastModified = tokenFile.lastModified();
+
+        Thread.sleep(100);
+        Mockito.when(adapter.nodeVersion()).thenReturn("v1.0.0");
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        Assert.assertNotEquals("Expected token file to be updated, but was not",
+                lastModified, tokenFile.lastModified());
+    }
+
+    @Test
+    public void propagateBuildInfo_existingTokenFileWithSameContent_doesNotWriteTokenFile()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been written",
+                tokenFile.exists());
+        long lastModified = tokenFile.lastModified();
+
+        Thread.sleep(100);
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+        Assert.assertEquals(
+                "Expected token file not to be updated, but it has been written",
+                lastModified, tokenFile.lastModified());
+    }
+
+    private void fillAdapter() throws URISyntaxException {
+        Mockito.when(adapter.nodeDownloadRoot())
+                .thenReturn(URI.create("http://something/node/"));
+        Mockito.when(adapter.nodeVersion()).thenReturn("v0.0.0");
+        Mockito.when(adapter.frontendDirectory())
+                .thenReturn(new File(tmpDir.getRoot(), "frontend"));
+        Mockito.when(adapter.javaSourceFolder())
+                .thenReturn(new File(tmpDir.getRoot(), "src/main/java"));
+        Mockito.when(adapter.javaResourceFolder())
+                .thenReturn(new File(tmpDir.getRoot(), "src/main/resources"));
+        Mockito.when(adapter.applicationProperties()).thenReturn(new File(
+                tmpDir.getRoot(), "src/main/resources/application.properties"));
+        Mockito.when(adapter.openApiJsonFile()).thenReturn(new File(
+                tmpDir.getRoot(), "target/generated-resources/openapi.json"));
+        Mockito.when(adapter.buildFolder()).thenReturn("target");
     }
 
     private void writePackageJson(File nodeModulesFolder, String name,
