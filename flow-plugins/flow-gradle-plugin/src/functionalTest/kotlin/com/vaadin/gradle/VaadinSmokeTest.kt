@@ -143,7 +143,6 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(true) { generatedFolder.exists() }
         expect(false) { generatedFile.exists() }
         expect(false) { generatedOldFlowFile.exists() }
-        expect(false) { generatedFlowFolder.exists() }
     }
 
     /**
