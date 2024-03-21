@@ -211,7 +211,7 @@ public class BuildFrontendUtilTest {
 
         BuildFrontendUtil.propagateBuildInfo(adapter);
         File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have not been written",
+        Assert.assertTrue("Token file should have been created",
                 tokenFile.exists());
     }
 
@@ -223,7 +223,7 @@ public class BuildFrontendUtilTest {
         BuildFrontendUtil.propagateBuildInfo(adapter);
 
         File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have been written",
+        Assert.assertTrue("Token file should have been created",
                 tokenFile.exists());
         long lastModified = tokenFile.lastModified();
 
@@ -243,7 +243,7 @@ public class BuildFrontendUtilTest {
         BuildFrontendUtil.propagateBuildInfo(adapter);
 
         File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have been written",
+        Assert.assertTrue("Token file should have been created",
                 tokenFile.exists());
         long lastModified = tokenFile.lastModified();
 
