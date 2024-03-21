@@ -118,7 +118,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
-                || options.isEnableWebpackConfigUpdate()) {
+                || options.isEnableConfigUpdate()) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!options.isUseByteCodeScanner(), classFinder,
                             options.isGenerateEmbeddableWebComponents(),
@@ -422,8 +422,8 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    public record NodeTasksLockInfo(long pid, String commandLine)
-            implements Serializable {
+    public record NodeTasksLockInfo(long pid,
+            String commandLine) implements Serializable {
     }
 
     private NodeTasksLockInfo readLockFile()
