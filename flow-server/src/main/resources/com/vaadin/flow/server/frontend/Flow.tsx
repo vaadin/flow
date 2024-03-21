@@ -207,6 +207,9 @@ function popstateHandler(event: PopStateEvent) {
     });
 
     if (event.state === 'vaadin-router-ignore') {
+        // Update last nav path to keep it on track. Otherwise it would be
+        // updated in vaadin-router-go event handler if needed.
+        lastNavigation = window.location.pathname;
         return;
     }
     const {pathname, search, hash} = window.location;
