@@ -118,6 +118,7 @@ function vaadinRouterGlobalClickHandler(event) {
     // ignore the click if the target URL is a fragment on the current page
     if (anchor.pathname === window.location.pathname && anchor.hash !== '') {
         lastNavigation = anchor.pathname;
+        lastNavigationSearch = anchor.search;
         window.location.hash = anchor.hash;
         return;
     }
@@ -144,6 +145,7 @@ function vaadinRouterGlobalClickHandler(event) {
 let navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
 let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>> | undefined = undefined;
 let lastNavigation: string;
+let lastNavigationSearch: string;
 let prevNavigation: string;
 let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
 
@@ -199,6 +201,7 @@ function navigateEventHandler(event) {
         }
     }
     lastNavigation = event.detail.pathname;
+    lastNavigationSearch = event.detail.search;
 }
 
 function popstateHandler(event: PopStateEvent) {
@@ -210,10 +213,11 @@ function popstateHandler(event: PopStateEvent) {
         // Update last nav path to keep it on track. Otherwise it would be
         // updated in vaadin-router-go event handler if needed.
         lastNavigation = window.location.pathname;
+        lastNavigationSearch = window.location.search;
         return;
     }
     const {pathname, search, hash} = window.location;
-    if(pathname === lastNavigation) {
+    if(pathname === lastNavigation && search === lastNavigationSearch) {
         return;
     }
     // @ts-ignore
