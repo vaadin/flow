@@ -528,16 +528,20 @@ public class BuildFrontendMojoTest {
         // Enable Hilla to generate openApi
         FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
                 """
-                        import { serverSideRoutes } from "Frontend/generated/flow/Flow";
-                        export const routes = [
-                            {
-                                element: <MainLayout />,
-                                handle: { title: 'Main' }
-                            }
-                        ] as RouteObject[];
+                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import { serverRoute } from 'Frontend/generated/flow/server-route';
 
+                        const routerBuilder = new RouterBuilder()
+                             .withReactRoutes([
+                                 {
+                                      element: <MainLayout />,
+                                      handle: { title: 'Main' }
+                                 }
+                             ])
+                            .withServerFallback(serverRoute);
 
-                        export const router = createBrowserRouter(...routes]);
+                        export const routes = routerBuilder.routes;
+                        export default routerBuilder.build();
                         """);
 
         Assert.assertFalse(
@@ -552,16 +556,21 @@ public class BuildFrontendMojoTest {
         // Enable Hilla to generate ts files
         FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
                 """
-                        import { serverSideRoutes } from "Frontend/generated/flow/Flow";
-                        export const routes = [
-                            {
-                                element: <MainLayout />,
-                                handle: { title: 'Main' }
-                            }
-                        ] as RouteObject[];
+                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import { serverRoute } from 'Frontend/generated/flow/server-route';
+                        import fileRoutes from 'Frontend/generated/file-routes';
 
+                        const routerBuilder = new RouterBuilder()
+                             .withReactRoutes([
+                                 {
+                                      element: <MainLayout />,
+                                      handle: { title: 'Main' }
+                                 }
+                             ])
+                            .withServerFallback(serverRoute);
 
-                        export const router = createBrowserRouter(...routes]);
+                        export const routes = routerBuilder.routes;
+                        export default routerBuilder.build();
                         """);
 
         File connectClientApi = new File(generatedTsFolder,
