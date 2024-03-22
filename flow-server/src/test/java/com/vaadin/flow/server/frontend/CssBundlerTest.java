@@ -135,6 +135,30 @@ public class CssBundlerTest {
                 .inlineImports(themeFolder, getThemeFile("styles.css")));
     }
 
+    @Test
+    public void unhandledImportsAreMovedToTop() throws IOException {
+        writeCss("body {background: blue};", "other.css");
+        writeCss(
+                """
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/inter@latest/index.css');
+                        @import url('other.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
+                        """,
+                "styles.css");
+
+        Assert.assertEquals(
+                """
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/inter@latest/index.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
+
+                        body {background: blue};
+                        """
+                        .trim(),
+                CssBundler
+                        .inlineImports(themeFolder, getThemeFile("styles.css"))
+                        .trim());
+    }
+
     private boolean createThemeFile(String filename) throws IOException {
         File f = getThemeFile(filename);
         f.getParentFile().mkdirs();

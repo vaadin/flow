@@ -3,6 +3,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -112,6 +114,19 @@ public class CssBundler {
             }
             return Matcher.quoteReplacement(result.group());
         });
+
+        // Move unhandled @import statements to the top, as they would be
+        // ignored by the browser if they appear after regular CSS rules
+        Matcher remainingImportMatcher = importPattern.matcher(content);
+        List<String> remainingImports = new ArrayList<>();
+        while (remainingImportMatcher.find()) {
+            remainingImports.add(remainingImportMatcher.group());
+        }
+        content = remainingImportMatcher.replaceAll("");
+        String remainingImportsString = String.join("\n", remainingImports);
+        boolean addNewLine = !content.isEmpty()
+                && !remainingImportsString.isEmpty();
+        content = remainingImportsString + (addNewLine ? "\n" : "") + content;
 
         return content;
     }
