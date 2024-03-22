@@ -29,7 +29,7 @@
  * as the import isn't updated automatically by Vaadin in this case.
  ******************************************************************************/
 import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-import serverRoute from 'Frontend/generated/flow/server-route';
+import { serverRoute } from 'Frontend/generated/flow/server-route';
 import fileRoutes from 'Frontend/generated/file-routes';
 
 const routerBuilder = new RouterBuilder()
