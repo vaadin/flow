@@ -190,14 +190,14 @@ function navigateEventHandler(event) {
                 continue() {
                     mountedContainer?.parentNode?.removeChild(mountedContainer);
                     mountedContainer = undefined;
-                    navigation(event.detail.pathname, {replace: false});
+                    popstateListener.listener(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
                 }
             }, router);
         } else {
             // Navigate to a non flow view. Clean nodes and undefine container.
             mountedContainer?.parentNode?.removeChild(mountedContainer);
             mountedContainer = undefined;
-            navigation(event.detail.pathname, {replace: false});
+            popstateListener.listener(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
         }
     }
     lastNavigation = event.detail.pathname;
@@ -254,6 +254,10 @@ export default function Flow() {
             }
         }
         flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
+            // Update last navigation when coming into serverside as we might come
+            // in using the forward/back buttons.
+            lastNavigation = pathname;
+            lastNavigationSearch = search;
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
                 outlet.append(container);
@@ -433,7 +437,7 @@ export const createWebComponent = (tag: string, props?: Properties, onload?: () 
  *
  * @param routes optional routes are for adding own route definition, giving routes will skip FS routes
  * @param serverSidePosition optional position where server routes should be put.
-  *                          If non given they go to the root of the routes [].
+ *                          If non given they go to the root of the routes [].
  *
  * @returns RouteObject[] with combined routes
  */

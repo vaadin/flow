@@ -101,18 +101,10 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
     @Override
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        if (NavigationTrigger.CLIENT_SIDE.equals(event.getTrigger())
-                || NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+        if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             return true;
         } else {
-            // For react router the server should push history state for
-            // server rendering even when client previously updated url with
-            // vaadin-router.
-            return super.shouldPushHistoryState(event)
-                    || (event.getUI().getInternals().getSession()
-                            .getConfiguration().isReactEnabled()
-                            && NavigationTrigger.CLIENT_SIDE
-                                    .equals(event.getTrigger()));
+            return super.shouldPushHistoryState(event);
         }
     }
 
