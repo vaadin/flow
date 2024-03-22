@@ -333,17 +333,23 @@ public class StateNode implements Serializable {
         List<StateNode> nodes = new ArrayList<>();
         visitNodeTreeBottomUp(nodes::add);
         nodes.forEach(StateNode::handleOnDetach);
-        for (StateNode node : nodes) {
-            if (node.hasBeenAttached) {
-                node.hasBeenDetached = true;
-                detaching = true;
-                try {
-                    node.fireDetachListeners();
-                } finally {
-                    detaching = false;
+        try {
+            detaching = true;
+            for (StateNode node : nodes) {
+                if (node.hasBeenAttached) {
+                    node.hasBeenDetached = true;
+                    node.detaching = true;
+                    try {
+                        node.fireDetachListeners();
+                    } finally {
+                        node.detaching = false;
+                    }
                 }
             }
+        } finally {
+            detaching = false;
         }
+
     }
 
     /**
