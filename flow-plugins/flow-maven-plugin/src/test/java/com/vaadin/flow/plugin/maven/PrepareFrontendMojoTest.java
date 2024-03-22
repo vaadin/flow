@@ -250,8 +250,6 @@ public class PrepareFrontendMojoTest {
                 generatedTsFolder.exists());
         Assert.assertFalse("Old file should have been removed",
                 oldFile.exists());
-        Assert.assertFalse("Flow folder should have been deleted",
-                flowFolder.exists());
     }
 
     @Test

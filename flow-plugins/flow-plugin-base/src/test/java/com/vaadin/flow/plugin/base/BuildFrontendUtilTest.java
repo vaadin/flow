@@ -18,6 +18,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -53,7 +54,7 @@ public class BuildFrontendUtilTest {
     private File statsJson;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws Exception {
         TemporaryFolder tmpDir = new TemporaryFolder();
         tmpDir.create();
         baseDir = tmpDir.newFolder();
@@ -65,6 +66,8 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
         ClassFinder classFinder = Mockito.mock(ClassFinder.class);
+        Mockito.when(classFinder.loadClass(ArgumentMatchers.anyString())).then(
+                i -> getClass().getClassLoader().loadClass(i.getArgument(0)));
         lookup = Mockito.spy(new LookupImpl(classFinder));
         Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
         Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
