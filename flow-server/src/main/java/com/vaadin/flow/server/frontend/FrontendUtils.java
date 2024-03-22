@@ -236,9 +236,11 @@ public class FrontendUtils {
 
     public static final String ROUTES_TSX = "routes.tsx";
 
+    public static final String ROUTES_FLOW_TSX = "routes-flow.tsx";
+
     public static final String ROUTES_JS = "routes.js";
 
-    public static final String VIEWS_TS = "views.ts";
+    public static final String FILE_ROUTES_TSX = "file-routes.ts";
 
     /**
      * Default generated path for generated frontend files.
