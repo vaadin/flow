@@ -58,7 +58,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             The server route definition is missing from the '%1$s' file
 
             To have working Flow routes add the following to the '%1$s' file:
-            - import serverRoute from 'Frontend/generated/flow/server-route';
+            - import { serverRoute } from 'Frontend/generated/flow/server-route';
             - call 'withServerFallback' method of 'RouterBuilder' as shown below:
 
                 const routerBuilder = new RouterBuilder()
