@@ -35,7 +35,6 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExampleExperimentalComponent;
@@ -102,7 +101,7 @@ public class NodeTasksViteTest {
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withWebpack(npmFolder, npmFolder);
+                .withBuildResultFolders(npmFolder, npmFolder);
 
         assertEquals(1, finder.getAnnotatedClasses(JsModule.class).size());
         assertEquals(1, finder.getAnnotatedClasses(JavaScript.class).size());
@@ -142,7 +141,7 @@ public class NodeTasksViteTest {
                 .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withWebpack(npmFolder, npmFolder);
+                .withBuildResultFolders(npmFolder, npmFolder);
 
         new NodeTasks(options).execute();
         File importsFile = FrontendUtils
@@ -168,7 +167,7 @@ public class NodeTasksViteTest {
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withWebpack(npmFolder, npmFolder);
+                .withBuildResultFolders(npmFolder, npmFolder);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -191,7 +190,7 @@ public class NodeTasksViteTest {
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withWebpack(npmFolder, npmFolder);
+                .withBuildResultFolders(npmFolder, npmFolder);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -215,7 +214,7 @@ public class NodeTasksViteTest {
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withWebpack(npmFolder, npmFolder);
+                .withBuildResultFolders(npmFolder, npmFolder);
 
         Assert.assertEquals(
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
@@ -247,7 +246,7 @@ public class NodeTasksViteTest {
                 .enableImportsUpdate(true).withRunNpmInstall(false)
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withWebpack(npmFolder, npmFolder);
+                .withBuildResultFolders(npmFolder, npmFolder);
         new NodeTasks(options).execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
@@ -267,7 +266,7 @@ public class NodeTasksViteTest {
                 .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withFrontendHotdeploy(true).withProductionMode(false)
-                .withWebpack(npmFolder, npmFolder);
+                .withBuildResultFolders(npmFolder, npmFolder);
         try (MockedStatic<BundleUtils> bundleUtils = Mockito
                 .mockStatic(BundleUtils.class);
                 MockedStatic<BundleValidationUtil> validationUtil = Mockito

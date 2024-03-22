@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
-import org.junit.*;
+import java.io.File;
+import java.io.IOException;
+
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
@@ -27,12 +30,16 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.io.File;
-import java.io.IOException;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.*;
-import static org.mockito.Mockito.*;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 public class NodeTasksHillaTest {
 
@@ -94,7 +101,7 @@ public class NodeTasksHillaTest {
                         FrontendUtils.GENERATED
                                 + FrontendUtils.JAR_RESOURCES_FOLDER))
                 .withFrontendGeneratedFolder(new File(userDir))
-                .withWebpack(npmFolder, npmFolder)
+                .withBuildResultFolders(npmFolder, npmFolder)
                 .setJavaResourceFolder(propertiesDir);
     }
 

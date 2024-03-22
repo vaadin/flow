@@ -165,4 +165,69 @@ public class NavigationIT extends ChromeBrowserTest {
                 getDriver().getCurrentUrl().endsWith("NavigationView"));
     }
 
+    @Test
+    public void testNavigationBrowserHistoryBack_anchor() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
+        Assert.assertEquals("AnchorView",
+                $(SpanElement.class).first().getText());
+        getDriver().navigate().back();
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
+        Assert.assertEquals("AnchorView",
+                $(SpanElement.class).first().getText());
+        getDriver().navigate().back();
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+    }
+
+    @Test
+    public void testNavigationBrowserHistoryBack_routerLink() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
+        Assert.assertEquals("RouterView",
+                $(SpanElement.class).first().getText());
+        getDriver().navigate().back();
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
+        Assert.assertEquals("RouterView",
+                $(SpanElement.class).first().getText());
+        getDriver().navigate().back();
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+    }
+
+    @Test
+    public void testNavigationBrowserHistoryBack_serverNavigation() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
+        Assert.assertEquals("ServerView",
+                $(SpanElement.class).first().getText());
+        getDriver().navigate().back();
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
+        Assert.assertEquals("ServerView",
+                $(SpanElement.class).first().getText());
+        getDriver().navigate().back();
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+    }
 }
