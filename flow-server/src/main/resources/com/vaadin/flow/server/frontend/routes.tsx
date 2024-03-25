@@ -29,7 +29,7 @@
  * as the import isn't updated automatically by Vaadin in this case.
  ******************************************************************************/
 import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-import { serverRoute } from 'Frontend/generated/flow/server-route';
+import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
 import fileRoutes from 'Frontend/generated/file-routes';
 
 const routerBuilder = new RouterBuilder()
@@ -44,7 +44,7 @@ const routerBuilder = new RouterBuilder()
     //         ],
     //     },
     // ])
-    .withServerFallback(serverRoute)
+    .withServerFallback(serverSideRoutes)
     // To add individual routes, use the following code:
     // .withReactRoutes([
     //     { path: '/login', element: <Login />, handle: { title: 'Login' } },

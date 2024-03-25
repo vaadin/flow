@@ -529,7 +529,7 @@ public class BuildFrontendMojoTest {
         FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
                 """
                         import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                        import { serverRoute } from 'Frontend/generated/flow/server-route';
+                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
 
                         const routerBuilder = new RouterBuilder()
                              .withReactRoutes([
@@ -538,7 +538,7 @@ public class BuildFrontendMojoTest {
                                       handle: { title: 'Main' }
                                  }
                              ])
-                            .withServerFallback(serverRoute);
+                            .withServerFallback(serverSideRoutes);
 
                         export const routes = routerBuilder.routes;
                         export default routerBuilder.build();
@@ -557,7 +557,7 @@ public class BuildFrontendMojoTest {
         FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
                 """
                         import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                        import { serverRoute } from 'Frontend/generated/flow/server-route';
+                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
                         import fileRoutes from 'Frontend/generated/file-routes';
 
                         const routerBuilder = new RouterBuilder()
@@ -567,7 +567,7 @@ public class BuildFrontendMojoTest {
                                       handle: { title: 'Main' }
                                  }
                              ])
-                            .withServerFallback(serverRoute);
+                            .withServerFallback(serverSideRoutes);
 
                         export const routes = routerBuilder.routes;
                         export default routerBuilder.build();

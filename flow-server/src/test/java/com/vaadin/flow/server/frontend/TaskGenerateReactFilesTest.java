@@ -42,7 +42,7 @@ public class TaskGenerateReactFilesTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     Options options;
-    File routesTsx, frontend, frontendGenerated, fileRoutesTs, serverRouteTs;
+    File routesTsx, frontend, frontendGenerated;
     ClassFinder classFinder;
 
     @Before
@@ -63,9 +63,6 @@ public class TaskGenerateReactFilesTest {
                 FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
         options.withFrontendGeneratedFolder(frontendGenerated);
         routesTsx = new File(frontend, "routes.tsx");
-        fileRoutesTs = new File(frontendGenerated,
-                FrontendUtils.FILE_ROUTES_TSX);
-        serverRouteTs = new File(frontendGenerated, "flow/server-route.tsx");
     }
 
     @Test
@@ -85,12 +82,6 @@ public class TaskGenerateReactFilesTest {
                         "routes.tsx").exists());
         Assert.assertFalse("Missing ./frontend/routes.tsx",
                 new File(frontend, "routes.tsx").exists());
-
-        Assert.assertTrue("Missing ./frontend/generated/file-routes.ts file",
-                fileRoutesTs.exists());
-        Assert.assertTrue(
-                "Missing ./frontend/generated/flow/server-route.ts file",
-                serverRouteTs.exists());
     }
 
     @Test
@@ -101,8 +92,7 @@ public class TaskGenerateReactFilesTest {
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
                         import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                        import { serverRoute } from 'Frontend/generated/flow/server-route';
-                        import fileRoutes from 'Frontend/generated/file-routes';
+                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -118,7 +108,7 @@ public class TaskGenerateReactFilesTest {
                                      ],
                                  },
                              ])
-                            .withServerFallback(serverRoute)
+                            .withServerFallback(serverSideRoutes)
                             .withReactRoutes([
                                  { path: '/login', element: <Login />, handle: { title: 'Login' } },
                              ])
@@ -127,6 +117,41 @@ public class TaskGenerateReactFilesTest {
                         export const routes = routerBuilder.routes;
 
                         export default routerBuilder.build();
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
+    public void routesContainMultipleFlowImports_noExceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { tea, serverSideRoutes, coffee } from "Frontend/generated/flow/Flow";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                              ...serverSideRoutes
+                            ],
+                          },
+                          { path: '/login', element: <LoginView />},
+                        ]);
+
+                        export default createBrowserRouter(routes);
                 """;
 
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
@@ -255,8 +280,7 @@ public class TaskGenerateReactFilesTest {
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
                         import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                        import { serverRoute } from 'Frontend/generated/flow/server-route';
-                        import fileRoutes from 'Frontend/generated/file-routes';
+                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -272,7 +296,7 @@ public class TaskGenerateReactFilesTest {
                                      ],
                                  },
                              ])
-                            .withServerFallback(serverRoute)
+                            .withServerFallback(serverSideRoutes)
                             .withReactRoutes([
                                  { path: '/login', element: <Login />, handle: { title: 'Login' } },
                              ])
@@ -289,6 +313,47 @@ public class TaskGenerateReactFilesTest {
                 ExecutionFailedException.class, () -> task.execute());
         Assert.assertEquals(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
                 exception.getMessage());
+    }
+
+    @Test
+    public void withServerFallbackMissing_expectionThrown() throws IOException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { lazy } from 'react';
+                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+                        import {protectRoutes} from "@hilla/react-auth";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+                        const routerBuilder = new RouterBuilder()
+                            .withReactRoutes([
+                                 {
+                                     element: <MainLayout />,
+                                     handle: { title: 'Main' },
+                                     children: [
+                                         { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                                         { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                                     ],
+                                 },
+                             ])
+                            .withReactRoutes([
+                                 { path: '/login', element: <Login />, handle: { title: 'Login' } },
+                             ])
+                            .protect();
+
+                        export default routerBuilder.build();
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
     }
 
     @Test

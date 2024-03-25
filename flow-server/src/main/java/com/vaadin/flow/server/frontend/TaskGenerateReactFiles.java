@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
 
@@ -58,11 +59,11 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             The server route definition is missing from the '%1$s' file
 
             To have working Flow routes add the following to the '%1$s' file:
-            - import { serverRoute } from 'Frontend/generated/flow/server-route';
+            - import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
             - call 'withServerFallback' method of 'RouterBuilder' as shown below:
 
                 const routerBuilder = new RouterBuilder()
-                    .withServerFallback(serverRoute)
+                    .withServerFallback(serverSideRoutes)
                     // .withFileRoutes() or .withReactRoutes()
                     // ...
                 export const routes = routerBuilder.routes;
@@ -70,7 +71,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 OR
 
                 export const routes = [
-                    ...serverRoute
+                    ...serverSideRoutes
                 ] as RouteObject[];
 
             """;
@@ -84,22 +85,11 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private static final String FLOW_TSX = "Flow.tsx";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
-
-    static final String FLOW_SERVER_ROUTE_TSX = "flow/server-route.tsx";
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
     private static final String ROUTES_JS_IMPORT_PATH_TOKEN = "%routesJsImportPath%";
-    static final String FILE_ROUTES_TS_FALLBACK = """
-            const fileRoutes = { path: "", module: undefined, children: [] };
-            export default fileRoutes;
-            """;
 
-    static final String SERVER_ROUTES_TS = """
-            import { serverSideRoutes } from "Frontend/generated/flow/Flow";
-            export const serverRoute = serverSideRoutes;
-            """;
-
-    private static Pattern SERVER_ROUTE_PATTERN = Pattern.compile(
-            "import[\\s\\S]?\\{[\\s\\S]*serverRoute[\\s\\S]*\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/server-route(\\.js)?\\1;");
+    private static final Pattern SERVER_ROUTE_PATTERN = Pattern.compile(
+            "import[\\s\\S]?\\{[\\s\\S]*(?:serverSideRoutes)+[\\s\\S]*\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -124,10 +114,6 @@ public class TaskGenerateReactFiles implements FallibleCommand {
         File frontendDirectory = options.getFrontendDirectory();
         File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
-        File fileRoutesTs = new File(frontendGeneratedFolder,
-                FrontendUtils.FILE_ROUTES_TSX);
-        File serverRouteTs = new File(frontendGeneratedFolder,
-                FLOW_SERVER_ROUTE_TSX);
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
@@ -137,12 +123,6 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             writeFile(flowTsx, getFlowTsxFileContent(routesTsx.exists()));
             if (fileAvailable(REACT_ADAPTER_TSX)) {
                 writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
-            }
-            if (!fileRoutesTs.exists()) {
-                writeFile(fileRoutesTs, FILE_ROUTES_TS_FALLBACK);
-            }
-            if (!serverRouteTs.exists()) {
-                writeFile(serverRouteTs, SERVER_ROUTES_TS);
             }
             if (!routesTsx.exists()) {
                 boolean isHillaUsed = FrontendUtils.isHillaUsed(
@@ -227,7 +207,21 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     }
 
     private boolean missingServerRouteImport(String routesContent) {
-        return !SERVER_ROUTE_PATTERN.matcher(routesContent).find();
+        routesContent = StringUtil.removeComments(routesContent);
+        boolean hasImport = SERVER_ROUTE_PATTERN.matcher(routesContent).find();
+        if (usesRouterBuilder(routesContent)) {
+            hasImport = hasImport
+                    && hasWithServerFallbackFunction(routesContent);
+        }
+        return !hasImport;
+    }
+
+    private boolean usesRouterBuilder(String routesContent) {
+        return routesContent.contains("new RouterBuilder(");
+    }
+
+    private boolean hasWithServerFallbackFunction(String routesContent) {
+        return routesContent.contains("withServerFallback(");
     }
 
     private boolean serverRoutesAvailable() {

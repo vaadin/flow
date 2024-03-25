@@ -7,10 +7,10 @@
  * re-generated automatically by Vaadin.
  ******************************************************************************/
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
-import { serverRoute } from 'Frontend/generated/flow/server-route';
+import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
 
 export const routes = [
-    ...serverRoute
+    ...serverSideRoutes
 ] as RouteObject[];
 
 export default createBrowserRouter(routes);
