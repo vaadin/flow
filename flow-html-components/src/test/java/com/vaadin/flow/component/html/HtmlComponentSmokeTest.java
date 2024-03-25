@@ -236,6 +236,12 @@ public class HtmlComponentSmokeTest {
             return true;
         }
 
+        // NativeTable delegates caption text to the nested <caption> element
+        if (method.getDeclaringClass() == NativeTable.class
+                && method.getName().startsWith("setCaptionText")) {
+            return true;
+        }
+
         return false;
     }
 
