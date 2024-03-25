@@ -110,10 +110,11 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler\\$RedirectStrategy",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.WebIconsRequestMatcher(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.JwtSecurityContextRepository",
-                "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.JwtSecurityContextRepository\\$UpdateJwtResponseWrapper",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.SerializedJwtSplitCookieRepository",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.VaadinStatelessSecurityConfigurer",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.VaadinStatelessSecurityConfigurer\\$SecretKeyConfigurer",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.VaadinStatelessSecurityConfigurer\\$UpdateJwtCookiesFilter",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.stateless\\.VaadinStatelessSecurityConfigurer\\$UpdateJWTCookieOnCommitResponseWrapper",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer\\$ClassPathScanner",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer\\$CustomResourceLoader"),
                 super.getExcludedPatterns());

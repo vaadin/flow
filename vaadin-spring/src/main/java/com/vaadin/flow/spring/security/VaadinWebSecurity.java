@@ -23,7 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import javax.crypto.SecretKey;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,7 +43,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
@@ -56,7 +54,6 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -150,6 +147,7 @@ public abstract class VaadinWebSecurity {
             cfg.invalidateHttpSession(true);
             addLogoutHandlers(cfg::addLogoutHandler);
         });
+
         DefaultSecurityFilterChain securityFilterChain = http.build();
         Optional.ofNullable(vaadinRolePrefixHolder)
                 .ifPresent(vaadinRolePrefixHolder -> vaadinRolePrefixHolder
@@ -551,23 +549,9 @@ public abstract class VaadinWebSecurity {
     protected void setStatelessAuthentication(HttpSecurity http,
             SecretKey secretKey, String issuer, long expiresIn)
             throws Exception {
-        VaadinStatelessSecurityConfigurer<HttpSecurity> vaadinStatelessSecurityConfigurer = new VaadinStatelessSecurityConfigurer<>();
-        vaadinStatelessSecurityConfigurer.setSharedObjects(http);
-        http.apply(vaadinStatelessSecurityConfigurer);
-
-        // Workaround
-        // https://github.com/spring-projects/spring-security/issues/12579 until
-        // it is released
-        SessionManagementConfigurer sessionManagementConfigurer = http
-                .getConfigurer(SessionManagementConfigurer.class);
-        Field f = SessionManagementConfigurer.class
-                .getDeclaredField("sessionManagementSecurityContextRepository");
-        f.setAccessible(true);
-        f.set(sessionManagementConfigurer,
-                http.getSharedObject(SecurityContextRepository.class));
-
-        vaadinStatelessSecurityConfigurer.withSecretKey().secretKey(secretKey)
-                .and().issuer(issuer).expiresIn(expiresIn);
+        VaadinStatelessSecurityConfigurer.apply(http,
+                cfg -> cfg.withSecretKey().secretKey(secretKey).and()
+                        .issuer(issuer).expiresIn(expiresIn));
     }
 
     /**
