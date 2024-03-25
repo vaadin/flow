@@ -38,7 +38,7 @@ public class Options implements Serializable {
 
     private boolean enableImportsUpdate = false;
 
-    private boolean enableWebpackConfigUpdate = false;
+    private boolean enableConfigUpdate = false;
 
     private boolean runNpmInstall = false;
 
@@ -181,6 +181,26 @@ public class Options implements Serializable {
     }
 
     /**
+     * Sets the folders where frontend build results should be stored.
+     *
+     * @param webappResourcesDirectory
+     *            the directory to set for build tool to output its build
+     *            results, meant for serving from context root.
+     * @param resourceOutputDirectory
+     *            the directory to output generated non-served resources, such
+     *            as the "config/stats.json" stats file, and the
+     *            "config/flow-build-info.json" token file.
+     * @return this builder
+     */
+    public Options withBuildResultFolders(File webappResourcesDirectory,
+            File resourceOutputDirectory) {
+        this.enableConfigUpdate = true;
+        this.webappResourcesDirectory = webappResourcesDirectory;
+        this.resourceOutputDirectory = resourceOutputDirectory;
+        return this;
+    }
+
+    /**
      * Sets the webpack related properties.
      *
      * @param webappResourcesDirectory
@@ -191,21 +211,22 @@ public class Options implements Serializable {
      *            as the "config/stats.json" stats file, and the
      *            "config/flow-build-info.json" token file.
      * @return this builder
+     * @deprecated to be removed, use
+     *             {@link #withBuildResultFolders(File, File)} instead.
      */
+    @Deprecated(since = "24.4", forRemoval = true)
     public Options withWebpack(File webappResourcesDirectory,
             File resourceOutputDirectory) {
-        this.enableWebpackConfigUpdate = true;
-        this.webappResourcesDirectory = webappResourcesDirectory;
-        this.resourceOutputDirectory = resourceOutputDirectory;
-        return this;
+        return withBuildResultFolders(webappResourcesDirectory,
+                resourceOutputDirectory);
     }
 
     /**
-     * Sets whether to enable packages and webpack file updates. Default is
+     * Sets whether to enable packages and frontend file updates. Default is
      * <code>true</code>.
      *
      * @param enablePackagesUpdate
-     *            <code>true</code> to enable packages and webpack update,
+     *            <code>true</code> to enable packages and frontend update,
      *            otherwise <code>false</code>
      * @return this builder
      */
@@ -280,7 +301,7 @@ public class Options implements Serializable {
 
     /**
      * Sets whether copy resources from classpath to the appropriate npm package
-     * folder so as they are available for webpack build.
+     * folder so as they are available for frontend build.
      *
      * @param jars
      *            set of class nodes to be visited. Not {@code null}
@@ -362,6 +383,9 @@ public class Options implements Serializable {
      * @return folder to generate frontend files in
      */
     public File getFrontendGeneratedFolder() {
+        if (frontendGeneratedFolder == null) {
+            return new File(getFrontendDirectory(), FrontendUtils.GENERATED);
+        }
         return frontendGeneratedFolder;
     }
 
@@ -628,9 +652,9 @@ public class Options implements Serializable {
     }
 
     /**
-     * Get the output directory for webpack output.
+     * Get the output directory for frontend build output.
      *
-     * @return webpackOutputDirectory
+     * @return webappResourcesDirectory
      */
     public File getWebappResourcesDirectory() {
         return webappResourcesDirectory;
@@ -725,8 +749,16 @@ public class Options implements Serializable {
         return enableImportsUpdate;
     }
 
+    public boolean isEnableConfigUpdate() {
+        return enableConfigUpdate;
+    }
+
+    /**
+     * @deprecated use {@link #isEnableConfigUpdate()}
+     */
+    @Deprecated(since = "24.4", forRemoval = true)
     public boolean isEnableWebpackConfigUpdate() {
-        return enableWebpackConfigUpdate;
+        return isEnableConfigUpdate();
     }
 
     public boolean isRunNpmInstall() {

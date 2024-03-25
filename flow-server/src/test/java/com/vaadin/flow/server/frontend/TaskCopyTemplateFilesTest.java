@@ -89,7 +89,8 @@ public class TaskCopyTemplateFilesTest {
 
         Options options = new Options(Mockito.mock(Lookup.class),
                 projectDirectory)
-                .withWebpack(frontendDirectory, resourceOutputDirectory)
+                .withBuildResultFolders(frontendDirectory,
+                        resourceOutputDirectory)
                 .withFrontendDirectory(frontendDirectory);
         TaskCopyTemplateFiles task = new TaskCopyTemplateFiles(finder, options);
         task.execute();

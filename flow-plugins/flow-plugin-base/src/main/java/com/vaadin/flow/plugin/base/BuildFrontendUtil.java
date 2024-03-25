@@ -15,26 +15,6 @@
  */
 package com.vaadin.flow.plugin.base;
 
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
-import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
-import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
-import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
-import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
-import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
-import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.LEGACY_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -65,6 +45,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -82,6 +63,24 @@ import com.vaadin.pro.licensechecker.Product;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Util class provides all methods a Plugin will need.
@@ -149,6 +148,8 @@ public class BuildFrontendUtil {
         Options options = new Options(lookup, adapter.npmFolder())
                 .withFrontendDirectory(getFrontendDirectory(adapter))
                 .withBuildDirectory(adapter.buildFolder())
+                .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                        adapter.servletResourceOutputDirectory())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
                 .createMissingPackageJson(true).enableImportsUpdate(false)
@@ -261,8 +262,8 @@ public class BuildFrontendUtil {
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
-            FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
-                    StandardCharsets.UTF_8.name());
+            FileIOUtils.writeIfChanged(token,
+                    JsonUtil.stringify(buildInfo, 2) + "\n");
             // Enable debug to find out problems related with flow modes
 
             if (adapter.isDebugEnabled()) {
@@ -309,7 +310,7 @@ public class BuildFrontendUtil {
                     .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withWebpack(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true)
                     .useByteCodeScanner(adapter.optimizeBundle())
@@ -375,7 +376,7 @@ public class BuildFrontendUtil {
                     .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withWebpack(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true).useByteCodeScanner(false)
                     .withJarFrontendResourcesFolder(
