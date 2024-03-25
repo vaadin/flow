@@ -132,7 +132,7 @@ function vaadinRouterGlobalClickHandler(event) {
 
     // if none of the above, convert the click into a navigation event
     const {pathname, search, hash} = anchor;
-    if (fireRouterEvent('go', {pathname, search, hash})) {
+    if (fireRouterEvent('go', {pathname, search, hash, nav: true})) {
         event.preventDefault();
         // for a click event, the scroll is reset to the top position.
         if (event && event.type === 'click') {
@@ -196,14 +196,18 @@ function navigateEventHandler(event) {
                 continue() {
                     mountedContainer?.parentNode?.removeChild(mountedContainer);
                     mountedContainer = undefined;
-                    popstateListener.listener(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
+                    if(event.detail.nav) {
+                        navigation(event.detail.pathname, {replace: false});
+                    } else {
+                        popstateListener.listener(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
+                    }
                 }
             }, router);
         } else {
             // Navigate to a non flow view. Clean nodes and undefine container.
             mountedContainer?.parentNode?.removeChild(mountedContainer);
             mountedContainer = undefined;
-            popstateListener.listener(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
+            navigation(event.detail.pathname, {replace: false});
         }
     }
     lastNavigation = event.detail.pathname;

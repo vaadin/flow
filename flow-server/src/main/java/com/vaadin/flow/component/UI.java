@@ -1670,7 +1670,11 @@ public class UI extends Component
     }
 
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
-    public static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
+    public static final String CLIENT_NAVIGATE_TO = """
+            const url = new URL($0, document.baseURI);
+            url["nav"] = true;
+            window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
+            """;
 
     public Element wrapperElement;
     private NavigationState clientViewNavigationState;
