@@ -96,7 +96,8 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
                 options);
         task.setGeneratedFileSupport(new GeneratedFilesSupport());
         task.execute();
-        assertAllFilesDeleted();
+        Assert.assertFalse("Generated folder has not been deleted",
+                generatedFolder.exists());
     }
 
     @Test
@@ -145,12 +146,6 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
         task.execute();
         assertOnlyExpectedGeneratedFilesExists(files.toArray(File[]::new));
 
-    }
-
-    private void assertAllFilesDeleted() throws IOException {
-        AccumulatorPathVisitor visitor = new AccumulatorPathVisitor();
-        Files.walkFileTree(generatedFolder.toPath(), visitor);
-        Assert.assertTrue(visitor.getFileList().isEmpty());
     }
 
     private void assertOnlyExpectedGeneratedFilesExists(File... expectedFiles)
