@@ -324,7 +324,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("webpack", "4.42.0");
+        defaults.put("webpack", "4.47.0");
         defaults.put("webpack-cli", "3.3.11");
         defaults.put("webpack-dev-server", "3.11.0");
         defaults.put("webpack-babel-multi-target-plugin", "2.5.0");
