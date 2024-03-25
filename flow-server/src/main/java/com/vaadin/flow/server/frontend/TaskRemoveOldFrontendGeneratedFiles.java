@@ -18,13 +18,16 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.file.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,19 +79,42 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
             toDelete.removeAll(generatedFiles);
             LOGGER.debug("Cleaning generated frontend files from {}: {}",
                     frontendGeneratedFolder, toDelete);
-
             for (Path path : toDelete) {
                 try {
                     Files.deleteIfExists(path);
-                } catch (IOException e) {
+                } catch (IOException ex) {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Cannot delete old generated file {}",
-                                path, e);
+                                path, ex);
                     } else {
                         LOGGER.warn("Cannot delete old generated file {}",
                                 path);
                     }
                 }
+            }
+            // Remove empty directories
+            try {
+                Files.walkFileTree(frontendGeneratedFolder,
+                        new SimpleFileVisitor<>() {
+                            @Override
+                            public FileVisitResult postVisitDirectory(Path dir,
+                                    IOException exc) throws IOException {
+                                if (PathUtils.isEmptyDirectory(dir)) {
+                                    Files.deleteIfExists(dir);
+                                }
+                                return FileVisitResult.CONTINUE;
+                            }
+                        });
+            } catch (IOException ex) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                            "Cannot delete empty folder generated under {}",
+                            frontendGeneratedFolder, ex);
+                } else {
+                    LOGGER.warn("Cannot delete empty folder generated under {}",
+                            frontendGeneratedFolder);
+                }
+
             }
         }
     }
