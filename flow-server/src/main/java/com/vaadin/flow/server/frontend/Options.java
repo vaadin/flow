@@ -124,6 +124,12 @@ public class Options implements Serializable {
     private boolean reactEnable = true;
 
     /**
+     * Removes generated files from a previous execution that are no more
+     * created.
+     */
+    private boolean cleanOldGeneratedFiles = false;
+
+    /**
      * Creates a new instance.
      *
      * @param lookup
@@ -918,5 +924,33 @@ public class Options implements Serializable {
     public Options withReact(boolean reactEnable) {
         this.reactEnable = reactEnable;
         return this;
+    }
+
+    /**
+     * Sets whether generated files from a previous execution that are no more
+     * created should be removed.
+     * <p>
+     * </p>
+     * By default, the odl generated files are preserved.
+     *
+     * @param {@literal true} if old generated files should be removed,
+     * {@literal false} if they should be preserved.
+     *
+     * @return this builder
+     */
+    public Options withCleanOldGeneratedFiles(boolean clean) {
+        this.cleanOldGeneratedFiles = clean;
+        return this;
+    }
+
+    /**
+     * Gets if generated files from a previous execution that are no more
+     * created should be removed.
+     *
+     * @return {@literal true} if old generated files should be removed,
+     *         otherwise {@literal false}.
+     */
+    public boolean isCleanOldGeneratedFiles() {
+        return cleanOldGeneratedFiles;
     }
 }

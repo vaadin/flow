@@ -110,8 +110,16 @@ abstract class AbstractUpdateImports implements Runnable {
     private final File generatedFlowDefinitions;
     private File chunkFolder;
 
+    private final GeneratedFilesSupport generatedFilesSupport;
+
     AbstractUpdateImports(Options options,
             FrontendDependenciesScanner scanner) {
+        this(options, scanner, new GeneratedFilesSupport());
+    }
+
+    AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
+            GeneratedFilesSupport generatedFilesSupport) {
+        this.generatedFilesSupport = generatedFilesSupport;
         this.options = options;
         this.scanner = scanner;
         this.classFinder = options.getClassFinder();
@@ -183,7 +191,8 @@ abstract class AbstractUpdateImports implements Runnable {
     protected void writeOutput(Map<File, List<String>> outputFiles) {
         try {
             for (Entry<File, List<String>> output : outputFiles.entrySet()) {
-                FileIOUtils.writeIfChanged(output.getKey(), output.getValue());
+                generatedFilesSupport.writeIfChanged(output.getKey(),
+                        output.getValue());
             }
             if (chunkFolder.exists() && chunkFolder.isDirectory()) {
                 for (File existingChunk : chunkFolder.listFiles()) {
