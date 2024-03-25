@@ -933,8 +933,9 @@ public class Options implements Serializable {
      * </p>
      * By default, the odl generated files are preserved.
      *
-     * @param {@literal true} if old generated files should be removed,
-     * {@literal false} if they should be preserved.
+     * @param clean
+     *            {@literal true} if old generated files should be removed,
+     *            {@literal false} if they should be preserved.
      *
      * @return this builder
      */
