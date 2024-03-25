@@ -14,7 +14,7 @@
     "esbuild-loader": "2.19.0",
     "html-webpack-plugin": "4.5.1",
     "fork-ts-checker-webpack-plugin": "6.2.1",
-    "webpack": "4.46.0",
+    "webpack": "4.47.0",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "4.10.0",
     "compression-webpack-plugin": "4.0.1",
