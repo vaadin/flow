@@ -174,7 +174,7 @@ public class NodeUpdaterTest {
         Assert.assertEquals("^2.2.10",
                 packageJson.getObject(NodeUpdater.DEPENDENCIES)
                         .getString("@webcomponents/webcomponentsjs"));
-        Assert.assertEquals("4.42.0", packageJson
+        Assert.assertEquals("4.47.0", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
