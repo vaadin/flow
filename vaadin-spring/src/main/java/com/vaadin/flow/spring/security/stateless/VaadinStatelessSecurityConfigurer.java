@@ -97,6 +97,40 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
     private SecretKeyConfigurer secretKeyConfigurer;
 
+    /**
+     * Sets {@link JwtSecurityContextRepository} as a shared object to be used
+     * by multiple {@code SecurityConfigurer}.
+     *
+     * @param http
+     *            the http security builder to store the shared object.
+     * @deprecated to be removed. There is no direct replacement for this
+     *             method. Shared object setup must be done along with other
+     *             required configurations by calling
+     *             {@link #apply(HttpSecurity, Customizer)}.
+     * @see #apply(HttpSecurity, Customizer)
+     */
+    @Deprecated(since = "24.4", forRemoval = true)
+    public void setSharedObjects(HttpSecurity http) {
+        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
+                new SerializedJwtSplitCookieRepository());
+        http.setSharedObject(SecurityContextRepository.class,
+                jwtSecurityContextRepository);
+    }
+
+    /**
+     * Applies configuration required to enable stateless security for a Vaadin
+     * application.
+     * <p>
+     * </p>
+     * Use {@code customizer} to tune {@link VaadinStatelessSecurityConfigurer},
+     * or {@link Customizer#withDefaults()} to accept the default values.
+     *
+     * @param http
+     *            the http security builder
+     * @param customizer
+     *            the {@link Customizer} to provide more options for the
+     *            {@link VaadinStatelessSecurityConfigurer}
+     */
     public static void apply(HttpSecurity http,
             Customizer<VaadinStatelessSecurityConfigurer<HttpSecurity>> customizer)
             throws Exception {
