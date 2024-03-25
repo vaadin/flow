@@ -176,6 +176,12 @@ function navigateEventHandler(event) {
                     // @ts-ignore
                     redirect: (path) => {
                         navigation(path, {replace: false});
+                    },
+                    continue: () => {
+                        if(window.location.pathname !== event.detail.pathname) {
+                            window.history.pushState(window.history.state, '', event.detail.pathname);
+                            window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
+                        }
                     }
                 },
                 router,
