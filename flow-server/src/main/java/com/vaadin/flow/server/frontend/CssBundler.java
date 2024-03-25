@@ -86,6 +86,7 @@ public class CssBundler {
 
             return Matcher.quoteReplacement(urlMatcher.group());
         });
+        List<String> unhandledImports = new ArrayList<>();
         Matcher importMatcher = importPattern.matcher(content);
         content = importMatcher.replaceAll(result -> {
             // Oh the horror
@@ -95,7 +96,8 @@ public class CssBundler {
             String layerOrMediaQueryInfo = result.group(9);
             if (layerOrMediaQueryInfo != null
                     && !layerOrMediaQueryInfo.isBlank()) {
-                return Matcher.quoteReplacement(result.group());
+                unhandledImports.add(result.group());
+                return "";
             }
             String url = getNonNullGroup(result, 3, 4, 5, 7, 8);
             if (url == null || !url.trim().endsWith(".css")) {
@@ -112,22 +114,17 @@ public class CssBundler {
                             .warn("Unable to inline import: " + result.group());
                 }
             }
-            return Matcher.quoteReplacement(result.group());
+
+            unhandledImports.add(result.group());
+            return "";
         });
 
-        // Move unhandled @import statements to the top, as they would be
+        // Prepend unhandled @import statements at the top, as they would be
         // ignored by the browser if they appear after regular CSS rules
-        Matcher remainingImportMatcher = importPattern.matcher(content);
-        List<String> remainingImports = new ArrayList<>();
-        while (remainingImportMatcher.find()) {
-            remainingImports.add(remainingImportMatcher.group());
+        if (!unhandledImports.isEmpty()) {
+            content = String.join("\n", unhandledImports)
+                    + (content.isEmpty() ? "" : "\n" + content);
         }
-        content = remainingImportMatcher.replaceAll("");
-        String remainingImportsString = String.join("\n", remainingImports);
-        boolean addNewLine = !content.isEmpty()
-                && !remainingImportsString.isEmpty();
-        content = remainingImportsString + (addNewLine ? "\n" : "") + content;
-
         return content;
     }
 

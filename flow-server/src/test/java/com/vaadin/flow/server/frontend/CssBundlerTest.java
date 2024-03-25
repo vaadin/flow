@@ -143,6 +143,9 @@ public class CssBundlerTest {
                         @import url('https://cdn.jsdelivr.net/fontsource/css/inter@latest/index.css');
                         @import url('other.css');
                         @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
+                        @import url('foo.css') layer(foo);
+                        @import url('bluish.css') print, screen;
+                        @import url('landscape.css') screen and (orientation: landscape);
                         """,
                 "styles.css");
 
@@ -150,6 +153,9 @@ public class CssBundlerTest {
                 """
                         @import url('https://cdn.jsdelivr.net/fontsource/css/inter@latest/index.css');
                         @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
+                        @import url('foo.css') layer(foo);
+                        @import url('bluish.css') print, screen;
+                        @import url('landscape.css') screen and (orientation: landscape);
 
                         body {background: blue};
                         """
