@@ -131,8 +131,11 @@ function vaadinRouterGlobalClickHandler(event) {
     }
 
     // if none of the above, convert the click into a navigation event
-    const {pathname, search, hash} = anchor;
-    if (fireRouterEvent('go', {pathname, search, hash, nav: true})) {
+    const {pathname, href, baseURI, search, hash} = anchor;
+    // Normalize away base from pathname. e.g. /react should remove base /view from /view/react
+    let normalizedPathname = href.slice(0, baseURI.length) == baseURI ? href.slice(baseURI.length) : pathname;
+    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname: "/" + normalizedPathname;
+    if (fireRouterEvent('go', {pathname: normalizedPathname, search, hash, clientNavigation: true})) {
         event.preventDefault();
         // for a click event, the scroll is reset to the top position.
         if (event && event.type === 'click') {
@@ -154,8 +157,13 @@ function navigateEventHandler(event) {
     if (event && event.preventDefault) {
         event.preventDefault();
     }
+    // Normalize path against baseURI if href available.
+    let normalizedPathname = event.detail.href && event.detail.href.slice(0, document.baseURI.length) == document.baseURI ?
+        event.detail.href.slice(document.baseURI.length) : event.detail.pathname;
+    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname: "/"+normalizedPathname;
+
     // @ts-ignore
-    let matched = matchRoutes(Array.from(routes), event.detail.pathname);
+    let matched = matchRoutes(Array.from(routes), normalizedPathname);
     prevNavigation = lastNavigation;
 
     // if navigation event route targets a flow view do beforeEnter for the
@@ -196,8 +204,11 @@ function navigateEventHandler(event) {
                 continue() {
                     mountedContainer?.parentNode?.removeChild(mountedContainer);
                     mountedContainer = undefined;
-                    if(event.detail.nav) {
-                        navigation(event.detail.pathname, {replace: false});
+                    // clientNavigation flag denotes navigation to a client route through
+                    // a link or server navigate. If clientNavigation is not given the
+                    // navigation is through a history event and we only call the router popstate event.
+                    if (event.detail.clientNavigation) {
+                        navigation(normalizedPathname, {replace: false});
                     } else {
                         popstateListener.listener(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
                     }
