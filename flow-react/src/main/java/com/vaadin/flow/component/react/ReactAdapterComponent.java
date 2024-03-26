@@ -99,10 +99,8 @@ public abstract class ReactAdapterComponent extends Component {
      *            state name
      * @param value
      *            value to assign
-     * @param <T>
-     *            type of the state value
      */
-    protected <T> void setState(String stateName, T value) {
+    protected void setState(String stateName, Object value) {
         getElement().setPropertyJson(stateName, writeAsJson(value));
     }
 
