@@ -32,7 +32,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
@@ -403,6 +405,43 @@ public class FeatureFlagsTest {
         CompletableFuture.allOf(directTask, supplierTask);
         Assert.assertTrue("Futures not completed, potential deadlock",
                 latch.await(1, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void propertiesFileCheckedForUnsupportedFeatureFlags() throws IOException {
+        Logger mockedLogger = Mockito.mock(Logger.class);
+
+        try (MockedStatic<LoggerFactory> context = Mockito.mockStatic(LoggerFactory.class)) {
+            context.when(() -> LoggerFactory.getLogger(FeatureFlags.class))
+                    .thenReturn(mockedLogger);
+
+            createFeatureFlagsFile(
+                    "com.vaadin.experimental.unsupportedFeature=true\ncom.vaadin.experimental.exampleFeatureFlag=true\n");
+            featureFlags.loadProperties();
+
+            Mockito.verify(mockedLogger, Mockito.never())
+                    .warn("Unsupported feature flag is present: {}", "com.vaadin.experimental.exampleFeatureFlag");
+            Mockito.verify(mockedLogger, Mockito.times(1))
+                    .warn("Unsupported feature flag is present: {}", "com.vaadin.experimental.unsupportedFeature");
+        }
+    }
+
+    @Test
+    public void propertiesFileCheckForUnsupportedFeatureFlagsRanOnlyOnce() throws IOException {
+        Logger mockedLogger = Mockito.mock(Logger.class);
+
+        try (MockedStatic<LoggerFactory> context = Mockito.mockStatic(LoggerFactory.class)) {
+            context.when(() -> LoggerFactory.getLogger(FeatureFlags.class))
+                    .thenReturn(mockedLogger);
+
+            createFeatureFlagsFile(
+                    "com.vaadin.experimental.unsupportedFeature=true\n");
+            featureFlags.loadProperties();
+            featureFlags.loadProperties();
+
+            Mockito.verify(mockedLogger, Mockito.times(1))
+                    .warn("Unsupported feature flag is present: {}", "com.vaadin.experimental.unsupportedFeature");
+        }
     }
 
     private boolean hasUsageStatsEntry(String name) {

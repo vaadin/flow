@@ -82,6 +82,8 @@ public class FeatureFlags implements Serializable {
 
     private ApplicationConfiguration configuration;
 
+    private boolean isPropertiesFileChecked = false;
+
     /**
      * Generate FeatureFlags with given lookup data.
      *
@@ -208,6 +210,11 @@ public class FeatureFlags implements Serializable {
 
             if (propertiesStream != null) {
                 props.load(propertiesStream);
+                // Check once if there are unsupported feature flags in the file
+                if (!isPropertiesFileChecked) {
+                    checkForUnsupportedFeatureFlags(props);
+                    isPropertiesFileChecked = true;
+                }
             }
             for (Feature f : features) {
                 // Allow users to override a feature flag with a system property
@@ -345,5 +352,14 @@ public class FeatureFlags implements Serializable {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(FeatureFlags.class);
+    }
+
+    private void checkForUnsupportedFeatureFlags(Properties props) {
+        for (Object property : props.keySet()) {
+            if (features.stream()
+                    .noneMatch(feature -> getPropertyName(feature.getId()).equals(property))) {
+                getLogger().warn("Unsupported feature flag is present: {}", property);
+            }
+        }
     }
 }
