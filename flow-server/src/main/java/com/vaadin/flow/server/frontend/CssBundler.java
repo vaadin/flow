@@ -100,18 +100,18 @@ public class CssBundler {
                 return "";
             }
             String url = getNonNullGroup(result, 3, 4, 5, 7, 8);
-            if (url == null || !url.trim().endsWith(".css")) {
-                return Matcher.quoteReplacement(result.group());
-            }
-
-            File potentialFile = new File(cssFile.getParentFile(), url.trim());
-            if (potentialFile.exists()) {
-                try {
-                    return Matcher.quoteReplacement(
-                            inlineImports(themeFolder, potentialFile));
-                } catch (IOException e) {
-                    getLogger()
-                            .warn("Unable to inline import: " + result.group());
+            String sanitizedUrl = sanitizeUrl(url);
+            if (sanitizedUrl != null && sanitizedUrl.endsWith(".css")) {
+                File potentialFile = new File(cssFile.getParentFile(),
+                        sanitizedUrl);
+                if (potentialFile.exists()) {
+                    try {
+                        return Matcher.quoteReplacement(
+                                inlineImports(themeFolder, potentialFile));
+                    } catch (IOException e) {
+                        getLogger().warn(
+                                "Unable to inline import: " + result.group());
+                    }
                 }
             }
 
@@ -136,6 +136,13 @@ public class CssBundler {
             }
         }
         return null;
+    }
+
+    private static String sanitizeUrl(String url) {
+        if (url == null) {
+            return null;
+        }
+        return url.trim().split("\\?")[0];
     }
 
     private static Logger getLogger() {
