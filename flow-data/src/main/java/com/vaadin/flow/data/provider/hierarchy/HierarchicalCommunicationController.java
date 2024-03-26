@@ -319,7 +319,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         if (passivated != null) {
             passivated.forEach(key -> {
                 T item = keyMapper.get(key);
-                if (item != null) {
+                if (item != null && !mapper.isExpanded(item)) {
                     dataGenerator.destroyData(item);
                     keyMapper.remove(item);
                 }
