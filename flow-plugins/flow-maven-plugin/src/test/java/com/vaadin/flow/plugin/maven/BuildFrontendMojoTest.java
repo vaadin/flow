@@ -528,20 +528,16 @@ public class BuildFrontendMojoTest {
         // Enable Hilla to generate openApi
         FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
                 """
-                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+                        import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+                        export const routes = [
+                            {
+                                element: <MainLayout />,
+                                handle: { title: 'Main' }
+                            }
+                        ] as RouteObject[];
 
-                        const routerBuilder = new RouterBuilder()
-                             .withReactRoutes([
-                                 {
-                                      element: <MainLayout />,
-                                      handle: { title: 'Main' }
-                                 }
-                             ])
-                            .withServerFallback(serverSideRoutes);
 
-                        export const routes = routerBuilder.routes;
-                        export default routerBuilder.build();
+                        export const router = createBrowserRouter(...routes]);
                         """);
 
         Assert.assertFalse(
@@ -556,21 +552,16 @@ public class BuildFrontendMojoTest {
         // Enable Hilla to generate ts files
         FileUtils.fileWrite(new File(frontendDirectory, "routes.tsx"), "UTF-8",
                 """
-                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
-                        import fileRoutes from 'Frontend/generated/file-routes';
+                        import { serverSideRoutes } from "Frontend/generated/flow/Flow";
+                        export const routes = [
+                            {
+                                element: <MainLayout />,
+                                handle: { title: 'Main' }
+                            }
+                        ] as RouteObject[];
 
-                        const routerBuilder = new RouterBuilder()
-                             .withReactRoutes([
-                                 {
-                                      element: <MainLayout />,
-                                      handle: { title: 'Main' }
-                                 }
-                             ])
-                            .withServerFallback(serverSideRoutes);
 
-                        export const routes = routerBuilder.routes;
-                        export default routerBuilder.build();
+                        export const router = createBrowserRouter(...routes]);
                         """);
 
         File connectClientApi = new File(generatedTsFolder,
