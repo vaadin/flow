@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,6 +78,7 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
                     .getFiles(frontendGeneratedFolder);
             HashSet<Path> toDelete = new HashSet<>(existingFiles);
             toDelete.removeAll(generatedFiles);
+            toDelete.removeIf(isKnownUnhandledFile());
             LOGGER.debug("Cleaning generated frontend files from {}: {}",
                     frontendGeneratedFolder, toDelete);
             for (Path path : toDelete) {
@@ -117,6 +119,19 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
 
             }
         }
+    }
+
+    private Predicate<Path> isKnownUnhandledFile() {
+        Path flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(
+                        frontendGeneratedFolder.getParent().toFile())
+                .toPath().toAbsolutePath();
+        return path -> path.equals(flowGeneratedImports)
+                || path.equals(flowGeneratedImports
+                        .resolveSibling(FrontendUtils.IMPORTS_D_TS_NAME))
+                || path.equals(frontendGeneratedFolder.resolve("views.ts"))
+                || path.getFileName().toString()
+                        .matches("theme(\\.(js|d\\.ts)|-.*\\.generated.js)");
     }
 
     @Override
