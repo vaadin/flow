@@ -1772,10 +1772,6 @@ public class UI extends Component
         }
 
         final String trimmedRoute = PathUtil.trimPath(event.route);
-        if (!trimmedRoute.equals(event.route)) {
-            // See InternalRedirectHandler invoked via Router.
-            getPage().getHistory().replaceState(null, trimmedRoute);
-        }
         final Location location = new Location(trimmedRoute,
                 QueryParameters.fromString(event.query));
         NavigationTrigger navigationTrigger;
@@ -1813,6 +1809,10 @@ public class UI extends Component
             serverPaused();
         } else {
             acknowledgeClient();
+            if (!trimmedRoute.equals(event.route)) {
+                // See InternalRedirectHandler invoked via Router.
+                getPage().getHistory().replaceState(null, trimmedRoute);
+            }
         }
     }
 
