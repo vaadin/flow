@@ -17,6 +17,7 @@ package com.vaadin.flow.spring;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -24,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.router.internal.ClientRoutesProvider;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.spring.SpringLookupInitializer.SpringApplicationContextInit;
 import com.vaadin.flow.spring.i18n.DefaultI18NProviderFactory;
@@ -78,5 +80,21 @@ public class VaadinApplicationConfiguration {
                     + DefaultI18NProviderFactory.DEFAULT_LOCATION_PATTERN
                     + "}") String locationPattern) {
         return DefaultI18NProviderFactory.create(locationPattern);
+    }
+
+    /**
+     * Creates default {@link ClientRoutesProvider}. This is created only if
+     * there's no {@link ClientRoutesProvider} bean declared.
+     *
+     * @param context
+     *            the application context
+     * @return default client routes provider
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public ClientRoutesProvider vaadinClientRoutesProvider(
+            ApplicationContext context) {
+        return new ClientRoutesProvider() {
+        };
     }
 }
