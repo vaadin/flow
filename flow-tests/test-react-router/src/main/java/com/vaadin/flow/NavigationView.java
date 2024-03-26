@@ -59,8 +59,8 @@ public class NavigationView extends Div {
         reactAnchorNavigation.setId(REACT_ANCHOR_ID);
         NativeButton reactServerNavigation = new NativeButton(
                 "Navigate to react through Server", event -> {
-            event.getSource().getUI().get().navigate("react");
-        });
+                    event.getSource().getUI().get().navigate("react");
+                });
         reactServerNavigation.setId(REACT_ID);
 
         add(new Div(), reactAnchorNavigation, new Div(), reactServerNavigation);
