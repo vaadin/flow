@@ -82,6 +82,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
@@ -1808,7 +1809,8 @@ public class UI extends Component
         } else if (isPostponed()) {
             serverPaused();
         } else {
-            acknowledgeClient();
+            serverConnected(
+                    !getSession().getState().equals(VaadinSessionState.OPEN));
             if (!trimmedRoute.equals(event.route)) {
                 // See InternalRedirectHandler invoked via Router.
                 getPage().getHistory().replaceState(null, trimmedRoute);
