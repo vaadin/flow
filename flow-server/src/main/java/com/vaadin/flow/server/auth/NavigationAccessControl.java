@@ -409,6 +409,6 @@ public class NavigationAccessControl implements BeforeEnterListener {
     public boolean hasAccessChecker(
             Class<? extends NavigationAccessChecker> type) {
         return checkerList.stream()
-                .anyMatch(checker -> checker.getClass() == type);
+                .anyMatch(checker -> type.isAssignableFrom(checker.getClass()));
     }
 }
