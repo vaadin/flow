@@ -1773,13 +1773,6 @@ public class UI extends Component
         }
 
         final String trimmedRoute = PathUtil.trimPath(event.route);
-        if(getForwardToClientUrl() == null && !isPostponed()) {
-            // Only replace route if not forwarding or postponing.
-            if (!trimmedRoute.equals(event.route)) {
-                // See InternalRedirectHandler invoked via Router.
-                getPage().getHistory().replaceState(null, trimmedRoute);
-            }
-        }
         final Location location = new Location(trimmedRoute,
                 QueryParameters.fromString(event.query));
         NavigationTrigger navigationTrigger;
@@ -1816,8 +1809,14 @@ public class UI extends Component
         } else if (isPostponed()) {
             serverPaused();
         } else {
+            // acknowledge client, but cancel if session not open
             serverConnected(
                     !getSession().getState().equals(VaadinSessionState.OPEN));
+            if (!trimmedRoute.equals(event.route) && !getInternals()
+                    .containsPendingJavascript("window.history.replaceState")) {
+                // See InternalRedirectHandler invoked via Router.
+                getPage().getHistory().replaceState(null, trimmedRoute);
+            }
         }
     }
 
