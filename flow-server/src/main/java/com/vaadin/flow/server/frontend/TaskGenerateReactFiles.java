@@ -223,7 +223,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             return content.replace("//%toReactRouterImport%",
                     "import { toReactRouter } from '@vaadin/hilla-file-router/runtime.js';")
                     .replace("//%viewsJsImport%",
-                            "import views from 'Frontend/generated/views.js';")
+                            "import views from 'Frontend/generated/file-routes.js';")
                     .replace("//%buildRouteFunction%",
                             """
                                     if(!routes) {
