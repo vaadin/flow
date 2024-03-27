@@ -42,6 +42,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.internal.ClientRoutesProvider;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * This is abstract error view for routing exceptions.
@@ -141,13 +142,8 @@ public abstract class AbstractRouteNotFoundError extends Component {
     }
 
     private List<Element> getClientRoutes() {
-        return Optional.ofNullable(VaadinService.getCurrent())
-                .map(VaadinService::getContext)
-                .map(ctx -> ctx.getAttribute(Lookup.class)
-                        .lookup(ClientRoutesProvider.class))
-                .stream()
-                .flatMap(provider -> provider.getClientRoutes().stream())
-                .filter(Objects::nonNull).map(this::clientRouteToHtml).toList();
+        return FrontendUtils.getClientRoutes().stream()
+                .map(this::clientRouteToHtml).toList();
     }
 
     private Element routeTemplateToHtml(String routeTemplate,

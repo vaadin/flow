@@ -45,4 +45,14 @@ public class TestServletInitializer {
             }
         };
     }
+
+    @Bean
+    public ClientRoutesProvider anotherhillaClientRoutesProvider() {
+        return new ClientRoutesProvider() {
+            @Override
+            public List<String> getClientRoutes() {
+                return List.of("/hilla", "/anotherhilla");
+            }
+        };
+    }
 }
