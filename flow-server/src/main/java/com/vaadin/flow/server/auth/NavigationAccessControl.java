@@ -402,14 +402,13 @@ public class NavigationAccessControl implements BeforeEnterListener {
     }
 
     /**
-     * Checks if an {@link AnnotatedViewAccessChecker} is in use, i.e. route
-     * annotations are read.
+     * Checks if an access checker of the given type is in use.
      *
-     * @return {@code true} if an {@link AnnotatedViewAccessChecker} is in use,
-     *         {@code false} otherwise
+     * @return {@code true} if a checker is in use, {@code false} otherwise
      */
-    public boolean isUsingAnnotatedViewAccessChecker() {
-        return checkerList.stream().anyMatch(
-                checker -> checker instanceof AnnotatedViewAccessChecker);
+    public boolean hasAccessChecker(
+            Class<? extends NavigationAccessChecker> type) {
+        return checkerList.stream()
+                .anyMatch(checker -> checker.getClass() == type);
     }
 }
