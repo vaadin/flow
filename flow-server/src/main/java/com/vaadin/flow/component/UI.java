@@ -82,6 +82,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
@@ -1670,7 +1671,11 @@ public class UI extends Component
     }
 
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
-    public static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
+    public static final String CLIENT_NAVIGATE_TO = """
+            const url = new URL($0, document.baseURI);
+            url["clientNavigation"] = true;
+            window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
+            """;
 
     public Element wrapperElement;
     private NavigationState clientViewNavigationState;
@@ -1768,10 +1773,6 @@ public class UI extends Component
         }
 
         final String trimmedRoute = PathUtil.trimPath(event.route);
-        if (!trimmedRoute.equals(event.route)) {
-            // See InternalRedirectHandler invoked via Router.
-            getPage().getHistory().replaceState(null, trimmedRoute);
-        }
         final Location location = new Location(trimmedRoute,
                 QueryParameters.fromString(event.query));
         NavigationTrigger navigationTrigger;
@@ -1808,7 +1809,28 @@ public class UI extends Component
         } else if (isPostponed()) {
             serverPaused();
         } else {
-            acknowledgeClient();
+            // acknowledge client, but cancel if session not open
+            serverConnected(
+                    !getSession().getState().equals(VaadinSessionState.OPEN));
+            replaceStateIfDiffersAndNoReplacePending(event.route, trimmedRoute);
+        }
+    }
+
+    /**
+     * Do a history replaceState if the trimmed route differs from the event
+     * route and there is no pending replaceState command.
+     *
+     * @param route
+     *            the event.route
+     * @param trimmedRoute
+     *            the trimmed route
+     */
+    private void replaceStateIfDiffersAndNoReplacePending(String route,
+            String trimmedRoute) {
+        if (!trimmedRoute.equals(route) && !getInternals()
+                .containsPendingJavascript("window.history.replaceState")) {
+            // See InternalRedirectHandler invoked via Router.
+            getPage().getHistory().replaceState(null, trimmedRoute);
         }
     }
 
