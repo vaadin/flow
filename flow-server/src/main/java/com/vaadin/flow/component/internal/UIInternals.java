@@ -677,8 +677,8 @@ public class UIInternals implements Serializable {
      * @return true if any invocation with given expression is found.
      */
     public boolean containsPendingJavascript(String containsFilter) {
-        return getPendingJavaScriptInvocations().filter(js -> js.getInvocation()
-                .getExpression().contains(containsFilter)).count() > 0;
+        return getPendingJavaScriptInvocations().anyMatch(js -> js
+                .getInvocation().getExpression().contains(containsFilter));
     }
 
     /**
