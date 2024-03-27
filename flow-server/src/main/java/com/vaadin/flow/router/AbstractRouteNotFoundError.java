@@ -82,7 +82,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
         boolean productionMode = event.getUI().getSession().getConfiguration()
                 .isProductionMode();
         String template;
-        String routes = getServerRoutes(event);
+        String routes = getRoutes(event);
 
         if (productionMode) {
             template = AbstractRouteNotFoundError.LazyInit.PRODUCTION_MODE_TEMPLATE;
@@ -118,7 +118,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
         }
     }
 
-    private String getServerRoutes(BeforeEnterEvent event) {
+    private String getRoutes(BeforeEnterEvent event) {
         List<Element> routeElements = new ArrayList<>();
         List<RouteData> routes = event.getSource().getRegistry()
                 .getRegisteredRoutes();
