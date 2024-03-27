@@ -141,9 +141,9 @@ public abstract class AbstractRouteNotFoundError extends Component {
     }
 
     private List<Element> getClientRoutes() {
-        return Optional
-                .ofNullable(VaadinService.getCurrent().getContext()
-                        .getAttribute(Lookup.class)
+        return Optional.ofNullable(VaadinService.getCurrent())
+                .map(VaadinService::getContext)
+                .map(ctx -> ctx.getAttribute(Lookup.class)
                         .lookup(ClientRoutesProvider.class))
                 .stream()
                 .flatMap(provider -> provider.getClientRoutes().stream())
