@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -83,6 +84,8 @@ public class FeatureFlags implements Serializable {
     private ApplicationConfiguration configuration;
 
     private boolean isPropertiesFileChecked = false;
+
+    private boolean isSystemPropertiesChecked = false;
 
     /**
      * Generate FeatureFlags with given lookup data.
@@ -186,6 +189,9 @@ public class FeatureFlags implements Serializable {
 
         File featureFlagFile = getFeatureFlagFile();
         if (featureFlagFile == null || !featureFlagFile.exists()) {
+            // Check once if there are unsupported feature flags in the system properties
+            checkForUnsupportedSystemProperties();
+
             // Disable all features if no file exists
             for (Feature f : features) {
                 f.setEnabled(
@@ -211,16 +217,15 @@ public class FeatureFlags implements Serializable {
             if (propertiesStream != null) {
                 props.load(propertiesStream);
                 // Check once if there are unsupported feature flags in the file
-                if (!isPropertiesFileChecked) {
-                    checkForUnsupportedFeatureFlags(props);
-                    isPropertiesFileChecked = true;
-                }
+                checkForUnsupportedFileProperties(props);
             }
+            // Check once if there are unsupported feature flags in the system properties
+            checkForUnsupportedSystemProperties();
             for (Feature f : features) {
                 // Allow users to override a feature flag with a system property
                 String propertyValue = System.getProperty(
                         SYSTEM_PROPERTY_PREFIX + f.getId(),
-                        props.getProperty(getPropertyName(f.getId())));
+                        props.getProperty(getFilePropertyName(f.getId())));
 
                 f.setEnabled(Boolean.parseBoolean(propertyValue));
             }
@@ -242,7 +247,7 @@ public class FeatureFlags implements Serializable {
                 continue;
             }
             properties.append("# ").append(feature.getTitle()).append("\n");
-            properties.append(getPropertyName(feature.getId()))
+            properties.append(getFilePropertyName(feature.getId()))
                     .append("=true\n");
         }
         if (!featureFlagFile.getParentFile().exists()) {
@@ -296,8 +301,12 @@ public class FeatureFlags implements Serializable {
                 .findFirst();
     }
 
-    private String getPropertyName(String featureId) {
+    private String getFilePropertyName(String featureId) {
         return "com.vaadin.experimental." + featureId;
+    }
+
+    private String getSystemPropertyName(String featureId) {
+        return SYSTEM_PROPERTY_PREFIX + featureId;
     }
 
     /**
@@ -346,7 +355,7 @@ public class FeatureFlags implements Serializable {
     public String getEnableHelperMessage(Feature feature) {
         return feature.getTitle()
                 + " is not enabled. Enable it in the debug window or by adding "
-                + getPropertyName(feature.getId())
+                + getFilePropertyName(feature.getId())
                 + "=true to src/main/resources/" + PROPERTIES_FILENAME;
     }
 
@@ -354,10 +363,29 @@ public class FeatureFlags implements Serializable {
         return LoggerFactory.getLogger(FeatureFlags.class);
     }
 
-    private void checkForUnsupportedFeatureFlags(Properties props) {
+    private void checkForUnsupportedFileProperties(Properties fileProps) {
+        if (!isPropertiesFileChecked) {
+            checkForUnsupportedFeatureFlags(fileProps, this::getFilePropertyName);
+            isPropertiesFileChecked = true;
+        }
+    }
+
+    private void checkForUnsupportedSystemProperties() {
+        if (!isSystemPropertiesChecked) {
+            // Initially, filter all system properties to the ones with our prefix
+            Properties filteredSystemProps = new Properties();
+            System.getProperties().entrySet().stream()
+                    .filter(property -> property.getKey().toString().startsWith(SYSTEM_PROPERTY_PREFIX))
+                    .forEach(property -> filteredSystemProps.put(property.getKey(), property.getValue()));
+            checkForUnsupportedFeatureFlags(filteredSystemProps, this::getSystemPropertyName);
+            isSystemPropertiesChecked = true;
+        }
+    }
+
+    private void checkForUnsupportedFeatureFlags(Properties props, Function<String, String> propertyWithPrefix) {
         for (Object property : props.keySet()) {
             if (features.stream()
-                    .noneMatch(feature -> getPropertyName(feature.getId()).equals(property))) {
+                    .noneMatch(feature -> propertyWithPrefix.apply(feature.getId()).equals(property))) {
                 getLogger().warn("Unsupported feature flag is present: {}", property);
             }
         }

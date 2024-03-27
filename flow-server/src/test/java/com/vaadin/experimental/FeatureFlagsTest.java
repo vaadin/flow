@@ -444,6 +444,38 @@ public class FeatureFlagsTest {
         }
     }
 
+    @Test
+    public void systemPropertiesCheckedForUnsupportedFeatureFlags() throws IOException {
+        Logger mockedLogger = Mockito.mock(Logger.class);
+        String exampleProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX + "exampleFeatureFlag";
+        String unsupportedProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX + "unsupportedFeature";
+        var previousValue = System.getProperty(exampleProperty);
+
+        try (MockedStatic<LoggerFactory> mockedFactory = Mockito.mockStatic(LoggerFactory.class)) {
+            mockedFactory.when(() -> LoggerFactory.getLogger(FeatureFlags.class))
+                    .thenReturn(mockedLogger);
+
+            System.setProperty(exampleProperty, "true");
+            System.setProperty(unsupportedProperty, "true");
+            // resetting feature flags to manually retry check (because it was run in @Before block)
+            context.removeAttribute(FeatureFlags.FeatureFlagsWrapper.class);
+            featureFlags = FeatureFlags.get(context);
+
+            Mockito.verify(mockedLogger, Mockito.never())
+                    .warn("Unsupported feature flag is present: {}", exampleProperty);
+            Mockito.verify(mockedLogger, Mockito.times(1))
+                    .warn("Unsupported feature flag is present: {}", unsupportedProperty);
+        }
+        finally {
+            if (previousValue == null) {
+                System.clearProperty(exampleProperty);
+            } else {
+                System.setProperty(exampleProperty, previousValue);
+            }
+            System.clearProperty(unsupportedProperty);
+        }
+    }
+
     private boolean hasUsageStatsEntry(String name) {
         return UsageStatistics.getEntries()
                 .filter(entry -> entry.getName().equals(name)).findFirst()
