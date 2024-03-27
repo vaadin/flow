@@ -66,7 +66,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         }
         File generatedFile = getGeneratedFile();
         try {
-            FileIOUtils.writeIfChanged(generatedFile, getFileContent());
+            writeIfChanged(generatedFile, getFileContent());
         } catch (IOException exception) {
             String errorMessage = String.format("Error writing '%s'",
                     generatedFile);

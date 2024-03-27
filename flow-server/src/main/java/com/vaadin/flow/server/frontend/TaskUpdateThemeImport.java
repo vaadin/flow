@@ -43,7 +43,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  *
  * @since
  */
-public class TaskUpdateThemeImport implements FallibleCommand {
+public class TaskUpdateThemeImport
+        extends AbstractFileGeneratorFallibleCommand {
 
     public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources";
     public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static";
@@ -88,12 +89,11 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         }
 
         try {
-            FileIOUtils.writeIfChanged(themeImportFile, String.format(
+            writeIfChanged(themeImportFile, String.format(
                     "import {applyTheme as _applyTheme} from './theme-%s.generated.js';%n"
                             + "export const applyTheme = _applyTheme;%n",
                     theme.getName()));
-            FileIOUtils.writeIfChanged(themeImportFileDefinition,
-                    EXPORT_MODULES_DEF);
+            writeIfChanged(themeImportFileDefinition, EXPORT_MODULES_DEF);
         } catch (IOException e) {
             throw new ExecutionFailedException(
                     "Unable to write theme import file", e);

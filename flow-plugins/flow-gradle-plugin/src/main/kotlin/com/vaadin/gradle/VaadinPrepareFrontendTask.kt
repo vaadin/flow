@@ -60,7 +60,6 @@ public open class VaadinPrepareFrontendTask : DefaultTask() {
     public fun vaadinPrepareFrontend() {
         // Remove Frontend/generated folder to get clean files copied/generated
         val adapter = GradlePluginAdapter(project, config, true)
-        project.delete(BuildFrontendUtil.getGeneratedFrontendDirectory(adapter))
         logger.debug("Running the vaadinPrepareFrontend task with effective configuration $config")
         val tokenFile = BuildFrontendUtil.propagateBuildInfo(adapter)
 

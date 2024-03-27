@@ -29,10 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.tests.util.MockOptions;
 
@@ -116,6 +113,8 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         options.withJarFrontendResourcesFolder(frontendDepsFolder)
                 .copyResources(jars(jar, dir));
         TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(options);
+        GeneratedFilesSupport generatedFileSupport = new GeneratedFilesSupport();
+        task.setGeneratedFileSupport(generatedFileSupport);
 
         task.execute();
 
@@ -164,6 +163,12 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(
                 "JSX resource source map should have been copied from jar file",
                 files.contains("test.jsx.map"));
+
+        Assert.assertEquals("Generated files should have been tracked",
+                files.stream()
+                        .map(path -> frontendDepsFolder.toPath().resolve(path))
+                        .collect(Collectors.toSet()),
+                generatedFileSupport.getFiles());
     }
 
     private static Set<File> jars(File... files) {

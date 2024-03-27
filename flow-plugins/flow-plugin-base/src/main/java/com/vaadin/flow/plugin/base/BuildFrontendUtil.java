@@ -146,6 +146,8 @@ public class BuildFrontendUtil {
         Lookup lookup = adapter.createLookup(classFinder);
 
         Options options = new Options(lookup, adapter.npmFolder())
+                .withCleanOldGeneratedFiles(true)
+                .withFrontendHotdeploy(adapter.isFrontendHotdeploy())
                 .withFrontendDirectory(getFrontendDirectory(adapter))
                 .withBuildDirectory(adapter.buildFolder())
                 .withBuildResultFolders(adapter.webpackOutputDirectory(),
