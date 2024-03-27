@@ -513,11 +513,30 @@ public class Element extends Node<Element> {
 
     /**
      * Removes this element from its parent and state tree.
+     * <p>
+     * This will send a detach event for the node, fully releasing it on the
+     * client.
      *
      * @return this element
      */
     public Element removeFromTree() {
+        return removeFromTree(true);
+    }
 
+    /**
+     * Removes this element from its parent and state tree.
+     * <p>
+     * sendDetach can be given as false to fully reset the node and not send a
+     * detach event. This for instance when having preserveOnRefresh that only
+     * moves the node.
+     * <p>
+     * This method is meant for internal use only.
+     *
+     * @param sendDetach
+     *            if the detach event should be sent to the client
+     * @return this element
+     */
+    public Element removeFromTree(boolean sendDetach) {
         Node<?> parent = getParentNode();
         if (parent != null) {
             if (parent.getChildren().anyMatch(Predicate.isEqual(this))) {
@@ -527,7 +546,7 @@ public class Element extends Node<Element> {
                 parent.removeVirtualChild(this);
             }
         }
-        getNode().removeFromTree();
+        getNode().removeFromTree(sendDetach);
         return this;
     }
 

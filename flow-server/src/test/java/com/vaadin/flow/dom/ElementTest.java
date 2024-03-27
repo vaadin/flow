@@ -2002,6 +2002,19 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    public void testMoveFromUiToUi_doesNotThrow() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+
+        child.removeFromTree();
+
+        body = new UI().getElement();
+        body.appendChild(child);
+        Assert.assertEquals(body, child.getParent());
+    }
+
+    @Test
     public void testRemoveFromTree_inDetachListener_removedFromParent() {
         Element body = new UI().getElement();
         Element child = ElementFactory.createDiv();
