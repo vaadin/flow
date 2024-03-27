@@ -82,19 +82,4 @@ public class VaadinApplicationConfiguration {
         return DefaultI18NProviderFactory.create(locationPattern);
     }
 
-    /**
-     * Creates default {@link ClientRoutesProvider}. This is created only if
-     * there's no {@link ClientRoutesProvider} bean declared.
-     *
-     * @param context
-     *            the application context
-     * @return default client routes provider
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public ClientRoutesProvider vaadinClientRoutesProvider(
-            ApplicationContext context) {
-        return new ClientRoutesProvider() {
-        };
-    }
 }
