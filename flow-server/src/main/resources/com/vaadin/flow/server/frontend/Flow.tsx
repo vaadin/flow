@@ -168,7 +168,8 @@ function navigateEventHandler(event) {
 
     // if navigation event route targets a flow view do beforeEnter for the
     // target path. Server will then handle updates and postpone as needed.
-    if(matched && matched.length > 0 && matched[matched.length - 1].route.path === "/*") {
+    // @ts-ignore
+    if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length >= 1) {
         if (mountedContainer?.onBeforeEnter) {
             // onBeforeEvent call will handle the Flow navigation
             mountedContainer.onBeforeEnter(
@@ -309,7 +310,8 @@ export default function Flow() {
             // flow from the view
             // If we are going to a non Flow view then we need to clean the Flow
             // view from the dom as we will not be getting a uidl response.
-            if(matched && matched[matched.length - 1].route.path !== "/*") {
+            // @ts-ignore
+            if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length == 0) {
                 mountedContainer?.parentNode?.removeChild(mountedContainer);
                 mountedContainer = undefined;
             }
