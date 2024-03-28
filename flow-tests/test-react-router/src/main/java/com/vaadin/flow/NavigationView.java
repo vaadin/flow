@@ -31,6 +31,9 @@ public class NavigationView extends Div {
     public static final String ROUTER_LINK_ID = "router-link-navigation";
     public static final String POSTPONE_ID = "postpone-view-link";
 
+    public static final String REACT_ANCHOR_ID = "anchor-react-navigation";
+    public static final String REACT_ID = "react-navigation";
+
     public NavigationView() {
         Anchor anchorNavigation = new Anchor("com.vaadin.flow.AnchorView",
                 "Navigate to AnchorView");
@@ -49,6 +52,18 @@ public class NavigationView extends Div {
 
         add(new Span("NavigationView"), new Div(), anchorNavigation, new Div(),
                 serverNavigation, new Div(), link, new Div(), postponeView);
+
+        // React navigation
+        Anchor reactAnchorNavigation = new Anchor("react",
+                "Navigate to react with Anchor");
+        reactAnchorNavigation.setId(REACT_ANCHOR_ID);
+        NativeButton reactServerNavigation = new NativeButton(
+                "Navigate to react through Server", event -> {
+                    event.getSource().getUI().get().navigate("react");
+                });
+        reactServerNavigation.setId(REACT_ID);
+
+        add(new Div(), reactAnchorNavigation, new Div(), reactServerNavigation);
     }
 
 }

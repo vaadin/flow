@@ -669,6 +669,19 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Filter pendingJsInvocations to see if an invocation expression is set
+     * with given filter string.
+     *
+     * @param containsFilter
+     *            string to filter invocation expressions with
+     * @return true if any invocation with given expression is found.
+     */
+    public boolean containsPendingJavascript(String containsFilter) {
+        return getPendingJavaScriptInvocations().anyMatch(js -> js
+                .getInvocation().getExpression().contains(containsFilter));
+    }
+
+    /**
      * Records the page title set with {@link Page#setTitle(String)}.
      * <p>
      * You should not set the page title for the browser with this method, use
