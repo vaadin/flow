@@ -311,7 +311,7 @@ export default function Flow() {
             // If we are going to a non Flow view then we need to clean the Flow
             // view from the dom as we will not be getting a uidl response.
             // @ts-ignore
-            if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length >= 1) {
+            if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length == 0) {
                 mountedContainer?.parentNode?.removeChild(mountedContainer);
                 mountedContainer = undefined;
             }
