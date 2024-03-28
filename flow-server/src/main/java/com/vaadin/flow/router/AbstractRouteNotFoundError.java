@@ -143,6 +143,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
 
     private List<Element> getClientRoutes() {
         return FrontendUtils.getClientRoutes().stream()
+                .filter(route -> !route.startsWith("$"))
                 .map(this::clientRouteToHtml).toList();
     }
 

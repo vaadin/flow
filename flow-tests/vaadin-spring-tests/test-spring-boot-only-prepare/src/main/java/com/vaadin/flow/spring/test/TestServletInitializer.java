@@ -40,7 +40,7 @@ public class TestServletInitializer {
         return new ClientRoutesProvider() {
             @Override
             public List<String> getClientRoutes() {
-                return List.of("/hilla", "/hilla/person/:id",
+                return List.of("$index", "/hilla", "/hilla/person/:id",
                         "/hilla/persons/:id?");
             }
         };
@@ -51,7 +51,7 @@ public class TestServletInitializer {
         return new ClientRoutesProvider() {
             @Override
             public List<String> getClientRoutes() {
-                return List.of("/hilla", "/anotherhilla");
+                return List.of("$layout", "/hilla", "/anotherhilla");
             }
         };
     }
