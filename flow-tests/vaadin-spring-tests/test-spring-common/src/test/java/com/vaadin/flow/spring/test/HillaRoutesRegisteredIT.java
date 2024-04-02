@@ -36,7 +36,7 @@ public class HillaRoutesRegisteredIT extends AbstractSpringTest {
             var expectedClientRoutes = List.of("root", "/hilla",
                     "/hilla/person/:id (requires parameter)",
                     "/hilla/persons/:id? (supports optional parameter)",
-                    "/hilla/hilla", "/anotherhilla", "/");
+                    "/hilla/hilla/", "/anotherhilla", "/");
             for (String route : expectedClientRoutes) {
                 Assert.assertTrue(
                         String.format("Expected client route %s is missing",
