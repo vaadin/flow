@@ -131,8 +131,11 @@ function vaadinRouterGlobalClickHandler(event) {
     }
 
     // if none of the above, convert the click into a navigation event
-    const {pathname, search, hash} = anchor;
-    if (fireRouterEvent('go', {pathname, search, hash})) {
+    const {pathname, href, baseURI, search, hash} = anchor;
+    // Normalize away base from pathname. e.g. /react should remove base /view from /view/react
+    let normalizedPathname = href.slice(0, baseURI.length) == baseURI ? href.slice(baseURI.length) : pathname;
+    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname: "/" + normalizedPathname;
+    if (fireRouterEvent('go', {pathname: normalizedPathname, search, hash, clientNavigation: true})) {
         event.preventDefault();
         // for a click event, the scroll is reset to the top position.
         if (event && event.type === 'click') {
@@ -154,13 +157,19 @@ function navigateEventHandler(event) {
     if (event && event.preventDefault) {
         event.preventDefault();
     }
+    // Normalize path against baseURI if href available.
+    let normalizedPathname = event.detail.href && event.detail.href.slice(0, document.baseURI.length) == document.baseURI ?
+        event.detail.href.slice(document.baseURI.length) : event.detail.pathname;
+    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname: "/"+normalizedPathname;
+
     // @ts-ignore
-    let matched = matchRoutes(Array.from(routes), event.detail.pathname);
+    let matched = matchRoutes(Array.from(routes), normalizedPathname);
     prevNavigation = lastNavigation;
 
     // if navigation event route targets a flow view do beforeEnter for the
     // target path. Server will then handle updates and postpone as needed.
-    if(matched && matched.length > 0 && matched[matched.length - 1].route.path === "/*") {
+    // @ts-ignore
+    if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length >= 1) {
         if (mountedContainer?.onBeforeEnter) {
             // onBeforeEvent call will handle the Flow navigation
             mountedContainer.onBeforeEnter(
@@ -176,6 +185,12 @@ function navigateEventHandler(event) {
                     // @ts-ignore
                     redirect: (path) => {
                         navigation(path, {replace: false});
+                    },
+                    continue: () => {
+                        if(window.location.pathname !== event.detail.pathname) {
+                            window.history.pushState(window.history.state, '', event.detail.pathname);
+                            window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
+                        }
                     }
                 },
                 router,
@@ -190,7 +205,14 @@ function navigateEventHandler(event) {
                 continue() {
                     mountedContainer?.parentNode?.removeChild(mountedContainer);
                     mountedContainer = undefined;
-                    navigation(event.detail.pathname, {replace: false});
+                    // clientNavigation flag denotes navigation to a client route through
+                    // a link or server navigate. If clientNavigation is not given the
+                    // navigation is through a history event and we only call the router popstate event.
+                    if (event.detail.clientNavigation) {
+                        navigation(normalizedPathname, {replace: false});
+                    } else {
+                        popstateListener.listener(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
+                    }
                 }
             }, router);
         } else {
@@ -254,6 +276,10 @@ export default function Flow() {
             }
         }
         flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
+            // Update last navigation when coming into serverside as we might come
+            // in using the forward/back buttons.
+            lastNavigation = pathname;
+            lastNavigationSearch = search;
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
                 outlet.append(container);
@@ -284,7 +310,8 @@ export default function Flow() {
             // flow from the view
             // If we are going to a non Flow view then we need to clean the Flow
             // view from the dom as we will not be getting a uidl response.
-            if(matched && matched[matched.length - 1].route.path !== "/*") {
+            // @ts-ignore
+            if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length == 0) {
                 mountedContainer?.parentNode?.removeChild(mountedContainer);
                 mountedContainer = undefined;
             }
@@ -433,7 +460,7 @@ export const createWebComponent = (tag: string, props?: Properties, onload?: () 
  *
  * @param routes optional routes are for adding own route definition, giving routes will skip FS routes
  * @param serverSidePosition optional position where server routes should be put.
-  *                          If non given they go to the root of the routes [].
+ *                          If non given they go to the root of the routes [].
  *
  * @returns RouteObject[] with combined routes
  */
