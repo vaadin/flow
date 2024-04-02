@@ -33,10 +33,10 @@ public class HillaRoutesRegisteredIT extends AbstractSpringTest {
 
         if (getDriver().getPageSource().contains(
                 "This detailed message is only shown when running in development mode.")) {
-            var expectedClientRoutes = List.of("/hilla",
+            var expectedClientRoutes = List.of("root", "/hilla",
                     "/hilla/person/:id (requires parameter)",
                     "/hilla/persons/:id? (supports optional parameter)",
-                    "/anotherhilla");
+                    "/hilla/hilla", "/anotherhilla", "/");
             for (String route : expectedClientRoutes) {
                 Assert.assertTrue(
                         String.format("Expected client route %s is missing",
