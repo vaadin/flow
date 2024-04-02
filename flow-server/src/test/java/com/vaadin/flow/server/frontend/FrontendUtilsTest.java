@@ -178,19 +178,19 @@ public class FrontendUtilsTest {
 
     private static final String ROUTES_CONTENT_WITH_WITH_FILE_ROUTES = """
                 import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+                import Flow from 'Frontend/generated/flow/Flow';
                 import fileRoutes from 'Frontend/generated/file-routes';
 
                 const routerBuilder = new RouterBuilder()
                     .withFileRoutes(fileRoutes)
-                    .withServerFallback(serverSideRoutes);
+                    .withFallbackComponent(Flow);
 
                 export const routes = routerBuilder.routes;
             """;
 
     private static final String ROUTES_CONTENT_WITH_WITH_REACT_ROUTES = """
                 import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+                import Flow from 'Frontend/generated/flow/Flow';
 
                 const routerBuilder = new RouterBuilder()
                     .withReactRoutes([
@@ -199,7 +199,7 @@ public class FrontendUtilsTest {
                           handle: { title: 'Hilla CRM' }
                       },
                     ])
-                    .withServerFallback(serverSideRoutes);
+                    .withFallbackComponent(Flow);
 
                 export const routes = routerBuilder.routes;
             """;

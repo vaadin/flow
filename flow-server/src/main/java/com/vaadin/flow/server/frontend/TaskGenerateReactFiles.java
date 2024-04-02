@@ -59,17 +59,16 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             The server route definition is missing from the '%1$s' file
 
             To have working Flow routes add the following to the '%1$s' file:
-            - import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
-            - call 'withServerFallback' method of 'RouterBuilder' as shown below:
-
+                import Flow from 'Frontend/generated/flow/Flow';
                 const routerBuilder = new RouterBuilder()
-                    .withServerFallback(serverSideRoutes)
+                    .withFallbackComponent(Flow)
                     // .withFileRoutes() or .withReactRoutes()
                     // ...
                 export const routes = routerBuilder.routes;
 
                 OR
 
+                import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
                 export const routes = [
                     ...serverSideRoutes
                 ] as RouteObject[];
@@ -88,8 +87,18 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
     private static final String ROUTES_JS_IMPORT_PATH_TOKEN = "%routesJsImportPath%";
 
+    // matches setting the server-side routes from Flow.tsx:
+    // import { serverSideRoutes } from "Frontend/generated/flow/Flow";
     private static final Pattern SERVER_ROUTE_PATTERN = Pattern.compile(
             "import[\\s\\S]?\\{[\\s\\S]*(?:serverSideRoutes)+[\\s\\S]*\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
+
+    // matches setting the fallback component to RouterBuilder,
+    // e.g. Flow component from Flow.tsx:
+    // import Flow from 'Frontend/generated/flow/Flow';
+    // ...
+    // .withFallbackComponent(Flow)
+    private static final Pattern FALLBACK_COMPONENT_PATTERN = Pattern.compile(
+            "import\\s+(\\w+)\\s+from\\s+(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\2;[\\s\\S]+withFallbackComponent\\(\\s*\\1\\s*\\)");
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -208,20 +217,15 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
     private boolean missingServerRouteImport(String routesContent) {
         routesContent = StringUtil.removeComments(routesContent);
-        boolean hasImport = SERVER_ROUTE_PATTERN.matcher(routesContent).find();
         if (usesRouterBuilder(routesContent)) {
-            hasImport = hasImport
-                    && hasWithServerFallbackFunction(routesContent);
+            return !FALLBACK_COMPONENT_PATTERN.matcher(routesContent).find();
+        } else {
+            return !SERVER_ROUTE_PATTERN.matcher(routesContent).find();
         }
-        return !hasImport;
     }
 
     private boolean usesRouterBuilder(String routesContent) {
         return routesContent.contains("new RouterBuilder(");
-    }
-
-    private boolean hasWithServerFallbackFunction(String routesContent) {
-        return routesContent.contains("withServerFallback(");
     }
 
     private boolean serverRoutesAvailable() {

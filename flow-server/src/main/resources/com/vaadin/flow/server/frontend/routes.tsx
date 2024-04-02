@@ -17,9 +17,11 @@
  * - `withReactRoutes` adds manual explicit route hierarchy. Allows also to add
  * an individual route, which then merged into File System-based routes,
  * e.g. Log In view;
- * - `withServerFallback` adds server-side routes automatically to either
- * autoconfigured routes, or manually configured routes;
- * - `protect` adds an authentication later to the routes.
+ * - `withFallbackComponent` adds a given component, e.g. server-side routes,
+ * to each branch of the current list of routes;
+ * - `protect` adds an authentication later to the routes. Takes an optional
+ * path to redirect to, if the route is protected and the user is not
+ * authenticated.
  *
  * NOTE:
  * - You need to restart the dev-server after adding the new `routes.tsx` file.
@@ -29,7 +31,7 @@
  * as the import isn't updated automatically by Vaadin in this case.
  ******************************************************************************/
 import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+import Flow from 'Frontend/generated/flow/Flow';
 import fileRoutes from 'Frontend/generated/file-routes';
 
 const routerBuilder = new RouterBuilder()
@@ -44,12 +46,14 @@ const routerBuilder = new RouterBuilder()
     //         ],
     //     },
     // ])
-    .withServerFallback(serverSideRoutes)
+    .withFallbackComponent(Flow)
     // To add individual routes, use the following code:
     // .withReactRoutes([
     //     { path: '/login', element: <Login />, handle: { title: 'Login' } },
     // ])
     .protect();
+    // Optional path to redirect to, if not authenticated
+    //.protect('/login');
 
 export const routes = routerBuilder.routes;
 

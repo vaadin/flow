@@ -92,7 +92,7 @@ public class TaskGenerateReactFilesTest {
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
                         import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+                        import Flow from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -108,7 +108,7 @@ public class TaskGenerateReactFilesTest {
                                      ],
                                  },
                              ])
-                            .withServerFallback(serverSideRoutes)
+                            .withFallbackComponent(Flow)
                             .withReactRoutes([
                                  { path: '/login', element: <Login />, handle: { title: 'Login' } },
                              ])
@@ -199,7 +199,7 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesMissingImport_expectionThrown() throws IOException {
+    public void routesMissingImport_exceptionThrown() throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
@@ -274,13 +274,13 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesexportMissing_expectionThrown() throws IOException {
+    public void routesExportMissing_exceptionThrown() throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
                         import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+                        import Flow from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -296,7 +296,7 @@ public class TaskGenerateReactFilesTest {
                                      ],
                                  },
                              ])
-                            .withServerFallback(serverSideRoutes)
+                            .withFallbackComponent(Flow)
                             .withReactRoutes([
                                  { path: '/login', element: <Login />, handle: { title: 'Login' } },
                              ])
@@ -316,13 +316,14 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void withServerFallbackMissing_expectionThrown() throws IOException {
+    public void withFallbackComponentMissing_exceptionThrown()
+            throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
                         import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
-                        import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+                        import Flow from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
@@ -342,6 +343,52 @@ public class TaskGenerateReactFilesTest {
                                  { path: '/login', element: <Login />, handle: { title: 'Login' } },
                              ])
                             .protect();
+
+                        export default routerBuilder.build();
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
+    public void withFallbackComponentReceivesDifferentObject_exceptionThrown()
+            throws IOException {
+        String content = """
+                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import foo from 'Frontend/generated/flow/Flow';
+
+                        const routerBuilder = new RouterBuilder()
+                            .withFallbackComponent(Flow);
+
+                        export default routerBuilder.build();
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
+    public void withFallbackComponentMissesImport_exceptionThrown()
+            throws IOException {
+        String content = """
+                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+                        const routerBuilder = new RouterBuilder()
+                            .withFallbackComponent(Flow);
 
                         export default routerBuilder.build();
                 """;
