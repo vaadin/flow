@@ -3,6 +3,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,6 +86,7 @@ public class CssBundler {
 
             return Matcher.quoteReplacement(urlMatcher.group());
         });
+        List<String> unhandledImports = new ArrayList<>();
         Matcher importMatcher = importPattern.matcher(content);
         content = importMatcher.replaceAll(result -> {
             // Oh the horror
@@ -93,26 +96,35 @@ public class CssBundler {
             String layerOrMediaQueryInfo = result.group(9);
             if (layerOrMediaQueryInfo != null
                     && !layerOrMediaQueryInfo.isBlank()) {
-                return Matcher.quoteReplacement(result.group());
+                unhandledImports.add(result.group());
+                return "";
             }
             String url = getNonNullGroup(result, 3, 4, 5, 7, 8);
-            if (url == null || !url.trim().endsWith(".css")) {
-                return Matcher.quoteReplacement(result.group());
-            }
-
-            File potentialFile = new File(cssFile.getParentFile(), url.trim());
-            if (potentialFile.exists()) {
-                try {
-                    return Matcher.quoteReplacement(
-                            inlineImports(themeFolder, potentialFile));
-                } catch (IOException e) {
-                    getLogger()
-                            .warn("Unable to inline import: " + result.group());
+            String sanitizedUrl = sanitizeUrl(url);
+            if (sanitizedUrl != null && sanitizedUrl.endsWith(".css")) {
+                File potentialFile = new File(cssFile.getParentFile(),
+                        sanitizedUrl);
+                if (potentialFile.exists()) {
+                    try {
+                        return Matcher.quoteReplacement(
+                                inlineImports(themeFolder, potentialFile));
+                    } catch (IOException e) {
+                        getLogger().warn(
+                                "Unable to inline import: " + result.group());
+                    }
                 }
             }
-            return Matcher.quoteReplacement(result.group());
+
+            unhandledImports.add(result.group());
+            return "";
         });
 
+        // Prepend unhandled @import statements at the top, as they would be
+        // ignored by the browser if they appear after regular CSS rules
+        if (!unhandledImports.isEmpty()) {
+            content = String.join("\n", unhandledImports)
+                    + (content.isEmpty() ? "" : "\n" + content);
+        }
         return content;
     }
 
@@ -124,6 +136,13 @@ public class CssBundler {
             }
         }
         return null;
+    }
+
+    private static String sanitizeUrl(String url) {
+        if (url == null) {
+            return null;
+        }
+        return url.trim().split("\\?")[0];
     }
 
     private static Logger getLogger() {

@@ -27,6 +27,7 @@ public class CssBundlerTest {
         String[] validImports = new String[] { //
                 // The typical you actually use
                 "@import url(foo.css);", //
+                "@import url(foo.css?ts=1234);", //
                 "@import url('foo.css');", //
                 "@import url(\"foo.css\");", //
                 "@import 'foo.css';", //
@@ -133,6 +134,40 @@ public class CssBundlerTest {
 
         Assert.assertEquals("body { content: '$\\'}", CssBundler
                 .inlineImports(themeFolder, getThemeFile("styles.css")));
+    }
+
+    @Test
+    public void unhandledImportsAreMovedToTop() throws IOException {
+        writeCss("body {background: blue};", "other.css");
+        writeCss(
+                """
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/inter@latest/index.css');
+                        @import url('other.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css?ts=1234');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css#foo');
+                        @import url('foo.css') layer(foo);
+                        @import url('bluish.css') print, screen;
+                        @import url('landscape.css') screen and (orientation: landscape);
+                        """,
+                "styles.css");
+
+        Assert.assertEquals(
+                """
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/inter@latest/index.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css?ts=1234');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css#foo');
+                        @import url('foo.css') layer(foo);
+                        @import url('bluish.css') print, screen;
+                        @import url('landscape.css') screen and (orientation: landscape);
+
+                        body {background: blue};
+                        """
+                        .trim(),
+                CssBundler
+                        .inlineImports(themeFolder, getThemeFile("styles.css"))
+                        .trim());
     }
 
     private boolean createThemeFile(String filename) throws IOException {
