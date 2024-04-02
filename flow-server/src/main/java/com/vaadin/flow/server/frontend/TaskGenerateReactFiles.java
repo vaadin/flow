@@ -90,7 +90,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     // matches setting the server-side routes from Flow.tsx:
     // import { serverSideRoutes } from "Frontend/generated/flow/Flow";
     private static final Pattern SERVER_ROUTE_PATTERN = Pattern.compile(
-            "import[\\s\\S]?\\{[\\s\\S]*(?:serverSideRoutes)+[\\s\\S]*\\}[\\s\\S]?from[\\s\\S]?(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;");
+            "import\\s+\\{[\\s\\S]*(?:serverSideRoutes)+[\\s\\S]*\\}\\s+from\\s+(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;[\\s\\S]+\\.{3}serverSideRoutes");
 
     // matches setting the fallback component to RouterBuilder,
     // e.g. Flow component from Flow.tsx:
@@ -217,15 +217,8 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
     private boolean missingServerRouteImport(String routesContent) {
         routesContent = StringUtil.removeComments(routesContent);
-        if (usesRouterBuilder(routesContent)) {
-            return !FALLBACK_COMPONENT_PATTERN.matcher(routesContent).find();
-        } else {
-            return !SERVER_ROUTE_PATTERN.matcher(routesContent).find();
-        }
-    }
-
-    private boolean usesRouterBuilder(String routesContent) {
-        return routesContent.contains("new RouterBuilder(");
+        return !FALLBACK_COMPONENT_PATTERN.matcher(routesContent).find()
+                && !SERVER_ROUTE_PATTERN.matcher(routesContent).find();
     }
 
     private boolean serverRoutesAvailable() {

@@ -85,7 +85,7 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesContainImport_serverSideRoutes_noExceptionThrown()
+    public void routesContainImportAndUsage_serverSideRoutes_noExceptionThrown()
             throws IOException, ExecutionFailedException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
@@ -127,6 +127,42 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
+    public void routesContainOnlyImport_serverSideRoutes_exceptionThrown()
+            throws IOException {
+        String content = """
+                         import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
+    public void routesContainNoImport_serverSideRoutes_exceptionThrown()
+            throws IOException {
+        String content = """
+                         export const routes = [
+                             ...serverSideRoutes
+                         ] as RouteObject[];
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
     public void routesContainMultipleFlowImports_noExceptionThrown()
             throws IOException, ExecutionFailedException {
         String content = """
@@ -162,7 +198,7 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesMissingImport_noBuildOrServerSideRoutes_exceptionThrown()
+    public void routesMissingImportAndUsage_noBuildOrServerSideRoutes_exceptionThrown()
             throws IOException, ExecutionFailedException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';

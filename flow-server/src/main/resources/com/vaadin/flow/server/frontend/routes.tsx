@@ -19,9 +19,9 @@
  * e.g. Log In view;
  * - `withFallbackComponent` adds a given component, e.g. server-side routes,
  * to each branch of the current list of routes;
- * - `protect` adds an authentication later to the routes. Takes an optional
- * path to redirect to, if the route is protected and the user is not
- * authenticated.
+ * - `protect` optional method that adds an authentication later to the routes.
+ * May be used with no parameters or with a path to redirect to, if the user is
+ * not authenticated.
  *
  * NOTE:
  * - You need to restart the dev-server after adding the new `routes.tsx` file.
@@ -36,8 +36,9 @@ import fileRoutes from 'Frontend/generated/file-routes';
 
 const routerBuilder = new RouterBuilder()
     .withFileRoutes(fileRoutes) // (1)
-    // To define routes manually, use the following code and remove (1):
-    // .withReactRoutes([
+    // To define routes manually or adding an individual route, use the
+    // following code and remove (1):
+    // .withReactRoutes(
     //     {
     //         element: <MainLayout />,
     //         handle: { title: 'Main' },
@@ -45,15 +46,17 @@ const routerBuilder = new RouterBuilder()
     //             { path: '/hilla', element: <HillaView />, handle: { title: 'Hilla' } }
     //         ],
     //     },
-    // ])
-    .withFallbackComponent(Flow)
-    // To add individual routes, use the following code:
-    // .withReactRoutes([
+    //     { path: '/login', element: <Login />, handle: { title: 'Login' } }
+    // )
+    // OR
+    // .withReactRoutes(
     //     { path: '/login', element: <Login />, handle: { title: 'Login' } },
-    // ])
+    // )
+    .withFallbackComponent(Flow)
+    // Optional method that adds an authentication for routes.
+    // Can take an optional path to redirect to, if not authenticated:
+    // .protect('/login');
     .protect();
-    // Optional path to redirect to, if not authenticated
-    //.protect('/login');
 
 export const routes = routerBuilder.routes;
 
