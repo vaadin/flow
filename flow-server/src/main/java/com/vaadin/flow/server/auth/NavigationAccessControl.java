@@ -401,4 +401,14 @@ public class NavigationAccessControl implements BeforeEnterListener {
         return LoggerFactory.getLogger(NavigationAccessControl.class);
     }
 
+    /**
+     * Checks if an access checker of the given type is in use.
+     *
+     * @return {@code true} if a checker is in use, {@code false} otherwise
+     */
+    public boolean hasAccessChecker(
+            Class<? extends NavigationAccessChecker> type) {
+        return checkerList.stream()
+                .anyMatch(checker -> type.isAssignableFrom(checker.getClass()));
+    }
 }

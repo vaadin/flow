@@ -374,6 +374,8 @@ public class MockServletServiceSessionSetup {
 
             Mockito.when(wrappedSession.getHttpSession())
                     .thenReturn(httpSession);
+            Mockito.when(session.getState())
+                    .thenReturn(VaadinSessionState.OPEN);
 
             Mockito.when(session.getService()).thenAnswer(i -> service);
             Mockito.when(session.hasLock()).thenReturn(true);

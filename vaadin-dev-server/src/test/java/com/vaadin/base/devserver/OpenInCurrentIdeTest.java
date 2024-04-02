@@ -9,8 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import com.vaadin.open.OSUtils;
 
 public class OpenInCurrentIdeTest {
 
@@ -46,7 +49,8 @@ public class OpenInCurrentIdeTest {
         // The binary on Mac is /.../IntelliJ IDEA.app/Contents/MacOS/idea
         Assert.assertEquals(
                 new File(baseDirectory, "MacOS/idea").getAbsolutePath(),
-                OpenInCurrentIde.getBinary(ideCommand.get()));
+                new File(OpenInCurrentIde.getBinary(ideCommand.get()))
+                        .getAbsolutePath());
 
     }
 
@@ -605,6 +609,8 @@ public class OpenInCurrentIdeTest {
 
     @Test
     public void runThrowsExceptionOnFailure() throws InterruptedException {
+        Assume.assumeFalse(OSUtils.isWindows());
+
         try {
             OpenInCurrentIde.run("/bin/sh", "-c",
                     "echo 'output1'; echo 'output2'; exit 123");
