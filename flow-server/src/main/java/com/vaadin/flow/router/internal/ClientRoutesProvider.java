@@ -27,9 +27,7 @@ public interface ClientRoutesProvider extends Serializable {
     /**
      * Get a list of client side routes.
      *
-     * @return a list of client side routes
+     * @return a list of client side routes. Not null.
      */
-    default List<String> getClientRoutes() {
-        return List.of();
-    }
+    List<String> getClientRoutes();
 }
