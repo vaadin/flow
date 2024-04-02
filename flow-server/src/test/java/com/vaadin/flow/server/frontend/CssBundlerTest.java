@@ -145,6 +145,7 @@ public class CssBundlerTest {
                         @import url('other.css');
                         @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
                         @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css?ts=1234');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css#foo');
                         @import url('foo.css') layer(foo);
                         @import url('bluish.css') print, screen;
                         @import url('landscape.css') screen and (orientation: landscape);
@@ -156,6 +157,7 @@ public class CssBundlerTest {
                         @import url('https://cdn.jsdelivr.net/fontsource/css/inter@latest/index.css');
                         @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
                         @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css?ts=1234');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css#foo');
                         @import url('foo.css') layer(foo);
                         @import url('bluish.css') print, screen;
                         @import url('landscape.css') screen and (orientation: landscape);
