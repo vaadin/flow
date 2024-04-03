@@ -131,12 +131,9 @@ function vaadinRouterGlobalClickHandler(event) {
     }
 
     // if none of the above, convert the click into a navigation event
-    const {pathname, href, baseURI, search, hash} = anchor;
+    const {href, baseURI, search, hash} = anchor;
     // Normalize away base from pathname. e.g. /react should remove base /view from /view/react
-    let normalizedPathname = href.slice(0, baseURI.length) == baseURI ? href.slice(baseURI.length) : pathname;
-    if(normalizedPathname.indexOf('?') !== -1) {
-        normalizedPathname = normalizedPathname.slice(0, normalizedPathname.indexOf('?'));
-    }
+    let normalizedPathname = href.replace(baseURI, '').replace(search,'').replace(hash, '');
     normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname : "/" + normalizedPathname;
     if (fireRouterEvent('go', {pathname: normalizedPathname, search, hash, clientNavigation: true})) {
         event.preventDefault();
@@ -161,12 +158,10 @@ function navigateEventHandler(event) {
         event.preventDefault();
     }
     // Normalize path against baseURI if href available.
-    let normalizedPathname = event.detail.href && event.detail.href.slice(0, document.baseURI.length) == document.baseURI ?
-        event.detail.href.slice(document.baseURI.length) : event.detail.pathname;
-    if(normalizedPathname.indexOf('?') !== -1) {
-        normalizedPathname = normalizedPathname.slice(0, normalizedPathname.indexOf('?'));
-    }
-    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname: "/"+normalizedPathname;
+    let normalizedPathname = event.detail.href ?
+        event.detail.href.replace(document.baseURI, '').replace(event.detail.search ,'').replace(event.detail.hash, '') :
+        event.detail.pathname;
+    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname : "/" + normalizedPathname;
 
     // @ts-ignore
     let matched = matchRoutes(Array.from(routes), normalizedPathname);
@@ -193,8 +188,11 @@ function navigateEventHandler(event) {
                         navigation(path, {replace: false});
                     },
                     continue: () => {
-                        if(window.location.pathname !== event.detail.pathname) {
-                            window.history.pushState(window.history.state, '', event.detail.pathname);
+                        let path = event.detail.pathname;
+                        if(event.detail.search) path += event.detail.search;
+                        if(event.detail.hash) path += event.detail.hash;
+                        if(window.location.pathname !== path) {
+                            window.history.pushState(window.history.state, '', path);
                             window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
                         }
                     }
