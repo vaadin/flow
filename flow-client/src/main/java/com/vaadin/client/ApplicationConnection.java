@@ -169,13 +169,6 @@ public class ApplicationConnection {
         client.getByNodeId = $entry(function(nodeId) {
             return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
         });
-        client.getNodeInfo = $entry(function(nodeId) {
-            return {
-                element: ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId),
-                javaClass: ap.@ApplicationConnection::getJavaClass(*)(nodeId),
-                styles: ap.@ApplicationConnection::getElementStyleProperties(*)(nodeId)
-            };
-        });
         client.getNodeId = $entry(function(element) {
             return ap.@ApplicationConnection::getNodeId(*)(element);
         });
@@ -309,6 +302,13 @@ public class ApplicationConnection {
         client.debug = $entry(function() {
             var registry = ap.@ApplicationConnection::registry;
             return registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::getDebugJson()();
+        });
+        client.getNodeInfo = $entry(function(nodeId) {
+            return {
+                element: ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId),
+                javaClass: ap.@ApplicationConnection::getJavaClass(*)(nodeId),
+                styles: ap.@ApplicationConnection::getElementStyleProperties(*)(nodeId)
+            };
         });
 
     }-*/;
