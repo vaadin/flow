@@ -373,6 +373,8 @@ export const serverSideRoutes = [
                 if (!eventListenerList) return [];
                 if (type == undefined) return eventListenerList;
                 // @ts-ignore
+                if(eventListenerList[type] == undefined) return [];
+                // @ts-ignore
                 return eventListenerList[type];
             }
 
