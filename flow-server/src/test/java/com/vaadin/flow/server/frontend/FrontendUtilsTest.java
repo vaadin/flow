@@ -183,7 +183,7 @@ public class FrontendUtilsTest {
 
                 const routerBuilder = new RouterBuilder()
                     .withFileRoutes(fileRoutes)
-                    .withFallbackComponent(Flow);
+                    .withFallback(Flow);
 
                 export const routes = routerBuilder.routes;
             """;
@@ -199,7 +199,7 @@ public class FrontendUtilsTest {
                           handle: { title: 'Hilla CRM' }
                       },
                     ])
-                    .withFallbackComponent(Flow);
+                    .withFallback(Flow);
 
                 export const routes = routerBuilder.routes;
             """;

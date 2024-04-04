@@ -61,7 +61,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             To have working Flow routes add the following to the '%1$s' file:
                 import Flow from 'Frontend/generated/flow/Flow';
                 const routerBuilder = new RouterBuilder()
-                    .withFallbackComponent(Flow)
+                    .withFallback(Flow)
                     // .withFileRoutes() or .withReactRoutes()
                     // ...
                 export const routes = routerBuilder.routes;
@@ -76,9 +76,12 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             """;
     protected static String MISSING_ROUTES_EXPORT = """
             Routes need to be exported as 'routes' for server navigation handling.
-            routes.tsx should at least contain
+            routes.tsx should contain
+            'export const { router, routes } = new RouterConfigurationBuilder()
+               // routes building
+               .build();'
+            OR
             'export const routes = [...serverSideRoutes] as RouteObject[];'
-            but can have react routes also defined.
             """;
 
     private static final String FLOW_TSX = "Flow.tsx";
@@ -96,9 +99,13 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     // e.g. Flow component from Flow.tsx:
     // import Flow from 'Frontend/generated/flow/Flow';
     // ...
-    // .withFallbackComponent(Flow)
+    // .withFallback(Flow)
     private static final Pattern FALLBACK_COMPONENT_PATTERN = Pattern.compile(
-            "import\\s+(\\w+)\\s+from\\s+(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\2;[\\s\\S]+withFallbackComponent\\(\\s*\\1\\s*\\)");
+            "import\\s+(\\w+)\\s+from\\s+(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\2;[\\s\\S]+withFallback\\(\\s*\\1\\s*\\)");
+
+    private static final Pattern ROUTES_EXPORT_PATTERN = Pattern.compile(
+            "export\\s+const\\s+(\\{[\\s\\S]*(router[\\s\\S]*routes|routes[\\s\\S]*router)[\\s\\S]*}|routes)"
+    );
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -142,12 +149,14 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             } else {
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
+                routesContent = StringUtil.removeComments(routesContent);
+
                 if (missingServerRouteImport(routesContent)
                         && serverRoutesAvailable()) {
                     throw new ExecutionFailedException(
                             String.format(NO_IMPORT, routesTsx.getPath()));
                 }
-                if (!routesContent.contains("export const routes")) {
+                if (missingRoutesExport(routesContent)) {
                     throw new ExecutionFailedException(MISSING_ROUTES_EXPORT);
                 }
             }
@@ -216,7 +225,6 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     }
 
     private boolean missingServerRouteImport(String routesContent) {
-        routesContent = StringUtil.removeComments(routesContent);
         return !FALLBACK_COMPONENT_PATTERN.matcher(routesContent).find()
                 && !SERVER_ROUTE_PATTERN.matcher(routesContent).find();
     }
@@ -224,6 +232,10 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private boolean serverRoutesAvailable() {
         return !options.getClassFinder().getAnnotatedClasses(Route.class)
                 .isEmpty();
+    }
+
+    private static boolean missingRoutesExport(String routesContent) {
+        return !ROUTES_EXPORT_PATTERN.matcher(routesContent).find();
     }
 
     private void writeFile(File target, String content)

@@ -17,11 +17,13 @@
  * - `withReactRoutes` adds manual explicit route hierarchy. Allows also to add
  * an individual route, which then merged into File System-based routes,
  * e.g. Log In view;
- * - `withFallbackComponent` adds a given component, e.g. server-side routes,
+ * - `withFallback` adds a given component, e.g. server-side routes,
  * to each branch of the current list of routes;
  * - `protect` optional method that adds an authentication later to the routes.
  * May be used with no parameters or with a path to redirect to, if the user is
  * not authenticated.
+ * - `build` terminal build operation that returns the final routes array
+ * RouterObject[] and router object.
  *
  * NOTE:
  * - You need to restart the dev-server after adding the new `routes.tsx` file.
@@ -30,11 +32,11 @@
  * exists in the frontend folder (not in generated folder) and you copied the file,
  * as the import isn't updated automatically by Vaadin in this case.
  ******************************************************************************/
-import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
 import Flow from 'Frontend/generated/flow/Flow';
-import fileRoutes from 'Frontend/generated/file-routes';
+import fileRoutes from 'Frontend/generated/file-routes.js';
 
-const routerBuilder = new RouterBuilder()
+export const { router, routes } = new RouterConfigurationBuilder()
     .withFileRoutes(fileRoutes) // (1)
     // To define routes manually or adding an individual route, use the
     // following code and remove (1):
@@ -52,12 +54,9 @@ const routerBuilder = new RouterBuilder()
     // .withReactRoutes(
     //     { path: '/login', element: <Login />, handle: { title: 'Login' } },
     // )
-    .withFallbackComponent(Flow)
+    .withFallback(Flow)
     // Optional method that adds an authentication for routes.
     // Can take an optional path to redirect to, if not authenticated:
     // .protect('/login');
-    .protect();
-
-export const routes = routerBuilder.routes;
-
-export default routerBuilder.build();
+    .protect()
+    .build();
