@@ -133,7 +133,7 @@ function vaadinRouterGlobalClickHandler(event) {
     // if none of the above, convert the click into a navigation event
     const {href, baseURI, search, hash} = anchor;
     // Normalize away base from pathname. e.g. /react should remove base /view from /view/react
-    let normalizedPathname = href.replace(baseURI, '').replace(search,'').replace(hash, '');
+    let normalizedPathname = href.replace(search,'').replace(baseURI, '').replace(hash, '');
     normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname : "/" + normalizedPathname;
     if (fireRouterEvent('go', {pathname: normalizedPathname, search, hash, clientNavigation: true})) {
         event.preventDefault();
@@ -159,7 +159,7 @@ function navigateEventHandler(event) {
     }
     // Normalize path against baseURI if href available.
     let normalizedPathname = event.detail.href ?
-        event.detail.href.replace(document.baseURI, '').replace(event.detail.search ,'').replace(event.detail.hash, '') :
+        event.detail.href.replace(event.detail.search ,'').replace(document.baseURI, '').replace(event.detail.hash, '') :
         event.detail.pathname;
     normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname : "/" + normalizedPathname;
 
