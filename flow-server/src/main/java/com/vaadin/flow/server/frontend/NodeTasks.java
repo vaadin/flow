@@ -363,7 +363,7 @@ public class NodeTasks implements FallibleCommand {
                         .of(lockInfo.pid());
 
                 if (processHandle.isPresent()
-                        && processHandle.get().info().commandLine().orElse("")
+                        && normalizeCommandLine(processHandle.get().info())
                                 .equals(lockInfo.commandLine())) {
                     if (!loggedWaiting) {
                         getLogger().info("Waiting for a previous instance of "
@@ -442,9 +442,14 @@ public class NodeTasks implements FallibleCommand {
     private void writeLockFile() throws IOException {
         ProcessHandle currentProcess = ProcessHandle.current();
         long myPid = currentProcess.pid();
-        String commandLine = currentProcess.info().commandLine().orElse("");
+        String commandLine = normalizeCommandLine(currentProcess.info());
         List<String> lines = List.of(Long.toString(myPid), commandLine);
         Files.write(lockFile, lines, StandardCharsets.UTF_8);
+    }
+
+    private String normalizeCommandLine(ProcessHandle.Info processInfo) {
+        return processInfo.commandLine()
+                .map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
     }
 
     private Logger getLogger() {
