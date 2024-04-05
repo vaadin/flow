@@ -53,6 +53,7 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.router.internal.ClientRoutesProvider;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
@@ -1421,5 +1422,21 @@ public class FrontendUtils {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    /**
+     * Get all available client routes in a distinct list of route paths
+     * collected from all {@link ClientRoutesProvider} implementations found
+     * with Vaadin {@link Lookup}.
+     *
+     * @return a list of available client routes
+     */
+    public static List<String> getClientRoutes() {
+        return Optional.ofNullable(VaadinService.getCurrent())
+                .map(VaadinService::getContext).stream()
+                .flatMap(ctx -> ctx.getAttribute(Lookup.class)
+                        .lookupAll(ClientRoutesProvider.class).stream())
+                .flatMap(provider -> provider.getClientRoutes().stream())
+                .filter(Objects::nonNull).distinct().toList();
     }
 }
