@@ -444,13 +444,12 @@ public class ElementListenerMap extends NodeMap {
 
         List<DomEventListener> listeners = new ArrayList<>();
         for (DomEventListenerWrapper wrapper : typeListeners) {
-            if(inert && !wrapper.allowIntert) {
+            if (inert && !wrapper.allowIntert) {
                 // drop as inert
-                LoggerFactory
-                        .getLogger(ElementListenerMap.class.getName()).info(
-                        "Ignored listener invocation from "
+                LoggerFactory.getLogger(ElementListenerMap.class.getName())
+                        .info("Ignored listener invocation from "
                                 + "the client side for an inert {} element",
-                        event.getSource().getTag());
+                                event.getSource().getTag());
                 continue;
             }
 

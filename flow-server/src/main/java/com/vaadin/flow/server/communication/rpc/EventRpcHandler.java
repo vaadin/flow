@@ -46,7 +46,7 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override
     public Optional<Runnable> handleNode(StateNode node,
-                                         JsonObject invocationJson, boolean inert) {
+            JsonObject invocationJson, boolean inert) {
         assert invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE);
 
         String eventType = invocationJson

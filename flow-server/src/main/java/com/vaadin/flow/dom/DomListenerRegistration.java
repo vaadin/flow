@@ -392,11 +392,11 @@ public interface DomListenerRegistration extends Registration {
     }
 
     /**
-     * Configures the event listener to bypass the server side
-     * security checks for modality. Handle with care! Can be
-     * ok when transferring data from "non-ui" component events
-     * through the Element API, like e.g. geolocation events.
-     * 
+     * Configures the event listener to bypass the server side security checks
+     * for modality. Handle with care! Can be ok when transferring data from
+     * "non-ui" component events through the Element API, like e.g. geolocation
+     * events.
+     *
      * @return the DomListenerRegistration for further configuration
      */
     public DomListenerRegistration allowInert();
