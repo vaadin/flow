@@ -1444,14 +1444,14 @@ public class Binder<BEAN> implements Serializable {
          * @return the value context
          */
         protected ValueContext createValueContext() {
-            return createValueContext(field);
+            return createValueContext(binder, field);
         }
 
-        static ValueContext createValueContext(HasValue<?, ?> field) {
+        static ValueContext createValueContext(Binder binder, HasValue<?, ?> field) {
             if (field instanceof Component) {
-                return new ValueContext((Component) field, field);
+                return new ValueContext(binder, (Component) field, field);
             }
-            return new ValueContext(null, field, findLocale());
+            return new ValueContext(binder, null, field, findLocale());
         }
 
         /**
@@ -2858,7 +2858,7 @@ public class Binder<BEAN> implements Serializable {
     private List<ValidationResult> validateBean(BEAN bean) {
         Objects.requireNonNull(bean, "bean cannot be null");
         return validators.stream()
-                .map(validator -> validator.apply(bean, new ValueContext()))
+                .map(validator -> validator.apply(bean, new ValueContext(this)))
                 .collect(Collectors.collectingAndThen(Collectors.toList(),
                         Collections::unmodifiableList));
     }
