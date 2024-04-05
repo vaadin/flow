@@ -128,7 +128,7 @@ public class PublishedServerEventHandlerRpcHandler
                         eventHandlers.getDisabledUpdateMode(methodName));
             }
         }
-        
+
         if (execute) {
             invokeMethod(component.get(), component.get().getClass(),
                     methodName, (JsonArray) args, promiseId, node.isInert());

@@ -213,7 +213,8 @@ public class ElementListenersTest
 
         JsonObject eventData = Json.createObject();
         eventData.put("baz", true);
-        ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData), false);
+        ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData),
+                false);
 
         JsonObject capturedJson = eventDataReference.get();
         Assert.assertNotNull(capturedJson);
@@ -376,7 +377,8 @@ public class ElementListenersTest
         final JsonObject eventData = Json.createObject();
         eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 child.getNode().getId());
-        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData), false);
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData),
+                false);
         Assert.assertEquals(child, capturedTarget.get());
 
         // nothing reported -> empty optional
@@ -388,12 +390,14 @@ public class ElementListenersTest
         // grandchild
         eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 grandChild.getNode().getId());
-        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData), false);
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData),
+                false);
         Assert.assertEquals(grandChild, capturedTarget.get());
 
         // -1 -> empty optional
         eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA, -1);
-        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData), false);
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData),
+                false);
         Assert.assertNull("no element should be reported",
                 capturedTarget.get());
     }
@@ -427,7 +431,8 @@ public class ElementListenersTest
 
         final JsonObject eventData = Json.createObject();
         eventData.put(key, child.getNode().getId());
-        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData), false);
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData),
+                false);
         Assert.assertEquals(child,
                 capturedTarget.get().getEventDataElement(expression).get());
 
@@ -439,7 +444,8 @@ public class ElementListenersTest
 
         // sibling
         eventData.put(key, sibling.getNode().getId());
-        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData), false);
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData),
+                false);
         Assert.assertEquals(sibling,
                 capturedTarget.get().getEventDataElement(expression).get());
     }
@@ -469,7 +475,8 @@ public class ElementListenersTest
         final JsonObject eventData = Json.createObject();
         eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 child.getNode().getId());
-        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData), false);
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData),
+                false);
         Assert.assertEquals(child, capturedTarget.get().getEventTarget().get());
         Assert.assertEquals(child,
                 capturedTarget.get().getEventDataElement("event.target").get());
@@ -487,7 +494,8 @@ public class ElementListenersTest
 
         JsonObject eventData = Json.createObject();
         eventData.put("filterKey", true);
-        ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData), false);
+        ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData),
+                false);
         Assert.assertEquals(1, eventCount.get());
     }
 
