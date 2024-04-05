@@ -18,10 +18,19 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * A base class for commands providing helpers for common file generation
+ * actions.
+ * <p>
+ * </p>
+ * By extending this class, commands can track generated files for subsequent
+ * processes. In addition, it allows to avoid writes on disk of the file already
+ * exists and has exactly the same generated content, preventing file system
+ * watchers to trigger unnecessary events.
+ */
 public abstract class AbstractFileGeneratorFallibleCommand
         implements FallibleCommand {
 
