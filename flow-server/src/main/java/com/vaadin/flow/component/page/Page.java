@@ -15,31 +15,29 @@
  */
 package com.vaadin.flow.component.page;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
 
-import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.DebounceSettings;
 import com.vaadin.flow.component.Direction;
+import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.dom.DebouncePhase;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.UrlUtil;
@@ -51,6 +49,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Represents the web page open in the browser, containing the UI it is
@@ -61,59 +61,11 @@ import elemental.json.JsonValue;
  */
 public class Page implements Serializable {
 
-    @Tag(Tag.DIV)
-    private static class ResizeEventReceiver extends Component {
 
-        private int windowResizeListenersSize;
-
-        @ClientCallable
-        @AllowInert
-        private void windowResized(int width, int height) {
-            if (windowResizeListenersSize != 0) {
-                fireEvent(new ResizeEvent(this, width, height));
-            }
-        }
-
-        private Registration addListener(BrowserWindowResizeListener listener) {
-            windowResizeListenersSize++;
-            Registration registration = addListener(ResizeEvent.class,
-                    event -> listener
-                            .browserWindowResized(event.getApiEvent()));
-
-            Registration combined = Registration
-                    .combine(this::listenerIsUnregistered, registration);
-            return Registration.once(combined::remove);
-        }
-
-        private void listenerIsUnregistered() {
-            windowResizeListenersSize--;
-            if (windowResizeListenersSize == 0) {
-                // remove JS listener
-                getUI().get().getPage().executeJs("$0.resizeRemove()", this);
-            }
-        }
-    }
-
-    private static class ResizeEvent
-            extends ComponentEvent<ResizeEventReceiver> {
-
-        private final BrowserWindowResizeEvent apiEvent;
-
-        private ResizeEvent(ResizeEventReceiver source, int width, int height) {
-            super(source, true);
-            apiEvent = new BrowserWindowResizeEvent(
-                    source.getUI().get().getPage(), width, height);
-
-        }
-
-        private BrowserWindowResizeEvent getApiEvent() {
-            return apiEvent;
-        }
-    }
-
-    private ResizeEventReceiver resizeReceiver;
     private final UI ui;
     private final History history;
+    private DomListenerRegistration resizeReceiver;
+    private ArrayList<BrowserWindowResizeListener> resizeListeners;
 
     /**
      * Creates a page instance for the given UI.
@@ -373,17 +325,35 @@ public class Page implements Serializable {
             BrowserWindowResizeListener resizeListener) {
         Objects.requireNonNull(resizeListener);
         if (resizeReceiver == null) {
-            // lazy creation which is done only one time since there is no way
-            // to remove virtual children
-            resizeReceiver = new ResizeEventReceiver();
-            ui.getElement().appendVirtualChild(resizeReceiver.getElement());
+            // "republish" on the "fake element", so can be listened with core APIs
+            ui.getElement().executeJs("""
+                const el = this;
+                window.addEventListener('resize', evt => {
+                    debugger;
+                    const event = new Event("window-resize");
+                    event.w = document.documentElement.clientWidth;
+                    event.h = document.documentElement.clientHeight;
+                    el.dispatchEvent(event);
+                });
+            """);
+            resizeReceiver = ui.getElement().addEventListener("window-resize", e-> {
+                var evt = new BrowserWindowResizeEvent(this, 
+                        (int) e.getEventData().getNumber("event.w"),  
+                        (int) e.getEventData().getNumber("event.w"));
+                // Clone list to avoid issues if listener unregisters itself
+                new ArrayList<>(resizeListeners).forEach(l -> l.browserWindowResized(evt));
+            })
+                    .addEventData("event.w")
+                    .addEventData("event.h")
+                    .debounce(300)
+                    // .allowInert() // this...
+                    ;
         }
-        if (resizeReceiver.windowResizeListenersSize == 0) {
-            // JS resize listener may be completely disabled if there are not
-            // listeners
-            executeJs(LazyJsLoader.WINDOW_LISTENER_JS, resizeReceiver);
+        if(resizeListeners == null) {
+            resizeListeners = new ArrayList<>(1);
         }
-        return resizeReceiver.addListener(resizeListener);
+        resizeListeners.add(resizeListener);
+        return () -> resizeListeners.remove(resizeListener);
     }
 
     /**
@@ -465,30 +435,6 @@ public class Page implements Serializable {
     private void addDependency(Dependency dependency) {
         assert dependency != null;
         ui.getInternals().getDependencyList().add(dependency);
-    }
-
-    private static class LazyJsLoader implements Serializable {
-
-        private static final String JS_FILE_NAME = "windowResizeListener.js";
-
-        private static final String WINDOW_LISTENER_JS = readJS();
-
-        private static String readJS() {
-            try (InputStream stream = Page.class
-                    .getResourceAsStream(JS_FILE_NAME);
-                    BufferedReader bf = new BufferedReader(
-                            new InputStreamReader(stream,
-                                    StandardCharsets.UTF_8))) {
-                StringBuilder builder = new StringBuilder();
-                bf.lines().forEach(builder::append);
-                return builder.toString();
-            } catch (IOException e) {
-                throw new RuntimeException(
-                        "Couldn't read window resize listener JavaScript file "
-                                + JS_FILE_NAME + ". The package is broken",
-                        e);
-            }
-        }
     }
 
     /**
