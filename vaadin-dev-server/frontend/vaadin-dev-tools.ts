@@ -970,6 +970,15 @@ export class VaadinDevTools extends LitElement {
           );
         }
       };
+    } else if (this.conf.backend === VaadinDevTools.HOTSWAP_AGENT || this.conf.backend === VaadinDevTools.JREBEL) {
+      this.frontendConnection.onHandshake = () => {
+        if (this.conf.backend) {
+          this.log(
+              MessageType.INFORMATION,
+              `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.conf.backend]}`
+          );
+        }
+      };
     }
 
     if (!this.conf.backend) {
