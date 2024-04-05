@@ -345,9 +345,8 @@ public class Page implements Serializable {
             })
                     .addEventData("event.w")
                     .addEventData("event.h")
-                    .debounce(300)
-                    // .allowInert() // this...
-                    ;
+                    .debounce(300).allowInert()
+            ;
         }
         if(resizeListeners == null) {
             resizeListeners = new ArrayList<>(1);
