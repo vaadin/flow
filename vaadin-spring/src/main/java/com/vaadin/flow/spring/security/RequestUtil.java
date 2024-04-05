@@ -24,6 +24,7 @@ import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.auth.AccessCheckDecision;
 import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -138,9 +139,17 @@ public class RequestUtil {
      */
     public boolean isCustomWebIcon(HttpServletRequest request) {
         if (webIconsRequestMatcher == null) {
-            webIconsRequestMatcher = new WebIconsRequestMatcher(
-                    springServletRegistration.getServlet().getService(),
-                    configurationProperties.getUrlMapping());
+            VaadinServletService vaadinService = springServletRegistration
+                    .getServlet().getService();
+            if (vaadinService != null) {
+                webIconsRequestMatcher = new WebIconsRequestMatcher(
+                        vaadinService, configurationProperties.getUrlMapping());
+            } else {
+                getLogger().debug(
+                        "WebIconsRequestMatcher cannot be created because VaadinService is not yet available. "
+                                + "This may happen after a hot-reload, and can cause requests for icons to be blocked by Spring Security.");
+                return false;
+            }
         }
         return webIconsRequestMatcher.matches(request);
     }
