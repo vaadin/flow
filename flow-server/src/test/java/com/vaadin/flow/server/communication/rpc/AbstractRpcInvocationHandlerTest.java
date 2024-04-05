@@ -55,7 +55,7 @@ public class AbstractRpcInvocationHandlerTest {
 
         @Override
         protected Optional<Runnable> handleNode(StateNode node,
-                JsonObject invocationJson) {
+                JsonObject invocationJson, boolean inert) {
             this.node = node;
             return Optional.of(() -> {
             });

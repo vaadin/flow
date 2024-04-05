@@ -15,6 +15,21 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import com.vaadin.flow.dom.DebouncePhase;
+import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.shared.JsonConstants;
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,21 +43,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import com.vaadin.flow.dom.DebouncePhase;
-import com.vaadin.flow.dom.DisabledUpdateMode;
-import com.vaadin.flow.dom.DomEvent;
-import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.function.SerializableRunnable;
-import com.vaadin.flow.internal.ConstantPoolKey;
-import com.vaadin.flow.internal.JsonUtils;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Map of DOM events with server-side listeners. The key set of this map
@@ -114,6 +114,7 @@ public class ElementListenerMap extends NodeMap {
         private int debounceTimeout = 0;
         private EnumSet<DebouncePhase> debouncePhases = NO_TIMEOUT_PHASES;
         private List<SerializableRunnable> unregisterHandlers;
+        private boolean allowIntert;
 
         private DomEventListenerWrapper(ElementListenerMap listenerMap,
                 String type, DomEventListener origin) {
@@ -264,6 +265,12 @@ public class ElementListenerMap extends NodeMap {
             return eventDataExpressions != null && eventDataExpressions
                     .contains(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
                             + propertyName);
+        }
+
+        @Override
+        public DomListenerRegistration allowInert() {
+            allowIntert = true;
+            return this;
         }
     }
 
@@ -423,11 +430,12 @@ public class ElementListenerMap extends NodeMap {
      * @param event
      *            the event to fire
      */
-    public void fireEvent(DomEvent event) {
+    public void fireEvent(DomEvent event, boolean inert) {
         if (listeners == null) {
             return;
         }
         boolean isElementEnabled = event.getSource().isEnabled();
+
         List<DomEventListenerWrapper> typeListeners = listeners
                 .get(event.getType());
         if (typeListeners == null) {
@@ -436,6 +444,16 @@ public class ElementListenerMap extends NodeMap {
 
         List<DomEventListener> listeners = new ArrayList<>();
         for (DomEventListenerWrapper wrapper : typeListeners) {
+            if(inert && !wrapper.allowIntert) {
+                // drop as inert
+                LoggerFactory
+                        .getLogger(ElementListenerMap.class.getName()).info(
+                        "Ignored listener invocation from "
+                                + "the client side for an inert {} element",
+                        event.getSource().getTag());
+                continue;
+            }
+
             if ((isElementEnabled
                     || DisabledUpdateMode.ALWAYS.equals(wrapper.mode))
                     && wrapper.matchesFilter(event.getEventData())

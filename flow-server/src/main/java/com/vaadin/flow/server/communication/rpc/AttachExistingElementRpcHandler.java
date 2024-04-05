@@ -52,7 +52,7 @@ public class AttachExistingElementRpcHandler
 
     @Override
     protected Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
+            JsonObject invocationJson, boolean inert) {
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_TAG_NAME);

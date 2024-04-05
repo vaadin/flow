@@ -88,7 +88,7 @@ public class AttachTemplateChildRpcHandlerTest {
 
         Mockito.when(parentNode.getId()).thenReturn(3);
 
-        handler.handleNode(node, object);
+        handler.handleNode(node, object, false);
     }
 
 }

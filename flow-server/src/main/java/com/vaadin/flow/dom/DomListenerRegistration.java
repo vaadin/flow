@@ -391,4 +391,12 @@ public interface DomListenerRegistration extends Registration {
         return this;
     }
 
+    /**
+     * Configures the event listener to pass modality checks on the server
+     * side. Handle with care!
+     * 
+     * @return the DomListenerRegistration for further configuration
+     */
+    public DomListenerRegistration allowInert();
+
 }

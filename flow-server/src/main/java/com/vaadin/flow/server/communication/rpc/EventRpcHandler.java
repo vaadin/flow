@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
@@ -45,7 +46,7 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override
     public Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
+                                         JsonObject invocationJson, boolean inert) {
         assert invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE);
 
         String eventType = invocationJson
@@ -59,7 +60,7 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
 
         DomEvent event = new DomEvent(Element.get(node), eventType, eventData);
 
-        node.getFeature(ElementListenerMap.class).fireEvent(event);
+        node.getFeature(ElementListenerMap.class).fireEvent(event, inert);
 
         return Optional.empty();
     }
