@@ -531,7 +531,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         json.put(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME, method);
 
         new PublishedServerEventHandlerRpcHandler()
-                .handleNode(component.getElement().getNode(), json);
+                .handleNode(component.getElement().getNode(), json, false);
     }
 
 }

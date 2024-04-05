@@ -79,7 +79,7 @@ public class PublishedServerEventHandlerRpcHandler
 
     @Override
     public Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
+            JsonObject invocationJson, boolean inert) {
         assert invocationJson
                 .hasKey(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
         String methodName = invocationJson
@@ -128,7 +128,7 @@ public class PublishedServerEventHandlerRpcHandler
                         eventHandlers.getDisabledUpdateMode(methodName));
             }
         }
-
+        
         if (execute) {
             invokeMethod(component.get(), component.get().getClass(),
                     methodName, (JsonArray) args, promiseId, node.isInert());

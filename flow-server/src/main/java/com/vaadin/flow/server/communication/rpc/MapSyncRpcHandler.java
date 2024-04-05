@@ -61,7 +61,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override
     protected Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
+            JsonObject invocationJson, boolean inert) {
         assert invocationJson.hasKey(JsonConstants.RPC_FEATURE);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
