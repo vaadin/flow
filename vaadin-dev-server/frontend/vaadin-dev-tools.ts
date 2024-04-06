@@ -1331,7 +1331,7 @@ export class VaadinDevTools extends LitElement {
     } else if (status === ConnectionStatus.INACTIVE) {
       return 'var(--dev-tools-grey-color)';
     } else if (status === ConnectionStatus.UNAVAILABLE) {
-      return 'var(--dev-tools-yellow-hsl)';
+      return 'var(--dev-tools-yellow-color)';
     } else if (status === ConnectionStatus.ERROR) {
       return 'var(--dev-tools-red-color)';
     } else {
