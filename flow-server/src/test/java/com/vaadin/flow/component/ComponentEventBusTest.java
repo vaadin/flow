@@ -108,8 +108,7 @@ public class ComponentEventBusTest {
             JsonObject eventData) {
         Element e = component.getElement();
         e.getNode().getFeature(ElementListenerMap.class).fireEvent(
-                new com.vaadin.flow.dom.DomEvent(e, domEvent, eventData),
-                false);
+                new com.vaadin.flow.dom.DomEvent(e, domEvent, eventData));
 
     }
 

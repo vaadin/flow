@@ -69,19 +69,13 @@ public abstract class AbstractRpcInvocationHandler
                     getClass().getName(), node.getId());
             return Optional.empty();
         } else if (!allowInert(ui, invocationJson) && node.isInert()) {
-            if (this instanceof EventRpcHandler) {
-                // EventRpcHandler has special handling
-                return handleNode(node, invocationJson, true);
-            } else {
-                // Drop others already here for safer implementation
-                getLogger().info(
-                        "Ignored RPC for invocation handler '{}' from "
-                                + "the client side for an inert node id='{}'",
-                        getClass().getName(), node.getId());
-                return Optional.empty();
-            }
+            getLogger().info(
+                    "Ignored RPC for invocation handler '{}' from "
+                            + "the client side for an inert node id='{}'",
+                    getClass().getName(), node.getId());
+            return Optional.empty();
         } else {
-            return handleNode(node, invocationJson, false);
+            return handleNode(node, invocationJson);
         }
     }
 
@@ -221,12 +215,10 @@ public abstract class AbstractRpcInvocationHandler
      *            node to handle invocation with, not {@code null}
      * @param invocationJson
      *            the RPC data to handle, not {@code null}
-     * @param inert
-     *            the node is inert, handle only if explicitly allowed
      * @return an optional runnable
      */
     protected abstract Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson, boolean inert);
+            JsonObject invocationJson);
 
     private static Logger getLogger() {
         return LoggerFactory

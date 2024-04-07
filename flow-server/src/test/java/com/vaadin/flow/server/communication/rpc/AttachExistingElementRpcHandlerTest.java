@@ -59,7 +59,7 @@ public class AttachExistingElementRpcHandlerTest {
         Mockito.when(node.getFeature(AttachExistingElementFeature.class))
                 .thenReturn(feature);
 
-        handler.handleNode(node, object, false);
+        handler.handleNode(node, object);
 
         Mockito.verify(consumer).onError(parentNode, "div", sibling);
         assertNodeIsUnregistered(node, requested, feature);
@@ -96,7 +96,7 @@ public class AttachExistingElementRpcHandlerTest {
         Mockito.when(node.getFeature(AttachExistingElementFeature.class))
                 .thenReturn(feature);
 
-        handler.handleNode(node, object, false);
+        handler.handleNode(node, object);
 
         assertNodeIsUnregistered(node, requested, feature);
         Mockito.verify(parentNode).insertChild(index, Element.get(requested));
@@ -137,7 +137,7 @@ public class AttachExistingElementRpcHandlerTest {
         Mockito.when(node.getFeature(AttachExistingElementFeature.class))
                 .thenReturn(feature);
 
-        handler.handleNode(node, object, false);
+        handler.handleNode(node, object);
 
         assertNodeIsUnregistered(node, requested, feature);
         Mockito.verify(parentNode, Mockito.times(0)).insertChild(index,

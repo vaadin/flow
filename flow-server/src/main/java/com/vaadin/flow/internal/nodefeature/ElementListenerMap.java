@@ -430,11 +430,12 @@ public class ElementListenerMap extends NodeMap {
      * @param event
      *            the event to fire
      */
-    public void fireEvent(DomEvent event, boolean inert) {
+    public void fireEvent(DomEvent event) {
         if (listeners == null) {
             return;
         }
-        boolean isElementEnabled = event.getSource().isEnabled();
+        final boolean isElementEnabled = event.getSource().isEnabled();
+        final boolean inert = event.getSource().getNode().isInert();
 
         List<DomEventListenerWrapper> typeListeners = listeners
                 .get(event.getType());
