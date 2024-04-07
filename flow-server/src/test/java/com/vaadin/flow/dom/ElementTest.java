@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
+import com.vaadin.flow.internal.nodefeature.InertData;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
@@ -380,6 +381,32 @@ public class ElementTest extends AbstractNodeTest {
         e.getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new DomEvent(e, "click", Json.createObject()));
         Assert.assertEquals(1, listenerCalls.get());
+    }
+
+    @Test
+    public void listenerReceivesEventsWithAllowIntert() {
+        Element e = ElementFactory.createDiv();
+        // Inert the node, verify events no more passed through
+        InertData inertData = e.getNode().getFeature(InertData.class);
+        inertData.setInertSelf(true);
+        inertData.generateChangesFromEmpty();
+
+        AtomicInteger listenerCalls = new AtomicInteger(0);
+        DomEventListener myListener = event -> listenerCalls.incrementAndGet();
+
+        DomListenerRegistration domListenerRegistration = e.addEventListener("click", myListener);
+        Assert.assertEquals(0, listenerCalls.get());
+        e.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(e, "click", Json.createObject()));
+        // Event should not go through
+        Assert.assertEquals(0, listenerCalls.get());
+
+        // Now should pass inert check and get notified
+        domListenerRegistration.allowInert();
+        e.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(e, "click", Json.createObject()));
+        Assert.assertEquals(1, listenerCalls.get());
+
     }
 
     @Test
