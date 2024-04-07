@@ -48,7 +48,7 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
 
     @Override
     protected Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson, boolean inert) {
+            JsonObject invocationJson) {
         int channelId = (int) invocationJson
                 .getNumber(JsonConstants.RPC_CHANNEL);
         JsonArray arguments = invocationJson

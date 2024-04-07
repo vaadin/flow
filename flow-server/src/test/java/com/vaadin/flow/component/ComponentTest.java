@@ -1304,7 +1304,7 @@ public class ComponentTest {
         AtomicInteger count = new AtomicInteger();
         div.addListener(TestDomEvent.class, vent -> count.incrementAndGet());
         div.getElement().getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(createEvent("foo", div), false);
+                .fireEvent(createEvent("foo", div));
 
         Assert.assertEquals(1, count.get());
     }
@@ -1317,7 +1317,7 @@ public class ComponentTest {
         AtomicInteger count = new AtomicInteger();
         div.addListener(TestDomEvent.class, vent -> count.incrementAndGet());
         div.getElement().getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(createEvent("foo", div), false);
+                .fireEvent(createEvent("foo", div));
 
         Assert.assertEquals(0, count.get());
     }
@@ -1333,7 +1333,7 @@ public class ComponentTest {
         AtomicInteger count = new AtomicInteger();
         div.addListener(TestDomEvent.class, event -> count.incrementAndGet());
         div.getElement().getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(createEvent("foo", div), false);
+                .fireEvent(createEvent("foo", div));
 
         Assert.assertEquals(0, count.get());
     }
@@ -1348,7 +1348,7 @@ public class ComponentTest {
         div.addListener(EnabledDomEvent.class,
                 event -> count.incrementAndGet());
         div.getElement().getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(createEvent("foo", div), false);
+                .fireEvent(createEvent("foo", div));
 
         Assert.assertEquals(1, count.get());
     }

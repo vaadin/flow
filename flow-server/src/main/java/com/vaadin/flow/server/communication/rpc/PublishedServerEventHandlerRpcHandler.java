@@ -79,7 +79,7 @@ public class PublishedServerEventHandlerRpcHandler
 
     @Override
     public Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson, boolean inert) {
+            JsonObject invocationJson) {
         assert invocationJson
                 .hasKey(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
         String methodName = invocationJson

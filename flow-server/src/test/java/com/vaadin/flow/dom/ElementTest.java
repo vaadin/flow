@@ -377,8 +377,8 @@ public class ElementTest extends AbstractNodeTest {
 
         e.addEventListener("click", myListener);
         Assert.assertEquals(0, listenerCalls.get());
-        e.getNode().getFeature(ElementListenerMap.class).fireEvent(
-                new DomEvent(e, "click", Json.createObject()), false);
+        e.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(e, "click", Json.createObject()));
         Assert.assertEquals(1, listenerCalls.get());
     }
 
@@ -1363,7 +1363,7 @@ public class ElementTest extends AbstractNodeTest {
 
     private void fireEvent(Element element, String eventType) {
         element.getNode().getFeature(ElementListenerMap.class).fireEvent(
-                new DomEvent(element, eventType, Json.createObject()), false);
+                new DomEvent(element, eventType, Json.createObject()));
 
     }
 

@@ -288,8 +288,7 @@ public class MapSyncRpcHandlerTest {
 
         new MapSyncRpcHandler().handleNode(noSyncProperties,
                 createSyncPropertyInvocation(noSyncProperties, TEST_PROPERTY,
-                        NEW_VALUE),
-                false);
+                        NEW_VALUE));
 
         Assert.assertEquals(NEW_VALUE, map.getProperty(TEST_PROPERTY));
     }
@@ -304,8 +303,7 @@ public class MapSyncRpcHandlerTest {
 
         new MapSyncRpcHandler().handleNode(element.getNode(),
                 createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
-                        NEW_VALUE),
-                false);
+                        NEW_VALUE));
     }
 
     @Test
@@ -320,8 +318,7 @@ public class MapSyncRpcHandlerTest {
 
         new MapSyncRpcHandler().handleNode(element.getNode(),
                 createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
-                        NEW_VALUE),
-                false);
+                        NEW_VALUE));
     }
 
     @Test
@@ -341,8 +338,7 @@ public class MapSyncRpcHandlerTest {
 
         new MapSyncRpcHandler().handleNode(propertyMap.getNode(),
                 createSyncPropertyInvocation(propertyMap.getNode(),
-                        TEST_PROPERTY, NEW_VALUE),
-                false);
+                        TEST_PROPERTY, NEW_VALUE));
     }
 
     @Test
@@ -373,8 +369,7 @@ public class MapSyncRpcHandlerTest {
         };
 
         new MapSyncRpcHandler().handleNode(node,
-                createSyncPropertyInvocation(node, TEST_PROPERTY, NEW_VALUE),
-                false);
+                createSyncPropertyInvocation(node, TEST_PROPERTY, NEW_VALUE));
 
         Assert.assertEquals(1, deferredUpdateInvocations.get());
         Assert.assertEquals(TEST_PROPERTY, deferredKey.get());
@@ -399,8 +394,7 @@ public class MapSyncRpcHandlerTest {
 
             new MapSyncRpcHandler().handleNode(disabledNode,
                     createSyncPropertyInvocation(disabledNode, TEST_PROPERTY,
-                            NEW_VALUE),
-                    false);
+                            NEW_VALUE));
 
             verify(logger, times(0)).warn(anyString(), anyString());
             verify(logger, times(1)).debug(anyString(), anyString());
@@ -426,8 +420,7 @@ public class MapSyncRpcHandlerTest {
 
             new MapSyncRpcHandler().handleNode(disabledNode,
                     createSyncPropertyInvocation(disabledNode, TEST_PROPERTY,
-                            NEW_VALUE),
-                    false);
+                            NEW_VALUE));
 
             verify(logger, times(1)).warn(anyString(), anyString());
             verify(logger, times(0)).debug(anyString(), anyString());
