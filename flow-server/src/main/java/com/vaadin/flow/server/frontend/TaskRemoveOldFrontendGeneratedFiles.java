@@ -129,7 +129,6 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
         return path -> path.equals(flowGeneratedImports)
                 || path.equals(flowGeneratedImports
                         .resolveSibling(FrontendUtils.IMPORTS_D_TS_NAME))
-                || path.equals(frontendGeneratedFolder.resolve("views.ts"))
                 || path.getFileName().toString()
                         .matches("theme(\\.(js|d\\.ts)|-.*\\.generated.js)");
     }
