@@ -325,11 +325,10 @@ public class Page implements Serializable {
             BrowserWindowResizeListener resizeListener) {
         Objects.requireNonNull(resizeListener);
         if (resizeReceiver == null) {
-            // "republish" on the "fake element", so can be listened with core APIs
+            // "republish" on the UI element, so can be listened with core APIs
             ui.getElement().executeJs("""
                 const el = this;
                 window.addEventListener('resize', evt => {
-                    debugger;
                     const event = new Event("window-resize");
                     event.w = document.documentElement.clientWidth;
                     event.h = document.documentElement.clientHeight;
