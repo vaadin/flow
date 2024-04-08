@@ -338,7 +338,7 @@ public class Page implements Serializable {
                     .addEventListener("window-resize", e -> {
                         var evt = new BrowserWindowResizeEvent(this,
                                 (int) e.getEventData().getNumber("event.w"),
-                                (int) e.getEventData().getNumber("event.w"));
+                                (int) e.getEventData().getNumber("event.h"));
                         // Clone list to avoid issues if listener unregisters
                         // itself
                         new ArrayList<>(resizeListeners)
