@@ -122,8 +122,8 @@ public class ValueContext implements Serializable {
         this.hasValue = hasValue;
         this.locale = locale;
     }
-    
-        /**
+
+    /**
      * Constructor for {@code ValueContext} without a {@code Locale}.
      * @deprecated Use the version with binder reference instead
      */
@@ -264,5 +264,4 @@ public class ValueContext implements Serializable {
     public Binder<?> getBinder() {
         return binder;
     }
-    
 }

@@ -36,6 +36,10 @@ public class ValueContextTest extends UI {
     private static final Locale COMPONENT_LOCALE = Locale.FRENCH;
     private TestTextField textField;
 
+    private Binder<PasswordBean> binder;
+    private TestTextField passwordField;
+    private TestTextField confirmPasswordField;
+
     @Test
     public void locale_from_component() {
         setLocale(COMPONENT_LOCALE);
@@ -103,12 +107,44 @@ public class ValueContextTest extends UI {
         Assert.assertEquals(Locale.GERMAN, context.getLocale().get());
     }
 
+    @Test
+    public void testWithBinder() {
+
+        // Test password mismatch
+        PasswordBean passwordBean = new PasswordBean();
+        binder.setBean(passwordBean);
+        passwordField.setValue("abc123");
+        confirmPasswordField.setValue("def456");
+        BinderValidationStatus<PasswordBean> status = binder.validate();
+        Assert.assertEquals(1, status.getFieldValidationErrors().size());
+        Assert.assertEquals(status.getFieldValidationErrors().iterator().next().getMessage().get(), "Passwords must match");
+
+        // Test password match
+        confirmPasswordField.setValue("abc123");
+        status = binder.validate();
+        Assert.assertEquals(0, status.getFieldValidationErrors().size());
+    }
+
     @Before
     public void setUp() {
         setLocale(UI_LOCALE);
         UI.setCurrent(this);
         textField = new TestTextField();
         add(textField);
+
+        binder = new Binder<>(PasswordBean.class);
+        passwordField = new TestTextField();
+        confirmPasswordField = new TestTextField();
+        binder.forField(passwordField).bind("password");
+        binder.forField(confirmPasswordField)
+          .withValidator((confirmValue, valueContext) -> {
+            Binder<?> ctxBinder = valueContext.getBinder();
+            Assert.assertSame(ctxBinder, binder);
+            TestTextField passwordField = (TestTextField)ctxBinder.getBinding("password").get().getField();
+            return !Objects.equals(confirmValue, passwordField.getValue()) ?
+              ValidationResult.error("Passwords must match") : ValidationResult.ok();
+          })
+          .bind("confirmPassword");
     }
 
     @After
@@ -118,5 +154,27 @@ public class ValueContextTest extends UI {
 
     @Override
     public void init(VaadinRequest request) {
+    }
+
+// PasswordBean
+
+    public static class PasswordBean {
+
+        private String password;
+        private String confirmPassword;
+
+        public String getPassword() {
+            return this.password;
+        }
+        public void setPassword(final String password) {
+            this.password = password;
+        }
+
+        public String getConfirmPassword() {
+            return this.confirmPassword;
+        }
+        public void setConfirmPassword(final String confirmPassword) {
+            this.confirmPassword = confirmPassword;
+        }
     }
 }
