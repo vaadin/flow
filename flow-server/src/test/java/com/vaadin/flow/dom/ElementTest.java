@@ -394,7 +394,8 @@ public class ElementTest extends AbstractNodeTest {
         AtomicInteger listenerCalls = new AtomicInteger(0);
         DomEventListener myListener = event -> listenerCalls.incrementAndGet();
 
-        DomListenerRegistration domListenerRegistration = e.addEventListener("click", myListener);
+        DomListenerRegistration domListenerRegistration = e
+                .addEventListener("click", myListener);
         Assert.assertEquals(0, listenerCalls.get());
         e.getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new DomEvent(e, "click", Json.createObject()));
