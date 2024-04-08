@@ -61,7 +61,6 @@ import java.util.Collections;
  */
 public class Page implements Serializable {
 
-
     private final UI ui;
     private final History history;
     private DomListenerRegistration resizeReceiver;
@@ -327,27 +326,27 @@ public class Page implements Serializable {
         if (resizeReceiver == null) {
             // "republish" on the UI element, so can be listened with core APIs
             ui.getElement().executeJs("""
-                const el = this;
-                window.addEventListener('resize', evt => {
-                    const event = new Event("window-resize");
-                    event.w = document.documentElement.clientWidth;
-                    event.h = document.documentElement.clientHeight;
-                    el.dispatchEvent(event);
-                });
-            """);
-            resizeReceiver = ui.getElement().addEventListener("window-resize", e-> {
-                var evt = new BrowserWindowResizeEvent(this, 
-                        (int) e.getEventData().getNumber("event.w"),  
-                        (int) e.getEventData().getNumber("event.w"));
-                // Clone list to avoid issues if listener unregisters itself
-                new ArrayList<>(resizeListeners).forEach(l -> l.browserWindowResized(evt));
-            })
-                    .addEventData("event.w")
-                    .addEventData("event.h")
-                    .debounce(300).allowInert()
-            ;
+                        const el = this;
+                        window.addEventListener('resize', evt => {
+                            const event = new Event("window-resize");
+                            event.w = document.documentElement.clientWidth;
+                            event.h = document.documentElement.clientHeight;
+                            el.dispatchEvent(event);
+                        });
+                    """);
+            resizeReceiver = ui.getElement()
+                    .addEventListener("window-resize", e -> {
+                        var evt = new BrowserWindowResizeEvent(this,
+                                (int) e.getEventData().getNumber("event.w"),
+                                (int) e.getEventData().getNumber("event.w"));
+                        // Clone list to avoid issues if listener unregisters
+                        // itself
+                        new ArrayList<>(resizeListeners)
+                                .forEach(l -> l.browserWindowResized(evt));
+                    }).addEventData("event.w").addEventData("event.h")
+                    .debounce(300).allowInert();
         }
-        if(resizeListeners == null) {
+        if (resizeListeners == null) {
             resizeListeners = new ArrayList<>(1);
         }
         resizeListeners.add(resizeListener);
