@@ -36,6 +36,7 @@ public class BrowserWindowResizeView extends AbstractDivView {
         add(windowSize);
         
         var modalBtn = new NativeButton("Open modal (should keep working");
+        modalBtn.setId("modal");
         modalBtn.addClickListener(e -> {
             add(new Div("Now modal, but resize events should still flow in"));
             getUI().get().addModal(new Div());

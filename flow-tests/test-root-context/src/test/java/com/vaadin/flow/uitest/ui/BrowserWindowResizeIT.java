@@ -26,7 +26,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class BrowserWindowResizeIT extends ChromeBrowserTest {
 
     @Test
-    public void listenResizeEvent() {
+    public void listenResizeEvent() throws InterruptedException {
         open();
 
         Dimension currentSize = getDriver().manage().window().getSize();
@@ -35,6 +35,9 @@ public class BrowserWindowResizeIT extends ChromeBrowserTest {
         getDriver().manage().window()
                 .setSize(new Dimension(newWidth, currentSize.getHeight()));
 
+        // debounced by defalt with 350
+        Thread.sleep(350);
+
         WebElement info = findElement(By.id("size-info"));
 
         Assert.assertEquals(String.valueOf(newWidth), info.getText());
@@ -42,6 +45,18 @@ public class BrowserWindowResizeIT extends ChromeBrowserTest {
         newWidth -= 30;
         getDriver().manage().window()
                 .setSize(new Dimension(newWidth, currentSize.getHeight()));
+
+        Thread.sleep(350);
+
+        Assert.assertEquals(String.valueOf(newWidth), info.getText());
+
+        // check the same comes in still if modal component set
+        findElement(By.id("modal")).click();
+        newWidth += 30;
+        getDriver().manage().window()
+                .setSize(new Dimension(newWidth, currentSize.getHeight()));
+
+        Thread.sleep(350);
 
         Assert.assertEquals(String.valueOf(newWidth), info.getText());
     }
