@@ -32,32 +32,44 @@ public class BrowserWindowResizeIT extends ChromeBrowserTest {
         Dimension currentSize = getDriver().manage().window().getSize();
 
         int newWidth = currentSize.getWidth() - 10;
+        int newHeght = currentSize.getHeight() - 10;
         getDriver().manage().window()
-                .setSize(new Dimension(newWidth, currentSize.getHeight()));
+                .setSize(new Dimension(newWidth, newHeght));
 
         // debounced by defalt with 350
         Thread.sleep(350);
 
         WebElement info = findElement(By.id("size-info"));
 
-        Assert.assertEquals(String.valueOf(newWidth), info.getText());
+        Assert.assertEquals(String.valueOf(newWidth),
+                info.getText().split("x")[0]);
+        Assert.assertEquals(String.valueOf(newHeght),
+                info.getText().split("x")[1]);
 
         newWidth -= 30;
+        newHeght += 30;
         getDriver().manage().window()
-                .setSize(new Dimension(newWidth, currentSize.getHeight()));
+                .setSize(new Dimension(newWidth, newHeght));
 
         Thread.sleep(350);
 
-        Assert.assertEquals(String.valueOf(newWidth), info.getText());
+        Assert.assertEquals(String.valueOf(newWidth),
+                info.getText().split("x")[0]);
+        Assert.assertEquals(String.valueOf(newHeght),
+                info.getText().split("x")[1]);
 
         // check the same comes in still if modal component set
         findElement(By.id("modal")).click();
         newWidth += 30;
+        newHeght += 30;
         getDriver().manage().window()
-                .setSize(new Dimension(newWidth, currentSize.getHeight()));
+                .setSize(new Dimension(newWidth, newHeght));
 
         Thread.sleep(350);
 
-        Assert.assertEquals(String.valueOf(newWidth), info.getText());
+        Assert.assertEquals(String.valueOf(newWidth),
+                info.getText().split("x")[0]);
+        Assert.assertEquals(String.valueOf(newHeght),
+                info.getText().split("x")[1]);
     }
 }
