@@ -1812,7 +1812,7 @@ public class UI extends Component
             // acknowledge client, but cancel if session not open
             serverConnected(
                     !getSession().getState().equals(VaadinSessionState.OPEN));
-            replaceStateIfDiffersAndNoReplacePending(event.route, trimmedRoute);
+            replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
     }
 
@@ -1822,15 +1822,15 @@ public class UI extends Component
      *
      * @param route
      *            the event.route
-     * @param trimmedRoute
-     *            the trimmed route
+     * @param location
+     *            the location with the trimmed route
      */
     private void replaceStateIfDiffersAndNoReplacePending(String route,
-            String trimmedRoute) {
-        if (!trimmedRoute.equals(route) && !getInternals()
+            Location location) {
+        if (!location.getPath().equals(route) && !getInternals()
                 .containsPendingJavascript("window.history.replaceState")) {
             // See InternalRedirectHandler invoked via Router.
-            getPage().getHistory().replaceState(null, trimmedRoute);
+            getPage().getHistory().replaceState(null, location);
         }
     }
 

@@ -132,7 +132,7 @@ class VersionsJsonConverter {
         }
     }
 
-    private boolean isIncludedByMode(String npmName, String mode) {
+    private boolean isIncludedByMode(String mode) {
         if (mode == null || mode.isBlank() || MODE_ALL.equalsIgnoreCase(mode)) {
             return true;
         } else if (reactEnabled) {
@@ -151,7 +151,7 @@ class VersionsJsonConverter {
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
             return;
         }
-        if (!isIncludedByMode(npmName, mode)) {
+        if (!isIncludedByMode(mode)) {
             return;
         }
         if (obj.hasKey(NPM_VERSION)) {

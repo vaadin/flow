@@ -131,10 +131,10 @@ function vaadinRouterGlobalClickHandler(event) {
     }
 
     // if none of the above, convert the click into a navigation event
-    const {pathname, href, baseURI, search, hash} = anchor;
+    const {href, baseURI, search, hash} = anchor;
     // Normalize away base from pathname. e.g. /react should remove base /view from /view/react
-    let normalizedPathname = href.slice(0, baseURI.length) == baseURI ? href.slice(baseURI.length) : pathname;
-    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname: "/" + normalizedPathname;
+    let normalizedPathname = href.replace(search,'').replace(baseURI, '').replace(hash, '');
+    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname : "/" + normalizedPathname;
     if (fireRouterEvent('go', {pathname: normalizedPathname, search, hash, clientNavigation: true})) {
         event.preventDefault();
         // for a click event, the scroll is reset to the top position.
@@ -158,9 +158,10 @@ function navigateEventHandler(event) {
         event.preventDefault();
     }
     // Normalize path against baseURI if href available.
-    let normalizedPathname = event.detail.href && event.detail.href.slice(0, document.baseURI.length) == document.baseURI ?
-        event.detail.href.slice(document.baseURI.length) : event.detail.pathname;
-    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname: "/"+normalizedPathname;
+    let normalizedPathname = event.detail.href ?
+        event.detail.href.replace(event.detail.search ,'').replace(document.baseURI, '').replace(event.detail.hash, '') :
+        event.detail.pathname;
+    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname : "/" + normalizedPathname;
 
     // @ts-ignore
     let matched = matchRoutes(Array.from(routes), normalizedPathname);
@@ -168,7 +169,8 @@ function navigateEventHandler(event) {
 
     // if navigation event route targets a flow view do beforeEnter for the
     // target path. Server will then handle updates and postpone as needed.
-    if(matched && matched.length > 0 && matched[matched.length - 1].route.path === "/*") {
+    // @ts-ignore
+    if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length >= 1) {
         if (mountedContainer?.onBeforeEnter) {
             // onBeforeEvent call will handle the Flow navigation
             mountedContainer.onBeforeEnter(
@@ -186,8 +188,11 @@ function navigateEventHandler(event) {
                         navigation(path, {replace: false});
                     },
                     continue: () => {
-                        if(window.location.pathname !== event.detail.pathname) {
-                            window.history.pushState(window.history.state, '', event.detail.pathname);
+                        let path = event.detail.pathname;
+                        if(event.detail.search) path += event.detail.search;
+                        if(event.detail.hash) path += event.detail.hash;
+                        if(window.location.pathname !== path) {
+                            window.history.pushState(window.history.state, '', path);
                             window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
                         }
                     }
@@ -309,7 +314,8 @@ export default function Flow() {
             // flow from the view
             // If we are going to a non Flow view then we need to clean the Flow
             // view from the dom as we will not be getting a uidl response.
-            if(matched && matched[matched.length - 1].route.path !== "/*") {
+            // @ts-ignore
+            if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length == 0) {
                 mountedContainer?.parentNode?.removeChild(mountedContainer);
                 mountedContainer = undefined;
             }
@@ -370,6 +376,8 @@ export const serverSideRoutes = [
             function getEventListener(type: string) {
                 if (!eventListenerList) return [];
                 if (type == undefined) return eventListenerList;
+                // @ts-ignore
+                if(eventListenerList[type] == undefined) return [];
                 // @ts-ignore
                 return eventListenerList[type];
             }
