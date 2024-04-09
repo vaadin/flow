@@ -384,7 +384,7 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void listenerReceivesEventsWithAllowIntert() {
+    public void listenerReceivesEventsWithAllowInert() {
         Element e = ElementFactory.createDiv();
         // Inert the node, verify events no more passed through
         InertData inertData = e.getNode().getFeature(InertData.class);
