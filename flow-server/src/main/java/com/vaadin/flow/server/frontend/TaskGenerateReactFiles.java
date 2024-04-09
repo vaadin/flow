@@ -60,18 +60,26 @@ public class TaskGenerateReactFiles implements FallibleCommand {
 
             To have working Flow routes add the following to the '%1$s' file:
                 import Flow from 'Frontend/generated/flow/Flow';
-                const routerBuilder = new RouterBuilder()
+                import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                export const { router, routes } = new RouterConfigurationBuilder()
                     .withFallback(Flow)
                     // .withFileRoutes() or .withReactRoutes()
                     // ...
-                export const routes = routerBuilder.routes;
+                    .build();
 
                 OR
 
+                import { createBrowserRouter, RouteObject } from 'react-router-dom';
                 import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
-                export const routes = [
-                    ...serverSideRoutes
-                ] as RouteObject[];
+
+                function build() {
+                    const routes = [...serverSideRoutes] as RouteObject[];
+                    return {
+                        router: createBrowserRouter(routes),
+                        routes
+                    };
+                }
+                export const { router, routes } = build();
 
             """;
     protected static String MISSING_ROUTES_EXPORT = """
@@ -95,7 +103,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private static final Pattern SERVER_ROUTE_PATTERN = Pattern.compile(
             "import\\s+\\{[\\s\\S]*(?:serverSideRoutes)+[\\s\\S]*\\}\\s+from\\s+(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\1;[\\s\\S]+\\.{3}serverSideRoutes");
 
-    // matches setting the fallback component to RouterBuilder,
+    // matches setting the fallback component to RouterConfigurationBuilder,
     // e.g. Flow component from Flow.tsx:
     // import Flow from 'Frontend/generated/flow/Flow';
     // ...

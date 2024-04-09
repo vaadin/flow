@@ -6,11 +6,11 @@
  * - copy this file or create your own `routes.tsx` in your frontend directory,
  *   then modify this copied/created file. By default, the `routes.tsx` file
  *   should be in `src/main/frontend/` folder;
- * - use `RouterBuilder` API to configure routes for the application;
+ * - use `RouterConfigurationBuilder` API to configure routes for the application;
  * - restart the application, so that the imports get re-generated.
  *
- * `RouterBuilder` combines a File System-based route configuration or your
- * explicit routes configuration with the server-side routes.
+ * `RouterConfigurationBuilder` combines a File System-based route configuration
+ * or your explicit routes configuration with the server-side routes.
  *
  * It has the following methods:
  * - `withFileRoutes` enables the File System-based routes autoconfiguration;

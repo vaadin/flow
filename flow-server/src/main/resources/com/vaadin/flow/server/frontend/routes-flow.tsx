@@ -9,8 +9,11 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
 
-export const routes = [
-    ...serverSideRoutes
-] as RouteObject[];
-
-export default createBrowserRouter(routes);
+function build() {
+    const routes = [...serverSideRoutes] as RouteObject[];
+    return {
+        router: createBrowserRouter(routes),
+        routes
+    };
+}
+export const { router, routes } = build()

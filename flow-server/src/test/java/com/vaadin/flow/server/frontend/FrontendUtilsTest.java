@@ -177,31 +177,28 @@ public class FrontendUtilsTest {
             """;
 
     private static final String ROUTES_CONTENT_WITH_WITH_FILE_ROUTES = """
-                import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                 import Flow from 'Frontend/generated/flow/Flow';
                 import fileRoutes from 'Frontend/generated/file-routes';
 
-                const routerBuilder = new RouterBuilder()
+                export const { router, routes } = new RouterConfigurationBuilder()
                     .withFileRoutes(fileRoutes)
-                    .withFallback(Flow);
-
-                export const routes = routerBuilder.routes;
+                    .withFallback(Flow)
+                    .build();
             """;
 
     private static final String ROUTES_CONTENT_WITH_WITH_REACT_ROUTES = """
-                import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                 import Flow from 'Frontend/generated/flow/Flow';
 
-                const routerBuilder = new RouterBuilder()
+                export const { router, routes } = new RouterConfigurationBuilder()
                     .withReactRoutes([
                       {
                           element: <MainLayout />,
                           handle: { title: 'Hilla CRM' }
                       },
                     ])
-                    .withFallback(Flow);
-
-                export const routes = routerBuilder.routes;
+                    .withFallback(Flow).build();
             """;
 
     private static final String HILLA_VIEW_TSX = """

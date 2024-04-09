@@ -91,13 +91,13 @@ public class TaskGenerateReactFilesTest {
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
-                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import Flow from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
-                        const routerBuilder = new RouterBuilder()
+                        export const { router, routes } = new RouterConfigurationBuilder()
                             .withReactRoutes([
                                  {
                                      element: <MainLayout />,
@@ -112,11 +112,8 @@ public class TaskGenerateReactFilesTest {
                             .withReactRoutes([
                                  { path: '/login', element: <Login />, handle: { title: 'Login' } },
                              ])
-                            .protect();
-
-                        export const routes = routerBuilder.routes;
-
-                        export default routerBuilder.build();
+                            .protect()
+                            .build();
                 """;
 
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
@@ -315,13 +312,13 @@ public class TaskGenerateReactFilesTest {
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
-                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import Flow from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
-                        const routerBuilder = new RouterBuilder()
+                        export const { router } = new RouterConfigurationBuilder()
                             .withReactRoutes([
                                  {
                                      element: <MainLayout />,
@@ -336,9 +333,8 @@ public class TaskGenerateReactFilesTest {
                             .withReactRoutes([
                                  { path: '/login', element: <Login />, handle: { title: 'Login' } },
                              ])
-                            .protect();
-
-                        export default routerBuilder.build();
+                            .protect()
+                            .build();
                 """;
 
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
@@ -357,13 +353,13 @@ public class TaskGenerateReactFilesTest {
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
-                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import Flow from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
-                        const routerBuilder = new RouterBuilder()
+                        export const { router, routes } = new RouterConfigurationBuilder()
                             .withReactRoutes([
                                  {
                                      element: <MainLayout />,
@@ -377,9 +373,8 @@ public class TaskGenerateReactFilesTest {
                             .withReactRoutes([
                                  { path: '/login', element: <Login />, handle: { title: 'Login' } },
                              ])
-                            .protect();
-
-                        export default routerBuilder.build();
+                            .protect()
+                            .build();
                 """;
 
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
@@ -396,13 +391,12 @@ public class TaskGenerateReactFilesTest {
     public void withFallbackReceivesDifferentObject_exceptionThrown()
             throws IOException {
         String content = """
-                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
                         import foo from 'Frontend/generated/flow/Flow';
 
-                        const routerBuilder = new RouterBuilder()
-                            .withFallback(Flow);
-
-                        export default routerBuilder.build();
+                        export const { router, routes } = new RouterConfigurationBuilder()
+                            .withFallback(Flow)
+                            .build();
                 """;
 
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
@@ -418,13 +412,12 @@ public class TaskGenerateReactFilesTest {
     @Test
     public void withFallbackMissesImport_exceptionThrown() throws IOException {
         String content = """
-                        import { RouterBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
-                        const routerBuilder = new RouterBuilder()
-                            .withFallback(Flow);
-
-                        export default routerBuilder.build();
+                        export const { router, routes } = new RouterConfigurationBuilder()
+                            .withFallback(Flow)
+                            .build();
                 """;
 
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
