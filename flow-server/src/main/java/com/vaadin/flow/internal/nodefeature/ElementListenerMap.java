@@ -455,8 +455,9 @@ public class ElementListenerMap extends NodeMap {
             if (!isNavigationRequest && inert && !wrapper.allowInert) {
                 // drop as inert
                 LoggerFactory.getLogger(ElementListenerMap.class.getName())
-                        .info("Ignored listener invocation from "
+                        .info("Ignored listener invocation for {} event from "
                                 + "the client side for an inert {} element",
+                                event.getType(),
                                 event.getSource().getTag());
                 continue;
             }
