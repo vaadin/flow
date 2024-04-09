@@ -533,7 +533,8 @@ public class BuildFrontendMojoTest {
                             {
                                 element: <MainLayout />,
                                 handle: { title: 'Main' }
-                            }
+                            },
+                            ...serverSideRoutes
                         ] as RouteObject[];
 
 
@@ -557,7 +558,8 @@ public class BuildFrontendMojoTest {
                             {
                                 element: <MainLayout />,
                                 handle: { title: 'Main' }
-                            }
+                            },
+                            ...serverSideRoutes
                         ] as RouteObject[];
 
 
