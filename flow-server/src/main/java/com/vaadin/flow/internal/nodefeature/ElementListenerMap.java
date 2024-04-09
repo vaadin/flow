@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -114,7 +115,7 @@ public class ElementListenerMap extends NodeMap {
         private int debounceTimeout = 0;
         private EnumSet<DebouncePhase> debouncePhases = NO_TIMEOUT_PHASES;
         private List<SerializableRunnable> unregisterHandlers;
-        private boolean allowIntert;
+        private boolean allowInert;
 
         private DomEventListenerWrapper(ElementListenerMap listenerMap,
                 String type, DomEventListener origin) {
@@ -269,7 +270,7 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration allowInert() {
-            allowIntert = true;
+            allowInert = true;
             return this;
         }
     }
@@ -434,7 +435,13 @@ public class ElementListenerMap extends NodeMap {
         if (listeners == null) {
             return;
         }
+
         final boolean isElementEnabled = event.getSource().isEnabled();
+
+        final boolean isNavigationRequest = UI.BrowserNavigateEvent.EVENT_NAME
+                .equals(event.getType())
+                || UI.BrowserLeaveNavigationEvent.EVENT_NAME
+                        .equals(event.getType());
         final boolean inert = event.getSource().getNode().isInert();
 
         List<DomEventListenerWrapper> typeListeners = listeners
@@ -445,7 +452,7 @@ public class ElementListenerMap extends NodeMap {
 
         List<DomEventListener> listeners = new ArrayList<>();
         for (DomEventListenerWrapper wrapper : typeListeners) {
-            if (inert && !wrapper.allowIntert) {
+            if (!isNavigationRequest && inert && !wrapper.allowInert) {
                 // drop as inert
                 LoggerFactory.getLogger(ElementListenerMap.class.getName())
                         .info("Ignored listener invocation from "

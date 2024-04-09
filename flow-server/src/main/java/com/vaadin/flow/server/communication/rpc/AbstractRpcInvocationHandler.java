@@ -118,22 +118,6 @@ public abstract class AbstractRpcInvocationHandler
                         invocationJson.getString(JsonConstants.RPC_EVENT_TYPE));
     }
 
-    private boolean isNavigationInvocation(JsonObject invocationJson) {
-        if (!invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE)) {
-            return false;
-        }
-        if (BrowserNavigateEvent.EVENT_NAME.equals(
-                invocationJson.getString(JsonConstants.RPC_EVENT_TYPE))) {
-            return true;
-        }
-        if (BrowserLeaveNavigationEvent.EVENT_NAME.equals(
-                invocationJson.getString(JsonConstants.RPC_EVENT_TYPE))) {
-            return true;
-        }
-        return false;
-
-    }
-
     private boolean isPollingEnabledForUI(UI ui) {
         return ui.getPollInterval() > 0;
     }
@@ -203,8 +187,7 @@ public abstract class AbstractRpcInvocationHandler
      *         the current invocation or not.
      */
     protected boolean allowInert(UI ui, JsonObject invocationJson) {
-        return isValidPollInvocation(ui, invocationJson)
-                || isNavigationInvocation(invocationJson);
+        return isValidPollInvocation(ui, invocationJson);
     }
 
     /**
