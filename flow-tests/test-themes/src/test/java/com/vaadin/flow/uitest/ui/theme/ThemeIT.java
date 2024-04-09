@@ -15,15 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.CSS_SNOWFLAKE;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
-
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
@@ -35,11 +26,24 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.CSS_SNOWFLAKE;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.KEYBOARD_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.LEMON_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUN_ID;
 
 public class ThemeIT extends ChromeBrowserTest {
 
@@ -237,6 +241,32 @@ public class ThemeIT extends ChromeBrowserTest {
     public void importCssAddedOnce() {
         open();
         assertRuleOnce(".fa-smile-beam:"); // importCss rule
+    }
+
+    @Test
+    public void cssWithAssetRelativePaths_urlPathIsNotRelative() {
+        open();
+        String expectedIconsURL = getRootURL()
+                + "/path/themes/app-theme/fortawesome/icons/";
+        String imageUrl = $(DivElement.class).id(KEYBOARD_ID)
+                .getCssValue("background-image");
+        Assert.assertTrue("Expecting relative asset URL to be resolved as "
+                + expectedIconsURL + "/keyboard.svg but was " + imageUrl,
+                imageUrl.contains(expectedIconsURL + "keyboard.svg"));
+
+        imageUrl = $(DivElement.class).id(LEMON_ID)
+                .getCssValue("background-image");
+        Assert.assertTrue(
+                "Expecting relative asset URL to be resolved as "
+                        + expectedIconsURL + "/lemon.svg but was " + imageUrl,
+                imageUrl.contains(expectedIconsURL + "lemon.svg"));
+
+        imageUrl = $(DivElement.class).id(SUN_ID)
+                .getCssValue("background-image");
+        Assert.assertTrue(
+                "Expecting relative asset URL to be resolved as "
+                        + expectedIconsURL + "/sun.svg but was " + imageUrl,
+                imageUrl.contains(expectedIconsURL + "sun.svg"));
     }
 
     @Override

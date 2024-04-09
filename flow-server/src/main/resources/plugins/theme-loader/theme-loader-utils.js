@@ -2,8 +2,12 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve, basename } from 'path';
 import { globSync } from 'glob';
 
-// Collect groups [url(] ['|"]optional './|../', file part and end of url
-const urlMatcher = /(url\(\s*)(\'|\")?(\.\/|\.\.\/)(\S*)(\2\s*\))/g;
+// Collect groups [url(] ['|"]optional './|../', other '../' segments optional, file part and end of url
+// The additional dot segments could be URL referencing assets in nested imported CSS
+// When Vite inlines CSS import it does not rewrite relative URL for not-resolvable resource
+// so the final CSS ends up with wrong relative URLs (r.g. ../../pkg/icon.svg)
+// If the URL is relative, we should try to check if it is an asset by ignoring the additional dot segments
+const urlMatcher = /(url\(\s*)(\'|\")?(\.\/|\.\.\/)((?:\3)*)?(\S*)(\2\s*\))/g;
 
 function assetsContains(fileUrl, themeFolder, logger) {
   const themeProperties = getThemeProperties(themeFolder);
@@ -48,23 +52,32 @@ function getThemeProperties(themeFolder) {
 }
 
 function rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, options) {
-  source = source.replace(urlMatcher, function (match, url, quoteMark, replace, fileUrl, endString) {
-    let absolutePath = resolve(handledResourceFolder, replace, fileUrl);
-    const existingThemeResource = absolutePath.startsWith(themeFolder) && existsSync(absolutePath);
-    if (existingThemeResource || assetsContains(fileUrl, themeFolder, logger)) {
+  source = source.replace(urlMatcher, function (match, url, quoteMark, replace, additionalDotSegments, fileUrl, endString) {
+    let absolutePath = resolve(handledResourceFolder, replace, additionalDotSegments || '', fileUrl);
+    let existingThemeResource = absolutePath.startsWith(themeFolder) && existsSync(absolutePath);
+    if (!existingThemeResource && additionalDotSegments) {
+      // Try to resolve path without dot segments as it may be an unresolvable
+      // relative URL from an inlined nested CSS
+      absolutePath = resolve(handledResourceFolder, replace, fileUrl);
+      existingThemeResource = absolutePath.startsWith(themeFolder) && existsSync(absolutePath);
+    }
+    const isAsset = assetsContains(fileUrl, themeFolder, logger);
+    if (existingThemeResource || isAsset) {
       // Adding ./ will skip css-loader, which should be done for asset files
       // In a production build, the css file is in VAADIN/build and static files are in VAADIN/static, so ../static needs to be added
       const replacement = options.devMode ? './' : '../static/';
 
       const skipLoader = existingThemeResource ? '' : replacement;
       const frontendThemeFolder = skipLoader + 'themes/' + basename(themeFolder);
-      logger.debug(
+      logger.log(
         'Updating url for file',
         "'" + replace + fileUrl + "'",
         'to use',
         "'" + frontendThemeFolder + '/' + fileUrl + "'"
       );
-      const pathResolved = absolutePath.substring(themeFolder.length).replace(/\\/g, '/');
+      // assets are always relative to theme folder
+      const pathResolved = isAsset ? '/' + fileUrl
+          : absolutePath.substring(themeFolder.length).replace(/\\/g, '/');
 
       // keep the url the same except replace the ./ or ../ to themes/[themeFolder]
       return url + (quoteMark ?? '') + frontendThemeFolder + pathResolved + endString;

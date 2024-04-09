@@ -68,7 +68,6 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
@@ -1662,9 +1661,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 File stylesCss = new File(
                         ThemeUtils.getThemeFolder(frontendDirectory, themeName),
                         fileName);
+                JsonObject themeJson = ThemeUtils
+                        .getThemeJson(themeName, config).orElse(null);
+
                 // Inline CSS into style tag to have hot module reload feature
-                element.appendChild(new DataNode(CssBundler
-                        .inlineImports(stylesCss.getParentFile(), stylesCss)));
+                element.appendChild(new DataNode(CssBundler.inlineImports(
+                        stylesCss.getParentFile(), stylesCss, themeJson)));
             }
         } catch (IOException e) {
             throw new RuntimeException(

@@ -10,6 +10,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 public class CssBundlerTest {
 
     private static final String TEST_CSS = "body {background: blue};";
@@ -73,21 +76,21 @@ public class CssBundlerTest {
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css")));
+                        getThemeFile("styles.css"), getThemeJson()));
 
         writeCss("background-image: url(\"foo/bar.png\");", "styles.css");
 
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css")));
+                        getThemeFile("styles.css"), getThemeJson()));
 
         writeCss("background-image: url(foo/bar.png);", "styles.css");
 
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css")));
+                        getThemeFile("styles.css"), getThemeJson()));
     }
 
     @Test
@@ -109,9 +112,8 @@ public class CssBundlerTest {
                             src: url('VAADIN/themes/my-theme/fonts/ostrich-sans-regular.ttf') format("TrueType");
                         }"""
                         .trim(),
-                CssBundler
-                        .inlineImports(themeFolder, getThemeFile("styles.css"))
-                        .trim());
+                CssBundler.inlineImports(themeFolder,
+                        getThemeFile("styles.css"), getThemeJson()).trim());
     }
 
     @Test
@@ -123,7 +125,7 @@ public class CssBundlerTest {
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/sub/file.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css")));
+                        getThemeFile("styles.css"), getThemeJson()));
     }
 
     @Test
@@ -132,8 +134,8 @@ public class CssBundlerTest {
         writeCss("@import 'other.css';", "styles.css");
         writeCss(css, "other.css");
 
-        Assert.assertEquals("body { content: '$\\'}", CssBundler
-                .inlineImports(themeFolder, getThemeFile("styles.css")));
+        Assert.assertEquals("body { content: '$\\'}", CssBundler.inlineImports(
+                themeFolder, getThemeFile("styles.css"), getThemeJson()));
     }
 
     @Test
@@ -165,9 +167,109 @@ public class CssBundlerTest {
                         body {background: blue};
                         """
                         .trim(),
-                CssBundler
-                        .inlineImports(themeFolder, getThemeFile("styles.css"))
-                        .trim());
+                CssBundler.inlineImports(themeFolder,
+                        getThemeFile("styles.css"), getThemeJson()).trim());
+    }
+
+    @Test
+    public void themeAssetsRelativeUrlsRewritten() throws IOException {
+        createThemeJson("""
+                {
+                  "assets": {
+                    "@some/pkg": {
+                      "svgs/regular/**": "my/icons"
+                    }
+                  }
+                }
+                """);
+        writeCss("""
+                background-image: url('my/icons/file1.png');
+                background-image: url('./my/icons/file2.png');
+                background-image: url('../my/icons/file3.png');
+                """, "styles.css");
+
+        Assert.assertEquals(
+                """
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file1.png');
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file2.png');
+                        background-image: url('../my/icons/file3.png');
+                        """,
+                CssBundler.inlineImports(themeFolder,
+                        getThemeFile("styles.css"), getThemeJson()));
+    }
+
+    @Test
+    public void themeAssetsRelativeUrlsInSubFolderRewritten()
+            throws IOException {
+        createThemeJson("""
+                {
+                  "assets": {
+                    "@some/pkg": {
+                      "svgs/regular/**": "my/icons"
+                    }
+                  }
+                }
+                """);
+        writeCss("""
+                @import url('sub/sub.css');
+                @import url('sub/nested/two.css');
+                """, "styles.css");
+        writeCss("""
+                @import url('nested/one.css');
+                background-image: url('../my/icons/file.png');
+                """, "sub/sub.css");
+        writeCss("background-image: url('../../my/icons/file1.png');",
+                "sub/nested/one.css");
+        writeCss("background-image: url('../../my/icons/file2.png');",
+                "sub/nested/two.css");
+
+        String actualCss = CssBundler.inlineImports(themeFolder,
+                getThemeFile("styles.css"), getThemeJson());
+        Assert.assertEquals(
+                """
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file1.png');
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file.png');
+
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file2.png');
+                        """,
+                actualCss);
+    }
+
+    @Test
+    public void relativeUrl_notThemeResourceNotAssets_notRewritten()
+            throws IOException {
+        createThemeJson("""
+                {
+                  "assets": {
+                    "@some/pkg": {
+                      "svgs/regular/**": "my/icons"
+                    }
+                  }
+                }
+                """);
+        writeCss("""
+                @import url('sub/sub.css');
+                @import url('sub/nested/two.css');
+                background-image: url('unknown/icons/file-root.png');
+                """, "styles.css");
+        writeCss("""
+                @import url('nested/one.css');
+                background-image: url('../unknown/icons/file-sub.png');
+                """, "sub/sub.css");
+        writeCss("background-image: url('../../unknown/icons/file1.png');",
+                "sub/nested/one.css");
+        writeCss("background-image: url('../../unknown/icons/file2.png');",
+                "sub/nested/two.css");
+
+        String actualCss = CssBundler.inlineImports(themeFolder,
+                getThemeFile("styles.css"), getThemeJson());
+        Assert.assertEquals("""
+                background-image: url('../../unknown/icons/file1.png');
+                background-image: url('../unknown/icons/file-sub.png');
+
+                background-image: url('../../unknown/icons/file2.png');
+                background-image: url('unknown/icons/file-root.png');
+                """, actualCss);
     }
 
     private boolean createThemeFile(String filename) throws IOException {
@@ -204,5 +306,20 @@ public class CssBundlerTest {
         File file = getThemeFile(filename);
         FileUtils.writeStringToFile(file, css, StandardCharsets.UTF_8);
         return file;
+    }
+
+    private JsonObject getThemeJson() throws IOException {
+        File file = getThemeFile("theme.json");
+        if (file.exists()) {
+            return Json.parse(Files.readString(file.toPath()));
+        }
+        return null;
+    }
+
+    private void createThemeJson(String json) throws IOException {
+        JsonObject jsonObject = Json.parse(json);
+        File file = getThemeFile("theme.json");
+        FileUtils.writeStringToFile(file, jsonObject.toJson(),
+                StandardCharsets.UTF_8);
     }
 }

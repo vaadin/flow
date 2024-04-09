@@ -31,6 +31,9 @@ public class ReusableThemeView extends Div {
     public static final String OCTOPUSS_ID = "octopuss";
     public static final String FONTAWESOME_ID = "font-awesome";
     public static final String SUB_COMPONENT_ID = "sub-component";
+    public static final String KEYBOARD_ID = "keyboard";
+    public static final String LEMON_ID = "lemon";
+    public static final String SUN_ID = "sun";
 
     public ReusableThemeView() {
         final Span textSpan = new Span("This is the theme test view");
@@ -56,6 +59,23 @@ public class ReusableThemeView extends Div {
         snowFlake.setId(SNOWFLAKE_ID);
 
         add(textSpan, snowFlake, subCss, butterfly, octopuss, faText);
+
+        Div keyboardIconFromParentTheme = new Div(
+                "Keyboard Icon in theme sub folder");
+        keyboardIconFromParentTheme.addClassName("icon-keyboard");
+        keyboardIconFromParentTheme.setId(KEYBOARD_ID);
+
+        Div lemonIconFromParentTheme = new Div(
+                "Lemon Icon in nested theme subfolder");
+        lemonIconFromParentTheme.addClassName("icon-lemon");
+        lemonIconFromParentTheme.setId(LEMON_ID);
+
+        Div sunIconFromParentTheme = new Div(
+                "Sun Icon in nested theme subfolder");
+        sunIconFromParentTheme.addClassName("icon-sun");
+        sunIconFromParentTheme.setId(SUN_ID);
+        add(keyboardIconFromParentTheme, lemonIconFromParentTheme,
+                sunIconFromParentTheme);
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));

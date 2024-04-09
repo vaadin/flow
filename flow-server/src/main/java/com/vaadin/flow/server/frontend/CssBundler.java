@@ -3,8 +3,11 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,6 +15,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import elemental.json.JsonObject;
 
 public class CssBundler {
 
@@ -53,8 +58,20 @@ public class CssBundler {
 
     private static Pattern urlPattern = Pattern.compile(URL);
 
+    @Deprecated
     public static String inlineImports(File themeFolder, File cssFile)
             throws IOException {
+        return inlineImports(themeFolder, cssFile, Set.of());
+    }
+
+    public static String inlineImports(File themeFolder, File cssFile,
+            JsonObject themeJson) throws IOException {
+        return inlineImports(themeFolder, cssFile,
+                getThemeAssetsAliases(themeJson));
+    }
+
+    public static String inlineImports(File themeFolder, File cssFile,
+            Set<String> assetAliases) throws IOException {
         String content = FileUtils.readFileToString(cssFile,
                 StandardCharsets.UTF_8);
 
@@ -68,7 +85,7 @@ public class CssBundler {
             File potentialFile = new File(cssFile.getParentFile(), url.trim());
             if (potentialFile.exists()) {
                 // e.g. background-image: url("./foo/bar.png") should become
-                // url("VAADIN/themes/<theme-name>>/foo/bar.png IF the file is
+                // url("VAADIN/themes/<theme-name>/foo/bar.png IF the file is
                 // inside the theme folder
                 // Otherwise, "./foo/bar.png" can also refer to a file in
                 // src/main/resources/META-INF/resources/foo/bar.png and then we
@@ -77,6 +94,19 @@ public class CssBundler {
                 // Also the imports are relative to the folder containing the
                 // CSS file we are processing, not always relative to the theme
                 // folder
+                String relativePath = themeFolder.getParentFile().toPath()
+                        .relativize(potentialFile.toPath()).toString()
+                        .replaceAll("\\\\", "/");
+                return Matcher.quoteReplacement(
+                        "url('VAADIN/themes/" + relativePath + "')");
+            } else if (isPotentialThemeAsset(themeFolder, assetAliases,
+                    potentialFile)) {
+                // a reference to a theme asset, e.g with a theme.json config
+                // { "assets": {
+                // "@some/pkg": { "svgs/regular/**": "my/icons" }
+                // } }
+                // background-image: url("./my/icons/bar.png") should become
+                // url("VAADIN/themes/<theme-name>/my/icons/bar.png
                 String relativePath = themeFolder.getParentFile().toPath()
                         .relativize(potentialFile.toPath()).toString()
                         .replaceAll("\\\\", "/");
@@ -106,8 +136,8 @@ public class CssBundler {
                         sanitizedUrl);
                 if (potentialFile.exists()) {
                     try {
-                        return Matcher.quoteReplacement(
-                                inlineImports(themeFolder, potentialFile));
+                        return Matcher.quoteReplacement(inlineImports(
+                                themeFolder, potentialFile, assetAliases));
                     } catch (IOException e) {
                         getLogger().warn(
                                 "Unable to inline import: " + result.group());
@@ -126,6 +156,49 @@ public class CssBundler {
                     + (content.isEmpty() ? "" : "\n" + content);
         }
         return content;
+    }
+
+    // A theme asset must:
+    // - be relative to the theme folder
+    // - have a match in theme.json 'assets'
+    private static boolean isPotentialThemeAsset(File themeFolder,
+            Set<String> assetAliases, File potentialFile) {
+        boolean potentialAsset = false;
+        if (!assetAliases.isEmpty()) {
+            Path themeFolderPath = themeFolder.toPath().normalize();
+            Path normalized = themeFolderPath.resolve(potentialFile.toPath())
+                    .normalize();
+            if (normalized.startsWith(themeFolderPath)) {
+                // path is relative to theme folder, check if it matches an
+                // asset
+                String relativePath = themeFolderPath.relativize(normalized)
+                        .toString().replaceAll("\\\\", "/");
+                potentialAsset = assetAliases.stream()
+                        .anyMatch(relativePath::startsWith);
+                if (potentialAsset) {
+                    getLogger().debug(
+                            "Considering '{}' a potential asset of theme '{}'",
+                            relativePath, themeFolder.getName());
+                }
+            }
+        }
+        return potentialAsset;
+    }
+
+    private static Set<String> getThemeAssetsAliases(JsonObject themeJson) {
+        JsonObject assets = themeJson != null && themeJson.hasKey("assets")
+                ? themeJson.getObject("assets")
+                : null;
+        Set<String> aliases = new HashSet<>();
+        if (assets != null) {
+            for (String nmpPackage : assets.keys()) {
+                JsonObject packageAliases = assets.getObject(nmpPackage);
+                for (String path : packageAliases.keys()) {
+                    aliases.add(packageAliases.getString(path) + "/");
+                }
+            }
+        }
+        return aliases;
     }
 
     private static String getNonNullGroup(MatchResult result, int... groupId) {

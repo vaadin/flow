@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -28,13 +32,13 @@ import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.BUTTERFLY_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.FONTAWESOME_ID;
+import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.KEYBOARD_ID;
+import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.LEMON_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.MY_COMPONENT_ID;
-import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.OCTOPUSS_ID;
+import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SUB_COMPONENT_ID;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SUN_ID;
 
 public class ReusableThemeIT extends ChromeBrowserTest {
 
@@ -141,6 +145,32 @@ public class ReusableThemeIT extends ChromeBrowserTest {
                 + $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
         Assert.assertFalse("Node static icon should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+    }
+
+    @Test
+    public void cssWithAssetRelativePaths_urlPathIsNotRelative() {
+        open();
+        String expectedIconsURL = getRootURL()
+                + "/path/VAADIN/static/themes/reusable-theme/fortawesome/icons/";
+        String imageUrl = $(DivElement.class).id(KEYBOARD_ID)
+                .getCssValue("background-image");
+        Assert.assertTrue("Expecting relative asset URL to be resolved as "
+                + expectedIconsURL + "/keyboard.svg but was " + imageUrl,
+                imageUrl.contains(expectedIconsURL + "keyboard.svg"));
+
+        imageUrl = $(DivElement.class).id(LEMON_ID)
+                .getCssValue("background-image");
+        Assert.assertTrue(
+                "Expecting relative asset URL to be resolved as "
+                        + expectedIconsURL + "/lemon.svg but was " + imageUrl,
+                imageUrl.contains(expectedIconsURL + "lemon.svg"));
+
+        imageUrl = $(DivElement.class).id(SUN_ID)
+                .getCssValue("background-image");
+        Assert.assertTrue(
+                "Expecting relative asset URL to be resolved as "
+                        + expectedIconsURL + "/sun.svg but was " + imageUrl,
+                imageUrl.contains(expectedIconsURL + "sun.svg"));
     }
 
     @Test

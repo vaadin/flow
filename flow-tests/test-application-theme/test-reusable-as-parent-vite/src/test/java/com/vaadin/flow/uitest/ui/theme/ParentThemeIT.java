@@ -15,20 +15,25 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.BUTTERFLY_ID;
+import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.KEYBOARD_ID;
+import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.LEMON_ID;
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.MY_POLYMER_ID;
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.OCTOPUSS_ID;
+import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.SUN_ID;
 
 public class ParentThemeIT extends ChromeBrowserTest {
     private final Pattern BODY_IMAGE_PATTERN = Pattern.compile(
@@ -84,6 +89,25 @@ public class ParentThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("Text field should have color as green",
                 "rgba(0, 128, 0, 1)", input.getCssValue("color"));
 
+    }
+
+    @Test
+    public void childTheme_cssAndAssetFromParentThemeAreApplied() {
+        open();
+        String imageUrl = $(DivElement.class).id(KEYBOARD_ID)
+                .getCssValue("background-image");
+        Assert.assertTrue(imageUrl.contains(getRootURL()
+                + "/VAADIN/static/themes/reusable-theme/fortawesome/icons/keyboard.svg"));
+
+        imageUrl = $(DivElement.class).id(LEMON_ID)
+                .getCssValue("background-image");
+        Assert.assertTrue(imageUrl.contains(getRootURL()
+                + "/VAADIN/static/themes/reusable-theme/fortawesome/icons/lemon.svg"));
+
+        imageUrl = $(DivElement.class).id(SUN_ID)
+                .getCssValue("background-image");
+        Assert.assertTrue(imageUrl.contains(getRootURL()
+                + "/VAADIN/static/themes/reusable-theme/fortawesome/icons/sun.svg"));
     }
 
     @Override
