@@ -17,6 +17,9 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.vaadin.flow.component.ComponentTest;
+import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -53,12 +56,27 @@ public class EventRpcHandlerTest {
         ui.add(c);
         AtomicInteger invocationData = new AtomicInteger(0);
 
-        element.addEventListener("test-event", e -> invocationData
-                .addAndGet((int) e.getEventData().getNumber("nr")));
+        DomListenerRegistration domListenerRegistration = element
+                .addEventListener("test-event", e -> invocationData
+                        .addAndGet((int) e.getEventData().getNumber("nr")));
         JsonObject eventData = Json.createObject();
         eventData.put("nr", 123);
         sendElementEvent(element, ui, "test-event", eventData);
         Assert.assertEquals(123, invocationData.get());
+
+        // Also verify inert stops the event and allowInert allows to bypass
+        invocationData.set(0);
+        eventData.put("nr", 124);
+        InertData inertData = element.getNode().getFeature(InertData.class);
+        inertData.setInertSelf(true);
+        inertData.generateChangesFromEmpty();
+        sendElementEvent(element, ui, "test-event", eventData);
+        Assert.assertEquals(0, invocationData.get());
+        // explicitly allow this event listener even element is inert
+        domListenerRegistration.allowInert();
+        sendElementEvent(element, ui, "test-event", eventData);
+        Assert.assertEquals(124, invocationData.get());
+
     }
 
     private static JsonObject createElementEventInvocation(Element element,
