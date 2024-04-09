@@ -144,8 +144,6 @@ public class VaadinServletContextInitializer
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
                     "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap",
-                    "com.vaadin.copilot.CopilotIndexHtmlLoader",
-                    "com.vaadin.copilot.CopilotLoader",
                     "com.vaadin.copilot.startup", "com.vaadin.hilla.startup")
             .collect(Collectors.toList());
 
