@@ -457,8 +457,7 @@ public class ElementListenerMap extends NodeMap {
                 LoggerFactory.getLogger(ElementListenerMap.class.getName())
                         .info("Ignored listener invocation for {} event from "
                                 + "the client side for an inert {} element",
-                                event.getType(),
-                                event.getSource().getTag());
+                                event.getType(), event.getSource().getTag());
                 continue;
             }
 
