@@ -1447,7 +1447,8 @@ public class Binder<BEAN> implements Serializable {
             return createValueContext(binder, field);
         }
 
-        static ValueContext createValueContext(Binder binder, HasValue<?, ?> field) {
+        static ValueContext createValueContext(Binder binder,
+                HasValue<?, ?> field) {
             if (field instanceof Component) {
                 return new ValueContext(binder, (Component) field, field);
             }

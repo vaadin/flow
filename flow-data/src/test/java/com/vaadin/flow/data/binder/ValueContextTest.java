@@ -117,7 +117,8 @@ public class ValueContextTest extends UI {
         confirmPasswordField.setValue("def456");
         BinderValidationStatus<PasswordBean> status = binder.validate();
         Assert.assertEquals(1, status.getFieldValidationErrors().size());
-        Assert.assertEquals(status.getFieldValidationErrors().iterator().next().getMessage().get(), "Passwords must match");
+        Assert.assertEquals(status.getFieldValidationErrors().iterator().next()
+                .getMessage().get(), "Passwords must match");
 
         // Test password match
         confirmPasswordField.setValue("abc123");
@@ -137,14 +138,17 @@ public class ValueContextTest extends UI {
         confirmPasswordField = new TestTextField();
         binder.forField(passwordField).bind("password");
         binder.forField(confirmPasswordField)
-          .withValidator((confirmValue, valueContext) -> {
-            Binder<?> ctxBinder = valueContext.getBinder();
-            Assert.assertSame(ctxBinder, binder);
-            TestTextField passwordField = (TestTextField)ctxBinder.getBinding("password").get().getField();
-            return !Objects.equals(confirmValue, passwordField.getValue()) ?
-              ValidationResult.error("Passwords must match") : ValidationResult.ok();
-          })
-          .bind("confirmPassword");
+                .withValidator((confirmValue, valueContext) -> {
+                    Binder<?> ctxBinder = valueContext.getBinder();
+                    Assert.assertSame(ctxBinder, binder);
+                    TestTextField passwordField = (TestTextField) ctxBinder
+                            .getBinding("password").get().getField();
+                    return !Objects.equals(confirmValue,
+                            passwordField.getValue())
+                                    ? ValidationResult
+                                            .error("Passwords must match")
+                                    : ValidationResult.ok();
+                }).bind("confirmPassword");
     }
 
     @After
@@ -156,7 +160,7 @@ public class ValueContextTest extends UI {
     public void init(VaadinRequest request) {
     }
 
-// PasswordBean
+    // PasswordBean
 
     public static class PasswordBean {
 
@@ -166,6 +170,7 @@ public class ValueContextTest extends UI {
         public String getPassword() {
             return this.password;
         }
+
         public void setPassword(final String password) {
             this.password = password;
         }
@@ -173,6 +178,7 @@ public class ValueContextTest extends UI {
         public String getConfirmPassword() {
             return this.confirmPassword;
         }
+
         public void setConfirmPassword(final String confirmPassword) {
             this.confirmPassword = confirmPassword;
         }

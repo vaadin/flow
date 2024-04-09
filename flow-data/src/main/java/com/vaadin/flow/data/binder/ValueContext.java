@@ -40,7 +40,9 @@ public class ValueContext implements Serializable {
 
     /**
      * Constructor for {@code ValueContext} without a {@code Locale}.
-     * @param binder the Binder using the value context
+     *
+     * @param binder
+     *            the Binder using the value context
      */
     public ValueContext(Binder<?> binder) {
         this.binder = binder;
@@ -52,7 +54,8 @@ public class ValueContext implements Serializable {
     /**
      * Constructor for {@code ValueContext} without a {@code Component}.
      *
-     * @param binder the Binder using the value context
+     * @param binder
+     *            the Binder using the value context
      * @param locale
      *            The locale used with conversion. Can be null.
      */
@@ -66,7 +69,8 @@ public class ValueContext implements Serializable {
     /**
      * Constructor for {@code ValueContext}.
      *
-     * @param binder the Binder using the value context
+     * @param binder
+     *            the Binder using the value context
      * @param component
      *            The component related to current value. Can be null. If the
      *            component implements {@link HasValue}, it will be returned by
@@ -88,13 +92,15 @@ public class ValueContext implements Serializable {
     /**
      * Constructor for {@code ValueContext}.
      *
-     * @param binder the Binder using the value context
+     * @param binder
+     *            the Binder using the value context
      * @param component
      *            The component related to current value. Can be null.
      * @param hasValue
      *            The value source related to current value. Can be null.
      */
-    public ValueContext(Binder binder, Component component, HasValue<?, ?> hasValue) {
+    public ValueContext(Binder binder, Component component,
+            HasValue<?, ?> hasValue) {
         this.binder = binder;
         Objects.requireNonNull(component,
                 "Component can't be null in ValueContext construction");
@@ -106,7 +112,8 @@ public class ValueContext implements Serializable {
     /**
      * Constructor for {@code ValueContext}.
      *
-     * @param binder the Binder using the value context
+     * @param binder
+     *            the Binder using the value context
      * @param component
      *            The component can be {@code null}.
      * @param locale
@@ -115,8 +122,8 @@ public class ValueContext implements Serializable {
      *            The value source related to current value. Can be
      *            {@code null}.
      */
-    public ValueContext(Binder binder, Component component, HasValue<?, ?> hasValue,
-            Locale locale) {
+    public ValueContext(Binder binder, Component component,
+            HasValue<?, ?> hasValue, Locale locale) {
         this.binder = binder;
         this.component = component;
         this.hasValue = hasValue;
@@ -125,6 +132,7 @@ public class ValueContext implements Serializable {
 
     /**
      * Constructor for {@code ValueContext} without a {@code Locale}.
+     *
      * @deprecated Use the version with binder reference instead
      */
     @Deprecated
@@ -210,7 +218,6 @@ public class ValueContext implements Serializable {
         this.hasValue = hasValue;
         this.locale = locale;
     }
-
 
     private Locale findLocale(Component component) {
         if (component != null && component.getUI().isPresent()) {
