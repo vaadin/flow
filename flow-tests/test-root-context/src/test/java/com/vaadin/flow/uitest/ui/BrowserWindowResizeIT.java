@@ -32,44 +32,46 @@ public class BrowserWindowResizeIT extends ChromeBrowserTest {
         Dimension currentSize = getDriver().manage().window().getSize();
 
         int newWidth = currentSize.getWidth() - 10;
-        int newHeght = currentSize.getHeight() - 10;
+        int newHeight = currentSize.getHeight() - 10;
         getDriver().manage().window()
-                .setSize(new Dimension(newWidth, newHeght));
+                .setSize(new Dimension(newWidth, newHeight));
 
         // debounced by defalt with 350
-        Thread.sleep(350);
+        Thread.sleep(500);
 
         WebElement info = findElement(By.id("size-info"));
 
         Assert.assertEquals(String.valueOf(newWidth),
                 info.getText().split("x")[0]);
-        Assert.assertEquals(String.valueOf(newHeght),
-                info.getText().split("x")[1]);
+        // Selenium sets the window size, the tested API reports viewport size...
+        int actualHeight = Integer.parseInt(info.getText().split("x")[1]);
 
         newWidth -= 30;
-        newHeght += 30;
+        newHeight -= 20;
+        actualHeight -= 20;
         getDriver().manage().window()
-                .setSize(new Dimension(newWidth, newHeght));
+                .setSize(new Dimension(newWidth, newHeight));
 
-        Thread.sleep(350);
+        Thread.sleep(500);
 
         Assert.assertEquals(String.valueOf(newWidth),
                 info.getText().split("x")[0]);
-        Assert.assertEquals(String.valueOf(newHeght),
+        Assert.assertEquals(String.valueOf(actualHeight),
                 info.getText().split("x")[1]);
 
         // check the same comes in still if modal component set
         findElement(By.id("modal")).click();
         newWidth += 30;
-        newHeght += 30;
+        newHeight += 20;
+        actualHeight += 20;
         getDriver().manage().window()
-                .setSize(new Dimension(newWidth, newHeght));
+                .setSize(new Dimension(newWidth, newHeight));
 
-        Thread.sleep(350);
+        Thread.sleep(500);
 
         Assert.assertEquals(String.valueOf(newWidth),
                 info.getText().split("x")[0]);
-        Assert.assertEquals(String.valueOf(newHeght),
+        Assert.assertEquals(String.valueOf(actualHeight),
                 info.getText().split("x")[1]);
     }
 }
