@@ -19,19 +19,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.flow.component.PollEvent;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.UI.BrowserLeaveNavigationEvent;
-import com.vaadin.flow.component.UI.BrowserNavigateEvent;
-import com.vaadin.flow.internal.NodeOwner;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonObject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.PollEvent;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.shared.JsonConstants;
+import elemental.json.JsonObject;
 
 /**
  * Abstract invocation handler implementation with common methods.

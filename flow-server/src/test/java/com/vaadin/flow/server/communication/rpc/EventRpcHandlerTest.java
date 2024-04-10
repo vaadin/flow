@@ -17,18 +17,16 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.component.ComponentTest;
-import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.internal.nodefeature.InertData;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.shared.JsonConstants;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -72,7 +70,7 @@ public class EventRpcHandlerTest {
         inertData.generateChangesFromEmpty();
         sendElementEvent(element, ui, "test-event", eventData);
         Assert.assertEquals(0, invocationData.get());
-        // explicitly allow this event listener even element is inert
+        // explicitly allow this event listener even when element is inert
         domListenerRegistration.allowInert();
         sendElementEvent(element, ui, "test-event", eventData);
         Assert.assertEquals(124, invocationData.get());
