@@ -18,6 +18,12 @@ import org.slf4j.LoggerFactory;
 
 import elemental.json.JsonObject;
 
+/**
+ * Utility methods to handle application theme CSS content.
+ * <p>
+ * </p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public class CssBundler {
 
     private static final String WHITE_SPACE = "\\s*";
@@ -58,19 +64,68 @@ public class CssBundler {
 
     private static Pattern urlPattern = Pattern.compile(URL);
 
+    /**
+     * Recurse over CSS import and inlines all ot them into a single CSS block.
+     * <p>
+     * </p>
+     * Unresolvable imports are put on the top of the resulting code, because
+     * {@code @import} statements must come before any other CSS instruction,
+     * otherwise the import is ignored by the browser.
+     * <p>
+     * </p>
+     * Along with import resolution and code inline, URLs
+     * ({@code url('image.png')} referencing theme resources rewritten to be
+     * correctly served by Vaadin at runtime.
+     *
+     * @param themeFolder
+     *            location of theme folder on the filesystem.
+     * @param cssFile
+     *            the CSS file to process.
+     * @return the processed stylesheet content, with inlined imports and
+     *         rewritten URLs.
+     * @throws IOException
+     *             if filesystem resources can not be read.
+     * @deprecated this method does not resolve theme assets, use
+     *             {@link #inlineImports(File, File, JsonObject)} instead.
+     */
     @Deprecated
     public static String inlineImports(File themeFolder, File cssFile)
             throws IOException {
         return inlineImports(themeFolder, cssFile, Set.of());
     }
 
+    /**
+     * Recurse over CSS import and inlines all ot them into a single CSS block.
+     * <p>
+     * </p>
+     * Unresolvable imports are put on the top of the resulting code, because
+     * {@code @import} statements must come before any other CSS instruction,
+     * otherwise the import is ignored by the browser.
+     * <p>
+     * </p>
+     * Along with import resolution and code inline, URLs
+     * ({@code url('image.png')} referencing theme resources or assets are
+     * rewritten to be correctly served by Vaadin at runtime.
+     *
+     * @param themeFolder
+     *            location of theme folder on the filesystem.
+     * @param cssFile
+     *            the CSS file to process.
+     * @param themeJson
+     *            the theme configuration, usually stored in
+     *            {@literal theme.json} file.
+     * @return the processed stylesheet content, with inlined imports and
+     *         rewritten URLs.
+     * @throws IOException
+     *             if filesystem resources can not be read.
+     */
     public static String inlineImports(File themeFolder, File cssFile,
             JsonObject themeJson) throws IOException {
         return inlineImports(themeFolder, cssFile,
                 getThemeAssetsAliases(themeJson));
     }
 
-    public static String inlineImports(File themeFolder, File cssFile,
+    private static String inlineImports(File themeFolder, File cssFile,
             Set<String> assetAliases) throws IOException {
         String content = FileUtils.readFileToString(cssFile,
                 StandardCharsets.UTF_8);
