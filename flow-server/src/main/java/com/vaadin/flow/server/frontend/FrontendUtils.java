@@ -237,9 +237,9 @@ public class FrontendUtils {
 
     public static final String ROUTES_TSX = "routes.tsx";
 
-    public static final String ROUTES_JS = "routes.js";
+    public static final String ROUTES_FLOW_TSX = "routes-flow.tsx";
 
-    public static final String VIEWS_TS = "views.ts";
+    public static final String ROUTES_JS = "routes.js";
 
     /**
      * Default generated path for generated frontend files.
@@ -338,15 +338,6 @@ public class FrontendUtils {
     // Regex pattern matches "...serverSideRoutes"
     private static final Pattern SERVER_SIDE_ROUTES_PATTERN = Pattern.compile(
             "(?<=\\s|^)\\.{3}serverSideRoutes(?=\\s|$)", Pattern.MULTILINE);
-
-    // Regex pattern matches "buildRoute("
-    private static final Pattern BUILDROUTE_FUNCTION_PATTERN = Pattern.compile(
-            "(?<=\\s|^)buildRoute\\((?=[\\s\\S]*|$)", Pattern.MULTILINE);
-
-    // Regex pattern matches "buildRoute()"
-    private static final Pattern BUILDROUTE_FUNCTION_NOARGS_PATTERN = Pattern
-            .compile("(?<=\\s|^)buildRoute\\(\\)(?=[\\s\\S]*|$)",
-                    Pattern.MULTILINE);
 
     // Regex pattern matches everything between "const|let|var routes = [" (or
     // "const routes: RouteObject[] = [") and "...serverSideRoutes"
@@ -1380,10 +1371,10 @@ public class FrontendUtils {
     private static boolean isRoutesTsxContentUsingHillaViews(
             String routesContent) {
         routesContent = StringUtil.removeComments(routesContent);
-        // Note that here we assume that Frontend/views doesn't have views.
-        // buildRoute() adds therefore only server side routes.
-        if (hasBuildRouteFunction(routesContent)) {
-            return !hasBuildRouteFunctionWithoutArguments(routesContent);
+        // Note that here we assume that Frontend/views doesn't have views and
+        // routes.tsx isn't the auto-generated one
+        if (hasFileOrReactRoutesFunction(routesContent)) {
+            return true;
         }
         return isRoutesContentUsingHillaViews(routesContent);
     }
@@ -1392,13 +1383,10 @@ public class FrontendUtils {
         return !SERVER_SIDE_ROUTES_PATTERN.matcher(routesContent).find();
     }
 
-    private static boolean hasBuildRouteFunctionWithoutArguments(
-            String routesContent) {
-        return BUILDROUTE_FUNCTION_NOARGS_PATTERN.matcher(routesContent).find();
-    }
-
-    private static boolean hasBuildRouteFunction(String routesContent) {
-        return BUILDROUTE_FUNCTION_PATTERN.matcher(routesContent).find();
+    private static boolean hasFileOrReactRoutesFunction(String routesContent) {
+        return !routesContent.isBlank()
+                && (routesContent.contains("withFileRoutes(")
+                        || routesContent.contains("withReactRoutes("));
     }
 
     private static boolean mayHaveClientSideRoutes(String routesContent) {
