@@ -87,7 +87,7 @@ public class PageTest {
     public void addNullAsAListener_trows() {
         page.addBrowserWindowResizeListener(null);
     }
-    
+
     @Test
     public void retrieveExtendedClientDetails_twice_theSecondResultComesDifferentBeforeCachedValueIsSet() {
         // given
