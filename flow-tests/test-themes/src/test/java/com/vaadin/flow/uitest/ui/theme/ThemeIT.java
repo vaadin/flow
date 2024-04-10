@@ -246,27 +246,29 @@ public class ThemeIT extends ChromeBrowserTest {
     @Test
     public void cssWithAssetRelativePaths_urlPathIsNotRelative() {
         open();
-        String expectedIconsURL = getRootURL()
-                + "/path/themes/app-theme/fortawesome/icons/";
+        // (/VAADIN/static) matches when test runs production mode
+        String expectedIconsURL = ".*" + getRootURL()
+                + "/path(/VAADIN/static)?/themes/app-theme/fortawesome/icons/%s.*";
         String imageUrl = $(DivElement.class).id(KEYBOARD_ID)
                 .getCssValue("background-image");
         Assert.assertTrue("Expecting relative asset URL to be resolved as "
                 + expectedIconsURL + "/keyboard.svg but was " + imageUrl,
-                imageUrl.contains(expectedIconsURL + "keyboard.svg"));
+                imageUrl.matches(
+                        String.format(expectedIconsURL, "keyboard.svg")));
 
         imageUrl = $(DivElement.class).id(LEMON_ID)
                 .getCssValue("background-image");
         Assert.assertTrue(
                 "Expecting relative asset URL to be resolved as "
                         + expectedIconsURL + "/lemon.svg but was " + imageUrl,
-                imageUrl.contains(expectedIconsURL + "lemon.svg"));
+                imageUrl.matches(String.format(expectedIconsURL, "lemon.svg")));
 
         imageUrl = $(DivElement.class).id(SUN_ID)
                 .getCssValue("background-image");
         Assert.assertTrue(
                 "Expecting relative asset URL to be resolved as "
                         + expectedIconsURL + "/sun.svg but was " + imageUrl,
-                imageUrl.contains(expectedIconsURL + "sun.svg"));
+                imageUrl.matches(String.format(expectedIconsURL, "sun.svg")));
     }
 
     @Override
