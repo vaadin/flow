@@ -43,7 +43,8 @@ public class BrowserWindowResizeIT extends ChromeBrowserTest {
 
         Assert.assertEquals(String.valueOf(newWidth),
                 info.getText().split("x")[0]);
-        // Selenium sets the window size, the tested API reports viewport size...
+        // Selenium sets the window size, the tested API reports viewport
+        // size...
         int actualHeight = Integer.parseInt(info.getText().split("x")[1]);
 
         newWidth -= 30;
