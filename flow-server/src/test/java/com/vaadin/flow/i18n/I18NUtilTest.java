@@ -81,21 +81,16 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=deutsch",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader()).thenReturn(mockLoader);
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        Assert.assertEquals(3, defaultTranslationLocales.size());
 
-            List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales();
-            Assert.assertEquals(3, defaultTranslationLocales.size());
-
-            Assert.assertTrue("Missing German bundle",
-                    defaultTranslationLocales.contains(new Locale("de")));
-            Assert.assertTrue("Missing English bundle",
-                    defaultTranslationLocales.contains(new Locale("en", "GB")));
-            Assert.assertTrue("Missing Finnish bundle",
-                    defaultTranslationLocales.contains(new Locale("fi", "FI")));
-        }
+        Assert.assertTrue("Missing German bundle",
+                defaultTranslationLocales.contains(new Locale("de")));
+        Assert.assertTrue("Missing English bundle",
+                defaultTranslationLocales.contains(new Locale("en", "GB")));
+        Assert.assertTrue("Missing Finnish bundle",
+                defaultTranslationLocales.contains(new Locale("fi", "FI")));
     }
 
     @Test
@@ -103,15 +98,10 @@ public class I18NUtilTest {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader()).thenReturn(mockLoader);
-
-            List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales();
-            Assert.assertTrue("Nothing should be returned for empty folder",
-                    defaultTranslationLocales.isEmpty());
-        }
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        Assert.assertTrue("Nothing should be returned for empty folder",
+                defaultTranslationLocales.isEmpty());
     }
 
     @Test
@@ -125,15 +115,10 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader()).thenReturn(mockLoader);
-
-            List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales();
-            Assert.assertTrue("Nothing should be returned for empty folder",
-                    defaultTranslationLocales.isEmpty());
-        }
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        Assert.assertTrue("Nothing should be returned for empty folder",
+                defaultTranslationLocales.isEmpty());
     }
 
     @Test
@@ -151,14 +136,8 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader())
-                    .thenReturn(urlClassLoader);
-
-            Assert.assertTrue("Default file should return true",
-                    I18NUtil.containsDefaultTranslation());
-        }
+        Assert.assertTrue("Default file should return true",
+                I18NUtil.containsDefaultTranslation(urlClassLoader));
     }
 
     @Test
@@ -171,14 +150,8 @@ public class I18NUtilTest {
         ClassLoader urlClassLoader = new URLClassLoader(
                 new URL[] { resources.toURI().toURL() });
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader())
-                    .thenReturn(urlClassLoader);
-
-            Assert.assertFalse("Nothing should be returned for empty folder",
-                    I18NUtil.containsDefaultTranslation());
-        }
+        Assert.assertFalse("Nothing should be returned for empty folder",
+                I18NUtil.containsDefaultTranslation(urlClassLoader));
     }
 
     @Test
@@ -189,25 +162,18 @@ public class I18NUtilTest {
         ClassLoader urlClassLoader = new URLClassLoader(
                 new URL[] { path.toUri().toURL() });
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader())
-                    .thenReturn(urlClassLoader);
+        Assert.assertTrue("Default file should return true",
+                I18NUtil.containsDefaultTranslation(urlClassLoader));
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(urlClassLoader);
+        Assert.assertEquals(
+                "Translation files with locale inside JAR should be resolved",
+                2, defaultTranslationLocales.size());
 
-            Assert.assertTrue("Default file should return true",
-                    I18NUtil.containsDefaultTranslation());
-            List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales();
-            Assert.assertEquals(
-                    "Translation files with locale inside JAR should be resolved",
-                    2, defaultTranslationLocales.size());
-
-            Assert.assertTrue(
-                    "Finnish locale translation should have been found",
-                    defaultTranslationLocales.contains(new Locale("fi", "FI")));
-            Assert.assertTrue("Japan locale translation should have been found",
-                    defaultTranslationLocales.contains(new Locale("ja", "JP")));
-        }
+        Assert.assertTrue("Finnish locale translation should have been found",
+                defaultTranslationLocales.contains(new Locale("fi", "FI")));
+        Assert.assertTrue("Japan locale translation should have been found",
+                defaultTranslationLocales.contains(new Locale("ja", "JP")));
     }
 
     private Path generateZipArchive(TemporaryFolder folder) throws IOException {

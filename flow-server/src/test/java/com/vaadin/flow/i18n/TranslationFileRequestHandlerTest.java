@@ -249,12 +249,8 @@ public class TranslationFileRequestHandlerTest {
             throws IOException {
         setRequestParams(requestedLanguageTag,
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier());
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            Assert.assertTrue("The request was not handled by the handler.",
-                    handler.handleRequest(session, request, response));
-        }
+        Assert.assertTrue("The request was not handled by the handler.",
+                handler.handleRequest(session, request, response));
         Assert.assertEquals(
                 "The expected response content does not match the actual response content.",
                 expectedResponseContent, getResponseContent());
@@ -313,11 +309,7 @@ public class TranslationFileRequestHandlerTest {
         createTranslationFiles(withRootBundle);
         mockI18nProvider(i18NProviderClass);
         mockService(isProductionMode);
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            handler = new TranslationFileRequestHandler(i18NProvider);
-        }
+        handler = new TranslationFileRequestHandler(i18NProvider);
         mockResponse();
     }
 
@@ -332,10 +324,15 @@ public class TranslationFileRequestHandlerTest {
 
     private void mockI18nProvider(
             Class<? extends I18NProvider> i18NProviderClass) {
-        i18NProvider = Mockito.mock(i18NProviderClass,
-                Mockito.CALLS_REAL_METHODS);
-        Mockito.when(i18NProvider.getProvidedLocales())
-                .thenReturn(providedLocales);
+        if (i18NProviderClass.equals(DefaultI18NProvider.class)) {
+            i18NProvider = Mockito.spy(
+                    new DefaultI18NProvider(providedLocales, urlClassLoader));
+        } else {
+            i18NProvider = Mockito.mock(i18NProviderClass,
+                    Mockito.CALLS_REAL_METHODS);
+            Mockito.when(i18NProvider.getProvidedLocales())
+                    .thenReturn(providedLocales);
+        }
     }
 
     private void mockResponse() throws IOException {
@@ -366,7 +363,8 @@ public class TranslationFileRequestHandlerTest {
     private static class CustomizedDefaultI18NProvider
             extends DefaultI18NProvider {
         public CustomizedDefaultI18NProvider(List<Locale> providedLocales) {
-            super(providedLocales);
+            super(providedLocales,
+                    TranslationFileRequestHandlerTest.class.getClassLoader());
         }
     }
 }
