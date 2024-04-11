@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultI18NProvider implements I18NProvider {
 
     final List<Locale> providedLocales;
+    private final ClassLoader classLoader;
 
     public static final String BUNDLE_FOLDER = "vaadin-i18n";
     public static final String BUNDLE_FILENAME = "translations";
@@ -49,7 +50,23 @@ public class DefaultI18NProvider implements I18NProvider {
      *            locale.
      */
     public DefaultI18NProvider(List<Locale> providedLocales) {
+        this(providedLocales, DefaultI18NProvider.class.getClassLoader());
+    }
+
+    /**
+     * Construct {@link DefaultI18NProvider} for a list of locales that we have
+     * translations for. Enables giving a specific classloader if needed.
+     *
+     * @param providedLocales
+     *            List of locales. The first locale should be the default
+     *            locale.
+     * @param classLoader
+     *            ClassLoader to use for loading translation bundles.
+     */
+    public DefaultI18NProvider(List<Locale> providedLocales,
+            ClassLoader classLoader) {
         this.providedLocales = Collections.unmodifiableList(providedLocales);
+        this.classLoader = classLoader;
     }
 
     @Override
@@ -84,8 +101,7 @@ public class DefaultI18NProvider implements I18NProvider {
 
     private ResourceBundle getBundle(Locale locale) {
         try {
-            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
-                    I18NUtil.getClassLoader());
+            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader);
         } catch (final MissingResourceException e) {
             getLogger().warn("Missing resource bundle for " + BUNDLE_PREFIX
                     + " and locale " + locale.getDisplayName(), e);

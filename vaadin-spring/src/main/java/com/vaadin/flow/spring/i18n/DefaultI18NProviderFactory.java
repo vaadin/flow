@@ -66,7 +66,8 @@ public class DefaultI18NProviderFactory implements Condition, Serializable {
                         Arrays.stream(translations).map(Resource::getFilename)
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList()));
-                return new DefaultI18NProvider(locales);
+                return new DefaultI18NProvider(locales,
+                        DefaultI18NProviderFactory.class.getClassLoader());
             }
         } catch (IOException e) {
             LoggerFactory.getLogger(DefaultI18NProviderFactory.class)
