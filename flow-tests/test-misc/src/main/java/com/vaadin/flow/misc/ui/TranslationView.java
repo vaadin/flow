@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.i18n.I18NProvider;
@@ -75,16 +76,17 @@ public class TranslationView extends Div {
 
     @Override
     protected void onAttach(AttachEvent event) {
-        event.getUI().setPollInterval(100);
+        UI ui = event.getUI();
+        ui.setPollInterval(100);
         CompletableFuture.runAsync(() -> {
             try {
                 Thread.sleep(50);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                event.getUI().access(() -> dynamic
+                ui.access(() -> dynamic
                         .setText(getTranslation("label", Locale.FRANCE)));
-                event.getUI().setPollInterval(-1);
+                ui.setPollInterval(-1);
             }
         });
 
