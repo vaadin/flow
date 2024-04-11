@@ -49,6 +49,20 @@ public class DefaultI18NProvider implements I18NProvider {
      *            List of locales. The first locale should be the default
      *            locale.
      */
+    public DefaultI18NProvider(List<Locale> providedLocales) {
+        this(providedLocales, DefaultI18NProvider.class.getClassLoader());
+    }
+
+    /**
+     * Construct {@link DefaultI18NProvider} for a list of locales that we have
+     * translations for. Enables giving a specific classloader if needed.
+     *
+     * @param providedLocales
+     *            List of locales. The first locale should be the default
+     *            locale.
+     * @param classLoader
+     *            ClassLoader to use for loading translation bundles.
+     */
     public DefaultI18NProvider(List<Locale> providedLocales,
             ClassLoader classLoader) {
         this.providedLocales = Collections.unmodifiableList(providedLocales);
