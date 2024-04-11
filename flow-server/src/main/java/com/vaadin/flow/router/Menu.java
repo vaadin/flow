@@ -25,6 +25,11 @@ import java.lang.annotation.Target;
 
 /**
  * Defines menu information for a route for automatically populated menu.
+ * <p>
+ * {@link Menu} is used together with {@link Route} to include it automatically
+ * in Hilla application's main menu, but only if server routes are being exposed
+ * for client-side via 'window.Vaadin.server.views' variable in the client-side.
+ * </p>
  *
  * @see Route
  */
