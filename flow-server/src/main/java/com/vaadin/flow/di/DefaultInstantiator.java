@@ -100,12 +100,13 @@ public class DefaultInstantiator implements Instantiator {
             // If no i18n provider provided check if the default location has
             // translation files (lang coded or just the default)
             List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales();
+                    .getDefaultTranslationLocales(getClassLoader());
             if (!defaultTranslationLocales.isEmpty()
-                    || I18NUtil.containsDefaultTranslation()) {
+                    || I18NUtil.containsDefaultTranslation(getClassLoader())) {
                 // Some lang files were found in default location initialize
                 // default I18N provider.
-                return new DefaultI18NProvider(defaultTranslationLocales);
+                return new DefaultI18NProvider(defaultTranslationLocales,
+                        getClassLoader());
             }
             return null;
         }
@@ -126,6 +127,10 @@ public class DefaultInstantiator implements Instantiator {
                     e);
         }
         return null;
+    }
+
+    protected ClassLoader getClassLoader() {
+        return getClass().getClassLoader();
     }
 
     /**
