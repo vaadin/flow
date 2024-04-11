@@ -53,11 +53,10 @@ public final class I18NUtil {
      *
      * @return {@code true} if default property file found
      */
-    public static boolean containsDefaultTranslation() {
-        URL resource = getClassLoader()
-                .getResource(DefaultI18NProvider.BUNDLE_FOLDER + "/"
-                        + DefaultI18NProvider.BUNDLE_FILENAME
-                        + PROPERTIES_SUFFIX);
+    public static boolean containsDefaultTranslation(ClassLoader classLoader) {
+        URL resource = classLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER
+                + "/" + DefaultI18NProvider.BUNDLE_FILENAME
+                + PROPERTIES_SUFFIX);
         if (resource == null) {
             return false;
         }
@@ -73,10 +72,11 @@ public final class I18NUtil {
      *
      * @return List of locales parsed from property files.
      */
-    public static List<Locale> getDefaultTranslationLocales() {
+    public static List<Locale> getDefaultTranslationLocales(
+            ClassLoader classLoader) {
         List<Locale> locales = new ArrayList<>();
 
-        URL resource = getClassLoader()
+        URL resource = classLoader
                 .getResource(DefaultI18NProvider.BUNDLE_FOLDER);
         if (resource == null) {
             return locales;
@@ -155,10 +155,6 @@ public final class I18NUtil {
         }
 
         return files;
-    }
-
-    protected static ClassLoader getClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
     }
 
     protected static Logger getLogger() {
