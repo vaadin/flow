@@ -66,7 +66,11 @@ public @interface Menu {
     boolean exclude() default false;
 
     /**
-     * Icon to use in the menu.
+     * Icon to use in the menu. Value can go inside a {@code <vaadin-icon>}
+     * element's {@code icon} attribute which accepts icon group and name like
+     * 'vaadin:file'. Or it can go to a {@code <vaadin-icon>} element's
+     * {@code src} attribute which takes path to the icon. E.g.
+     * 'line-awesome/svg/lock-open-solid.svg'.
      *
      * @return A String for an icon. Empty String by default.
      */
