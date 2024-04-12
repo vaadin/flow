@@ -24,6 +24,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.SpringVersion;
+import org.springframework.util.ClassUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -125,5 +126,10 @@ public class SpringInstantiator extends DefaultInstantiator {
             // If there is no bean, try to instantiate one
             return context.getAutowireCapableBeanFactory().createBean(type);
         }
+    }
+
+    @Override
+    public Class<?> getApplicationClass(Class<?> clazz) {
+        return ClassUtils.getUserClass(clazz);
     }
 }
