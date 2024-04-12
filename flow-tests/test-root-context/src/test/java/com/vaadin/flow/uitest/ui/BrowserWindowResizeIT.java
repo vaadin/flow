@@ -36,7 +36,7 @@ public class BrowserWindowResizeIT extends ChromeBrowserTest {
         getDriver().manage().window()
                 .setSize(new Dimension(newWidth, newHeight));
 
-        // debounced by defalt with 350
+        // debounced by default with 300
         Thread.sleep(500);
 
         WebElement info = findElement(By.id("size-info"));
