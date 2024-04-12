@@ -154,22 +154,23 @@ public class ReusableThemeIT extends ChromeBrowserTest {
                 + "/path/VAADIN/static/themes/reusable-theme/fortawesome/icons/";
         String imageUrl = $(DivElement.class).id(KEYBOARD_ID)
                 .getCssValue("background-image");
-        Assert.assertTrue("Expecting relative asset URL to be resolved as "
-                + expectedIconsURL + "/keyboard.svg but was " + imageUrl,
+        Assert.assertTrue(
+                "Expecting relative asset URL to be resolved as "
+                        + expectedIconsURL + "keyboard.svg but was " + imageUrl,
                 imageUrl.contains(expectedIconsURL + "keyboard.svg"));
 
         imageUrl = $(DivElement.class).id(LEMON_ID)
                 .getCssValue("background-image");
         Assert.assertTrue(
                 "Expecting relative asset URL to be resolved as "
-                        + expectedIconsURL + "/lemon.svg but was " + imageUrl,
+                        + expectedIconsURL + "lemon.svg but was " + imageUrl,
                 imageUrl.contains(expectedIconsURL + "lemon.svg"));
 
         imageUrl = $(DivElement.class).id(SUN_ID)
                 .getCssValue("background-image");
         Assert.assertTrue(
                 "Expecting relative asset URL to be resolved as "
-                        + expectedIconsURL + "/sun.svg but was " + imageUrl,
+                        + expectedIconsURL + "sun.svg but was " + imageUrl,
                 imageUrl.contains(expectedIconsURL + "sun.svg"));
     }
 
