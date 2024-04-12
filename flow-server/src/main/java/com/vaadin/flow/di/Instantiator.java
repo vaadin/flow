@@ -16,6 +16,7 @@
 package com.vaadin.flow.di;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
@@ -115,6 +116,38 @@ public interface Instantiator extends Serializable {
      * @return an instance of the given type
      */
     <T> T getOrCreate(Class<T> type);
+
+    /**
+     * Return the application-defined class for the given instance: usually
+     * simply the class of the given instance, but the original class in case of
+     * a runtime generated subclass.
+     *
+     * @param instance
+     *            the instance to check
+     * @return the user-defined class
+     */
+    default Class<?> getApplicationClass(Object instance) {
+        Objects.requireNonNull(instance, "Instance cannot be null");
+        return getApplicationClass(instance.getClass());
+    }
+
+    /**
+     * Return the application-defined class for the given class: usually simply
+     * the given class, but the original class in case of a runtime generated
+     * subclass.
+     *
+     * @param clazz
+     *            the class to check
+     * @return the user-defined class
+     */
+    default Class<?> getApplicationClass(Class<?> clazz) {
+        Class<?> appClass = clazz;
+        while (appClass != null && appClass != Object.class
+                && appClass.isSynthetic()) {
+            appClass = appClass.getSuperclass();
+        }
+        return appClass;
+    }
 
     /**
      * Creates an instance of a navigation target or router layout. This method
