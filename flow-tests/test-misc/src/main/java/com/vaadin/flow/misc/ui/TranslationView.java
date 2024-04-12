@@ -84,9 +84,10 @@ public class TranslationView extends Div {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                ui.access(() -> dynamic
-                        .setText(getTranslation("label", Locale.FRANCE)));
-                ui.setPollInterval(-1);
+                ui.access(() -> {
+                    dynamic.setText(getTranslation("label", Locale.FRANCE));
+                    ui.setPollInterval(-1);
+                });
             }
         });
 
