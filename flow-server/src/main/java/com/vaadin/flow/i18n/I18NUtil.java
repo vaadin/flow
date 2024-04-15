@@ -18,6 +18,7 @@ package com.vaadin.flow.i18n;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -133,7 +134,9 @@ public final class I18NUtil {
 
         File bundleFolder = new File(resource.getFile());
 
-        if ("jar".equals(resource.getProtocol())) {
+        if ("jar".equals(resource.getProtocol()) ||
+        // wsjar check is for OpenLiberty
+                "wsjar".equals(resource.getProtocol())) {
             String file = resource.getFile().substring("file:".length(),
                     resource.getFile().indexOf('!'));
             try {
@@ -149,11 +152,38 @@ public final class I18NUtil {
                 getLogger().debug(
                         "failed to read jar file '" + file + "' contents", ioe);
             }
+        } else if ("vfs".equals(resource.getProtocol())) {
+            files.addAll(listJBossVfsDirectory(resource));
         } else if (bundleFolder.exists() && bundleFolder.isDirectory()) {
             Arrays.stream(bundleFolder.listFiles()).filter(File::isFile)
                     .forEach(files::add);
         }
+        return files;
+    }
 
+    // Borrowed from DevModeInitializer
+    private static List<File> listJBossVfsDirectory(URL url) {
+        List<File> files = new ArrayList<>();
+        try {
+            Object virtualFile = url.openConnection().getContent();
+            Class virtualFileClass = virtualFile.getClass();
+
+            // Reflection as we cannot afford a dependency to
+            // WildFly or JBoss
+            Method getChildren = virtualFileClass.getMethod("getChildren");
+            Method getPhysicalFileMethod = virtualFileClass
+                    .getMethod("getPhysicalFile");
+
+            List virtualFiles = (List) getChildren.invoke(virtualFile);
+            for (Object child : virtualFiles) {
+                // side effect: create real-world files
+                files.add((File) getPhysicalFileMethod.invoke(child));
+            }
+        } catch (Exception exc) {
+            getLogger().debug(
+                    "Failed to list entries in JBoss VFS directory {}", url,
+                    exc);
+        }
         return files;
     }
 
