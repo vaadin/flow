@@ -31,8 +31,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.internal.ComponentTracker;
-import com.vaadin.flow.i18n.I18NProvider;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -46,6 +44,7 @@ import com.vaadin.flow.component.ScrollOptions.Behavior;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -55,6 +54,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -1771,15 +1771,15 @@ public class ComponentTest {
     }
 
     @Test
-    public void getTranslation_delegateToDeprecated() {
+    public void getTranslation_deprecated_delegatesToActualImplementation() {
         Component component = Mockito.mock(Component.class);
         Mockito.doCallRealMethod().when(component).getTranslation(
-                Mockito.any(Locale.class), Mockito.anyString(),
+                Mockito.anyString(), Mockito.any(Locale.class),
                 Mockito.any(Object[].class));
 
-        component.getTranslation(Locale.GERMAN, "foo");
+        component.getTranslation("foo", Locale.GERMAN);
 
-        Mockito.verify(component).getTranslation("foo", Locale.GERMAN);
+        Mockito.verify(component).getTranslation(Locale.GERMAN, "foo");
     }
 
     @Test
