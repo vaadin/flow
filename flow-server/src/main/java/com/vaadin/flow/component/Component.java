@@ -457,10 +457,10 @@ public abstract class Component
     /**
      * Called when the component is attached to a UI.
      * <p>
-     * The default implementation does nothing.
-     * <p>
      * This method is invoked before the {@link AttachEvent} is fired for the
      * component.
+     * </p>
+     * Make sure to call <code>super.onAttach</code> when overriding this method.
      *
      * @param attachEvent
      *            the attach event
@@ -472,10 +472,10 @@ public abstract class Component
     /**
      * Called when the component is detached from a UI.
      * <p>
-     * The default implementation does nothing.
-     * <p>
      * This method is invoked before the {@link DetachEvent} is fired for the
      * component.
+     * <p>
+     * Make sure to call <code>super.onDetach</code> when overriding this method.
      *
      * @param detachEvent
      *            the detach event
