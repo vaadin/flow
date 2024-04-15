@@ -40,6 +40,7 @@ import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndenta
 public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
     private static final String DECLARE_CSS_MODULE = "declare module '*.css?inline' {";
+    private static final String DECLARE_CSSTYPE_MODULE = "declare module 'csstype' {";
     static final String UPDATE_MESSAGE = """
 
             ***************************************************************************
@@ -131,22 +132,57 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                         "Cannot read " + TS_DEFINITIONS + " contents", ex);
             }
 
+            String cssModuleContent;
+            try {
+                cssModuleContent = removeComments(getTemplateContent(".v2"));
+            } catch (IOException ex) {
+                throw new ExecutionFailedException(
+                        "Cannot read " + TS_DEFINITIONS + ".v2 contents", ex);
+            }
+
             String uncommentedDefaultContent = removeComments(defaultContent);
+            String cssTypeModuleContent = uncommentedDefaultContent
+                    .replace(cssModuleContent, "");
+            boolean containsExactCssModule = compareIgnoringIndentationAndEOL(
+                    content, cssModuleContent, String::equals)
+                    || compareIgnoringIndentationAndEOL(content,
+                            cssModuleContent, String::contains);
+            boolean containsExactCssTypeModule = compareIgnoringIndentationAndEOL(
+                    content, cssTypeModuleContent, String::equals)
+                    || compareIgnoringIndentationAndEOL(content,
+                            cssTypeModuleContent, String::contains);
+            boolean containsCssType = content.contains(DECLARE_CSSTYPE_MODULE);
+            boolean containsCssModule = content.contains(DECLARE_CSS_MODULE);
+
             if (compareIgnoringIndentationAndEOL(content, defaultContent,
                     String::equals)
                     || compareIgnoringIndentationAndEOL(content,
                             uncommentedDefaultContent, String::contains)) {
                 log().debug("{} is up-to-date", TS_DEFINITIONS);
-            } else if (content.contains(DECLARE_CSS_MODULE)) {
+            } else if (containsExactCssModule && containsExactCssTypeModule) {
+                log().debug("{} is up-to-date", TS_DEFINITIONS);
+            } else if (containsCssModule && !containsExactCssModule) {
                 log().debug(
                         "Custom {} not updated because it contains '*.css?inline' module declaration",
                         TS_DEFINITIONS);
                 throw new ExecutionFailedException(String.format(
                         CHECK_CONTENT_MESSAGE, uncommentedDefaultContent));
-            } else {
+            } else if (containsCssType && !containsExactCssTypeModule) {
                 log().debug(
-                        "Updating custom {} to add '*.css?inline' module declaration",
+                        "Custom {} not updated because it contains 'csstype' module declaration",
                         TS_DEFINITIONS);
+                throw new ExecutionFailedException(String.format(
+                        CHECK_CONTENT_MESSAGE, uncommentedDefaultContent));
+            } else {
+                if (containsExactCssModule) {
+                    log().debug(
+                            "Updating custom {} to add 'csstype' module declaration",
+                            TS_DEFINITIONS);
+                } else {
+                    log().debug(
+                            "Updating custom {} to add '*.css?inline' and 'csstype' module declarations",
+                            TS_DEFINITIONS);
+                }
                 UpdateMode updateMode = computeUpdateMode(content);
                 if (updateMode == UpdateMode.UPDATE_AND_BACKUP) {
                     try {
@@ -169,6 +205,15 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                                 defaultContent,
                                 StandardOpenOption.TRUNCATE_EXISTING);
                     } else {
+                        // If correct css module was found, only add csstype
+                        if (containsExactCssModule) {
+                            uncommentedDefaultContent = uncommentedDefaultContent
+                                    .replace(cssModuleContent, "");
+                        }
+                        if (containsExactCssTypeModule) {
+                            uncommentedDefaultContent = uncommentedDefaultContent
+                                    .replace(cssTypeModuleContent, "");
+                        }
                         Files.writeString(tsDefinitions.toPath(),
                                 uncommentedDefaultContent,
                                 StandardOpenOption.APPEND);
@@ -195,6 +240,12 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             throws ExecutionFailedException {
         try {
             String templateContent = getTemplateContent(".v1");
+            if (compareIgnoringIndentationAndEOL(content, templateContent,
+                    String::equals)) {
+                // Current content has been written by Flow, can be replaced
+                return UpdateMode.REPLACE;
+            }
+            templateContent = getTemplateContent(".v2");
             if (compareIgnoringIndentationAndEOL(content, templateContent,
                     String::equals)) {
                 // Current content has been written by Flow, can be replaced

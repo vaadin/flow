@@ -110,8 +110,14 @@ public class TaskGenerateTsDefinitionsTest {
     @Test
     public void tsDefinition_oldFlowContents_tsDefinitionUpdated()
             throws Exception {
+        tsDefinition_oldFlowContents_tsDefinitionUpdated(".v1");
+        tsDefinition_oldFlowContents_tsDefinitionUpdated(".v2");
+    }
+
+    private void tsDefinition_oldFlowContents_tsDefinitionUpdated(String suffix)
+            throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
-        Files.writeString(typesTSfile, readPreviousContent());
+        Files.writeString(typesTSfile, readPreviousContent(suffix));
         taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
@@ -124,9 +130,15 @@ public class TaskGenerateTsDefinitionsTest {
     @Test
     public void tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated()
             throws Exception {
+        tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated(".v1");
+        tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated(".v2");
+    }
+
+    private void tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated(
+            String suffix) throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         Files.writeString(typesTSfile,
-                readPreviousContent().replaceFirst("\r?\n$", ""));
+                readPreviousContent(suffix).replaceFirst("\r?\n$", ""));
         taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
@@ -237,11 +249,24 @@ public class TaskGenerateTsDefinitionsTest {
     }
 
     @Test
-    public void customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndWarningLogged()
+    public void customTsDefinition_v1FlowContents_tsDefinitionUpdatedAndWarningLogged()
             throws Exception {
+        customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndWarningLogged(
+                ".v1");
+    }
+
+    @Test
+    public void customTsDefinition_v2FlowContents_tsDefinitionUpdatedAndWarningLogged()
+            throws Exception {
+        customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndWarningLogged(
+                ".v2");
+    }
+
+    private void customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndWarningLogged(
+            String suffix) throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         String originalContent = "import type { SchemaObject } from \"../../types\";"
-                + System.lineSeparator() + readPreviousContent();
+                + System.lineSeparator() + readPreviousContent(suffix);
         Files.writeString(typesTSfile, originalContent);
 
         MockLogger logger = new MockLogger();
@@ -268,9 +293,18 @@ public class TaskGenerateTsDefinitionsTest {
     @Test
     public void contentUpdateForSecondTime_tsDefinitionUpdatedAndWarningLoggedOnce()
             throws Exception {
+        contentUpdateForSecondTime_tsDefinitionUpdatedAndWarningLoggedOnce(
+                ".v1");
+        taskGenerateTsDefinitions.warningEmitted = false;
+        contentUpdateForSecondTime_tsDefinitionUpdatedAndWarningLoggedOnce(
+                ".v2");
+    }
+
+    private void contentUpdateForSecondTime_tsDefinitionUpdatedAndWarningLoggedOnce(
+            String suffix) throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         String originalContent = "import type { SchemaObject } from \"../../types\";"
-                + System.lineSeparator() + readPreviousContent();
+                + System.lineSeparator() + readPreviousContent(suffix);
         Files.writeString(typesTSfile, originalContent);
 
         MockLogger logger = new MockLogger();
@@ -309,6 +343,11 @@ public class TaskGenerateTsDefinitionsTest {
                           const content: CSSResultGroup;
                           export default content;
                         }
+                        declare module 'csstype' {
+                          interface Properties {
+                            [index: `--${string}`]: any;
+                          }
+                        }
                         export declare const jtdForms: readonly ["elements", "values", "discriminator", "properties", "optionalProperties", "enum", "type", "ref"];
                         export type JTDForm = typeof jtdForms[number];
                         }""");
@@ -335,6 +374,11 @@ public class TaskGenerateTsDefinitionsTest {
                           import type { CSSResultGroup } from 'lit';
                           const content: CSSResultGroup;
                           export default content;
+                        }
+                        declare module 'csstype' {
+                          interface Properties {
+                            [index: `--${string}`]: any;
+                          }
                         }
                         export declare const jtdForms: readonly ["elements", "values", "discriminator", "properties", "optionalProperties", "enum", "type", "ref"];
                         export type JTDForm = typeof jtdForms[number];
@@ -434,9 +478,9 @@ public class TaskGenerateTsDefinitionsTest {
         return fileContent;
     }
 
-    private String readPreviousContent() throws IOException {
+    private String readPreviousContent(String suffix) throws IOException {
         return IOUtils.toString(
-                getClass().getResourceAsStream(TS_DEFINITIONS + ".v1"), UTF_8);
+                getClass().getResourceAsStream(TS_DEFINITIONS + suffix), UTF_8);
     }
 
 }
