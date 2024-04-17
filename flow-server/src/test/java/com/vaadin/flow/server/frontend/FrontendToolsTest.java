@@ -59,6 +59,8 @@ import net.jcip.annotations.NotThreadSafe;
 @Category(SlowTests.class)
 public class FrontendToolsTest {
 
+    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "18.12.0";
+
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
             : "node/node";
@@ -69,7 +71,7 @@ public class FrontendToolsTest {
 
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
-    private static final String SUPPORTED_PNPM_VERSION = "5.15.0";
+    private static final String SUPPORTED_PNPM_VERSION = "7.0.0";
 
     private String baseDir;
 
@@ -147,18 +149,18 @@ public class FrontendToolsTest {
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(false);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "16.14.0", () -> tools.getNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version updated even if it should not have been touched.",
-                "16.14.0", updatedNodeVersion.getFullVersion());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, updatedNodeVersion.getFullVersion());
     }
 
     @Test
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "16.14.0", () -> tools.getNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version was not auto updated.",
@@ -230,18 +232,18 @@ public class FrontendToolsTest {
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(false);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "16.14.0", () -> tools.forceAlternativeNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version updated even if it should not have been touched.",
-                "16.14.0", updatedNodeVersion.getFullVersion());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, updatedNodeVersion.getFullVersion());
     }
 
     @Test
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "16.14.0", () -> tools.forceAlternativeNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version was not auto updated.",
@@ -671,7 +673,7 @@ public class FrontendToolsTest {
                     "Unexpected exception message content '"
                             + exception.getMessage() + "'",
                     exception.getMessage().contains(
-                            "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 5.0.0"));
+                            "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 7.0.0"));
         } finally {
             uninstallGlobalPnpm(OLD_PNPM_VERSION);
         }
