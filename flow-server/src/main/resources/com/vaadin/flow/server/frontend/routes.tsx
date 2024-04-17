@@ -41,18 +41,22 @@ export const { router, routes } = new RouterConfigurationBuilder()
     // To define routes manually or adding an individual route, use the
     // following code and remove (1):
     // .withReactRoutes(
-    //     {
+    //     [
+    //       {
     //         element: <MainLayout />,
     //         handle: { title: 'Main' },
     //         children: [
     //             { path: '/hilla', element: <HillaView />, handle: { title: 'Hilla' } }
     //         ],
-    //     },
-    //     { path: '/login', element: <Login />, handle: { title: 'Login' } }
+    //       },
+    //       { path: '/login', element: <Login />, handle: { title: 'Login' } }
+    //     ]
     // )
     // OR
     // .withReactRoutes(
-    //     { path: '/login', element: <Login />, handle: { title: 'Login' } },
+    //   [
+    //     { path: '/login', element: <Login />, handle: { title: 'Login' } }
+    //   ]
     // )
     .withFallback(Flow)
     // Optional method that adds an authentication for routes.
