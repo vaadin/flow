@@ -68,7 +68,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @Category(SlowTests.class)
 public class FrontendToolsTest {
 
-    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "18.0.0";
+    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "18.12.0";
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
@@ -80,7 +80,7 @@ public class FrontendToolsTest {
 
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
-    private static final String SUPPORTED_PNPM_VERSION = "5.15.0";
+    private static final String SUPPORTED_PNPM_VERSION = "7.0.0";
 
     private String baseDir;
 
@@ -693,7 +693,7 @@ public class FrontendToolsTest {
                     "Unexpected exception message content '"
                             + exception.getMessage() + "'",
                     exception.getMessage().contains(
-                            "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 5.0.0"));
+                            "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least 7.0.0"));
         } finally {
             uninstallGlobalPnpm(OLD_PNPM_VERSION);
         }
