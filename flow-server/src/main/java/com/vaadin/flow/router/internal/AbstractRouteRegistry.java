@@ -51,6 +51,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AccessCheckDecision;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
@@ -218,12 +219,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (vaadinService == null) {
             return Collections.emptyList();
         }
-        var populateClientSideMenu = vaadinService.getInstantiator()
-                .getMenuAccessControl().getPopulateClientSideMenu();
-        if (populateClientSideMenu.isEmpty()
+        MenuAccessControl.PopulateClientMenu populateClientSideMenu = vaadinService
+                .getInstantiator().getMenuAccessControl()
+                .getPopulateClientSideMenu();
+        if (populateClientSideMenu == MenuAccessControl.PopulateClientMenu.AUTOMATIC
                 && !isClientMenuUsed(vaadinService)) {
             return getRegisteredRoutes();
-        } else if (!populateClientSideMenu.orElse(true)) {
+        } else if (populateClientSideMenu == MenuAccessControl.PopulateClientMenu.NEVER) {
             // Continue only if the menu is populated on the client-side.
             return getRegisteredRoutes();
         }
@@ -232,17 +234,15 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                 NavigationAccessControl.class, accessControls);
         List<ViewAccessChecker> legacyViewAccessCheckers = findListOf(
                 ViewAccessChecker.class, accessControls);
-        var routeCandidates = getRegisteredRoutes().stream()
-                .filter(route -> route.getMenuData() != null);
         if (navigationAccessControls.isEmpty()
                 && legacyViewAccessCheckers.isEmpty()) {
-            return routeCandidates.toList();
+            return getMenuRouteCandidates().toList();
         }
         if (VaadinService.getCurrentRequest() == null) {
             return Collections.emptyList();
         }
-        return routeCandidates.filter(route -> navigationAccessControls.stream()
-                .allMatch(accessControl -> {
+        return getMenuRouteCandidates().filter(route -> navigationAccessControls
+                .stream().allMatch(accessControl -> {
                     NavigationContext navigationContext = accessControl
                             .createNavigationContext(
                                     route.getNavigationTarget(),
@@ -262,6 +262,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                                     .decision() == AccessCheckDecision.ALLOW;
                         }))
                 .toList();
+    }
+
+    private Stream<RouteData> getMenuRouteCandidates() {
+        return getRegisteredRoutes().stream()
+                .filter(route -> route.getMenuData() != null);
     }
 
     private <T> List<T> findListOf(Class<T> targetType, Collection<?> objects) {

@@ -24,7 +24,8 @@ public class Application {
     @Bean
     public MenuAccessControl customMenuAccessControl() {
         var menuAccessControl = new DefaultMenuAccessControl();
-        menuAccessControl.setPopulateClientSideMenu(Boolean.TRUE);
+        menuAccessControl.setPopulateClientSideMenu(
+                MenuAccessControl.PopulateClientMenu.ALWAYS);
         return menuAccessControl;
     }
 }

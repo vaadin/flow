@@ -23,15 +23,16 @@ import java.util.Optional;
  */
 public class DefaultMenuAccessControl implements MenuAccessControl {
 
-    private Boolean populateClientSideMenu;
+    private PopulateClientMenu populateClientSideMenu = PopulateClientMenu.AUTOMATIC;
 
     @Override
-    public void setPopulateClientSideMenu(Boolean populateClientSideMenu) {
+    public void setPopulateClientSideMenu(
+            PopulateClientMenu populateClientSideMenu) {
         this.populateClientSideMenu = populateClientSideMenu;
     }
 
     @Override
-    public Optional<Boolean> getPopulateClientSideMenu() {
-        return Optional.ofNullable(populateClientSideMenu);
+    public PopulateClientMenu getPopulateClientSideMenu() {
+        return populateClientSideMenu;
     }
 }

@@ -23,7 +23,6 @@ import jakarta.servlet.ServletContext;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -75,7 +74,7 @@ public class RouteRegistryMenuAccessTest {
 
     @Test
     public void getRegisteredAccessibleMenuRoutes_withoutNavAccessControl_noMenuRoutes() {
-        mockInstantiator(Boolean.TRUE);
+        mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         registry.clean();
         registry.setRoute("home", RouteRegistryTestBase.MyRoute.class,
                 Collections.emptyList());
@@ -87,7 +86,7 @@ public class RouteRegistryMenuAccessTest {
 
     @Test
     public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsFalse_oneMenuRoute() {
-        mockInstantiator(Boolean.FALSE);
+        mockInstantiator(MenuAccessControl.PopulateClientMenu.NEVER);
         registry.clean();
         registry.setRoute("home", RouteRegistryTestBase.MyRoute.class,
                 Collections.emptyList());
@@ -103,7 +102,7 @@ public class RouteRegistryMenuAccessTest {
                 .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
             utils.when(() -> FrontendUtils.readFileRoutesJsonFile(any()))
                     .thenReturn("");
-            mockInstantiator(null);
+            mockInstantiator(MenuAccessControl.PopulateClientMenu.AUTOMATIC);
             registry.clean();
             registry.setRoute("home", RouteRegistryTestBase.MyRoute.class,
                     Collections.emptyList());
@@ -128,7 +127,7 @@ public class RouteRegistryMenuAccessTest {
                 .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
             utils.when(() -> FrontendUtils.readFileRoutesJsonFile(any()))
                     .thenReturn(FILE_ROUTES_JSON_WITH_LAYOUT);
-            mockInstantiator(null);
+            mockInstantiator(MenuAccessControl.PopulateClientMenu.AUTOMATIC);
             registry.clean();
             registry.setRoute("home", RouteRegistryTestBase.MyRoute.class,
                     Collections.emptyList());
@@ -149,7 +148,7 @@ public class RouteRegistryMenuAccessTest {
 
     @Test
     public void getRegisteredAccessibleMenuRoutes_withoutNavAccessControl_oneMenuRoute() {
-        mockInstantiator(Boolean.TRUE);
+        mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         registry.clean();
         registry.setRoute("hasmenu", MyMenuRoute.class,
                 Collections.emptyList());
@@ -162,7 +161,7 @@ public class RouteRegistryMenuAccessTest {
 
     @Test
     public void getRegisteredAccessibleMenuRoutes_withNavAccessControlWithoutRequest_noAccessibleMenuRoute() {
-        mockInstantiator(Boolean.TRUE);
+        mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         registry.clean();
         registry.setRoute("hasmenu", MyMenuRoute.class,
                 Collections.emptyList());
@@ -225,7 +224,7 @@ public class RouteRegistryMenuAccessTest {
     private void setupForAnonymous(MockedStatic<VaadinService> vaadinService) {
         vaadinService.when(VaadinService::getCurrentRequest)
                 .thenReturn(mock(VaadinRequest.class));
-        mockInstantiator(Boolean.TRUE);
+        mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         when(VaadinService.getCurrent().getRouter())
                 .thenReturn(mock(Router.class));
     }
@@ -284,7 +283,7 @@ public class RouteRegistryMenuAccessTest {
         when(vaadinRequest.isUserInRole("admin")).thenReturn(true);
         vaadinService.when(VaadinService::getCurrentRequest)
                 .thenReturn(vaadinRequest);
-        mockInstantiator(Boolean.TRUE);
+        mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         when(VaadinService.getCurrent().getRouter())
                 .thenReturn(mock(Router.class));
     }
@@ -334,7 +333,8 @@ public class RouteRegistryMenuAccessTest {
         }
     }
 
-    private static void mockInstantiator(Boolean populateClientSideMenu) {
+    private static void mockInstantiator(
+            MenuAccessControl.PopulateClientMenu populateClientSideMenu) {
         VaadinService.setCurrent(mock(VaadinService.class));
         var instantiator = mock(Instantiator.class);
         when(VaadinService.getCurrent().getInstantiator())
@@ -343,12 +343,12 @@ public class RouteRegistryMenuAccessTest {
                 .thenReturn(new MenuAccessControl() {
                     @Override
                     public void setPopulateClientSideMenu(
-                            Boolean populateClientSideMenu) {
+                            PopulateClientMenu populateClientSideMenu) {
                     }
 
                     @Override
-                    public Optional<Boolean> getPopulateClientSideMenu() {
-                        return Optional.ofNullable(populateClientSideMenu);
+                    public PopulateClientMenu getPopulateClientSideMenu() {
+                        return populateClientSideMenu;
                     }
                 });
     }

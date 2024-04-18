@@ -21,11 +21,12 @@ import java.util.Optional;
 public class CustomMenuAccessControl implements MenuAccessControl {
 
     @Override
-    public void setPopulateClientSideMenu(Boolean populateClientSideMenu) {
+    public void setPopulateClientSideMenu(
+            PopulateClientMenu populateClientSideMenu) {
     }
 
     @Override
-    public Optional<Boolean> getPopulateClientSideMenu() {
-        return Optional.of(Boolean.TRUE);
+    public PopulateClientMenu getPopulateClientSideMenu() {
+        return PopulateClientMenu.ALWAYS;
     }
 }

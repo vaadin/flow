@@ -47,8 +47,8 @@ public class DefaultInstantiatorMenuAccessControlTest {
         Assert.assertNotNull(menuAccessControl);
         Assert.assertTrue(
                 menuAccessControl instanceof DefaultMenuAccessControl);
-        Assert.assertTrue(
-                menuAccessControl.getPopulateClientSideMenu().isEmpty());
+        Assert.assertSame(menuAccessControl.getPopulateClientSideMenu(),
+                MenuAccessControl.PopulateClientMenu.AUTOMATIC);
     }
 
     @Test
@@ -66,8 +66,8 @@ public class DefaultInstantiatorMenuAccessControlTest {
                 .getMenuAccessControl();
         Assert.assertNotNull(menuAccessControl);
         Assert.assertTrue(menuAccessControl instanceof CustomMenuAccessControl);
-        Assert.assertTrue(
-                menuAccessControl.getPopulateClientSideMenu().orElse(false));
+        Assert.assertSame(menuAccessControl.getPopulateClientSideMenu(),
+                MenuAccessControl.PopulateClientMenu.ALWAYS);
     }
 
     public static void clearMenuAccessControlField()

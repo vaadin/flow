@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.auth;
 
 import java.io.Serializable;
-import java.util.Optional;
 
 /**
  * Interface for controlling access to routes in the application's menu
@@ -26,29 +25,44 @@ import java.util.Optional;
 public interface MenuAccessControl extends Serializable {
 
     /**
+     * Enum for controlling how the client-side menu should be populated.
+     */
+    enum PopulateClientMenu {
+        /**
+         * Always populate the menu with server side routes.
+         */
+        ALWAYS,
+        /**
+         * Never populate the menu with server side routes.
+         */
+        NEVER,
+        /**
+         * Populate the menu with server side routes only if client-side menu
+         * exists.
+         */
+        AUTOMATIC
+    };
+
+    /**
      * Sets whether the Hilla application's main menu should be populated
      * automatically with server side routes and therefore routes information
-     * sent to the browser. Three possible values: {@link Boolean#TRUE} - always
-     * populate the menu with server side routes, {@link Boolean#FALSE} - never
-     * populate the menu with server side routes, {@code null} - populate the
-     * menu with server side routes only if client-side menu exists.
+     * sent to the browser. Three possible values:
+     * {@link PopulateClientMenu#ALWAYS}, {@link PopulateClientMenu#NEVER},
+     * {@link PopulateClientMenu#AUTOMATIC}.
      *
      * @param populateClientSideMenu
      *            whether the client-side menu should be populated with server
      *            side routes
      */
-    void setPopulateClientSideMenu(Boolean populateClientSideMenu);
+    void setPopulateClientSideMenu(PopulateClientMenu populateClientSideMenu);
 
     /**
      * Gets whether the Hilla application's main menu should be populated
      * automatically with server side routes and therefore routes information
      * sent to the browser.
      *
-     * @return {@link Boolean} wrapped in {@link Optional} where empty means
-     *         automatic mode, {@link Boolean#TRUE} means always populate the
-     *         menu with server side routes, {@link Boolean#FALSE} means never
-     *         populate the menu with server side routes.
+     * @return enum of type {@link PopulateClientMenu}
      */
-    Optional<Boolean> getPopulateClientSideMenu();
+    PopulateClientMenu getPopulateClientSideMenu();
 
 }
