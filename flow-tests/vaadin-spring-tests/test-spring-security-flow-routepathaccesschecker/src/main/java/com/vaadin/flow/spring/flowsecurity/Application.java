@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.vaadin.flow.server.auth.DefaultMenuAccessControl;
+import com.vaadin.flow.server.auth.MenuAccessControl;
+
 @SpringBootApplication
 public class Application {
 
@@ -18,4 +21,10 @@ public class Application {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public MenuAccessControl customMenuAccessControl() {
+        var menuAccessControl = new DefaultMenuAccessControl();
+        menuAccessControl.setPopulateClientSideMenu(Boolean.TRUE);
+        return menuAccessControl;
+    }
 }

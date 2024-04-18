@@ -303,6 +303,39 @@ public class AppViewIT extends AbstractIT {
         assertLogoutViewShown();
     }
 
+    @Test
+    public void client_menu_routes_correct_for_anonymous() {
+        navigateToClientMenuList();
+        assertMenuListContains("PublicView");
+    }
+
+    @Test
+    public void client_menu_routes_correct_for_user() {
+        open(LOGIN_PATH);
+        loginUser();
+        navigateToClientMenuList();
+        assertMenuListContains("PublicView, PrivateView");
+    }
+
+    @Test
+    public void client_menu_routes_correct_for_admin() {
+        open(LOGIN_PATH);
+        loginAdmin();
+        navigateToClientMenuList();
+        assertMenuListContains("PublicView, PrivateView, AdminView");
+    }
+
+    private void assertMenuListContains(String expected) {
+        TestBenchElement menuList = waitUntil(driver -> $("*").id("menu-list"));
+        String menuListText = menuList.getText();
+        Assert.assertTrue(menuListText.contains(expected));
+    }
+
+    private void navigateToClientMenuList() {
+        open("menu-list");
+        assertPathShown("menu-list");
+    }
+
     private void navigateTo(String path) {
         navigateTo(path, true);
     }
