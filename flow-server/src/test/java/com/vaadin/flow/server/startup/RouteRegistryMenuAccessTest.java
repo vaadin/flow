@@ -55,7 +55,7 @@ import static org.mockito.Mockito.mock;
 public class RouteRegistryMenuAccessTest {
 
     private static String FILE_ROUTES_JSON_WITH_LAYOUT = "{\"route\":\"\",\"params\":{},\"title\":\"Layout\",\"children\":[]}";
-    
+
     private ApplicationRouteRegistry registry;
 
     @Before
@@ -339,16 +339,18 @@ public class RouteRegistryMenuAccessTest {
         var instantiator = mock(Instantiator.class);
         when(VaadinService.getCurrent().getInstantiator())
                 .thenReturn(instantiator);
-        when(instantiator.getMenuAccessControl()).thenReturn(new MenuAccessControl() {
-            @Override
-            public void setPopulateClientSideMenu(Boolean populateClientSideMenu) {
-            }
+        when(instantiator.getMenuAccessControl())
+                .thenReturn(new MenuAccessControl() {
+                    @Override
+                    public void setPopulateClientSideMenu(
+                            Boolean populateClientSideMenu) {
+                    }
 
-            @Override
-            public Optional<Boolean> getPopulateClientSideMenu() {
-                return Optional.ofNullable(populateClientSideMenu);
-            }
-        });
+                    @Override
+                    public Optional<Boolean> getPopulateClientSideMenu() {
+                        return Optional.ofNullable(populateClientSideMenu);
+                    }
+                });
     }
 
     @Tag("div")

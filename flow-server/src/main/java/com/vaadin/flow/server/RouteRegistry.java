@@ -121,7 +121,7 @@ public interface RouteRegistry extends Serializable {
      * targets with a menu information. Access checking depends on the active
      * {@link VaadinService} and {@link VaadinRequest} and the given collection
      * of access controls.
-     * 
+     *
      * @param vaadinRequest
      *            the request to check access for
      * @param accessControls
@@ -129,7 +129,8 @@ public interface RouteRegistry extends Serializable {
      * @return list of accessible menu routes available for this registry
      */
     List<RouteData> getRegisteredAccessibleMenuRoutes(
-            VaadinRequest vaadinRequest, Collection<BeforeEnterListener> accessControls);
+            VaadinRequest vaadinRequest,
+            Collection<BeforeEnterListener> accessControls);
 
     /**
      * Search for a route target using given navigation <code>url</code>

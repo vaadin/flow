@@ -93,12 +93,14 @@ public class DefaultInstantiator implements Instantiator {
 
     @Override
     public I18NProvider getI18NProvider() {
-        return getAtomicReferenceInstance(i18nProvider, this::getI18NProviderInstance);
+        return getAtomicReferenceInstance(i18nProvider,
+                this::getI18NProviderInstance);
     }
 
     @Override
     public MenuAccessControl getMenuAccessControl() {
-        return getAtomicReferenceInstance(menuAccessControl, this::getMenuAccessControlInstance);
+        return getAtomicReferenceInstance(menuAccessControl,
+                this::getMenuAccessControlInstance);
     }
 
     private <T> T getAtomicReferenceInstance(AtomicReference<T> reference,
@@ -108,7 +110,7 @@ public class DefaultInstantiator implements Instantiator {
         }
         return reference.get();
     }
-    
+
     private I18NProvider getI18NProviderInstance() {
         String property = getInitProperty(InitParameters.I18N_PROVIDER);
         if (property == null) {
@@ -167,6 +169,7 @@ public class DefaultInstantiator implements Instantiator {
         }
         return null;
     }
+
     protected ClassLoader getClassLoader() {
         return getClass().getClassLoader();
     }
@@ -183,8 +186,7 @@ public class DefaultInstantiator implements Instantiator {
         if (deploymentConfiguration == null) {
             return null;
         }
-        return deploymentConfiguration
-                .getStringProperty(propertyName, null);
+        return deploymentConfiguration.getStringProperty(propertyName, null);
     }
 
     private <T> T create(Class<T> type) {

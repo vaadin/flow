@@ -108,15 +108,17 @@ public class SpringInstantiator extends DefaultInstantiator {
 
     @Override
     public MenuAccessControl getMenuAccessControl() {
-        int beansCount = context.getBeanNamesForType(MenuAccessControl.class).length;
+        int beansCount = context
+                .getBeanNamesForType(MenuAccessControl.class).length;
         if (beansCount == 1) {
             return context.getBean(MenuAccessControl.class);
         } else {
             if (loggingEnabled.compareAndSet(true, false)) {
                 LoggerFactory.getLogger(SpringInstantiator.class.getName())
                         .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
-                                        + "falling back to the default behavior",
-                                MenuAccessControl.class.getSimpleName(), beansCount);
+                                + "falling back to the default behavior",
+                                MenuAccessControl.class.getSimpleName(),
+                                beansCount);
             }
             return super.getMenuAccessControl();
         }

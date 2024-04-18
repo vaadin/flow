@@ -42,10 +42,13 @@ public class DefaultInstantiatorMenuAccessControlTest {
         mockLookup(service);
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service);
-        MenuAccessControl menuAccessControl = defaultInstantiator.getMenuAccessControl();
+        MenuAccessControl menuAccessControl = defaultInstantiator
+                .getMenuAccessControl();
         Assert.assertNotNull(menuAccessControl);
-        Assert.assertTrue(menuAccessControl instanceof DefaultMenuAccessControl);
-        Assert.assertTrue(menuAccessControl.getPopulateClientSideMenu().isEmpty());
+        Assert.assertTrue(
+                menuAccessControl instanceof DefaultMenuAccessControl);
+        Assert.assertTrue(
+                menuAccessControl.getPopulateClientSideMenu().isEmpty());
     }
 
     @Test
@@ -59,10 +62,12 @@ public class DefaultInstantiatorMenuAccessControlTest {
                 return "com.vaadin.flow.server.auth.CustomMenuAccessControl";
             }
         };
-        MenuAccessControl menuAccessControl = defaultInstantiator.getMenuAccessControl();
+        MenuAccessControl menuAccessControl = defaultInstantiator
+                .getMenuAccessControl();
         Assert.assertNotNull(menuAccessControl);
         Assert.assertTrue(menuAccessControl instanceof CustomMenuAccessControl);
-        Assert.assertTrue(menuAccessControl.getPopulateClientSideMenu().orElse(false));
+        Assert.assertTrue(
+                menuAccessControl.getPopulateClientSideMenu().orElse(false));
     }
 
     public static void clearMenuAccessControlField()

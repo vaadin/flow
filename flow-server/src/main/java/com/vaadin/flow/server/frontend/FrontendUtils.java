@@ -1446,7 +1446,7 @@ public class FrontendUtils {
 
     /**
      * Get the content of the <code>file-routes.json</code>.
-     * 
+     *
      * @param configuration
      *            the vaadin configuration
      * @return the content of the file-routes.json file as a string

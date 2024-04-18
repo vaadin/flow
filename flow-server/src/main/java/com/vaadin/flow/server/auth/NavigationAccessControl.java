@@ -422,15 +422,16 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * @param navigationTarget
      *            the navigation target class. Not null.
      * @param path
-     *           the path to the navigation target. Not null.
+     *            the path to the navigation target. Not null.
      * @param vaadinService
      *            the Vaadin service. Not null.
      * @param vaadinRequest
      *            the Vaadin request.
      * @return a new navigation context instance.
      */
-    public NavigationContext createNavigationContext(Class<?> navigationTarget, String path,
-            VaadinService vaadinService, VaadinRequest vaadinRequest) {
+    public NavigationContext createNavigationContext(Class<?> navigationTarget,
+            String path, VaadinService vaadinService,
+            VaadinRequest vaadinRequest) {
         Objects.requireNonNull(navigationTarget);
         Objects.requireNonNull(path);
         Objects.requireNonNull(vaadinService);

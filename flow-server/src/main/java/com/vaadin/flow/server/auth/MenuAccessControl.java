@@ -32,7 +32,7 @@ public interface MenuAccessControl extends Serializable {
      * populate the menu with server side routes, {@link Boolean#FALSE} - never
      * populate the menu with server side routes, {@code null} - populate the
      * menu with server side routes only if client-side menu exists.
-     * 
+     *
      * @param populateClientSideMenu
      *            whether the client-side menu should be populated with server
      *            side routes
@@ -43,7 +43,7 @@ public interface MenuAccessControl extends Serializable {
      * Gets whether the Hilla application's main menu should be populated
      * automatically with server side routes and therefore routes information
      * sent to the browser.
-     * 
+     *
      * @return {@link Boolean} wrapped in {@link Optional} where empty means
      *         automatic mode, {@link Boolean#TRUE} means always populate the
      *         menu with server side routes, {@link Boolean#FALSE} means never

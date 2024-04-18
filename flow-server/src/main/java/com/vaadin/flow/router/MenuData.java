@@ -34,10 +34,14 @@ public class MenuData implements Serializable {
     /**
      * Creates a new instance of the menu data.
      *
-     * @param title the title of the menu item
-     * @param order the order of the menu item
-     * @param exclude whether the menu item should be excluded
-     * @param icon the icon of the menu item
+     * @param title
+     *            the title of the menu item
+     * @param order
+     *            the order of the menu item
+     * @param exclude
+     *            whether the menu item should be excluded
+     * @param icon
+     *            the icon of the menu item
      */
     public MenuData(String title, Long order, boolean exclude, String icon) {
         this.title = title;
@@ -48,7 +52,7 @@ public class MenuData implements Serializable {
 
     /**
      * Gets the title of the menu item.
-     * 
+     *
      * @return the title of the menu item
      */
     public String getTitle() {
@@ -57,7 +61,7 @@ public class MenuData implements Serializable {
 
     /**
      * Gets the order of the menu item.
-     * 
+     *
      * @return the order of the menu item
      */
     public Long getOrder() {
@@ -66,7 +70,7 @@ public class MenuData implements Serializable {
 
     /**
      * Gets whether the menu item should be excluded.
-     * 
+     *
      * @return whether the menu item should be excluded
      */
     public boolean isExclude() {
@@ -75,7 +79,7 @@ public class MenuData implements Serializable {
 
     /**
      * Gets the icon of the menu item.
-     * 
+     *
      * @return the icon of the menu item
      */
     public String getIcon() {
@@ -84,13 +88,10 @@ public class MenuData implements Serializable {
 
     @Override
     public String toString() {
-        return "MenuData{" +
-                "title='" + title + '\'' +
-                ", order=" + order +
-                ", exclude=" + exclude +
-                ", icon='" + icon + '\'' +
-                '}';
+        return "MenuData{" + "title='" + title + '\'' + ", order=" + order
+                + ", exclude=" + exclude + ", icon='" + icon + '\'' + '}';
     }
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof MenuData other

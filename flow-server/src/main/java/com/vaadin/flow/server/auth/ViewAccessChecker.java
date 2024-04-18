@@ -291,7 +291,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
 
     /**
      * Checks access to the given navigation target.
-     * 
+     *
      * @param context
      *            the navigation context
      * @return the result of the access check
@@ -311,7 +311,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
         }
         return context.deny("");
     }
-    
+
     /**
      * Creates a new {@link NavigationContext} instance based on the given route
      * data and Vaadin service and request.
@@ -319,7 +319,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * @param navigationTarget
      *            the navigation target class. Not null.
      * @param path
-     *           the path to the navigation target. Not null.
+     *            the path to the navigation target. Not null.
      * @param vaadinService
      *            the Vaadin service. Not null.
      * @param vaadinRequest

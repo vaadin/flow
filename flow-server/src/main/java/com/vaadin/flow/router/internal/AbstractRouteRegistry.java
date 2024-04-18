@@ -211,9 +211,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public List<RouteData> getRegisteredAccessibleMenuRoutes(VaadinRequest vaadinRequest, Collection<BeforeEnterListener> accessControls) {
+    public List<RouteData> getRegisteredAccessibleMenuRoutes(
+            VaadinRequest vaadinRequest,
+            Collection<BeforeEnterListener> accessControls) {
         final VaadinService vaadinService = VaadinService.getCurrent();
-        if(vaadinService == null) {
+        if (vaadinService == null) {
             return Collections.emptyList();
         }
         var populateClientSideMenu = vaadinService.getInstantiator()
@@ -236,7 +238,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                 && legacyViewAccessCheckers.isEmpty()) {
             return routeCandidates.toList();
         }
-        if(VaadinService.getCurrentRequest() == null) {
+        if (VaadinService.getCurrentRequest() == null) {
             return Collections.emptyList();
         }
         return routeCandidates.filter(route -> navigationAccessControls.stream()
@@ -267,7 +269,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                 .filter(event -> targetType.isAssignableFrom(event.getClass()))
                 .map(targetType::cast).toList();
     }
-    
+
     private boolean isClientMenuUsed(VaadinService vaadinService) {
         try {
             String fileRoutesJson = FrontendUtils.readFileRoutesJsonFile(
@@ -277,7 +279,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             return false;
         }
     }
-    
+
     private List<RouteData> getRegisteredRoutes(
             ConfiguredRoutes configuration) {
         var routePathMap = new HashMap<>(configuration.getRoutesMap());

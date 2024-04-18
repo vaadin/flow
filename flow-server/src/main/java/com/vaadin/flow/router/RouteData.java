@@ -101,9 +101,9 @@ public class RouteData extends RouteBaseData<RouteData> {
      *            menu data for this route
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-                     String template, Map<String, RouteParameterData> parameters,
-                     Class<? extends Component> navigationTarget,
-                     List<RouteAliasData> routeAliases, MenuData menuData) {
+            String template, Map<String, RouteParameterData> parameters,
+            Class<? extends Component> navigationTarget,
+            List<RouteAliasData> routeAliases, MenuData menuData) {
         super(parentLayouts, template, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
@@ -122,7 +122,7 @@ public class RouteData extends RouteBaseData<RouteData> {
 
     /**
      * Get the menu data for this route.
-     * 
+     *
      * @return the menu data for this route
      */
     public MenuData getMenuData() {
