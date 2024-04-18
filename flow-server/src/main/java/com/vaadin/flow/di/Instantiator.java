@@ -29,6 +29,7 @@ import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
 
@@ -201,10 +202,18 @@ public interface Instantiator extends Serializable {
     /**
      * Get the I18NProvider if one has been defined.
      *
-     * @return I18NProvier instance
+     * @return I18NProvider instance
      */
     default I18NProvider getI18NProvider() {
         return getOrCreate(I18NProvider.class);
     }
 
+    /**
+     * Get the MenuAccessControl if one has been defined.
+     *
+     * @return MenuAccessControl instance
+     */
+    default MenuAccessControl getMenuAccessControl() {
+        return getOrCreate(MenuAccessControl.class);
+    }
 }

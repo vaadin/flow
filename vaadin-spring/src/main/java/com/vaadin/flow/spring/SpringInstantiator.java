@@ -32,6 +32,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 
 /**
  * Default Spring instantiator that is used if no other instantiator has been
@@ -102,6 +103,22 @@ public class SpringInstantiator extends DefaultInstantiator {
                                 I18NProvider.class.getSimpleName(), beansCount);
             }
             return super.getI18NProvider();
+        }
+    }
+
+    @Override
+    public MenuAccessControl getMenuAccessControl() {
+        int beansCount = context.getBeanNamesForType(MenuAccessControl.class).length;
+        if (beansCount == 1) {
+            return context.getBean(MenuAccessControl.class);
+        } else {
+            if (loggingEnabled.compareAndSet(true, false)) {
+                LoggerFactory.getLogger(SpringInstantiator.class.getName())
+                        .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
+                                        + "falling back to the default behavior",
+                                MenuAccessControl.class.getSimpleName(), beansCount);
+            }
+            return super.getMenuAccessControl();
         }
     }
 
