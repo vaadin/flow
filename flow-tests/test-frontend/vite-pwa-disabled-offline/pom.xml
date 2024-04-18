@@ -25,17 +25,6 @@
             <artifactId>vaadin-dev-server</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--
-            Workaround to prevent tests failures on Bender
-            until remote chrome gets updated at least to 121
-        -->
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-devtools-v120</artifactId>
-            <version>4.18.1</version>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
