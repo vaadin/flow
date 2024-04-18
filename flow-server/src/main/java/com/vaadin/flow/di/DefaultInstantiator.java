@@ -22,6 +22,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -160,6 +162,11 @@ public class DefaultInstantiator implements Instantiator {
 
                 return ReflectTools.createInstance(
                         (Class<? extends MenuAccessControl>) providerClass);
+            } else {
+                LoggerFactory.getLogger(DefaultInstantiator.class).warn(
+                        "Menu access control implementation class property '{}' is set to '{}' but it's not {} implementation",
+                        InitParameters.MENU_ACCESS_CONTROL, property,
+                        MenuAccessControl.class.getSimpleName());
             }
         } catch (ClassNotFoundException e) {
             throw new InvalidIMenuAccessControlException(
