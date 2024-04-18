@@ -112,7 +112,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             "import\\s+(\\w+)\\s+from\\s+(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\2;[\\s\\S]+withFallback\\(\\s*\\1\\s*\\)");
 
     private static final Pattern ROUTES_EXPORT_PATTERN = Pattern.compile(
-            "export\\s+const\\s+(\\{[\\s\\S]*(router[\\s\\S]*routes|routes[\\s\\S]*router)[\\s\\S]*}|routes)");
+            "export\\s+(const\\s+)?(\\{[\\s\\S]*(router[\\s\\S]*routes|routes[\\s\\S]*router)[\\s\\S]*}|routes)");
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
