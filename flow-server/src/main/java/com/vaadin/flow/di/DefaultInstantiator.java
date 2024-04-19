@@ -22,8 +22,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -33,7 +31,7 @@ import com.vaadin.flow.i18n.I18NUtil;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.InvalidI18NConfigurationException;
-import com.vaadin.flow.server.InvalidIMenuAccessControlException;
+import com.vaadin.flow.server.InvalidMenuAccessControlException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.auth.DefaultMenuAccessControl;
@@ -163,18 +161,17 @@ public class DefaultInstantiator implements Instantiator {
                 return ReflectTools.createInstance(
                         (Class<? extends MenuAccessControl>) providerClass);
             } else {
-                LoggerFactory.getLogger(DefaultInstantiator.class).warn(
-                        "Menu access control implementation class property '{}' is set to '{}' but it's not {} implementation",
+                throw new InvalidMenuAccessControlException(String.format(
+                        "Menu access control implementation class property '%s' is set to '%s' but it's not %s implementation",
                         InitParameters.MENU_ACCESS_CONTROL, property,
-                        MenuAccessControl.class.getSimpleName());
+                        MenuAccessControl.class.getSimpleName()));
             }
         } catch (ClassNotFoundException e) {
-            throw new InvalidIMenuAccessControlException(
+            throw new InvalidMenuAccessControlException(
                     "Failed to load given provider class '" + property
                             + "' as it was not found by the class loader.",
                     e);
         }
-        return null;
     }
 
     protected ClassLoader getClassLoader() {

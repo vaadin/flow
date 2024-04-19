@@ -26,8 +26,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.InvalidMenuAccessControlException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+
+import static org.junit.Assert.assertThrows;
 
 public class DefaultInstantiatorMenuAccessControlTest {
 
@@ -68,6 +72,29 @@ public class DefaultInstantiatorMenuAccessControlTest {
         Assert.assertTrue(menuAccessControl instanceof CustomMenuAccessControl);
         Assert.assertSame(menuAccessControl.getPopulateClientSideMenu(),
                 MenuAccessControl.PopulateClientMenu.ALWAYS);
+    }
+
+    @Test
+    public void defaultInstantiator_getMenuAccessControlWithInvalidType_throwException() {
+        VaadinService service = Mockito.mock(VaadinService.class);
+        mockLookup(service);
+        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
+                service) {
+            @Override
+            protected String getInitProperty(String propertyName) {
+                return "com.vaadin.flow.server.auth.InvalidMenuAccessControl";
+            }
+        };
+        String errorMessage = assertThrows(
+                InvalidMenuAccessControlException.class,
+                () -> defaultInstantiator.getMenuAccessControl()).getMessage();
+        Assert.assertEquals(
+                "Menu access control implementation class property '"
+                        + InitParameters.MENU_ACCESS_CONTROL
+                        + "' is set to 'com.vaadin.flow.server.auth.InvalidMenuAccessControl' but it's not "
+                        + MenuAccessControl.class.getSimpleName()
+                        + " implementation",
+                errorMessage);
     }
 
     public static void clearMenuAccessControlField()

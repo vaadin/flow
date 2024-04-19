@@ -21,7 +21,7 @@ package com.vaadin.flow.server;
  *
  * @since 1.0
  */
-public class InvalidIMenuAccessControlException extends RuntimeException {
+public class InvalidMenuAccessControlException extends RuntimeException {
 
     /**
      * Constructs a new invalid Menu access control configuration runtime
@@ -31,7 +31,7 @@ public class InvalidIMenuAccessControlException extends RuntimeException {
      *            the detail message. The detail message is saved for later
      *            retrieval by the {@link #getMessage()} method.
      */
-    public InvalidIMenuAccessControlException(String message) {
+    public InvalidMenuAccessControlException(String message) {
         super(message);
     }
 
@@ -48,7 +48,7 @@ public class InvalidIMenuAccessControlException extends RuntimeException {
      *            permitted, and indicates that the cause is nonexistent or
      *            unknown.)
      */
-    public InvalidIMenuAccessControlException(String message, Throwable cause) {
+    public InvalidMenuAccessControlException(String message, Throwable cause) {
         super(message, cause);
     }
 }
