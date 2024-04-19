@@ -222,12 +222,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         MenuAccessControl.PopulateClientMenu populateClientSideMenu = vaadinService
                 .getInstantiator().getMenuAccessControl()
                 .getPopulateClientSideMenu();
-        if (populateClientSideMenu == MenuAccessControl.PopulateClientMenu.AUTOMATIC
+        if (populateClientSideMenu == MenuAccessControl.PopulateClientMenu.NEVER) {
+            return Collections.emptyList();
+        } else if (populateClientSideMenu != MenuAccessControl.PopulateClientMenu.ALWAYS
                 && !isClientMenuUsed(vaadinService)) {
-            return getRegisteredRoutes();
-        } else if (populateClientSideMenu == MenuAccessControl.PopulateClientMenu.NEVER) {
-            // Continue only if the menu is populated on the client-side.
-            return getRegisteredRoutes();
+            return Collections.emptyList();
         }
 
         List<NavigationAccessControl> navigationAccessControls = findListOf(

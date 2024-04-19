@@ -85,19 +85,19 @@ public class RouteRegistryMenuAccessTest {
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsFalse_oneMenuRoute() {
+    public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsFalse_noMenuRoute() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.NEVER);
         registry.clean();
         registry.setRoute("home", RouteRegistryTestBase.MyRoute.class,
                 Collections.emptyList());
         Assert.assertEquals("One route should be registered.", 1,
                 registry.getRegisteredRoutes().size());
-        Assert.assertEquals("One route should be registered.", 1,
+        Assert.assertEquals("No routes should be registered.", 0,
                 registry.getRegisteredAccessibleMenuRoutes(null, null).size());
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsAutomaticWithoutFileRoutesJson_oneMenuRoute() {
+    public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsAutomaticWithoutFileRoutesJson_noMenuRoute() {
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
             utils.when(() -> FrontendUtils.readFileRoutesJsonFile(any()))
@@ -114,7 +114,7 @@ public class RouteRegistryMenuAccessTest {
                             Mockito.CALLS_REAL_METHODS)) {
                 config.when(() -> ApplicationConfiguration.get(any()))
                         .thenReturn(mock(ApplicationConfiguration.class));
-                Assert.assertEquals("One route should be registered.", 1,
+                Assert.assertEquals("No routes should be registered.", 0,
                         registry.getRegisteredAccessibleMenuRoutes(null, null)
                                 .size());
             }
