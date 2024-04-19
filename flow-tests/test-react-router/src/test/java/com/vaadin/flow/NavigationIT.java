@@ -26,7 +26,6 @@ import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class NavigationIT extends ChromeBrowserTest {
-
     @Test
     public void testNavigation() {
         open();
@@ -291,6 +290,38 @@ public class NavigationIT extends ChromeBrowserTest {
         getDriver().navigate().back();
         Assert.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
+    }
+
+    @Test
+    public void testRouterLinkWithQueryNavigation() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_QUERY_ID).click();
+        Assert.assertEquals(
+                "Exception on router-link navigation with query parameters",
+                "AnchorView", $(SpanElement.class).first().getText());
+        System.out.println(getDriver().getCurrentUrl());
+        Assert.assertTrue("Query was missing in url",
+                getDriver().getCurrentUrl().endsWith("?test=value"));
+    }
+
+    @Test
+    public void testAnchorWithQueryNavigation() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.ANCHOR_QUERY_ID).click();
+        Assert.assertEquals(
+                "Exception on router-link navigation with query parameters",
+                "AnchorView", $(SpanElement.class).first().getText());
+        System.out.println(getDriver().getCurrentUrl());
+        Assert.assertTrue("Query was missing in url",
+                getDriver().getCurrentUrl().endsWith("?test=anchor"));
     }
 
 }
