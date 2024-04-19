@@ -209,7 +209,7 @@ public interface Instantiator extends Serializable {
     }
 
     /**
-     * Get the MenuAccessControl if one has been defined.
+     * Get the MenuAccessControl.
      *
      * @return MenuAccessControl instance
      */
