@@ -47,8 +47,7 @@ public class MenuListView extends Div implements AfterNavigationObserver {
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        String targetAccessibleMenuRoutes = RouteConfiguration.forSessionScope()
-                .getHandledRegistry()
+        String targetAccessibleMenuRoutes = event.getSource().getRegistry()
                 .getRegisteredAccessibleMenuRoutes(VaadinRequest.getCurrent(),
                         UI.getCurrent().getInternals()
                                 .getListeners(BeforeEnterHandler.class).stream()

@@ -115,7 +115,7 @@ public class SpringInstantiator extends DefaultInstantiator {
         } else {
             if (loggingEnabled.compareAndSet(true, false)) {
                 LoggerFactory.getLogger(SpringInstantiator.class.getName())
-                        .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
+                        .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for Menu Access Control, "
                                 + "falling back to the default behavior",
                                 MenuAccessControl.class.getSimpleName(),
                                 beansCount);
