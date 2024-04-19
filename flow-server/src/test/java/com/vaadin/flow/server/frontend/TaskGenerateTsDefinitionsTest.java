@@ -153,7 +153,7 @@ public class TaskGenerateTsDefinitionsTest {
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         String hillaTsDef = IOUtils.toString(
-                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla"),
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v1"),
                 UTF_8);
         Files.writeString(typesTSfile, hillaTsDef);
         taskGenerateTsDefinitions.execute();
@@ -173,7 +173,7 @@ public class TaskGenerateTsDefinitionsTest {
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         String hillaTsDef = IOUtils.toString(
-                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla"),
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v1"),
                 UTF_8);
         // do not care about comment type (single or multi line)
         hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
@@ -196,7 +196,7 @@ public class TaskGenerateTsDefinitionsTest {
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         String hillaTsDef = IOUtils.toString(
-                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla"),
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v1"),
                 UTF_8);
         // do not care about comment type (single or multi line)
         hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
@@ -210,6 +210,72 @@ public class TaskGenerateTsDefinitionsTest {
         MatcherAssert.assertThat("types.d.ts should have been updated",
                 updatedContent,
                 CoreMatchers.containsString(readExpectedContent(true)));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaV2Contents_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v2"),
+                UTF_8);
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                stripEmptyLines(updatedContent), CoreMatchers.containsString(
+                        stripEmptyLines(readExpectedContent(true))));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaV2Contents_ignoringMultilineComments_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v2"),
+                UTF_8);
+        // do not care about comment type (single or multi line)
+        hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
+                "/* a comment */\n$1");
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                stripEmptyLines(updatedContent), CoreMatchers.containsString(
+                        stripEmptyLines(readExpectedContent(true))));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaV2Contents_ignoringSingleLineComments_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v2"),
+                UTF_8);
+        // do not care about comment type (single or multi line)
+        hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
+                "// a comment\n$1");
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                stripEmptyLines(updatedContent), CoreMatchers.containsString(
+                        stripEmptyLines(readExpectedContent(true))));
         MatcherAssert.assertThat("types.d.ts should contain original content",
                 updatedContent, CoreMatchers.containsString(hillaTsDef));
     }
@@ -283,10 +349,10 @@ public class TaskGenerateTsDefinitionsTest {
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
                 taskGenerateTsDefinitions.shouldGenerate());
-        String updatedContent = Files.readString(typesTSfile);
+        String updatedContent = stripEmptyLines(Files.readString(typesTSfile));
         MatcherAssert.assertThat("types.d.ts should have been updated",
-                updatedContent,
-                CoreMatchers.containsString(readExpectedContent(true)));
+                updatedContent, CoreMatchers.containsString(
+                        stripEmptyLines(readExpectedContent(true))));
         assertBackupFileCreated(originalContent);
     }
 
@@ -483,4 +549,7 @@ public class TaskGenerateTsDefinitionsTest {
                 getClass().getResourceAsStream(TS_DEFINITIONS + suffix), UTF_8);
     }
 
+    private String stripEmptyLines(String input) {
+        return input.replaceAll("(?m)^[ \t]*\r?\n", "");
+    }
 }

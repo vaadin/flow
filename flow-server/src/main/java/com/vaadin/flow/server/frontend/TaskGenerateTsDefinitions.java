@@ -258,10 +258,13 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
         }
 
         try {
-            String templateContent = getTemplateContent(".hilla");
+            String templateContent = getTemplateContent(".hilla.v1");
+            String templateV2Content = getTemplateContent(".hilla.v2");
             String uncommentedContent = removeComments(content);
             if (compareIgnoringIndentationAndEOL(uncommentedContent,
-                    templateContent, String::equals)) {
+                    templateContent, String::equals)
+                    || compareIgnoringIndentationAndEOL(uncommentedContent,
+                            templateV2Content, String::equals)) {
                 // Current content is compatible with what we expect to be in a
                 // Hilla application. Flow contents can be appended silently.
                 return UpdateMode.UPDATE;
