@@ -961,6 +961,15 @@ export class VaadinDevTools extends LitElement {
           );
         }
       };
+    } else if (this.conf.backend === VaadinDevTools.HOTSWAP_AGENT || this.conf.backend === VaadinDevTools.JREBEL) {
+      this.frontendConnection.onHandshake = () => {
+        if (this.conf.backend) {
+          this.log(
+              MessageType.INFORMATION,
+              `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.conf.backend]}`
+          );
+        }
+      };
     }
 
     if (!this.conf.backend) {
@@ -1295,7 +1304,7 @@ export class VaadinDevTools extends LitElement {
     } else if (status === ConnectionStatus.INACTIVE) {
       return 'var(--dev-tools-grey-color)';
     } else if (status === ConnectionStatus.UNAVAILABLE) {
-      return 'var(--dev-tools-yellow-hsl)';
+      return 'var(--dev-tools-yellow-color)';
     } else if (status === ConnectionStatus.ERROR) {
       return 'var(--dev-tools-red-color)';
     } else {
@@ -1450,7 +1459,8 @@ export class VaadinDevTools extends LitElement {
           class="status-blip"
           style="background: linear-gradient(to right, ${this.getStatusColor(
             this.frontendStatus
-          )} 50%, ${this.getStatusColor(this.javaStatus)} 50%)"
+          )} 50%, ${this.getStatusColor(this.conf.backend === VaadinDevTools.HOTSWAP_AGENT
+            || this.conf.backend === VaadinDevTools.JREBEL ? this.frontendStatus : this.javaStatus)} 50%)"
         ></span>
         ${this.splashMessage ? html`<span class="status-description">${this.splashMessage}</span></div>` : nothing}
       </div>`;

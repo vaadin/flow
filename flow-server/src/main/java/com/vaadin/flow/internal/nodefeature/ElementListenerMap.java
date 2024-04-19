@@ -436,13 +436,13 @@ public class ElementListenerMap extends NodeMap {
         if (listeners == null) {
             return;
         }
-
         final boolean isElementEnabled = event.getSource().isEnabled();
 
         final boolean isNavigationRequest = UI.BrowserNavigateEvent.EVENT_NAME
                 .equals(event.getType())
                 || UI.BrowserLeaveNavigationEvent.EVENT_NAME
                         .equals(event.getType());
+
         final boolean inert = event.getSource().getNode().isInert();
 
         List<DomEventListenerWrapper> typeListeners = listeners

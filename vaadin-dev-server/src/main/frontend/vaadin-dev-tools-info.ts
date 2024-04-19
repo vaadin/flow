@@ -58,9 +58,13 @@ export class InfoTab extends LitElement {
         </dt>
         <dd
           class="live-reload-status"
-          style="--status-color: ${this._devTools.getStatusColor(this._devTools.javaStatus)}"
+          style="--status-color: ${this._devTools.getStatusColor(this._devTools.conf.backend ===
+          VaadinDevTools.HOTSWAP_AGENT || this._devTools.conf.backend === VaadinDevTools.JREBEL
+              ? this._devTools.frontendStatus : this._devTools.javaStatus)}"
         >
-          Java ${this._devTools.javaStatus}
+          Java ${this._devTools.conf.backend === VaadinDevTools.HOTSWAP_AGENT
+            || this._devTools.conf.backend === VaadinDevTools.JREBEL ? this._devTools.frontendStatus
+            : this._devTools.javaStatus}
           ${this._devTools.conf.backend ? `(${VaadinDevTools.BACKEND_DISPLAY_NAME[this._devTools.conf.backend]})` : ''}
         </dd>
         <dd
