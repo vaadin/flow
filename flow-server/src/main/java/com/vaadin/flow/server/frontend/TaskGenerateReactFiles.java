@@ -89,6 +89,10 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                // routes building
                .build();'
             OR
+            'export { router } = ...
+            // Some other code here
+            export { routes } = ...'
+            OR
             'export const routes = [...serverSideRoutes] as RouteObject[];'
             """;
 
@@ -111,8 +115,10 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private static final Pattern FALLBACK_COMPONENT_PATTERN = Pattern.compile(
             "import\\s+(\\w+)\\s+from\\s+(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\2;[\\s\\S]+withFallback\\(\\s*\\1\\s*\\)");
 
+    // matches "export const { router, routes }" or "export { router, routes }"
+    // or "export { router } export { routes }"
     private static final Pattern ROUTES_EXPORT_PATTERN = Pattern.compile(
-            "export\\s+const\\s+(\\{[\\s\\S]*(router[\\s\\S]*routes|routes[\\s\\S]*router)[\\s\\S]*}|routes)");
+            "export\\s+(const\\s+)?(\\{[\\s\\S]*(router[\\s\\S]*routes|routes[\\s\\S]*router)[\\s\\S]*}|routes)");
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
