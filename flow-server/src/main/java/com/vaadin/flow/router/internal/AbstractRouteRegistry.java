@@ -266,7 +266,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     private Stream<RouteData> getMenuRouteCandidates() {
         return getRegisteredRoutes().stream()
-                .filter(route -> route.getMenuData() != null);
+                .filter(route -> route.getMenuData() != null)
+                .filter(route -> !route.getMenuData().isExclude());
     }
 
     private <T> List<T> findListOf(Class<T> targetType, Collection<?> objects) {

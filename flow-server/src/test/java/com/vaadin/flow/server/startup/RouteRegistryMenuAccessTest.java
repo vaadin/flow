@@ -160,6 +160,19 @@ public class RouteRegistryMenuAccessTest {
     }
 
     @Test
+    public void getRegisteredAccessibleMenuRoutes_withoutNavAccessControl_doNotReturnExcludedMenuRoute() {
+        mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRouteExcluded.class,
+                Collections.emptyList());
+        Assert.assertEquals("One route should be registered.", 1,
+                registry.getRegisteredRoutes().size());
+        Assert.assertEquals("No accessible menu routes should be available.", 0,
+                registry.getRegisteredAccessibleMenuRoutes(null, List.of())
+                        .size());
+    }
+
+    @Test
     public void getRegisteredAccessibleMenuRoutes_withNavAccessControlWithoutRequest_noAccessibleMenuRoute() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         registry.clean();
@@ -362,6 +375,12 @@ public class RouteRegistryMenuAccessTest {
     @Route("hasmenu")
     @Menu
     protected static class MyMenuRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("hasmenu")
+    @Menu(exclude = true)
+    protected static class MyMenuRouteExcluded extends Component {
     }
 
     @AnonymousAllowed
