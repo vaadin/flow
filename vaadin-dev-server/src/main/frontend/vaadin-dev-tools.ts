@@ -594,9 +594,6 @@ export class VaadinDevTools extends LitElement {
     return shown !== null && shown.includes(persistentId);
   }
 
-  @property({ type: Boolean, attribute: false })
-  expanded: boolean = false;
-
   @property({ type: String, attribute: false })
   splashMessage?: string;
 
@@ -821,25 +818,14 @@ export class VaadinDevTools extends LitElement {
     super.disconnectedCallback();
   }
 
-  toggleExpanded() {
-    this.notifications.slice().forEach((notification) => this.dismissNotification(notification.id));
-    this.expanded = !this.expanded;
-    if (this.expanded) {
-      this.root.focus();
-    }
-  }
 
   showSplashMessage(msg: string | undefined) {
     this.splashMessage = msg;
     if (this.splashMessage) {
-      if (this.expanded) {
-        this.demoteSplashMessage();
-      } else {
         // automatically move notification to message tray after a certain amount of time
         setTimeout(() => {
           this.demoteSplashMessage();
         }, VaadinDevTools.AUTO_DEMOTE_NOTIFICATION_DELAY);
-      }
     }
   }
 
