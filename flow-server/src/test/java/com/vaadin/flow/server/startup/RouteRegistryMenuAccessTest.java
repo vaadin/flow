@@ -56,20 +56,30 @@ public class RouteRegistryMenuAccessTest {
     private static String FILE_ROUTES_JSON_WITH_LAYOUT = "{\"route\":\"\",\"params\":{},\"title\":\"Layout\",\"children\":[]}";
 
     private ApplicationRouteRegistry registry;
+    private VaadinRequest vaadinRequest;
 
     @Before
     public void init() {
         registry = ApplicationRouteRegistry.getInstance(
                 new VaadinServletContext(mock(ServletContext.class)));
+        this.vaadinRequest = mock(VaadinRequest.class);
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_withoutVaadinService_returnEmpty() {
-        VaadinService.setCurrent(null);
+    public void getRegisteredAccessibleMenuRoutes_withoutRequest_returnEmpty() {
         Assert.assertEquals(
                 "No accessible menu routes should be available without VaadinService.",
                 0,
                 registry.getRegisteredAccessibleMenuRoutes(null, null).size());
+    }
+
+    @Test
+    public void getRegisteredAccessibleMenuRoutes_withoutVaadinService_returnEmpty() {
+        when(vaadinRequest.getService()).thenReturn(null);
+        Assert.assertEquals(
+                "No accessible menu routes should be available without VaadinService.",
+                0,
+                registry.getRegisteredAccessibleMenuRoutes(vaadinRequest, null).size());
     }
 
     @Test
@@ -81,7 +91,8 @@ public class RouteRegistryMenuAccessTest {
         Assert.assertEquals("One route should be registered.", 1,
                 registry.getRegisteredRoutes().size());
         Assert.assertEquals("No accessible menu routes should be available.", 0,
-                registry.getRegisteredAccessibleMenuRoutes(null, null).size());
+                registry.getRegisteredAccessibleMenuRoutes(vaadinRequest, null)
+                        .size());
     }
 
     @Test
@@ -92,8 +103,8 @@ public class RouteRegistryMenuAccessTest {
                 Collections.emptyList());
         Assert.assertEquals("One route should be registered.", 1,
                 registry.getRegisteredRoutes().size());
-        Assert.assertEquals("No routes should be registered.", 0,
-                registry.getRegisteredAccessibleMenuRoutes(null, null).size());
+        Assert.assertEquals("No routes should be registered.", 0, registry
+                .getRegisteredAccessibleMenuRoutes(vaadinRequest, null).size());
     }
 
     @Test
@@ -115,8 +126,8 @@ public class RouteRegistryMenuAccessTest {
                 config.when(() -> ApplicationConfiguration.get(any()))
                         .thenReturn(mock(ApplicationConfiguration.class));
                 Assert.assertEquals("No routes should be registered.", 0,
-                        registry.getRegisteredAccessibleMenuRoutes(null, null)
-                                .size());
+                        registry.getRegisteredAccessibleMenuRoutes(
+                                vaadinRequest, null).size());
             }
         }
     }
@@ -140,8 +151,8 @@ public class RouteRegistryMenuAccessTest {
                 config.when(() -> ApplicationConfiguration.get(any()))
                         .thenReturn(mock(ApplicationConfiguration.class));
                 Assert.assertEquals("No Menu routes should be registered.", 0,
-                        registry.getRegisteredAccessibleMenuRoutes(null, null)
-                                .size());
+                        registry.getRegisteredAccessibleMenuRoutes(
+                                vaadinRequest, null).size());
             }
         }
     }
@@ -155,8 +166,8 @@ public class RouteRegistryMenuAccessTest {
         Assert.assertEquals("One route should be registered.", 1,
                 registry.getRegisteredRoutes().size());
         Assert.assertEquals("One accessible menu routes should be available.",
-                1, registry.getRegisteredAccessibleMenuRoutes(null, List.of())
-                        .size());
+                1, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        List.of()).size());
     }
 
     @Test
@@ -168,8 +179,8 @@ public class RouteRegistryMenuAccessTest {
         Assert.assertEquals("One route should be registered.", 1,
                 registry.getRegisteredRoutes().size());
         Assert.assertEquals("No accessible menu routes should be available.", 0,
-                registry.getRegisteredAccessibleMenuRoutes(null, List.of())
-                        .size());
+                registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        List.of()).size());
     }
 
     @Test
@@ -182,7 +193,7 @@ public class RouteRegistryMenuAccessTest {
                 registry.getRegisteredRoutes().size());
         Assert.assertEquals(
                 "No accessible menu routes should be available without an active request.",
-                0, registry.getRegisteredAccessibleMenuRoutes(null,
+                0, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
                         List.of(new NavigationAccessControl())).size());
     }
 
@@ -213,80 +224,68 @@ public class RouteRegistryMenuAccessTest {
 
     @Test
     public void getRegisteredAccessibleMenuRoutes_withDisabledNavAccessControlAndViewAccessChecker_anonymous() {
-        try (MockedStatic<VaadinService> vaadinService = Mockito
-                .mockStatic(VaadinService.class, Mockito.CALLS_REAL_METHODS)) {
-            setupForAnonymous(vaadinService);
-            var navAccessControl = new NavigationAccessControl();
-            navAccessControl.setEnabled(false);
-            var viewAccessControl = new ViewAccessChecker(false);
-            List<BeforeEnterListener> accessControls = List.of(navAccessControl,
-                    viewAccessControl);
+        setupForAnonymous();
+        var navAccessControl = new NavigationAccessControl();
+        navAccessControl.setEnabled(false);
+        var viewAccessControl = new ViewAccessChecker(false);
+        List<BeforeEnterListener> accessControls = List.of(navAccessControl,
+                viewAccessControl);
 
-            registry.clean();
-            registry.setRoute("hasmenu", MyMenuRoute.class,
-                    Collections.emptyList());
-            Assert.assertEquals("One route should be registered.", 1,
-                    registry.getRegisteredRoutes().size());
-            Assert.assertEquals(
-                    "One accessible menu routes should be available.", 1,
-                    registry.getRegisteredAccessibleMenuRoutes(null,
-                            accessControls).size());
-        }
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRoute.class,
+                Collections.emptyList());
+        Assert.assertEquals("One route should be registered.", 1,
+                registry.getRegisteredRoutes().size());
+        Assert.assertEquals("One accessible menu routes should be available.",
+                1, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        accessControls).size());
     }
 
-    private void setupForAnonymous(MockedStatic<VaadinService> vaadinService) {
-        vaadinService.when(VaadinService::getCurrentRequest)
-                .thenReturn(mock(VaadinRequest.class));
+    private void setupForAnonymous() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
-        when(VaadinService.getCurrent().getRouter())
-                .thenReturn(mock(Router.class));
     }
 
     private void testAsAnonymous(BeforeEnterListener... withAccessControls) {
-        try (MockedStatic<VaadinService> vaadinService = Mockito
-                .mockStatic(VaadinService.class, Mockito.CALLS_REAL_METHODS)) {
-            setupForAnonymous(vaadinService);
+        setupForAnonymous();
 
-            List<BeforeEnterListener> accessControls = Stream
-                    .of(withAccessControls).toList();
+        List<BeforeEnterListener> accessControls = Stream.of(withAccessControls)
+                .toList();
 
-            registry.clean();
-            registry.setRoute("hasmenu", MyMenuRoute.class,
-                    Collections.emptyList());
-            Assert.assertEquals("One route should be registered.", 1,
-                    registry.getRegisteredRoutes().size());
-            Assert.assertEquals(
-                    "No accessible menu routes should be available due to lack of security annotation.",
-                    0, registry.getRegisteredAccessibleMenuRoutes(null,
-                            accessControls).size());
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRoute.class,
+                Collections.emptyList());
+        Assert.assertEquals("One route should be registered.", 1,
+                registry.getRegisteredRoutes().size());
+        Assert.assertEquals(
+                "No accessible menu routes should be available due to lack of security annotation.",
+                0, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        accessControls).size());
 
-            registry.clean();
-            registry.setRoute("hasmenu", MyMenuRouteAnonymousAllowed.class,
-                    Collections.emptyList());
-            Assert.assertEquals(
-                    "One accessible menu routes should be available.", 1,
-                    registry.getRegisteredAccessibleMenuRoutes(null,
-                            accessControls).size());
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRouteAnonymousAllowed.class,
+                Collections.emptyList());
+        Assert.assertEquals("One accessible menu routes should be available.",
+                1, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        accessControls).size());
 
-            registry.clean();
-            registry.setRoute("hasmenu", MyMenuRoutePermitAll.class,
-                    Collections.emptyList());
-            Assert.assertEquals(
-                    "no accessible menu routes should be available for anonymous user.",
-                    0, registry.getRegisteredAccessibleMenuRoutes(null,
-                            accessControls).size());
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRoutePermitAll.class,
+                Collections.emptyList());
+        Assert.assertEquals(
+                "no accessible menu routes should be available for anonymous user.",
+                0, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        accessControls).size());
 
-            registry.clean();
-            registry.setRoute("hasmenu", MyMenuRouteRolesAllowedAdmin.class,
-                    Collections.emptyList());
-            Assert.assertEquals(
-                    "No accessible menu routes should be available without admin role.",
-                    0, registry.getRegisteredAccessibleMenuRoutes(null,
-                            accessControls).size());
-        }
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRouteRolesAllowedAdmin.class,
+                Collections.emptyList());
+        Assert.assertEquals(
+                "No accessible menu routes should be available without admin role.",
+                0, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        accessControls).size());
     }
 
-    private void setupForAdmin(MockedStatic<VaadinService> vaadinService, VaadinRequest vaadinRequest) {
+    private void setupForAdmin(VaadinRequest vaadinRequest) {
         when(vaadinRequest.getUserPrincipal()).thenReturn(new Principal() {
             @Override
             public String getName() {
@@ -294,64 +293,54 @@ public class RouteRegistryMenuAccessTest {
             }
         });
         when(vaadinRequest.isUserInRole("admin")).thenReturn(true);
-        vaadinService.when(VaadinService::getCurrentRequest)
-                .thenReturn(vaadinRequest);
         mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
-        when(VaadinService.getCurrent().getRouter())
-                .thenReturn(mock(Router.class));
     }
 
     private void testAsAdmin(BeforeEnterListener... withAccessControls) {
-        try (MockedStatic<VaadinService> vaadinService = Mockito
-                .mockStatic(VaadinService.class, Mockito.CALLS_REAL_METHODS)) {
-            VaadinRequest vaadinRequest = mock(VaadinRequest.class);
-            setupForAdmin(vaadinService, vaadinRequest);
+        setupForAdmin(vaadinRequest);
 
-            List<BeforeEnterListener> accessControls = Stream
-                    .of(withAccessControls).toList();
+        List<BeforeEnterListener> accessControls = Stream.of(withAccessControls)
+                .toList();
 
-            registry.clean();
-            registry.setRoute("hasmenu", MyMenuRoute.class,
-                    Collections.emptyList());
-            Assert.assertEquals("One route should be registered.", 1,
-                    registry.getRegisteredRoutes().size());
-            Assert.assertEquals(
-                    "No accessible menu routes should be available due to lack of security annotation.",
-                    0, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
-                            accessControls).size());
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRoute.class,
+                Collections.emptyList());
+        Assert.assertEquals("One route should be registered.", 1,
+                registry.getRegisteredRoutes().size());
+        Assert.assertEquals(
+                "No accessible menu routes should be available due to lack of security annotation.",
+                0, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        accessControls).size());
 
-            registry.clean();
-            registry.setRoute("hasmenu", MyMenuRouteAnonymousAllowed.class,
-                    Collections.emptyList());
-            Assert.assertEquals(
-                    "One accessible menu routes should be available.", 1,
-                    registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
-                            accessControls).size());
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRouteAnonymousAllowed.class,
+                Collections.emptyList());
+        Assert.assertEquals("One accessible menu routes should be available.",
+                1, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        accessControls).size());
 
-            registry.clean();
-            registry.setRoute("hasmenu", MyMenuRoutePermitAll.class,
-                    Collections.emptyList());
-            Assert.assertEquals(
-                    "One accessible menu route should be available.", 1,
-                    registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
-                            accessControls).size());
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRoutePermitAll.class,
+                Collections.emptyList());
+        Assert.assertEquals("One accessible menu route should be available.", 1,
+                registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        accessControls).size());
 
-            registry.clean();
-            registry.setRoute("hasmenu", MyMenuRouteRolesAllowedAdmin.class,
-                    Collections.emptyList());
-            Assert.assertEquals(
-                    "One accessible menu route should be available.", 1,
-                    registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
-                            accessControls).size());
-        }
+        registry.clean();
+        registry.setRoute("hasmenu", MyMenuRouteRolesAllowedAdmin.class,
+                Collections.emptyList());
+        Assert.assertEquals("One accessible menu route should be available.", 1,
+                registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
+                        accessControls).size());
     }
 
-    private static void mockInstantiator(
+    private void mockInstantiator(
             MenuAccessControl.PopulateClientMenu populateClientSideMenu) {
-        VaadinService.setCurrent(mock(VaadinService.class));
+        var vaadinService = mock(VaadinService.class);
+        when(vaadinRequest.getService()).thenReturn(vaadinService);
         var instantiator = mock(Instantiator.class);
-        when(VaadinService.getCurrent().getInstantiator())
-                .thenReturn(instantiator);
+        when(vaadinService.getInstantiator()).thenReturn(instantiator);
+        when(vaadinService.getRouter()).thenReturn(mock(Router.class));
         when(instantiator.getMenuAccessControl())
                 .thenReturn(new MenuAccessControl() {
                     @Override

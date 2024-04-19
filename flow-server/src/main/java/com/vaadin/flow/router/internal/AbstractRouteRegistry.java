@@ -215,7 +215,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     public List<RouteData> getRegisteredAccessibleMenuRoutes(
             VaadinRequest vaadinRequest,
             Collection<BeforeEnterListener> accessControls) {
-        final VaadinService vaadinService = VaadinService.getCurrent();
+        if (vaadinRequest == null) {
+            return Collections.emptyList();
+        }
+        final VaadinService vaadinService = vaadinRequest.getService();
         if (vaadinService == null) {
             return Collections.emptyList();
         }
@@ -236,9 +239,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (navigationAccessControls.isEmpty()
                 && legacyViewAccessCheckers.isEmpty()) {
             return getMenuRouteCandidates().toList();
-        }
-        if (VaadinService.getCurrentRequest() == null) {
-            return Collections.emptyList();
         }
         return getMenuRouteCandidates().filter(route -> navigationAccessControls
                 .stream().allMatch(accessControl -> {
