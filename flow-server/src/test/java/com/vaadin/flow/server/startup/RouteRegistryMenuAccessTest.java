@@ -45,15 +45,12 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
 public class RouteRegistryMenuAccessTest {
-
-    private static String FILE_ROUTES_JSON_WITH_LAYOUT = "{\"route\":\"\",\"params\":{},\"title\":\"Layout\",\"children\":[]}";
 
     private ApplicationRouteRegistry registry;
     private VaadinRequest vaadinRequest;
@@ -86,8 +83,7 @@ public class RouteRegistryMenuAccessTest {
     public void getRegisteredAccessibleMenuRoutes_withoutNavAccessControl_noMenuRoutes() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.ALWAYS);
         registry.clean();
-        registry.setRoute("home", RouteRegistryTestBase.MyRoute.class,
-                Collections.emptyList());
+        registry.setRoute("home", MyRoute.class, Collections.emptyList());
         Assert.assertEquals("One route should be registered.", 1,
                 registry.getRegisteredRoutes().size());
         Assert.assertEquals("No accessible menu routes should be available.", 0,
@@ -99,8 +95,7 @@ public class RouteRegistryMenuAccessTest {
     public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsFalse_noMenuRoute() {
         mockInstantiator(MenuAccessControl.PopulateClientMenu.NEVER);
         registry.clean();
-        registry.setRoute("home", RouteRegistryTestBase.MyRoute.class,
-                Collections.emptyList());
+        registry.setRoute("home", MyMenuRoute.class, Collections.emptyList());
         Assert.assertEquals("One route should be registered.", 1,
                 registry.getRegisteredRoutes().size());
         Assert.assertEquals("No routes should be registered.", 0, registry
@@ -108,52 +103,20 @@ public class RouteRegistryMenuAccessTest {
     }
 
     @Test
-    public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsAutomaticWithoutFileRoutesJson_noMenuRoute() {
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            utils.when(() -> FrontendUtils.readFileRoutesJsonFile(any()))
-                    .thenReturn("");
-            mockInstantiator(MenuAccessControl.PopulateClientMenu.AUTOMATIC);
-            registry.clean();
-            registry.setRoute("home", RouteRegistryTestBase.MyRoute.class,
-                    Collections.emptyList());
-            Assert.assertEquals("One route should be registered.", 1,
-                    registry.getRegisteredRoutes().size());
+    public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsAutomatic_oneMenuRoute() {
+        mockInstantiator(MenuAccessControl.PopulateClientMenu.AUTOMATIC);
+        registry.clean();
+        registry.setRoute("home", MyMenuRoute.class, Collections.emptyList());
+        Assert.assertEquals("One route should be registered.", 1,
+                registry.getRegisteredRoutes().size());
 
-            try (MockedStatic<ApplicationConfiguration> config = Mockito
-                    .mockStatic(ApplicationConfiguration.class,
-                            Mockito.CALLS_REAL_METHODS)) {
-                config.when(() -> ApplicationConfiguration.get(any()))
-                        .thenReturn(mock(ApplicationConfiguration.class));
-                Assert.assertEquals("No routes should be registered.", 0,
-                        registry.getRegisteredAccessibleMenuRoutes(
-                                vaadinRequest, null).size());
-            }
-        }
-    }
-
-    @Test
-    public void getRegisteredAccessibleMenuRoutes_populateClientSideMenuIsAutomaticWithFileRoutesJson_noMenuRoute() {
-        try (MockedStatic<FrontendUtils> utils = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            utils.when(() -> FrontendUtils.readFileRoutesJsonFile(any()))
-                    .thenReturn(FILE_ROUTES_JSON_WITH_LAYOUT);
-            mockInstantiator(MenuAccessControl.PopulateClientMenu.AUTOMATIC);
-            registry.clean();
-            registry.setRoute("home", RouteRegistryTestBase.MyRoute.class,
-                    Collections.emptyList());
-            Assert.assertEquals("One route should be registered.", 1,
-                    registry.getRegisteredRoutes().size());
-
-            try (MockedStatic<ApplicationConfiguration> config = Mockito
-                    .mockStatic(ApplicationConfiguration.class,
-                            Mockito.CALLS_REAL_METHODS)) {
-                config.when(() -> ApplicationConfiguration.get(any()))
-                        .thenReturn(mock(ApplicationConfiguration.class));
-                Assert.assertEquals("No Menu routes should be registered.", 0,
-                        registry.getRegisteredAccessibleMenuRoutes(
-                                vaadinRequest, null).size());
-            }
+        try (MockedStatic<ApplicationConfiguration> config = Mockito.mockStatic(
+                ApplicationConfiguration.class, Mockito.CALLS_REAL_METHODS)) {
+            config.when(() -> ApplicationConfiguration.get(any()))
+                    .thenReturn(mock(ApplicationConfiguration.class));
+            Assert.assertEquals("One route should be registered.", 1, registry
+                    .getRegisteredAccessibleMenuRoutes(vaadinRequest, null)
+                    .size());
         }
     }
 

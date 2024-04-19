@@ -304,10 +304,6 @@ public class FrontendUtils {
      */
     public static final String JS_MODULES = "jsModules";
 
-    public static final String FILE_ROUTES_JSON_NAME = "file-routes.json";
-    public static final String FILE_ROUTES_JSON_PROD_PATH = "/META-INF/VAADIN/"
-            + FILE_ROUTES_JSON_NAME;
-
     /**
      * A parameter informing about the location of the
      * {@link FrontendUtils#TOKEN_FILE}.
@@ -1444,29 +1440,4 @@ public class FrontendUtils {
                 .filter(Objects::nonNull).distinct().toList();
     }
 
-    /**
-     * Get the content of the <code>file-routes.json</code>.
-     *
-     * @param configuration
-     *            the vaadin configuration
-     * @return the content of the file-routes.json file as a string
-     * @throws IOException
-     *             if an I/O error occurs
-     */
-    public static String readFileRoutesJsonFile(
-            AbstractConfiguration configuration) throws IOException {
-        if (configuration.isProductionMode()) {
-            try (InputStream inputStream = FrontendUtils.class
-                    .getResourceAsStream(FILE_ROUTES_JSON_PROD_PATH)) {
-                if (inputStream != null) {
-                    return IOUtils.toString(inputStream, UTF_8);
-                }
-                return "";
-            }
-        }
-        return FileUtils.readFileToString(new File(
-                getFrontendGeneratedFolder(
-                        getProjectFrontendDir(configuration)),
-                FILE_ROUTES_JSON_NAME), UTF_8);
-    }
 }

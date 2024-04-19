@@ -227,9 +227,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                 .getPopulateClientSideMenu();
         if (populateClientSideMenu == MenuAccessControl.PopulateClientMenu.NEVER) {
             return Collections.emptyList();
-        } else if (populateClientSideMenu != MenuAccessControl.PopulateClientMenu.ALWAYS
-                && !isClientMenuUsed(vaadinService)) {
-            return Collections.emptyList();
         }
 
         List<NavigationAccessControl> navigationAccessControls = findListOf(
@@ -273,16 +270,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Stream.ofNullable(objects).flatMap(Collection::stream)
                 .filter(event -> targetType.isAssignableFrom(event.getClass()))
                 .map(targetType::cast).toList();
-    }
-
-    private boolean isClientMenuUsed(VaadinService vaadinService) {
-        try {
-            String fileRoutesJson = FrontendUtils.readFileRoutesJsonFile(
-                    ApplicationConfiguration.get(vaadinService.getContext()));
-            return fileRoutesJson.contains("\"title\":\"Layout\"");
-        } catch (IOException e) {
-            return false;
-        }
     }
 
     private List<RouteData> getRegisteredRoutes(
