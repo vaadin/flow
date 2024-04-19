@@ -1459,7 +1459,8 @@ export class VaadinDevTools extends LitElement {
           class="status-blip"
           style="background: linear-gradient(to right, ${this.getStatusColor(
             this.frontendStatus
-          )} 50%, ${this.getStatusColor(this.javaStatus)} 50%)"
+          )} 50%, ${this.getStatusColor(this.conf.backend === VaadinDevTools.HOTSWAP_AGENT
+            || this.conf.backend === VaadinDevTools.JREBEL ? this.frontendStatus : this.javaStatus)} 50%)"
         ></span>
         ${this.splashMessage ? html`<span class="status-description">${this.splashMessage}</span></div>` : nothing}
       </div>`;
