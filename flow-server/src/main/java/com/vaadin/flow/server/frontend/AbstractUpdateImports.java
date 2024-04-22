@@ -43,8 +43,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
@@ -55,6 +53,7 @@ import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
+import org.slf4j.Logger;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -106,7 +105,8 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private ClassFinder classFinder;
 
-    private final File generatedFlowImports;
+    final File generatedFlowImports;
+    final File generatedFlowWebComponentImports;
     private final File generatedFlowDefinitions;
     private File chunkFolder;
 
@@ -123,6 +123,11 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
+
+        generatedFlowWebComponentImports = new File(
+                FrontendUtils.getFlowGeneratedWebComponentsFolder(
+                        options.getFrontendDirectory()),
+                FrontendUtils.IMPORTS_WEB_COMPONENT_NAME);
         this.chunkFolder = new File(generatedFlowImports.getParentFile(),
                 "chunks");
 
@@ -138,6 +143,8 @@ abstract class AbstractUpdateImports implements Runnable {
 
         Map<File, List<String>> output = process(css, javascript);
         writeOutput(output);
+        writeWebComponentImports(
+                filterWebComponentImports(output.get(generatedFlowImports)));
 
         getLogger().debug("Imports and chunks update took {} ms.",
                 TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
@@ -195,6 +202,30 @@ abstract class AbstractUpdateImports implements Runnable {
         } catch (IOException e) {
             throw new IllegalStateException(
                     "Failed to update the generated Flow imports", e);
+        }
+    }
+
+    // Visible for test
+    List<String> filterWebComponentImports(List<String> lines) {
+        if (lines != null) {
+            // Exclude Lumo global imports for exported web-component
+            return lines.stream()
+                    .filter(line -> !line.matches(
+                            ".*@vaadin/vaadin-lumo-styles/.*-global.js.*"))
+                    .collect(Collectors.toList());
+        }
+        return lines;
+    }
+
+    private void writeWebComponentImports(List<String> lines) {
+        if (lines != null) {
+            try {
+                FileIOUtils.writeIfChanged(generatedFlowWebComponentImports,
+                        lines);
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                        "Failed to update the generated Flow imports", e);
+            }
         }
     }
 
