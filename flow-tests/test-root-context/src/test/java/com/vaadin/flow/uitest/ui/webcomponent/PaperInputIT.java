@@ -37,6 +37,7 @@ public class PaperInputIT extends ChromeBrowserTest {
         String originalValue = input.getAttribute("value");
         input.sendKeys(Keys.END + "bar");
 
+        waitForElementPresent(By.className("update-value"));
         List<WebElement> updateValueElements = findElements(
                 By.className("update-value"));
         WebElement lastUpdateValue = updateValueElements
