@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultI18NProvider implements I18NProvider {
 
     final List<Locale> providedLocales;
+    private final ClassLoader classLoader;
 
     public static final String BUNDLE_FOLDER = "vaadin-i18n";
     public static final String BUNDLE_FILENAME = "translations";
@@ -49,7 +50,23 @@ public class DefaultI18NProvider implements I18NProvider {
      *            locale.
      */
     public DefaultI18NProvider(List<Locale> providedLocales) {
+        this(providedLocales, DefaultI18NProvider.class.getClassLoader());
+    }
+
+    /**
+     * Construct {@link DefaultI18NProvider} for a list of locales that we have
+     * translations for. Enables giving a specific classloader if needed.
+     *
+     * @param providedLocales
+     *            List of locales. The first locale should be the default
+     *            locale.
+     * @param classLoader
+     *            ClassLoader to use for loading translation bundles.
+     */
+    public DefaultI18NProvider(List<Locale> providedLocales,
+            ClassLoader classLoader) {
         this.providedLocales = Collections.unmodifiableList(providedLocales);
+        this.classLoader = classLoader;
     }
 
     @Override
@@ -94,11 +111,10 @@ public class DefaultI18NProvider implements I18NProvider {
 
     ResourceBundle getBundle(Locale locale, ResourceBundle.Control control) {
         if (control == null) {
-            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
-                    I18NUtil.getClassLoader());
+            return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader);
         }
-        return ResourceBundle.getBundle(BUNDLE_PREFIX, locale,
-                I18NUtil.getClassLoader(), control);
+        return ResourceBundle.getBundle(BUNDLE_PREFIX, locale, classLoader,
+                control);
     }
 
     static Logger getLogger() {

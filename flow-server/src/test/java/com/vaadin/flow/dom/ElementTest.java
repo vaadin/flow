@@ -50,6 +50,7 @@ import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
@@ -59,7 +60,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
-
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -380,6 +380,33 @@ public class ElementTest extends AbstractNodeTest {
         e.getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new DomEvent(e, "click", Json.createObject()));
         Assert.assertEquals(1, listenerCalls.get());
+    }
+
+    @Test
+    public void listenerReceivesEventsWithAllowInert() {
+        Element e = ElementFactory.createDiv();
+        // Inert the node, verify events no more passed through
+        InertData inertData = e.getNode().getFeature(InertData.class);
+        inertData.setInertSelf(true);
+        inertData.generateChangesFromEmpty();
+
+        AtomicInteger listenerCalls = new AtomicInteger(0);
+        DomEventListener myListener = event -> listenerCalls.incrementAndGet();
+
+        DomListenerRegistration domListenerRegistration = e
+                .addEventListener("click", myListener);
+        Assert.assertEquals(0, listenerCalls.get());
+        e.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(e, "click", Json.createObject()));
+        // Event should not go through
+        Assert.assertEquals(0, listenerCalls.get());
+
+        // Now should pass inert check and get notified
+        domListenerRegistration.allowInert();
+        e.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(e, "click", Json.createObject()));
+        Assert.assertEquals(1, listenerCalls.get());
+
     }
 
     @Test

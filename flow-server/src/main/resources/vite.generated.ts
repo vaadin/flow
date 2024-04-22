@@ -718,6 +718,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }
     },
     build: {
+      minify: productionMode,
       outDir: buildOutputFolder,
       emptyOutDir: devBundle,
       assetsDir: 'VAADIN/build',
