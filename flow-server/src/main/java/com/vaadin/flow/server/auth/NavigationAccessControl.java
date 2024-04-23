@@ -30,9 +30,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.WrappedSession;
 
@@ -410,5 +413,31 @@ public class NavigationAccessControl implements BeforeEnterListener {
             Class<? extends NavigationAccessChecker> type) {
         return checkerList.stream()
                 .anyMatch(checker -> type.isAssignableFrom(checker.getClass()));
+    }
+
+    /**
+     * Creates a new {@link NavigationContext} instance based on the given route
+     * data and Vaadin service and request.
+     *
+     * @param navigationTarget
+     *            the navigation target class. Not null.
+     * @param path
+     *            the path to the navigation target. Not null.
+     * @param vaadinService
+     *            the Vaadin service. Not null.
+     * @param vaadinRequest
+     *            the Vaadin request.
+     * @return a new navigation context instance.
+     */
+    public NavigationContext createNavigationContext(Class<?> navigationTarget,
+            String path, VaadinService vaadinService,
+            VaadinRequest vaadinRequest) {
+        Objects.requireNonNull(navigationTarget);
+        Objects.requireNonNull(path);
+        Objects.requireNonNull(vaadinService);
+        return new NavigationContext(vaadinService.getRouter(),
+                navigationTarget, new Location(path), RouteParameters.empty(),
+                vaadinRequest.getUserPrincipal(),
+                getRolesChecker(vaadinRequest), false);
     }
 }
