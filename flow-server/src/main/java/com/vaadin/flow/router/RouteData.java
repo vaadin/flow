@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Component;
  */
 public class RouteData extends RouteBaseData<RouteData> {
     private final List<RouteAliasData> routeAliases;
+    private final MenuData menuData;
 
     /**
      * RouteData constructor. This constructor doesn't support parameters. When
@@ -58,6 +59,7 @@ public class RouteData extends RouteBaseData<RouteData> {
 
         Collections.sort(routeAliases);
         this.routeAliases = Collections.unmodifiableList(routeAliases);
+        this.menuData = null;
     }
 
     /**
@@ -78,10 +80,35 @@ public class RouteData extends RouteBaseData<RouteData> {
             String template, Map<String, RouteParameterData> parameters,
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
+        this(parentLayouts, template, parameters, navigationTarget,
+                routeAliases, null);
+    }
+
+    /**
+     * RouteData constructor.
+     *
+     * @param parentLayouts
+     *            route parent layout class chain
+     * @param template
+     *            full route template
+     * @param parameters
+     *            navigation target path parameters
+     * @param navigationTarget
+     *            route navigation target
+     * @param routeAliases
+     *            list of aliases for this route
+     * @param menuData
+     *            menu data for this route
+     */
+    public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
+            String template, Map<String, RouteParameterData> parameters,
+            Class<? extends Component> navigationTarget,
+            List<RouteAliasData> routeAliases, MenuData menuData) {
         super(parentLayouts, template, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
         this.routeAliases = Collections.unmodifiableList(routeAliases);
+        this.menuData = menuData;
     }
 
     /**
@@ -93,12 +120,22 @@ public class RouteData extends RouteBaseData<RouteData> {
         return routeAliases;
     }
 
+    /**
+     * Get the menu data for this route.
+     *
+     * @return the menu data for this route
+     */
+    public MenuData getMenuData() {
+        return menuData;
+    }
+
     @Override
     public String toString() {
         return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
                 + getTemplate() + '\'' + ", parameters=" + getRouteParameters()
                 + ", navigationTarget=" + getNavigationTarget()
-                + ", routeAliases=" + routeAliases + '}';
+                + ", routeAliases=" + routeAliases + ", menuData=" + menuData
+                + "}'";
     }
 
     @Override
@@ -108,7 +145,8 @@ public class RouteData extends RouteBaseData<RouteData> {
             return other.getParentLayouts().equals(this.getParentLayouts())
                     && other.getTemplate().equals(this.getTemplate())
                     && other.getNavigationTarget().equals(getNavigationTarget())
-                    && routeAliases.containsAll(other.routeAliases);
+                    && routeAliases.containsAll(other.routeAliases)
+                    && Objects.equals(menuData, other.getMenuData());
         }
         return false;
     }
@@ -116,6 +154,6 @@ public class RouteData extends RouteBaseData<RouteData> {
     @Override
     public int hashCode() {
         return Objects.hash(getParentLayouts(), getTemplate(),
-                getNavigationTarget(), routeAliases);
+                getNavigationTarget(), routeAliases, menuData);
     }
 }

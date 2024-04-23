@@ -69,7 +69,7 @@ public class SecurityConfig extends VaadinWebSecurity {
                     .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(antMatchers("/private"))
                     .authenticated()
-                .requestMatchers(antMatchers("/", "/public/**", "/another"))
+                .requestMatchers(antMatchers("/", "/public/**", "/another", "/menu-list"))
                     .permitAll()
                 .requestMatchers(antMatchers("/error"))
                     .permitAll()

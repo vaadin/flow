@@ -250,7 +250,7 @@ function popstateHandler(event: PopStateEvent) {
     }));
 }
 
-export default function Flow() {
+function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const {pathname, search, hash} = useLocation();
     const navigate = useNavigate();
@@ -320,6 +320,7 @@ export default function Flow() {
     }, [pathname, search, hash]);
     return <output ref={ref} />;
 }
+Flow.type = 'FlowContainer'; // This is for copilot to recognize this
 
 export const serverSideRoutes = [
     { path: '/*', element: <Flow/> },
@@ -457,3 +458,5 @@ export const createWebComponent = (tag: string, props?: Properties, onload?: () 
     }
     return React.createElement(tag);
 };
+
+export default Flow;

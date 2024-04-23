@@ -24,6 +24,8 @@ import org.springframework.context.annotation.Configuration;
 
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.server.auth.DefaultMenuAccessControl;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.spring.SpringLookupInitializer.SpringApplicationContextInit;
 import com.vaadin.flow.spring.i18n.DefaultI18NProviderFactory;
@@ -78,5 +80,17 @@ public class VaadinApplicationConfiguration {
                     + DefaultI18NProviderFactory.DEFAULT_LOCATION_PATTERN
                     + "}") String locationPattern) {
         return DefaultI18NProviderFactory.create(locationPattern);
+    }
+
+    /**
+     * Creates default {@link MenuAccessControl}. This is created only if
+     * there's no {@link MenuAccessControl} bean declared.
+     *
+     * @return default menu access control
+     */
+    @Bean
+    @ConditionalOnMissingBean(value = MenuAccessControl.class)
+    public MenuAccessControl vaadinMenuAccessControl() {
+        return new DefaultMenuAccessControl();
     }
 }
