@@ -111,8 +111,9 @@ public class FrontendTools {
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
 
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 16;
-    private static final int SUPPORTED_NODE_MINOR_VERSION = 14;
+    private static final int SUPPORTED_NODE_MAJOR_VERSION = 18;
+    private static final int SUPPORTED_NODE_MINOR_VERSION = 12;
+
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 8;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
 
@@ -132,7 +133,7 @@ public class FrontendTools {
     static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
-    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 5;
+    private static final int SUPPORTED_PNPM_MAJOR_VERSION = 7;
     private static final int SUPPORTED_PNPM_MINOR_VERSION = 0;
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
