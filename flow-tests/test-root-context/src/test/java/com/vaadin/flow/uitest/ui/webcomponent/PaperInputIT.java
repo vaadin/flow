@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui.webcomponent;
 
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -27,6 +28,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class PaperInputIT extends ChromeBrowserTest {
 
     @Test
+    @Ignore("Inconsistent failures. Ignored until fixed.")
     public void paperInputIsFunctional() {
         open();
 

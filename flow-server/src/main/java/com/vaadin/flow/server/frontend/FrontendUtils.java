@@ -1439,4 +1439,5 @@ public class FrontendUtils {
                 .flatMap(provider -> provider.getClientRoutes().stream())
                 .filter(Objects::nonNull).distinct().toList();
     }
+
 }
