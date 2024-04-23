@@ -718,6 +718,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }
     },
     build: {
+      minify: productionMode,
       outDir: buildOutputFolder,
       emptyOutDir: devBundle,
       assetsDir: 'VAADIN/build',
@@ -780,10 +781,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
         babel: {
           // We need to use babel to provide the source information for it to be correct
           // (otherwise Babel will slightly rewrite the source file and esbuild generate source info for the modified file)
-          presets: [['@babel/preset-react', { runtime: 'automatic', development: devMode }]],
+          presets: [['@babel/preset-react', { runtime: 'automatic', development: !productionMode }]],
           // React writes the source location for where components are used, this writes for where they are defined
           plugins: [
-              devMode && addFunctionComponentSourceLocationBabel()
+            !productionMode && addFunctionComponentSourceLocationBabel()
           ].filter(Boolean)
         }
       }),
