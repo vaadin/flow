@@ -21,6 +21,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -34,6 +35,7 @@ import org.springframework.security.concurrent.DelegatingSecurityContextExecutor
 @Route(value = "private", layout = MainView.class)
 @RouteAlias(value = "privateAndForbiddenForAll")
 @PageTitle("Private View")
+@Menu(order = 2)
 public class PrivateView extends VerticalLayout {
 
     private BankService bankService;
