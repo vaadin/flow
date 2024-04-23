@@ -95,6 +95,8 @@ abstract class AbstractUpdateImports implements Runnable {
             + " return !ae || ae.blur() || ae.focus() || true;\n" + "}";
     private static final String IMPORT_TEMPLATE = "import '%s';";
     private static final Pattern STARTING_DOT_SLASH = Pattern.compile("^\\./+");
+    private static final Pattern VAADIN_LUMO_GLOBAL_IMPORT = Pattern
+            .compile(".*@vaadin/vaadin-lumo-styles/.*-global.js.*");
     final Options options;
 
     private final UnaryOperator<String> themeToLocalPathConverter;
@@ -210,8 +212,7 @@ abstract class AbstractUpdateImports implements Runnable {
         if (lines != null) {
             // Exclude Lumo global imports for exported web-component
             return lines.stream()
-                    .filter(line -> !line.matches(
-                            ".*@vaadin/vaadin-lumo-styles/.*-global.js.*"))
+                    .filter(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate().negate())
                     .collect(Collectors.toList());
         }
         return lines;
