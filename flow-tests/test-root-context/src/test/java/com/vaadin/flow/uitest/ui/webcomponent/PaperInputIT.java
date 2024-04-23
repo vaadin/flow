@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -32,8 +31,6 @@ public class PaperInputIT extends ChromeBrowserTest {
         open();
 
         WebElement input = findElement(By.tagName("paper-input"));
-        new Actions(getDriver()).click(input).perform();
-
         String originalValue = input.getAttribute("value");
         input.sendKeys(Keys.END + "bar");
 
