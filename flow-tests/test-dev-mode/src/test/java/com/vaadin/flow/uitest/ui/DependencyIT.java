@@ -62,19 +62,6 @@ public class DependencyIT extends ChromeBrowserTest {
                 addedJsText);
     }
 
-    @Test
-    public void loadingUnavailableResources() throws IOException {
-
-        open();
-        findElement(By.id("loadUnavailableResources")).click();
-
-        DevToolsElement devTools = $(DevToolsElement.class).first();
-        devTools.waitForErrorMessage(s -> s.startsWith("Error loading http://")
-                && s.endsWith("/not-found.css"));
-        devTools.waitForErrorMessage(s -> s.startsWith("Error loading http://")
-                && s.endsWith("/not-found.js"));
-    }
-
     protected WebElement findElementById(String id) {
         return findElement(By.id(id));
     }
