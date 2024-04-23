@@ -150,18 +150,21 @@ public class FrontendToolsTest {
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(false);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, () -> tools.getNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version updated even if it should not have been touched.",
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, updatedNodeVersion.getFullVersion());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                updatedNodeVersion.getFullVersion());
     }
 
     @Test
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, () -> tools.getNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version was not auto updated.",
@@ -233,18 +236,21 @@ public class FrontendToolsTest {
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(false);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, () -> tools.forceAlternativeNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version updated even if it should not have been touched.",
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, updatedNodeVersion.getFullVersion());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                updatedNodeVersion.getFullVersion());
     }
 
     @Test
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED, () -> tools.forceAlternativeNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version was not auto updated.",
