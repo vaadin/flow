@@ -12,6 +12,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <jetty.version>12.0.8</jetty.version>
     </properties>
 
     <dependencyManagement>
