@@ -50,7 +50,7 @@ public class ComponentTracker {
 
     private static Boolean disabled = null;
     private static String[] prefixesToSkip = new String[] { "com.vaadin.flow.",
-            "java.", "jdk.", "org.springframework.beans.", };
+            "java.", "jakarta.", "jdk.", "org.springframework.beans.", };
 
     /**
      * Represents a location in the source code.
