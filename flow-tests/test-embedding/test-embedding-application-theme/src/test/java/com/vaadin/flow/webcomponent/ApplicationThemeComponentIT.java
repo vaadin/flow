@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.component.html.testbench.H1Element;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -68,9 +68,12 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
 
         Assert.assertEquals(
-                "Embedded style should not match external component",
-                "rgba(0, 0, 255, 1)",
-                $(SpanElement.class).id("overflow").getCssValue("color"));
+                "Document style should be applied outside embedded component",
+                "rgba(0, 0, 255, 1)", $("*").id("global").getCssValue("color"));
+        Assert.assertEquals(
+                "Theme style should not be applied outside embedded component",
+                "rgba(0, 0, 0, 1)", $("*").id("internal").getCssValue("color"));
+
         getDriver().get(getRootURL() + "/themes/embedded-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
@@ -217,5 +220,24 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 "Project contains 2 css injections to document and both should be hashed",
                 2l, getCommandExecutor().executeScript(
                         "return window.Vaadin.theme.injectedGlobalCss.length"));
+    }
+
+    @Test
+    public void lumoImports_doNotLeakEmbeddingPage() {
+        open();
+        checkLogsForErrors();
+
+        // Ensure embedded components are loaded before testing embedding page
+        validateEmbeddedComponent($("themed-component").id("first"), "first");
+        validateEmbeddedComponent($("themed-component").id("second"), "second");
+
+        final H1Element element = $(H1Element.class).waitForFirst();
+        Assert.assertFalse(
+                "Lumo styles (typography) should not have been applied to elements in embedding page",
+                element.getCssValue("font-family").contains("Roboto"));
+        Assert.assertEquals(
+                "Lumo styles (colors) should not have been applied to elements in embedding page",
+                "rgba(0, 0, 0, 1)", element.getCssValue("color"));
+
     }
 }

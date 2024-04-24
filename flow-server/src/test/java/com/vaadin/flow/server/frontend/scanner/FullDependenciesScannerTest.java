@@ -305,7 +305,7 @@ public class FullDependenciesScannerTest {
                 }, false, null, false);
 
         List<String> modules = scanner.getModules();
-        Assert.assertEquals(25, modules.size());
+        Assert.assertEquals(26, modules.size());
         assertJsModules(modules);
 
         // Theme modules should be included now
