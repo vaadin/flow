@@ -338,7 +338,7 @@ public class FullDependenciesScannerTest {
                     return null;
                 }, null);
 
-        DepsTests.assertImportCount(26, scanner.getModules());
+        DepsTests.assertImportCount(28, scanner.getModules());
         List<String> modules = DepsTests.merge(scanner.getModules());
         assertJsModules(modules);
 
