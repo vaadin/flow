@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow;
+package com.vaadin.notreallyflow;
 
 import java.io.File;
 import java.nio.file.Path;

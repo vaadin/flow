@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow;
+package com.vaadin.notreallyflow;
 
 import java.lang.reflect.Field;
 import java.util.Map;
