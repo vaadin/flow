@@ -49,9 +49,8 @@ public class ComponentTracker {
             .synchronizedMap(new WeakHashMap<>());
 
     private static Boolean disabled = null;
-    private static String[] prefixesToSkip = new String[] {
-            "com.vaadin.flow.", "java.", "jdk.",
-            "org.springframework.beans.", };
+    private static String[] prefixesToSkip = new String[] { "com.vaadin.flow.",
+            "java.", "jdk.", "org.springframework.beans.", };
 
     /**
      * Represents a location in the source code.
