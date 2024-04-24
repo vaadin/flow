@@ -1,7 +1,6 @@
 name: Flow Validation
 on:
   push:
-    branches: [main, '24.2', '24.1', '24.0', '23.3', '9.1']
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]
@@ -177,9 +176,6 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: browser-actions/setup-chrome@latest
-        with:
-          chrome-version: stable
       - uses: actions/download-artifact@v4
         if: ${{ github.run_attempt == 1 }}
         with:
