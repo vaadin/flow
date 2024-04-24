@@ -19,12 +19,14 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class BrowserWindowResizeIT extends ChromeBrowserTest {
 
     @Test
-    public void listenResizeEvent() {
+    public void listenResizeEvent() throws InterruptedException {
         open();
 
         Dimension currentSize = getDriver().manage().window().getSize();
-
         int newWidth = currentSize.getWidth() - 10;
+
+        Thread.sleep(500);
+
         getDriver().manage().window()
                 .setSize(new Dimension(newWidth, currentSize.getHeight()));
 
@@ -35,6 +37,7 @@ public class BrowserWindowResizeIT extends ChromeBrowserTest {
         newWidth -= 30;
         getDriver().manage().window()
                 .setSize(new Dimension(newWidth, currentSize.getHeight()));
+        Thread.sleep(500);
 
         Assert.assertEquals(String.valueOf(newWidth), info.getText());
     }
