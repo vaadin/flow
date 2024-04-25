@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -93,6 +94,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         private final ClassFinder finder;
         private final FrontendDependenciesScanner scanner;
         private List<String> resultingLines;
+        private List<String> webcomponentImports;
 
         UpdateImports(ClassFinder classFinder,
                 FrontendDependenciesScanner scanner, File npmDirectory,
@@ -107,6 +109,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         @Override
         protected void writeImportLines(List<String> lines) {
             resultingLines = lines;
+            webcomponentImports = filterWebComponentImports(lines);
         }
 
         @Override
@@ -401,7 +404,32 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 "@vaadin/vaadin-lumo-styles/sizing.js",
                 "@vaadin/vaadin-lumo-styles/spacing.js",
                 "@vaadin/vaadin-lumo-styles/style.js",
-                "@vaadin/vaadin-lumo-styles/icons.js");
+                "@vaadin/vaadin-lumo-styles/icons.js", "./lumo-includes.ts");
+    }
+
+    @Test
+    public void generate_embeddedImports_doNotContainLumoGlobalThemeFiles()
+            throws IOException {
+        updater.run();
+
+        Predicate<String> containsLumoGlobalImports = line -> line
+                .contains("lumo-includes.ts");
+
+        List<String> flowImports = new ArrayList<>(updater.resultingLines);
+        assertTrue("Flow import should contain Lumo global import",
+                flowImports.stream().anyMatch(containsLumoGlobalImports));
+
+        assertTrue(
+                "Import for web-components should not contain Lumo global imports",
+                updater.webcomponentImports.stream()
+                        .noneMatch(containsLumoGlobalImports));
+
+        // Check that imports other than lumo globals are the same
+        flowImports.removeAll(updater.webcomponentImports);
+        assertTrue(
+                "Flow and web-component imports must be the same, except for lumo globals",
+                flowImports.stream().allMatch(containsLumoGlobalImports));
+
     }
 
     // flow #6408

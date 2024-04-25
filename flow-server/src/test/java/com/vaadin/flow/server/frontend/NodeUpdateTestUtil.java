@@ -78,7 +78,7 @@ public class NodeUpdateTestUtil {
                 "@vaadin/vaadin-lumo-styles/style.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
                 "@vaadin/vaadin-lumo-styles/color.js",
-                "@vaadin/vaadin-lumo-styles/sizing.js",
+                "@vaadin/vaadin-lumo-styles/sizing.js", "./lumo-includes.ts",
                 "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
                 "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
                 "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
