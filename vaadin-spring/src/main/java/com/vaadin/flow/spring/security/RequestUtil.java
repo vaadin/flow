@@ -16,6 +16,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
@@ -49,6 +50,9 @@ public class RequestUtil {
 
     @Autowired(required = false)
     private EndpointRequestUtil endpointRequestUtil;
+
+    @Autowired(required = false)
+    private FileRouterRequestUtil fileRouterRequestUtil;
 
     @Autowired
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
@@ -95,12 +99,28 @@ public class RequestUtil {
      *
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is targeting an anonymous enpoint,
+     * @return {@code true} if the request is targeting an anonymous endpoint,
      *         {@code false} otherwise
      */
     public boolean isAnonymousEndpoint(HttpServletRequest request) {
         if (endpointRequestUtil != null) {
             return endpointRequestUtil.isAnonymousEndpoint(request);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the request targets a Hilla view that is allowed according to
+     * its configuration and the current user.
+     *
+     * @param request
+     *            the HTTP request to check
+     * @return {@code true} if the request corresponds to an accessible Hilla
+     *         view, {@code false} otherwise
+     */
+    public boolean isAllowedHillaView(HttpServletRequest request) {
+        if (fileRouterRequestUtil != null) {
+            return fileRouterRequestUtil.isRouteAllowed(request);
         }
         return false;
     }
