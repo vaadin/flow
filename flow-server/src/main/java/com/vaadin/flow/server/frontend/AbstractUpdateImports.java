@@ -43,6 +43,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
@@ -53,7 +55,6 @@ import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
-import org.slf4j.Logger;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -112,8 +113,16 @@ abstract class AbstractUpdateImports implements Runnable {
     private final File generatedFlowDefinitions;
     private File chunkFolder;
 
+    private final GeneratedFilesSupport generatedFilesSupport;
+
     AbstractUpdateImports(Options options,
             FrontendDependenciesScanner scanner) {
+        this(options, scanner, new GeneratedFilesSupport());
+    }
+
+    AbstractUpdateImports(Options options, FrontendDependenciesScanner scanner,
+            GeneratedFilesSupport generatedFilesSupport) {
+        this.generatedFilesSupport = generatedFilesSupport;
         this.options = options;
         this.scanner = scanner;
         this.classFinder = options.getClassFinder();
@@ -192,7 +201,8 @@ abstract class AbstractUpdateImports implements Runnable {
     protected void writeOutput(Map<File, List<String>> outputFiles) {
         try {
             for (Entry<File, List<String>> output : outputFiles.entrySet()) {
-                FileIOUtils.writeIfChanged(output.getKey(), output.getValue());
+                generatedFilesSupport.writeIfChanged(output.getKey(),
+                        output.getValue());
             }
             if (chunkFolder.exists() && chunkFolder.isDirectory()) {
                 for (File existingChunk : chunkFolder.listFiles()) {
@@ -221,8 +231,8 @@ abstract class AbstractUpdateImports implements Runnable {
     private void writeWebComponentImports(List<String> lines) {
         if (lines != null) {
             try {
-                FileIOUtils.writeIfChanged(generatedFlowWebComponentImports,
-                        lines);
+                generatedFilesSupport.writeIfChanged(
+                        generatedFlowWebComponentImports, lines);
             } catch (IOException e) {
                 throw new IllegalStateException(
                         "Failed to update the generated Flow imports", e);

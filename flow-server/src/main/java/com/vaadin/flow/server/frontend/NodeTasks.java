@@ -86,7 +86,8 @@ public class NodeTasks implements FallibleCommand {
             TaskCopyTemplateFiles.class,
             TaskRunDevBundleBuild.class,
             TaskPrepareProdBundle.class,
-            TaskCleanFrontendFiles.class
+            TaskCleanFrontendFiles.class,
+            TaskRemoveOldFrontendGeneratedFiles.class
         ));
     // @formatter:on
 
@@ -273,7 +274,10 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isCopyTemplates()) {
             commands.add(new TaskCopyTemplateFiles(classFinder, options));
+        }
 
+        if (options.isCleanOldGeneratedFiles()) {
+            commands.add(new TaskRemoveOldFrontendGeneratedFiles(options));
         }
     }
 
@@ -334,10 +338,10 @@ public class NodeTasks implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         getLock();
         try {
-
             sortCommands(commands);
-
+            GeneratedFilesSupport generatedFilesSupport = new GeneratedFilesSupport();
             for (FallibleCommand command : commands) {
+                command.setGeneratedFileSupport(generatedFilesSupport);
                 command.execute();
             }
         } finally {

@@ -50,7 +50,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @since 3.0
  */
-public class TaskGenerateReactFiles implements FallibleCommand {
+public class TaskGenerateReactFiles
+        extends AbstractFileGeneratorFallibleCommand {
 
     public static final String CLASS_PACKAGE = "com/vaadin/flow/server/frontend/%s";
     private Options options;
@@ -255,7 +256,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             throws ExecutionFailedException {
 
         try {
-            FileIOUtils.writeIfChanged(target, content);
+            writeIfChanged(target, content);
         } catch (IOException exception) {
             String errorMessage = String.format("Error writing '%s'", target);
             throw new ExecutionFailedException(errorMessage, exception);
