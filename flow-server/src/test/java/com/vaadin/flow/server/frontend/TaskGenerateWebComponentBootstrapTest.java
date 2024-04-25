@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,8 +25,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_WEB_COMPONENT_NAME;
 
 public class TaskGenerateWebComponentBootstrapTest {
     @Rule
@@ -42,7 +42,8 @@ public class TaskGenerateWebComponentBootstrapTest {
         frontendDirectory = temporaryFolder.newFolder(DEFAULT_FRONTEND_DIR);
         File generatedFolder = temporaryFolder.newFolder(TARGET, FRONTEND);
         generatedImports = new File(generatedFolder,
-                "flow-generated-imports.js");
+                IMPORTS_WEB_COMPONENT_NAME);
+        generatedImports.getParentFile().mkdirs();
         generatedImports.createNewFile();
         taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(
                 frontendDirectory, generatedImports);
@@ -54,7 +55,7 @@ public class TaskGenerateWebComponentBootstrapTest {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
-                "import '../../target/frontend/flow-generated-imports.js'"));
+                "import '../../target/frontend/generated-flow-webcomponent-imports.js'"));
     }
 
     @Test
