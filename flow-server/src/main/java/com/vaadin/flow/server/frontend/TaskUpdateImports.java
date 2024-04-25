@@ -53,6 +53,7 @@ import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_WEB_COMPONENT_NAME;
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
@@ -86,6 +87,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
         private final File generatedFlowImports;
         private final File generatedFlowDefinitions;
+        final File generatedFlowWebComponentImports;
         private final File fallBackImports;
         private final ClassFinder finder;
 
@@ -99,6 +101,8 @@ public class TaskUpdateImports extends NodeUpdater {
             generatedFlowImports = new File(generatedDirectory, IMPORTS_NAME);
             generatedFlowDefinitions = new File(generatedDirectory,
                     IMPORTS_D_TS_NAME);
+            generatedFlowWebComponentImports = new File(generatedDirectory,
+                    IMPORTS_WEB_COMPONENT_NAME);
             finder = classFinder;
             this.fallBackImports = fallBackImports;
         }
@@ -137,6 +141,8 @@ public class TaskUpdateImports extends NodeUpdater {
                 updateImportsFile(generatedFlowImports, lines);
                 updateImportsFile(generatedFlowDefinitions,
                         getDefinitionLines());
+                updateImportsFile(generatedFlowWebComponentImports,
+                        filterWebComponentImports(lines));
             } catch (IOException e) {
                 throw new IllegalStateException(String.format(
                         "Failed to update the Flow imports file '%s'",
@@ -202,6 +208,7 @@ public class TaskUpdateImports extends NodeUpdater {
         protected Collection<String> getGeneratedModules() {
             final Set<String> exclude = new HashSet<>(
                     Arrays.asList(generatedFlowImports.getName(),
+                            generatedFlowWebComponentImports.getName(),
                             FrontendUtils.FALLBACK_IMPORTS_NAME));
             return NodeUpdater.getGeneratedModules(generatedFolder, exclude);
         }

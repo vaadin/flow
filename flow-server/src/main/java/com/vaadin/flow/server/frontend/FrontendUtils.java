@@ -35,7 +35,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -188,6 +187,12 @@ public class FrontendUtils {
      * file.
      */
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
+
+    /**
+     * Name of the file that contains application imports, javascript, theme and
+     * style annotations used when embedding Flow as web-component.
+     */
+    public static final String IMPORTS_WEB_COMPONENT_NAME = "generated-flow-webcomponent-imports.js";
 
     public static final String THEME_IMPORTS_D_TS_NAME = "theme.d.ts";
     public static final String THEME_IMPORTS_NAME = "theme.js";

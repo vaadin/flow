@@ -139,6 +139,17 @@ abstract class AbstractUpdateImports implements Runnable {
 
     protected abstract void writeImportLines(List<String> lines);
 
+    // Visible for test
+    List<String> filterWebComponentImports(List<String> lines) {
+        if (lines != null) {
+            // Exclude Lumo global imports for exported web-component
+            return lines.stream()
+                    .filter(line -> !line.contains("/lumo-includes.ts"))
+                    .collect(Collectors.toList());
+        }
+        return lines;
+    }
+
     /**
      * Get all ES6 modules needed for run the application. Modules that are
      * theme dependencies are guaranteed to precede other modules in the result.
