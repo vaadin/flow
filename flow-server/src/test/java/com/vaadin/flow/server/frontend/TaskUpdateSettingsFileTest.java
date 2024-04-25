@@ -107,7 +107,8 @@ public class TaskUpdateSettingsFileTest {
                     "Expected '" + key + "' to have an absolute path matching "
                             + temporaryFolder.getRoot().getPath() + ", but was "
                             + path,
-                    path.startsWith(temporaryFolder.getRoot().getPath()));
+                    Paths.get(path)
+                            .startsWith(temporaryFolder.getRoot().getPath()));
         });
     }
 
