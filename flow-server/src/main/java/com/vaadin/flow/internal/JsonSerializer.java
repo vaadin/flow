@@ -85,14 +85,23 @@ public final class JsonSerializer {
 
         try {
             JsonObject json = Json.createObject();
-            BeanInfo info = Introspector.getBeanInfo(bean.getClass());
-            for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
-                if ("class".equals(pd.getName())) {
-                    continue;
+            var type = bean.getClass();
+
+            if (type.isRecord()) {
+                for (var rc : type.getRecordComponents()) {
+                    json.put(rc.getName(),
+                            toJson(rc.getAccessor().invoke(bean)));
                 }
-                Method reader = pd.getReadMethod();
-                if (reader != null) {
-                    json.put(pd.getName(), toJson(reader.invoke(bean)));
+            } else {
+                BeanInfo info = Introspector.getBeanInfo(type);
+                for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
+                    if ("class".equals(pd.getName())) {
+                        continue;
+                    }
+                    Method reader = pd.getReadMethod();
+                    if (reader != null) {
+                        json.put(pd.getName(), toJson(reader.invoke(bean)));
+                    }
                 }
             }
 

@@ -45,6 +45,9 @@ public class JsonSerializerTest {
         SOME_VALUE_1, SOME_VALUE_2;
     }
 
+    public record SomeRecord(String name, int age) {
+    }
+
     public static class ObjectWithSimpleTypes {
 
         private String stringProperty;
@@ -197,6 +200,7 @@ public class JsonSerializerTest {
 
         private ObjectWithSimpleTypes object1;
         private ObjectWithSimpleTypes object2;
+        private SomeRecord record;
 
         public ObjectWithSimpleTypes getObject1() {
             return object1;
@@ -212,6 +216,14 @@ public class JsonSerializerTest {
 
         public void setObject2(ObjectWithSimpleTypes object2) {
             this.object2 = object2;
+        }
+
+        public SomeRecord getRecord() {
+            return record;
+        }
+
+        public void setRecord(SomeRecord record) {
+            this.record = record;
         }
     }
 
@@ -465,6 +477,8 @@ public class JsonSerializerTest {
         Assert.assertTrue(jsonObject.get("object1") instanceof JsonNull);
         Assert.assertTrue(jsonObject.hasKey("object2"));
         Assert.assertTrue(jsonObject.get("object2") instanceof JsonNull);
+        Assert.assertTrue(jsonObject.hasKey("record"));
+        Assert.assertTrue(jsonObject.get("record") instanceof JsonNull);
 
         bean = JsonSerializer.toObject(ObjectWithOtherObjects.class, json);
 
@@ -472,6 +486,7 @@ public class JsonSerializerTest {
                 bean);
         Assert.assertNull(bean.getObject1());
         Assert.assertNull(bean.getObject2());
+        Assert.assertNull(bean.getRecord());
     }
 
     @Test
@@ -514,6 +529,9 @@ public class JsonSerializerTest {
         innerBean.setCharacterProperty('D');
         innerBean.setEnumProperty(SomeEnum.SOME_VALUE_1);
         bean.setObject2(innerBean);
+
+        SomeRecord record = new SomeRecord("someone", 42);
+        bean.setRecord(record);
 
         JsonValue json = JsonSerializer.toJson(bean);
 
@@ -572,6 +590,11 @@ public class JsonSerializerTest {
                 object.getString("characterProperty").charAt(0));
         Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(),
                 object.getString("enumProperty"));
+
+        object = ((JsonObject) json).getObject("record");
+        Assert.assertNotNull("The record should be not be null", object);
+        Assert.assertEquals("someone", object.getString("name"));
+        Assert.assertEquals(42, object.getNumber("age"), PRECISION);
     }
 
     @Test
