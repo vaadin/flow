@@ -271,4 +271,12 @@ public class InitParameters implements Serializable {
      * Configuration name for cleaning or leaving frontend files in build.
      */
     public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";
+
+    /**
+     * Configuration name for how long since last browser open before we open a
+     * new tab for the application in development mode.
+     *
+     * Time is given in minutes.
+     */
+    public static final String LAUNCH_BROWSER_DELAY = "launch-browser.delay";
 }

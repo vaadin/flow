@@ -1,11 +1,18 @@
 package com.vaadin.base.devserver;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.open.Open;
+
+import static com.vaadin.flow.server.InitParameters.LAUNCH_BROWSER_DELAY;
 
 /**
  * Util for launching a browser instance.
@@ -52,11 +59,46 @@ public class BrowserLauncher {
         return applicationConfiguration.isProductionMode();
     }
 
-    private static boolean isLaunched() {
+    private boolean isLaunched() {
+        File launchFile = getLaunchFile();
+        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration
+                .get(context);
+        int lastModifiedDelay = Integer.parseInt(applicationConfiguration
+                .getStringProperty(LAUNCH_BROWSER_DELAY, "30"));
+        // If launch file exists and is younger than time update file content
+        // and modified stamp
+        if (launchFile.exists()
+                && TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()
+                        - launchFile.lastModified()) < lastModifiedDelay) {
+            try {
+                Files.writeString(launchFile.toPath(),
+                        "" + System.currentTimeMillis());
+            } catch (IOException e) {
+                LoggerFactory.getLogger(BrowserLauncher.class)
+                        .debug("Failed to write browser launched file.", e);
+            }
+            return true;
+        }
         return LAUNCHED_VALUE.equals(System.getProperty(LAUNCH_TRACKER));
     }
 
-    private static void setLaunched() {
+    private File getLaunchFile() {
+        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration
+                .get(context);
+        File buildFolder = new File(applicationConfiguration.getProjectFolder(),
+                applicationConfiguration.getBuildFolder());
+        return new File(buildFolder, "tab.launch");
+    }
+
+    private void setLaunched() {
+        // write launch file and update modified timestamp.
+        try {
+            Files.writeString(getLaunchFile().toPath(),
+                    "" + System.currentTimeMillis());
+        } catch (IOException e) {
+            LoggerFactory.getLogger(BrowserLauncher.class)
+                    .debug("Failed to write browser launched file.", e);
+        }
         System.setProperty(LAUNCH_TRACKER, LAUNCHED_VALUE);
     }
 
