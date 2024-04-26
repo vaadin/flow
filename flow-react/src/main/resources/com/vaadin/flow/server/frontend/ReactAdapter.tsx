@@ -185,10 +185,10 @@ export abstract class ReactAdapterElement extends HTMLElement {
     protected useCustomEvent<T = undefined>(type: string, options: CustomEventInit<T> = {}): DispatchEvent<T> {
         if (!this.#customEvents.has(type)) {
             const dispatch = ((detail?: T) => {
-                const eventInitDict = "detail" in options ? {
+                const eventInitDict =  detail === undefined ? options : {
                     ...options,
                     detail
-                } : options;
+                };
                 const event = new CustomEvent(type, eventInitDict);
                 return this.dispatchEvent(event);
             }) as DispatchEvent<T>;
