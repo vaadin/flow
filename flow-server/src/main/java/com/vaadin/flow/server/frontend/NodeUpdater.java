@@ -202,8 +202,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         return FileUtils
                 .listFiles(webComponentsFolder, new String[] { "js" }, true)
                 .stream()
-                .filter(file -> !FrontendUtils.IMPORTS_WEB_COMPONENT_NAME
-                        .equals(file.getName()))
                 .map(file -> unixPath
                         .apply(baseDir.relativize(file.toURI()).getPath()))
                 .collect(Collectors.toSet());
