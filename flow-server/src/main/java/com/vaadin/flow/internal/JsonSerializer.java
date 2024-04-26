@@ -85,10 +85,10 @@ public final class JsonSerializer {
 
         try {
             JsonObject json = Json.createObject();
-            var type = bean.getClass();
+            Class<?> type = bean.getClass();
 
             if (type.isRecord()) {
-                for (var rc : type.getRecordComponents()) {
+                for (RecordComponent rc : type.getRecordComponents()) {
                     json.put(rc.getName(),
                             toJson(rc.getAccessor().invoke(bean)));
                 }
