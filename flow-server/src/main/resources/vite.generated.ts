@@ -609,7 +609,6 @@ function themePlugin(opts): PluginOption {
       if (!id.startsWith(settings.themeFolder)) {
         return;
       }
-
       for (const location of [themeResourceFolder, frontendFolder]) {
         const result = await this.resolve(path.resolve(location, id));
         if (result) {
@@ -626,8 +625,9 @@ function themePlugin(opts): PluginOption {
       ) {
         return;
       }
-      const [themeName] = bareId.substring(themeFolder.length + 1).split('/');
-      return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(themeFolder, themeName), console, opts);
+      const resourceThemeFolder = bareId.startsWith(themeFolder) ? themeFolder : themeOptions.themeResourceFolder;
+      const [themeName] =  bareId.substring(resourceThemeFolder.length + 1).split('/');
+      return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(resourceThemeFolder, themeName), console, opts);
     }
   };
 }
