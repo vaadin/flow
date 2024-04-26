@@ -17,14 +17,15 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.ExecutionFailedException;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 
@@ -55,9 +56,8 @@ public class TaskGenerateWebComponentBootstrapTest {
             throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
-        Assert.assertTrue(content
-                .contains("import 'Frontend/generated/flow/web-components/"
-                        + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "'"));
+        Assert.assertTrue(content.contains("import 'Frontend/generated/flow/"
+                + FrontendUtils.IMPORTS_NAME + "'"));
     }
 
     @Test
