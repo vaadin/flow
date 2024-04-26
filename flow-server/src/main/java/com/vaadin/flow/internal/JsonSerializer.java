@@ -21,6 +21,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +33,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.component.JsonSerializable;
-
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonNull;
@@ -201,6 +201,10 @@ public final class JsonSerializer {
             return toCollection(type, genericType, json);
         }
 
+        if (type.isRecord()) {
+            return toRecord(type, json);
+        }
+
         T instance;
         try {
             instance = type.newInstance();
@@ -251,6 +255,28 @@ public final class JsonSerializer {
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     "Could not deserialize object of type " + type
+                            + " from JsonValue",
+                    e);
+        }
+    }
+
+    private static <T> T toRecord(Class<T> type, JsonValue json) {
+        try {
+            RecordComponent[] components = type.getRecordComponents();
+            Class<?>[] componentTypes = new Class<?>[components.length];
+            Object[] values = new Object[components.length];
+
+            for (int i = 0; i < components.length; i++) {
+                componentTypes[i] = components[i].getType();
+                values[i] = toObject(componentTypes[i],
+                        ((JsonObject) json).get(components[i].getName()));
+            }
+
+            return type.getDeclaredConstructor(componentTypes)
+                    .newInstance(values);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Could not deserialize record of type " + type
                             + " from JsonValue",
                     e);
         }
