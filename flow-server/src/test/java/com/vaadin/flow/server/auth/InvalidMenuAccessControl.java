@@ -1,10 +1,3 @@
-package com.vaadin.flow.test.scalability;
-
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.router.Route;
-
 /*
  * Copyright 2000-2024 Vaadin Ltd.
  *
@@ -20,13 +13,12 @@ import com.vaadin.flow.router.Route;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-@Route("helloworld")
-public class HelloWorldUI extends Div {
 
-    public HelloWorldUI() {
-        NativeButton b = new NativeButton("Hello", e -> {
-            add(new Text("Hello!"));
-        });
-        add(b);
-    }
+package com.vaadin.flow.server.auth;
+
+/**
+ * Invalid type of and MenuAccessControl, not implementing the required
+ * interface.
+ */
+public class InvalidMenuAccessControl {
 }

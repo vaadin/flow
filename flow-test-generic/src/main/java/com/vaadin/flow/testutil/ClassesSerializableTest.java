@@ -219,6 +219,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractUpdateImports",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractFileGeneratorFallibleCommand",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.GeneratedFilesSupport",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.Task.*",

@@ -8,6 +8,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -17,6 +18,7 @@ import com.vaadin.flow.router.RouterLink;
 @Route(value = "", layout = MainView.class)
 @RouteAlias("home")
 @PageTitle("Public View")
+@Menu(order = 1)
 public class PublicView extends FlexLayout {
 
     public static final String BACKGROUND_NAVIGATION_ID = "backgroundNavi";
