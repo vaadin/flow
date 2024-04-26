@@ -55,11 +55,13 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(TaskRemoveOldFrontendGeneratedFiles.class);
     private final Path frontendGeneratedFolder;
+    private final File frontendFolder;
 
     private final Set<Path> existingFiles = new HashSet<>();
     private GeneratedFilesSupport generatedFilesSupport;
 
     public TaskRemoveOldFrontendGeneratedFiles(Options options) {
+        frontendFolder = options.getFrontendDirectory();
         frontendGeneratedFolder = options.getFrontendGeneratedFolder().toPath();
         if (frontendGeneratedFolder.toFile().exists()) {
             try (Stream<Path> files = Files.walk(frontendGeneratedFolder)) {
@@ -123,7 +125,6 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
     }
 
     private Predicate<Path> isKnownUnhandledFile() {
-        File frontendFolder = frontendGeneratedFolder.getParent().toFile();
         Path flowGeneratedImports = FrontendUtils
                 .getFlowGeneratedImports(frontendFolder).toPath()
                 .toAbsolutePath();
