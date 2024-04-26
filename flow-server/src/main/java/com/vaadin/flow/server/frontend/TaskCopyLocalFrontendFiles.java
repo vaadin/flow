@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,8 @@ import org.slf4j.LoggerFactory;
  *
  * @since 2.0
  */
-public class TaskCopyLocalFrontendFiles implements FallibleCommand {
+public class TaskCopyLocalFrontendFiles
+        extends AbstractFileGeneratorFallibleCommand {
 
     private final Options options;
 
@@ -62,7 +64,12 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         if (localResourcesFolder != null
                 && localResourcesFolder.isDirectory()) {
             log().info("Copying project local frontend resources.");
-            copyLocalResources(localResourcesFolder, target);
+            Set<String> files = copyLocalResources(localResourcesFolder,
+                    target);
+            track(files.stream()
+                    .map(path -> target.toPath().resolve(path).toFile())
+                    .toList());
+
             log().info("Copying frontend directory completed.");
         } else {
             log().debug("Found no local frontend resources for the project");

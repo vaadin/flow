@@ -58,14 +58,6 @@ public @interface Menu {
     long order() default Long.MIN_VALUE;
 
     /**
-     * Set to true to explicitly exclude a view from the automatically populated
-     * menu.
-     *
-     * @return true to exclude the view from the menu, false otherwise
-     */
-    boolean exclude() default false;
-
-    /**
      * Icon to use in the menu. Value can go inside a {@code <vaadin-icon>}
      * element's {@code icon} attribute which accepts icon group and name like
      * 'vaadin:file'. Or it can go to a {@code <vaadin-icon>} element's

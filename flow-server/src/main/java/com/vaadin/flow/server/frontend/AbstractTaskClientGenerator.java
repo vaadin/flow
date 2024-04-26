@@ -30,7 +30,8 @@ import com.vaadin.flow.server.ExecutionFailedException;
  *
  * @since 3.0
  */
-public abstract class AbstractTaskClientGenerator implements FallibleCommand {
+public abstract class AbstractTaskClientGenerator
+        extends AbstractFileGeneratorFallibleCommand {
 
     /**
      * Get file content for writing to the generated file.
@@ -62,7 +63,7 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         }
         File generatedFile = getGeneratedFile();
         try {
-            FileIOUtils.writeIfChanged(generatedFile, getFileContent());
+            writeIfChanged(generatedFile, getFileContent());
         } catch (IOException exception) {
             String errorMessage = String.format("Error writing '%s'",
                     generatedFile);
