@@ -55,8 +55,9 @@ public class TaskGenerateWebComponentBootstrapTest {
             throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import 'Frontend/generated/flow/"
-                + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "'"));
+        Assert.assertTrue(content
+                .contains("import 'Frontend/generated/flow/web-components/"
+                        + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "'"));
     }
 
     @Test

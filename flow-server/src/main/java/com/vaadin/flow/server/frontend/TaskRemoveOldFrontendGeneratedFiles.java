@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.FileVisitResult;
@@ -55,13 +54,11 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(TaskRemoveOldFrontendGeneratedFiles.class);
     private final Path frontendGeneratedFolder;
-    private final File frontendFolder;
 
     private final Set<Path> existingFiles = new HashSet<>();
     private GeneratedFilesSupport generatedFilesSupport;
 
     public TaskRemoveOldFrontendGeneratedFiles(Options options) {
-        frontendFolder = options.getFrontendDirectory();
         frontendGeneratedFolder = options.getFrontendGeneratedFolder().toPath();
         if (frontendGeneratedFolder.toFile().exists()) {
             try (Stream<Path> files = Files.walk(frontendGeneratedFolder)) {
@@ -126,13 +123,10 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
 
     private Predicate<Path> isKnownUnhandledFile() {
         Path flowGeneratedImports = FrontendUtils
-                .getFlowGeneratedImports(frontendFolder).toPath()
-                .toAbsolutePath();
-        Path flowGeneratedWebComponentImports = FrontendUtils
-                .getFlowGeneratedWebComponentsImports(frontendFolder).toPath()
-                .toAbsolutePath();
+                .getFlowGeneratedImports(
+                        frontendGeneratedFolder.getParent().toFile())
+                .toPath().toAbsolutePath();
         return path -> path.equals(flowGeneratedImports)
-                || path.equals(flowGeneratedWebComponentImports)
                 || path.equals(flowGeneratedImports
                         .resolveSibling(FrontendUtils.IMPORTS_D_TS_NAME))
                 || path.getFileName().toString()
