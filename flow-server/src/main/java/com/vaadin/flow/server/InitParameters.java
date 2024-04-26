@@ -185,6 +185,11 @@ public class InitParameters implements Serializable {
     public static final String I18N_PROVIDER = "i18n.provider";
 
     /**
+     * Menu access control property.
+     */
+    public static final String MENU_ACCESS_CONTROL = "menu.access.control";
+
+    /**
      * Configuration name for the parameter that determines if Flow should
      * automatically register servlets needed for the application to work.
      */

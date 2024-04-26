@@ -30,8 +30,8 @@ public class PostponeView extends Div implements BeforeLeaveObserver {
 
     public static String CONTINUE_ID = "continue-button";
     public static String STAY_ID = "stay-button";
-    public static String NAVIGATION_ID = "to-navigation";
-    public static String NAVIGATION_ROUTER_LINK_ID = "to-navigation";
+    public static String NAVIGATION_ID = "anchor-to-navigation";
+    public static String NAVIGATION_ROUTER_LINK_ID = "routerlink-to-navigation";
 
     private NativeButton navigate, stay;
 
