@@ -1228,21 +1228,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Gets the location of the generated import file for exported web
-     * components.
-     *
-     * @param frontendFolder
-     *            the project frontend folder
-     * @return the location of the generated import JS file for exported web
-     *         components
-     */
-    public static File getFlowGeneratedWebComponentsImports(
-            File frontendFolder) {
-        return new File(getFlowGeneratedFolder(frontendFolder),
-                IMPORTS_WEB_COMPONENT_NAME);
-    }
-
-    /**
      * Gets the folder where exported web components are generated.
      *
      * @param frontendFolder

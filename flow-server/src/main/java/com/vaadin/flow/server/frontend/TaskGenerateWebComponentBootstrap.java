@@ -52,7 +52,7 @@ public class TaskGenerateWebComponentBootstrap
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
 
-        lines.add("import 'Frontend/generated/flow/"
+        lines.add("import 'Frontend/generated/flow/web-components/"
                 + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
                 + "FlowClient.js';");
