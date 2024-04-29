@@ -278,5 +278,5 @@ public class InitParameters implements Serializable {
      *
      * Time is given in minutes.
      */
-    public static final String LAUNCH_BROWSER_DELAY = "launch-browser.delay";
+    public static final String LAUNCH_BROWSER_DELAY = "launch-browser-delay";
 }
