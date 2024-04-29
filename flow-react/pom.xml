@@ -48,6 +48,24 @@
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-and-rename-file</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>rename</goal>
+                        </goals>
+                        <configuration>
+                            <sourceFile>${project.build.outputDirectory}/com/vaadin/flow/server/frontend/ReactAdapter.tsx</sourceFile>
+                            <destinationFile>${project.build.outputDirectory}/com/vaadin/flow/server/frontend/ReactAdapter.template</destinationFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
