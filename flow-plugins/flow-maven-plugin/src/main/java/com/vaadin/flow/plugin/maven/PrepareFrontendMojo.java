@@ -51,15 +51,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     + "</productionMode> Maven parameter no longer has any effect and can be removed. Production mode is automatically enabled when you run the build-frontend target.");
         }
 
-        try {
-            FileUtils.deleteDirectory(generatedTsFolder());
-            logDebug("Cleaned the generated folder '"
-                    + generatedTsFolder().getPath() + "'");
-        } catch (IOException e) {
-            throw new MojoFailureException("Failed to clean generated folder "
-                    + generatedTsFolder().getPath(), e);
-        }
-
         // propagate info via System properties and token file
         File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
 

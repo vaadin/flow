@@ -34,6 +34,9 @@ public class ThemeView extends Div {
     public static final String SUB_COMPONENT_ID = "sub-component";
     public static final String DICE_ID = "dice";
     public static final String CSS_SNOWFLAKE = "icon-snowflake";
+    public static final String KEYBOARD_ID = "keyboard";
+    public static final String LEMON_ID = "lemon";
+    public static final String SUN_ID = "sun";
 
     public ThemeView() {
         UI.getCurrent().getPage()
@@ -70,6 +73,23 @@ public class ThemeView extends Div {
 
         add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake,
                 faText, diceImageSpan);
+
+        Div keyboardIconFromParentTheme = new Div(
+                "Keyboard Icon in theme sub folder");
+        keyboardIconFromParentTheme.addClassName("icon-keyboard");
+        keyboardIconFromParentTheme.setId(KEYBOARD_ID);
+
+        Div lemonIconFromParentTheme = new Div(
+                "Lemon Icon in nested theme subfolder");
+        lemonIconFromParentTheme.addClassName("icon-lemon");
+        lemonIconFromParentTheme.setId(LEMON_ID);
+
+        Div sunIconFromParentTheme = new Div(
+                "Sun Icon in nested theme subfolder");
+        sunIconFromParentTheme.addClassName("icon-sun");
+        sunIconFromParentTheme.setId(SUN_ID);
+        add(keyboardIconFromParentTheme, lemonIconFromParentTheme,
+                sunIconFromParentTheme);
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));

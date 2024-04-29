@@ -103,7 +103,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.4.1</version>
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -296,7 +296,6 @@
                 <module>test-redeployment</module>
                 <module>test-redeployment-no-cache</module>
 
-                <module>test-scalability</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
                 <module>test-themes/pom-production.xml</module>

@@ -40,4 +40,16 @@ public interface FallibleCommand {
      *             if there is an execution error
      */
     void execute() throws ExecutionFailedException;
+
+    /**
+     * Accepts {@link GeneratedFilesSupport} utility allows to track generated
+     * files but write them only when the content is changed, preventing
+     * filesystem watchers to be triggered when not required.
+     *
+     * @param support
+     *            the generated file support utility to use.
+     */
+    default void setGeneratedFileSupport(GeneratedFilesSupport support) {
+    }
+
 }

@@ -28,6 +28,9 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.ThemeUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
+import elemental.json.JsonObject;
 
 /**
  * Watches the given theme folder for changes, combines the theme on changes and
@@ -49,6 +52,9 @@ public class ThemeLiveUpdater implements Closeable {
     public ThemeLiveUpdater(File themeFolder, VaadinContext context) {
         String themeName = themeFolder.getName();
         File stylesCss = new File(themeFolder, "styles.css");
+        JsonObject themeJson = ThemeUtils
+                .getThemeJson(themeName, ApplicationConfiguration.get(context))
+                .orElse(null);
 
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                 .getLiveReloadFromContext(context);
@@ -57,13 +63,14 @@ public class ThemeLiveUpdater implements Closeable {
                 watcher = new FileWatcher(file -> {
                     if (file.getName().endsWith(".css")) {
                         try {
+
                             // All changes are merged into one style block
                             liveReload.get()
                                     .update(ThemeUtils.getThemeFilePath(
                                             themeName, "styles.css"),
                                             CssBundler.inlineImports(
                                                     stylesCss.getParentFile(),
-                                                    stylesCss));
+                                                    stylesCss, themeJson));
                         } catch (IOException e) {
                             getLogger().error(
                                     "Unable to perform hot update of " + file,

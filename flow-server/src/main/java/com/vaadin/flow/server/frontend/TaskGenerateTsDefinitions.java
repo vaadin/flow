@@ -26,8 +26,8 @@ import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationAndEOL;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>types.d.ts</code> if it is missing in project folder and
@@ -189,7 +189,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                         File backupFile = File.createTempFile(
                                 tsDefinitions.getName() + ".", ".bak",
                                 tsDefinitions.getParentFile());
-                        FileIOUtils.writeIfChanged(backupFile, content);
+                        writeIfChanged(backupFile, content);
                         log().debug("Created {} backup copy on {}",
                                 TS_DEFINITIONS, backupFile);
                     } catch (IOException ex) {
@@ -223,6 +223,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
                             warningEmitted = true;
                         }
                     }
+                    track(tsDefinitions);
                 } catch (IOException ex) {
                     throw new ExecutionFailedException(
                             "Error updating custom " + TS_DEFINITIONS + " file",
