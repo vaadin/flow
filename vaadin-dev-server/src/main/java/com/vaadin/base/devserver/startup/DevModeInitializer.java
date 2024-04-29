@@ -83,9 +83,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 /**
  * Initializer for starting node updaters as well as the dev mode server.
@@ -206,15 +204,16 @@ public class DevModeInitializer implements Serializable {
                     new StatisticsSender(storage));
         }
 
-        String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
-                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
+        File frontendFolder = config.getFrontendFolder();
 
         Lookup lookupFromContext = context.getAttribute(Lookup.class);
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
         Options options = new Options(lookup, baseDir)
-                .withFrontendDirectory(new File(frontendFolder))
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(
+                        new File(frontendFolder + GENERATED))
                 .withBuildDirectory(config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -226,7 +225,7 @@ public class DevModeInitializer implements Serializable {
         // config,
         // see https://github.com/vaadin/flow/issues/9082
         File target = new File(baseDir, config.getBuildFolder());
-        options.withWebpack(
+        options.withBuildResultFolders(
                 Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES)
                         .toFile(),
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
@@ -260,17 +259,15 @@ public class DevModeInitializer implements Serializable {
                         InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
                 .split(",");
 
-        String frontendGeneratedFolderName = config
-                .getStringProperty(PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                        Paths.get(baseDir.getAbsolutePath(),
-                                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
-                                .toString());
+        String frontendGeneratedFolderName = config.getStringProperty(
+                PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
+                Paths.get(frontendFolder.getPath(), GENERATED).toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
         JsonObject tokenFileData = Json.createObject();
         Mode mode = config.getMode();
-        boolean reactRouterEnabled = config.getBooleanProperty(REACT_ENABLE,
+        boolean reactEnable = config.getBooleanProperty(REACT_ENABLE,
                 FrontendUtils
                         .isReactRouterRequired(options.getFrontendDirectory()));
         options.enablePackagesUpdate(true)
@@ -292,7 +289,7 @@ public class DevModeInitializer implements Serializable {
                 .withFrontendHotdeploy(
                         mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD)
                 .withBundleBuild(mode == Mode.DEVELOPMENT_BUNDLE)
-                .withReact(reactRouterEnabled);
+                .withReact(reactEnable);
 
         NodeTasks tasks = new NodeTasks(options);
 
@@ -471,7 +468,8 @@ public class DevModeInitializer implements Serializable {
             // Creating a temporary jar file out of the vfs files
             String vfsJarPath = url.toString();
             String fileNamePrefix = vfsJarPath.substring(
-                    vfsJarPath.lastIndexOf('/') + 1,
+                    vfsJarPath.lastIndexOf(
+                            vfsJarPath.contains("\\") ? '\\' : '/') + 1,
                     vfsJarPath.lastIndexOf(".jar"));
             Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
 

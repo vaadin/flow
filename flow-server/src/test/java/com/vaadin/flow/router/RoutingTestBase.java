@@ -25,6 +25,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 public class RoutingTestBase {
@@ -79,7 +80,7 @@ public class RoutingTestBase {
         private static VaadinSession createMockSession(Router router) {
             MockVaadinServletService service = new MockVaadinServletService();
             service.setRouter(router);
-            return new MockVaadinSession(service);
+            return new AlwaysLockedVaadinSession(service);
         }
 
     }

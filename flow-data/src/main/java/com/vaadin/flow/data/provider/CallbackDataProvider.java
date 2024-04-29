@@ -149,4 +149,11 @@ public class CallbackDataProvider<T, F>
                 : "CallbackDataProvider got null as an id for item: " + item;
         return itemId;
     }
+
+    @Override
+    public String toString() {
+        return "CallbackDataProvider(" + "fetchCallback=" + fetchCallback
+                + ", countCallback=" + countCallback + ", idGetter=" + idGetter
+                + ')';
+    }
 }

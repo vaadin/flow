@@ -82,8 +82,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         lines.addAll(getThemeLines());
 
         for (TypeScriptBootstrapModifier modifier : modifiers) {
-            modifier.modify(lines, options.isProductionMode(),
-                    frontDeps.getThemeDefinition());
+            modifier.modify(lines, options, frontDeps);
         }
         return String.join(System.lineSeparator(), lines);
     }

@@ -1,13 +1,18 @@
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.io.file.AccumulatorPathVisitor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -15,10 +20,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
@@ -58,7 +63,8 @@ public class NodeTasksExecutionTest {
         // Make a builder that doesn't add any commands.
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Collections.singleton(this.getClass()));
-        options = new MockOptions(finder, null).withBuildDirectory(TARGET);
+        options = new MockOptions(finder, null).withBuildDirectory(TARGET)
+                .withFrontendDirectory(temporaryFolder.getRoot());
         options.withProductionMode(false);
 
         nodeTasks = new NodeTasks(options);
@@ -190,6 +196,88 @@ public class NodeTasksExecutionTest {
         Assert.assertThrows(
                 "NodeTasks execution should fail due to unknown task in execution list",
                 UnknownTaskException.class, nodeTasks::execute);
+    }
+
+    @Test
+    public void nodeTasks_deletesOldGeneratedFiles() throws Exception {
+        options.withCleanOldGeneratedFiles(true);
+
+        NodeTasks spiedNodeTasks = Mockito.spy(new NodeTasks(options));
+        // TaskRemoveOldFrontendGeneratedFiles should be the last executed task
+        Mockito.doAnswer(i -> i.getArgument(
+                0) instanceof TaskRemoveOldFrontendGeneratedFiles ? 1 : 0)
+                .when(spiedNodeTasks).getIndex(ArgumentMatchers.any());
+
+        List<Path> generatedFiles = List.of(Paths.get("file.tsx"),
+                Paths.get("another.js"), Paths.get("sub", "a.tsx"),
+                Paths.get("sub", "nested", "b.js"));
+        enqueueCreateGeneratedFilesTasks(spiedNodeTasks, generatedFiles);
+        spiedNodeTasks.execute();
+        assertOnlyExpectedGeneratedFilesExists(generatedFiles);
+
+        // Simulate execution that generates different files
+        generatedFiles = List.of(Paths.get("no-the-same-file.tsx"),
+                Paths.get("another.js"), Paths.get("sub", "a.tsx"),
+                Paths.get("sub", "b.tsx"),
+                Paths.get("sub", "nested-changed", "b.js"));
+        enqueueCreateGeneratedFilesTasks(spiedNodeTasks, generatedFiles);
+        spiedNodeTasks.execute();
+        assertOnlyExpectedGeneratedFilesExists(generatedFiles);
+
+    }
+
+    private void enqueueCreateGeneratedFilesTasks(NodeTasks nodeTasks,
+            List<Path> generatedFiles)
+            throws NoSuchFieldException, IllegalAccessException {
+        List<FallibleCommand> commandList = getCommands(nodeTasks);
+        commandList.clear();
+        generatedFiles.stream().map(this::createGeneratedFileTask)
+                .forEach(commandList::add);
+        commandList.add(new TaskRemoveOldFrontendGeneratedFiles(options));
+    }
+
+    private void assertOnlyExpectedGeneratedFilesExists(
+            List<Path> expectedFiles) throws IOException {
+        AccumulatorPathVisitor visitor = new AccumulatorPathVisitor();
+        Files.walkFileTree(options.getFrontendGeneratedFolder().toPath(),
+                visitor);
+        Assert.assertEquals(
+                "Expect exactly currently generated files to exists",
+                Set.copyOf(expectedFiles),
+                Set.copyOf(visitor.relativizeFiles(
+                        options.getFrontendGeneratedFolder().toPath(), false,
+                        null)));
+    }
+
+    private FallibleCommand createGeneratedFileTask(Path relativePath) {
+        Path resolved = options.getFrontendGeneratedFolder().toPath()
+                .resolve(relativePath);
+        return new FileGeneratorTask(resolved.toFile());
+    }
+
+    private static class FileGeneratorTask implements FallibleCommand {
+
+        private final File file;
+
+        private GeneratedFilesSupport support;
+
+        FileGeneratorTask(File file) {
+            this.file = file;
+        }
+
+        @Override
+        public void setGeneratedFileSupport(GeneratedFilesSupport support) {
+            this.support = support;
+        }
+
+        @Override
+        public void execute() throws ExecutionFailedException {
+            try {
+                support.writeIfChanged(file, "test file");
+            } catch (IOException e) {
+                throw new ExecutionFailedException(e);
+            }
+        }
     }
 
     private class NewTask implements FallibleCommand {

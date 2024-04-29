@@ -36,6 +36,8 @@ import { createRequire } from 'module';
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
 
+//#vitePluginFileSystemRouterImport#
+
 // Make `require` compatible with ES modules
 const require = createRequire(import.meta.url);
 
@@ -308,7 +310,7 @@ function statsExtracterPlugin(): PluginOption {
 
       const isFrontendResourceCollected = (id: string) =>
           !id.startsWith(themeOptions.frontendGeneratedFolder.replace(/\\/g, '/'))
-          || isThemeComponentsResource(id) 
+          || isThemeComponentsResource(id)
           || isGeneratedWebComponentResource(id);
 
       // collects project's frontend resources in frontend folder, excluding
@@ -345,7 +347,7 @@ function statsExtracterPlugin(): PluginOption {
           const fileKey = line.substring(line.indexOf('jar-resources/') + 14);
           frontendFiles[fileKey] = hash;
         });
-      // collects and hash rest of the Frontend resources excluding files in /generated/ and /themes/ 
+      // collects and hash rest of the Frontend resources excluding files in /generated/ and /themes/
       // and files already in frontendFiles.
       let frontendFolderAlias = "Frontend";
       generatedImports
@@ -360,7 +362,7 @@ function statsExtracterPlugin(): PluginOption {
             const fileBuffer = readFileSync(filePath, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
             frontendFiles[line] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
           }
-        });        
+        });
       // If a index.ts exists hash it to be able to see if it changes.
       if (existsSync(path.resolve(frontendFolder, 'index.ts'))) {
         const fileBuffer = readFileSync(path.resolve(frontendFolder, 'index.ts'), { encoding: 'utf-8' }).replace(
@@ -607,7 +609,6 @@ function themePlugin(opts): PluginOption {
       if (!id.startsWith(settings.themeFolder)) {
         return;
       }
-
       for (const location of [themeResourceFolder, frontendFolder]) {
         const result = await this.resolve(path.resolve(location, id));
         if (result) {
@@ -624,8 +625,9 @@ function themePlugin(opts): PluginOption {
       ) {
         return;
       }
-      const [themeName] = bareId.substring(themeFolder.length + 1).split('/');
-      return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(themeFolder, themeName), console, opts);
+      const resourceThemeFolder = bareId.startsWith(themeFolder) ? themeFolder : themeOptions.themeResourceFolder;
+      const [themeName] =  bareId.substring(resourceThemeFolder.length + 1).split('/');
+      return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(resourceThemeFolder, themeName), console, opts);
     }
   };
 }
@@ -716,9 +718,11 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }
     },
     build: {
+      minify: productionMode,
       outDir: buildOutputFolder,
       emptyOutDir: devBundle,
       assetsDir: 'VAADIN/build',
+      target: ["esnext", "safari15"],
       rollupOptions: {
         input: {
           indexhtml: projectIndexHtml,
@@ -772,14 +776,16 @@ export const vaadinConfig: UserConfigFn = (env) => {
         ]
       }),
       // The React plugin provides fast refresh and debug source info
-      devMode && reactPlugin({
+      reactPlugin({
         include: '**/*.tsx',
         babel: {
           // We need to use babel to provide the source information for it to be correct
           // (otherwise Babel will slightly rewrite the source file and esbuild generate source info for the modified file)
-          presets: [['@babel/preset-react', { runtime: 'automatic', development: devMode }]],
+          presets: [['@babel/preset-react', { runtime: 'automatic', development: !productionMode }]],
           // React writes the source location for where components are used, this writes for where they are defined
-          plugins: [addFunctionComponentSourceLocationBabel()]
+          plugins: [
+            !productionMode && addFunctionComponentSourceLocationBabel()
+          ].filter(Boolean)
         }
       }),
       {
@@ -843,6 +849,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         typescript: true
       }),
       productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })
+      //#vitePluginFileSystemRouter#
     ]
   };
 };

@@ -1,22 +1,22 @@
 package com.vaadin.base.devserver.stats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import com.vaadin.flow.testutil.TestUtils;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.flow.testutil.TestUtils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 
 public class ProjectHelpersTest {
 
@@ -91,10 +91,19 @@ public class ProjectHelpersTest {
         assertEquals(keyStringFile, "test@vaadin.com/" + keyFile);
 
         // Check system property works
-        String keyStringProp = "test@vaadin.com/pro-536e1234-test-test-prop-f7a1ef311234";
-        System.setProperty("vaadin.proKey", keyStringProp);
-        String keyProp = ProjectHelpers.getProKey();
-        assertEquals(keyStringProp, "test@vaadin.com/" + keyProp);
+        String originalProKeyProp = System.getProperty("vaadin.proKey");
+        try {
+            String keyStringProp = "test@vaadin.com/pro-536e1234-test-test-prop-f7a1ef311234";
+            System.setProperty("vaadin.proKey", keyStringProp);
+            String keyProp = ProjectHelpers.getProKey();
+            assertEquals(keyStringProp, "test@vaadin.com/" + keyProp);
+        } finally {
+            if (originalProKeyProp == null) {
+                System.clearProperty("vaadin.proKey");
+            } else {
+                System.setProperty("vaadin.proKey", originalProKeyProp);
+            }
+        }
     }
 
 }

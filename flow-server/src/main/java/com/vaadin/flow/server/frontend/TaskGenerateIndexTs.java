@@ -20,10 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Version;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
@@ -40,6 +42,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
+    private static final String ROUTES_JS_IMPORT_PATH_TOKEN = "%routesJsImportPath%";
+
     private final File frontendDirectory;
     private Options options;
 
@@ -55,7 +59,28 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public void execute() throws ExecutionFailedException {
+        if (!shouldGenerate()) {
+            cleanup();
+            return;
+        }
+        File generatedFile = getGeneratedFile();
+        try {
+            writeIfChanged(generatedFile, getFileContent());
+        } catch (IOException exception) {
+            String errorMessage = String.format("Error writing '%s'",
+                    generatedFile);
+            throw new ExecutionFailedException(errorMessage, exception);
+        }
+    }
+
+    @Override
     protected File getGeneratedFile() {
+        if (options.isReactEnabled()) {
+            return new File(
+                    new File(frontendDirectory, FrontendUtils.GENERATED),
+                    INDEX_TSX);
+        }
         return new File(new File(frontendDirectory, FrontendUtils.GENERATED),
                 INDEX_TS);
     }
@@ -74,13 +99,29 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         String indexTemplate;
         String indexFile = INDEX_TS;
         if (options.isReactEnabled()) {
-            indexFile = "index-react.ts";
+            indexFile = "index-react.tsx";
         }
         try (InputStream indexTsStream = getClass()
                 .getResourceAsStream(indexFile)) {
             indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
+            if (options.isReactEnabled()) {
+                File routesTsx = new File(frontendDirectory,
+                        FrontendUtils.ROUTES_TSX);
+                indexTemplate = indexTemplate.replace(
+                        ROUTES_JS_IMPORT_PATH_TOKEN,
+                        (routesTsx.exists())
+                                ? FrontendUtils.FRONTEND_FOLDER_ALIAS
+                                        + FrontendUtils.ROUTES_JS
+                                : FrontendUtils.FRONTEND_FOLDER_ALIAS
+                                        + FrontendUtils.GENERATED
+                                        + FrontendUtils.ROUTES_JS);
+            }
         }
         return indexTemplate;
+    }
+
+    private void cleanup() {
+        FileUtils.deleteQuietly(getGeneratedFile());
     }
 
     /**

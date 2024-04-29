@@ -34,25 +34,25 @@ jobs:
           [ -z "${{secrets.TB_LICENSE}}" ] \
             && echo "🚫 **TB_LICENSE** is not defined, check that **${{github.repository}}** repo has a valid secret" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: '20.9.0'
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Set up Maven
-        uses: stCarolas/setup-maven@v4.5
+        uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -70,7 +70,7 @@ jobs:
         run: |
           tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
           tar rf workspace.tar $(find . -d -name target)
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: saved-workspace
           path: workspace.tar
@@ -82,27 +82,27 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Set up Maven
-        uses: stCarolas/setup-maven@v4.5
+        uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
@@ -135,10 +135,10 @@ jobs:
       - name: Package test-report files
         if: ${{ failure() || success() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-unit-${{matrix.current}}.tgz -T -
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output
+          name: tests-output-unit-${{ matrix.current }}
           path: tests-report-*.tgz
   it-tests:
     needs: build
@@ -148,31 +148,31 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: '20.9.0'
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v3
         with:
           version: '8.3.1'
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: '1.0.7'
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
       - name: Set up Maven
-        uses: stCarolas/setup-maven@v4.5
+        uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.8.7
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -180,7 +180,7 @@ jobs:
       - uses: browser-actions/setup-chrome@latest
         with:
           chrome-version: stable
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
@@ -221,13 +221,14 @@ jobs:
       - name: Package test-report files
         if: ${{ failure() || success() }}
         run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-it-${{matrix.current}}.tgz -T -
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: ${{ failure() || success() }}
         with:
-          name: tests-output
+          name: tests-output-it-${{ matrix.current }}
           path: tests-report-*.tgz
   test-results:
     permissions:
+      actions: write
       issues: read
       checks: write
       pull-requests: write
@@ -235,10 +236,15 @@ jobs:
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: tests-output
+          pattern: tests-output-*
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: tests-output
       - name: extract downloaded files
@@ -248,7 +254,7 @@ jobs:
         with:
           junit_files: "**/target/*-reports/TEST*.xml"
           check_run_annotations: all tests, skipped tests
-      - uses: geekyeggo/delete-artifact@v2
+      - uses: geekyeggo/delete-artifact@v4
         with:
           name: |
             saved-workspace

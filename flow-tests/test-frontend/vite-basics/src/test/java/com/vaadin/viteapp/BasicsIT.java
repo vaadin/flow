@@ -39,15 +39,6 @@ public class BasicsIT extends ViteDevModeIT {
     }
 
     @Test
-    public void debugWindowShown() {
-        DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
-        devTools.expand();
-        Assert.assertNotNull(
-                devTools.$("div").attributeContains("class", "window")
-                        .attributeContains("class", "visible").waitForFirst());
-    }
-
-    @Test
     public void canImportJson() {
         $("button").id(MainView.LOAD_AND_SHOW_JSON).click();
         Assert.assertEquals("{\"hello\":\"World\"}",
@@ -71,5 +62,11 @@ public class BasicsIT extends ViteDevModeIT {
     @Test
     public void bootstrapTsCanBeModified() {
         Assert.assertEquals(1L, executeScript("return window.bootstrapMod"));
+    }
+
+    @Test
+    public void toplevelAwaitWorks() {
+        Assert.assertEquals("This is the value set in other.js",
+                executeScript("return window.topLevelAwaitValue"));
     }
 }

@@ -19,8 +19,7 @@ package com.vaadin.flow;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.react.ReactAdapterComponent;
-
-import java.util.function.Consumer;
+import com.vaadin.flow.function.SerializableConsumer;
 
 @JsModule("./ReactInput.tsx")
 @Tag("react-input")
@@ -42,7 +41,7 @@ public class ReactInput extends ReactAdapterComponent {
         setState("value", value);
     }
 
-    public void addValueChangeListener(Consumer<String> onChange) {
+    public void addValueChangeListener(SerializableConsumer<String> onChange) {
         addStateChangeListener("value", String.class, onChange);
     }
 

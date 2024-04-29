@@ -15,6 +15,7 @@ import com.vaadin.flow.router.Route;
 @JsModule("@testscope/map")
 @JsModule("package-outside-npm/index.js")
 @JsModule("package2-outside-npm/index.js")
+@JsModule("./toplevelawait-main.js")
 @CssImport("./image.css")
 public class MainView extends Div {
 

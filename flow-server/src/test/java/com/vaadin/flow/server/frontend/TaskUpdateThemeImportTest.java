@@ -247,8 +247,9 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String classPathThemePath = "frontend/" + FrontendUtils.GENERATED
-                + FrontendUtils.JAR_RESOURCES_FOLDER + "/" + CUSTOM_THEME_PATH;
+        String classPathThemePath = DEFAULT_FRONTEND_DIR
+                + FrontendUtils.GENERATED + FrontendUtils.JAR_RESOURCES_FOLDER
+                + "/" + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
@@ -270,8 +271,9 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(projectRoot, metaInfResources);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String classPathThemePath = "frontend/" + FrontendUtils.GENERATED
-                + FrontendUtils.JAR_RESOURCES_FOLDER + "/" + CUSTOM_THEME_PATH;
+        String classPathThemePath = DEFAULT_FRONTEND_DIR
+                + FrontendUtils.GENERATED + FrontendUtils.JAR_RESOURCES_FOLDER
+                + "/" + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
@@ -293,8 +295,9 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(projectRoot, staticResources);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String classPathThemePath = "frontend/" + FrontendUtils.GENERATED
-                + FrontendUtils.JAR_RESOURCES_FOLDER + "/" + CUSTOM_THEME_PATH;
+        String classPathThemePath = DEFAULT_FRONTEND_DIR
+                + FrontendUtils.GENERATED + FrontendUtils.JAR_RESOURCES_FOLDER
+                + "/" + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
@@ -406,8 +409,9 @@ public class TaskUpdateThemeImportTest {
     @Test
     public void taskExecuted_customThemeFolderExistsInClassPathAndStaticAndMetaInfResources_throwsException() {
 
-        String classPathThemePath = "frontend/" + FrontendUtils.GENERATED
-                + FrontendUtils.JAR_RESOURCES_FOLDER + "/" + CUSTOM_THEME_PATH;
+        String classPathThemePath = DEFAULT_FRONTEND_DIR
+                + FrontendUtils.GENERATED + FrontendUtils.JAR_RESOURCES_FOLDER
+                + "/" + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
@@ -424,8 +428,8 @@ public class TaskUpdateThemeImportTest {
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage()
-                .contains(String.format(
+        Assert.assertTrue(e.getMessage(),
+                e.getMessage().contains(String.format(
                         "Theme '%s' should not exist inside a "
                                 + "jar and in the project at the same time.",
                         CUSTOM_THEME_NAME)));

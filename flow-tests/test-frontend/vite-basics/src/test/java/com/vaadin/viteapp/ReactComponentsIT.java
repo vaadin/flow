@@ -7,6 +7,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -32,7 +33,10 @@ public class ReactComponentsIT extends ChromeBrowserTest {
             String expected = element.getAttribute("data-expected");
             Long line = Long.parseLong(expected.split("_")[0]);
             Long column = Long.parseLong(expected.split("_")[1]);
-            String filenameEnd = "vite-basics/frontend/ReactComponents.tsx";
+            String filenameEnd = "vite-basics/src/main/frontend/ReactComponents.tsx";
+            if (FrontendUtils.isWindows()) {
+                filenameEnd = filenameEnd.replaceAll("/", "\\\\");
+            }
 
             Map<String, Object> result = (Map<String, Object>) executeScript(
                     """

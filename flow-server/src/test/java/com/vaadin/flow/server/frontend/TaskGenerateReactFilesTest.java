@@ -31,7 +31,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -43,7 +42,7 @@ public class TaskGenerateReactFilesTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     Options options;
-    File routesTsx, frontend;
+    File routesTsx, frontend, frontendGenerated;
     ClassFinder classFinder;
 
     @Before
@@ -52,11 +51,17 @@ public class TaskGenerateReactFilesTest {
 
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(TestRoute.class));
+        Mockito.when(classFinder.getClassLoader())
+                .thenReturn(getClass().getClassLoader());
 
         options = new MockOptions(classFinder, temporaryFolder.getRoot())
                 .withBuildDirectory("target");
-        frontend = temporaryFolder.newFolder("frontend");
+        frontend = temporaryFolder
+                .newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
         options.withFrontendDirectory(frontend);
+        frontendGenerated = temporaryFolder.newFolder(
+                FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
+        options.withFrontendGeneratedFolder(frontendGenerated);
         routesTsx = new File(frontend, "routes.tsx");
     }
 
@@ -68,40 +73,115 @@ public class TaskGenerateReactFilesTest {
 
         task.execute();
 
-        Assert.assertTrue("Missing ./frontend/App.tsx",
-                new File(frontend, "App.tsx").exists());
         Assert.assertTrue("Missing ./frontend/generated/flow/Flow.tsx",
                 new File(new File(frontend, FrontendUtils.GENERATED),
                         "flow/Flow.tsx").exists());
-        Assert.assertTrue("Missing ./frontend/routes.tsx",
+        Assert.assertTrue(
+                "Missing ./frontend/" + FrontendUtils.GENERATED + "routes.tsx",
+                new File(new File(frontend, FrontendUtils.GENERATED),
+                        "routes.tsx").exists());
+        Assert.assertFalse("Missing ./frontend/routes.tsx",
                 new File(frontend, "routes.tsx").exists());
     }
 
     @Test
-    public void routesContainsImport_noExpectionThrown()
+    public void routesContainImportAndUsage_serverSideRoutes_noExceptionThrown()
             throws IOException, ExecutionFailedException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
-                        import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import Flow from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+                        export const { router, routes } = new RouterConfigurationBuilder()
+                            .withReactRoutes([
+                                 {
+                                     element: <MainLayout />,
+                                     handle: { title: 'Main' },
+                                     children: [
+                                         { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                                         { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                                     ],
+                                 },
+                             ])
+                            .withFallback(Flow)
+                            .withReactRoutes([
+                                 { path: '/login', element: <Login />, handle: { title: 'Login' } },
+                             ])
+                            .protect()
+                            .build();
+                """;
 
-                                export const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
+    public void routesContainOnlyImport_serverSideRoutes_exceptionThrown()
+            throws IOException {
+        String content = """
+                         import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
+    public void routesContainNoImport_serverSideRoutes_exceptionThrown()
+            throws IOException {
+        String content = """
+                         export const routes = [
+                             ...serverSideRoutes
+                         ] as RouteObject[];
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
+    public void routesContainMultipleFlowImports_noExceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
+                        import { tea, serverSideRoutes, coffee } from "Frontend/generated/flow/Flow";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } },
                               ...serverSideRoutes
                             ],
                           },
-                                { path: '/login', element: <LoginView />},
+                          { path: '/login', element: <LoginView />},
                         ]);
 
                         export default createBrowserRouter(routes);
@@ -115,27 +195,27 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesMissingImport_expectionThrown() throws IOException {
+    public void routesMissingImportAndUsage_noBuildOrServerSideRoutes_exceptionThrown()
+            throws IOException, ExecutionFailedException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
-                        import { lazy } from 'react';
                         import { createBrowserRouter, RouteObject } from 'react-router-dom';
-                        import {protectRoutes} from "@hilla/react-auth";
+                        import { tea, coffee } from "Frontend/generated/flow/Flow";
                         import LoginView from "Frontend/views/LoginView";
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
 
-                                export const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } }
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } }
                             ],
                           },
-                                { path: '/login', element: <LoginView />},
+                          { path: '/login', element: <LoginView />},
                         ]);
 
                         export default createBrowserRouter(routes);
@@ -152,30 +232,27 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesContainsRoutesExport_noExpectionThrown()
-            throws IOException, ExecutionFailedException {
+    public void routesMissingImport_exceptionThrown() throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
                         import { createBrowserRouter, RouteObject } from 'react-router-dom';
-                        import {serverSideRoutes} from "Frontend/generated/flow/Flow";
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
 
-                                export const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } },
-                              ...serverSideRoutes
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } }
                             ],
                           },
-                                { path: '/login', element: <LoginView />},
+                          { path: '/login', element: <LoginView />},
                         ]);
 
                         export default createBrowserRouter(routes);
@@ -185,11 +262,14 @@ public class TaskGenerateReactFilesTest {
 
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
 
-        task.execute();
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
     }
 
     @Test
-    public void missingImport_noServerRoutesDefined_noExpectionThrown()
+    public void missingImport_noServerRoutesDefined_noExceptionThrown()
             throws IOException, ExecutionFailedException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
@@ -201,16 +281,16 @@ public class TaskGenerateReactFilesTest {
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
 
-                                export const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } }
+                        export const routes: RouteObject[] = protectRoutes([
+                          {
+                            element: <MainLayout />,
+                            handle: { title: 'Main' },
+                            children: [
+                              { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                              { path: '/about', element: <AboutView />, handle: { title: 'About' } }
                             ],
                           },
-                                { path: '/login', element: <LoginView />},
+                          { path: '/login', element: <LoginView />},
                         ]);
 
                         export default createBrowserRouter(routes);
@@ -227,32 +307,34 @@ public class TaskGenerateReactFilesTest {
     }
 
     @Test
-    public void routesexportMissing_expectionThrown() throws IOException {
+    public void routesExportMissing_exceptionThrown() throws IOException {
         String content = """
                         import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
                         import MainLayout from 'Frontend/views/MainLayout.js';
                         import { lazy } from 'react';
-                        import { createBrowserRouter, RouteObject } from 'react-router-dom';
-                        import {serverSideRoutes} from "Frontend/generated/flow/Flow";
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import Flow from 'Frontend/generated/flow/Flow';
                         import {protectRoutes} from "@hilla/react-auth";
                         import LoginView from "Frontend/views/LoginView";
 
                         const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
-
-                                const routes: RouteObject[] = protectRoutes([
-                                        {
-                                                element: <MainLayout />,
-                                        handle: { title: 'Main' },
-                                children: [
-                                { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
-                                { path: '/about', element: <AboutView />, handle: { title: 'About' } },
-                              ...serverSideRoutes
-                            ],
-                          },
-                                { path: '/login', element: <LoginView />},
-                        ]);
-
-                        export default createBrowserRouter(routes);
+                        export const { router } = new RouterConfigurationBuilder()
+                            .withReactRoutes([
+                                 {
+                                     element: <MainLayout />,
+                                     handle: { title: 'Main' },
+                                     children: [
+                                         { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                                         { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                                     ],
+                                 },
+                             ])
+                            .withFallback(Flow)
+                            .withReactRoutes([
+                                 { path: '/login', element: <Login />, handle: { title: 'Login' } },
+                             ])
+                            .protect()
+                            .build();
                 """;
 
         FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
@@ -262,6 +344,210 @@ public class TaskGenerateReactFilesTest {
         Exception exception = Assert.assertThrows(
                 ExecutionFailedException.class, () -> task.execute());
         Assert.assertEquals(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
+                exception.getMessage());
+    }
+
+    @Test
+    public void withFallbackMissing_exceptionThrown() throws IOException {
+        String content = """
+                        import HelloWorldView from 'Frontend/views/helloworld/HelloWorldView.js';
+                        import MainLayout from 'Frontend/views/MainLayout.js';
+                        import { lazy } from 'react';
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import Flow from 'Frontend/generated/flow/Flow';
+                        import {protectRoutes} from "@hilla/react-auth";
+                        import LoginView from "Frontend/views/LoginView";
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+                        export const { router, routes } = new RouterConfigurationBuilder()
+                            .withReactRoutes([
+                                 {
+                                     element: <MainLayout />,
+                                     handle: { title: 'Main' },
+                                     children: [
+                                         { path: '/', element: <HelloWorldView />, handle: { title: 'Hello World', rolesAllowed: ['USER'] } },
+                                         { path: '/about', element: <AboutView />, handle: { title: 'About' } },
+                                     ],
+                                 },
+                             ])
+                            .withReactRoutes([
+                                 { path: '/login', element: <Login />, handle: { title: 'Login' } },
+                             ])
+                            .protect()
+                            .build();
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
+    public void withFallbackReceivesDifferentObject_exceptionThrown()
+            throws IOException {
+        String content = """
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import foo from 'Frontend/generated/flow/Flow';
+
+                        export const { router, routes } = new RouterConfigurationBuilder()
+                            .withFallback(Flow)
+                            .build();
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
+    public void withFallbackMissesImport_exceptionThrown() throws IOException {
+        String content = """
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+
+                        const AboutView = lazy(async () => import('Frontend/views/about/AboutView.js'));
+                        export const { router, routes } = new RouterConfigurationBuilder()
+                            .withFallback(Flow)
+                            .build();
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(String.format(TaskGenerateReactFiles.NO_IMPORT,
+                routesTsx.getPath()), exception.getMessage());
+    }
+
+    @Test
+    public void frontendReactFilesAreCleanedWhenReactIsDisabled()
+            throws ExecutionFailedException {
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+        task.execute();
+
+        options.withReact(false);
+        task.execute();
+
+        Assert.assertFalse(
+                "./frontend/routes.tsx should be removed when react is disabled",
+                new File(frontend, "routes.tsx").exists());
+        Assert.assertFalse(
+                "./frontend/generated/flow/Flow.tsx should be removed when react is disabled",
+                new File(frontendGenerated,
+                        TaskGenerateReactFiles.FLOW_FLOW_TSX).exists());
+        Assert.assertFalse(
+                "./frontend/generated/flow/ReactAdapter.tsx should be removed when react is disabled",
+                new File(frontendGenerated,
+                        TaskGenerateReactFiles.FLOW_REACT_ADAPTER_TSX)
+                        .exists());
+        Assert.assertFalse(
+                "./frontend/routes.tsx.flowBackup should not be created with default content",
+                new File(frontend, "routes.tsx.flowBackup").exists());
+    }
+
+    @Test
+    public void frontendCustomReactFilesAreCleanedAndBackUppedWhenReactIsDisabled()
+            throws ExecutionFailedException, IOException {
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+        task.execute();
+        FileUtils.write(routesTsx, "Custom content", StandardCharsets.UTF_8);
+
+        options.withReact(false);
+        task.execute();
+
+        Assert.assertFalse(
+                "./frontend/routes.tsx should be removed when react is disabled",
+                new File(frontend, "routes.tsx").exists());
+        Assert.assertFalse(
+                "./frontend/" + FrontendUtils.GENERATED
+                        + "routes.tsx should be removed when react is disabled",
+                new File(new File(frontend, FrontendUtils.GENERATED),
+                        "routes.tsx").exists());
+        Assert.assertTrue("./frontend/routes.tsx.flowBackup should exist",
+                new File(frontend, "routes.tsx.flowBackup").exists());
+    }
+
+    @Test
+    public void routesContainExport_noConst_noExceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import Flow from 'Frontend/generated/flow/Flow';
+
+                        const { router, originalRoutes } = new RouterConfigurationBuilder();
+                           .withFallback(Flow)
+                           .build();
+
+                        const routes = originalRoutes;
+                        export { router, routes }
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
+    public void routesContainExport_twoSingleExports_noExceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import Flow from 'Frontend/generated/flow/Flow';
+
+                        const { router, originalRoutes } = new RouterConfigurationBuilder();
+                           .withFallback(Flow)
+                           .build();
+
+                        const routes = originalRoutes;
+                        export { routes }
+                        router = anotherRouter;
+                        export {router}
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
+    public void routesContainExport_oneSingleExport_exceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import Flow from 'Frontend/generated/flow/Flow';
+
+                        const { router, originalRoutes } = new RouterConfigurationBuilder();
+                           .withFallback(Flow)
+                           .build();
+
+                        const routes = originalRoutes;
+                        export { routes }
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(
+                String.format(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
+                        routesTsx.getPath()),
                 exception.getMessage());
     }
 

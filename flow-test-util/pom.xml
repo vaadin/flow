@@ -43,6 +43,11 @@
                     <groupId>org.asynchttpclient</groupId>
                     <artifactId>async-http-client</artifactId>
                 </exclusion>
+                <!-- remove this after TB 9.2.5 release -->
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 

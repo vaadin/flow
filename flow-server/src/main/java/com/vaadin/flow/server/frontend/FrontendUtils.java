@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import jakarta.servlet.ServletContext;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,6 +28,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,6 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import jakarta.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -53,6 +53,7 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.router.internal.ClientRoutesProvider;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
@@ -60,7 +61,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -110,9 +110,19 @@ public class FrontendUtils {
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
      *
-     * By default it is <code>/frontend</code> in the project folder.
+     * By default it is <code>/src/main/frontend</code> in the project folder.
      */
     public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR
+            + "src/main/" + FRONTEND;
+
+    /**
+     * Path of the old folder containing application frontend source files, it
+     * needs to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
+     *
+     * By default the old folder is <code>/frontend</code> in the project
+     * folder.
+     */
+    public static final String LEGACY_FRONTEND_DIR = DEFAULT_NODE_DIR
             + FRONTEND;
 
     /**
@@ -227,6 +237,10 @@ public class FrontendUtils {
 
     public static final String ROUTES_TSX = "routes.tsx";
 
+    public static final String ROUTES_FLOW_TSX = "routes-flow.tsx";
+
+    public static final String ROUTES_JS = "routes.js";
+
     /**
      * Default generated path for generated frontend files.
      */
@@ -257,6 +271,12 @@ public class FrontendUtils {
      */
     public static final String FRONTEND_GENERATED_FLOW_IMPORT_PATH = FRONTEND_FOLDER_ALIAS
             + "generated/flow/";
+
+    /**
+     * The default directory in frontend directory, where Hilla views are
+     * located.
+     */
+    public static final String HILLA_VIEWS_PATH = "views";
 
     /**
      * File used to enable npm mode.
@@ -500,8 +520,7 @@ public class FrontendUtils {
 
     private static InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
-        File file = new File(new File(config.getProjectFolder(), "frontend"),
-                path);
+        File file = new File(getProjectFrontendDir(config), path);
         if (file.exists()) {
             try {
                 return Files.newInputStream(file.toPath());
@@ -551,7 +570,8 @@ public class FrontendUtils {
         if (devModeHandler.isPresent()) {
             try {
                 File frontendFile = resolveFrontendPath(
-                        devModeHandler.get().getProjectRoot(), path);
+                        devModeHandler.get().getProjectRoot(),
+                        service.getDeploymentConfiguration(), path);
                 return frontendFile == null ? null
                         : new FileInputStream(frontendFile);
             } catch (IOException e) {
@@ -563,19 +583,43 @@ public class FrontendUtils {
 
     /**
      * Looks up the frontend resource at the given path. If the path starts with
-     * {@code ./}, first look in {@code frontend}, then in
-     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
-     * with {@code ./}, look in {@code node_modules} instead.
+     * {@code ./}, first look in {@value FrontendUtils#DEFAULT_FRONTEND_DIR},
+     * then in {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not
+     * start with {@code ./}, look in {@code node_modules} instead.
      *
      * @param projectRoot
      *            the project root folder.
+     * @param deploymentConfiguration
+     *            the active deployment configuration
      * @param path
      *            the file path.
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
-    public static File resolveFrontendPath(File projectRoot, String path) {
+    public static File resolveFrontendPath(File projectRoot,
+            DeploymentConfiguration deploymentConfiguration, String path) {
         return resolveFrontendPath(projectRoot, path,
-                new File(projectRoot, FrontendUtils.FRONTEND));
+                deploymentConfiguration.getFrontendFolder());
+    }
+
+    /**
+     * Get the legacy frontend folder if available and new folder doesn't exist.
+     *
+     * @param projectRoot
+     *            project's root directory
+     * @param frontendDir
+     *            the frontend directory location from project's configuration
+     * @return correct folder or legacy folder if not user defined
+     */
+    public static File getLegacyFrontendFolderIfExists(File projectRoot,
+            File frontendDir) {
+        if (!frontendDir.exists() && frontendDir.toPath()
+                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
+            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                return legacy;
+            }
+        }
+        return frontendDir;
     }
 
     /**
@@ -664,13 +708,7 @@ public class FrontendUtils {
      */
     public static File getProjectFrontendDir(
             AbstractConfiguration configuration) {
-        String propertyValue = configuration
-                .getStringProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
-        File f = new File(propertyValue);
-        if (f.isAbsolute()) {
-            return f;
-        }
-        return new File(configuration.getProjectFolder(), propertyValue);
+        return configuration.getFrontendFolder();
     }
 
     /**
@@ -1239,8 +1277,27 @@ public class FrontendUtils {
      */
     public static boolean isHillaViewsUsed(File frontendDirectory) {
         Objects.requireNonNull(frontendDirectory);
-        var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.ROUTES_TS,
-                FrontendUtils.ROUTES_TSX);
+        File viewsDirectory = new File(frontendDirectory, HILLA_VIEWS_PATH);
+        if (viewsDirectory.exists()) {
+            try {
+                Collection<Path> views = FileIOUtils.getFilesByPattern(
+                        viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
+                for (Path view : views) {
+                    String viewContent = IOUtils.toString(view.toUri(), UTF_8);
+                    viewContent = StringUtil.removeComments(viewContent);
+                    if (!viewContent.isBlank()) {
+                        return true;
+                    }
+                }
+            } catch (IOException e) {
+                getLogger().error(
+                        "Couldn't scan Hilla views directory for hilla auto-detection",
+                        e);
+            }
+        }
+
+        var files = List.of(FrontendUtils.INDEX_TS, FrontendUtils.INDEX_TSX,
+                FrontendUtils.ROUTES_TS);
         for (String fileName : files) {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {
@@ -1253,6 +1310,18 @@ public class FrontendUtils {
                             "Couldn't read {} for hilla views auto-detection",
                             routesFile.getName(), e);
                 }
+            }
+        }
+        File routesFile = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
+        if (routesFile.exists()) {
+            try {
+                String routesTsContent = IOUtils.toString(routesFile.toURI(),
+                        UTF_8);
+                return isRoutesTsxContentUsingHillaViews(routesTsContent);
+            } catch (IOException e) {
+                getLogger().error(
+                        "Couldn't read {} for hilla views auto-detection",
+                        routesFile.getName(), e);
             }
         }
         return false;
@@ -1299,8 +1368,25 @@ public class FrontendUtils {
         return mayHaveClientSideRoutes(routesContent);
     }
 
+    private static boolean isRoutesTsxContentUsingHillaViews(
+            String routesContent) {
+        routesContent = StringUtil.removeComments(routesContent);
+        // Note that here we assume that Frontend/views doesn't have views and
+        // routes.tsx isn't the auto-generated one
+        if (hasFileOrReactRoutesFunction(routesContent)) {
+            return true;
+        }
+        return isRoutesContentUsingHillaViews(routesContent);
+    }
+
     private static boolean missingServerSideRoutes(String routesContent) {
         return !SERVER_SIDE_ROUTES_PATTERN.matcher(routesContent).find();
+    }
+
+    private static boolean hasFileOrReactRoutesFunction(String routesContent) {
+        return !routesContent.isBlank()
+                && (routesContent.contains("withFileRoutes(")
+                        || routesContent.contains("withReactRoutes("));
     }
 
     private static boolean mayHaveClientSideRoutes(String routesContent) {
@@ -1321,6 +1407,37 @@ public class FrontendUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Is the React module available in the classpath.
+     *
+     * @return true if the React module is available, false otherwise
+     */
+    public static boolean isReactModuleAvailable(Options options) {
+        try {
+            options.getClassFinder().loadClass(
+                    "com.vaadin.flow.component.react.ReactAdapterComponent");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get all available client routes in a distinct list of route paths
+     * collected from all {@link ClientRoutesProvider} implementations found
+     * with Vaadin {@link Lookup}.
+     *
+     * @return a list of available client routes
+     */
+    public static List<String> getClientRoutes() {
+        return Optional.ofNullable(VaadinService.getCurrent())
+                .map(VaadinService::getContext).stream()
+                .flatMap(ctx -> ctx.getAttribute(Lookup.class)
+                        .lookupAll(ClientRoutesProvider.class).stream())
+                .flatMap(provider -> provider.getClientRoutes().stream())
+                .filter(Objects::nonNull).distinct().toList();
     }
 
 }

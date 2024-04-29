@@ -25,8 +25,11 @@ import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.ReconnectConfiguration;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.util.NativeFunction;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -222,6 +225,43 @@ public class ApplicationConnection {
     private Node getDomElementByNodeId(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         return node == null ? null : node.getDomNode();
+
+    }
+
+    private String getJavaClass(int id) {
+        StateNode node = registry.getStateTree().getNode(id);
+        return node == null ? null
+                : node.getMap(NodeFeatures.ELEMENT_DATA)
+                        .getProperty(NodeProperties.JAVA_CLASS)
+                        .getValueOrDefault(null);
+    }
+
+    public static final class Styles extends JavaScriptObject {
+        protected Styles() {
+
+        }
+
+        public final native void set(String key, Object value)/*-{
+            this[key] = value;
+        }-*/;
+    }
+
+    private JavaScriptObject getElementStyleProperties(int id) {
+        StateNode node = registry.getStateTree().getNode(id);
+        Styles styles = JavaScriptObject.createObject().cast();
+        if (node != null) {
+            JsArray<String> names = node
+                    .getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                    .getPropertyNames();
+            for (int i = 0; i < names.length(); i++) {
+                String name = names.get(i);
+                styles.set(name,
+                        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES)
+                                .getProperty(name).getValue());
+
+            }
+        }
+        return styles;
     }
 
     private int getNodeId(Element element) {
@@ -262,6 +302,13 @@ public class ApplicationConnection {
         client.debug = $entry(function() {
             var registry = ap.@ApplicationConnection::registry;
             return registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::getDebugJson()();
+        });
+        client.getNodeInfo = $entry(function(nodeId) {
+            return {
+                element: ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId),
+                javaClass: ap.@ApplicationConnection::getJavaClass(*)(nodeId),
+                styles: ap.@ApplicationConnection::getElementStyleProperties(*)(nodeId)
+            };
         });
 
     }-*/;

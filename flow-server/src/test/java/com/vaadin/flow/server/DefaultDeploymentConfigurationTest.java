@@ -15,14 +15,21 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.hamcrest.Matchers.is;
@@ -38,6 +45,9 @@ import static org.junit.Assert.assertTrue;
  * @since 1.0
  */
 public class DefaultDeploymentConfigurationTest {
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     VaadinContext context;
 
@@ -289,6 +299,37 @@ public class DefaultDeploymentConfigurationTest {
                 config.frontendHotdeploy());
     }
 
+    @Test
+    public void frontendHotDeploy_hillaInLegacyFrontendFolderExists_usesLegacyAndHotdeploy()
+            throws IOException {
+        File projectRoot = tempFolder.getRoot();
+        File legacyFrontend = tempFolder
+                .newFolder(FrontendUtils.LEGACY_FRONTEND_DIR);
+
+        File legacyFrontendViews = new File(legacyFrontend,
+                FrontendUtils.HILLA_VIEWS_PATH);
+        if (!legacyFrontendViews.mkdir()) {
+            Assert.fail("Failed to generate legacy frontend views folder");
+        }
+
+        File viewFile = new File(legacyFrontendViews, "MyView.tsx");
+        org.apache.commons.io.FileUtils.writeStringToFile(viewFile,
+                "export default function MyView(){}", "UTF-8");
+
+        try (MockedStatic<EndpointRequestUtil> util = Mockito
+                .mockStatic(EndpointRequestUtil.class)) {
+            util.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
+            Properties init = new Properties();
+            init.put(FrontendUtils.PROJECT_BASEDIR,
+                    projectRoot.getAbsolutePath());
+            DefaultDeploymentConfiguration config = createDeploymentConfig(
+                    init);
+            boolean hotdeploy = config.frontendHotdeploy();
+            Assert.assertTrue("Should use the legacy frontend folder",
+                    hotdeploy);
+        }
+    }
+
     private DefaultDeploymentConfiguration createDeploymentConfig(
             Properties initParameters) {
         ApplicationConfiguration appConfig = setupAppConfig();
@@ -308,6 +349,13 @@ public class DefaultDeploymentConfigurationTest {
     private ApplicationConfiguration setupAppConfig() {
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getFrontendFolder()).thenCallRealMethod();
+        Mockito.when(
+                appConfig.getStringProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                        FrontendUtils.DEFAULT_FRONTEND_DIR))
+                .thenReturn(FrontendUtils.DEFAULT_FRONTEND_DIR);
+        Mockito.when(appConfig.getProjectFolder())
+                .thenReturn(tempFolder.getRoot());
         Mockito.when(appConfig.getContext()).thenReturn(context);
         return appConfig;
     }

@@ -65,7 +65,8 @@ public class CleanFrontendMojoTest {
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
-        frontendGenerated = new File(projectBase, "frontend/generated");
+        frontendGenerated = new File(projectBase,
+                "src/main/frontend/generated");
 
         ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
                 projectBase);
@@ -75,7 +76,7 @@ public class CleanFrontendMojoTest {
                 "resourceOutputDirectory",
                 new File(projectBase, VAADIN_SERVLET_RESOURCES));
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
-                new File(projectBase, "frontend"));
+                new File(projectBase, "src/main/frontend"));
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 new File(projectBase,
@@ -301,8 +302,9 @@ public class CleanFrontendMojoTest {
                 .resolve("test-classes/com/vaadin/hilla"));
         Files.createFile(Paths.get(projectBase.toString(), "target").resolve(
                 "test-classes/com/vaadin/hilla/EndpointController.class"));
-        Files.createDirectories(Paths.get(projectBase.toString(), "frontend"));
-        Files.createFile(Paths.get(projectBase.toString(), "frontend")
+        Files.createDirectories(
+                Paths.get(projectBase.toString(), "src/main/frontend"));
+        Files.createFile(Paths.get(projectBase.toString(), "src/main/frontend")
                 .resolve("index.ts"));
     }
 

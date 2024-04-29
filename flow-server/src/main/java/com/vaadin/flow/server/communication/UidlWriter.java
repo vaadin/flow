@@ -359,7 +359,7 @@ public class UidlWriter implements Serializable {
             //@formatter:off
             expression =
                   "try{"
-                +   "Promise.resolve((function(){"
+                +   "Promise.resolve((async function(){"
                 +     expression
                 +   "})()).then($"+successIndex+",function(error){$"+errorIndex+"(''+error)})"
                 + "}catch(error){"

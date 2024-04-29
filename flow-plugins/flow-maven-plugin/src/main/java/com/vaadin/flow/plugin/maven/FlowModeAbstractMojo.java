@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 import java.io.File;
 import java.net.URI;
@@ -74,13 +75,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * A directory with project's frontend source files.
      */
-    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
+    @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
     private File frontendDirectory;
 
     /**
      * The folder where flow will put TS API files for client projects.
      */
-    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
+    @Parameter(defaultValue = "${null}")
     private File generatedTsFolder;
 
     /**
@@ -228,7 +229,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private boolean skipDevBundleRebuild;
 
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
-    private Boolean reactRouterEnabled;
+    private Boolean reactEnable;
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -298,14 +299,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File frontendDirectory() {
-
         return frontendDirectory;
     }
 
     @Override
     public File generatedTsFolder() {
-
-        return generatedTsFolder;
+        if (generatedTsFolder != null) {
+            return generatedTsFolder;
+        }
+        return new File(frontendDirectory(), GENERATED);
     }
 
     @Override
@@ -352,6 +354,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
+    public void logDebug(CharSequence debugMessage, Throwable e) {
+
+        getLog().debug(debugMessage, e);
+
+    }
+
+    @Override
     public void logInfo(CharSequence infoMessage) {
 
         getLog().info(infoMessage);
@@ -365,6 +374,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
+    public void logError(CharSequence error) {
+
+        getLog().error(error);
+    }
+
+    @Override
     public void logWarn(CharSequence warning, Throwable e) {
 
         getLog().warn(warning, e);
@@ -372,9 +387,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public void logError(CharSequence warning, Throwable e) {
+    public void logError(CharSequence error, Throwable e) {
 
-        getLog().error(warning, e);
+        getLog().error(error, e);
 
     }
 
@@ -481,7 +496,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (frontendHotdeploy != null) {
             return frontendHotdeploy;
         }
-        return FrontendUtils.isHillaUsed(frontendDirectory());
+        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
+        return FrontendUtils.isHillaUsed(frontendDirectory);
     }
 
     @Override
@@ -496,9 +512,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public boolean isReactEnabled() {
-        if (reactRouterEnabled != null) {
-            return reactRouterEnabled;
+        if (reactEnable != null) {
+            return reactEnable;
         }
-        return FrontendUtils.isReactRouterRequired(frontendDirectory());
+        File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
+        return FrontendUtils.isReactRouterRequired(frontendDirectory);
     }
 }

@@ -92,6 +92,12 @@ class SerializedJwtSplitCookieRepository {
         }
     }
 
+    static boolean containsCookie(HttpServletResponse response) {
+        return response.getHeaders("Set-Cookie").stream()
+                .anyMatch(cookie -> cookie
+                        .startsWith(JWT_HEADER_AND_PAYLOAD_COOKIE_NAME));
+    }
+
     /**
      * Checks the presence of JWT cookies in request.
      *
@@ -131,20 +137,26 @@ class SerializedJwtSplitCookieRepository {
 
     private void removeJwtSplitCookies(HttpServletRequest request,
             HttpServletResponse response) {
-        Cookie jwtHeaderAndPayloadRemove = new Cookie(
-                JWT_HEADER_AND_PAYLOAD_COOKIE_NAME, null);
-        jwtHeaderAndPayloadRemove.setPath(getRequestContextPath(request));
-        jwtHeaderAndPayloadRemove.setMaxAge(0);
-        jwtHeaderAndPayloadRemove.setSecure(request.isSecure());
-        jwtHeaderAndPayloadRemove.setHttpOnly(false);
-        response.addCookie(jwtHeaderAndPayloadRemove);
 
-        Cookie jwtSignatureRemove = new Cookie(JWT_SIGNATURE_COOKIE_NAME, null);
-        jwtSignatureRemove.setPath(getRequestContextPath(request));
-        jwtSignatureRemove.setMaxAge(0);
-        jwtSignatureRemove.setSecure(request.isSecure());
-        jwtSignatureRemove.setHttpOnly(true);
-        response.addCookie(jwtSignatureRemove);
+        // No need to send JWT cookies with max-age 0 if the current request
+        // does not contain them
+        if (containsSerializedJwt(request)) {
+            Cookie jwtHeaderAndPayloadRemove = new Cookie(
+                    JWT_HEADER_AND_PAYLOAD_COOKIE_NAME, null);
+            jwtHeaderAndPayloadRemove.setPath(getRequestContextPath(request));
+            jwtHeaderAndPayloadRemove.setMaxAge(0);
+            jwtHeaderAndPayloadRemove.setSecure(request.isSecure());
+            jwtHeaderAndPayloadRemove.setHttpOnly(false);
+            response.addCookie(jwtHeaderAndPayloadRemove);
+
+            Cookie jwtSignatureRemove = new Cookie(JWT_SIGNATURE_COOKIE_NAME,
+                    null);
+            jwtSignatureRemove.setPath(getRequestContextPath(request));
+            jwtSignatureRemove.setMaxAge(0);
+            jwtSignatureRemove.setSecure(request.isSecure());
+            jwtSignatureRemove.setHttpOnly(true);
+            response.addCookie(jwtSignatureRemove);
+        }
     }
 
     private String getRequestContextPath(HttpServletRequest request) {

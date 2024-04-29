@@ -21,7 +21,7 @@ import {
     useLocation,
     useNavigate
 } from "react-router-dom";
-import { routes } from "Frontend/routes.js";
+import { routes } from "%routesJsImportPath%";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -115,6 +115,7 @@ function vaadinRouterGlobalClickHandler(event) {
     // ignore the click if the target URL is a fragment on the current page
     if (anchor.pathname === window.location.pathname && anchor.hash !== '') {
         lastNavigation = anchor.pathname;
+        lastNavigationSearch = anchor.search;
         window.location.hash = anchor.hash;
         return;
     }
@@ -127,8 +128,11 @@ function vaadinRouterGlobalClickHandler(event) {
     }
 
     // if none of the above, convert the click into a navigation event
-    const {pathname, search, hash} = anchor;
-    if (fireRouterEvent('go', {pathname, search, hash})) {
+    const {href, baseURI, search, hash} = anchor;
+    // Normalize away base from pathname. e.g. /react should remove base /view from /view/react
+    let normalizedPathname = href.replace(search,'').replace(baseURI, '').replace(hash, '');
+    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname : "/" + normalizedPathname;
+    if (fireRouterEvent('go', {pathname: normalizedPathname, search, hash, clientNavigation: true})) {
         event.preventDefault();
         // for a click event, the scroll is reset to the top position.
         if (event && event.type === 'click') {
@@ -141,6 +145,7 @@ function vaadinRouterGlobalClickHandler(event) {
 let navigation: NavigateFunction | ((arg0: any, arg1: { replace: boolean; }) => void);
 let mountedContainer: Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>> | undefined = undefined;
 let lastNavigation: string;
+let lastNavigationSearch: string;
 let prevNavigation: string;
 let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
 
@@ -149,14 +154,22 @@ function navigateEventHandler(event) {
     if (event && event.preventDefault) {
         event.preventDefault();
     }
+    // Normalize path against baseURI if href available.
+    let normalizedPathname = event.detail.href ?
+        event.detail.href.replace(event.detail.search ,'').replace(document.baseURI, '').replace(event.detail.hash, '') :
+        event.detail.pathname;
+    normalizedPathname = normalizedPathname.startsWith("/") ? normalizedPathname : "/" + normalizedPathname;
+
     // @ts-ignore
-    let matched = matchRoutes(Array.from(routes), event.detail.pathname);
+    let matched = matchRoutes(Array.from(routes), normalizedPathname);
     prevNavigation = lastNavigation;
 
     // if navigation event route targets a flow view do beforeEnter for the
     // target path. Server will then handle updates and postpone as needed.
-    if(matched?.length == 1 && matched[0].route.path === "/*") {
+    // @ts-ignore
+    if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length >= 1) {
         if (mountedContainer?.onBeforeEnter) {
+            // onBeforeEvent call will handle the Flow navigation
             mountedContainer.onBeforeEnter(
                 {
                     pathname: event.detail.pathname,
@@ -170,6 +183,15 @@ function navigateEventHandler(event) {
                     // @ts-ignore
                     redirect: (path) => {
                         navigation(path, {replace: false});
+                    },
+                    continue: () => {
+                        let path = event.detail.pathname;
+                        if(event.detail.search) path += event.detail.search;
+                        if(event.detail.hash) path += event.detail.hash;
+                        if(window.location.pathname !== path) {
+                            window.history.pushState(window.history.state, '', path);
+                            window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
+                        }
                     }
                 },
                 router,
@@ -180,7 +202,19 @@ function navigateEventHandler(event) {
         // navigation. If not postponed clear + navigate will be executed.
         if (mountedContainer?.onBeforeLeave) {
             mountedContainer?.onBeforeLeave({pathname: event.detail.pathname, search: event.detail.search}, {
-                prevent() {}
+                prevent() {},
+                continue() {
+                    mountedContainer?.parentNode?.removeChild(mountedContainer);
+                    mountedContainer = undefined;
+                    // clientNavigation flag denotes navigation to a client route through
+                    // a link or server navigate. If clientNavigation is not given the
+                    // navigation is through a history event and we only call the router popstate event.
+                    if (event.detail.clientNavigation) {
+                        navigation(normalizedPathname, {replace: false});
+                    } else {
+                        popstateListener.listener(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'}));
+                    }
+                }
             }, router);
         } else {
             // Navigate to a non flow view. Clean nodes and undefine container.
@@ -190,14 +224,23 @@ function navigateEventHandler(event) {
         }
     }
     lastNavigation = event.detail.pathname;
+    lastNavigationSearch = event.detail.search;
 }
 
 function popstateHandler(event: PopStateEvent) {
+    fireRouterEvent('location-changed', {
+        location: window.location
+    });
+
     if (event.state === 'vaadin-router-ignore') {
+        // Update last nav path to keep it on track. Otherwise it would be
+        // updated in vaadin-router-go event handler if needed.
+        lastNavigation = window.location.pathname;
+        lastNavigationSearch = window.location.search;
         return;
     }
     const {pathname, search, hash} = window.location;
-    if(pathname === lastNavigation) {
+    if(pathname === lastNavigation && search === lastNavigationSearch) {
         return;
     }
     // @ts-ignore
@@ -207,7 +250,7 @@ function popstateHandler(event: PopStateEvent) {
     }));
 }
 
-export default function Flow() {
+function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const {pathname, search, hash} = useLocation();
     const navigate = useNavigate();
@@ -233,10 +276,11 @@ export default function Flow() {
                 window.addEventListener('popstate', popstateHandler);
             }
         }
-        if(lastNavigation === pathname) {
-            return;
-        }
         flow.serverSideRoutes[0].action({pathname, search}).then((container) => {
+            // Update last navigation when coming into serverside as we might come
+            // in using the forward/back buttons.
+            lastNavigation = pathname;
+            lastNavigationSearch = search;
             const outlet = ref.current?.parentNode;
             if (outlet && outlet !== container.parentNode) {
                 outlet.append(container);
@@ -261,11 +305,14 @@ export default function Flow() {
                 window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
             }
 
-            let matched = matchRoutes(Array.from(routes), pathname);
+            let matched = matchRoutes(Array.from(routes), window.location.pathname);
 
             // if router force navigated using 'Link' we will need to remove
             // flow from the view
-            if(matched && matched[0].route.path !== "/*") {
+            // If we are going to a non Flow view then we need to clean the Flow
+            // view from the dom as we will not be getting a uidl response.
+            // @ts-ignore
+            if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length == 0) {
                 mountedContainer?.parentNode?.removeChild(mountedContainer);
                 mountedContainer = undefined;
             }
@@ -273,6 +320,7 @@ export default function Flow() {
     }, [pathname, search, hash]);
     return <output ref={ref} />;
 }
+Flow.type = 'FlowContainer'; // This is for copilot to recognize this
 
 export const serverSideRoutes = [
     { path: '/*', element: <Flow/> },
@@ -281,74 +329,76 @@ export const serverSideRoutes = [
 (function () {
     "use strict";
     [Document, Window].forEach((cst) => {
-        // save the original methods before overwriting them
         if (typeof cst === "function") {
-            // @ts-ignore
-            cst.prototype._addEventListener = cst.prototype.addEventListener;
-            // @ts-ignore
-            cst.prototype._removeEventListener = cst.prototype.removeEventListener;
-
-            cst.prototype.addEventListener = function (type: string, listener: EventListener,
-                                                       useCapture: boolean = false) {
-                // declare listener
+            const eventListenerList = {};
+            function pushEventListener(type: string, listener: EventListener,
+                                       useCapture: boolean = false) {
                 // @ts-ignore
-                this._addEventListener(type, listener, useCapture);
-
+                if (!eventListenerList[type]) {
+                    // @ts-ignore
+                    eventListenerList[type] = [];
+                }
                 // @ts-ignore
-                if (!this.eventListenerList) this.eventListenerList = {};
+                eventListenerList[type].push({ type, listener, useCapture });
+            }
+            function removeEventListener(type: string, listener: EventListener,
+                                         useCapture: boolean = false) {
                 // @ts-ignore
-                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
-
-                // add listener to  event tracking list
-                // @ts-ignore
-                this.eventListenerList[type].push({ type, listener, useCapture });
-            };
-
-            cst.prototype.removeEventListener = function (type: string, listener: EventListener,
-                                                          useCapture: boolean = false) {
-                // remove listener
-                // @ts-ignore
-                this._removeEventListener(type, listener, useCapture);
-
-                // @ts-ignore
-                if (!this.eventListenerList) this.eventListenerList = {};
-                // @ts-ignore
-                if (!this.eventListenerList[type]) this.eventListenerList[type] = [];
-
+                if (!eventListenerList[type]) {
+                    return;
+                }
                 // Find the event in the list, If a listener is registered twice, one
                 // with capture and one without, remove each one separately. Removal of
                 // a capturing listener does not affect a non-capturing version of the
                 // same listener, and vice versa.
                 // @ts-ignore
-                for (let i = 0; i < this.eventListenerList[type].length; i++) {
+                for (let i = 0; i < eventListenerList[type].length; i++) {
                     if (
                         // @ts-ignore
-                        this.eventListenerList[type][i].listener === listener &&
+                        eventListenerList[type][i].listener === listener &&
                         // @ts-ignore
-                        this.eventListenerList[type][i].useCapture === useCapture
+                        eventListenerList[type][i].useCapture === useCapture
                     ) {
                         // @ts-ignore
-                        this.eventListenerList[type].splice(i, 1);
+                        eventListenerList[type].splice(i, 1);
                         break;
                     }
                 }
                 // if no more events of the removed event type are left,remove the group
                 // @ts-ignore
-                if (this.eventListenerList[type].length == 0)
+                if (eventListenerList[type].length == 0) {
                     // @ts-ignore
-                    delete this.eventListenerList[type];
+                    delete eventListenerList[type];
+                }
+            }
+            function getEventListener(type: string) {
+                if (!eventListenerList) return [];
+                if (type == undefined) return eventListenerList;
+                // @ts-ignore
+                if(eventListenerList[type] == undefined) return [];
+                // @ts-ignore
+                return eventListenerList[type];
+            }
+
+            // save the original methods before overwriting them
+            const originalAddEventListener = cst.prototype.addEventListener;
+            const originalRemoveEventListener = cst.prototype.removeEventListener;
+
+            cst.prototype.addEventListener = function (type: string, listener: EventListener,
+                                                       useCapture: boolean = false) {
+                originalAddEventListener.call(this, type, listener, useCapture);
+                pushEventListener(type, listener, useCapture);
+            };
+
+            cst.prototype.removeEventListener = function (type: string, listener: EventListener,
+                                                          useCapture: boolean = false) {
+                originalRemoveEventListener.call(this, type, listener, useCapture);
+                removeEventListener(type, listener, useCapture);
             };
 
             // @ts-ignore
             cst.prototype.getEventListeners = function (type: string) {
-                // @ts-ignore
-                if (!this.eventListenerList) this.eventListenerList = {};
-
-                // return reqested listeners type or all them
-                // @ts-ignore
-                if (type === undefined) return this.eventListenerList;
-                // @ts-ignore
-                return this.eventListenerList[type];
+                return getEventListener(type);
             };
         }
     });
@@ -359,25 +409,54 @@ export const serverSideRoutes = [
  * Load the script for an exported WebComponent with the given tag
  *
  * @param tag name of the exported web-component to load
+ *
+ * @returns Promise(resolve, reject) that is fulfilled on script load
  */
-export const loadComponentScript = (tag: String) => {
-    useEffect(() => {
-        const script = document.createElement('script');
-        script.src = `/web-component/${tag}.js`;
-        document.head.appendChild(script);
+export const loadComponentScript = (tag: String): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        useEffect(() => {
+            const script = document.createElement('script');
+            script.src = `/web-component/${tag}.js`;
+            script.onload = function() {
+                resolve();
+            };
+            script.onerror = function(err) {
+                reject(err);
+            };
+            document.head.appendChild(script);
 
-        return () => {
-            document.head.removeChild(script);
-        }
-    }, []);
+            return () => {
+                document.head.removeChild(script);
+            }
+        }, []);
+    });
 };
+
+interface Properties {
+    [key: string]: string;
+}
 
 /**
  * Load WebComponent script and create a React element for the WebComponent.
  *
  * @param tag custom web-component tag name.
+ * @param props optional Properties object to create element attributes with
+ * @param onload optional callback to be called for script onload
+ * @param onerror optional callback for error loading the script
  */
-export const createWebComponent = (tag: string) => {
-    loadComponentScript(tag);
+export const createWebComponent = (tag: string, props?: Properties, onload?: () => void, onerror?: (err:any) => void) => {
+    loadComponentScript(tag).then(() => onload?.(), (err) => {
+        if(onerror) {
+            onerror(err);
+        } else {
+            console.error(`Failed to load script for ${tag}.`, err);
+        }
+    });
+
+    if(props) {
+        return React.createElement(tag, props);
+    }
     return React.createElement(tag);
 };
+
+export default Flow;

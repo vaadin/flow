@@ -213,7 +213,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("10.3.10", packageJson
+        Assert.assertEquals("10.3.12", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
@@ -433,6 +433,96 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void testGetPlatformPinnedDependencies_reactNotAvailable_noReactComponents()
+            throws IOException, ClassNotFoundException {
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+                ".json", temporaryFolder.newFolder());
+        JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+
+        JsonObject reactComponents = Json.createObject();
+        JsonObject reactData = Json.createObject();
+        reactData.put("jsVersion", "24.4.0-alpha13");
+        reactData.put("npmName", "@vaadin/react-components");
+
+        reactComponents.put("react-components", reactData);
+
+        mockedVaadinCoreJson.put("react", reactComponents);
+
+        Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
+        Assert.assertTrue(
+                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
+
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
+                StandardCharsets.UTF_8);
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(coreVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(null);
+
+        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+        Assert.assertFalse(pinnedVersions.hasKey("react-components"));
+    }
+
+    @Test
+    public void testGetPlatformPinnedDependencies_reactAvailable_containsReactComponents()
+            throws IOException, ClassNotFoundException {
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+                ".json", temporaryFolder.newFolder());
+        File vaadinVersionsFile = File.createTempFile("vaadin-versions",
+                ".json", temporaryFolder.newFolder());
+        JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+
+        JsonObject reactComponents = Json.createObject();
+        JsonObject reactData = Json.createObject();
+        reactData.put("jsVersion", "24.4.0-alpha13");
+        reactData.put("npmName", "@vaadin/react-components");
+        reactData.put("mode", "react");
+
+        reactComponents.put("react-components", reactData);
+
+        mockedVaadinCoreJson.put("react", reactComponents);
+
+        Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
+        Assert.assertTrue(
+                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
+
+        JsonObject mockedVaadinJson = getMockVaadinVersionsJson();
+
+        reactComponents = Json.createObject();
+        reactData = Json.createObject();
+        reactData.put("jsVersion", "24.4.0-alpha13");
+        reactData.put("npmName", "@vaadin/react-components-pro");
+        reactData.put("mode", "react");
+
+        reactComponents.put("react-components-pro", reactData);
+
+        mockedVaadinJson.put("react", reactComponents);
+
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
+                StandardCharsets.UTF_8);
+        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toJson(),
+                StandardCharsets.UTF_8);
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(coreVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(vaadinVersionsFile.toURI().toURL());
+        Class clazz = FeatureFlags.class; // actual class doesn't matter
+        Mockito.doReturn(clazz).when(finder).loadClass(
+                "com.vaadin.flow.component.react.ReactAdapterComponent");
+
+        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/react-components"));
+        Assert.assertTrue(
+                pinnedVersions.hasKey("@vaadin/react-components-pro"));
+    }
+
+    @Test
     public void testGetPlatformPinnedDependencies_VaadinAndVaadinCoreVersionsArePresent_outputContainsBothCoreAndCommercialVersions()
             throws IOException {
         File coreVersionsFile = File.createTempFile("vaadin-core-versions",
@@ -471,8 +561,8 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getDefaultDependencies_reactRouterIsUsed_addsHillaReactComponents() {
-        boolean reactRouterEnabled = options.isReactEnabled();
+    public void getDefaultDependencies_reactIsUsed_addsHillaReactComponents() {
+        boolean reactEnabled = options.isReactEnabled();
         try (MockedStatic<FrontendUtils> mock = Mockito
                 .mockStatic(FrontendUtils.class)) {
             mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
@@ -500,13 +590,13 @@ public class NodeUpdaterTest {
                     "React dev dependency should be added when react-router is used",
                     defaultDevDeps.containsKey("react-dev-dependency"));
         } finally {
-            options.withReact(reactRouterEnabled);
+            options.withReact(reactEnabled);
         }
     }
 
     @Test
     public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
-        boolean reactRouterEnabled = options.isReactEnabled();
+        boolean reactEnabled = options.isReactEnabled();
         try (MockedStatic<FrontendUtils> mock = Mockito
                 .mockStatic(FrontendUtils.class)) {
             mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
@@ -530,7 +620,7 @@ public class NodeUpdaterTest {
                     "Lit dev dependency should be added when vaadin-router is used",
                     defaultDevDeps.containsKey("lit-dev-dependency"));
         } finally {
-            options.withReact(reactRouterEnabled);
+            options.withReact(reactEnabled);
         }
     }
 
@@ -561,9 +651,42 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void readPackageJson_nonExistingFile_jsonContainsDepsAndDevDeps()
+            throws IOException {
+        JsonObject jsonObject = nodeUpdater
+                .readPackageJson("non-existing-folder");
+        Assert.assertTrue(jsonObject.hasKey("dependencies"));
+        Assert.assertTrue(jsonObject.hasKey("devDependencies"));
+    }
+
+    @Test
     public void readDependencies_doesntHaveDependencies_doesNotThrow() {
         nodeUpdater.readDependencies("no-deps", "dependencies");
         nodeUpdater.readDependencies("no-deps", "devDependencies");
+    }
+
+    @Test
+    public void readPackageJsonIfAvailable_nonExistingFile_noErrorLog() {
+        Logger log = Mockito.mock(Logger.class);
+        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
+                options) {
+
+            @Override
+            public void execute() {
+            }
+
+            @Override
+            Logger log() {
+                return log;
+            }
+        };
+        nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
+                "dependencies");
+        Mockito.verifyNoInteractions(log);
+
+        nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
+                "devDpendencies");
+        Mockito.verifyNoInteractions(log);
     }
 
     private String getPolymerVersion(JsonObject object) {

@@ -1396,6 +1396,19 @@ public class DataCommunicator<T> implements Serializable {
                         previousActive.length());
             }
 
+            if (activeKeyOrder.isEmpty() && !effectiveRequested.isEmpty()) {
+                getLogger().error(
+                        "Requested data for {} but data provider did not fetch any item. "
+                                + "It might be a bug in the data provider callbacks implementation ({}).",
+                        effectiveRequested, getDataProvider());
+            } else if (activeKeyOrder.size() < effectiveRequested.length()) {
+                getLogger().error(
+                        "Requested data for {} but data provider fetched only {} items. "
+                                + "It might be a bug in the data provider callbacks implementation ({}).",
+                        effectiveRequested, activeKeyOrder.size(),
+                        getDataProvider());
+            }
+
             update.set(activeStart, getJsonItems(effectiveRequested));
             updated = true;
         } else if (!previousActive.equals(effectiveRequested)) {

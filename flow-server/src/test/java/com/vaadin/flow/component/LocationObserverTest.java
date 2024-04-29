@@ -29,11 +29,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.TestRouteRegistry;
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
 public class LocationObserverTest {
@@ -61,32 +57,10 @@ public class LocationObserverTest {
     public static class RootComponent extends Component {
     }
 
-    public static class RouterTestMockUI extends MockUI {
-
-        public RouterTestMockUI(Router router) {
-            super(createMockSession(router));
-        }
-
-        private static VaadinSession createMockSession(Router router) {
-            MockVaadinServletService service = new MockVaadinServletService();
-            service.setRouter(router);
-
-            VaadinSession session = new AlwaysLockedVaadinSession(service);
-            session.setConfiguration(service.getDeploymentConfiguration());
-            return session;
-        }
-
-        @Override
-        public void accessSynchronously(Command command)
-                throws UIDetachedException {
-            // NOOP
-        }
-    }
-
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
-        ui = new UI();
+        ui = new MockUI();
         eventCollector.clear();
     }
 
@@ -94,7 +68,7 @@ public class LocationObserverTest {
     public void navigation_and_locale_change_should_fire_locale_change_observer()
             throws InvalidRouteConfigurationException {
         router = new Router(new TestRouteRegistry());
-        ui = new RouterTestMockUI(router);
+        ui = new MockUI(router);
 
         RouteConfiguration.forRegistry(router.getRegistry())
                 .setAnnotatedRoute(Translations.class);

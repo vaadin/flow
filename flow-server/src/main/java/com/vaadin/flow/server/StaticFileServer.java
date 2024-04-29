@@ -376,9 +376,8 @@ public class StaticFileServer implements StaticFileHandler {
                 .getDeploymentConfiguration();
         // First, look for the theme assets in the {project.root}/frontend/
         // themes/my-theme folder
-        File frontendFolder = new File(
-                deploymentConfiguration.getProjectFolder(),
-                FrontendUtils.FRONTEND);
+        File frontendFolder = FrontendUtils
+                .getProjectFrontendDir(deploymentConfiguration);
         File assetInFrontendThemes = new File(frontendFolder, assetPath);
         if (assetInFrontendThemes.exists()) {
             return assetInFrontendThemes.toURI().toURL();

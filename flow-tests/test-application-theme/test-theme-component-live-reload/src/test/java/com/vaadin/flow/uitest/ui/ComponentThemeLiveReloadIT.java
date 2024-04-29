@@ -34,6 +34,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -47,14 +48,16 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private static final String OTHER_BORDER_RADIUS = "6px";
     private static final String PARENT_BORDER_RADIUS = "9px";
 
-    private static final String THEMES_FOLDER = "frontend/themes/";
+    private static final String THEMES_FOLDER = FrontendUtils.DEFAULT_FRONTEND_DIR
+            + "/themes/";
     private static final String CURRENT_THEME = "app-theme";
     private static final String PARENT_THEME = "parent-theme";
     private static final String CURRENT_THEME_FOLDER = THEMES_FOLDER
             + CURRENT_THEME + "/";
     private static final String PARENT_THEME_FOLDER = THEMES_FOLDER
             + PARENT_THEME + "/";
-    private static final String THEME_GENERATED_PATTERN = "frontend/generated/theme-%s.generated.js";
+    private static final String THEME_GENERATED_PATTERN = FrontendUtils.DEFAULT_FRONTEND_DIR
+            + "/generated/theme-%s.generated.js";
     private static final String COMPONENT_STYLE_SHEET = "components/vaadin-text-field.css";
 
     private File currentThemeComponentCSSFile;

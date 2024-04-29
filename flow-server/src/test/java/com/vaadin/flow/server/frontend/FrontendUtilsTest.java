@@ -37,7 +37,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -175,6 +174,42 @@ public class FrontendUtilsTest {
                           ],
                       },
                   ];
+            """;
+
+    private static final String ROUTES_CONTENT_WITH_WITH_FILE_ROUTES = """
+                import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                import Flow from 'Frontend/generated/flow/Flow';
+                import fileRoutes from 'Frontend/generated/file-routes';
+
+                export const { router, routes } = new RouterConfigurationBuilder()
+                    .withFileRoutes(fileRoutes)
+                    .withFallback(Flow)
+                    .build();
+            """;
+
+    private static final String ROUTES_CONTENT_WITH_WITH_REACT_ROUTES = """
+                import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                import Flow from 'Frontend/generated/flow/Flow';
+
+                export const { router, routes } = new RouterConfigurationBuilder()
+                    .withReactRoutes([
+                      {
+                          element: <MainLayout />,
+                          handle: { title: 'Hilla CRM' }
+                      },
+                    ])
+                    .withFallback(Flow).build();
+            """;
+
+    private static final String HILLA_VIEW_TSX = """
+                import { VerticalLayout } from "@vaadin/react-components/VerticalLayout.js";
+                export default function AboutView() {
+                    return (
+                        <VerticalLayout theme="padding">
+                            <p>This is a Hilla view</p>
+                        </VerticalLayout>
+                    );
+                }
             """;
 
     @Test
@@ -491,7 +526,7 @@ public class FrontendUtilsTest {
 
     @Test
     public void isReactRouterRequired_noIndexTsFile_true() throws IOException {
-        File frontend = tmpDir.newFolder("frontend");
+        File frontend = tmpDir.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
         Assert.assertTrue("react-router expected when index.ts isn't there",
                 FrontendUtils.isReactRouterRequired(frontend));
     }
@@ -604,11 +639,75 @@ public class FrontendUtilsTest {
                 FrontendUtils.isHillaViewsUsed(frontend));
     }
 
+    @Test
+    public void isHillaViewsUsed_withFileRoutes_true() throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
+                ROUTES_CONTENT_WITH_WITH_FILE_ROUTES);
+        Assert.assertTrue("hilla-views are expected, as withFileRoutes is used",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_withReactRoutes_true() throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
+                ROUTES_CONTENT_WITH_WITH_REACT_ROUTES);
+        Assert.assertTrue(
+                "hilla-views are expected, as withReactRoutes is used",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_nonEmptyHillaViewInViews_true()
+            throws IOException {
+        File frontend = null;
+        for (String ext : Arrays.asList(".js", ".jsx", ".ts", ".tsx")) {
+            try {
+                frontend = prepareFrontendForRoutesFile(
+                        FrontendUtils.HILLA_VIEWS_PATH + "/HillaView" + ext,
+                        HILLA_VIEW_TSX);
+                Assert.assertTrue(
+                        "hilla view is present, thus Hilla is expected",
+                        FrontendUtils.isHillaViewsUsed(frontend));
+            } finally {
+                if (frontend != null && frontend.exists()) {
+                    FileUtils.deleteQuietly(frontend);
+                }
+            }
+        }
+    }
+
+    @Test
+    public void isHillaViewsUsed_emptyHillaViewContent_false()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(
+                FrontendUtils.HILLA_VIEWS_PATH + "/HillaView.ts", "//comment");
+        Assert.assertFalse("empty Hilla view, Hilla not expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
+    @Test
+    public void isHillaViewsUsed_noViews_false() throws IOException {
+        File frontend = prepareFrontendForRoutesFile(
+                FrontendUtils.HILLA_VIEWS_PATH + "/foo.css", "some css");
+        Assert.assertFalse("no Hilla views, Hilla not expected",
+                FrontendUtils.isHillaViewsUsed(frontend));
+    }
+
     private File prepareFrontendForRoutesFile(String fileName, String content)
             throws IOException {
-        File frontend = tmpDir.newFolder("frontend");
+        return prepareFrontendForRoutesFile(fileName, content, false);
+    }
+
+    private File prepareFrontendForRoutesFile(String fileName, String content,
+            boolean generateDummyFSView) throws IOException {
+        File frontend = tmpDir.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
         FileUtils.write(new File(frontend, fileName), content,
                 StandardCharsets.UTF_8);
+        if (generateDummyFSView) {
+            FileUtils.write(new File(frontend, "views/testFSView.ts"),
+                    "export default function TestFSView() { return 'TestFSView'; }",
+                    StandardCharsets.UTF_8);
+        }
         return frontend;
     }
 

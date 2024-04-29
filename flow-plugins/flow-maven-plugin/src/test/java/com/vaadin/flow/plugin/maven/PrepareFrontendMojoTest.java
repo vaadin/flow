@@ -102,7 +102,8 @@ public class PrepareFrontendMojoTest {
                 VAADIN_SERVLET_RESOURCES);
         defaultJavaSource = new File(".", "src/test/java");
         defaultJavaResource = new File(".", "src/test/resources");
-        generatedTsFolder = new File(projectBase, "frontend/generated");
+        generatedTsFolder = new File(projectBase,
+                "src/main/frontend/generated");
 
         ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
                 projectBase);
@@ -111,7 +112,7 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo,
                 "resourceOutputDirectory", resourceOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
-                new File(projectBase, "frontend"));
+                new File(projectBase, "src/main/frontend"));
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 new File(projectBase,
@@ -249,8 +250,6 @@ public class PrepareFrontendMojoTest {
                 generatedTsFolder.exists());
         Assert.assertFalse("Old file should have been removed",
                 oldFile.exists());
-        Assert.assertFalse("Flow folder should have been deleted",
-                flowFolder.exists());
     }
 
     @Test

@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>2.0.12</version>
+            <version>2.0.13</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -57,7 +57,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.1</version>
                 <configuration>
                     <excludes>
                         <exclude>**/*Fake*</exclude>
@@ -104,6 +104,7 @@
                         <fileset>
                             <directory>${project.basedir}/src/main/bundles</directory>
                             <directory>${project.basedir}/frontend/generated</directory>
+                            <directory>${project.basedir}/src/main/frontend/generated</directory>
                         </fileset>
                     </filesets>
                 </configuration>

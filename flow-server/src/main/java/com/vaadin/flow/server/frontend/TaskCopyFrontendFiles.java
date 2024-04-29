@@ -38,7 +38,8 @@ import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
  *
  * @since 2.0
  */
-public class TaskCopyFrontendFiles implements FallibleCommand {
+public class TaskCopyFrontendFiles
+        extends AbstractFileGeneratorFallibleCommand {
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
             "**/*.js", "**/*.js.map", "**/*.css", "**/*.css.map", "**/*.ts",
             "**/*.ts.map", "**/*.tsx", "**/*.tsx.map", "**/*.jsx",
@@ -113,6 +114,8 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         long ms = (System.nanoTime() - start) / 1000000;
         log().info("Visited {} resources. Took {} ms.",
                 resourceLocations.size(), ms);
+        track(handledFiles.stream().map(relativePath -> targetDirectory.toPath()
+                .resolve(relativePath).toFile()).toList());
     }
 
     static Set<String> getFilesInDirectory(File targetDirectory,
@@ -130,4 +133,5 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
     private Logger log() {
         return LoggerFactory.getLogger(this.getClass());
     }
+
 }

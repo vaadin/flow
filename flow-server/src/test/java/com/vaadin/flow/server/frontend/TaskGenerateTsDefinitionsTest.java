@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -30,6 +31,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -38,6 +40,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import static com.vaadin.flow.server.frontend.TaskGenerateTsDefinitions.TS_DEFINITIONS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+@NotThreadSafe
 public class TaskGenerateTsDefinitionsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -50,6 +53,7 @@ public class TaskGenerateTsDefinitionsTest {
         Options options = new Options(Mockito.mock(Lookup.class), outputFolder);
 
         taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(options);
+        taskGenerateTsDefinitions.warningEmitted = false;
     }
 
     @Test
@@ -106,8 +110,14 @@ public class TaskGenerateTsDefinitionsTest {
     @Test
     public void tsDefinition_oldFlowContents_tsDefinitionUpdated()
             throws Exception {
+        tsDefinition_oldFlowContents_tsDefinitionUpdated(".v1");
+        tsDefinition_oldFlowContents_tsDefinitionUpdated(".v2");
+    }
+
+    private void tsDefinition_oldFlowContents_tsDefinitionUpdated(String suffix)
+            throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
-        Files.writeString(typesTSfile, readPreviousContent());
+        Files.writeString(typesTSfile, readPreviousContent(suffix));
         taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
@@ -120,9 +130,15 @@ public class TaskGenerateTsDefinitionsTest {
     @Test
     public void tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated()
             throws Exception {
+        tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated(".v1");
+        tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated(".v2");
+    }
+
+    private void tsDefinition_oldFlowContents_missingLastEOL_tsDefinitionUpdated(
+            String suffix) throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         Files.writeString(typesTSfile,
-                readPreviousContent().replaceFirst("\r?\n$", ""));
+                readPreviousContent(suffix).replaceFirst("\r?\n$", ""));
         taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
@@ -133,7 +149,139 @@ public class TaskGenerateTsDefinitionsTest {
     }
 
     @Test
-    public void customTsDefinition_missingFlowContents_tsDefinitionUpdatedAndExceptionThrown()
+    public void tsDefinition_oldHillaContents_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v1"),
+                UTF_8);
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                updatedContent,
+                CoreMatchers.containsString(readExpectedContent(true)));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaContents_ignoringMultilineComments_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v1"),
+                UTF_8);
+        // do not care about comment type (single or multi line)
+        hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
+                "/* a comment */\n$1\n");
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                updatedContent,
+                CoreMatchers.containsString(readExpectedContent(true)));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaContents_ignoringSingleLineComments_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v1"),
+                UTF_8);
+        // do not care about comment type (single or multi line)
+        hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
+                "// a comment\n$1\n");
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                updatedContent,
+                CoreMatchers.containsString(readExpectedContent(true)));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaV2Contents_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v2"),
+                UTF_8);
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                stripEmptyLines(updatedContent), CoreMatchers.containsString(
+                        stripEmptyLines(readExpectedContent(true))));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaV2Contents_ignoringMultilineComments_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v2"),
+                UTF_8);
+        // do not care about comment type (single or multi line)
+        hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
+                "/* a comment */\n$1");
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                stripEmptyLines(updatedContent), CoreMatchers.containsString(
+                        stripEmptyLines(readExpectedContent(true))));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void tsDefinition_oldHillaV2Contents_ignoringSingleLineComments_tsDefinitionUpdated()
+            throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String hillaTsDef = IOUtils.toString(
+                getClass().getResourceAsStream(TS_DEFINITIONS + ".hilla.v2"),
+                UTF_8);
+        // do not care about comment type (single or multi line)
+        hillaTsDef = hillaTsDef.replaceAll("(?m)^(\\s*declare.*)$",
+                "// a comment\n$1");
+        Files.writeString(typesTSfile, hillaTsDef);
+        taskGenerateTsDefinitions.execute();
+        Assert.assertFalse(
+                "Should not generate types.d.ts when already existing",
+                taskGenerateTsDefinitions.shouldGenerate());
+        String updatedContent = Files.readString(typesTSfile);
+        MatcherAssert.assertThat("types.d.ts should have been updated",
+                stripEmptyLines(updatedContent), CoreMatchers.containsString(
+                        stripEmptyLines(readExpectedContent(true))));
+        MatcherAssert.assertThat("types.d.ts should contain original content",
+                updatedContent, CoreMatchers.containsString(hillaTsDef));
+    }
+
+    @Test
+    public void customTsDefinition_missingFlowContents_tsDefinitionUpdatedAndWarningLogged()
             throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         String originalContent = """
@@ -145,11 +293,17 @@ public class TaskGenerateTsDefinitionsTest {
                 export type JTDForm = typeof jtdForms[number];
                 """;
         Files.writeString(typesTSfile, originalContent);
-        ExecutionFailedException exception = Assert.assertThrows(
-                ExecutionFailedException.class,
-                taskGenerateTsDefinitions::execute);
-        MatcherAssert.assertThat(exception.getMessage(), CoreMatchers
-                .containsString(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
+
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
+            taskGenerateTsDefinitions.execute();
+        }
+        Assert.assertTrue(logger.getLogs()
+                .contains(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
                 taskGenerateTsDefinitions.shouldGenerate());
@@ -161,25 +315,83 @@ public class TaskGenerateTsDefinitionsTest {
     }
 
     @Test
-    public void customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndExceptionThrown()
+    public void customTsDefinition_v1FlowContents_tsDefinitionUpdatedAndWarningLogged()
             throws Exception {
+        customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndWarningLogged(
+                ".v1");
+    }
+
+    @Test
+    public void customTsDefinition_v2FlowContents_tsDefinitionUpdatedAndWarningLogged()
+            throws Exception {
+        customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndWarningLogged(
+                ".v2");
+    }
+
+    private void customTsDefinition_oldFlowContents_tsDefinitionUpdatedAndWarningLogged(
+            String suffix) throws Exception {
         Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
         String originalContent = "import type { SchemaObject } from \"../../types\";"
-                + System.lineSeparator() + readPreviousContent();
+                + System.lineSeparator() + readPreviousContent(suffix);
         Files.writeString(typesTSfile, originalContent);
-        ExecutionFailedException exception = Assert.assertThrows(
-                ExecutionFailedException.class,
-                taskGenerateTsDefinitions::execute);
-        MatcherAssert.assertThat(exception.getMessage(), CoreMatchers
-                .containsString(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
+
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
+            taskGenerateTsDefinitions.execute();
+        }
+        Assert.assertTrue(logger.getLogs()
+                .contains(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
+
         Assert.assertFalse(
                 "Should not generate types.d.ts when already existing",
                 taskGenerateTsDefinitions.shouldGenerate());
-        String updatedContent = Files.readString(typesTSfile);
+        String updatedContent = stripEmptyLines(Files.readString(typesTSfile));
         MatcherAssert.assertThat("types.d.ts should have been updated",
-                updatedContent,
-                CoreMatchers.containsString(readExpectedContent(true)));
+                updatedContent, CoreMatchers.containsString(
+                        stripEmptyLines(readExpectedContent(true))));
         assertBackupFileCreated(originalContent);
+    }
+
+    @Test
+    public void contentUpdateForSecondTime_tsDefinitionUpdatedAndWarningLoggedOnce()
+            throws Exception {
+        contentUpdateForSecondTime_tsDefinitionUpdatedAndWarningLoggedOnce(
+                ".v1");
+        taskGenerateTsDefinitions.warningEmitted = false;
+        contentUpdateForSecondTime_tsDefinitionUpdatedAndWarningLoggedOnce(
+                ".v2");
+    }
+
+    private void contentUpdateForSecondTime_tsDefinitionUpdatedAndWarningLoggedOnce(
+            String suffix) throws Exception {
+        Path typesTSfile = new File(outputFolder, "types.d.ts").toPath();
+        String originalContent = "import type { SchemaObject } from \"../../types\";"
+                + System.lineSeparator() + readPreviousContent(suffix);
+        Files.writeString(typesTSfile, originalContent);
+
+        MockLogger logger = new MockLogger();
+        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
+                .mockStatic(AbstractTaskClientGenerator.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+            client.when(() -> AbstractTaskClientGenerator.log())
+                    .thenReturn(logger);
+            taskGenerateTsDefinitions.execute();
+
+            Assert.assertTrue(logger.getLogs()
+                    .contains(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
+
+            logger.clearLogs();
+
+            Files.writeString(typesTSfile, originalContent);
+
+            taskGenerateTsDefinitions.execute();
+        }
+        Assert.assertFalse(logger.getLogs()
+                .contains(TaskGenerateTsDefinitions.UPDATE_MESSAGE));
     }
 
     @Test
@@ -196,6 +408,11 @@ public class TaskGenerateTsDefinitionsTest {
                           import type { CSSResultGroup } from 'lit';
                           const content: CSSResultGroup;
                           export default content;
+                        }
+                        declare module 'csstype' {
+                          interface Properties {
+                            [index: `--${string}`]: any;
+                          }
                         }
                         export declare const jtdForms: readonly ["elements", "values", "discriminator", "properties", "optionalProperties", "enum", "type", "ref"];
                         export type JTDForm = typeof jtdForms[number];
@@ -224,6 +441,11 @@ public class TaskGenerateTsDefinitionsTest {
                           const content: CSSResultGroup;
                           export default content;
                         }
+                        declare module 'csstype' {
+                          interface Properties {
+                            [index: `--${string}`]: any;
+                          }
+                        }
                         export declare const jtdForms: readonly ["elements", "values", "discriminator", "properties", "optionalProperties", "enum", "type", "ref"];
                         export type JTDForm = typeof jtdForms[number];
                         }"""
@@ -248,11 +470,11 @@ public class TaskGenerateTsDefinitionsTest {
                             [Ref in string]?: SchemaObject;
                         };
                         declare module '*.css?inline' {
-
+                          something
                           import type { CSSResultGroup } from 'lit';
-
+                          custom
                           const content: CSSResultGroup;
-
+                          added
                           export default content;
                         }
                         export declare const jtdForms: readonly ["elements", "values", "discriminator", "properties", "optionalProperties", "enum", "type", "ref"];
@@ -300,9 +522,12 @@ public class TaskGenerateTsDefinitionsTest {
 
     private void assertBackupFileCreated(String originalContent)
             throws IOException {
-        File backupFile = new File(
-                taskGenerateTsDefinitions.getGeneratedFile().getParent(),
-                TS_DEFINITIONS + ".flowBackup");
+        File[] backups = taskGenerateTsDefinitions.getGeneratedFile()
+                .getParentFile()
+                .listFiles(file -> file.getName().endsWith(".bak"));
+        Assert.assertEquals(1, backups.length);
+
+        File backupFile = backups[0];
         Assert.assertTrue("Original types.d.ts backup should exist",
                 backupFile.exists());
         Assert.assertEquals(originalContent,
@@ -319,9 +544,12 @@ public class TaskGenerateTsDefinitionsTest {
         return fileContent;
     }
 
-    private String readPreviousContent() throws IOException {
+    private String readPreviousContent(String suffix) throws IOException {
         return IOUtils.toString(
-                getClass().getResourceAsStream(TS_DEFINITIONS + ".v1"), UTF_8);
+                getClass().getResourceAsStream(TS_DEFINITIONS + suffix), UTF_8);
     }
 
+    private String stripEmptyLines(String input) {
+        return input.replaceAll("(?m)^[ \t]*\r?\n", "");
+    }
 }

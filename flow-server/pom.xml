@@ -114,7 +114,7 @@
         <dependency>
             <groupId>com.helger</groupId>
             <artifactId>ph-css</artifactId>
-            <version>7.0.1</version>
+            <version>7.0.2</version>
         </dependency>
 
         <!-- Byte code analysis -->
@@ -134,7 +134,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.25.0</version>
+            <version>1.26.1</version>
         </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>

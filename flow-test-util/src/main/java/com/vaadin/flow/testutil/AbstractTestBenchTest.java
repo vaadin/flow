@@ -185,6 +185,13 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 60);
     }
 
+    protected void waitForWebComponent(String tagName) {
+        waitForWebComponentsBootstrap();
+        waitUntil(d -> getCommandExecutor()
+                .executeScript("return await customElements.whenDefined('"
+                        + tagName + "').then(() => true)"));
+    }
+
     /**
      * Returns the URL to be used for the test.
      *

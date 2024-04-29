@@ -130,7 +130,9 @@ public class VaadinServletContextInitializer
             "com/vaadin/external/gwt", "javassist/", "io/methvin",
             "com/github/javaparser", "oshi/", "io/micrometer", "jakarta/",
             "com/nimbusds", "elemental/util", "elemental/json",
-            "org/reflections", "org/aopalliance", "org/objectweb")
+            "org/reflections", "org/aopalliance", "org/objectweb",
+
+            "com/vaadin/hilla", "com/vaadin/copilot")
             .collect(Collectors.toList());
 
     /**
@@ -142,7 +144,7 @@ public class VaadinServletContextInitializer
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
                     "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap",
-                    "com.vaadin.hilla")
+                    "com.vaadin.copilot.startup", "com.vaadin.hilla.startup")
             .collect(Collectors.toList());
 
     /**
@@ -735,19 +737,14 @@ public class VaadinServletContextInitializer
                     ((ConfigurableApplicationContext) appContext)
                             .addApplicationListener(new ReloadListener(e -> {
                                 // Updates cached white list and route packages
-                                Set<String> addedPackages = new HashSet<>();
-                                e.getAddedClasses().forEach(c -> {
-                                    if (c.contains("/")) {
-                                        c = c.replaceAll("/", ".");
-                                    }
-                                    if (c.contains(".")) {
-                                        addedPackages.add(c.substring(0,
-                                                c.lastIndexOf(".")));
-                                    }
-                                });
                                 ReloadCache.dynamicWhiteList
-                                        .addAll(addedPackages);
-                                ReloadCache.routePackages.addAll(addedPackages);
+                                        .addAll(e.getAddedPackages());
+                                ReloadCache.dynamicWhiteList
+                                        .addAll(e.getChangedPackages());
+                                ReloadCache.routePackages
+                                        .addAll(e.getAddedPackages());
+                                ReloadCache.routePackages
+                                        .addAll(e.getChangedPackages());
                             }));
                 }
             }
@@ -993,6 +990,11 @@ public class VaadinServletContextInitializer
 
                 if (devModeCachingEnabled && valid.contains(originalPath)) {
                     resourcesList.add(resource);
+                    // Restore root paths to ensure new resources are correctly
+                    // validate and cached after a reload
+                    if (originalPath.endsWith("/")) {
+                        rootPaths.add(originalPath);
+                    }
                 } else {
                     if (path.endsWith(".jar!/")) {
                         resourcesList.add(resource);

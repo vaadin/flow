@@ -1205,6 +1205,19 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("toAccessDenied")
+    @Tag(Tag.DIV)
+    public static class RedirectToAccessDenied extends Component
+            implements BeforeEnterObserver {
+
+        private static final String MESSAGE = "You are not allowed";
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            event.rerouteToError(AccessDeniedException.class, MESSAGE);
+        }
+    }
+
     @Route("param/reroute")
     @Tag(Tag.DIV)
     public static class RedirectOnSetParam extends Component
@@ -2837,6 +2850,21 @@ public class RouterTest extends RoutingTestBase {
                 HttpStatusCode.NOT_FOUND.getCode(), result);
 
         Assert.assertEquals(RouteNotFoundError.class, getUIComponentClass());
+    }
+
+    @Test
+    public void rerouteToDefaultAccessDeniedHandler_rerouteToNotFoundPreservingMessage()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(RedirectToAccessDenied.class);
+
+        int result = router.navigate(ui, new Location("toAccessDenied"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Target should have rerouted to not found target.",
+                HttpStatusCode.NOT_FOUND.getCode(), result);
+
+        Assert.assertEquals(RouteNotFoundError.class, getUIComponentClass());
+        assertExceptionComponent(RouteNotFoundError.class,
+                RedirectToAccessDenied.MESSAGE);
     }
 
     @Test

@@ -127,6 +127,16 @@ public interface PluginAdapterBase {
     void logDebug(CharSequence debugMessage);
 
     /**
+     * Delegates a debug-Message to a logger.
+     *
+     * @param debugMessage
+     *            to be logged.
+     * @param throwable
+     *            to be logged.
+     */
+    void logDebug(CharSequence debugMessage, Throwable throwable);
+
+    /**
      * Delegates a info-Message to a logger.
      *
      * @param infoMessage
@@ -140,8 +150,15 @@ public interface PluginAdapterBase {
      * @param warningMessage
      *            to be logged.
      */
-
     void logWarn(CharSequence warningMessage);
+
+    /**
+     * delegates a error-Message to a logger.
+     *
+     * @param errorMessage
+     *            to be logged.
+     */
+    void logError(CharSequence errorMessage);
 
     /**
      * Delegates a warning-Message to a logger.

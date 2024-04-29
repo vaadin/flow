@@ -19,11 +19,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 @SpringBootApplication
 @Configuration
 @EnableWebSecurity
+@EnableAsync(proxyTargetClass = true)
 @Import(DummyOAuth2Server.class)
 public class TestServletInitializer {
 

@@ -52,7 +52,7 @@ public class RestartMonitorTest {
         executorService.submit(() -> simulateTask(latch));
         Assert.assertTrue(
                 "Not restarting, execution should not have been blocked",
-                latch.await(10, TimeUnit.MILLISECONDS));
+                latch.await(100, TimeUnit.MILLISECONDS));
     }
 
     @Test

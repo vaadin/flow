@@ -82,4 +82,9 @@ public abstract class ConfigurableFilterDataProviderWrapper<T, Q, C, F>
         this.configuredFilter = filter;
         refreshAll();
     }
+
+    @Override
+    public String toString() {
+        return "ConfigurableFilterDataProviderWrapper(" + dataProvider + ")";
+    }
 }

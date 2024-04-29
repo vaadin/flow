@@ -75,14 +75,14 @@ public final class WebComponentExporterUtils {
 
     private static boolean isEligible(Class<?> clazz) {
         if (Modifier.isAbstract(clazz.getModifiers())) {
-            getLogger().trace(
+            getLogger().error(
                     "Class {} is abstract, and won't be instantiated as a '{}' by default",
                     clazz.getName(),
                     WebComponentExporter.class.getSimpleName());
             return false;
         }
         if (!Modifier.isPublic(clazz.getModifiers())) {
-            getLogger().trace(
+            getLogger().error(
                     "Class {} is not public, and won't be instantiated as a '{}' by default",
                     clazz.getName(),
                     WebComponentExporter.class.getSimpleName());
@@ -93,7 +93,7 @@ public final class WebComponentExporterUtils {
                 .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
         if (!constructor.isPresent()
                 || !Modifier.isPublic(constructor.get().getModifiers())) {
-            getLogger().warn(
+            getLogger().error(
                     "Class {} has no public no-argument constructor, and won't be instantiated as a '{}' by default",
                     clazz.getName(),
                     WebComponentExporter.class.getSimpleName());
@@ -101,7 +101,7 @@ public final class WebComponentExporterUtils {
         }
         if (clazz.getEnclosingClass() != null
                 && !Modifier.isStatic(clazz.getModifiers())) {
-            getLogger().warn(
+            getLogger().error(
                     "Class {} is inner (nested non static) class, and won't be instantiated as a '{}' by default",
                     clazz.getName(),
                     WebComponentExporter.class.getSimpleName());

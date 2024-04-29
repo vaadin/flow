@@ -36,6 +36,11 @@ public final class NodeProperties {
     public static final String PAYLOAD = "payload";
 
     /**
+     * Key for {@link ElementData#getJavaClass()}.
+     */
+    public static final String JAVA_CLASS = "jc";
+
+    /**
      * Key for {@link TextNodeMap#getText()}.
      */
     public static final String TEXT = "text";

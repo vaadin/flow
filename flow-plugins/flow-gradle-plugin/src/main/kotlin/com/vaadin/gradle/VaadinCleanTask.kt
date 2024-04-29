@@ -15,9 +15,11 @@
  */
 package com.vaadin.gradle
 
+import com.vaadin.flow.plugin.base.CleanFrontendUtil
+import com.vaadin.flow.plugin.base.CleanOptions
+import com.vaadin.flow.server.frontend.FrontendUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
-import com.vaadin.flow.server.Constants
 
 /**
  * Cleans everything Vaadin-related. Useful if npm fails to run after Vaadin
@@ -28,11 +30,7 @@ import com.vaadin.flow.server.Constants
  * * `node_modules`
  * * `package.json`
  * * `package-lock.json`
- * * `webpack.generated.js`
  * * `package-lock.yaml` (used by Vaadin 14.2+ pnpm)
- * * `pnpm-file.js` (used by Vaadin 14.2+ pnpm)
- * * `tsconfig.json` (used by Vaadin 15+)
- * * `types.d.ts` (used by Vaadin 15+)
  *
  * Doesn't delete `webpack.config.js` since it is intended to contain
  * user-specific code. See https://github.com/vaadin/vaadin-gradle-plugin/issues/43
@@ -48,28 +46,16 @@ public open class VaadinCleanTask : DefaultTask() {
 
     init {
         group = "Vaadin"
-        description = "Cleans the project completely and removes 'generated' folders, node_modules, src/main/bundles/, webpack.generated.js, " +
-                "vite.generated.js, tsconfig.json, types.d.ts, pnpm-lock.yaml, pnpmfile.js, .pnpmfile.cjs and package-lock.json"
+        description = "Cleans the project completely and removes 'generated' folders, node_modules, src/main/bundles/, " +
+                "vite.generated.js, pnpm-lock.yaml, .pnpmfile.cjs and package-lock.json"
 
         dependsOn("clean")
     }
 
     @TaskAction
     public fun clean() {
-        project.delete(
-                config.generatedTsFolder,
-                config.frontendDirectory.get().resolve("generated").absolutePath,
-                "${project.projectDir}/node_modules",
-                "${project.projectDir}/${Constants.BUNDLE_LOCATION}",
-                "${project.projectDir}/src/main/dev-bundle/",
-                "${project.projectDir}/package-lock.json",
-                "${project.projectDir}/webpack.generated.js",
-                "${project.projectDir}/vite.generated.js",
-                "${project.projectDir}/.pnpmfile.cjs",
-                "${project.projectDir}/pnpm-lock.yaml", // used by Vaadin 14.2+ pnpm
-                "${project.projectDir}/pnpmfile.js", // used by Vaadin 14.2+ pnpm
-                "${project.projectDir}/tsconfig.json", // used by Vaadin 15+
-                "${project.projectDir}/types.d.ts" // used by Vaadin 15+
-        )
+        CleanFrontendUtil.runCleaning(
+                GradlePluginAdapter(project, config, false),
+                CleanOptions())
     }
 }

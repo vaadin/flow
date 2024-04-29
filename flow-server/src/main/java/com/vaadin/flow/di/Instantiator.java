@@ -16,6 +16,7 @@
 package com.vaadin.flow.di;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
@@ -28,6 +29,7 @@ import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
 
@@ -117,6 +119,38 @@ public interface Instantiator extends Serializable {
     <T> T getOrCreate(Class<T> type);
 
     /**
+     * Return the application-defined class for the given instance: usually
+     * simply the class of the given instance, but the original class in case of
+     * a runtime generated subclass.
+     *
+     * @param instance
+     *            the instance to check
+     * @return the user-defined class
+     */
+    default Class<?> getApplicationClass(Object instance) {
+        Objects.requireNonNull(instance, "Instance cannot be null");
+        return getApplicationClass(instance.getClass());
+    }
+
+    /**
+     * Return the application-defined class for the given class: usually simply
+     * the given class, but the original class in case of a runtime generated
+     * subclass.
+     *
+     * @param clazz
+     *            the class to check
+     * @return the user-defined class
+     */
+    default Class<?> getApplicationClass(Class<?> clazz) {
+        Class<?> appClass = clazz;
+        while (appClass != null && appClass != Object.class
+                && appClass.isSynthetic()) {
+            appClass = appClass.getSuperclass();
+        }
+        return appClass;
+    }
+
+    /**
      * Creates an instance of a navigation target or router layout. This method
      * is not called in cases when a component instance is reused when
      * navigating.
@@ -168,10 +202,18 @@ public interface Instantiator extends Serializable {
     /**
      * Get the I18NProvider if one has been defined.
      *
-     * @return I18NProvier instance
+     * @return I18NProvider instance
      */
     default I18NProvider getI18NProvider() {
         return getOrCreate(I18NProvider.class);
     }
 
+    /**
+     * Get the MenuAccessControl.
+     *
+     * @return MenuAccessControl instance
+     */
+    default MenuAccessControl getMenuAccessControl() {
+        return getOrCreate(MenuAccessControl.class);
+    }
 }
