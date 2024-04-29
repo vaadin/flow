@@ -98,6 +98,7 @@ public class TaskGenerateReactFiles
             """;
 
     private static final String FLOW_TSX = "Flow.tsx";
+    private static final String REACT_ADAPTER_TEMPLATE = "ReactAdapter.template";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
@@ -151,8 +152,9 @@ public class TaskGenerateReactFiles
                 frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
         try {
             writeFile(flowTsx, getFlowTsxFileContent(routesTsx.exists()));
-            if (fileAvailable(REACT_ADAPTER_TSX)) {
-                writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
+            if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
+                writeFile(reactAdapterTsx,
+                        getFileContent(REACT_ADAPTER_TEMPLATE));
             }
             if (!routesTsx.exists()) {
                 boolean isHillaUsed = FrontendUtils.isHillaUsed(
