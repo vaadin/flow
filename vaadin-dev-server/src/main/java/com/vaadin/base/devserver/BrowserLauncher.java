@@ -70,16 +70,19 @@ public class BrowserLauncher {
         if (launchFile.exists()
                 && TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()
                         - launchFile.lastModified()) < lastModifiedDelay) {
-            try {
-                Files.writeString(launchFile.toPath(),
-                        "" + System.currentTimeMillis());
-            } catch (IOException e) {
-                LoggerFactory.getLogger(BrowserLauncher.class)
-                        .debug("Failed to write browser launched file.", e);
-            }
+            writeLaunchFile(launchFile);
             return true;
         }
         return LAUNCHED_VALUE.equals(System.getProperty(LAUNCH_TRACKER));
+    }
+
+    private void writeLaunchFile(File launchFile) {
+        try {
+            Files.writeString(launchFile.toPath(),
+                    Long.toString(System.currentTimeMillis()));
+        } catch (IOException e) {
+            getLogger().debug("Failed to write browser launched file.", e);
+        }
     }
 
     private File getLaunchFile() {
@@ -92,13 +95,7 @@ public class BrowserLauncher {
 
     private void setLaunched() {
         // write launch file and update modified timestamp.
-        try {
-            Files.writeString(getLaunchFile().toPath(),
-                    "" + System.currentTimeMillis());
-        } catch (IOException e) {
-            LoggerFactory.getLogger(BrowserLauncher.class)
-                    .debug("Failed to write browser launched file.", e);
-        }
+        writeLaunchFile(getLaunchFile());
         System.setProperty(LAUNCH_TRACKER, LAUNCHED_VALUE);
     }
 
