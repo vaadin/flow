@@ -59,7 +59,9 @@ export function fireRouterEvent(type, detail) {
 // @ts-ignore
 function vaadinRouterGlobalClickHandler(event) {
     // ignore the click if the default action is prevented
-    if (event.defaultPrevented) {
+    // Prevented side-nav click should be handled if targeting Flow route.
+    if (event.defaultPrevented &&
+        (event.target.tagName !== "VAADIN-SIDE-NAV-ITEM" && mountedContainer)) {
         return;
     }
 
