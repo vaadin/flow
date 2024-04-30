@@ -53,7 +53,7 @@ public class DevToolsWrapper {
         sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
                 Optional.empty()));
         sendToAllTargets(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
-                Optional.empty()));
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()));
     }
 
     /**
