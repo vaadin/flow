@@ -29,11 +29,12 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class PaperInputIT extends ChromeBrowserTest {
 
     @Test
-    @Ignore("Inconsistent failures. Ignored until fixed.")
+    //@Ignore("Inconsistent failures. Ignored until fixed.")
     public void paperInputIsFunctional() {
         open();
 
         WebElement input = findElement(By.tagName("paper-input"));
+        
         new Actions(getDriver()).click(input).perform();
 
         String originalValue = input.getAttribute("value");
