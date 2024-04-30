@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -85,6 +86,7 @@ import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializ
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
+import com.vaadin.flow.spring.io.FilterableResourceResolver;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -523,9 +525,7 @@ public class VaadinServletContextInitializer
             collectHandleTypes(devModeHandlerManager.getHandlesTypes(),
                     annotations, superTypes);
 
-            Set<Class<?>> classes = findByAnnotationOrSuperType(basePackages,
-                    customLoader, annotations, superTypes)
-                    .collect(Collectors.toSet());
+            Set<Class<?>> classes = findClassesForDevMode(basePackages, annotations, superTypes);
 
             if (devModeCachingEnabled) {
                 classes.addAll(ReloadCache.jarClasses);
@@ -590,6 +590,14 @@ public class VaadinServletContextInitializer
             return customScanOnly != null && !customScanOnly.isEmpty();
         }
 
+    }
+
+    protected Set<Class<?>> findClassesForDevMode(Set<String> basePackages,
+            List<Class<? extends Annotation>> annotations,
+            List<Class<?>> superTypes) {
+        return findByAnnotationOrSuperType(basePackages,
+                customLoader, annotations, superTypes)
+                .collect(Collectors.toSet());
     }
 
     private class WebComponentServletContextListener
@@ -801,7 +809,7 @@ public class VaadinServletContextInitializer
 
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             Class<? extends Annotation>... annotations) {
-        return findByAnnotation(packages, appContext, annotations);
+        return findByAnnotation(packages, customLoader, annotations);
     }
 
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
@@ -812,7 +820,7 @@ public class VaadinServletContextInitializer
 
     Stream<Class<?>> findBySuperType(Collection<String> packages,
             Class<?> type) {
-        return findBySuperType(packages, appContext, type);
+        return findBySuperType(packages, customLoader, type);
     }
 
     private Stream<Class<?>> findBySuperType(Collection<String> packages,
@@ -921,7 +929,7 @@ public class VaadinServletContextInitializer
      * with atmosphere we skip known packaged from our resources collection.
      */
     private static class CustomResourceLoader
-            extends PathMatchingResourcePatternResolver {
+            extends FilterableResourceResolver {
 
         private final PrefixTree scanNever = new PrefixTree(DEFAULT_SCAN_NEVER);
 
@@ -1013,7 +1021,10 @@ public class VaadinServletContextInitializer
                                         .replace(".class", "");
                                 ReloadCache.jarClassNames.add(className);
                             }
-                            if (shouldPathBeScanned(relativePath)) {
+                            if (shouldPathBeScanned(relativePath)
+                                    && isAllowedByPackageProperties(
+                                            path.substring(0, index),
+                                            relativePath, true)) {
                                 resourcesList.add(resource);
                             }
                         } else {
@@ -1025,10 +1036,17 @@ public class VaadinServletContextInitializer
                                         "Parent resource of [%s] not found in the resources!",
                                         path));
                             }
-
-                            if (parents.stream()
-                                    .anyMatch(parent -> shouldPathBeScanned(
-                                            path.substring(parent.length())))) {
+                            AtomicBoolean val = new AtomicBoolean(true);
+                            if (parents.stream().anyMatch(parent -> {
+                                if (shouldPathBeScanned(
+                                        path.substring(parent.length()))) {
+                                    val.set(isAllowedByPackageProperties(parent,
+                                            path.substring(parent.length()),
+                                            val.get()));
+                                    return val.get();
+                                }
+                                return false;
+                            })) {
                                 resourcesList.add(resource);
                             }
                         }
