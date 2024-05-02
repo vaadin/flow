@@ -86,7 +86,8 @@ public class NodeTasks implements FallibleCommand {
             TaskCopyTemplateFiles.class,
             TaskRunDevBundleBuild.class,
             TaskPrepareProdBundle.class,
-            TaskCleanFrontendFiles.class
+            TaskCleanFrontendFiles.class,
+            TaskRemoveOldFrontendGeneratedFiles.class
         ));
     // @formatter:on
 
@@ -273,7 +274,10 @@ public class NodeTasks implements FallibleCommand {
 
         if (options.isCopyTemplates()) {
             commands.add(new TaskCopyTemplateFiles(classFinder, options));
+        }
 
+        if (options.isCleanOldGeneratedFiles()) {
+            commands.add(new TaskRemoveOldFrontendGeneratedFiles(options));
         }
     }
 
@@ -334,10 +338,10 @@ public class NodeTasks implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         getLock();
         try {
-
             sortCommands(commands);
-
+            GeneratedFilesSupport generatedFilesSupport = new GeneratedFilesSupport();
             for (FallibleCommand command : commands) {
+                command.setGeneratedFileSupport(generatedFilesSupport);
                 command.execute();
             }
         } finally {
@@ -363,7 +367,7 @@ public class NodeTasks implements FallibleCommand {
                         .of(lockInfo.pid());
 
                 if (processHandle.isPresent()
-                        && processHandle.get().info().commandLine().orElse("")
+                        && normalizeCommandLine(processHandle.get().info())
                                 .equals(lockInfo.commandLine())) {
                     if (!loggedWaiting) {
                         getLogger().info("Waiting for a previous instance of "
@@ -442,9 +446,14 @@ public class NodeTasks implements FallibleCommand {
     private void writeLockFile() throws IOException {
         ProcessHandle currentProcess = ProcessHandle.current();
         long myPid = currentProcess.pid();
-        String commandLine = currentProcess.info().commandLine().orElse("");
+        String commandLine = normalizeCommandLine(currentProcess.info());
         List<String> lines = List.of(Long.toString(myPid), commandLine);
         Files.write(lockFile, lines, StandardCharsets.UTF_8);
+    }
+
+    private String normalizeCommandLine(ProcessHandle.Info processInfo) {
+        return processInfo.commandLine()
+                .map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
     }
 
     private Logger getLogger() {

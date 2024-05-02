@@ -130,7 +130,9 @@ public class VaadinServletContextInitializer
             "com/vaadin/external/gwt", "javassist/", "io/methvin",
             "com/github/javaparser", "oshi/", "io/micrometer", "jakarta/",
             "com/nimbusds", "elemental/util", "elemental/json",
-            "org/reflections", "org/aopalliance", "org/objectweb")
+            "org/reflections", "org/aopalliance", "org/objectweb",
+
+            "com/vaadin/hilla", "com/vaadin/copilot")
             .collect(Collectors.toList());
 
     /**
@@ -142,7 +144,7 @@ public class VaadinServletContextInitializer
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
                     "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap",
-                    "com.vaadin.hilla")
+                    "com.vaadin.copilot.startup", "com.vaadin.hilla.startup")
             .collect(Collectors.toList());
 
     /**

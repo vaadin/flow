@@ -26,7 +26,6 @@ import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class NavigationIT extends ChromeBrowserTest {
-
     @Test
     public void testNavigation() {
         open();
@@ -255,6 +254,23 @@ public class NavigationIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void testReactNavigation_flowContentCleaned() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.REACT_ANCHOR_ID).click();
+        Assert.assertEquals("This is a simple view for a React route",
+                $(ParagraphElement.class).id("react").getText());
+
+        Assert.assertFalse("Flow navigation view contents should not exist",
+                $(AnchorElement.class)
+                        .attribute("id", NavigationView.REACT_ANCHOR_ID)
+                        .exists());
+    }
+
+    @Test
     public void testReactNavigationBrowserHistoryBack_serverNavigation() {
         open();
 
@@ -274,6 +290,38 @@ public class NavigationIT extends ChromeBrowserTest {
         getDriver().navigate().back();
         Assert.assertEquals("NavigationView",
                 $(SpanElement.class).first().getText());
+    }
+
+    @Test
+    public void testRouterLinkWithQueryNavigation() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_QUERY_ID).click();
+        Assert.assertEquals(
+                "Exception on router-link navigation with query parameters",
+                "AnchorView", $(SpanElement.class).first().getText());
+        System.out.println(getDriver().getCurrentUrl());
+        Assert.assertTrue("Query was missing in url",
+                getDriver().getCurrentUrl().endsWith("?test=value"));
+    }
+
+    @Test
+    public void testAnchorWithQueryNavigation() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.ANCHOR_QUERY_ID).click();
+        Assert.assertEquals(
+                "Exception on router-link navigation with query parameters",
+                "AnchorView", $(SpanElement.class).first().getText());
+        System.out.println(getDriver().getCurrentUrl());
+        Assert.assertTrue("Query was missing in url",
+                getDriver().getCurrentUrl().endsWith("?test=anchor"));
     }
 
 }

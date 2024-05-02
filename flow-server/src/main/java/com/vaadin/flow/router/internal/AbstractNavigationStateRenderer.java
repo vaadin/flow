@@ -123,13 +123,14 @@ public abstract class AbstractNavigationStateRenderer
     static <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
             NavigationEvent event) {
         UI ui = event.getUI();
+        Instantiator instantiator = Instantiator.get(ui);
         Optional<HasElement> currentInstance = ui.getInternals()
                 .getActiveRouterTargetsChain().stream()
-                .filter(component -> component.getClass()
+                .filter(component -> instantiator.getApplicationClass(component)
                         .equals(routeTargetType))
                 .findAny();
-        return (T) currentInstance.orElseGet(() -> Instantiator.get(ui)
-                .createRouteTarget(routeTargetType, event));
+        return (T) currentInstance.orElseGet(
+                () -> instantiator.createRouteTarget(routeTargetType, event));
     }
 
     @Override

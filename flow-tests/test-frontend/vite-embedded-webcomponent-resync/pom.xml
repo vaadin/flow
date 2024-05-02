@@ -72,19 +72,18 @@
             <artifactId>jetty-ee10-websocket-jakarta-server</artifactId>
             <version>${jetty.version}</version>
         </dependency>
-        <!-- This is probably needed here only because we run the tests with Jetty 11 (ee9) instead
-        of 12 (ee10) and the websocket API is from EE10 -->
+
+        <!-- Fix dependency convergence issue in Jetty artifacts -->
         <dependency>
-            <groupId>jakarta.websocket</groupId>
-            <artifactId>jakarta.websocket-api</artifactId>
-            <version>${jakarta.websocket.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.websocket</groupId>
-            <artifactId>jakarta.websocket-client-api</artifactId>
-            <version>${jakarta.websocket.version}</version>
-            <scope>provided</scope>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-plus</artifactId>
+            <version>${jetty.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.annotation</groupId>
+                    <artifactId>jakarta.annotation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

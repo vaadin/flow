@@ -19,17 +19,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.flow.component.PollEvent;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.UI.BrowserLeaveNavigationEvent;
-import com.vaadin.flow.component.UI.BrowserNavigateEvent;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonObject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.PollEvent;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.shared.JsonConstants;
+import elemental.json.JsonObject;
 
 /**
  * Abstract invocation handler implementation with common methods.
@@ -62,12 +59,12 @@ public abstract class AbstractRpcInvocationHandler
         // ignore RPC requests from the client side for the nodes that are
         // invisible, disabled or inert
         if (node.isInactive()) {
-            getLogger().trace("Ignored RPC for invocation handler '{}' from "
+            getLogger().info("Ignored RPC for invocation handler '{}' from "
                     + "the client side for an inactive (disabled or invisible) node id='{}'",
                     getClass().getName(), node.getId());
             return Optional.empty();
         } else if (!allowInert(ui, invocationJson) && node.isInert()) {
-            getLogger().trace(
+            getLogger().info(
                     "Ignored RPC for invocation handler '{}' from "
                             + "the client side for an inert node id='{}'",
                     getClass().getName(), node.getId());
@@ -114,22 +111,6 @@ public abstract class AbstractRpcInvocationHandler
         return invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE)
                 && PollEvent.DOM_EVENT_NAME.equalsIgnoreCase(
                         invocationJson.getString(JsonConstants.RPC_EVENT_TYPE));
-    }
-
-    private boolean isNavigationInvocation(JsonObject invocationJson) {
-        if (!invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE)) {
-            return false;
-        }
-        if (BrowserNavigateEvent.EVENT_NAME.equals(
-                invocationJson.getString(JsonConstants.RPC_EVENT_TYPE))) {
-            return true;
-        }
-        if (BrowserLeaveNavigationEvent.EVENT_NAME.equals(
-                invocationJson.getString(JsonConstants.RPC_EVENT_TYPE))) {
-            return true;
-        }
-        return false;
-
     }
 
     private boolean isPollingEnabledForUI(UI ui) {
@@ -201,8 +182,7 @@ public abstract class AbstractRpcInvocationHandler
      *         the current invocation or not.
      */
     protected boolean allowInert(UI ui, JsonObject invocationJson) {
-        return isValidPollInvocation(ui, invocationJson)
-                || isNavigationInvocation(invocationJson);
+        return isValidPollInvocation(ui, invocationJson);
     }
 
     /**

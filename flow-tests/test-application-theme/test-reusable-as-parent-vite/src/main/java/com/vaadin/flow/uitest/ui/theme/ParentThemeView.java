@@ -27,6 +27,9 @@ public class ParentThemeView extends Div {
     public static final String MY_POLYMER_ID = "field";
     public static final String TEST_TEXT_ID = "test-text";
     public static final String SNOWFLAKE_ID = "fortawesome";
+    public static final String KEYBOARD_ID = "keyboard";
+    public static final String LEMON_ID = "lemon";
+    public static final String SUN_ID = "sun";
     public static final String BUTTERFLY_ID = "butterfly";
     public static final String OCTOPUSS_ID = "octopuss";
     public static final String FONTAWESOME_ID = "font-awesome";
@@ -55,7 +58,24 @@ public class ParentThemeView extends Div {
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, faText);
+        Div keyboardIconFromParentTheme = new Div(
+                "Keyboard Icon in theme sub folder");
+        keyboardIconFromParentTheme.addClassName("icon-keyboard");
+        keyboardIconFromParentTheme.setId(KEYBOARD_ID);
+
+        Div lemonIconFromParentTheme = new Div(
+                "Lemon Icon in nested theme subfolder");
+        lemonIconFromParentTheme.addClassName("icon-lemon");
+        lemonIconFromParentTheme.setId(LEMON_ID);
+
+        Div sunIconFromParentTheme = new Div(
+                "Sun Icon in nested theme subfolder");
+        sunIconFromParentTheme.addClassName("icon-sun");
+        sunIconFromParentTheme.setId(SUN_ID);
+
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, faText,
+                keyboardIconFromParentTheme, lemonIconFromParentTheme,
+                sunIconFromParentTheme);
 
         add(new Div());
         add(new MyPolymerField().withId(MY_POLYMER_ID));

@@ -18,14 +18,20 @@ package com.vaadin.flow.i18n;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Locale;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -36,7 +42,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -81,21 +86,16 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=deutsch",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader()).thenReturn(mockLoader);
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        Assert.assertEquals(3, defaultTranslationLocales.size());
 
-            List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales();
-            Assert.assertEquals(3, defaultTranslationLocales.size());
-
-            Assert.assertTrue("Missing German bundle",
-                    defaultTranslationLocales.contains(new Locale("de")));
-            Assert.assertTrue("Missing English bundle",
-                    defaultTranslationLocales.contains(new Locale("en", "GB")));
-            Assert.assertTrue("Missing Finnish bundle",
-                    defaultTranslationLocales.contains(new Locale("fi", "FI")));
-        }
+        Assert.assertTrue("Missing German bundle",
+                defaultTranslationLocales.contains(new Locale("de")));
+        Assert.assertTrue("Missing English bundle",
+                defaultTranslationLocales.contains(new Locale("en", "GB")));
+        Assert.assertTrue("Missing Finnish bundle",
+                defaultTranslationLocales.contains(new Locale("fi", "FI")));
     }
 
     @Test
@@ -103,15 +103,10 @@ public class I18NUtilTest {
         Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader()).thenReturn(mockLoader);
-
-            List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales();
-            Assert.assertTrue("Nothing should be returned for empty folder",
-                    defaultTranslationLocales.isEmpty());
-        }
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        Assert.assertTrue("Nothing should be returned for empty folder",
+                defaultTranslationLocales.isEmpty());
     }
 
     @Test
@@ -125,15 +120,10 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader()).thenReturn(mockLoader);
-
-            List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales();
-            Assert.assertTrue("Nothing should be returned for empty folder",
-                    defaultTranslationLocales.isEmpty());
-        }
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(mockLoader);
+        Assert.assertTrue("Nothing should be returned for empty folder",
+                defaultTranslationLocales.isEmpty());
     }
 
     @Test
@@ -151,14 +141,8 @@ public class I18NUtilTest {
         Files.writeString(file.toPath(), "title=Default lang",
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader())
-                    .thenReturn(urlClassLoader);
-
-            Assert.assertTrue("Default file should return true",
-                    I18NUtil.containsDefaultTranslation());
-        }
+        Assert.assertTrue("Default file should return true",
+                I18NUtil.containsDefaultTranslation(urlClassLoader));
     }
 
     @Test
@@ -171,14 +155,8 @@ public class I18NUtilTest {
         ClassLoader urlClassLoader = new URLClassLoader(
                 new URL[] { resources.toURI().toURL() });
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader())
-                    .thenReturn(urlClassLoader);
-
-            Assert.assertFalse("Nothing should be returned for empty folder",
-                    I18NUtil.containsDefaultTranslation());
-        }
+        Assert.assertFalse("Nothing should be returned for empty folder",
+                I18NUtil.containsDefaultTranslation(urlClassLoader));
     }
 
     @Test
@@ -189,25 +167,155 @@ public class I18NUtilTest {
         ClassLoader urlClassLoader = new URLClassLoader(
                 new URL[] { path.toUri().toURL() });
 
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> I18NUtil.getClassLoader())
-                    .thenReturn(urlClassLoader);
+        Assert.assertTrue("Default file should return true",
+                I18NUtil.containsDefaultTranslation(urlClassLoader));
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(urlClassLoader);
+        Assert.assertEquals(
+                "Translation files with locale inside JAR should be resolved",
+                2, defaultTranslationLocales.size());
 
-            Assert.assertTrue("Default file should return true",
-                    I18NUtil.containsDefaultTranslation());
-            List<Locale> defaultTranslationLocales = I18NUtil
-                    .getDefaultTranslationLocales();
-            Assert.assertEquals(
-                    "Translation files with locale inside JAR should be resolved",
-                    2, defaultTranslationLocales.size());
+        Assert.assertTrue("Finnish locale translation should have been found",
+                defaultTranslationLocales.contains(new Locale("fi", "FI")));
+        Assert.assertTrue("Japan locale translation should have been found",
+                defaultTranslationLocales.contains(new Locale("ja", "JP")));
+    }
 
-            Assert.assertTrue(
-                    "Finnish locale translation should have been found",
-                    defaultTranslationLocales.contains(new Locale("fi", "FI")));
-            Assert.assertTrue("Japan locale translation should have been found",
-                    defaultTranslationLocales.contains(new Locale("ja", "JP")));
+    // Open Liberty may use 'wsjar' as protocol of JAR resources
+    // https://openliberty.io/docs/latest/reference/config/classloading.html
+    @Test
+    public void openliberty_translationFilesInJar_returnsTrueForDefault_findsLanguages()
+            throws IOException {
+        Path path = generateZipArchive(temporaryFolder);
+
+        URLStreamHandler wsjarMockHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) throws IOException {
+                url = new URL("jar", url.getPath(), url.getFile());
+                return url.openConnection();
+            }
+        };
+        URLStreamHandlerFactory wsjarMockHandlerFactory = protocol -> {
+            if ("wsjar".equals(protocol)) {
+                return wsjarMockHandler;
+            }
+            return null;
+        };
+        ClassLoader urlClassLoader = new URLClassLoader(
+                new URL[] { path.toUri().toURL() },
+                ClassLoader.getSystemClassLoader(), wsjarMockHandlerFactory) {
+            @Override
+            public URL getResource(String name) {
+                URL url = super.getResource(name);
+                if (url != null && url.getProtocol().equals("jar")) {
+                    try {
+                        return new URL("wsjar", url.getHost(), url.getPort(),
+                                url.getFile(), wsjarMockHandler);
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return url;
+            }
+        };
+
+        Assert.assertTrue("Default file should return true",
+                I18NUtil.containsDefaultTranslation(urlClassLoader));
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(urlClassLoader);
+        Assert.assertEquals(
+                "Translation files with locale inside JAR should be resolved",
+                2, defaultTranslationLocales.size());
+
+        Assert.assertTrue("Finnish locale translation should have been found",
+                defaultTranslationLocales.contains(new Locale("fi", "FI")));
+        Assert.assertTrue("Japan locale translation should have been found",
+                defaultTranslationLocales.contains(new Locale("ja", "JP")));
+    }
+
+    public static class MockVirtualFile {
+
+        private final JarEntry entry;
+        private final JarFile jarFile;
+
+        private MockVirtualFile(JarFile jarFile, JarEntry entry) {
+            this.jarFile = jarFile;
+            this.entry = entry;
         }
+
+        public List<MockVirtualFile> getChildren() {
+            return jarFile.stream().filter(e -> !e.getName()
+                    .equals(entry.getName())
+                    && e.getName().startsWith(entry.getName())
+                    && (e.getName().endsWith("/") || !e.getName()
+                            .substring(entry.getName().length()).contains("/")))
+                    .map(e -> new MockVirtualFile(jarFile, e)).toList();
+        }
+
+        public File getPhysicalFile() {
+            return new File(entry.getName());
+        }
+    }
+
+    // vfs:/content/my.war/WEB-INF/classes/vaadin-i18n/
+    @Test
+    public void jbossVfs_translationFilesInJar_returnsTrueForDefault_findsLanguages()
+            throws IOException {
+        Path path = generateZipArchive(temporaryFolder);
+        JarFile jarFile = new JarFile(path.toFile());
+        URLConnection urlConnection = Mockito.mock(URLConnection.class);
+        Mockito.when(urlConnection.getContent()).thenReturn(new MockVirtualFile(
+                jarFile, jarFile.getJarEntry("vaadin-i18n/")));
+
+        URLStreamHandler vfsMockHandler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) throws IOException {
+                if (url.getFile().endsWith("/vaadin-i18n")) {
+                    return urlConnection;
+                }
+                return null;
+            }
+        };
+        URLStreamHandlerFactory vfsMockHandlerFactory = protocol -> {
+            if ("vfs".equals(protocol)) {
+                return vfsMockHandler;
+            }
+            return null;
+        };
+        ClassLoader urlClassLoader = new URLClassLoader(
+                new URL[] { path.toUri().toURL() },
+                ClassLoader.getSystemClassLoader(), vfsMockHandlerFactory) {
+            @Override
+            public URL getResource(String name) {
+                URL url = super.getResource(name);
+                if (url != null && url.getProtocol().equals("jar")
+                        && url.getFile().contains("fake.jar!")) {
+                    try {
+                        return new URL("vfs", null, 0,
+                                "/content/my.war/WEB-INF/lib/fake.jar"
+                                        + url.getFile().replaceFirst(
+                                                ".*fake.jar!", ""),
+                                vfsMockHandler);
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                return url;
+            }
+        };
+
+        Assert.assertTrue("Default file should return true",
+                I18NUtil.containsDefaultTranslation(urlClassLoader));
+        List<Locale> defaultTranslationLocales = I18NUtil
+                .getDefaultTranslationLocales(urlClassLoader);
+        Assert.assertEquals(
+                "Translation files with locale inside JAR should be resolved",
+                2, defaultTranslationLocales.size());
+
+        Assert.assertTrue("Finnish locale translation should have been found",
+                defaultTranslationLocales.contains(new Locale("fi", "FI")));
+        Assert.assertTrue("Japan locale translation should have been found",
+                defaultTranslationLocales.contains(new Locale("ja", "JP")));
     }
 
     private Path generateZipArchive(TemporaryFolder folder) throws IOException {

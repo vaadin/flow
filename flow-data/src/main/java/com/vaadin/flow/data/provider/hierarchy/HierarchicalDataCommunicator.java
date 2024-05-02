@@ -196,7 +196,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                                         .startUpdate(getDataProviderSize()),
                                 (pkey, range) -> mapper.fetchChildItems(
                                         getKeyMapper().get(pkey), range)));
-
+        controller.setHasUniqueKeyProviderSupplier(
+                uniqueKeyProviderSupplier.get() != null);
         Range range = computeRequestedRange(start, length);
         controller.setRequestRange(range.getStart(), range.length());
         requestFlush(controller);

@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -124,6 +125,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     class UpdateImports extends AbstractUpdateImports {
 
         private Map<File, List<String>> output;
+        private List<String> webComponentImports;
 
         UpdateImports(FrontendDependenciesScanner scanner, Options options) {
             super(options, scanner);
@@ -132,6 +134,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         @Override
         protected void writeOutput(Map<File, List<String>> output) {
             this.output = output;
+        }
+
+        @Override
+        List<String> filterWebComponentImports(List<String> lines) {
+            webComponentImports = super.filterWebComponentImports(lines);
+            return webComponentImports;
         }
 
         public Map<File, List<String>> getOutput() {
@@ -398,11 +406,39 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         updater.run();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
+                "@vaadin/vaadin-lumo-styles/color-global.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/typography-global.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
                 "@vaadin/vaadin-lumo-styles/spacing.js",
                 "@vaadin/vaadin-lumo-styles/style.js",
                 "@vaadin/vaadin-lumo-styles/icons.js");
+    }
+
+    @Test
+    public void generate_embeddedImports_doNotContainLumoGlobalThemeFiles()
+            throws IOException {
+        updater.run();
+
+        List<String> flowImports = new ArrayList<>(
+                updater.getOutput().get(updater.generatedFlowImports));
+
+        Predicate<String> lumoGlobalsMatcher = Pattern
+                .compile("@vaadin/vaadin-lumo-styles/.*-global.js")
+                .asPredicate();
+        assertTrue(flowImports.stream().anyMatch(lumoGlobalsMatcher));
+
+        assertTrue(
+                "Import for web-components should not contain lumo global imports",
+                updater.webComponentImports.stream()
+                        .noneMatch(lumoGlobalsMatcher));
+
+        // Check that imports other than lumo globals are the same
+        flowImports.removeAll(updater.webComponentImports);
+        assertTrue(
+                "Flow and web-component imports must be the same, except for lumo globals",
+                flowImports.stream().allMatch(lumoGlobalsMatcher));
+
     }
 
     @Test

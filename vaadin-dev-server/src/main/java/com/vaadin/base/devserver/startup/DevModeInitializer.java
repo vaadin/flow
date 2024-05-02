@@ -469,7 +469,7 @@ public class DevModeInitializer implements Serializable {
             String vfsJarPath = url.toString();
             String fileNamePrefix = vfsJarPath.substring(
                     vfsJarPath.lastIndexOf(
-                            FrontendUtils.isWindows() ? '\\' : '/') + 1,
+                            vfsJarPath.contains("\\") ? '\\' : '/') + 1,
                     vfsJarPath.lastIndexOf(".jar"));
             Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
 

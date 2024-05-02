@@ -1,17 +1,17 @@
 package com.vaadin.flow.server;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import jakarta.servlet.http.HttpServletRequest;
-
-import com.vaadin.flow.server.HandlerHelper.RequestType;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 
 public class HandlerHelperTest {
 
@@ -213,6 +213,24 @@ public class HandlerHelperTest {
                 null);
 
         Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_flowPushUrl() {
+        VaadinServletRequest request = createVaadinRequest("VAADIN/push", "",
+                RequestType.PUSH);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_vaadinServletMapping_flowPushUrl() {
+        VaadinServletRequest request = createVaadinRequest("/VAADIN/push",
+                "/ui", RequestType.PUSH);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/ui/*",
                 request.getHttpServletRequest()));
     }
 

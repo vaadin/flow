@@ -199,6 +199,10 @@ public class HandlerHelper implements Serializable {
                 requestedPathWithoutServletMapping.get(),
                 requestTypeParameter)) {
             return true;
+        } else if (RequestType.PUSH.getIdentifier().equals(requestTypeParameter)
+                && "VAADIN/push"
+                        .equals(requestedPathWithoutServletMapping.get())) {
+            return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
             return true;
         } else if (isHillaPush(requestedPathWithoutServletMapping.get())) {

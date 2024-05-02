@@ -25,6 +25,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.SyntheticState;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,6 +47,7 @@ import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -131,6 +136,13 @@ public class NavigationStateRendererTest {
         }
     }
 
+    @Route(value = "proxyable")
+    public static class ProxyableView extends Text {
+        public ProxyableView() {
+            super("");
+        }
+    }
+
     private Router router;
 
     @Rule
@@ -215,6 +227,51 @@ public class NavigationStateRendererTest {
         Assert.assertEquals(Text.class, routeTarget.getClass());
 
         UI.setCurrent(null);
+    }
+
+    @Test
+    public void getRouteTarget_supportsProxyClasses() {
+        try {
+            Class<? extends ProxyableView> routeProxyClass = new ByteBuddy()
+                    .subclass(ProxyableView.class)
+                    .modifiers(Visibility.PUBLIC, SyntheticState.SYNTHETIC)
+                    .make().load(ProxyableView.class.getClassLoader(),
+                            ClassLoadingStrategy.Default.WRAPPER)
+                    .getLoaded();
+
+            AtomicInteger routeCreationCounter = new AtomicInteger(0);
+            MockVaadinServletService service = new MockVaadinServletService();
+            service.init(new MockInstantiator() {
+                @Override
+                public <T extends HasElement> T createRouteTarget(
+                        Class<T> routeTargetType, NavigationEvent event) {
+                    Assert.assertEquals(ProxyableView.class, routeTargetType);
+                    routeCreationCounter.incrementAndGet();
+                    return (T) ReflectTools.createInstance(routeProxyClass);
+                }
+            });
+            MockUI ui = new MockUI(new AlwaysLockedVaadinSession(service));
+
+            NavigationEvent event = new NavigationEvent(
+                    new Router(new TestRouteRegistry()), new Location("child"),
+                    ui, NavigationTrigger.UI_NAVIGATE);
+            NavigationStateRenderer renderer = new NavigationStateRenderer(
+                    navigationStateFromTarget(ProxyableView.class));
+            renderer.handle(event);
+            HasElement view = ui.getInternals().getActiveRouterTargetsChain()
+                    .get(0);
+
+            Component routeTarget = renderer.getRouteTarget(ProxyableView.class,
+                    event);
+
+            // Getting route target should not create a new instance
+            Assert.assertEquals(
+                    "Only one view instance should have been created", 1,
+                    routeCreationCounter.get());
+            Assert.assertSame(view, routeTarget);
+        } finally {
+            UI.setCurrent(null);
+        }
     }
 
     @Route("parent")

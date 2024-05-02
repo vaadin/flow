@@ -10,6 +10,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 public class CssBundlerTest {
 
     private static final String TEST_CSS = "body {background: blue};";
@@ -27,6 +30,7 @@ public class CssBundlerTest {
         String[] validImports = new String[] { //
                 // The typical you actually use
                 "@import url(foo.css);", //
+                "@import url(foo.css?ts=1234);", //
                 "@import url('foo.css');", //
                 "@import url(\"foo.css\");", //
                 "@import 'foo.css';", //
@@ -72,21 +76,21 @@ public class CssBundlerTest {
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css")));
+                        getThemeFile("styles.css"), getThemeJson()));
 
         writeCss("background-image: url(\"foo/bar.png\");", "styles.css");
 
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css")));
+                        getThemeFile("styles.css"), getThemeJson()));
 
         writeCss("background-image: url(foo/bar.png);", "styles.css");
 
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css")));
+                        getThemeFile("styles.css"), getThemeJson()));
     }
 
     @Test
@@ -108,9 +112,8 @@ public class CssBundlerTest {
                             src: url('VAADIN/themes/my-theme/fonts/ostrich-sans-regular.ttf') format("TrueType");
                         }"""
                         .trim(),
-                CssBundler
-                        .inlineImports(themeFolder, getThemeFile("styles.css"))
-                        .trim());
+                CssBundler.inlineImports(themeFolder,
+                        getThemeFile("styles.css"), getThemeJson()).trim());
     }
 
     @Test
@@ -122,7 +125,7 @@ public class CssBundlerTest {
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/sub/file.png');",
                 CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css")));
+                        getThemeFile("styles.css"), getThemeJson()));
     }
 
     @Test
@@ -131,8 +134,142 @@ public class CssBundlerTest {
         writeCss("@import 'other.css';", "styles.css");
         writeCss(css, "other.css");
 
-        Assert.assertEquals("body { content: '$\\'}", CssBundler
-                .inlineImports(themeFolder, getThemeFile("styles.css")));
+        Assert.assertEquals("body { content: '$\\'}", CssBundler.inlineImports(
+                themeFolder, getThemeFile("styles.css"), getThemeJson()));
+    }
+
+    @Test
+    public void unhandledImportsAreMovedToTop() throws IOException {
+        writeCss("body {background: blue};", "other.css");
+        writeCss(
+                """
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/inter@latest/index.css');
+                        @import url('other.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css?ts=1234');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css#foo');
+                        @import url('foo.css') layer(foo);
+                        @import url('bluish.css') print, screen;
+                        @import url('landscape.css') screen and (orientation: landscape);
+                        """,
+                "styles.css");
+
+        Assert.assertEquals(
+                """
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/inter@latest/index.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css?ts=1234');
+                        @import url('https://cdn.jsdelivr.net/fontsource/css/aclonica@latest/index.css#foo');
+                        @import url('foo.css') layer(foo);
+                        @import url('bluish.css') print, screen;
+                        @import url('landscape.css') screen and (orientation: landscape);
+
+                        body {background: blue};
+                        """
+                        .trim(),
+                CssBundler.inlineImports(themeFolder,
+                        getThemeFile("styles.css"), getThemeJson()).trim());
+    }
+
+    @Test
+    public void themeAssetsRelativeUrlsRewritten() throws IOException {
+        createThemeJson("""
+                {
+                  "assets": {
+                    "@some/pkg": {
+                      "svgs/regular/**": "my/icons"
+                    }
+                  }
+                }
+                """);
+        writeCss("""
+                background-image: url('my/icons/file1.png');
+                background-image: url('./my/icons/file2.png');
+                background-image: url('../my/icons/file3.png');
+                """, "styles.css");
+
+        Assert.assertEquals(
+                """
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file1.png');
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file2.png');
+                        background-image: url('../my/icons/file3.png');
+                        """,
+                CssBundler.inlineImports(themeFolder,
+                        getThemeFile("styles.css"), getThemeJson()));
+    }
+
+    @Test
+    public void themeAssetsRelativeUrlsInSubFolderRewritten()
+            throws IOException {
+        createThemeJson("""
+                {
+                  "assets": {
+                    "@some/pkg": {
+                      "svgs/regular/**": "my/icons"
+                    }
+                  }
+                }
+                """);
+        writeCss("""
+                @import url('sub/sub.css');
+                @import url('sub/nested/two.css');
+                """, "styles.css");
+        writeCss("""
+                @import url('nested/one.css');
+                background-image: url('../my/icons/file.png');
+                """, "sub/sub.css");
+        writeCss("background-image: url('../../my/icons/file1.png');",
+                "sub/nested/one.css");
+        writeCss("background-image: url('../../my/icons/file2.png');",
+                "sub/nested/two.css");
+
+        String actualCss = CssBundler.inlineImports(themeFolder,
+                getThemeFile("styles.css"), getThemeJson());
+        Assert.assertEquals(
+                """
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file1.png');
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file.png');
+
+                        background-image: url('VAADIN/themes/my-theme/my/icons/file2.png');
+                        """,
+                actualCss);
+    }
+
+    @Test
+    public void relativeUrl_notThemeResourceNotAssets_notRewritten()
+            throws IOException {
+        createThemeJson("""
+                {
+                  "assets": {
+                    "@some/pkg": {
+                      "svgs/regular/**": "my/icons"
+                    }
+                  }
+                }
+                """);
+        writeCss("""
+                @import url('sub/sub.css');
+                @import url('sub/nested/two.css');
+                background-image: url('unknown/icons/file-root.png');
+                """, "styles.css");
+        writeCss("""
+                @import url('nested/one.css');
+                background-image: url('../unknown/icons/file-sub.png');
+                """, "sub/sub.css");
+        writeCss("background-image: url('../../unknown/icons/file1.png');",
+                "sub/nested/one.css");
+        writeCss("background-image: url('../../unknown/icons/file2.png');",
+                "sub/nested/two.css");
+
+        String actualCss = CssBundler.inlineImports(themeFolder,
+                getThemeFile("styles.css"), getThemeJson());
+        Assert.assertEquals("""
+                background-image: url('../../unknown/icons/file1.png');
+                background-image: url('../unknown/icons/file-sub.png');
+
+                background-image: url('../../unknown/icons/file2.png');
+                background-image: url('unknown/icons/file-root.png');
+                """, actualCss);
     }
 
     private boolean createThemeFile(String filename) throws IOException {
@@ -169,5 +306,20 @@ public class CssBundlerTest {
         File file = getThemeFile(filename);
         FileUtils.writeStringToFile(file, css, StandardCharsets.UTF_8);
         return file;
+    }
+
+    private JsonObject getThemeJson() throws IOException {
+        File file = getThemeFile("theme.json");
+        if (file.exists()) {
+            return Json.parse(Files.readString(file.toPath()));
+        }
+        return null;
+    }
+
+    private void createThemeJson(String json) throws IOException {
+        JsonObject jsonObject = Json.parse(json);
+        File file = getThemeFile("theme.json");
+        FileUtils.writeStringToFile(file, jsonObject.toJson(),
+                StandardCharsets.UTF_8);
     }
 }
