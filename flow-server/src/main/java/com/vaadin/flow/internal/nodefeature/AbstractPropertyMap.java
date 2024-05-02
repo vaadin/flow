@@ -81,7 +81,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *            the name of the property to remove
      */
     public void removeProperty(String name) {
-        super.remove(name);
+        remove(name);
     }
 
     /**
