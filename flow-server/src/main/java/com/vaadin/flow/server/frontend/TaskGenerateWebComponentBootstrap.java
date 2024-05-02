@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,7 +52,7 @@ public class TaskGenerateWebComponentBootstrap
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
 
-        lines.add("import 'Frontend/generated/flow/web-components/"
+        lines.add("import 'Frontend/generated/flow/"
                 + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
                 + "FlowClient.js';");

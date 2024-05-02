@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2023 Vaadin Ltd.
+ * Copyright 2000-2024 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
@@ -53,7 +55,6 @@ import com.vaadin.flow.server.frontend.scanner.EntryPointType;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
-import org.slf4j.Logger;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -126,10 +127,9 @@ abstract class AbstractUpdateImports implements Runnable {
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
 
-        generatedFlowWebComponentImports = new File(
-                FrontendUtils.getFlowGeneratedWebComponentsFolder(
-                        options.getFrontendDirectory()),
-                FrontendUtils.IMPORTS_WEB_COMPONENT_NAME);
+        generatedFlowWebComponentImports = FrontendUtils
+                .getFlowGeneratedWebComponentsImports(
+                        options.getFrontendDirectory());
         this.chunkFolder = new File(generatedFlowImports.getParentFile(),
                 "chunks");
 
