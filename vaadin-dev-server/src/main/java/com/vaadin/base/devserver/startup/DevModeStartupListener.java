@@ -15,13 +15,15 @@
  */
 package com.vaadin.base.devserver.startup;
 
-import java.io.Serializable;
-import java.util.Set;
-
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.HandlesTypes;
 import jakarta.servlet.annotation.WebListener;
+
+import java.io.Serializable;
+import java.util.Set;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
@@ -69,31 +71,55 @@ public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,
         ServletContextListener {
 
+    private DevModeHandlerManager devModeHandlerManager;
+
     @Override
     public void initialize(Set<Class<?>> classes, VaadinContext context)
             throws VaadinInitializerException {
-        Lookup lookup = context.getAttribute(Lookup.class);
-        DevModeHandlerManager devModeHandlerManager = lookup
-                .lookup(DevModeHandlerManager.class);
-        devModeHandlerManager.initDevModeHandler(classes, context);
-
+        lookupDevModeHandlerManager(context).initDevModeHandler(classes,
+                context);
     }
 
     @Override
     public void contextInitialized(ServletContextEvent ctx) {
-        // No need to do anything on init
+        // Keep a reference to the dev mode handler manager to stop it on
+        // context destroy event, since lookup in that phase could fail, for
+        // example if the DI container behind lookup has been already disposed
+        devModeHandlerManager = lookupDevModeHandlerManager(
+                new VaadinServletContext(ctx.getServletContext()));
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent ctx) {
-        VaadinServletContext context = new VaadinServletContext(
-                ctx.getServletContext());
-        Lookup lookup = context.getAttribute(Lookup.class);
-        DevModeHandlerManager devModeHandlerManager = lookup
-                .lookup(DevModeHandlerManager.class);
+        if (devModeHandlerManager == null) {
+            // devModeHandlerManager should never be null here.
+            // if it happens try to lookup to ensure dev server is stopped
+            // but do not propagate potential failures to the container, since
+            // the situation error cannot be handled in any way.
+            try {
+                devModeHandlerManager = lookupDevModeHandlerManager(
+                        new VaadinServletContext(ctx.getServletContext()));
+            } catch (Exception exception) {
+                LoggerFactory.getLogger(DevModeStartupListener.class).debug(
+                        "Cannot obtain DevModeHandlerManager instance during ServletContext destroy event. "
+                                + "Potential cause could be DI container behind Lookup being already disposed.",
+                        exception);
+            }
+        }
         if (devModeHandlerManager != null) {
             devModeHandlerManager.stopDevModeHandler();
         }
+        devModeHandlerManager = null;
     }
 
+    private DevModeHandlerManager lookupDevModeHandlerManager(
+            VaadinContext context) {
+        Lookup lookup = context.getAttribute(Lookup.class);
+        if (lookup == null) {
+            LoggerFactory.getLogger(DevModeStartupListener.class).debug(
+                    "Cannot obtain a Lookup instance from VaadinContext.");
+            return null;
+        }
+        return lookup.lookup(DevModeHandlerManager.class);
+    }
 }
