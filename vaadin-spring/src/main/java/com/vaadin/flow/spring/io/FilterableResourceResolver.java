@@ -41,6 +41,17 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.util.ResourceUtils;
 
+/**
+ * A {@link PathMatchingResourcePatternResolver} that allows filtering resources
+ * by package properties. The resolver reads META-INF/VAADIN/package.properties
+ * from JAR files and directories. The properties file can contain a list of the
+ * allowed or blocked packages. If it contains both, the allowed packages take
+ * precedence. Allowed packages are mapped with the key
+ * "vaadin.allowed-packages". Blocked packages are mapped with the key
+ * "vaadin.blocked-packages".
+ * 
+ * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
+ */
 public class FilterableResourceResolver
         extends PathMatchingResourcePatternResolver {
 
@@ -48,11 +59,22 @@ public class FilterableResourceResolver
     private static final String JAR_KEY = ".jar!/";
     private static final String PACKAGE_PROPERTIES_PATH = "META-INF/VAADIN/package.properties";
 
+    /**
+     * The property key for allowed packages.
+     */
     public static final String ALLOWED_PACKAGES_PROPERTY = "vaadin.allowed-packages";
+    /**
+     * The property key for blocked packages.
+     */
     public static final String BLOCKED_PACKAGES_PROPERTY = "vaadin.blocked-packages";
 
-    private Map<String, Properties> propertiesCache = new HashMap<>();
+    private final Map<String, Properties> propertiesCache = new HashMap<>();
 
+    /**
+     * Creates a new instance of the resolver.
+     *
+     * @param resourceLoader the resource loader to use
+     */
     public FilterableResourceResolver(ResourceLoader resourceLoader) {
         super(resourceLoader);
     }
@@ -61,10 +83,28 @@ public class FilterableResourceResolver
         return LoggerFactory.getLogger(FilterableResourceResolver.class);
     }
 
+    private String toJarPath(String path) {
+        return path.substring(0, path.lastIndexOf(JAR_KEY) + JAR_KEY.length());
+    }
+
+    private String pathToKey(String path) {
+        String key = path.substring(0, path.lastIndexOf(JAR_KEY));
+        if (key.startsWith(JAR_PROTOCOL)) {
+            // clear the jar: prefix
+            key = key.substring(4);
+        }
+        return key;
+    }
+
+    /**
+     * Checks if the given path is a JAR file.
+     * @param path the path to check. Not null.
+     * @return {@code true} if the path is a JAR file, {@code false} otherwise
+     */
     protected boolean isJar(String path) {
         return path.lastIndexOf(JAR_KEY) != -1;
     }
-
+    
     private Resource doResolveRootDirResource(Resource original)
             throws IOException {
         String rootDirPath = original.getURI().getPath();
@@ -74,12 +114,26 @@ public class FilterableResourceResolver
                 String jarPath = rootDirPath.substring(0,
                         index + JAR_KEY.length());
                 return new UrlResource(jarPath);
-                // return new ClassPathResource(jarPath, getClassLoader());
             }
         }
         return super.resolveRootDirResource(original);
     }
 
+    /**
+     * Find all resources in jar files that match the given location pattern via
+     * the Ant-style PathMatcher. Supports additional filtering based on allowed
+     * or blocked packages in package.properties.
+     * 
+     * @param rootDirResource
+     *            the root directory as Resource
+     * @param rootDirUrl
+     *            the pre-resolved root directory URL
+     * @param subPattern
+     *            the sub pattern to match (below the root directory)
+     * @return a mutable Set of matching Resource instances
+     * @throws IOException
+     *             in case of I/O error
+     */
     @Override
     protected Set<Resource> doFindPathMatchingJarResources(
             Resource rootDirResource, URL rootDirUrl, String subPattern)
@@ -94,6 +148,19 @@ public class FilterableResourceResolver
                 subPattern);
     }
 
+    /**
+     * Find all class path resources with the given path via the configured
+     * ClassLoader. Called by findAllClassPathResources(String). Supports
+     * additional filtering based on allowed or blocked packages in
+     * package.properties.
+     * 
+     * @param path
+     *            the absolute path within the class path (never a leading
+     *            slash)
+     * @return a mutable Set of matching Resource instances
+     * @throws IOException
+     *             in case of I/O errors
+     */
     @Override
     protected Set<Resource> doFindAllClassPathResources(String path)
             throws IOException {
@@ -109,10 +176,7 @@ public class FilterableResourceResolver
             URL rootDirUrl) throws IOException {
         if (!propertiesCache.containsKey(path)) {
             if (isJar(path)) {
-                String jarPath = path.substring(0, path.lastIndexOf(JAR_KEY));
-                if (jarPath.startsWith("jar:")) {
-                    jarPath = jarPath.substring(4);
-                }
+                String jarPath = pathToKey(path);
                 propertiesCache.put(jarPath, readPackageProperties(rootDirUrl,
                         path, doResolveRootDirResource(rootDirResource)));
                 getLogger().trace("Caching package.properties of JAR {}", path);
@@ -136,22 +200,14 @@ public class FilterableResourceResolver
             String rootDirPath = rootDirResource.getURI().toString();
             String rootPath = rootDirResource.getURI().getPath();
             if (rootPath != null && isJar(rootDirPath)) {
-                int index = rootDirPath.lastIndexOf(JAR_KEY);
-                if (index != -1) {
-                    String jarPath = rootDirPath.substring(0,
-                            index + JAR_KEY.length());
-                    String key = rootPath.substring(0,
-                            rootPath.lastIndexOf(JAR_KEY));
-                    if (key.startsWith(JAR_PROTOCOL)) {
-                        key = key.substring(4);
-                    }
-                    if (!propertiesCache.containsKey(key)) {
-                        propertiesCache.put(key, readPackageProperties(null,
-                                jarPath, rootDirResource));
-                        getLogger().trace(
-                                "Caching package.properties of JAR {}",
-                                rootPath);
-                    }
+                String jarPath = toJarPath(rootDirPath);
+                String key = pathToKey(rootPath);
+                if (!propertiesCache.containsKey(key)) {
+                    propertiesCache.put(key, readPackageProperties(null,
+                            jarPath, rootDirResource));
+                    getLogger().trace(
+                            "Caching package.properties of JAR {}",
+                            rootPath);
                 }
             } else if (!propertiesCache.containsKey(rootPath)) {
                 Resource resource = doFindPathMatchingFileResources(
@@ -172,8 +228,15 @@ public class FilterableResourceResolver
         }
     }
 
-    private boolean isBlockedJar(Resource resource) {
-        // TODO handle case of package.properties with vaadin.blocked-jar=true
+    /**
+     * Returns whether the given resource is a blocked jar and shouldn't be included.
+     *
+     * @param resource the resource to check
+     * @return {@code true} if the resource is a blocked jar, {@code false} otherwise
+     */
+    protected boolean isBlockedJar(Resource resource) {
+        // placeholder to handle case of package.properties with
+        // vaadin.blocked-jar=true
         return false;
     }
 
@@ -268,6 +331,18 @@ public class FilterableResourceResolver
         }
     }
 
+    /**
+     * Check if the target path is allowed by the package properties.
+     * 
+     * @param rootPath
+     *            Root path as a key for the cached properties
+     * @param targetPath
+     *            relative path to check
+     * @param defaultValue
+     *            default value to return if the properties are not found
+     * @return {@code true} if the target path is allowed by the package
+     *         properties,
+     */
     protected boolean isAllowedByPackageProperties(String rootPath,
                                                    String targetPath, boolean defaultValue) {
         Properties properties = propertiesCache.get(rootPath);

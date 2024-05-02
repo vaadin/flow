@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.spring.test.blocked.startup.vaadin;
 
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 

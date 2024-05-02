@@ -525,7 +525,8 @@ public class VaadinServletContextInitializer
             collectHandleTypes(devModeHandlerManager.getHandlesTypes(),
                     annotations, superTypes);
 
-            Set<Class<?>> classes = findClassesForDevMode(basePackages, annotations, superTypes);
+            Set<Class<?>> classes = findClassesForDevMode(basePackages,
+                    annotations, superTypes);
 
             if (devModeCachingEnabled) {
                 classes.addAll(ReloadCache.jarClasses);
@@ -595,9 +596,8 @@ public class VaadinServletContextInitializer
     protected Set<Class<?>> findClassesForDevMode(Set<String> basePackages,
             List<Class<? extends Annotation>> annotations,
             List<Class<?>> superTypes) {
-        return findByAnnotationOrSuperType(basePackages,
-                customLoader, annotations, superTypes)
-                .collect(Collectors.toSet());
+        return findByAnnotationOrSuperType(basePackages, customLoader,
+                annotations, superTypes).collect(Collectors.toSet());
     }
 
     private class WebComponentServletContextListener
@@ -1021,32 +1021,25 @@ public class VaadinServletContextInitializer
                                         .replace(".class", "");
                                 ReloadCache.jarClassNames.add(className);
                             }
-                            if (shouldPathBeScanned(relativePath)
-                                    && isAllowedByPackageProperties(
-                                            path.substring(0, index),
-                                            relativePath, true)) {
+                            if (shouldPathBeScanned(relativePath,
+                                    path.substring(0, index))) {
                                 resourcesList.add(resource);
                             }
                         } else {
                             List<String> parents = rootPaths.stream()
-                                    .filter(path::startsWith)
-                                    .collect(Collectors.toList());
+                                    .filter(path::startsWith).toList();
                             if (parents.isEmpty()) {
                                 throw new IllegalStateException(String.format(
                                         "Parent resource of [%s] not found in the resources!",
                                         path));
                             }
-                            AtomicBoolean val = new AtomicBoolean(true);
-                            if (parents.stream().anyMatch(parent -> {
-                                if (shouldPathBeScanned(
-                                        path.substring(parent.length()))) {
-                                    val.set(isAllowedByPackageProperties(parent,
+                            AtomicBoolean parentIsAllowedByPackageProperties = new AtomicBoolean(
+                                    true);
+                            if (parents.stream()
+                                    .anyMatch(parent -> shouldPathBeScanned(
                                             path.substring(parent.length()),
-                                            val.get()));
-                                    return val.get();
-                                }
-                                return false;
-                            })) {
+                                            parent,
+                                            parentIsAllowedByPackageProperties))) {
                                 resourcesList.add(resource);
                             }
                         }
@@ -1065,8 +1058,66 @@ public class VaadinServletContextInitializer
             return resourcesList.toArray(new Resource[0]);
         }
 
+        /**
+         * Checks if the given path should be scanned.
+         *
+         * @param path
+         *            the relative path to check
+         * @return {@code true} if the path should be scanned, {@code false}
+         *         otherwise
+         */
         private boolean shouldPathBeScanned(String path) {
             return scanAlways.hasPrefix(path) || !scanNever.hasPrefix(path);
+        }
+
+        /**
+         * Checks if the given path should be scanned. Checks
+         * package.properties.
+         *
+         * @param path
+         *            the relative path to check
+         * @param rootPath
+         *            the root path of the resource. Also, a key for cached
+         *            properties.
+         * @return {@code true} if the path should be scanned, {@code false}
+         *         otherwise
+         */
+        private boolean shouldPathBeScanned(String path, String rootPath) {
+            return shouldPathBeScanned(path, rootPath, null);
+        }
+
+        /**
+         * Checks if the given path should be scanned. Checks
+         * package.properties.
+         *
+         * @param path
+         *            the relative path to check
+         * @param rootPath
+         *            the root path of the resource. Also, a key for cached
+         *            properties.
+         * @param parentIsAllowedByPackageProperties
+         *            This value is used as a default value for the
+         *            package.properties check. Value of the object may be
+         *            changed, if result changes. null defaults to true.
+         * @return {@code true} if the path should be scanned, {@code false}
+         *         otherwise
+         */
+        private boolean shouldPathBeScanned(String path, String rootPath,
+                AtomicBoolean parentIsAllowedByPackageProperties) {
+            if (shouldPathBeScanned(path)) {
+                // The given parentIsAllowedByPackageProperties ensures that
+                // result from the previous check follows up here as a default
+                // value.
+                boolean defaultValue = parentIsAllowedByPackageProperties == null
+                        || parentIsAllowedByPackageProperties.get();
+                boolean allowed = isAllowedByPackageProperties(rootPath, path,
+                        defaultValue);
+                if (parentIsAllowedByPackageProperties != null) {
+                    parentIsAllowedByPackageProperties.set(allowed);
+                }
+                return allowed;
+            }
+            return false;
         }
     }
 
