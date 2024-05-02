@@ -147,21 +147,14 @@ public class WebPushIT extends ChromeBrowserTest {
     }
 
     public boolean isNotificationPresent(WebDriver driver) {
-        // Send a message to service worker which responds with the push
-        // event data if available.
-        // Store push data to window object
-        ((JavascriptExecutor) driver).executeScript(
-                """
-                        var msg = new MessageChannel();
-                        msg.port1.onmessage = function(event){
-                            //Response received from SW
-                            window.webpush = event.data;
-                        };
-                        navigator.serviceWorker.controller.postMessage("getPush", [msg.port2]);
-                        return true;
-                        """);
-        // Check if there was any push data from the service worker.
         return (boolean) ((JavascriptExecutor) driver).executeScript(
-                "if(window.webpush && window.webpush === 'WebPush: Test title - Testing notification')return true; return false;");
+                """
+                        return await navigator.serviceWorker.getRegistration().then( (ev) => ev.getNotifications() )
+                            .then( (notifications) => {
+                                return notifications.length == 1 &&
+                                    notifications[0].title === 'Test title' &&
+                                    notifications[0].body === 'Testing notification';
+                            });
+                        """);
     }
 }
