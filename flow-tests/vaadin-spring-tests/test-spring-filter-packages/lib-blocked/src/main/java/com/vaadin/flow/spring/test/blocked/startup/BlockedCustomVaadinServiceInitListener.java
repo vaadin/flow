@@ -15,12 +15,9 @@
  */
 package com.vaadin.flow.spring.test.blocked.startup;
 
-import org.springframework.stereotype.Component;
-
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
-@Component
 public class BlockedCustomVaadinServiceInitListener
         implements VaadinServiceInitListener {
 
