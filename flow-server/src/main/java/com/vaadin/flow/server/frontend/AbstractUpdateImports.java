@@ -135,10 +135,9 @@ abstract class AbstractUpdateImports implements Runnable {
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
 
-        generatedFlowWebComponentImports = new File(
-                FrontendUtils.getFlowGeneratedWebComponentsFolder(
-                        options.getFrontendDirectory()),
-                FrontendUtils.IMPORTS_WEB_COMPONENT_NAME);
+        generatedFlowWebComponentImports = FrontendUtils
+                .getFlowGeneratedWebComponentsImports(
+                        options.getFrontendDirectory());
         this.chunkFolder = new File(generatedFlowImports.getParentFile(),
                 "chunks");
 
@@ -235,7 +234,8 @@ abstract class AbstractUpdateImports implements Runnable {
                         generatedFlowWebComponentImports, lines);
             } catch (IOException e) {
                 throw new IllegalStateException(
-                        "Failed to update the generated Flow imports", e);
+                        "Failed to update the generated Flow imports for exported web component",
+                        e);
             }
         }
     }

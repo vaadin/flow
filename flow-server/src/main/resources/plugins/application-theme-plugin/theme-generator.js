@@ -81,7 +81,6 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
 
   themeFileContent += `let needsReloadOnChanges = false;\n`;
   const imports = [];
-  const deferredImports = [];
   const componentCssImports = [];
   const globalFileContent = [];
   const globalCssCode = [];
@@ -119,9 +118,9 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
       if (lumoImport === 'utility' || lumoImport === 'badge' || lumoImport === 'typography' || lumoImport === 'color') {
         // Inject into main document the same way as other Lumo styles are injected
-        // Defer import at runtime to prevent leaking document when theme is applied
-        // to an embedded component
-        deferredImports.push(`import('@vaadin/vaadin-lumo-styles/${lumoImport}-global.js');\n`);
+        // Lumo imports go to the theme global imports file to prevent style leaks
+        // when the theme is applied to an embedded component
+        globalFileContent.push(`import '@vaadin/vaadin-lumo-styles/${lumoImport}-global.js';\n`);
       }
     });
 
@@ -223,8 +222,6 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     const removers = [];
     if (target !== document) {
       ${shadowOnlyCss.join('')}
-    } else {
-      ${deferredImports.join('\n')}
     }
     ${parentTheme}
     ${globalCssCode.join('')}
