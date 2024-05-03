@@ -19,6 +19,7 @@ import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.expect
 import com.vaadin.flow.server.InitParameters
+import com.vaadin.flow.server.frontend.FrontendUtils
 import elemental.json.JsonObject
 import elemental.json.impl.JsonUtil
 import org.gradle.api.JavaVersion
@@ -26,6 +27,8 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
 import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 /**
  * The most basic tests. If these fail, the plugin is completely broken and all
