@@ -19,6 +19,7 @@ import java.io.File
 import kotlin.test.assertContains
 import kotlin.test.expect
 import com.vaadin.flow.server.InitParameters
+import com.vaadin.flow.server.frontend.FrontendUtils
 import elemental.json.JsonObject
 import elemental.json.impl.JsonUtil
 import org.gradle.api.JavaVersion
@@ -26,6 +27,8 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
 import org.junit.Test
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 /**
  * The most basic tests. If these fail, the plugin is completely broken and all
@@ -327,6 +330,76 @@ class VaadinSmokeTest : AbstractGradleTest() {
         val cssFile = File(testProject.dir, "frontend/generated/jar-resources/mystyle.css")
         expect(true, cssFile.toString()) { cssFile.exists() }
 
+    }
+
+    /**
+     * Tests that build works with resources from classpath, not only from
+     * frontend directory
+     *
+     * https://github.com/vaadin/flow/issues/14420
+     */
+    @Test
+    fun vaadinBuildFrontendShouldScanFilesystemDependencies() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation(files('libs/addon.jar'))
+            }
+        """
+        )
+
+        testProject.newFile(
+            "src/main/java/org/vaadin/example/MainView.java", """
+            package org.vaadin.example;
+
+            import com.vaadin.flow.component.html.Div;
+            import com.vaadin.flow.component.html.Span;
+            import com.vaadin.flow.router.Route;
+            import com.vaadin.example.Addon;
+
+            @Route("")
+            public class MainView extends Div {
+
+                public MainView() {
+                    add(new Addon());
+                }
+            }
+        """.trimIndent()
+        )
+
+        testProject.newFolder("libs")
+        val addonJar: File = testProject.newFile("libs/addon.jar")
+        Files.copy(
+            File(javaClass.classLoader.getResource("addon.jar").path).toPath(),
+            addonJar.toPath(), StandardCopyOption.REPLACE_EXISTING
+        )
+
+        val result: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val addonFile =
+            File(testProject.dir, FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "jar-resources/my-addon.js")
+        expect(true, addonFile.toString()) { addonFile.exists() }
+
+        val importsFile = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "flow/" + FrontendUtils.IMPORTS_NAME
+        )
+        expect(true, importsFile.toString()) { importsFile.exists() }
+        expect(true, "Addon javascript should be found and imported") {
+            importsFile.readText().contains("import 'Frontend/generated/jar-resources/my-addon.js'")
+        }
     }
 
     @Test
