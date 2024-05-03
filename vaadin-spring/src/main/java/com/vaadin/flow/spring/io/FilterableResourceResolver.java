@@ -49,7 +49,7 @@ import org.springframework.util.ResourceUtils;
  * precedence. Allowed packages are mapped with the key
  * "vaadin.allowed-packages". Blocked packages are mapped with the key
  * "vaadin.blocked-packages".
- * 
+ *
  * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
  */
 public class FilterableResourceResolver
@@ -73,7 +73,8 @@ public class FilterableResourceResolver
     /**
      * Creates a new instance of the resolver.
      *
-     * @param resourceLoader the resource loader to use
+     * @param resourceLoader
+     *            the resource loader to use
      */
     public FilterableResourceResolver(ResourceLoader resourceLoader) {
         super(resourceLoader);
@@ -98,13 +99,15 @@ public class FilterableResourceResolver
 
     /**
      * Checks if the given path is a JAR file.
-     * @param path the path to check. Not null.
+     *
+     * @param path
+     *            the path to check. Not null.
      * @return {@code true} if the path is a JAR file, {@code false} otherwise
      */
     protected boolean isJar(String path) {
         return path.lastIndexOf(JAR_KEY) != -1;
     }
-    
+
     private Resource doResolveRootDirResource(Resource original)
             throws IOException {
         String rootDirPath = original.getURI().getPath();
@@ -123,7 +126,7 @@ public class FilterableResourceResolver
      * Find all resources in jar files that match the given location pattern via
      * the Ant-style PathMatcher. Supports additional filtering based on allowed
      * or blocked packages in package.properties.
-     * 
+     *
      * @param rootDirResource
      *            the root directory as Resource
      * @param rootDirUrl
@@ -141,7 +144,7 @@ public class FilterableResourceResolver
         String path = rootDirResource.getURI().toString();
         cachePackageProperties(path, rootDirResource, rootDirUrl);
 
-        if(isBlockedJar(rootDirResource)) {
+        if (isBlockedJar(rootDirResource)) {
             return Collections.emptySet();
         }
         return super.doFindPathMatchingJarResources(rootDirResource, rootDirUrl,
@@ -153,7 +156,7 @@ public class FilterableResourceResolver
      * ClassLoader. Called by findAllClassPathResources(String). Supports
      * additional filtering based on allowed or blocked packages in
      * package.properties.
-     * 
+     *
      * @param path
      *            the absolute path within the class path (never a leading
      *            slash)
@@ -205,8 +208,7 @@ public class FilterableResourceResolver
                 if (!propertiesCache.containsKey(key)) {
                     propertiesCache.put(key, readPackageProperties(null,
                             jarPath, rootDirResource));
-                    getLogger().trace(
-                            "Caching package.properties of JAR {}",
+                    getLogger().trace("Caching package.properties of JAR {}",
                             rootPath);
                 }
             } else if (!propertiesCache.containsKey(rootPath)) {
@@ -217,8 +219,7 @@ public class FilterableResourceResolver
                         ? PropertiesLoaderUtils.loadProperties(resource)
                         : null;
                 propertiesCache.put(rootPath, properties);
-                getLogger().trace(
-                        "Caching package.properties of directory {}",
+                getLogger().trace("Caching package.properties of directory {}",
                         rootPath);
             }
 
@@ -229,10 +230,13 @@ public class FilterableResourceResolver
     }
 
     /**
-     * Returns whether the given resource is a blocked jar and shouldn't be included.
+     * Returns whether the given resource is a blocked jar and shouldn't be
+     * included.
      *
-     * @param resource the resource to check
-     * @return {@code true} if the resource is a blocked jar, {@code false} otherwise
+     * @param resource
+     *            the resource to check
+     * @return {@code true} if the resource is a blocked jar, {@code false}
+     *         otherwise
      */
     protected boolean isBlockedJar(Resource resource) {
         // placeholder to handle case of package.properties with
@@ -333,7 +337,7 @@ public class FilterableResourceResolver
 
     /**
      * Check if the target path is allowed by the package properties.
-     * 
+     *
      * @param rootPath
      *            Root path as a key for the cached properties
      * @param targetPath
@@ -344,17 +348,17 @@ public class FilterableResourceResolver
      *         properties,
      */
     protected boolean isAllowedByPackageProperties(String rootPath,
-                                                   String targetPath, boolean defaultValue) {
+            String targetPath, boolean defaultValue) {
         Properties properties = propertiesCache.get(rootPath);
         if (properties == null) {
             return defaultValue;
         }
 
         List<String> allowedPackages = Stream.of(properties
-                        .getProperty(ALLOWED_PACKAGES_PROPERTY, "").split(","))
+                .getProperty(ALLOWED_PACKAGES_PROPERTY, "").split(","))
                 .filter(pkg -> !pkg.isBlank()).toList();
         List<String> blockedPackages = Stream.of(properties
-                        .getProperty(BLOCKED_PACKAGES_PROPERTY, "").split(","))
+                .getProperty(BLOCKED_PACKAGES_PROPERTY, "").split(","))
                 .filter(pkg -> !pkg.isBlank()).toList();
         if (!allowedPackages.isEmpty()) {
             return allowedPackages.stream().anyMatch(targetPath::startsWith);
