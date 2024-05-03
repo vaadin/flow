@@ -17,6 +17,7 @@
 package com.vaadin.flow.spring.io;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -53,7 +54,7 @@ import org.springframework.util.ResourceUtils;
  * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
  */
 public class FilterableResourceResolver
-        extends PathMatchingResourcePatternResolver {
+        extends PathMatchingResourcePatternResolver implements Serializable {
 
     private static final String JAR_PROTOCOL = "jar:";
     private static final String JAR_KEY = ".jar!/";
