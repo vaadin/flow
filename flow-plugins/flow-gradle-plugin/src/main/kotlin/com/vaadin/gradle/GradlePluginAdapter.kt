@@ -47,9 +47,16 @@ internal class GradlePluginAdapter(
         val dependencyConfigurationJars: List<File> = if (dependencyConfiguration != null) {
             var artifacts: List<ResolvedArtifact> =
                 dependencyConfiguration.resolvedConfiguration.resolvedArtifacts.toList()
+
+            // Detect local filesystem dependencies that are not resolved as artifacts
+            // They will be added to the filtered artifacts list
+            val filesystemDependencies =
+                dependencyConfiguration.resolvedConfiguration.files.minus(artifacts.map { it.file }.toSet())
+
             val artifactFilter = config.classpathFilter.toPredicate()
             artifacts = artifacts.filter { artifactFilter.test(it.moduleVersion.id.module) }
-            artifacts.map { it.file }
+
+            artifacts.map { it.file }.plus(filesystemDependencies)
         } else listOf()
 
         // we need to also analyze the project's classes
