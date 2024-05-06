@@ -24,12 +24,12 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipException;
 
@@ -69,7 +69,11 @@ public class FilterableResourceResolver
      */
     public static final String BLOCKED_PACKAGES_PROPERTY = "vaadin.blocked-packages";
 
-    private final Map<String, Properties> propertiesCache = new HashMap<>();
+    private final Map<String, PackageInfo> propertiesCache = new HashMap<>();
+
+    private record PackageInfo(Set<String> allowedPackages,
+            Set<String> blockedPackages) {
+    }
 
     /**
      * Creates a new instance of the resolver.
@@ -191,7 +195,7 @@ public class FilterableResourceResolver
                 Properties properties = resource != null
                         ? PropertiesLoaderUtils.loadProperties(resource)
                         : null;
-                propertiesCache.put(path, properties);
+                propertiesCache.put(path, createPackageInfo(properties));
                 getLogger().trace("Caching package.properties of directory {}",
                         path);
             }
@@ -219,14 +223,14 @@ public class FilterableResourceResolver
                 Properties properties = resource != null
                         ? PropertiesLoaderUtils.loadProperties(resource)
                         : null;
-                propertiesCache.put(rootPath, properties);
+                propertiesCache.put(rootPath, createPackageInfo(properties));
                 getLogger().trace("Caching package.properties of directory {}",
                         rootPath);
             }
 
         } catch (IOException e) {
-            getLogger().warn("Failed to find " + PACKAGE_PROPERTIES_PATH
-                    + " for path " + res, e);
+            getLogger().warn("Failed to find {} for path {}",
+                    PACKAGE_PROPERTIES_PATH, res, e);
         }
     }
 
@@ -250,7 +254,7 @@ public class FilterableResourceResolver
      * This method is slightly adjusted from the origin to just read
      * META-INF/VAADIN/package.properties and transform it to Properties object.
      */
-    private Properties readPackageProperties(URL jarPathURL, String jarPath,
+    private PackageInfo readPackageProperties(URL jarPathURL, String jarPath,
             Resource rootDirResource) throws IOException {
         URLConnection con = null;
         JarFile jarFile;
@@ -325,7 +329,7 @@ public class FilterableResourceResolver
                         getLogger().trace("Read package.properties: [{}]",
                                 prop);
                     }
-                    return prop;
+                    return prop != null ? createPackageInfo(prop) : null;
                 }
             }
             return null;
@@ -350,22 +354,35 @@ public class FilterableResourceResolver
      */
     protected boolean isAllowedByPackageProperties(String rootPath,
             String targetPath, boolean defaultValue) {
-        Properties properties = propertiesCache.get(rootPath);
-        if (properties == null) {
+        PackageInfo packageInfo = propertiesCache.get(rootPath);
+        if (packageInfo == null) {
             return defaultValue;
         }
 
-        List<String> allowedPackages = Stream.of(properties
-                .getProperty(ALLOWED_PACKAGES_PROPERTY, "").split(","))
-                .filter(pkg -> !pkg.isBlank()).toList();
-        List<String> blockedPackages = Stream.of(properties
-                .getProperty(BLOCKED_PACKAGES_PROPERTY, "").split(","))
-                .filter(pkg -> !pkg.isBlank()).toList();
-        if (!allowedPackages.isEmpty()) {
-            return allowedPackages.stream().anyMatch(targetPath::startsWith);
-        } else if (!blockedPackages.isEmpty()) {
-            return blockedPackages.stream().noneMatch(targetPath::startsWith);
+        if (!packageInfo.allowedPackages().isEmpty()) {
+            return packageInfo.allowedPackages().stream()
+                    .anyMatch(targetPath::startsWith);
+        } else if (!packageInfo.blockedPackages().isEmpty()) {
+            return packageInfo.blockedPackages().stream()
+                    .noneMatch(targetPath::startsWith);
         }
         return defaultValue;
+    }
+
+    private PackageInfo createPackageInfo(Properties properties) {
+        if (properties == null) {
+            return null;
+        }
+        Set<String> allowedPackages = Stream
+                .of(properties.getProperty(ALLOWED_PACKAGES_PROPERTY, "")
+                        .split(","))
+                .filter(pkg -> !pkg.isBlank()).map(String::trim)
+                .map(pkg -> pkg.replace(".", "/")).collect(Collectors.toSet());
+        Set<String> blockedPackages = Stream
+                .of(properties.getProperty(BLOCKED_PACKAGES_PROPERTY, "")
+                        .split(","))
+                .filter(pkg -> !pkg.isBlank()).map(String::trim)
+                .map(pkg -> pkg.replace(".", "/")).collect(Collectors.toSet());
+        return new PackageInfo(allowedPackages, blockedPackages);
     }
 }
