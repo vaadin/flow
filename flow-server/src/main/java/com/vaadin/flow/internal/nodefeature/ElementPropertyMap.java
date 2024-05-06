@@ -193,7 +193,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         Serializable oldValue = super.remove(key);
 
         fireEvent(new PropertyChangeEvent(Element.get(getNode()), key, oldValue,
-                true));
+                false));
 
         return oldValue;
     }

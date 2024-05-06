@@ -478,6 +478,79 @@ public class TaskGenerateReactFilesTest {
                 new File(frontend, "routes.tsx.flowBackup").exists());
     }
 
+    @Test
+    public void routesContainExport_noConst_noExceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import Flow from 'Frontend/generated/flow/Flow';
+
+                        const { router, originalRoutes } = new RouterConfigurationBuilder();
+                           .withFallback(Flow)
+                           .build();
+
+                        const routes = originalRoutes;
+                        export { router, routes }
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
+    public void routesContainExport_twoSingleExports_noExceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import Flow from 'Frontend/generated/flow/Flow';
+
+                        const { router, originalRoutes } = new RouterConfigurationBuilder();
+                           .withFallback(Flow)
+                           .build();
+
+                        const routes = originalRoutes;
+                        export { routes }
+                        router = anotherRouter;
+                        export {router}
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        task.execute();
+    }
+
+    @Test
+    public void routesContainExport_oneSingleExport_exceptionThrown()
+            throws IOException, ExecutionFailedException {
+        String content = """
+                        import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                        import Flow from 'Frontend/generated/flow/Flow';
+
+                        const { router, originalRoutes } = new RouterConfigurationBuilder();
+                           .withFallback(Flow)
+                           .build();
+
+                        const routes = originalRoutes;
+                        export { routes }
+                """;
+
+        FileUtils.write(routesTsx, content, StandardCharsets.UTF_8);
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+
+        Exception exception = Assert.assertThrows(
+                ExecutionFailedException.class, () -> task.execute());
+        Assert.assertEquals(
+                String.format(TaskGenerateReactFiles.MISSING_ROUTES_EXPORT,
+                        routesTsx.getPath()),
+                exception.getMessage());
+    }
+
     @Tag("div")
     @Route("test")
     private class TestRoute extends Component {

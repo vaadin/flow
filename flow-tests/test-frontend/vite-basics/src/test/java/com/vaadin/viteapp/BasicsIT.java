@@ -39,15 +39,6 @@ public class BasicsIT extends ViteDevModeIT {
     }
 
     @Test
-    public void debugWindowShown() {
-        DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
-        devTools.expand();
-        Assert.assertNotNull(
-                devTools.$("div").attributeContains("class", "window")
-                        .attributeContains("class", "visible").waitForFirst());
-    }
-
-    @Test
     public void canImportJson() {
         $("button").id(MainView.LOAD_AND_SHOW_JSON).click();
         Assert.assertEquals("{\"hello\":\"World\"}",

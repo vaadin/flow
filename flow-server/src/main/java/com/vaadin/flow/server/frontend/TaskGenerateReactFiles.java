@@ -50,7 +50,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @since 3.0
  */
-public class TaskGenerateReactFiles implements FallibleCommand {
+public class TaskGenerateReactFiles
+        extends AbstractFileGeneratorFallibleCommand {
 
     public static final String CLASS_PACKAGE = "com/vaadin/flow/server/frontend/%s";
     private Options options;
@@ -89,10 +90,15 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                // routes building
                .build();'
             OR
+            'export { router } = ...
+            // Some other code here
+            export { routes } = ...'
+            OR
             'export const routes = [...serverSideRoutes] as RouteObject[];'
             """;
 
     private static final String FLOW_TSX = "Flow.tsx";
+    private static final String REACT_ADAPTER_TEMPLATE = "ReactAdapter.template";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
@@ -111,8 +117,10 @@ public class TaskGenerateReactFiles implements FallibleCommand {
     private static final Pattern FALLBACK_COMPONENT_PATTERN = Pattern.compile(
             "import\\s+(\\w+)\\s+from\\s+(\"|'|`)Frontend\\/generated\\/flow\\/Flow(\\.js)?\\2;[\\s\\S]+withFallback\\(\\s*\\1\\s*\\)");
 
+    // matches "export const { router, routes }" or "export { router, routes }"
+    // or "export { router } export { routes }"
     private static final Pattern ROUTES_EXPORT_PATTERN = Pattern.compile(
-            "export\\s+const\\s+(\\{[\\s\\S]*(router[\\s\\S]*routes|routes[\\s\\S]*router)[\\s\\S]*}|routes)");
+            "export\\s+(const\\s+)?(\\{[\\s\\S]*(router[\\s\\S]*routes|routes[\\s\\S]*router)[\\s\\S]*}|routes)");
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -144,8 +152,9 @@ public class TaskGenerateReactFiles implements FallibleCommand {
                 frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
         try {
             writeFile(flowTsx, getFlowTsxFileContent(routesTsx.exists()));
-            if (fileAvailable(REACT_ADAPTER_TSX)) {
-                writeFile(reactAdapterTsx, getFileContent(REACT_ADAPTER_TSX));
+            if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
+                writeFile(reactAdapterTsx,
+                        getFileContent(REACT_ADAPTER_TEMPLATE));
             }
             if (!routesTsx.exists()) {
                 boolean isHillaUsed = FrontendUtils.isHillaUsed(
@@ -249,7 +258,7 @@ public class TaskGenerateReactFiles implements FallibleCommand {
             throws ExecutionFailedException {
 
         try {
-            FileIOUtils.writeIfChanged(target, content);
+            writeIfChanged(target, content);
         } catch (IOException exception) {
             String errorMessage = String.format("Error writing '%s'", target);
             throw new ExecutionFailedException(errorMessage, exception);

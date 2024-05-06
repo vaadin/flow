@@ -185,6 +185,11 @@ public class InitParameters implements Serializable {
     public static final String I18N_PROVIDER = "i18n.provider";
 
     /**
+     * Menu access control property.
+     */
+    public static final String MENU_ACCESS_CONTROL = "menu.access.control";
+
+    /**
      * Configuration name for the parameter that determines if Flow should
      * automatically register servlets needed for the application to work.
      */
@@ -266,4 +271,12 @@ public class InitParameters implements Serializable {
      * Configuration name for cleaning or leaving frontend files in build.
      */
     public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";
+
+    /**
+     * Configuration name for how long since last browser open before we open a
+     * new tab for the application in development mode.
+     *
+     * Time is given in minutes.
+     */
+    public static final String LAUNCH_BROWSER_DELAY = "launch-browser-delay";
 }
