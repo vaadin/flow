@@ -25,6 +25,7 @@ import com.vaadin.testbench.elementsbase.Element;
  * @since 1.0
  */
 @Element("button")
-public class NativeButtonElement extends TestBenchElement implements HasLabelAsText {
+public class NativeButtonElement extends TestBenchElement
+        implements HasLabelAsText {
 
 }
