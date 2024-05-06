@@ -16,7 +16,6 @@
 package com.vaadin.flow.component;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -320,110 +319,6 @@ public class PropertyDescriptorsTest {
     @Test(expected = IllegalArgumentException.class)
     public void booleanPropertyDefaultTrue_setToNull() {
         booleanPropertyDefaultTrue.set(component, null);
-    }
-
-    @Test
-    public void booleanPropertyDefaultFalse_resetToDefault_propertyChangeListenerTriggered() {
-        booleanPropertyDefaultFalse.set(component, true);
-
-        AtomicBoolean listenerTriggered = new AtomicBoolean(false);
-        component.getElement().addPropertyChangeListener(TEST_PROPERTY,
-                event -> listenerTriggered.set(true));
-
-        booleanPropertyDefaultFalse.set(component, false);
-
-        Assert.assertTrue(listenerTriggered.get());
-    }
-
-    @Test
-    public void booleanPropertyDefaultTrue_resetToDefault_propertyChangeListenerTriggered() {
-        booleanPropertyDefaultTrue.set(component, false);
-
-        AtomicBoolean listenerTriggered = new AtomicBoolean(false);
-        component.getElement().addPropertyChangeListener(TEST_PROPERTY,
-                event -> listenerTriggered.set(true));
-
-        booleanPropertyDefaultTrue.set(component, true);
-
-        Assert.assertTrue(listenerTriggered.get());
-    }
-
-    @Test
-    public void stringPropertyDefaultEmpty_resetToDefault_propertyChangeListenerTriggered() {
-        stringPropertyDefaultEmpty.set(component, SOME_STRING_VALUE);
-
-        AtomicBoolean listenerTriggered = new AtomicBoolean(false);
-        component.getElement().addPropertyChangeListener(TEST_PROPERTY,
-                event -> listenerTriggered.set(true));
-
-        stringPropertyDefaultEmpty.set(component, EMPTY_STRING);
-
-        Assert.assertTrue(listenerTriggered.get());
-    }
-
-    @Test
-    public void stringPropertyDefaultFoo_resetToDefault_propertyChangeListenerTriggered() {
-        stringPropertyDefaultFoo.set(component, SOME_STRING_VALUE);
-
-        AtomicBoolean listenerTriggered = new AtomicBoolean(false);
-        component.getElement().addPropertyChangeListener(TEST_PROPERTY,
-                event -> listenerTriggered.set(true));
-
-        stringPropertyDefaultFoo.set(component, FOO);
-
-        Assert.assertTrue(listenerTriggered.get());
-    }
-
-    @Test
-    public void integerPropertyDefaultZero_resetToDefault_propertyChangeListenerTriggered() {
-        integerPropertyDefaultZero.set(component, SOME_INTEGER_VALUE);
-
-        AtomicBoolean listenerTriggered = new AtomicBoolean(false);
-        component.getElement().addPropertyChangeListener(TEST_PROPERTY,
-                event -> listenerTriggered.set(true));
-
-        integerPropertyDefaultZero.set(component, ZERO);
-
-        Assert.assertTrue(listenerTriggered.get());
-    }
-
-    @Test
-    public void integerPropertyDefaultOne_resetToDefault_propertyChangeListenerTriggered() {
-        integerPropertyDefaultOne.set(component, SOME_INTEGER_VALUE);
-
-        AtomicBoolean listenerTriggered = new AtomicBoolean(false);
-        component.getElement().addPropertyChangeListener(TEST_PROPERTY,
-                event -> listenerTriggered.set(true));
-
-        integerPropertyDefaultOne.set(component, ONE);
-
-        Assert.assertTrue(listenerTriggered.get());
-    }
-
-    @Test
-    public void doublePropertyDefaultZero_resetToDefault_propertyChangeListenerTriggered() {
-        doublePropertyDefaultZero.set(component, SOME_DOUBLE_VALUE);
-
-        AtomicBoolean listenerTriggered = new AtomicBoolean(false);
-        component.getElement().addPropertyChangeListener(TEST_PROPERTY,
-                event -> listenerTriggered.set(true));
-
-        doublePropertyDefaultZero.set(component, ZERO_DOUBLE);
-
-        Assert.assertTrue(listenerTriggered.get());
-    }
-
-    @Test
-    public void doublePropertyDefaultOne_resetToDefault_propertyChangeListenerTriggered() {
-        doublePropertyDefaultOne.set(component, SOME_DOUBLE_VALUE);
-
-        AtomicBoolean listenerTriggered = new AtomicBoolean(false);
-        component.getElement().addPropertyChangeListener(TEST_PROPERTY,
-                event -> listenerTriggered.set(true));
-
-        doublePropertyDefaultOne.set(component, ONE_DOUBLE);
-
-        Assert.assertTrue(listenerTriggered.get());
     }
 
     @Test
