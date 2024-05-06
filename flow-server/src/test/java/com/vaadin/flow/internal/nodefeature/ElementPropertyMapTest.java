@@ -58,14 +58,14 @@ public class ElementPropertyMapTest {
             event.set(ev);
         };
         map.addPropertyChangeListener("foo", listener);
-        map.removeProperty("foo");
 
+        map.remove("foo");
         Assert.assertNull(event.get().getValue());
         Assert.assertEquals("bar", event.get().getOldValue());
         Assert.assertEquals("foo", event.get().getPropertyName());
         Assert.assertEquals(Element.get(map.getNode()),
                 event.get().getSource());
-        Assert.assertFalse(event.get().isUserOriginated());
+        Assert.assertTrue(event.get().isUserOriginated());
     }
 
     @Test
