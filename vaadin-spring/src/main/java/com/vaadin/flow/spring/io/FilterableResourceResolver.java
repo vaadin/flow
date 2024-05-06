@@ -72,7 +72,7 @@ public class FilterableResourceResolver
     private final Map<String, PackageInfo> propertiesCache = new HashMap<>();
 
     private record PackageInfo(Set<String> allowedPackages,
-            Set<String> blockedPackages) {
+            Set<String> blockedPackages) implements Serializable {
     }
 
     /**
