@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -85,6 +86,7 @@ import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializ
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
+import com.vaadin.flow.spring.io.FilterableResourceResolver;
 import com.vaadin.flow.theme.Theme;
 
 /**
@@ -523,9 +525,8 @@ public class VaadinServletContextInitializer
             collectHandleTypes(devModeHandlerManager.getHandlesTypes(),
                     annotations, superTypes);
 
-            Set<Class<?>> classes = findByAnnotationOrSuperType(basePackages,
-                    customLoader, annotations, superTypes)
-                    .collect(Collectors.toSet());
+            Set<Class<?>> classes = findClassesForDevMode(basePackages,
+                    annotations, superTypes);
 
             if (devModeCachingEnabled) {
                 classes.addAll(ReloadCache.jarClasses);
@@ -590,6 +591,13 @@ public class VaadinServletContextInitializer
             return customScanOnly != null && !customScanOnly.isEmpty();
         }
 
+    }
+
+    protected Set<Class<?>> findClassesForDevMode(Set<String> basePackages,
+            List<Class<? extends Annotation>> annotations,
+            List<Class<?>> superTypes) {
+        return findByAnnotationOrSuperType(basePackages, customLoader,
+                annotations, superTypes).collect(Collectors.toSet());
     }
 
     private class WebComponentServletContextListener
@@ -801,7 +809,7 @@ public class VaadinServletContextInitializer
 
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             Class<? extends Annotation>... annotations) {
-        return findByAnnotation(packages, appContext, annotations);
+        return findByAnnotation(packages, customLoader, annotations);
     }
 
     private Stream<Class<?>> findByAnnotation(Collection<String> packages,
@@ -812,7 +820,7 @@ public class VaadinServletContextInitializer
 
     Stream<Class<?>> findBySuperType(Collection<String> packages,
             Class<?> type) {
-        return findBySuperType(packages, appContext, type);
+        return findBySuperType(packages, customLoader, type);
     }
 
     private Stream<Class<?>> findBySuperType(Collection<String> packages,
@@ -921,7 +929,7 @@ public class VaadinServletContextInitializer
      * with atmosphere we skip known packaged from our resources collection.
      */
     private static class CustomResourceLoader
-            extends PathMatchingResourcePatternResolver {
+            extends FilterableResourceResolver {
 
         private final PrefixTree scanNever = new PrefixTree(DEFAULT_SCAN_NEVER);
 
@@ -1013,22 +1021,25 @@ public class VaadinServletContextInitializer
                                         .replace(".class", "");
                                 ReloadCache.jarClassNames.add(className);
                             }
-                            if (shouldPathBeScanned(relativePath)) {
+                            if (shouldPathBeScanned(relativePath,
+                                    path.substring(0, index))) {
                                 resourcesList.add(resource);
                             }
                         } else {
                             List<String> parents = rootPaths.stream()
-                                    .filter(path::startsWith)
-                                    .collect(Collectors.toList());
+                                    .filter(path::startsWith).toList();
                             if (parents.isEmpty()) {
                                 throw new IllegalStateException(String.format(
                                         "Parent resource of [%s] not found in the resources!",
                                         path));
                             }
-
+                            AtomicBoolean parentIsAllowedByPackageProperties = new AtomicBoolean(
+                                    true);
                             if (parents.stream()
                                     .anyMatch(parent -> shouldPathBeScanned(
-                                            path.substring(parent.length())))) {
+                                            path.substring(parent.length()),
+                                            parent,
+                                            parentIsAllowedByPackageProperties))) {
                                 resourcesList.add(resource);
                             }
                         }
@@ -1047,8 +1058,66 @@ public class VaadinServletContextInitializer
             return resourcesList.toArray(new Resource[0]);
         }
 
+        /**
+         * Checks if the given path should be scanned.
+         *
+         * @param path
+         *            the relative path to check
+         * @return {@code true} if the path should be scanned, {@code false}
+         *         otherwise
+         */
         private boolean shouldPathBeScanned(String path) {
             return scanAlways.hasPrefix(path) || !scanNever.hasPrefix(path);
+        }
+
+        /**
+         * Checks if the given path should be scanned. Checks
+         * package.properties.
+         *
+         * @param path
+         *            the relative path to check
+         * @param rootPath
+         *            the root path of the resource. Also, a key for cached
+         *            properties.
+         * @return {@code true} if the path should be scanned, {@code false}
+         *         otherwise
+         */
+        private boolean shouldPathBeScanned(String path, String rootPath) {
+            return shouldPathBeScanned(path, rootPath, null);
+        }
+
+        /**
+         * Checks if the given path should be scanned. Checks
+         * package.properties.
+         *
+         * @param path
+         *            the relative path to check
+         * @param rootPath
+         *            the root path of the resource. Also, a key for cached
+         *            properties.
+         * @param parentIsAllowedByPackageProperties
+         *            This value is used as a default value for the
+         *            package.properties check. Value of the object may be
+         *            changed, if result changes. null defaults to true.
+         * @return {@code true} if the path should be scanned, {@code false}
+         *         otherwise
+         */
+        private boolean shouldPathBeScanned(String path, String rootPath,
+                AtomicBoolean parentIsAllowedByPackageProperties) {
+            if (shouldPathBeScanned(path)) {
+                // The given parentIsAllowedByPackageProperties ensures that
+                // result from the previous check follows up here as a default
+                // value.
+                boolean defaultValue = parentIsAllowedByPackageProperties == null
+                        || parentIsAllowedByPackageProperties.get();
+                boolean allowed = isAllowedByPackageProperties(rootPath, path,
+                        defaultValue);
+                if (parentIsAllowedByPackageProperties != null) {
+                    parentIsAllowedByPackageProperties.set(allowed);
+                }
+                return allowed;
+            }
+            return false;
         }
     }
 
