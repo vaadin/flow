@@ -46,12 +46,12 @@ public class PolymerIdTestIT extends ChromeBrowserTest {
         TestBenchElement myComponent = $("my-polymer-component").first();
 
         // wait for polymer initalisation
-        waitUntillWithMessage(driver -> getCommandExecutor().executeScript(
+        waitUntilWithMessage(driver -> getCommandExecutor().executeScript(
                 "return !!window.Polymer || !!arguments[0].constructor.polymerElementVersion",
                 myComponent),
                 "Failed to load constructor.polymerElementVersion for 'my-polymer-component'");
 
-        waitUntillWithMessage(
+        waitUntilWithMessage(
                 driver -> getCommandExecutor().executeScript(
                         "return arguments[0].$ !== undefined", myComponent),
                 "Failed to load $ for 'my-polymer-component'");
@@ -68,7 +68,7 @@ public class PolymerIdTestIT extends ChromeBrowserTest {
         Assert.assertEquals("2", content.getText());
     }
 
-    private void waitUntillWithMessage(ExpectedCondition<?> condition,
+    private void waitUntilWithMessage(ExpectedCondition<?> condition,
             String message) {
         waitUntilWithMessage(condition, message, 10);
     }
