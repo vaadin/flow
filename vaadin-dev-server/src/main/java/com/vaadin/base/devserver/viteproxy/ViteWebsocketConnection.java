@@ -145,4 +145,10 @@ public class ViteWebsocketConnection implements Listener {
                 .sendClose(CloseCodes.NORMAL_CLOSURE.getCode(), "");
         closeRequest.get();
     }
+
+    @Override
+    public void onError(WebSocket webSocket, Throwable error) {
+        getLogger().error("Error from Vite websocket connection", error);
+        Listener.super.onError(webSocket, error);
+    }
 }
