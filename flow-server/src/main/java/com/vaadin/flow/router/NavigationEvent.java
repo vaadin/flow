@@ -34,6 +34,7 @@ public class NavigationEvent extends EventObject {
     private final NavigationTrigger trigger;
     private boolean forwardTo = false;
     private JsonValue state = null;
+    private boolean forceInstantiation = false;
 
     /**
      * Creates a new navigation event.
@@ -88,6 +89,38 @@ public class NavigationEvent extends EventObject {
         this.forwardTo = forwardTo;
     }
 
+    /**
+     * Creates a new navigation event.
+     *
+     * @param router
+     *            the router handling the navigation, not {@code null}
+     * @param location
+     *            the new location, not {@code null}
+     * @param ui
+     *            the UI in which the navigation occurs, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this navigation event,
+     *            not {@code null}
+     * @param state
+     *            includes navigation state info including for example the
+     *            scroll position and the complete href of the RouterLink
+     * @param forwardTo
+     *            indicates if this event is created as a result of
+     *            {@link BeforeEvent#forwardTo} or not
+     * @param forceInstantiation
+     *            if set to {@code true}, the navigation target will always be
+     *            instantiated
+     */
+    public NavigationEvent(Router router, Location location, UI ui,
+            NavigationTrigger trigger, JsonValue state, boolean forwardTo,
+            boolean forceInstantiation) {
+        this(router, location, ui, trigger);
+
+        this.state = state;
+        this.forwardTo = forwardTo;
+        this.forceInstantiation = forceInstantiation;
+    }
+
     @Override
     public Router getSource() {
         return (Router) super.getSource();
@@ -140,5 +173,16 @@ public class NavigationEvent extends EventObject {
      */
     public boolean isForwardTo() {
         return forwardTo;
+    }
+
+    /**
+     * When set to true, the navigation target should be instantiated regardless
+     * of it being already available.
+     *
+     * @return {@code true} if navigation target will be instantiated in any
+     *         case
+     */
+    public boolean isForceInstantiation() {
+        return forceInstantiation;
     }
 }

@@ -190,6 +190,35 @@ public class Router implements Serializable {
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
             JsonValue state) {
+        return navigate(ui, location, trigger, state, false);
+    }
+
+    /**
+     * Navigates the given UI to the given location. For internal use only.
+     * <p>
+     * This method pushes to the browser history if the <code>trigger</code> is
+     * {@link NavigationTrigger#ROUTER_LINK} or
+     * {@link NavigationTrigger#UI_NAVIGATE}.
+     *
+     * @param ui
+     *            the UI to update, not <code>null</code>
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     * @param trigger
+     *            the type of user action that triggered this navigation, not
+     *            <code>null</code>
+     * @param state
+     *            includes navigation state info including for example the
+     *            scroll position and the complete href of the RouterLink
+     * @param forceInstantiation
+     *            if set to {@code true}, the navigation target will always be
+     *            instantiated
+     * @return the HTTP status code resulting from the navigation
+     * @see UI#navigate(String)
+     * @see UI#navigate(String, QueryParameters)
+     */
+    public int navigate(UI ui, Location location, NavigationTrigger trigger,
+            JsonValue state, boolean forceInstantiation) {
         assert ui != null;
         assert location != null;
         assert trigger != null;
@@ -197,7 +226,8 @@ public class Router implements Serializable {
 
         if (handleNavigationForLocation(ui, location)) {
             try {
-                return handleNavigation(ui, location, trigger, state);
+                return handleNavigation(ui, location, trigger, state,
+                        forceInstantiation);
             } catch (Exception exception) {
                 return handleExceptionNavigation(ui, location, exception,
                         trigger, state);
@@ -218,12 +248,13 @@ public class Router implements Serializable {
     }
 
     private int handleNavigation(UI ui, Location location,
-            NavigationTrigger trigger, JsonValue state) {
+            NavigationTrigger trigger, JsonValue state,
+            boolean forceInstantiation) {
         NavigationState newState = getRouteResolver()
                 .resolve(new ResolveRequest(this, location));
         if (newState != null) {
             NavigationEvent navigationEvent = new NavigationEvent(this,
-                    location, ui, trigger, state, false);
+                    location, ui, trigger, state, false, forceInstantiation);
 
             NavigationHandler handler = new NavigationStateRenderer(newState);
             return handler.handle(navigationEvent);
@@ -233,7 +264,8 @@ public class Router implements Serializable {
                     .resolve(new ResolveRequest(this, slashToggledLocation));
             if (slashToggledState != null) {
                 NavigationEvent navigationEvent = new NavigationEvent(this,
-                        slashToggledLocation, ui, trigger, state, false);
+                        slashToggledLocation, ui, trigger, state, false,
+                        forceInstantiation);
 
                 NavigationHandler handler = new InternalRedirectHandler(
                         slashToggledLocation);

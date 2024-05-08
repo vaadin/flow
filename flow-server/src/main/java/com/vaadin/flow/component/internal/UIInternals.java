@@ -66,6 +66,7 @@ import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.ListenerPriority;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -194,6 +195,8 @@ public class UIInternals implements Serializable {
     private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
 
     private Location lastHandledNavigation = null;
+
+    private Location locationForRefresh = null;
 
     private ContinueNavigationAction continueNavigationAction = null;
 
@@ -1038,6 +1041,16 @@ public class UIInternals implements Serializable {
      */
     public void setLastHandledNavigation(Location location) {
         lastHandledNavigation = location;
+        if (location != null) {
+            locationForRefresh = location;
+        }
+    }
+
+    public void refreshCurrentRoute() {
+        if (locationForRefresh != null) {
+            getRouter().navigate(ui, locationForRefresh,
+                    NavigationTrigger.PROGRAMMATIC, null, true);
+        }
     }
 
     /**
