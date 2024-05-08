@@ -148,7 +148,7 @@ public class ViteWebsocketConnection implements Listener {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
-        getLogger().error("Error from Vite websocket connection", error);
+        getLogger().debug("Error from Vite websocket connection", error);
         Listener.super.onError(webSocket, error);
     }
 }
