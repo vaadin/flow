@@ -54,15 +54,14 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
     public ViteWebsocketProxy(Session browserSession, Integer vitePort,
             String vitePath) throws InterruptedException, ExecutionException {
         viteConnection = new ViteWebsocketConnection(vitePort, vitePath,
-                browserSession.getNegotiatedSubprotocol(),
-                msg -> browserSession.getAsyncRemote().sendText(msg, result -> {
-                    if (result.isOK()) {
-                        getLogger().debug("Message sent to browser: {}", msg);
-                    } else {
+                browserSession.getNegotiatedSubprotocol(), msg -> {
+                    try {
+                        browserSession.getBasicRemote().sendText(msg);
+                    } catch (IOException e) {
                         getLogger().debug("Error sending message to browser",
-                                result.getException());
+                                e);
                     }
-                }), () -> {
+                }, () -> {
                     try {
                         browserSession.close();
                     } catch (IOException e) {
