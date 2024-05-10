@@ -57,6 +57,7 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
                 browserSession.getNegotiatedSubprotocol(), msg -> {
                     try {
                         browserSession.getBasicRemote().sendText(msg);
+                        getLogger().debug("Message sent to browser: {}", msg);
                     } catch (IOException e) {
                         getLogger().debug("Error sending message to browser",
                                 e);
