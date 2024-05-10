@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.4-SNAPSHOT</version>
+        <version>24.5-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-spring-tests</artifactId>
     <name>Vaadin Spring tests</name>
@@ -16,8 +16,8 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <component.version>24.3.10</component.version>
-        <nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
+        <component.version>24.3.11</component.version>
+        <nimbus-jose-jwt.version>9.38</nimbus-jose-jwt.version>
     </properties>
 
     <dependencyManagement>
@@ -335,6 +335,7 @@
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
+                <module>test-spring-filter-packages</module>
 
             </modules>
         </profile>
