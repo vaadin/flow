@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
@@ -531,4 +533,31 @@ public class RouteConfiguration implements Serializable {
         return false;
     }
 
+    /**
+     * Get the {@link RouteData} for all accessible registered navigation
+     * targets with a menu information. Access checking depends on the active
+     * {@link VaadinService} and {@link VaadinRequest} and the given collection
+     * of access controls.
+     *
+     * @return list of accessible menu routes available for handled registry
+     */
+    public List<RouteData> getRegisteredAccessibleMenuRoutes() {
+        return getRegisteredAccessibleMenuRoutes(Collections.emptyList());
+    }
+
+    /**
+     * Get the {@link RouteData} for all accessible registered navigation
+     * targets with a menu information. Access checking depends on the active
+     * {@link VaadinService} and {@link VaadinRequest} and the given collection
+     * of access controls.
+     *
+     * @param accessControls
+     *            the access controls to use for checking access
+     * @return list of accessible menu routes available for handled registry
+     */
+    public List<RouteData> getRegisteredAccessibleMenuRoutes(
+            Collection<BeforeEnterListener> accessControls) {
+        return getHandledRegistry().getRegisteredAccessibleMenuRoutes(
+                VaadinRequest.getCurrent(), accessControls);
+    }
 }
