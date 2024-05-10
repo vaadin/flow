@@ -21,26 +21,23 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.littemplate.LitTemplate;
-import com.vaadin.flow.component.template.Id;
+import com.vaadin.flow.component.polymertemplate.Id;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.templatemodel.TemplateModel;
 
-@Route(value = "route-path")
-@Tag("my-component")
-@JsModule("./my-component.js")
-public class IdTestView extends LitTemplate {
-
-    @WebServlet("/servlet-path/*")
-    public static class MyServlet extends VaadinServlet {
-    }
+@Route(value = "route-path-polymer")
+@Tag("my-polymer-component")
+@JsModule("./my-polymer-component.js")
+public class PolymerIdTestView extends PolymerTemplate<TemplateModel> {
 
     @Id
     NativeButton button;
     @Id
     Div content;
 
-    public IdTestView() {
+    public PolymerIdTestView() {
         button.addClickListener(e -> {
             String s = content.getText();
             Integer val = 1

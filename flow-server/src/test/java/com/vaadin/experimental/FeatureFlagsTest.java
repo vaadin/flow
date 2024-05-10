@@ -32,7 +32,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
@@ -403,6 +405,88 @@ public class FeatureFlagsTest {
         CompletableFuture.allOf(directTask, supplierTask);
         Assert.assertTrue("Futures not completed, potential deadlock",
                 latch.await(1, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void propertiesFileCheckedForUnsupportedFeatureFlags()
+            throws IOException {
+        Logger mockedLogger = Mockito.mock(Logger.class);
+
+        try (MockedStatic<LoggerFactory> context = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            context.when(() -> LoggerFactory.getLogger(FeatureFlags.class))
+                    .thenReturn(mockedLogger);
+
+            createFeatureFlagsFile(
+                    "com.vaadin.experimental.unsupportedFeature=true\ncom.vaadin.experimental.exampleFeatureFlag=true\n");
+            featureFlags.loadProperties();
+
+            Mockito.verify(mockedLogger, Mockito.never()).warn(
+                    "Unsupported feature flag is present: {}",
+                    "com.vaadin.experimental.exampleFeatureFlag");
+            Mockito.verify(mockedLogger, Mockito.times(1)).warn(
+                    "Unsupported feature flag is present: {}",
+                    "com.vaadin.experimental.unsupportedFeature");
+        }
+    }
+
+    @Test
+    public void propertiesFileCheckForUnsupportedFeatureFlagsRanOnlyOnce()
+            throws IOException {
+        Logger mockedLogger = Mockito.mock(Logger.class);
+
+        try (MockedStatic<LoggerFactory> context = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            context.when(() -> LoggerFactory.getLogger(FeatureFlags.class))
+                    .thenReturn(mockedLogger);
+
+            createFeatureFlagsFile(
+                    "com.vaadin.experimental.unsupportedFeature=true\n");
+            featureFlags.loadProperties();
+            featureFlags.loadProperties();
+
+            Mockito.verify(mockedLogger, Mockito.times(1)).warn(
+                    "Unsupported feature flag is present: {}",
+                    "com.vaadin.experimental.unsupportedFeature");
+        }
+    }
+
+    @Test
+    public void systemPropertiesCheckedForUnsupportedFeatureFlags()
+            throws IOException {
+        Logger mockedLogger = Mockito.mock(Logger.class);
+        String exampleProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
+                + "exampleFeatureFlag";
+        String unsupportedProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
+                + "unsupportedFeature";
+        var previousValue = System.getProperty(exampleProperty);
+
+        try (MockedStatic<LoggerFactory> mockedFactory = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            mockedFactory
+                    .when(() -> LoggerFactory.getLogger(FeatureFlags.class))
+                    .thenReturn(mockedLogger);
+
+            System.setProperty(exampleProperty, "true");
+            System.setProperty(unsupportedProperty, "true");
+            // resetting feature flags to manually retry check (because it was
+            // run in @Before block)
+            context.removeAttribute(FeatureFlags.FeatureFlagsWrapper.class);
+            featureFlags = FeatureFlags.get(context);
+
+            Mockito.verify(mockedLogger, Mockito.never()).warn(
+                    "Unsupported feature flag is present: {}", exampleProperty);
+            Mockito.verify(mockedLogger, Mockito.times(1)).warn(
+                    "Unsupported feature flag is present: {}",
+                    unsupportedProperty);
+        } finally {
+            if (previousValue == null) {
+                System.clearProperty(exampleProperty);
+            } else {
+                System.setProperty(exampleProperty, previousValue);
+            }
+            System.clearProperty(unsupportedProperty);
+        }
     }
 
     private boolean hasUsageStatsEntry(String name) {
