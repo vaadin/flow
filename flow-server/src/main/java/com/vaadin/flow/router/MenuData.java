@@ -27,7 +27,7 @@ import java.util.Objects;
 public class MenuData implements Serializable {
 
     private final String title;
-    private final Long order;
+    private final Double order;
     private final boolean exclude;
     private final String icon;
 
@@ -43,7 +43,7 @@ public class MenuData implements Serializable {
      * @param icon
      *            the icon of the menu item
      */
-    public MenuData(String title, Long order, boolean exclude, String icon) {
+    public MenuData(String title, Double order, boolean exclude, String icon) {
         this.title = title;
         this.order = order;
         this.exclude = exclude;
@@ -64,7 +64,7 @@ public class MenuData implements Serializable {
      *
      * @return the order of the menu item
      */
-    public Long getOrder() {
+    public Double getOrder() {
         return order;
     }
 

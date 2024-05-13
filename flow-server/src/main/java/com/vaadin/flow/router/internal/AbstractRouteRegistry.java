@@ -309,7 +309,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         MenuData menuData = AnnotationReader
                 .getAnnotationFor(target, Menu.class)
                 .map(menu -> new MenuData(menu.title(),
-                        (menu.order() == Long.MIN_VALUE) ? null : menu.order(),
+                        (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null
+                                : menu.order(),
                         false, menu.icon()))
                 .orElse(null);
 
