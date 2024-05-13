@@ -72,6 +72,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -747,7 +748,14 @@ public class NavigationStateRendererTest {
     @Test
     public void purgeInactiveUIPreservedChainCache_inactiveUI_clearsCache() {
         MockVaadinServletService service = createMockServiceWithInstantiator();
-        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        Mockito.when(wrappedSession.getId()).thenReturn("A-SESSION-ID");
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service) {
+            @Override
+            public WrappedSession getSession() {
+                return wrappedSession;
+            }
+        };
 
         MockUI activeUI = new MockUI(session);
         Component attachedToActiveUI = new PreservedView();
