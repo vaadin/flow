@@ -3,6 +3,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -182,7 +184,7 @@ public class BundleUtilsTest {
 
     @Test
     public void noPackageLockExists_jarDevBundleLockIsCopied()
-            throws IOException {
+            throws IOException, ClassNotFoundException {
         Options options = new MockOptions(temporaryFolder.getRoot())
                 .withBuildDirectory("target");
 
@@ -190,9 +192,95 @@ public class BundleUtilsTest {
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
+        File jarHybridPackageLock = new File(options.getNpmFolder(),
+                "hybrid-temp.json");
+        final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
+        FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
+
+        Mockito.doThrow(new ClassNotFoundException("No Hilla"))
+                .when(options.getClassFinder())
+                .loadClass("com.vaadin.hilla.EndpointController");
         Mockito.when(options.getClassFinder()
                 .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
+        Mockito.when(options.getClassFinder().getResource(
+                DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarHybridPackageLock.toURI().toURL());
+
+        BundleUtils.copyPackageLockFromBundle(options);
+
+        final String packageLockContents = FileUtils.readFileToString(
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
+                StandardCharsets.UTF_8);
+
+        Assert.assertEquals("File should be gotten from jar on classpath",
+                jarPackageLockContent, packageLockContents);
+    }
+
+    @Test
+    public void noPackageLockExists_hillaUsed_jarHybridDevBundleLockIsCopied()
+            throws IOException, ClassNotFoundException {
+        Options options = new MockOptions(temporaryFolder.getRoot())
+                .withBuildDirectory("target");
+
+        Path dummyView = options.getFrontendDirectory().toPath()
+                .resolve(Path.of("views", "dummy.tsx"));
+        Files.createDirectories(dummyView.getParent());
+        Files.writeString(dummyView, "const x = 1;");
+
+        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
+        final String jarPackageLockContent = "{ \"jarData\"}";
+        FileUtils.write(jarPackageLock, jarPackageLockContent);
+
+        File jarHybridPackageLock = new File(options.getNpmFolder(),
+                "hybrid-temp.json");
+        final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
+        FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
+
+        Mockito.when(options.getClassFinder()
+                .loadClass("com.vaadin.hilla.EndpointController"))
+                .thenReturn(Object.class);
+        Mockito.when(options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarPackageLock.toURI().toURL());
+        Mockito.when(options.getClassFinder().getResource(
+                DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarHybridPackageLock.toURI().toURL());
+
+        BundleUtils.copyPackageLockFromBundle(options);
+
+        final String packageLockContents = FileUtils.readFileToString(
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
+                StandardCharsets.UTF_8);
+
+        Assert.assertEquals("File should be gotten from jar on classpath",
+                jarHybridPackageLockContent, packageLockContents);
+    }
+
+    @Test
+    public void noPackageLockExists_hillaUsed_hybridPackageLockNotPresentInJar_jarDevBundleIsCopied()
+            throws IOException, ClassNotFoundException {
+        Options options = new MockOptions(temporaryFolder.getRoot())
+                .withBuildDirectory("target");
+
+        Path dummyView = options.getFrontendDirectory().toPath()
+                .resolve(Path.of("views", "dummy.tsx"));
+        Files.createDirectories(dummyView.getParent());
+        Files.writeString(dummyView, "const x = 1;");
+
+        File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
+        final String jarPackageLockContent = "{ \"jarData\"}";
+        FileUtils.write(jarPackageLock, jarPackageLockContent);
+
+        Mockito.when(options.getClassFinder()
+                .loadClass("com.vaadin.hilla.EndpointController"))
+                .thenReturn(Object.class);
+        Mockito.when(options.getClassFinder()
+                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(jarPackageLock.toURI().toURL());
+        Mockito.when(options.getClassFinder().getResource(
+                DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
+                .thenReturn(null);
 
         BundleUtils.copyPackageLockFromBundle(options);
 
