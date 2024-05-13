@@ -24,8 +24,7 @@ import java.util.Objects;
  * <p>
  * Only for read as data is immutable.
  */
-public record MenuData(String title, Long order, boolean exclude, String icon) implements Serializable {
-
+public record MenuData(String title, Double order, boolean exclude, String icon) implements Serializable {
 
     /**
      * Gets the title of the menu item.
