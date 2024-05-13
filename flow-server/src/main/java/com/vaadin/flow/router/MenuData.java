@@ -26,6 +26,7 @@ import java.util.Objects;
  */
 public record MenuData(String title, Long order, boolean exclude, String icon) implements Serializable {
 
+
     /**
      * Gets the title of the menu item.
      *
@@ -40,7 +41,7 @@ public record MenuData(String title, Long order, boolean exclude, String icon) i
      *
      * @return the order of the menu item
      */
-    public Long getOrder() {
+    public Double getOrder() {
         return order;
     }
 

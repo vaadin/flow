@@ -50,13 +50,13 @@ public @interface Menu {
     /**
      * Used to determine the order in the menu. Ties are resolved based on the
      * used title. Entries without explicitly defined ordering are put below
-     * entries with an order. {@link Long#MIN_VALUE} is the default value and
+     * entries with an order. {@link Double#MIN_VALUE} is the default value and
      * considered as undefined.
      *
-     * @return the order of the item in the menu. {@link Long#MIN_VALUE} by
+     * @return the order of the item in the menu. {@link Double#MIN_VALUE} by
      *         default.
      */
-    long order() default Long.MIN_VALUE;
+    double order() default Double.MIN_VALUE;
 
     /**
      * Icon to use in the menu. Value can go inside a {@code <vaadin-icon>}
