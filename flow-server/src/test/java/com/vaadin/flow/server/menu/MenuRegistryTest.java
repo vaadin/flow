@@ -212,7 +212,7 @@ public class MenuRegistryTest {
                 menuItems.containsKey("/about"));
         Assert.assertEquals("About", menuItems.get("/about").title());
         Assert.assertTrue("Login should be required",
-                menuItems.get("/about").requiresLogin());
+                menuItems.get("/about").loginRequired());
         Assert.assertNull("About doesn't contain specific menu data",
                 menuItems.get("/about").menu());
 
@@ -220,7 +220,7 @@ public class MenuRegistryTest {
                 menuItems.containsKey("/hilla"));
         Assert.assertEquals("Hilla", menuItems.get("/hilla").title());
         Assert.assertTrue("Login should be required",
-                menuItems.get("/hilla").requiresLogin());
+                menuItems.get("/hilla").loginRequired());
         Assert.assertArrayEquals("Faulty roles fo hilla",
                 new String[] { "ROLE_USER" },
                 menuItems.get("/hilla").rolesAllowed());

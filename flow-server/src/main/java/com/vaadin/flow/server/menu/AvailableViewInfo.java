@@ -31,7 +31,7 @@ import com.vaadin.flow.router.MenuData;
  *
  * @param title
  * @param rolesAllowed
- * @param requiresLogin
+ * @param loginRequired
  * @param route
  * @param lazy
  * @param register
@@ -40,7 +40,7 @@ import com.vaadin.flow.router.MenuData;
  * @param routeParameters
  */
 public record AvailableViewInfo(String title, String[] rolesAllowed,
-                                boolean requiresLogin, String route, boolean lazy,
+                                boolean loginRequired, String route, boolean lazy,
                                 boolean register, MenuData menu,
                                 List<AvailableViewInfo> children, @JsonProperty(
         "params") Map<String, RouteParamType> routeParameters) implements Serializable {
@@ -55,7 +55,7 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
         final AvailableViewInfo that = (AvailableViewInfo) o;
         return Objects.equals(title, that.title)
                 && Arrays.equals(rolesAllowed, that.rolesAllowed)
-                && Objects.equals(requiresLogin, that.requiresLogin)
+                && Objects.equals(loginRequired, that.loginRequired)
                 && Objects.equals(route, that.route)
                 && Objects.equals(lazy, that.lazy)
                 && Objects.equals(register, that.register)
@@ -74,7 +74,7 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
     public String toString() {
         return "AvailableViewInfo{" + "title='" + title
                 + '\'' + ", rolesAllowed=" + Arrays.toString(rolesAllowed)
-                + ", requiresLogin=" + requiresLogin
+                + ", loginRequired=" + loginRequired
                 + ", route='" + route + '\''
                 + ", lazy=" + lazy
                 + ", register=" + register
