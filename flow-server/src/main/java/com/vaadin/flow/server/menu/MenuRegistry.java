@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
@@ -55,7 +56,7 @@ public class MenuRegistry {
      *
      * @return routes with view information
      */
-    public static Map<String, ViewInfo> collectMenuItems() {
+    public static Map<String, AvailableViewInfo> collectMenuItems() {
         return new MenuRegistry().collectMenuItems();
     }
 
@@ -65,27 +66,66 @@ public class MenuRegistry {
      *
      * @return routes with view information
      */
-    public Map<String, ViewInfo> getMenuItems() {
+    public Map<String, AvailableViewInfo> getMenuItems() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forApplicationScope();
 
-        Map<String, ViewInfo> menuRoutes = new HashMap<>();
+        Map<String, AvailableViewInfo> menuRoutes = new HashMap<>();
 
         menuRoutes.putAll(collectClientMenuItems());
 
+        collectAndAddServerMenuItems(routeConfiguration, menuRoutes);
+
+        return menuRoutes;
+    }
+
+    /**
+     * Collect all active and accessible server menu items.
+     *
+     * @param routeConfiguration
+     *            routeConfiguration to use
+     * @param menuRoutes
+     *            map to add route data into
+     */
+    public static void collectAndAddServerMenuItems(
+            RouteConfiguration routeConfiguration,
+            Map<String, AvailableViewInfo> menuRoutes) {
         List<RouteData> registeredAccessibleMenuRoutes = routeConfiguration
                 .getRegisteredAccessibleMenuRoutes();
 
+        addMenuRoutes(menuRoutes, registeredAccessibleMenuRoutes);
+    }
+
+    /**
+     * Collect all active and accessible server menu items.
+     *
+     * @param routeConfiguration
+     *            routeConfiguration to use
+     * @param accessControls
+     *            extra access controls if needed
+     * @param menuRoutes
+     *            map to add route data into
+     */
+    public static void collectAndAddServerMenuItems(
+            RouteConfiguration routeConfiguration,
+            List<BeforeEnterListener> accessControls,
+            Map<String, AvailableViewInfo> menuRoutes) {
+        List<RouteData> registeredAccessibleMenuRoutes = routeConfiguration
+                .getRegisteredAccessibleMenuRoutes(accessControls);
+
+        addMenuRoutes(menuRoutes, registeredAccessibleMenuRoutes);
+    }
+
+    private static void addMenuRoutes(Map<String, AvailableViewInfo> menuRoutes,
+            List<RouteData> registeredAccessibleMenuRoutes) {
         for (RouteData route : registeredAccessibleMenuRoutes) {
             String title = getTitle(route);
             Map<String, RouteParamType> parameters = getParameters(route);
             menuRoutes.put("/" + route.getTemplate(),
-                    new ViewInfo(title, null, false, "/" + route.getTemplate(),
-                            false, false, route.getMenuData(), null,
-                            parameters));
+                    new AvailableViewInfo(title, null, false,
+                            "/" + route.getTemplate(), false, false,
+                            route.getMenuData(), null, parameters));
         }
-
-        return menuRoutes;
     }
 
     /**
@@ -122,7 +162,7 @@ public class MenuRegistry {
         return parameters;
     }
 
-    private Map<String, ViewInfo> collectClientMenuItems() {
+    private Map<String, AvailableViewInfo> collectClientMenuItems() {
         List<String> clientRoutes = FrontendUtils.getClientRoutes();
 
         if (clientRoutes.isEmpty()) {
@@ -144,14 +184,15 @@ public class MenuRegistry {
             return Collections.emptyMap();
         }
 
-        Map<String, ViewInfo> configurations = new HashMap<>();
+        Map<String, AvailableViewInfo> configurations = new HashMap<>();
 
         try (InputStream source = viewsJsonAsResource.openStream()) {
             if (source != null) {
                 ObjectMapper mapper = new ObjectMapper();
-                mapper.readValue(source, new TypeReference<List<ViewInfo>>() {
-                }).forEach(clientViewConfig -> collectClientViews("",
-                        clientViewConfig, configurations));
+                mapper.readValue(source,
+                        new TypeReference<List<AvailableViewInfo>>() {
+                        }).forEach(clientViewConfig -> collectClientViews("",
+                                clientViewConfig, configurations));
             }
         } catch (IOException e) {
             LoggerFactory.getLogger(MenuRegistry.class).warn(
@@ -168,8 +209,9 @@ public class MenuRegistry {
         return configurations;
     }
 
-    private void collectClientViews(String basePath, ViewInfo viewConfig,
-            Map<String, ViewInfo> configurations) {
+    private void collectClientViews(String basePath,
+            AvailableViewInfo viewConfig,
+            Map<String, AvailableViewInfo> configurations) {
         String path = viewConfig.route() == null || viewConfig.route().isEmpty()
                 ? basePath
                 : basePath + '/' + viewConfig.route();

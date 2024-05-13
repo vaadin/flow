@@ -130,7 +130,8 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        Map<String, ViewInfo> menuItems = new MenuRegistry().getMenuItems();
+        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+                .getMenuItems();
 
         Assert.assertEquals(4, menuItems.size());
         asssertClientRoutes(menuItems);
@@ -151,7 +152,7 @@ public class MenuRegistryTest {
         Mockito.when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
                 .thenReturn(clientFiles.toURI().toURL());
 
-        Map<String, ViewInfo> menuItems = new MenuRegistry() {
+        Map<String, AvailableViewInfo> menuItems = new MenuRegistry() {
             @Override
             ClassLoader getClassLoader() {
                 return mockClassLoader;
@@ -171,7 +172,8 @@ public class MenuRegistryTest {
         Arrays.asList(MyRoute.class, MyInfo.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        Map<String, ViewInfo> menuItems = new MenuRegistry().getMenuItems();
+        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+                .getMenuItems();
 
         Assert.assertEquals(2, menuItems.size());
         assertServerRoutes(menuItems);
@@ -191,7 +193,8 @@ public class MenuRegistryTest {
         Arrays.asList(MyRoute.class, MyInfo.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        Map<String, ViewInfo> menuItems = new MenuRegistry().getMenuItems();
+        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+                .getMenuItems();
 
         Assert.assertEquals(6, menuItems.size());
         asssertClientRoutes(menuItems);
@@ -199,7 +202,7 @@ public class MenuRegistryTest {
 
     }
 
-    private void asssertClientRoutes(Map<String, ViewInfo> menuItems) {
+    private void asssertClientRoutes(Map<String, AvailableViewInfo> menuItems) {
         Assert.assertTrue("Client route '' missing", menuItems.containsKey(""));
         Assert.assertEquals("Public", menuItems.get("").title());
         Assert.assertNull("Public doesn't contain specific menu data",
@@ -209,7 +212,7 @@ public class MenuRegistryTest {
                 menuItems.containsKey("/about"));
         Assert.assertEquals("About", menuItems.get("/about").title());
         Assert.assertTrue("Login should be required",
-                menuItems.get("/about").loginRequired());
+                menuItems.get("/about").requiresLogin());
         Assert.assertNull("About doesn't contain specific menu data",
                 menuItems.get("/about").menu());
 
@@ -217,7 +220,7 @@ public class MenuRegistryTest {
                 menuItems.containsKey("/hilla"));
         Assert.assertEquals("Hilla", menuItems.get("/hilla").title());
         Assert.assertTrue("Login should be required",
-                menuItems.get("/hilla").loginRequired());
+                menuItems.get("/hilla").requiresLogin());
         Assert.assertArrayEquals("Faulty roles fo hilla",
                 new String[] { "ROLE_USER" },
                 menuItems.get("/hilla").rolesAllowed());
@@ -232,7 +235,7 @@ public class MenuRegistryTest {
                 menuItems.get("/login").menu().exclude());
     }
 
-    private void assertServerRoutes(Map<String, ViewInfo> menuItems) {
+    private void assertServerRoutes(Map<String, AvailableViewInfo> menuItems) {
         Assert.assertTrue("Server route 'home' missing",
                 menuItems.containsKey("/home"));
         Assert.assertEquals("MyRoute", menuItems.get("/home").title());
