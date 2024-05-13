@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +33,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
@@ -50,6 +48,16 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
  * that require path parameters.
  */
 public class MenuRegistry {
+
+    /**
+     * Collect views with menu annotation for automatic menu population. All
+     * client views are collected and any accessible server views.
+     *
+     * @return routes with view information
+     */
+    public static Map<String, ViewInfo> collectMenuItems() {
+        return new MenuRegistry().collectMenuItems();
+    }
 
     /**
      * Collect views with menu annotation for automatic menu population. All
@@ -152,7 +160,7 @@ public class MenuRegistry {
         }
 
         for (String route : new HashSet<>(configurations.keySet())) {
-            if (!clientRoutes.contains(route)) {
+            if (!clientRoutes.contains(route.replaceFirst("/", ""))) {
                 configurations.remove(route);
             }
         }
@@ -164,8 +172,7 @@ public class MenuRegistry {
             Map<String, ViewInfo> configurations) {
         String path = viewConfig.route() == null || viewConfig.route().isEmpty()
                 ? basePath
-                : basePath.isEmpty() ? viewConfig.route()
-                        : basePath + '/' + viewConfig.route();
+                : basePath + '/' + viewConfig.route();
         configurations.put(path, viewConfig);
         if (viewConfig.children() != null) {
             viewConfig.children().forEach(
@@ -181,7 +188,7 @@ public class MenuRegistry {
             DeploymentConfiguration deploymentConfiguration) {
         var isProductionMode = deploymentConfiguration.isProductionMode();
         if (isProductionMode) {
-            return getClass().getResource(FILE_ROUTES_JSON_PROD_PATH);
+            return getClassLoader().getResource(FILE_ROUTES_JSON_PROD_PATH);
         }
         try {
             Path fileRoutes = deploymentConfiguration.getFrontendFolder()
@@ -197,6 +204,17 @@ public class MenuRegistry {
                     FILE_ROUTES_JSON_NAME, e);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Get the ClassLoader.
+     * <p>
+     * Note! package protected for testing.
+     *
+     * @return ClassLoader
+     */
+    ClassLoader getClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
     }
 
 }

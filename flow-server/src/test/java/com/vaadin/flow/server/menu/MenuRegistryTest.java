@@ -50,7 +50,6 @@ import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -59,6 +58,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static com.vaadin.flow.server.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
+import static com.vaadin.flow.server.menu.MenuRegistry.FILE_ROUTES_JSON_PROD_PATH;
 
 @NotThreadSafe
 public class MenuRegistryTest {
@@ -133,6 +133,33 @@ public class MenuRegistryTest {
         Map<String, ViewInfo> menuItems = new MenuRegistry().getMenuItems();
 
         Assert.assertEquals(4, menuItems.size());
+        asssertClientRoutes(menuItems);
+    }
+
+    @Test
+    public void productionMode_getMenuItemsContainsExpectedClientPaths()
+            throws IOException {
+        Mockito.when(deploymentConfiguration.isProductionMode())
+                .thenReturn(true);
+
+        tmpDir.newFolder("META-INF", "VAADIN");
+        File clientFiles = new File(tmpDir.getRoot(),
+                FILE_ROUTES_JSON_PROD_PATH);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        ClassLoader mockClassLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
+                .thenReturn(clientFiles.toURI().toURL());
+
+        Map<String, ViewInfo> menuItems = new MenuRegistry() {
+            @Override
+            ClassLoader getClassLoader() {
+                return mockClassLoader;
+            }
+        }.getMenuItems();
+
+        Assert.assertEquals(4, menuItems.size());
+        asssertClientRoutes(menuItems);
     }
 
     @Test
@@ -147,6 +174,7 @@ public class MenuRegistryTest {
         Map<String, ViewInfo> menuItems = new MenuRegistry().getMenuItems();
 
         Assert.assertEquals(2, menuItems.size());
+        assertServerRoutes(menuItems);
     }
 
     @Test
@@ -166,7 +194,54 @@ public class MenuRegistryTest {
         Map<String, ViewInfo> menuItems = new MenuRegistry().getMenuItems();
 
         Assert.assertEquals(6, menuItems.size());
+        asssertClientRoutes(menuItems);
+        assertServerRoutes(menuItems);
 
+    }
+
+    private void asssertClientRoutes(Map<String, ViewInfo> menuItems) {
+        Assert.assertTrue("Client route '' missing", menuItems.containsKey(""));
+        Assert.assertEquals("Public", menuItems.get("").title());
+        Assert.assertNull("Public doesn't contain specific menu data",
+                menuItems.get("").menu());
+
+        Assert.assertTrue("Client route 'about' view missing",
+                menuItems.containsKey("/about"));
+        Assert.assertEquals("About", menuItems.get("/about").title());
+        Assert.assertTrue("Login should be required",
+                menuItems.get("/about").loginRequired());
+        Assert.assertNull("About doesn't contain specific menu data",
+                menuItems.get("/about").menu());
+
+        Assert.assertTrue("Client route 'hilla' view missing",
+                menuItems.containsKey("/hilla"));
+        Assert.assertEquals("Hilla", menuItems.get("/hilla").title());
+        Assert.assertTrue("Login should be required",
+                menuItems.get("/hilla").loginRequired());
+        Assert.assertArrayEquals("Faulty roles fo hilla",
+                new String[] { "ROLE_USER" },
+                menuItems.get("/hilla").rolesAllowed());
+        Assert.assertNull("Hilla doesn't contain specific menu data",
+                menuItems.get("/hilla").menu());
+
+        Assert.assertTrue("Client route 'login' view missing",
+                menuItems.containsKey("/login"));
+        Assert.assertEquals("Login", menuItems.get("/login").title());
+        Assert.assertNull(menuItems.get("/login").menu().title());
+        Assert.assertTrue("Login view should be excluded",
+                menuItems.get("/login").menu().exclude());
+    }
+
+    private void assertServerRoutes(Map<String, ViewInfo> menuItems) {
+        Assert.assertTrue("Server route 'home' missing",
+                menuItems.containsKey("/home"));
+        Assert.assertEquals("MyRoute", menuItems.get("/home").title());
+        Assert.assertEquals("Home", menuItems.get("/home").menu().title());
+
+        Assert.assertTrue("Server route 'info' missing",
+                menuItems.containsKey("/info"));
+        Assert.assertEquals("MyInfo", menuItems.get("/info").title());
+        Assert.assertEquals("", menuItems.get("/info").menu().title());
     }
 
     @Tag("div")
