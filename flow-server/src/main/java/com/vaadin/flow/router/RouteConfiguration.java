@@ -24,8 +24,10 @@ import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -537,10 +539,21 @@ public class RouteConfiguration implements Serializable {
      * Get the {@link RouteData} for all accessible registered navigation
      * targets with a menu information. Access checking depends on the active
      * {@link VaadinService} and {@link VaadinRequest}.
+     * <p>
+     * Automatically adds access controls from UI if available.
      *
      * @return list of accessible menu routes available for handled registry
      */
     public List<RouteData> getRegisteredAccessibleMenuRoutes() {
+        UI ui = UI.getCurrent();
+        if (ui != null) {
+            List<BeforeEnterListener> accessControls = ui.getInternals()
+                    .getListeners(BeforeEnterHandler.class).stream()
+                    .filter(BeforeEnterListener.class::isInstance)
+                    .map(BeforeEnterListener.class::cast).toList();
+            return getRegisteredAccessibleMenuRoutes(accessControls);
+        }
+
         return getRegisteredAccessibleMenuRoutes(Collections.emptyList());
     }
 
