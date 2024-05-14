@@ -24,6 +24,7 @@ import java.net.URLConnection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -68,11 +69,32 @@ public class FilterableResourceResolver
      * The property key for blocked packages.
      */
     public static final String BLOCKED_PACKAGES_PROPERTY = "vaadin.blocked-packages";
+    /**
+     * The property key for blocked JAR file.
+     */
+    public static final String BLOCKED_JAR_PROPERTY = "vaadin.blocked-jar";
+
+    private static final List<String> DEFAULT_SCAN_NEVER_JAR = Stream.of(
+            "antlr", "logback-classic", "logback-classic-core",
+            "commons-codec-", "commons-fileupload", "commons-io",
+            "commons-logging", "commons-exec", "commons-lang", "jackson-",
+            "atmosphere-runtime", "byte-buddy", "commons-compress",
+            "aspectjweaver", "hibernate-core", "hibernate-commons",
+            "hibernate-validator", "jboss-logging", "/selenium-", "slf4j",
+            "/spring-", "org/webjars/bowergithub", "snakeyaml",
+
+            "javax.", "jakarta.", "kotlin-",
+
+            "gwt-elemental", "javassist", "javaparser-core",
+            "javaparser-symbol", "oshi-core", "micrometer-", "nimbus-jose-jwt",
+
+            "/hilla-engine-core-", "/hilla-engine-runtime-",
+            "/hilla-parser-jvm-", "/hilla-runtime-plugin-").toList();
 
     private final Map<String, PackageInfo> propertiesCache = new HashMap<>();
 
     private record PackageInfo(Set<String> allowedPackages,
-            Set<String> blockedPackages) implements Serializable {
+            Set<String> blockedPackages, boolean blockedJar) implements Serializable {
     }
 
     /**
@@ -116,6 +138,9 @@ public class FilterableResourceResolver
     private Resource doResolveRootDirResource(Resource original)
             throws IOException {
         String rootDirPath = original.getURI().getPath();
+        if (rootDirPath == null) {
+            rootDirPath = original.getURI().toString();
+        }
         if (rootDirPath != null) {
             int index = rootDirPath.lastIndexOf(JAR_KEY);
             if (index != -1) {
@@ -147,9 +172,12 @@ public class FilterableResourceResolver
             Resource rootDirResource, URL rootDirUrl, String subPattern)
             throws IOException {
         String path = rootDirResource.getURI().toString();
-        cachePackageProperties(path, rootDirResource, rootDirUrl);
+        if (DEFAULT_SCAN_NEVER_JAR.stream().anyMatch(path::contains)) {
+            return Set.of();
+        }
+        String key = cachePackageProperties(path, rootDirResource, rootDirUrl);
 
-        if (isBlockedJar(rootDirResource)) {
+        if (isBlockedJar(rootDirResource, key)) {
             return Collections.emptySet();
         }
         return super.doFindPathMatchingJarResources(rootDirResource, rootDirUrl,
@@ -174,42 +202,55 @@ public class FilterableResourceResolver
             throws IOException {
         var result = super.doFindAllClassPathResources(path);
         result.removeIf(res -> {
-            cachePackageProperties(res);
-            return isBlockedJar(res);
+            try {
+                String resourcePath = res.getURI().getPath();
+                if (resourcePath != null && DEFAULT_SCAN_NEVER_JAR.stream()
+                        .anyMatch(resourcePath::contains)) {
+                    return false;
+                }
+            } catch (IOException e) {
+                getLogger().warn("Failed to resolve path for resource {}", res,
+                        e);
+            }
+            String key = cachePackageProperties(res);
+            return isBlockedJar(res, key);
         });
         return result;
     }
 
-    private void cachePackageProperties(String path, Resource rootDirResource,
+    private String cachePackageProperties(String path, Resource rootDirResource,
             URL rootDirUrl) throws IOException {
-        if (!propertiesCache.containsKey(path)) {
-            if (isJar(path)) {
-                String jarPath = pathToKey(path);
-                propertiesCache.put(jarPath, readPackageProperties(rootDirUrl,
-                        path, doResolveRootDirResource(rootDirResource)));
+        String key = path;
+        if (isJar(path)) {
+            key = pathToKey(path);
+            if (!propertiesCache.containsKey(key)) {
+                propertiesCache.put(key, readPackageProperties(rootDirUrl, path,
+                        doResolveRootDirResource(rootDirResource)));
                 getLogger().trace("Caching package.properties of JAR {}", path);
-            } else {
-                Resource resource = doFindPathMatchingFileResources(
-                        rootDirResource, PACKAGE_PROPERTIES_PATH).stream()
-                        .findFirst().orElse(null);
-                Properties properties = resource != null
-                        ? PropertiesLoaderUtils.loadProperties(resource)
-                        : null;
-                propertiesCache.put(path, createPackageInfo(properties));
-                getLogger().trace("Caching package.properties of directory {}",
-                        path);
             }
+        } else if (!propertiesCache.containsKey(path)) {
+            Resource resource = doFindPathMatchingFileResources(rootDirResource,
+                    PACKAGE_PROPERTIES_PATH).stream().findFirst().orElse(null);
+            Properties properties = resource != null
+                    ? PropertiesLoaderUtils.loadProperties(resource)
+                    : null;
+            propertiesCache.put(path, createPackageInfo(properties));
+            getLogger().trace("Caching package.properties of directory {}",
+                    path);
         }
+        return key;
     }
 
-    private void cachePackageProperties(Resource res) {
+    private String cachePackageProperties(Resource res) {
+        String key = null;
         try {
             Resource rootDirResource = convertClassLoaderURL(res.getURL());
             String rootDirPath = rootDirResource.getURI().toString();
             String rootPath = rootDirResource.getURI().getPath();
+            key = rootPath;
             if (rootPath != null && isJar(rootDirPath)) {
                 String jarPath = toJarPath(rootDirPath);
-                String key = pathToKey(rootPath);
+                key = pathToKey(rootPath);
                 if (!propertiesCache.containsKey(key)) {
                     propertiesCache.put(key, readPackageProperties(null,
                             jarPath, rootDirResource));
@@ -232,6 +273,7 @@ public class FilterableResourceResolver
             getLogger().warn("Failed to find {} for path {}",
                     PACKAGE_PROPERTIES_PATH, res, e);
         }
+        return key;
     }
 
     /**
@@ -240,12 +282,16 @@ public class FilterableResourceResolver
      *
      * @param resource
      *            the resource to check
+     * @param key
+     *            the key for the package info
      * @return {@code true} if the resource is a blocked jar, {@code false}
      *         otherwise
      */
-    protected boolean isBlockedJar(Resource resource) {
-        // placeholder to handle case of package.properties with
-        // vaadin.blocked-jar=true
+    protected boolean isBlockedJar(Resource resource, String key) {
+        if (resource != null && key != null) {
+            PackageInfo pkgInfo = propertiesCache.get(key);
+            return pkgInfo != null && pkgInfo.blockedJar();
+        }
         return false;
     }
 
@@ -383,6 +429,8 @@ public class FilterableResourceResolver
                         .split(","))
                 .filter(pkg -> !pkg.isBlank()).map(String::trim)
                 .map(pkg -> pkg.replace(".", "/")).collect(Collectors.toSet());
-        return new PackageInfo(allowedPackages, blockedPackages);
+        boolean blockedJar = Boolean.parseBoolean(
+                properties.getProperty(BLOCKED_JAR_PROPERTY, "false"));
+        return new PackageInfo(allowedPackages, blockedPackages, blockedJar);
     }
 }

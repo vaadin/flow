@@ -37,6 +37,7 @@
 		<module>lib-blocked</module>
 		<module>lib-exclude</module>
 		<module>ui</module>
+		<module>allowed-ui</module>
 	</modules>
 
 </project>

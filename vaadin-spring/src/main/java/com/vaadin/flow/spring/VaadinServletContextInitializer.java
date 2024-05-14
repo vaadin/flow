@@ -708,7 +708,7 @@ public class VaadinServletContextInitializer
             customScanOnly = Arrays.stream(onlyScanProperty.split(","))
                     .map(onlyPackage -> onlyPackage.replace('/', '.').trim())
                     .collect(Collectors.toList());
-            customLoader = appContext;
+            customLoader = new CustomResourceLoader(appContext);
         }
 
         if (!customScanOnly.isEmpty() && !neverScan.isEmpty()) {
@@ -937,6 +937,12 @@ public class VaadinServletContextInitializer
                 .stream().map(packageName -> packageName.replace('.', '/'))
                 .collect(Collectors.toList()));
 
+        /**
+         * If true, only filter based on the package.properties in jar/module.
+         * false by default.
+         */
+        private boolean filterOnlyByPackageProperties = false;
+
         public CustomResourceLoader(ResourceLoader resourceLoader,
                 List<String> addedScanNever) {
             super(resourceLoader);
@@ -945,6 +951,11 @@ public class VaadinServletContextInitializer
                     "addedScanNever shouldn't be null!");
 
             addedScanNever.forEach(scanNever::addPrefix);
+        }
+
+        public CustomResourceLoader(ResourceLoader resourceLoader) {
+            super(resourceLoader);
+            filterOnlyByPackageProperties = true;
         }
 
         /**
@@ -992,11 +1003,11 @@ public class VaadinServletContextInitializer
                     path = originalPath;
                 }
 
-                if (devModeCachingEnabled && skipped.contains(originalPath)) {
+                if (isDevModeCacheUsed() && skipped.contains(originalPath)) {
                     continue;
                 }
 
-                if (devModeCachingEnabled && valid.contains(originalPath)) {
+                if (isDevModeCacheUsed() && valid.contains(originalPath)) {
                     resourcesList.add(resource);
                     // Restore root paths to ensure new resources are correctly
                     // validate and cached after a reload
@@ -1013,7 +1024,7 @@ public class VaadinServletContextInitializer
                         int index = path.lastIndexOf(".jar!/");
                         if (index >= 0) {
                             String relativePath = path.substring(index + 6);
-                            if (devModeCachingEnabled
+                            if (isDevModeCacheUsed()
                                     && relativePath.endsWith(".class")) {
                                 // Stores names of all classes from JARs
                                 String className = relativePath
@@ -1046,7 +1057,7 @@ public class VaadinServletContextInitializer
                     }
                 }
 
-                if (devModeCachingEnabled) {
+                if (isDevModeCacheUsed()) {
                     if (resourcesList.contains(resource)) {
                         valid.add(originalPath);
                     } else {
@@ -1058,6 +1069,10 @@ public class VaadinServletContextInitializer
             return resourcesList.toArray(new Resource[0]);
         }
 
+        private boolean isDevModeCacheUsed() {
+            return !filterOnlyByPackageProperties && devModeCachingEnabled;
+        }
+
         /**
          * Checks if the given path should be scanned.
          *
@@ -1067,7 +1082,8 @@ public class VaadinServletContextInitializer
          *         otherwise
          */
         private boolean shouldPathBeScanned(String path) {
-            return scanAlways.hasPrefix(path) || !scanNever.hasPrefix(path);
+            return filterOnlyByPackageProperties || scanAlways.hasPrefix(path)
+                    || !scanNever.hasPrefix(path);
         }
 
         /**
