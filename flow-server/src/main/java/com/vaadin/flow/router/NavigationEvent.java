@@ -35,6 +35,7 @@ public class NavigationEvent extends EventObject {
     private boolean forwardTo = false;
     private JsonValue state = null;
     private boolean forceInstantiation = false;
+    private boolean recreateLayoutChain = false;
 
     /**
      * Creates a new navigation event.
@@ -110,15 +111,20 @@ public class NavigationEvent extends EventObject {
      * @param forceInstantiation
      *            if set to {@code true}, the navigation target will always be
      *            instantiated
+     * @param recreateLayoutChain
+     *            if set to {@code true}, the complete layout chain up to the
+     *            navigation target will be re-instantiated. Requires
+     *            {@code forceInstantiation} to be true to have an effect.
      */
     public NavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, JsonValue state, boolean forwardTo,
-            boolean forceInstantiation) {
+            boolean forceInstantiation, boolean recreateLayoutChain) {
         this(router, location, ui, trigger);
 
         this.state = state;
         this.forwardTo = forwardTo;
         this.forceInstantiation = forceInstantiation;
+        this.recreateLayoutChain = recreateLayoutChain;
     }
 
     @Override
@@ -179,10 +185,21 @@ public class NavigationEvent extends EventObject {
      * When set to true, the navigation target should be instantiated regardless
      * of it being already available.
      *
-     * @return {@code true} if navigation target will be instantiated in any
+     * @return {@code true} if navigation target should be instantiated in any
      *         case
      */
     public boolean isForceInstantiation() {
         return forceInstantiation;
+    }
+
+    /**
+     * When set to true, the complete layout chain up to the navigation target
+     * should be re-instantiated regardless of it being already available.
+     *
+     * @return {@code true} if layout chain up to the navigation target should
+     *         be instantiated in any case
+     */
+    public boolean isRecreateLayoutChain() {
+        return recreateLayoutChain;
     }
 }

@@ -14,6 +14,8 @@ import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.DETACHCOUNTER_ID
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.NAVIGATE_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.REFRESH_ID;
+import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.REFRESH_LAYOUTS_ID;
+import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteLayout.ROUTER_LAYOUT_ID;
 
 public class RefreshCurrentRouteIT extends AbstractStreamResourceIT {
 
@@ -22,12 +24,14 @@ public class RefreshCurrentRouteIT extends AbstractStreamResourceIT {
         open();
 
         final String originalId = getString(ID);
+        final String originalLayoutId = getString(ROUTER_LAYOUT_ID);
 
         assertInitialEventCounters();
 
         $(NativeButtonElement.class).id(NAVIGATE_ID).click();
 
         Assert.assertEquals(getString(ID), originalId);
+        Assert.assertEquals(getString(ROUTER_LAYOUT_ID), originalLayoutId);
 
         // Nav events should have happened, attach/detach should not
         Assert.assertEquals(1, getInt(ATTACHCOUNTER_ID));
@@ -38,10 +42,11 @@ public class RefreshCurrentRouteIT extends AbstractStreamResourceIT {
     }
 
     @Test
-    public void refreshCurrentRoute_ensureNewInstanceAndCorrectEventCounts() {
+    public void refreshCurrentRoute_ensureNewInstanceAndCorrectEventCounts_noNewLayout() {
         open();
 
         final String originalId = getString(ID);
+        final String originalLayoutId = getString(ROUTER_LAYOUT_ID);
 
         assertInitialEventCounters();
 
@@ -49,6 +54,28 @@ public class RefreshCurrentRouteIT extends AbstractStreamResourceIT {
 
         // UUID should be new since refresh creates new instance
         Assert.assertNotEquals(getString(ID), originalId);
+        // Layout UUID should be same
+        Assert.assertEquals(getString(ROUTER_LAYOUT_ID), originalLayoutId);
+
+        // Event counters should equal original values
+        assertInitialEventCounters();
+    }
+
+    @Test
+    public void refreshCurrentRoute_ensureNewInstanceAndCorrectEventCounts_newLayout() {
+        open();
+
+        final String originalId = getString(ID);
+        final String originalLayoutId = getString(ROUTER_LAYOUT_ID);
+
+        assertInitialEventCounters();
+
+        $(NativeButtonElement.class).id(REFRESH_LAYOUTS_ID).click();
+
+        // UUID should be new since refresh creates new instance
+        Assert.assertNotEquals(getString(ID), originalId);
+        // UUID should be new since new layout instances were requested
+        Assert.assertNotEquals(getString(ROUTER_LAYOUT_ID), originalLayoutId);
 
         // Event counters should equal original values
         assertInitialEventCounters();

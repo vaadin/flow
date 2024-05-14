@@ -190,7 +190,7 @@ public class Router implements Serializable {
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
             JsonValue state) {
-        return navigate(ui, location, trigger, state, false);
+        return navigate(ui, location, trigger, state, false, false);
     }
 
     /**
@@ -213,12 +213,17 @@ public class Router implements Serializable {
      * @param forceInstantiation
      *            if set to {@code true}, the navigation target will always be
      *            instantiated
+     * @param recreateLayoutChain
+     *            if set to {@code true}, the complete layout chain up to the
+     *            navigation target will be re-instantiated. Requires
+     *            {@code forceInstantiation} to be true to have an effect.
      * @return the HTTP status code resulting from the navigation
      * @see UI#navigate(String)
      * @see UI#navigate(String, QueryParameters)
      */
     public int navigate(UI ui, Location location, NavigationTrigger trigger,
-            JsonValue state, boolean forceInstantiation) {
+            JsonValue state, boolean forceInstantiation,
+            boolean recreateLayoutChain) {
         assert ui != null;
         assert location != null;
         assert trigger != null;
@@ -227,7 +232,7 @@ public class Router implements Serializable {
         if (handleNavigationForLocation(ui, location)) {
             try {
                 return handleNavigation(ui, location, trigger, state,
-                        forceInstantiation);
+                        forceInstantiation, recreateLayoutChain);
             } catch (Exception exception) {
                 return handleExceptionNavigation(ui, location, exception,
                         trigger, state);
@@ -249,12 +254,13 @@ public class Router implements Serializable {
 
     private int handleNavigation(UI ui, Location location,
             NavigationTrigger trigger, JsonValue state,
-            boolean forceInstantiation) {
+            boolean forceInstantiation, boolean recreateLayoutChain) {
         NavigationState newState = getRouteResolver()
                 .resolve(new ResolveRequest(this, location));
         if (newState != null) {
             NavigationEvent navigationEvent = new NavigationEvent(this,
-                    location, ui, trigger, state, false, forceInstantiation);
+                    location, ui, trigger, state, false, forceInstantiation,
+                    recreateLayoutChain);
 
             NavigationHandler handler = new NavigationStateRenderer(newState);
             return handler.handle(navigationEvent);
@@ -265,7 +271,7 @@ public class Router implements Serializable {
             if (slashToggledState != null) {
                 NavigationEvent navigationEvent = new NavigationEvent(this,
                         slashToggledLocation, ui, trigger, state, false,
-                        forceInstantiation);
+                        forceInstantiation, recreateLayoutChain);
 
                 NavigationHandler handler = new InternalRedirectHandler(
                         slashToggledLocation);

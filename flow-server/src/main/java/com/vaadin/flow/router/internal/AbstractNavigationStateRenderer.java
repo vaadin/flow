@@ -116,15 +116,20 @@ public abstract class AbstractNavigationStateRenderer
      *            the class of the route target component
      * @param event
      *            the navigation event that uses the route target
+     * @param lastElement
+     *            {@code true} when this is the last element in the chain
      * @return an instance of the route target component
      */
     @SuppressWarnings("unchecked")
     // Non-private for testing purposes
     static <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
+            NavigationEvent event, boolean lastElement) {
         UI ui = event.getUI();
         Instantiator instantiator = Instantiator.get(ui);
-        Optional<HasElement> currentInstance = event.isForceInstantiation()
+        boolean forceInstantiation = lastElement ? event.isForceInstantiation()
+                : (event.isForceInstantiation()
+                        && event.isRecreateLayoutChain());
+        Optional<HasElement> currentInstance = forceInstantiation
                 ? Optional.empty()
                 : ui.getInternals().getActiveRouterTargetsChain().stream()
                         .filter(component -> instantiator
@@ -485,7 +490,9 @@ public abstract class AbstractNavigationStateRenderer
 
         try {
             for (Class<? extends HasElement> elementType : typesChain) {
-                HasElement element = getRouteTarget(elementType, event);
+                HasElement element = getRouteTarget(elementType, event,
+                        typesChain.indexOf(elementType) == typesChain.size()
+                                - 1);
 
                 chain.add(element);
 
@@ -528,14 +535,8 @@ public abstract class AbstractNavigationStateRenderer
                 EventUtil.collectBeforeEnterObserversFromChain(chain, event
                         .getUI().getInternals().getActiveRouterTargetsChain()));
 
-        Optional<Integer> result = sendBeforeEnterEvent(chainEnterHandlers,
-                event, beforeNavigation, chain);
-
-        if (result.isPresent()) {
-            return result;
-        }
-
-        return Optional.empty();
+        return sendBeforeEnterEvent(chainEnterHandlers, event, beforeNavigation,
+                chain);
     }
 
     /*

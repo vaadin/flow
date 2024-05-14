@@ -1046,10 +1046,11 @@ public class UIInternals implements Serializable {
         }
     }
 
-    public void refreshCurrentRoute() {
+    public void refreshCurrentRoute(boolean refreshRouteChain) {
         if (locationForRefresh != null) {
             getRouter().navigate(ui, locationForRefresh,
-                    NavigationTrigger.PROGRAMMATIC, null, true);
+                    NavigationTrigger.PROGRAMMATIC, null, true,
+                    refreshRouteChain);
         }
     }
 

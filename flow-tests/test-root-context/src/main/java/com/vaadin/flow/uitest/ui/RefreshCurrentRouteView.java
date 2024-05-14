@@ -15,7 +15,7 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Route;
 
-@Route(value = "com.vaadin.flow.uitest.ui.RefreshCurrentRouteView")
+@Route(value = "com.vaadin.flow.uitest.ui.RefreshCurrentRouteView", layout = RefreshCurrentRouteLayout.class)
 public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
         BeforeLeaveObserver, AfterNavigationObserver {
 
@@ -27,6 +27,7 @@ public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
     final static String BEFORELEAVECOUNTER_ID = "beforeleavecounter";
     final static String NAVIGATE_ID = "navigate";
     final static String REFRESH_ID = "refresh";
+    final static String REFRESH_LAYOUTS_ID = "refreshlayouts";
 
     private int attach, detach, afterNav, beforeEnter, beforeLeave;
     private final Div id, attachCounter, detachCounter, afterNavCounter,
@@ -50,8 +51,13 @@ public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
         add(navigate);
 
         NativeButton refresh = new NativeButton("Refresh this view",
-                e -> UI.getCurrent().refreshCurrentRoute());
+                e -> UI.getCurrent().refreshCurrentRoute(false));
         refresh.setId(REFRESH_ID);
+        add(refresh);
+
+        refresh = new NativeButton("Refresh this view and layouts",
+                e -> UI.getCurrent().refreshCurrentRoute(true));
+        refresh.setId(REFRESH_LAYOUTS_ID);
         add(refresh);
     }
 

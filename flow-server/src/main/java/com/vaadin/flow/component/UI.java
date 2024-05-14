@@ -1249,9 +1249,13 @@ public class UI extends Component
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, but not if {@link com.vaadin.flow.router.PreserveOnRefresh} is
      * used.
+     *
+     * @param refreshRouteChain
+     *            {@code true} to refresh all layouts in the route chain,
+     *            {@code false} to only refresh the route instance
      */
-    public void refreshCurrentRoute() {
-        getInternals().refreshCurrentRoute();
+    public void refreshCurrentRoute(boolean refreshRouteChain) {
+        getInternals().refreshCurrentRoute(refreshRouteChain);
     }
 
     /**

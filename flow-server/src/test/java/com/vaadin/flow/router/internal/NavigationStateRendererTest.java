@@ -222,7 +222,8 @@ public class NavigationStateRendererTest {
         NavigationStateRenderer renderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
 
-        Component routeTarget = renderer.getRouteTarget(Component.class, event);
+        Component routeTarget = renderer.getRouteTarget(Component.class, event,
+                true);
 
         Assert.assertEquals(Text.class, routeTarget.getClass());
 
@@ -262,7 +263,7 @@ public class NavigationStateRendererTest {
                     .get(0);
 
             Component routeTarget = renderer.getRouteTarget(ProxyableView.class,
-                    event);
+                    event, true);
 
             // Getting route target should not create a new instance
             Assert.assertEquals(
