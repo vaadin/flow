@@ -16,7 +16,6 @@
 package com.vaadin.flow.mixedtest.ui;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
@@ -27,10 +26,10 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class IdTestIT extends ChromeBrowserTest {
+public class PolymerIdTestIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
-        return "/context-path/servlet-path/route-path";
+        return "/context-path/servlet-path/route-path-polymer";
     }
 
     @Test
@@ -40,11 +39,22 @@ public class IdTestIT extends ChromeBrowserTest {
         checkLogsForErrors(
                 msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
         waitUntilWithMessage(
-                ExpectedConditions
-                        .presenceOfElementLocated(By.tagName("my-component")),
-                "Failed to load my-component", 25);
+                ExpectedConditions.presenceOfElementLocated(
+                        By.tagName("my-polymer-component")),
+                "Failed to load my-polymer-component", 25);
 
-        TestBenchElement myComponent = $("my-component").first();
+        TestBenchElement myComponent = $("my-polymer-component").first();
+
+        // wait for polymer initalisation
+        waitUntillWithMessage(driver -> getCommandExecutor().executeScript(
+                "return !!window.Polymer || !!arguments[0].constructor.polymerElementVersion",
+                myComponent),
+                "Failed to load constructor.polymerElementVersion for 'my-polymer-component'");
+
+        waitUntillWithMessage(
+                driver -> getCommandExecutor().executeScript(
+                        "return arguments[0].$ !== undefined", myComponent),
+                "Failed to load $ for 'my-polymer-component'");
 
         WebElement content = myComponent.$(TestBenchElement.class)
                 .id("content");
@@ -56,6 +66,11 @@ public class IdTestIT extends ChromeBrowserTest {
 
         button.click();
         Assert.assertEquals("2", content.getText());
+    }
+
+    private void waitUntillWithMessage(ExpectedCondition<?> condition,
+            String message) {
+        waitUntilWithMessage(condition, message, 10);
     }
 
     private void waitUntilWithMessage(ExpectedCondition<?> condition,

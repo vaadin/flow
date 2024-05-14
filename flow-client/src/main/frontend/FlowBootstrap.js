@@ -90,7 +90,36 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
           throw new Error('Application ' + appId + ' is already being initialized');
         }
         if (isInitializedInDom(appId)) {
-          throw new Error('Application ' + appId + ' already initialized');
+          if (appInitResponse.appConfig.productionMode) {
+            throw new Error('Application ' + appId + ' already initialized');
+          }
+
+          // Remove old contents for Flow
+          var appDiv = document.getElementById(appId);
+          for (var i = 0; i < appDiv.childElementCount; i++) {
+            appDiv.childNodes[i].remove();
+          }
+
+          // For devMode reset app config and restart widgetset as client
+          // is up and running after hrm update.
+          const getConfig = function (name) {
+            return config[name];
+          };
+
+          /* Export public data */
+          const app = {
+            getConfig: getConfig
+          };
+          apps[appId] = app;
+
+          if (widgetsets['client'].callback) {
+            log('Starting from bootstrap', appId);
+            widgetsets['client'].callback(appId);
+          } else {
+            log('Setting pending startup', appId);
+            widgetsets['client'].pendingApps.push(appId);
+          }
+          return apps[appId];
         }
       }
 

@@ -695,8 +695,12 @@ public class UIInternals implements Serializable {
      */
     public void setTitle(String title) {
         assert title != null;
-        JavaScriptInvocation invocation = new JavaScriptInvocation(
-                "document.title = $0", title);
+        JavaScriptInvocation invocation = new JavaScriptInvocation("""
+                    document.title = $0;
+                    if(window?.Vaadin?.documentTitleSignal) {
+                        window.Vaadin.documentTitleSignal.value = $0;
+                    }
+                """.stripIndent(), title);
 
         pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
                 getStateTree().getRootNode(), invocation);
