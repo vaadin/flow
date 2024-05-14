@@ -65,7 +65,7 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(title, route, lazy, register, menu, routeParameters);
+        int result = Objects.hash(title, loginRequired, route, lazy, register, menu, routeParameters);
         result = 31 * result + Arrays.hashCode(rolesAllowed);
         return result;
     }

@@ -199,7 +199,27 @@ public class MenuRegistryTest {
         Assert.assertEquals(6, menuItems.size());
         asssertClientRoutes(menuItems);
         assertServerRoutes(menuItems);
+    }
 
+    @Test
+    public void collectMenuItems_returnsCorrecPaths() throws IOException {
+        File generated = tmpDir.newFolder("generated");
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        Mockito.when(request.getService()).thenReturn(vaadinService);
+        CurrentInstance.set(VaadinRequest.class, request);
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(MyRoute.class, MyInfo.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
+                .collectMenuItems();
+
+        Assert.assertEquals(6, menuItems.size());
+        asssertClientRoutes(menuItems);
+        assertServerRoutes(menuItems);
     }
 
     private void asssertClientRoutes(Map<String, AvailableViewInfo> menuItems) {

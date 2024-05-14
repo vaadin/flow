@@ -41,6 +41,8 @@ import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+
 /**
  * Registry for getting the menu items available for the current state of the
  * application.
@@ -57,7 +59,7 @@ public class MenuRegistry {
      * @return routes with view information
      */
     public static Map<String, AvailableViewInfo> collectMenuItems() {
-        return new MenuRegistry().collectMenuItems();
+        return new MenuRegistry().getMenuItems();
     }
 
     /**
@@ -137,7 +139,7 @@ public class MenuRegistry {
      */
     private static String getTitle(RouteData route) {
         return Optional
-                .ofNullable(route.getNavigationTarget().getClass()
+                .ofNullable(route.getNavigationTarget()
                         .getAnnotation(PageTitle.class))
                 .map(PageTitle::value)
                 .orElse(route.getNavigationTarget().getSimpleName());
@@ -234,8 +236,7 @@ public class MenuRegistry {
         }
         try {
             Path fileRoutes = deploymentConfiguration.getFrontendFolder()
-                    .toPath().resolve("generated")
-                    .resolve(FILE_ROUTES_JSON_NAME);
+                    .toPath().resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
             if (fileRoutes.toFile().exists()) {
                 return fileRoutes.toUri().toURL();
             }

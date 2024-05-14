@@ -536,8 +536,7 @@ public class RouteConfiguration implements Serializable {
     /**
      * Get the {@link RouteData} for all accessible registered navigation
      * targets with a menu information. Access checking depends on the active
-     * {@link VaadinService} and {@link VaadinRequest} and the given collection
-     * of access controls.
+     * {@link VaadinService} and {@link VaadinRequest}.
      *
      * @return list of accessible menu routes available for handled registry
      */
