@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -71,6 +72,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -726,5 +728,67 @@ public class NavigationStateRendererTest {
         Assert.assertFalse(
                 "No pushState invocation is expected when navigating to the current location.",
                 pushStateCalled.get());
+    }
+
+    @Test
+    public void purgeInactiveUIPreservedChainCache_activeUI_throws() {
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        MockUI activeUI = new MockUI(session);
+        Component attachedToActiveUI = new PreservedView();
+        activeUI.add(attachedToActiveUI);
+
+        Assert.assertThrows(IllegalStateException.class,
+                () -> AbstractNavigationStateRenderer
+                        .purgeInactiveUIPreservedChainCache(activeUI));
+
+    }
+
+    @Test
+    public void purgeInactiveUIPreservedChainCache_inactiveUI_clearsCache() {
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        Mockito.when(wrappedSession.getId()).thenReturn("A-SESSION-ID");
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service) {
+            @Override
+            public WrappedSession getSession() {
+                return wrappedSession;
+            }
+        };
+
+        MockUI activeUI = new MockUI(session);
+        Component attachedToActiveUI = new PreservedView();
+        activeUI.add(attachedToActiveUI);
+
+        MockUI inActiveUI = new MockUI(session);
+        Component attachedToInactiveUI = new PreservedView();
+        inActiveUI.add(attachedToInactiveUI);
+        inActiveUI.close();
+
+        // Simulate two tabs on the same view, but one has been closed
+        Location location = new Location("preserved");
+        AbstractNavigationStateRenderer.setPreservedChain(session, "ACTIVE",
+                location,
+                new ArrayList<>(Collections.singletonList(attachedToActiveUI)));
+        AbstractNavigationStateRenderer.setPreservedChain(session, "INACTIVE",
+                location, new ArrayList<>(
+                        Collections.singletonList(attachedToInactiveUI)));
+
+        AbstractNavigationStateRenderer
+                .purgeInactiveUIPreservedChainCache(inActiveUI);
+
+        Optional<ArrayList<HasElement>> active = AbstractNavigationStateRenderer
+                .getPreservedChain(session, "ACTIVE", location);
+        Assert.assertTrue(
+                "Expected preserved chain for active window to be present",
+                active.isPresent());
+
+        Optional<ArrayList<HasElement>> inactive = AbstractNavigationStateRenderer
+                .getPreservedChain(session, "INACTIVE", location);
+        Assert.assertFalse(
+                "Expected preserved chain for inactive window to be removed",
+                inactive.isPresent());
+
     }
 }
