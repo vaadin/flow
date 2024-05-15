@@ -172,7 +172,7 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
     }
 
     private int getInitialUIId() {
-        return Integer.parseInt(waitUntil(d -> $(H3Element.class).single())
+        return Integer.parseInt(waitUntil(d -> $(H3Element.class).first())
                 .getText().replace("Initial UI: ", ""));
     }
 
