@@ -123,19 +123,26 @@ public abstract class AbstractNavigationStateRenderer
      *            the class of the route target component
      * @param event
      *            the navigation event that uses the route target
+     * @param lastElement
+     *            {@code true} when this is the last element in the chain
      * @return an instance of the route target component
      */
     @SuppressWarnings("unchecked")
     // Non-private for testing purposes
     static <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
+            NavigationEvent event, boolean lastElement) {
         UI ui = event.getUI();
         Instantiator instantiator = Instantiator.get(ui);
-        Optional<HasElement> currentInstance = ui.getInternals()
-                .getActiveRouterTargetsChain().stream()
-                .filter(component -> instantiator.getApplicationClass(component)
-                        .equals(routeTargetType))
-                .findAny();
+        boolean forceInstantiation = lastElement ? event.isForceInstantiation()
+                : (event.isForceInstantiation()
+                        && event.isRecreateLayoutChain());
+        Optional<HasElement> currentInstance = forceInstantiation
+                ? Optional.empty()
+                : ui.getInternals().getActiveRouterTargetsChain().stream()
+                        .filter(component -> instantiator
+                                .getApplicationClass(component)
+                                .equals(routeTargetType))
+                        .findAny();
         return (T) currentInstance.orElseGet(
                 () -> instantiator.createRouteTarget(routeTargetType, event));
     }
@@ -174,10 +181,10 @@ public abstract class AbstractNavigationStateRenderer
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
                 routeTargetType, routeLayoutTypes);
 
-        if (preserveOnRefreshTarget) {
+        if (preserveOnRefreshTarget && !event.isForceInstantiation()) {
             final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(
                     event);
-            if (!maybeChain.isPresent()) {
+            if (maybeChain.isEmpty()) {
                 // We're returning because the preserved chain is not ready to
                 // be used as is, and requires client data requested within
                 // `getPreservedChain`. Once the data is retrieved from the
@@ -489,8 +496,9 @@ public abstract class AbstractNavigationStateRenderer
         List<Class<? extends HasElement>> typesChain = getTypesChain();
 
         try {
-            for (Class<? extends HasElement> elementType : typesChain) {
-                HasElement element = getRouteTarget(elementType, event);
+            for (int i = 0; i < typesChain.size(); i++) {
+                HasElement element = getRouteTarget(typesChain.get(i), event,
+                        i == typesChain.size() - 1);
 
                 if (!beforeNavigation.isErrorEvent()) {
                     UsageStatistics.markAsUsed(Constants.STATISTICS_FLOW_ROUTER,
@@ -538,14 +546,8 @@ public abstract class AbstractNavigationStateRenderer
                 EventUtil.collectBeforeEnterObserversFromChain(chain, event
                         .getUI().getInternals().getActiveRouterTargetsChain()));
 
-        Optional<Integer> result = sendBeforeEnterEvent(chainEnterHandlers,
-                event, beforeNavigation, chain);
-
-        if (result.isPresent()) {
-            return result;
-        }
-
-        return Optional.empty();
+        return sendBeforeEnterEvent(chainEnterHandlers, event, beforeNavigation,
+                chain);
     }
 
     /*
