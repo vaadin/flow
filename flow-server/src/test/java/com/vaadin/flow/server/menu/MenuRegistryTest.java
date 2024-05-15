@@ -264,7 +264,7 @@ public class MenuRegistryTest {
         Assert.assertTrue("Server route 'info' missing",
                 menuItems.containsKey("/info"));
         Assert.assertEquals("MyInfo", menuItems.get("/info").title());
-        Assert.assertEquals("", menuItems.get("/info").menu().title());
+        Assert.assertEquals("MyInfo", menuItems.get("/info").menu().title());
     }
 
     @Tag("div")

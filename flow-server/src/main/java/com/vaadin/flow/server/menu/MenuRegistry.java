@@ -32,6 +32,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
@@ -121,7 +122,7 @@ public class MenuRegistry {
     private static void addMenuRoutes(Map<String, AvailableViewInfo> menuRoutes,
             List<RouteData> registeredAccessibleMenuRoutes) {
         for (RouteData route : registeredAccessibleMenuRoutes) {
-            String title = getTitle(route);
+            String title = getTitle(route.getNavigationTarget());
             Map<String, RouteParamType> parameters = getParameters(route);
             menuRoutes.put("/" + route.getTemplate(),
                     new AvailableViewInfo(title, null, false,
@@ -133,16 +134,13 @@ public class MenuRegistry {
     /**
      * Get page title for route or simple name if no PageTitle is set.
      *
-     * @param route
-     *            route to get title for
+     * @param target
+     *            route class to get title for
      * @return title to use for route
      */
-    private static String getTitle(RouteData route) {
-        return Optional
-                .ofNullable(route.getNavigationTarget()
-                        .getAnnotation(PageTitle.class))
-                .map(PageTitle::value)
-                .orElse(route.getNavigationTarget().getSimpleName());
+    public static String getTitle(Class<? extends Component> target) {
+        return Optional.ofNullable(target.getAnnotation(PageTitle.class))
+                .map(PageTitle::value).orElse(target.getSimpleName());
     }
 
     /**
