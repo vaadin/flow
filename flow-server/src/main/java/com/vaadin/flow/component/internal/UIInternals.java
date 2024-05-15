@@ -1052,8 +1052,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Re-navigates to the current route. Also re-instantiates the route target
-     * component, even if {@link com.vaadin.flow.router.PreserveOnRefresh} is
-     * used.
+     * component, and optionally all layouts in the route chain.
      *
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
