@@ -1050,8 +1050,20 @@ public class UIInternals implements Serializable {
         }
     }
 
+    /**
+     * Re-navigates to the current route. Also re-instantiates the route target
+     * component, even if {@link com.vaadin.flow.router.PreserveOnRefresh} is
+     * used.
+     *
+     * @param refreshRouteChain
+     *            {@code true} to refresh all layouts in the route chain,
+     *            {@code false} to only refresh the route instance
+     */
     public void refreshCurrentRoute(boolean refreshRouteChain) {
-        if (locationForRefresh != null) {
+        if (locationForRefresh == null) {
+            getLogger().warn("Latest navigation location is not set. "
+                    + "Unable to refresh the current route.");
+        } else {
             getRouter().navigate(ui, locationForRefresh,
                     NavigationTrigger.PROGRAMMATIC, null, true,
                     refreshRouteChain);

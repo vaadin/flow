@@ -13,6 +13,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.RefreshCurrentRouteView", layout = RefreshCurrentRouteLayout.class)
@@ -45,8 +46,7 @@ public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
         beforeLeaveCounter = createCounterSpan(BEFORELEAVECOUNTER_ID);
 
         NativeButton navigate = new NativeButton("Navigate to this view",
-                e -> UI.getCurrent().navigate(
-                        "com.vaadin.flow.uitest.ui.RefreshCurrentRouteView"));
+                e -> UI.getCurrent().navigate(getNavigationTarget()));
         navigate.setId(NAVIGATE_ID);
         add(navigate);
 
@@ -59,6 +59,10 @@ public class RefreshCurrentRouteView extends Div implements BeforeEnterObserver,
                 e -> UI.getCurrent().refreshCurrentRoute(true));
         refresh.setId(REFRESH_LAYOUTS_ID);
         add(refresh);
+    }
+
+    protected String getNavigationTarget() {
+        return "com.vaadin.flow.uitest.ui.RefreshCurrentRouteView";
     }
 
     private Div createCounterSpan(String id) {
