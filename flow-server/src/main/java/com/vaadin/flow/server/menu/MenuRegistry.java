@@ -21,12 +21,15 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +42,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.internal.ParameterInfo;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -60,22 +64,25 @@ public class MenuRegistry {
      * @return routes with view information
      */
     public static Map<String, AvailableViewInfo> collectMenuItems() {
-        return new MenuRegistry().getMenuItems();
+        return new MenuRegistry().getMenuItems(true);
     }
 
     /**
      * Collect views with menu annotation for automatic menu population. All
      * client views are collected and any accessible server views.
      *
+     * @param filterClientViews
+     *            {@code true} to filter client views by login information
      * @return routes with view information
      */
-    public Map<String, AvailableViewInfo> getMenuItems() {
+    public Map<String, AvailableViewInfo> getMenuItems(
+            boolean filterClientViews) {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forApplicationScope();
 
         Map<String, AvailableViewInfo> menuRoutes = new HashMap<>();
 
-        menuRoutes.putAll(collectClientMenuItems());
+        menuRoutes.putAll(collectClientMenuItems(filterClientViews));
 
         collectAndAddServerMenuItems(routeConfiguration, menuRoutes);
 
@@ -162,7 +169,8 @@ public class MenuRegistry {
         return parameters;
     }
 
-    private Map<String, AvailableViewInfo> collectClientMenuItems() {
+    private Map<String, AvailableViewInfo> collectClientMenuItems(
+            boolean filterClientViews) {
         List<String> clientRoutes = FrontendUtils.getClientRoutes();
 
         if (clientRoutes.isEmpty()) {
@@ -206,6 +214,10 @@ public class MenuRegistry {
             }
         }
 
+        if (filterClientViews) {
+            filterClientViews(configurations);
+        }
+
         return configurations;
     }
 
@@ -245,6 +257,70 @@ public class MenuRegistry {
                     FILE_ROUTES_JSON_NAME, e);
             throw new RuntimeException(e);
         }
+    }
+
+    private void filterClientViews(
+            Map<String, AvailableViewInfo> configurations) {
+        VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
+        final boolean isUserAuthenticated = vaadinRequest
+                .getUserPrincipal() != null;
+
+        Set<String> clientEntries = new HashSet<>(configurations.keySet());
+        for (String key : clientEntries) {
+            AvailableViewInfo viewInfo = configurations.get(key);
+            boolean routeValid = validateViewAccessible(viewInfo,
+                    isUserAuthenticated, vaadinRequest::isUserInRole);
+
+            if (!routeValid) {
+                configurations.remove(key);
+                if (viewInfo.children() != null
+                        && !viewInfo.children().isEmpty()) {
+                    // remove all children for unauthenticated parent.
+                    removeChildren(configurations, viewInfo, key);
+                }
+            }
+        }
+    }
+
+    private static void removeChildren(
+            Map<String, AvailableViewInfo> configurations,
+            AvailableViewInfo viewInfo, String parentPath) {
+        for (AvailableViewInfo child : viewInfo.children()) {
+            configurations.remove(parentPath + "/" + child.route());
+            if (child.children() != null) {
+                removeChildren(configurations, child,
+                        parentPath + "/" + child.route());
+            }
+        }
+    }
+
+    /**
+     * Check view against authentication state.
+     * <p>
+     * If not authenticated and login required -> invalid. If user doesn't have
+     * correct roles -> invalid.
+     *
+     * @param viewInfo
+     *            view info
+     * @param isUserAuthenticated
+     *            user authentication state
+     * @param roleAuthentication
+     *            method to authenticate if user has role
+     * @return true if accessible, false if something is not authenticated
+     */
+    private static boolean validateViewAccessible(AvailableViewInfo viewInfo,
+            boolean isUserAuthenticated,
+            Predicate<? super String> roleAuthentication) {
+        if (viewInfo.loginRequired() && !isUserAuthenticated) {
+            return false;
+        } else {
+            String[] roles = viewInfo.rolesAllowed();
+            if (roles != null && roles.length > 0
+                    && !Arrays.stream(roles).anyMatch(roleAuthentication)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
