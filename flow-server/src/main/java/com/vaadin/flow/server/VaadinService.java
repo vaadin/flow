@@ -63,6 +63,7 @@ import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.HeartbeatHandler;
@@ -1347,6 +1348,8 @@ public abstract class VaadinService implements Serializable {
                     getLogger().debug("Closing inactive UI #{} in session {}",
                             ui.getUIId(), sessionId);
                     ui.close();
+                    AbstractNavigationStateRenderer
+                            .purgeInactiveUIPreservedChainCache(ui);
                 });
             }
         }
