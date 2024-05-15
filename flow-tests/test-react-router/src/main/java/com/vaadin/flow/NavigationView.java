@@ -20,6 +20,7 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
@@ -28,8 +29,13 @@ public class NavigationView extends Div {
 
     public static final String SERVER_ID = "server-navigation";
     public static final String ANCHOR_ID = "anchor-navigation";
+    public static final String ANCHOR_QUERY_ID = "anchor-query-navigation";
+    public static final String ROUTER_LINK_QUERY_ID = "router-link-query-navigation";
     public static final String ROUTER_LINK_ID = "router-link-navigation";
     public static final String POSTPONE_ID = "postpone-view-link";
+
+    public static final String REACT_ANCHOR_ID = "anchor-react-navigation";
+    public static final String REACT_ID = "react-navigation";
 
     public NavigationView() {
         Anchor anchorNavigation = new Anchor("com.vaadin.flow.AnchorView",
@@ -49,6 +55,29 @@ public class NavigationView extends Div {
 
         add(new Span("NavigationView"), new Div(), anchorNavigation, new Div(),
                 serverNavigation, new Div(), link, new Div(), postponeView);
+
+        // React navigation
+        Anchor reactAnchorNavigation = new Anchor("react",
+                "Navigate to react with Anchor");
+        reactAnchorNavigation.setId(REACT_ANCHOR_ID);
+        NativeButton reactServerNavigation = new NativeButton(
+                "Navigate to react through Server", event -> {
+                    event.getSource().getUI().get().navigate("react");
+                });
+        reactServerNavigation.setId(REACT_ID);
+
+        add(new Div(), reactAnchorNavigation, new Div(), reactServerNavigation);
+
+        RouterLink rlViewQuery = new RouterLink("AnchorQuery",
+                AnchorView.class);
+        rlViewQuery.setQueryParameters(QueryParameters.of("test", "value"));
+        rlViewQuery.setId(ROUTER_LINK_QUERY_ID);
+        add(new Div(), rlViewQuery);
+
+        Anchor anchorViewQuery = new Anchor(
+                "com.vaadin.flow.AnchorView?test=anchor", "AnchorQuery");
+        anchorViewQuery.setId(ANCHOR_QUERY_ID);
+        add(new Div(), anchorViewQuery);
     }
 
 }

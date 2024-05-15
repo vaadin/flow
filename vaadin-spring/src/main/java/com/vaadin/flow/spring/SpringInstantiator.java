@@ -24,6 +24,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.SpringVersion;
+import org.springframework.util.ClassUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -31,6 +32,7 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 
 /**
  * Default Spring instantiator that is used if no other instantiator has been
@@ -104,6 +106,24 @@ public class SpringInstantiator extends DefaultInstantiator {
         }
     }
 
+    @Override
+    public MenuAccessControl getMenuAccessControl() {
+        int beansCount = context
+                .getBeanNamesForType(MenuAccessControl.class).length;
+        if (beansCount == 1) {
+            return context.getBean(MenuAccessControl.class);
+        } else {
+            if (loggingEnabled.compareAndSet(true, false)) {
+                LoggerFactory.getLogger(SpringInstantiator.class.getName())
+                        .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for Menu Access Control, "
+                                + "falling back to the default behavior",
+                                MenuAccessControl.class.getSimpleName(),
+                                beansCount);
+            }
+            return super.getMenuAccessControl();
+        }
+    }
+
     /**
      * Hands over an existing bean or tries to instantiate one with the
      * following rules:
@@ -134,5 +154,10 @@ public class SpringInstantiator extends DefaultInstantiator {
             // If there is no bean, try to instantiate one
             return context.getAutowireCapableBeanFactory().createBean(type);
         }
+    }
+
+    @Override
+    public Class<?> getApplicationClass(Class<?> clazz) {
+        return ClassUtils.getUserClass(clazz);
     }
 }

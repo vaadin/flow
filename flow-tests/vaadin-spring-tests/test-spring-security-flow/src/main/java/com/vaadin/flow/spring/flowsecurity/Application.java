@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.server.auth.DefaultMenuAccessControl;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.spring.i18n.DefaultI18NProviderFactory;
 
 @SpringBootApplication
@@ -50,5 +52,13 @@ public class Application {
                         locale);
             }
         };
+    }
+
+    @Bean
+    public MenuAccessControl customMenuAccessControl() {
+        var menuAccessControl = new DefaultMenuAccessControl();
+        menuAccessControl.setPopulateClientSideMenu(
+                MenuAccessControl.PopulateClientMenu.ALWAYS);
+        return menuAccessControl;
     }
 }

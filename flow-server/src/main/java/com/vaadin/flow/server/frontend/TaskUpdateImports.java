@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 
@@ -37,8 +36,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
         UpdateMainImportsFile(Options options,
-                FrontendDependenciesScanner scanner) {
-            super(options, scanner);
+                FrontendDependenciesScanner scanner,
+                GeneratedFilesSupport generatedFilesSupport) {
+            super(options, scanner, generatedFilesSupport);
         }
 
         @Override
@@ -52,6 +52,8 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
     }
+
+    private GeneratedFilesSupport generatedFilesSupport = new GeneratedFilesSupport();
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -67,9 +69,14 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     @Override
+    public void setGeneratedFileSupport(GeneratedFilesSupport support) {
+        this.generatedFilesSupport = support;
+    }
+
+    @Override
     public void execute() {
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(options,
-                frontDeps);
+                frontDeps, generatedFilesSupport);
         mainUpdate.run();
     }
 

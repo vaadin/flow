@@ -4,7 +4,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        For general support from the community, use https://stackoverflow.com/questions/tagged/vaadin (or tag vaadin-flow) or Vaadin discord chat https://discord.gg/MYFq5RTbBn instead.
+        For general support from the community, use https://stackoverflow.com/questions/tagged/vaadin (or tag vaadin-flow) or the Vaadin Forum https://vaadin.com/forum/ instead.
   - type: markdown
     attributes:
       value: |

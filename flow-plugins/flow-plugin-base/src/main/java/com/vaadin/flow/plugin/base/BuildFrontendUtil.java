@@ -45,6 +45,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -145,6 +146,8 @@ public class BuildFrontendUtil {
         Lookup lookup = adapter.createLookup(classFinder);
 
         Options options = new Options(lookup, adapter.npmFolder())
+                .withCleanOldGeneratedFiles(true)
+                .withFrontendHotdeploy(adapter.isFrontendHotdeploy())
                 .withFrontendDirectory(getFrontendDirectory(adapter))
                 .withBuildDirectory(adapter.buildFolder())
                 .withBuildResultFolders(adapter.webpackOutputDirectory(),
@@ -261,8 +264,8 @@ public class BuildFrontendUtil {
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
-            FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
-                    StandardCharsets.UTF_8.name());
+            FileIOUtils.writeIfChanged(token,
+                    JsonUtil.stringify(buildInfo, 2) + "\n");
             // Enable debug to find out problems related with flow modes
 
             if (adapter.isDebugEnabled()) {

@@ -1,15 +1,8 @@
-import { Overlay, OverlayOutsideClickEvent } from '@vaadin/overlay';
-import 'construct-style-sheets-polyfill';
-import { LitElement, PropertyValueMap, TemplateResult, css, html, nothing, render } from 'lit';
+import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
 import { Product, handleLicenseMessage, licenseCheckFailed, licenseInit } from './License';
-import { ComponentReference, deepContains } from './component-util';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
-import { popupStyles } from './styles';
-import './vaadin-dev-tools-info';
-import './vaadin-dev-tools-log';
 import { WebSocketConnection } from './websocket-connection';
 
 /**
@@ -17,7 +10,6 @@ import { WebSocketConnection } from './websocket-connection';
  */
 export interface DevToolsInterface {
   send(command: string, data: any): void;
-  addTab(id: string, tag: string): void;
 }
 export interface MessageHandler {
   handleMessage(message: ServerMessage): boolean;
@@ -60,22 +52,6 @@ export interface DevToolsPlugin {
   init(devToolsInterface: DevToolsInterface): void;
 }
 
-interface Feature {
-  id: string;
-  title: string;
-  moreInfoLink: string;
-  requiresServerRestart: boolean;
-  enabled: boolean;
-}
-
-interface Tab {
-  id: string;
-  title: string;
-  render: (() => TemplateResult) | string;
-  element?: HTMLElement;
-  handleMessage?: MessageHandler;
-}
-
 export enum MessageType {
   LOG = 'log',
   INFORMATION = 'information',
@@ -103,7 +79,6 @@ type DevToolsConf = {
 };
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
-  static MAX_LOG_ROWS = 1000;
   unhandledMessages: ServerMessage[] = [];
   conf: DevToolsConf = { enable: false, url: '', liveReloadPort: -1 };
 
@@ -200,36 +175,6 @@ export class VaadinDevTools extends LitElement {
           max-width: calc(100% - 1rem);
         }
 
-        .dev-tools .dev-tools-icon {
-          flex: none;
-          pointer-events: none;
-          display: inline-block;
-          width: 1rem;
-          height: 1rem;
-          fill: #fff;
-          transition: var(--dev-tools-transition-duration);
-          margin: 0;
-        }
-
-        .dev-tools.active .dev-tools-icon {
-          opacity: 0;
-          position: absolute;
-          transform: scale(0.5);
-        }
-
-        .dev-tools .status-blip {
-          flex: none;
-          display: block;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          z-index: 20001;
-          background: var(--dev-tools-grey-color);
-          position: absolute;
-          top: -1px;
-          right: -1px;
-        }
-
         .dev-tools .status-description {
           overflow: hidden;
           text-overflow: ellipsis;
@@ -240,62 +185,6 @@ export class VaadinDevTools extends LitElement {
           background-color: hsla(var(--dev-tools-red-hsl), 0.15);
           animation: bounce 0.5s;
           animation-iteration-count: 2;
-        }
-
-        .switch {
-          display: inline-flex;
-          align-items: center;
-        }
-
-        .switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-          position: absolute;
-        }
-
-        .switch .slider {
-          display: block;
-          flex: none;
-          width: 28px;
-          height: 18px;
-          border-radius: 9px;
-          background-color: rgba(255, 255, 255, 0.3);
-          transition: var(--dev-tools-transition-duration);
-          margin-right: 0.5rem;
-        }
-
-        .switch:focus-within .slider,
-        .switch .slider:hover {
-          background-color: rgba(255, 255, 255, 0.35);
-          transition: none;
-        }
-
-        .switch input:focus-visible ~ .slider {
-          box-shadow: 0 0 0 2px var(--dev-tools-background-color-active), 0 0 0 4px var(--dev-tools-blue-color);
-        }
-
-        .switch .slider::before {
-          content: '';
-          display: block;
-          margin: 2px;
-          width: 14px;
-          height: 14px;
-          background-color: #fff;
-          transition: var(--dev-tools-transition-duration);
-          border-radius: 50%;
-        }
-
-        .switch input:checked + .slider {
-          background-color: var(--dev-tools-green-color);
-        }
-
-        .switch input:checked + .slider::before {
-          transform: translateX(10px);
-        }
-
-        .switch input:disabled + .slider::before {
-          background-color: var(--dev-tools-grey-color);
         }
 
         .window.hidden {
@@ -350,37 +239,6 @@ export class VaadinDevTools extends LitElement {
           gap: 0.5rem;
         }
 
-        .tab {
-          color: var(--dev-tools-text-color-secondary);
-          font: inherit;
-          font-size: var(--dev-tools-font-size-small);
-          font-weight: 500;
-          line-height: 1;
-          padding: 0.25rem 0.375rem;
-          background: none;
-          border: none;
-          margin: 0;
-          border-radius: 0.25rem;
-          transition: var(--dev-tools-transition-duration);
-        }
-
-        .tab:hover,
-        .tab.active {
-          color: var(--dev-tools-text-color-active);
-        }
-
-        .tab.active {
-          background-color: rgba(255, 255, 255, 0.12);
-        }
-
-        .tab.unreadErrors::after {
-          content: '•';
-          color: hsl(var(--dev-tools-red-hsl));
-          font-size: 1.5rem;
-          position: absolute;
-          transform: translate(0, -50%);
-        }
-
         .ahreflike {
           font-weight: 500;
           color: var(--dev-tools-text-color-secondary);
@@ -408,26 +266,6 @@ export class VaadinDevTools extends LitElement {
         .button:focus,
         .button:hover {
           color: var(--dev-tools-text-color-emphasis);
-        }
-
-        .minimize-button {
-          flex: none;
-          width: 1rem;
-          height: 1rem;
-          color: inherit;
-          background-color: transparent;
-          border: 0;
-          padding: 0;
-          margin: 0 0 0 auto;
-          opacity: 0.8;
-        }
-
-        .minimize-button:hover {
-          opacity: 1;
-        }
-
-        .minimize-button svg {
-          max-width: 100%;
         }
 
         .message.information {
@@ -672,70 +510,6 @@ export class VaadinDevTools extends LitElement {
           display: none;
         }
 
-        .info-tray {
-          padding: 0.75rem;
-          position: relative;
-          flex: auto;
-          overflow: auto;
-          animation: fade-in var(--dev-tools-transition-duration) ease-in;
-          user-select: text;
-        }
-
-        .info-tray dl {
-          margin: 0;
-          display: grid;
-          grid-template-columns: max-content 1fr;
-          column-gap: 0.75rem;
-          position: relative;
-        }
-
-        .info-tray dt {
-          grid-column: 1;
-          color: var(--dev-tools-text-color-emphasis);
-        }
-
-        .info-tray dt:not(:first-child)::before {
-          content: '';
-          width: 100%;
-          position: absolute;
-          height: 1px;
-          background-color: rgba(255, 255, 255, 0.1);
-          margin-top: -0.375rem;
-        }
-
-        .info-tray dd {
-          grid-column: 2;
-          margin: 0;
-        }
-
-        .info-tray :is(dt, dd):not(:last-child) {
-          margin-bottom: 0.75rem;
-        }
-
-        .info-tray dd + dd {
-          margin-top: -0.5rem;
-        }
-
-        .info-tray .live-reload-status::before {
-          content: '•';
-          color: var(--status-color);
-          width: 0.75rem;
-          display: inline-block;
-          font-size: 1rem;
-          line-height: 0.5rem;
-        }
-
-        .info-tray .copy {
-          position: fixed;
-          z-index: 1;
-          top: 0.5rem;
-          right: 0.5rem;
-        }
-
-        .info-tray .switch {
-          vertical-align: -4px;
-        }
-
         @keyframes slideIn {
           from {
             transform: translateX(100%);
@@ -791,7 +565,6 @@ export class VaadinDevTools extends LitElement {
           }
         }
       `,
-      popupStyles
     ];
   }
 
@@ -821,12 +594,6 @@ export class VaadinDevTools extends LitElement {
     return shown !== null && shown.includes(persistentId);
   }
 
-  @property({ type: Boolean, attribute: false })
-  expanded: boolean = false;
-
-  @property({ type: Array, attribute: false })
-  messages: Message[] = [];
-
   @property({ type: String, attribute: false })
   splashMessage?: string;
 
@@ -838,22 +605,6 @@ export class VaadinDevTools extends LitElement {
 
   @property({ type: String, attribute: false })
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
-
-  @state()
-  private tabs: Tab[] = [
-    { id: 'log', title: 'Log', render: 'vaadin-dev-tools-log' },
-    { id: 'info', title: 'Info', render: 'vaadin-dev-tools-info' },
-    { id: 'features', title: 'Feature Flags', render: () => this.renderFeatures() }
-  ];
-
-  @state()
-  private activeTab: string = 'log';
-
-  @state()
-  private features: Feature[] = [];
-
-  @state()
-  unreadErrors = false;
 
   @query('.window')
   private root!: HTMLElement;
@@ -904,7 +655,7 @@ export class VaadinDevTools extends LitElement {
       );
       return;
     }
-    const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
+    const onConnectionError = (msg: string) => console.error(msg);
     const onReload = () => {
       this.showSplashMessage('Reloading…');
       const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
@@ -916,7 +667,6 @@ export class VaadinDevTools extends LitElement {
     const onUpdate = (path: string, content: string) => {
       let styleTag = document.head.querySelector(`style[data-file-path='${path}']`);
       if (styleTag) {
-        this.log(MessageType.INFORMATION, 'Hot update of ' + path);
         styleTag.textContent = content;
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       } else {
@@ -926,7 +676,6 @@ export class VaadinDevTools extends LitElement {
 
     const frontendConnection = new WebSocketConnection(this.getDedicatedWebSocketUrl());
     frontendConnection.onHandshake = () => {
-      this.log(MessageType.LOG, 'Vaadin development mode initialized');
       if (!VaadinDevTools.isActive) {
         frontendConnection.setActive(false);
       }
@@ -953,14 +702,6 @@ export class VaadinDevTools extends LitElement {
       this.javaConnection.onStatusChange = (status) => {
         this.javaStatus = status;
       };
-      this.javaConnection.onHandshake = () => {
-        if (this.conf.backend) {
-          this.log(
-            MessageType.INFORMATION,
-            `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.conf.backend]}`
-          );
-        }
-      };
     }
 
     if (!this.conf.backend) {
@@ -979,15 +720,7 @@ export class VaadinDevTools extends LitElement {
     return handler.handleMessage && handler.handleMessage.call(tabElement, message);
   }
   handleFrontendMessage(message: ServerMessage) {
-    for (const tab of this.tabs) {
-      if (tab.element && this.tabHandleMessage(tab.element, message)) {
-        // Fully handled
-        return;
-      }
-    }
-
     if (message.command === 'featureFlags') {
-      this.features = message.data.features as Feature[];
     } else if (handleLicenseMessage(message)) {
     } else {
       this.unhandledMessages.push(message);
@@ -1028,7 +761,6 @@ export class VaadinDevTools extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.catchErrors();
 
     this.conf = (window.Vaadin as any).devToolsConf || this.conf;
     // when focus or clicking anywhere, move the splash message to the message tray
@@ -1055,26 +787,6 @@ export class VaadinDevTools extends LitElement {
     windowAny.Vaadin = windowAny.Vaadin || {};
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
 
-    // Prevent application overlays from closing when interacting with the dev tools
-    document.documentElement.addEventListener('vaadin-overlay-outside-click', (event: Event) => {
-      // We don't want to prevent closing the overlay if the overlay owner is
-      // part of the dev tools, for example when using the color picker of the
-      // theme editor
-      const outsideClickEvent = event as OverlayOutsideClickEvent;
-      const overlayOwner = (outsideClickEvent.target as Overlay).owner;
-      const containsOverlayOwner = overlayOwner ? deepContains(this, overlayOwner) : false;
-
-      if (containsOverlayOwner) {
-        return;
-      }
-      // Otherwise prevent closing the overlay if click is within the dev tools
-      const sourceEvent = outsideClickEvent.detail.sourceEvent;
-      const composedPath = sourceEvent.composedPath();
-      if (composedPath.includes(this)) {
-        event.preventDefault();
-      }
-    });
-
     const anyVaadin = window.Vaadin as any;
     if (anyVaadin.devToolsPlugins) {
       Array.from(anyVaadin.devToolsPlugins as DevToolsPlugin[]).forEach((plugin) => this.initPlugin(plugin));
@@ -1088,9 +800,6 @@ export class VaadinDevTools extends LitElement {
   async initPlugin(plugin: DevToolsPlugin) {
     const devTools = this;
     plugin.init({
-      addTab: (title, tag) => {
-        devTools.tabs.push({ id: title, title, render: tag });
-      },
       send: function (command: string, data: any): void {
         devTools.frontendConnection!.send(command, data);
       }
@@ -1099,21 +808,6 @@ export class VaadinDevTools extends LitElement {
 
   format(o: any): string {
     return o.toString();
-  }
-  catchErrors() {
-    // Process stored messages
-    const queue = (window as any).Vaadin.ConsoleErrors as any[];
-    if (queue) {
-      queue.forEach((args: any[]) => {
-        this.log(MessageType.ERROR, args.map((o) => this.format(o)).join(' '));
-      });
-    }
-    // Install new handler that immediately processes messages
-    (window as any).Vaadin.ConsoleErrors = {
-      push: (args: any[]) => {
-        this.log(MessageType.ERROR, args.map((o) => this.format(o)).join(' '));
-      }
-    };
   }
 
   disconnectedCallback() {
@@ -1124,32 +818,18 @@ export class VaadinDevTools extends LitElement {
     super.disconnectedCallback();
   }
 
-  toggleExpanded() {
-    this.notifications.slice().forEach((notification) => this.dismissNotification(notification.id));
-    this.expanded = !this.expanded;
-    if (this.expanded) {
-      this.root.focus();
-    }
-  }
 
   showSplashMessage(msg: string | undefined) {
     this.splashMessage = msg;
     if (this.splashMessage) {
-      if (this.expanded) {
-        this.demoteSplashMessage();
-      } else {
         // automatically move notification to message tray after a certain amount of time
         setTimeout(() => {
           this.demoteSplashMessage();
         }, VaadinDevTools.AUTO_DEMOTE_NOTIFICATION_DELAY);
-      }
     }
   }
 
   demoteSplashMessage() {
-    if (this.splashMessage) {
-      this.log(MessageType.LOG, this.splashMessage);
-    }
     this.showSplashMessage(undefined);
   }
 
@@ -1159,35 +839,6 @@ export class VaadinDevTools extends LitElement {
     } else {
       licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
     }
-  }
-
-  log(type: MessageType, message: string, details?: string, link?: string, dontShowAgainMessage?: string) {
-    const id = this.nextMessageId;
-    this.nextMessageId += 1;
-    this.messages.push({
-      id,
-      type,
-      message,
-      details,
-      link,
-      dontShowAgain: false,
-      dontShowAgainMessage,
-      deleted: false
-    });
-    while (this.messages.length > VaadinDevTools.MAX_LOG_ROWS) {
-      this.messages.shift();
-    }
-    this.requestUpdate();
-    this.updateComplete.then(() => {
-      // Scroll into view
-      const lastMessage = this.renderRoot.querySelector('.message-tray .message:last-child');
-      if (this.expanded && lastMessage) {
-        setTimeout(() => lastMessage.scrollIntoView({ behavior: 'smooth' }), this.transitionDuration);
-        this.unreadErrors = false;
-      } else if (type === MessageType.ERROR) {
-        this.unreadErrors = true;
-      }
-    });
   }
 
   showNotification(
@@ -1226,8 +877,6 @@ export class VaadinDevTools extends LitElement {
         }, VaadinDevTools.AUTO_DEMOTE_NOTIFICATION_DELAY);
       }
       this.requestUpdate();
-    } else {
-      this.log(type, message, details, link);
     }
   }
 
@@ -1248,7 +897,6 @@ export class VaadinDevTools extends LitElement {
       }
 
       notification.deleted = true;
-      this.log(notification.type, notification.message, notification.details, notification.link);
 
       // give some time for the animation
       setTimeout(() => {
@@ -1289,20 +937,6 @@ export class VaadinDevTools extends LitElement {
     window.sessionStorage.setItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE, yes ? 'true' : 'false');
   }
 
-  getStatusColor(status: ConnectionStatus | undefined) {
-    if (status === ConnectionStatus.ACTIVE) {
-      return 'var(--dev-tools-green-color)';
-    } else if (status === ConnectionStatus.INACTIVE) {
-      return 'var(--dev-tools-grey-color)';
-    } else if (status === ConnectionStatus.UNAVAILABLE) {
-      return 'var(--dev-tools-yellow-hsl)';
-    } else if (status === ConnectionStatus.ERROR) {
-      return 'var(--dev-tools-red-color)';
-    } else {
-      return 'none';
-    }
-  }
-
   /* eslint-disable lit/no-template-arrow */
   renderMessage(messageObject: Message) {
     return html`
@@ -1336,207 +970,14 @@ export class VaadinDevTools extends LitElement {
 
   /* eslint-disable lit/no-template-map */
   render() {
-    return html` <div
-        class="window ${this.expanded && !this.componentPickActive ? 'visible' : 'hidden'}"
-        tabindex="0"
-        @keydown=${(e: KeyboardEvent) => e.key === 'Escape' && this.expanded && this.toggleExpanded()}
-      >
-        <div class="window-toolbar">
-          ${this.tabs.map(
-            (tab) =>
-              html`<button
-                class=${classMap({
-                  tab: true,
-                  active: this.activeTab === tab.id,
-                  unreadErrors: tab.id === 'log' && this.unreadErrors
-                })}
-                id="${tab.id}"
-                @click=${() => {
-                  const currentTab = this.tabs.find((tab) => tab.id === this.activeTab);
-                  if (currentTab && currentTab.element) {
-                    const currentTabElement: any =
-                      typeof currentTab.render === 'function'
-                        ? currentTab.element!.firstElementChild
-                        : currentTab.element;
-                    const deactivateMethod = currentTabElement?.deactivate;
-                    if (deactivateMethod) {
-                      deactivateMethod.call(currentTabElement);
-                    }
-                  }
-                  this.activeTab = tab.id;
-                  const tabElement: any =
-                    typeof tab.render === 'function' ? tab.element!.firstElementChild : tab.element;
-                  const activateMethod = tabElement.activate;
-                  if (activateMethod) {
-                    activateMethod.call(tabElement);
-                  }
-                }}
-              >
-                ${tab.title}
-              </button> `
-          )}
-          <button class="minimize-button" title="Minimize" @click=${() => this.toggleExpanded()}>
-            <svg fill="none" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
-              <g fill="#fff" opacity=".8">
-                <path
-                  d="m7.25 1.75c0-.41421.33579-.75.75-.75h3.25c2.0711 0 3.75 1.67893 3.75 3.75v6.5c0 2.0711-1.6789 3.75-3.75 3.75h-6.5c-2.07107 0-3.75-1.6789-3.75-3.75v-3.25c0-.41421.33579-.75.75-.75s.75.33579.75.75v3.25c0 1.2426 1.00736 2.25 2.25 2.25h6.5c1.2426 0 2.25-1.0074 2.25-2.25v-6.5c0-1.24264-1.0074-2.25-2.25-2.25h-3.25c-.41421 0-.75-.33579-.75-.75z"
-                />
-                <path
-                  d="m2.96967 2.96967c.29289-.29289.76777-.29289 1.06066 0l5.46967 5.46967v-2.68934c0-.41421.33579-.75.75-.75.4142 0 .75.33579.75.75v4.5c0 .4142-.3358.75-.75.75h-4.5c-.41421 0-.75-.3358-.75-.75 0-.41421.33579-.75.75-.75h2.68934l-5.46967-5.46967c-.29289-.29289-.29289-.76777 0-1.06066z"
-                />
-              </g>
-            </svg>
-          </button>
-        </div>
-        <div id="tabContainer"></div>
-      </div>
-
+    return html` 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
-      <vaadin-dev-tools-component-picker
-        .active=${this.componentPickActive}
-        @component-picker-opened=${() => {
-          this.componentPickActive = true;
-        }}
-        @component-picker-closed=${() => {
-          this.componentPickActive = false;
-        }}
-      ></vaadin-dev-tools-component-picker>
       <div
-        style="display: var(--dev-tools-button-display, none)"
-        class="dev-tools ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
-        @click=${() => this.toggleExpanded()}
+        style="display: none"
+        class="dev-tools ${this.splashMessage ? 'active' : ''}"
       >
-        ${this.unreadErrors
-          ? html`<svg
-              fill="none"
-              height="16"
-              viewBox="0 0 16 16"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
-              xmlns:xlink="http://www.w3.org/1999/xlink"
-              class="dev-tools-icon error"
-            >
-              <clipPath id="a"><path d="m0 0h16v16h-16z" /></clipPath>
-              <g clip-path="url(#a)">
-                <path
-                  d="m6.25685 2.09894c.76461-1.359306 2.72169-1.359308 3.4863 0l5.58035 9.92056c.7499 1.3332-.2135 2.9805-1.7432 2.9805h-11.1606c-1.529658 0-2.4930857-1.6473-1.743156-2.9805z"
-                  fill="#ff5c69"
-                />
-                <path
-                  d="m7.99699 4c-.45693 0-.82368.37726-.81077.834l.09533 3.37352c.01094.38726.32803.69551.71544.69551.38741 0 .70449-.30825.71544-.69551l.09533-3.37352c.0129-.45674-.35384-.834-.81077-.834zm.00301 8c.60843 0 1-.3879 1-.979 0-.5972-.39157-.9851-1-.9851s-1 .3879-1 .9851c0 .5911.39157.979 1 .979z"
-                  fill="#fff"
-                />
-              </g>
-            </svg>`
-          : html`<svg
-              fill="none"
-              height="17"
-              viewBox="0 0 16 17"
-              width="16"
-              xmlns="http://www.w3.org/2000/svg"
-              class="dev-tools-icon logo"
-            >
-              <g fill="#fff">
-                <path
-                  d="m8.88273 5.97926c0 .04401-.0032.08898-.00801.12913-.02467.42848-.37813.76767-.8117.76767-.43358 0-.78704-.34112-.81171-.76928-.00481-.04015-.00801-.08351-.00801-.12752 0-.42784-.10255-.87656-1.14434-.87656h-3.48364c-1.57118 0-2.315271-.72849-2.315271-2.21758v-1.26683c0-.42431.324618-.768314.748261-.768314.42331 0 .74441.344004.74441.768314v.42784c0 .47924.39576.81265 1.11293.81265h3.41538c1.5542 0 1.67373 1.156 1.725 1.7679h.03429c.05095-.6119.17048-1.7679 1.72468-1.7679h3.4154c.7172 0 1.0145-.32924 1.0145-.80847l-.0067-.43202c0-.42431.3227-.768314.7463-.768314.4234 0 .7255.344004.7255.768314v1.26683c0 1.48909-.6181 2.21758-2.1893 2.21758h-3.4836c-1.04182 0-1.14437.44872-1.14437.87656z"
-                />
-                <path
-                  d="m8.82577 15.1648c-.14311.3144-.4588.5335-.82635.5335-.37268 0-.69252-.2249-.83244-.5466-.00206-.0037-.00412-.0073-.00617-.0108-.00275-.0047-.00549-.0094-.00824-.0145l-3.16998-5.87318c-.08773-.15366-.13383-.32816-.13383-.50395 0-.56168.45592-1.01879 1.01621-1.01879.45048 0 .75656.22069.96595.6993l2.16882 4.05042 2.17166-4.05524c.2069-.47379.513-.69448.9634-.69448.5603 0 1.0166.45711 1.0166 1.01879 0 .17579-.0465.35029-.1348.50523l-3.1697 5.8725c-.00503.0096-.01006.0184-.01509.0272-.00201.0036-.00402.0071-.00604.0106z"
-                />
-              </g>
-            </svg>`}
-
-        <span
-          class="status-blip"
-          style="background: linear-gradient(to right, ${this.getStatusColor(
-            this.frontendStatus
-          )} 50%, ${this.getStatusColor(this.javaStatus)} 50%)"
-        ></span>
         ${this.splashMessage ? html`<span class="status-description">${this.splashMessage}</span></div>` : nothing}
       </div>`;
-  }
-
-  protected updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>): void {
-    super.updated(_changedProperties);
-
-    const tabContainer = this.renderRoot.querySelector('#tabContainer')! as HTMLElement;
-
-    const newTabElements: HTMLElement[] = [];
-
-    // Ensure each tab has an element, either a container <div> for render functions or the requested tag
-    this.tabs.forEach((tab) => {
-      if (tab.element) {
-        return;
-      }
-
-      if (typeof tab.render === 'function') {
-        tab.element = document.createElement('div');
-      } else {
-        tab.element = document.createElement(tab.render);
-        (tab.element as any)._devTools = this;
-      }
-      newTabElements.push(tab.element);
-    });
-
-    // Ensure tabs are in the correct order in the tab container
-    if (tabContainer?.childElementCount !== this.tabs.length) {
-      for (let i = 0; i < this.tabs.length; i++) {
-        const tab = this.tabs[i];
-        if (tabContainer.childElementCount > i && tabContainer.children[i] === tab.element) {
-          // ok
-        } else {
-          // insert at i
-          tabContainer.insertBefore(tab.element!, tabContainer.children[i]);
-        }
-      }
-      // Remove extra elements
-      while (tabContainer?.childElementCount > this.tabs.length) {
-        tabContainer.lastElementChild?.remove();
-      }
-    }
-
-    // Render or request an update for each tab
-    for (const tab of this.tabs) {
-      if (typeof tab.render === 'function') {
-        render(tab.render(), tab.element!);
-      } else if ((tab.element as any).requestUpdate) {
-        // To re-render log when messages are updated
-        (tab.element as any).requestUpdate();
-      }
-      const active = tab.id === this.activeTab;
-      tab.element!.hidden = !active;
-    }
-
-    // Send any unhandled messages
-    for (const tabElement of newTabElements) {
-      for (var i = 0; i < this.unhandledMessages.length; i++) {
-        if (this.tabHandleMessage(tabElement, this.unhandledMessages[i])) {
-          this.unhandledMessages.splice(i, 1);
-          i--;
-        }
-      }
-    }
-  }
-
-  private renderFeatures() {
-    return html`<div class="features-tray">
-      ${this.features.map(
-        (feature) => html`<div class="feature">
-          <label class="switch">
-            <input
-              class="feature-toggle"
-              id="feature-toggle-${feature.id}"
-              type="checkbox"
-              ?checked=${feature.enabled}
-              @change=${(e: InputEvent) => this.toggleFeatureFlag(e, feature)}
-            />
-            <span class="slider"></span>
-            ${feature.title}
-          </label>
-          <a class="ahreflike" href="${feature.moreInfoLink}" target="_blank">Learn more</a>
-        </div>`
-      )}
-    </div>`;
   }
 
   setJavaLiveReloadActive(active: boolean) {
@@ -1548,19 +989,4 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  toggleFeatureFlag(e: Event, feature: Feature) {
-    const enabled = (e.target! as HTMLInputElement).checked;
-    if (this.frontendConnection) {
-      this.frontendConnection.send('setFeature', { featureId: feature.id, enabled });
-      this.showNotification(
-        MessageType.INFORMATION,
-        `“${feature.title}” ${enabled ? 'enabled' : 'disabled'}`,
-        feature.requiresServerRestart ? 'This feature requires a server restart' : undefined,
-        undefined,
-        `feature${feature.id}${enabled ? 'Enabled' : 'Disabled'}`
-      );
-    } else {
-      this.log(MessageType.ERROR, `Unable to toggle feature ${feature.title}: No server connection available`);
-    }
-  }
 }

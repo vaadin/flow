@@ -725,9 +725,13 @@ public class StateTreeTest {
         tree.collectChanges(c -> {
         });
         Assert.assertEquals(0, tree.collectDirtyNodes().size());
+        Assert.assertTrue(node2.isClientSideInitialized());
+        Assert.assertTrue(node2.isAttached());
 
         tree.getRootNode().prepareForResync();
 
+        Assert.assertFalse(node2.isClientSideInitialized());
+        Assert.assertTrue(node2.isAttached());
         Assert.assertEquals(1, attachCount.get());
         Assert.assertEquals(1, detachCount.get());
 
@@ -743,6 +747,16 @@ public class StateTreeTest {
         Assert.assertTrue(
                 remaining.hasFeature(PushConfigurationParametersMap.class));
 
+        tree.collectChanges(change -> {
+        });
+        Assert.assertTrue(node2.isClientSideInitialized());
+
+        // Make sure detach listener is called when a resynced node is
+        // eventually detached
+        // In practice checks that node2.hasBeenAttached = true
+        node2.setParent(null);
+        Assert.assertEquals("Detach listener was not called on final detach", 2,
+                detachCount.get());
     }
 
     @Test

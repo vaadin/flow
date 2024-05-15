@@ -176,23 +176,29 @@ public class FrontendUtilsTest {
                   ];
             """;
 
-    private static final String ROUTES_CONTENT_WITH_BUILD_ROUTE_TSX = """
-                import { buildRoute } from "Frontend/generated/flow/Flow";
-                export const routes = buildRoute();
+    private static final String ROUTES_CONTENT_WITH_WITH_FILE_ROUTES = """
+                import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                import Flow from 'Frontend/generated/flow/Flow';
+                import fileRoutes from 'Frontend/generated/file-routes';
+
+                export const { router, routes } = new RouterConfigurationBuilder()
+                    .withFileRoutes(fileRoutes)
+                    .withFallback(Flow)
+                    .build();
             """;
 
-    private static final String ROUTES_CONTENT_WITH_BUILD_ROUTE_WITH_ARGS_TSX = """
-                import { buildRoute } from "Frontend/generated/flow/Flow";
-                let routing: RouteObject[] = [
+    private static final String ROUTES_CONTENT_WITH_WITH_REACT_ROUTES = """
+                import { RouterConfigurationBuilder } from '@vaadin/hilla-file-router/runtime.js';
+                import Flow from 'Frontend/generated/flow/Flow';
+
+                export const { router, routes } = new RouterConfigurationBuilder()
+                    .withReactRoutes([
                       {
                           element: <MainLayout />,
-                          handle: { title: 'Hilla CRM' },
-                          children: [
-                              ...serverSideRoutes
-                          ],
+                          handle: { title: 'Hilla CRM' }
                       },
-                  ];
-                export const routes = buildRoute(routing, routing[0].children);
+                    ])
+                    .withFallback(Flow).build();
             """;
 
     private static final String HILLA_VIEW_TSX = """
@@ -634,29 +640,19 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void isHillaViewsUsed_buildRouteTsxWithoutArgs_false()
-            throws IOException {
+    public void isHillaViewsUsed_withFileRoutes_true() throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
-                ROUTES_CONTENT_WITH_BUILD_ROUTE_TSX);
-        Assert.assertFalse("hilla-views are not expected",
+                ROUTES_CONTENT_WITH_WITH_FILE_ROUTES);
+        Assert.assertTrue("hilla-views are expected, as withFileRoutes is used",
                 FrontendUtils.isHillaViewsUsed(frontend));
     }
 
     @Test
-    public void isHillaViewsUsed_buildRouteTsxWithoutArgsFSViewExists_false()
-            throws IOException {
+    public void isHillaViewsUsed_withReactRoutes_true() throws IOException {
         File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
-                ROUTES_CONTENT_WITH_BUILD_ROUTE_TSX, true);
-        Assert.assertTrue("hilla-views are expected",
-                FrontendUtils.isHillaViewsUsed(frontend));
-    }
-
-    @Test
-    public void isHillaViewsUsed_buildRouteWithArgsTsx_true()
-            throws IOException {
-        File frontend = prepareFrontendForRoutesFile(FrontendUtils.ROUTES_TSX,
-                ROUTES_CONTENT_WITH_BUILD_ROUTE_WITH_ARGS_TSX);
-        Assert.assertTrue("hilla-views are expected",
+                ROUTES_CONTENT_WITH_WITH_REACT_ROUTES);
+        Assert.assertTrue(
+                "hilla-views are expected, as withReactRoutes is used",
                 FrontendUtils.isHillaViewsUsed(frontend));
     }
 

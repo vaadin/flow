@@ -17,6 +17,7 @@ package com.vaadin.flow.spring.security.stateless;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -191,7 +192,6 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
                     .convert(jwt);
             context.setAuthentication(authentication);
         }
-
         return context;
     }
 

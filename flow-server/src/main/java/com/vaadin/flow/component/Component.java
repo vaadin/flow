@@ -457,10 +457,11 @@ public abstract class Component
     /**
      * Called when the component is attached to a UI.
      * <p>
-     * The default implementation does nothing.
-     * <p>
      * This method is invoked before the {@link AttachEvent} is fired for the
      * component.
+     * </p>
+     * Make sure to call <code>super.onAttach</code> when overriding this
+     * method.
      *
      * @param attachEvent
      *            the attach event
@@ -472,10 +473,11 @@ public abstract class Component
     /**
      * Called when the component is detached from a UI.
      * <p>
-     * The default implementation does nothing.
-     * <p>
      * This method is invoked before the {@link DetachEvent} is fired for the
      * component.
+     * <p>
+     * Make sure to call <code>super.onDetach</code> when overriding this
+     * method.
      *
      * @param detachEvent
      *            the detach event
@@ -687,9 +689,7 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(String key, Locale locale, Object... params) {
-        return LocaleUtil.getI18NProvider()
-                .map(i18n -> i18n.getTranslation(key, locale, params))
-                .orElseGet(() -> "!{" + key + "}!");
+        return getTranslation(locale, key, params);
     }
 
     /**
@@ -711,6 +711,25 @@ public abstract class Component
      */
     @Deprecated
     public String getTranslation(Object key, Locale locale, Object... params) {
+        return getTranslation(locale, key, params);
+    }
+
+    /**
+     * Get the translation for key with given locale.
+     * <p>
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
+     *
+     * @param locale
+     *            locale to use
+     * @param key
+     *            translation key
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     */
+    public String getTranslation(Locale locale, String key, Object... params) {
         return LocaleUtil.getI18NProvider()
                 .map(i18n -> i18n.getTranslation(key, locale, params))
                 .orElseGet(() -> "!{" + key + "}!");
@@ -731,27 +750,10 @@ public abstract class Component
      *            parameters used in translation string
      * @return translation for key if found
      */
-    public String getTranslation(Locale locale, String key, Object... params) {
-        return getTranslation(key, locale, params);
-    }
-
-    /**
-     * Get the translation for key with given locale.
-     * <p>
-     * The method never returns a null. If there is no {@link I18NProvider}
-     * available or no translation for the {@code key} it returns an exception
-     * string e.g. '!{key}!'.
-     *
-     * @param locale
-     *            locale to use
-     * @param key
-     *            translation key
-     * @param params
-     *            parameters used in translation string
-     * @return translation for key if found
-     */
     public String getTranslation(Locale locale, Object key, Object... params) {
-        return getTranslation(key, locale, params);
+        return LocaleUtil.getI18NProvider()
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 
     /**

@@ -249,6 +249,7 @@ export class Flow {
           } else if (cmd && cmd.redirect && redirectContext) {
             resolve(cmd.redirect(redirectContext.pathname));
           } else {
+            cmd?.continue?.();
             this.container.style.display = '';
             resolve(this.container);
           }

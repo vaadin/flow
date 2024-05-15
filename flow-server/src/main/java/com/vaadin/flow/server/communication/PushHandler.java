@@ -390,8 +390,14 @@ public class PushHandler {
         // In development mode we may have a live-reload push channel
         // that should be closed.
 
-        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
-                .getLiveReloadFromService(service);
+        Optional<BrowserLiveReload> liveReload = Optional.empty();
+        try {
+            liveReload = BrowserLiveReloadAccessor
+                    .getLiveReloadFromService(service);
+        } catch (IllegalStateException e) {
+            getLogger().debug(
+                    "Could not get live-reload push channel to close it.", e);
+        }
         if (isDebugWindowConnection(resource) && liveReload.isPresent()
                 && liveReload.get().isLiveReload(resource)) {
             liveReload.get().onDisconnect(resource);

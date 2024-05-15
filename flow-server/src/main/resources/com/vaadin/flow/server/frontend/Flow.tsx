@@ -16,12 +16,11 @@
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import React, { useCallback, useEffect, useRef } from "react";
 import {
+    useBlocker,
     useLocation,
     useNavigate,
-    RouteObject, useBlocker, createBrowserRouter
 } from "react-router-dom";
-//%viewsJsImport%
-//%toReactRouterImport%
+import { routes } from "%routesJsImportPath%";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -163,7 +162,7 @@ function nop() {
 
 type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>>;
 
-export default function Flow() {
+function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const navigate = useNavigate();
     const blocker = useBlocker(true);
@@ -231,6 +230,7 @@ export default function Flow() {
     }, [blocker.state, pathname, search]);
     return <output ref={ref} />;
 }
+Flow.type = 'FlowContainer'; // This is for copilot to recognize this
 
 export const serverSideRoutes = [
     { path: '/*', element: <Flow/> },
@@ -267,63 +267,6 @@ interface Properties {
     [key: string]: string;
 }
 
-type PopstateEventListener = (event: PopStateEvent) => boolean | void;
-
-export function createRouter(routes: RouteObject[], opts: Parameters<typeof createBrowserRouter>[1] = {}) {
-    const originalWindow = opts?.window ?? window;
-
-    const popstateListeners = new WeakMap<PopstateEventListener, PopstateEventListener>();
-
-    function ignoreVaadinPopstate(eventListener: PopstateEventListener): PopstateEventListener {
-        return function (this: EventTarget, event: PopStateEvent) {
-            if (event.state === 'vaadin-router-ignore') {
-                return;
-            }
-            return eventListener.call(this, event);
-        }
-    }
-
-    function addEventListener(type: string, eventListener: EventListener, options?: boolean | AddEventListenerOptions) {
-        let listener = eventListener;
-        if (type === 'popstate') {
-            if (popstateListeners.has(eventListener)) {
-                listener = popstateListeners.get(eventListener) as EventListener;
-            } else {
-                listener = ignoreVaadinPopstate(eventListener) as EventListener;
-                popstateListeners.set(eventListener, listener);
-            }
-        }
-
-        originalWindow.addEventListener(type, listener, options);
-    }
-
-    function removeEventListener(type: string, eventListener: EventListener, options?: boolean | EventListenerOptions) {
-        let listener = eventListener;
-        if (type === 'popstate' && popstateListeners.has(eventListener)) {
-            listener = popstateListeners.get(eventListener) as EventListener;
-            popstateListeners.delete(eventListener);
-        }
-
-        originalWindow.removeEventListener(type, listener, options);
-    }
-
-    const patchedWindow = new Proxy(originalWindow, {
-        get(target: Window, name: string | symbol) {
-            switch (name) {
-                case 'addEventListener':
-                    return addEventListener;
-                case 'removeEventListener':
-                    return removeEventListener;
-                default:
-                    const value: unknown = Reflect.get(target, name);
-                    return typeof value === "function" ? value.bind(target) : value;
-            }
-        }
-    });
-
-    return createBrowserRouter(routes, {...opts, window: patchedWindow});
-}
-
 /**
  * Load WebComponent script and create a React element for the WebComponent.
  *
@@ -332,7 +275,7 @@ export function createRouter(routes: RouteObject[], opts: Parameters<typeof crea
  * @param onload optional callback to be called for script onload
  * @param onerror optional callback for error loading the script
  */
-export const createWebComponent = (tag: string, props?: Properties, onload?: () => void, onerror?: (err:any) => void) => {
+export const reactElement = (tag: string, props?: Properties, onload?: () => void, onerror?: (err:any) => void) => {
     loadComponentScript(tag).then(() => onload?.(), (err) => {
         if(onerror) {
             onerror(err);
@@ -347,25 +290,4 @@ export const createWebComponent = (tag: string, props?: Properties, onload?: () 
     return React.createElement(tag);
 };
 
-/**
- * Build routes for the application. Combines server side routes and FS routes.
- *
- * @param routes optional routes are for adding own route definition, giving routes will skip FS routes
- * @param serverSidePosition optional position where server routes should be put.
-  *                          If non given they go to the root of the routes [].
- *
- * @returns RouteObject[] with combined routes
- */
-export const buildRoute = (routes?: RouteObject[], serverSidePosition?: RouteObject[]): RouteObject[] => {
-    let combinedRoutes = [] as RouteObject[];
-    //%buildRouteFunction%
-    if(serverSidePosition) {
-        serverSidePosition.push(...serverSideRoutes);
-    } else {
-        combinedRoutes.push(...serverSideRoutes);
-    }
-    if(routes) {
-        combinedRoutes.push(...routes);
-    }
-    return combinedRoutes;
-};
+export default Flow;

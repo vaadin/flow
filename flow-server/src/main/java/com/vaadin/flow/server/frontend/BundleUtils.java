@@ -199,12 +199,34 @@ public final class BundleUtils {
                 return;
             }
         }
-        final URL resource = options.getClassFinder()
-                .getResource(DEV_BUNDLE_JAR_PATH + packageLockFile);
+        boolean hillaUsed = FrontendUtils.isHillaUsed(
+                options.getFrontendDirectory(), options.getClassFinder());
+        URL resource = null;
+        if (hillaUsed) {
+            resource = options.getClassFinder().getResource(
+                    DEV_BUNDLE_JAR_PATH + "hybrid-" + packageLockFile);
+        }
+        if (resource == null) {
+            // If Hilla is in used but the hybrid lock file is not found in the
+            // dev-bundle, fallback to the standard.
+            // Could happen if Flow, dev-bundle and Vaadin maven plugin are not
+            // in sync because of project configuration.
+            if (hillaUsed) {
+                getLogger().debug(
+                        "The '{}' template for hybrid application could not be found in dev-bundle JAR. Fallback to standard template.",
+                        packageLockFile);
+            }
+            resource = options.getClassFinder()
+                    .getResource(DEV_BUNDLE_JAR_PATH + packageLockFile);
+        }
         if (resource != null) {
             FileUtils.write(packageLock,
                     IOUtils.toString(resource, StandardCharsets.UTF_8),
                     StandardCharsets.UTF_8);
+        } else {
+            getLogger().debug(
+                    "The '{}' file cannot be created because the dev-bundle JAR does not contain a suitable template.",
+                    packageLockFile);
         }
     }
 }

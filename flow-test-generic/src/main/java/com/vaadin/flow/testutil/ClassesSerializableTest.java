@@ -161,6 +161,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.JavaScriptBootstrapHandler(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.menu\\.MenuRegistry(\\$.*)?",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PathLookup",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ErrorNavigationTargetInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.RouteRegistryInitializer",
@@ -219,6 +220,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractUpdateImports",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractFileGeneratorFallibleCommand",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.GeneratedFilesSupport",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.Task.*",
