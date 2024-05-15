@@ -16,10 +16,14 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -29,6 +33,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -983,6 +988,45 @@ public abstract class AbstractNavigationStateRenderer
                     cache.remove(windowName);
                 }
             });
+        }
+    }
+
+    /**
+     * Removes preserved component cache for an inactive UI.
+     *
+     * @param inactiveUI
+     *            the inactive UI
+     * @throws IllegalStateException
+     *             if the UI is not in closing state
+     */
+    public static void purgeInactiveUIPreservedChainCache(UI inactiveUI) {
+        if (!inactiveUI.isClosing()) {
+            throw new IllegalStateException(
+                    "Cannot purge preserved chain cache for an active UI");
+        }
+        final VaadinSession session = inactiveUI.getSession();
+        final PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
+        if (cache != null && !cache.isEmpty()) {
+            StateNode uiNode = inactiveUI.getElement().getNode();
+            Set<String> inactiveWindows = cache.entrySet().stream()
+                    .filter(e -> {
+                        ArrayList<HasElement> chain = e.getValue().getSecond();
+                        // chain is never empty
+                        StateNode chainNode = chain.get(0).getElement()
+                                .getNode();
+                        while (chainNode.getParent() != null) {
+                            chainNode = chainNode.getParent();
+                        }
+                        return uiNode == chainNode;
+                    }).map(Map.Entry::getKey).collect(Collectors.toSet());
+            if (!inactiveWindows.isEmpty()) {
+                LoggerFactory.getLogger(AbstractNavigationStateRenderer.class)
+                        .debug("Removing preserved chain cache for inactive UI {} on VaadinSession {} (windows: {})",
+                                inactiveUI.getUIId(),
+                                session.getSession().getId(), inactiveWindows);
+            }
+            inactiveWindows.forEach(cache::remove);
         }
     }
 
