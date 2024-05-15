@@ -83,6 +83,10 @@ public class FeatureFlags implements Serializable {
             "Internationalization plugin for Copilot", "copilotI18n",
             "https://vaadin.com/docs/latest/tools", false, null);
 
+    public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
+            "Hilla Full-stack Signals", "fullstack-signals",
+            "https://github.com/vaadin/hilla/discussions/1902", true, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -108,6 +112,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(WEB_PUSH));
         features.add(new Feature(FORM_FILLER_ADDON));
         features.add(new Feature(HILLA_I18N));
+        features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
         features.add(new Feature(COPILOT_FLOW));
         features.add(new Feature(COPILOT_I18N));
         loadProperties();
