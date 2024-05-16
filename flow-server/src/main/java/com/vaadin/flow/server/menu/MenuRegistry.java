@@ -273,7 +273,14 @@ public class MenuRegistry {
     public static final String FILE_ROUTES_JSON_PROD_PATH = "META-INF/VAADIN/"
             + FILE_ROUTES_JSON_NAME;
 
-    private static URL getViewsJsonAsResource(
+    /**
+     * Load views json as a resource.
+     *
+     * @param deploymentConfiguration
+     *            current deployment configuration
+     * @return URL to json resource
+     */
+    public static URL getViewsJsonAsResource(
             DeploymentConfiguration deploymentConfiguration) {
         var isProductionMode = deploymentConfiguration.isProductionMode();
         if (isProductionMode) {
@@ -359,13 +366,13 @@ public class MenuRegistry {
     }
 
     /**
-     * Get the ClassLoader.
+     * Get the current thread ContextClassLoader.
      * <p>
-     * Note! package protected for testing.
+     * Note! public for testing.
      *
      * @return ClassLoader
      */
-    static ClassLoader getClassLoader() {
+    public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
     }
 
