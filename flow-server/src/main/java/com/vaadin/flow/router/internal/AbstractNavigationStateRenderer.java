@@ -23,10 +23,14 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -36,6 +40,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -116,19 +121,26 @@ public abstract class AbstractNavigationStateRenderer
      *            the class of the route target component
      * @param event
      *            the navigation event that uses the route target
+     * @param lastElement
+     *            {@code true} when this is the last element in the chain
      * @return an instance of the route target component
      */
     @SuppressWarnings("unchecked")
     // Non-private for testing purposes
     static <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
+            NavigationEvent event, boolean lastElement) {
         UI ui = event.getUI();
         Instantiator instantiator = Instantiator.get(ui);
-        Optional<HasElement> currentInstance = ui.getInternals()
-                .getActiveRouterTargetsChain().stream()
-                .filter(component -> instantiator.getApplicationClass(component)
-                        .equals(routeTargetType))
-                .findAny();
+        boolean forceInstantiation = lastElement ? event.isForceInstantiation()
+                : (event.isForceInstantiation()
+                        && event.isRecreateLayoutChain());
+        Optional<HasElement> currentInstance = forceInstantiation
+                ? Optional.empty()
+                : ui.getInternals().getActiveRouterTargetsChain().stream()
+                        .filter(component -> instantiator
+                                .getApplicationClass(component)
+                                .equals(routeTargetType))
+                        .findAny();
         return (T) currentInstance.orElseGet(
                 () -> instantiator.createRouteTarget(routeTargetType, event));
     }
@@ -167,10 +179,10 @@ public abstract class AbstractNavigationStateRenderer
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
                 routeTargetType, routeLayoutTypes);
 
-        if (preserveOnRefreshTarget) {
+        if (preserveOnRefreshTarget && !event.isForceInstantiation()) {
             final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(
                     event);
-            if (!maybeChain.isPresent()) {
+            if (maybeChain.isEmpty()) {
                 // We're returning because the preserved chain is not ready to
                 // be used as is, and requires client data requested within
                 // `getPreservedChain`. Once the data is retrieved from the
@@ -482,8 +494,9 @@ public abstract class AbstractNavigationStateRenderer
         List<Class<? extends HasElement>> typesChain = getTypesChain();
 
         try {
-            for (Class<? extends HasElement> elementType : typesChain) {
-                HasElement element = getRouteTarget(elementType, event);
+            for (int i = 0; i < typesChain.size(); i++) {
+                HasElement element = getRouteTarget(typesChain.get(i), event,
+                        i == typesChain.size() - 1);
 
                 chain.add(element);
 
@@ -526,14 +539,8 @@ public abstract class AbstractNavigationStateRenderer
                 EventUtil.collectBeforeEnterObserversFromChain(chain, event
                         .getUI().getInternals().getActiveRouterTargetsChain()));
 
-        Optional<Integer> result = sendBeforeEnterEvent(chainEnterHandlers,
-                event, beforeNavigation, chain);
-
-        if (result.isPresent()) {
-            return result;
-        }
-
-        return Optional.empty();
+        return sendBeforeEnterEvent(chainEnterHandlers, event, beforeNavigation,
+                chain);
     }
 
     /*
@@ -983,6 +990,45 @@ public abstract class AbstractNavigationStateRenderer
                     cache.remove(windowName);
                 }
             });
+        }
+    }
+
+    /**
+     * Removes preserved component cache for an inactive UI.
+     *
+     * @param inactiveUI
+     *            the inactive UI
+     * @throws IllegalStateException
+     *             if the UI is not in closing state
+     */
+    public static void purgeInactiveUIPreservedChainCache(UI inactiveUI) {
+        if (!inactiveUI.isClosing()) {
+            throw new IllegalStateException(
+                    "Cannot purge preserved chain cache for an active UI");
+        }
+        final VaadinSession session = inactiveUI.getSession();
+        final PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
+        if (cache != null && !cache.isEmpty()) {
+            StateNode uiNode = inactiveUI.getElement().getNode();
+            Set<String> inactiveWindows = cache.entrySet().stream()
+                    .filter(e -> {
+                        ArrayList<HasElement> chain = e.getValue().getSecond();
+                        // chain is never empty
+                        StateNode chainNode = chain.get(0).getElement()
+                                .getNode();
+                        while (chainNode.getParent() != null) {
+                            chainNode = chainNode.getParent();
+                        }
+                        return uiNode == chainNode;
+                    }).map(Map.Entry::getKey).collect(Collectors.toSet());
+            if (!inactiveWindows.isEmpty()) {
+                LoggerFactory.getLogger(AbstractNavigationStateRenderer.class)
+                        .debug("Removing preserved chain cache for inactive UI {} on VaadinSession {} (windows: {})",
+                                inactiveUI.getUIId(),
+                                session.getSession().getId(), inactiveWindows);
+            }
+            inactiveWindows.forEach(cache::remove);
         }
     }
 

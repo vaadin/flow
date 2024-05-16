@@ -341,7 +341,9 @@ public class AppViewIT extends AbstractIT {
     private void assertMenuListContains(String expected) {
         TestBenchElement menuList = waitUntil(driver -> $("*").id("menu-list"));
         String menuListText = menuList.getText();
-        Assert.assertTrue(menuListText.contains(expected));
+        Assert.assertTrue(
+                "Expected " + expected + " but actual is " + menuListText,
+                menuListText.contains(expected));
     }
 
     private void navigateToClientMenuList() {

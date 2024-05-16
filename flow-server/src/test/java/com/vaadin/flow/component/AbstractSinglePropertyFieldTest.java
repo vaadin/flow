@@ -33,6 +33,9 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.tests.PublicApiAnalyzer;
 import com.vaadin.tests.util.MockUI;
@@ -83,7 +86,9 @@ public class AbstractSinglePropertyFieldTest {
         Assert.assertEquals("bar", field.getValue());
         monitor.assertEvent(false, "foo", "bar");
 
-        field.getElement().removeProperty("property");
+        // Cannot do removeProperty because
+        // https://github.com/vaadin/flow/issues/3994
+        field.getElement().setProperty("property", null);
         Assert.assertEquals("", field.getValue());
         monitor.assertEvent(false, "bar", "");
     }
@@ -184,38 +189,6 @@ public class AbstractSinglePropertyFieldTest {
     }
 
     @Tag("tag")
-    private static class StringNullFieldWithDefaultEmpty extends
-            AbstractSinglePropertyField<StringNullFieldWithDefaultEmpty, String> {
-        public StringNullFieldWithDefaultEmpty() {
-            super("property", "", true);
-        }
-    }
-
-    @Test
-    public void stringNullFieldWithDefaultEmpty_basicCases() {
-        StringNullFieldWithDefaultEmpty field = new StringNullFieldWithDefaultEmpty();
-        ValueChangeMonitor<String> monitor = new ValueChangeMonitor<>(field);
-
-        Assert.assertEquals("", field.getValue());
-        Assert.assertFalse(field.getElement().hasProperty("property"));
-        monitor.assertNoEvent();
-
-        field.setValue("foo");
-        Assert.assertEquals("foo", field.getValue());
-        monitor.assertEvent(false, "", "foo");
-
-        field.setValue("");
-        Assert.assertEquals("", field.getValue());
-        Assert.assertTrue(field.getElement().hasProperty("property"));
-        monitor.assertEvent(false, "foo", "");
-
-        field.setValue(null);
-        Assert.assertFalse(field.getElement().hasProperty("property"));
-        Assert.assertEquals("", field.getValue());
-        monitor.assertNoEvent();
-    }
-
-    @Tag("tag")
     private static class DoubleField
             extends AbstractSinglePropertyField<DoubleField, Double> {
         public DoubleField() {
@@ -241,7 +214,9 @@ public class AbstractSinglePropertyFieldTest {
         Assert.assertEquals(1.1, field.getValue(), 0);
         monitor.assertEvent(false, 10.1, 1.1);
 
-        field.getElement().removeProperty("property");
+        // Cannot do removeProperty because
+        // https://github.com/vaadin/flow/issues/3994
+        field.getElement().setProperty("property", null);
         Assert.assertEquals(0.0, field.getValue(), 0);
         monitor.assertEvent(false, 1.1, 0.0);
     }
@@ -271,7 +246,9 @@ public class AbstractSinglePropertyFieldTest {
         Assert.assertEquals(1, field.getValue().intValue());
         monitor.assertEvent(false, 0, 1);
 
-        field.getElement().removeProperty("property");
+        // Cannot do removeProperty because
+        // https://github.com/vaadin/flow/issues/3994
+        field.getElement().setProperty("property", null);
         Assert.assertEquals(42, field.getValue().intValue());
         monitor.assertEvent(false, 1, 42);
     }
@@ -305,7 +282,9 @@ public class AbstractSinglePropertyFieldTest {
         field.setValue(true);
         monitor.discard();
 
-        field.getElement().removeProperty("property");
+        // Cannot do removeProperty because
+        // https://github.com/vaadin/flow/issues/3994
+        field.getElement().setProperty("property", null);
         Assert.assertFalse(field.getValue());
         monitor.assertEvent(false, true, false);
     }
@@ -353,7 +332,9 @@ public class AbstractSinglePropertyFieldTest {
         monitor.assertEvent(false, LocalDate.of(2018, 4, 25),
                 LocalDate.of(2017, 3, 24));
 
-        field.getElement().removeProperty("property");
+        // Cannot do removeProperty because
+        // https://github.com/vaadin/flow/issues/3994
+        field.getElement().setProperty("property", null);
         Assert.assertEquals(null, field.getValue());
         monitor.assertEvent(false, LocalDate.of(2017, 3, 24), null);
     }

@@ -2613,7 +2613,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                     throw new NullPointerException();
                 }, name -> name))
                 .bind(Person::getFirstName, Person::setFirstName)
-                .read(Person.createTestPerson1());
+                .read(new Person());
+
     }
 
     @Test(expected = BindingException.class)

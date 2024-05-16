@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -242,10 +243,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public static List<String> getClasspathElements(MavenProject project) {
 
         try {
-            final Stream<String> classpathElements = Stream.concat(
-                    project.getRuntimeClasspathElements().stream(),
-                    project.getCompileClasspathElements().stream().filter(
-                            s -> s.matches(INCLUDE_FROM_COMPILE_DEPS_REGEX)));
+            final Stream<String> classpathElements = Stream
+                    .of(project.getRuntimeClasspathElements().stream(),
+                            project.getSystemClasspathElements().stream(),
+                            project.getCompileClasspathElements().stream()
+                                    .filter(s -> s.matches(
+                                            INCLUDE_FROM_COMPILE_DEPS_REGEX)))
+                    .flatMap(Function.identity());
             return classpathElements.collect(Collectors.toList());
         } catch (DependencyResolutionRequiredException e) {
             throw new IllegalStateException(String.format(

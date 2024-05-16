@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
+import com.vaadin.testbench.HasLabelAsText;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
@@ -24,6 +25,7 @@ import com.vaadin.testbench.elementsbase.Element;
  * @since 1.0
  */
 @Element("button")
-public class NativeButtonElement extends TestBenchElement {
+public class NativeButtonElement extends TestBenchElement
+        implements HasLabelAsText {
 
 }

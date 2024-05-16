@@ -54,6 +54,7 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.server.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
 import static java.util.stream.Collectors.toList;
@@ -308,8 +309,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         MenuData menuData = AnnotationReader
                 .getAnnotationFor(target, Menu.class)
-                .map(menu -> new MenuData(menu.title(),
-                        (menu.order() == Long.MIN_VALUE) ? null : menu.order(),
+                .map(menu -> new MenuData(
+                        (menu.title() == null || menu.title().isBlank())
+                                ? MenuRegistry.getTitle(target)
+                                : menu.title(),
+                        (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null
+                                : menu.order(),
                         false, menu.icon()))
                 .orElse(null);
 
