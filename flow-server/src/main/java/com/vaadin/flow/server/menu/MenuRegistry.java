@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
@@ -182,6 +183,27 @@ public class MenuRegistry {
     public static Map<String, AvailableViewInfo> collectClientMenuItems(
             boolean filterClientViews,
             DeploymentConfiguration deploymentConfiguration) {
+
+        VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
+        return collectClientMenuItems(filterClientViews,
+                deploymentConfiguration, vaadinRequest);
+    }
+
+    /**
+     * Collect all available client routes.
+     *
+     * @param filterClientViews
+     *            true to filter routes by authentication status
+     * @param deploymentConfiguration
+     *            application deployment configuration
+     * @param vaadinRequest
+     *            current request
+     * @return map of registered routes
+     */
+    public static Map<String, AvailableViewInfo> collectClientMenuItems(
+            boolean filterClientViews,
+            DeploymentConfiguration deploymentConfiguration,
+            VaadinRequest vaadinRequest) {
         List<String> clientRoutes = FrontendUtils.getClientRoutes();
 
         if (clientRoutes.isEmpty()) {
@@ -205,7 +227,9 @@ public class MenuRegistry {
 
         try (InputStream source = viewsJsonAsResource.openStream()) {
             if (source != null) {
-                ObjectMapper mapper = new ObjectMapper();
+                ObjectMapper mapper = new ObjectMapper().configure(
+                        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                        false);
                 mapper.readValue(source,
                         new TypeReference<List<AvailableViewInfo>>() {
                         }).forEach(clientViewConfig -> collectClientViews("",
@@ -224,7 +248,7 @@ public class MenuRegistry {
         }
 
         if (filterClientViews) {
-            filterClientViews(configurations);
+            filterClientViews(configurations, vaadinRequest);
         }
 
         return configurations;
@@ -235,7 +259,9 @@ public class MenuRegistry {
             Map<String, AvailableViewInfo> configurations) {
         String path = viewConfig.route() == null || viewConfig.route().isEmpty()
                 ? basePath
-                : basePath + '/' + viewConfig.route();
+                : viewConfig.route().startsWith("/")
+                        ? basePath + viewConfig.route()
+                        : basePath + '/' + viewConfig.route();
         configurations.put(path, viewConfig);
         if (viewConfig.children() != null) {
             viewConfig.children().forEach(
@@ -244,7 +270,7 @@ public class MenuRegistry {
     }
 
     public static final String FILE_ROUTES_JSON_NAME = "file-routes.json";
-    public static final String FILE_ROUTES_JSON_PROD_PATH = "/META-INF/VAADIN/"
+    public static final String FILE_ROUTES_JSON_PROD_PATH = "META-INF/VAADIN/"
             + FILE_ROUTES_JSON_NAME;
 
     private static URL getViewsJsonAsResource(
@@ -269,8 +295,8 @@ public class MenuRegistry {
     }
 
     private static void filterClientViews(
-            Map<String, AvailableViewInfo> configurations) {
-        VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
+            Map<String, AvailableViewInfo> configurations,
+            VaadinRequest vaadinRequest) {
         final boolean isUserAuthenticated = vaadinRequest
                 .getUserPrincipal() != null;
 
