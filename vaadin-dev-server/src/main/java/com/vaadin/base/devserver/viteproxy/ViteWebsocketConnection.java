@@ -15,6 +15,8 @@
  */
 package com.vaadin.base.devserver.viteproxy;
 
+import jakarta.websocket.CloseReason.CloseCodes;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -31,17 +33,15 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.ViteHandler;
 
-import jakarta.websocket.CloseReason.CloseCodes;
-
 /**
  * Communicates with a Vite server through a websocket connection.
  */
 public class ViteWebsocketConnection implements Listener {
 
     private final Consumer<String> onMessage;
-    private final WebSocket clientWebSocket;
     private final Runnable onClose;
-    private List<CharSequence> parts = new ArrayList<>();
+    private final CompletableFuture<WebSocket> wsClientFuture;
+    private final List<CharSequence> parts = new ArrayList<>();
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass());
@@ -62,22 +62,42 @@ public class ViteWebsocketConnection implements Listener {
      * @param onClose
      *            a callback to invoke if the connection to Vite is closed
      *
-     * @throws InterruptedException
-     *             if there is a problem with the connection
-     * @throws ExecutionException
-     *             if there is a problem with the connection
      */
     public ViteWebsocketConnection(int port, String path, String subProtocol,
-            Consumer<String> onMessage, Runnable onClose)
-            throws InterruptedException, ExecutionException {
+            Consumer<String> onMessage, Runnable onClose) {
         this.onMessage = onMessage;
         this.onClose = onClose;
         String wsHost = ViteHandler.DEV_SERVER_HOST.replace("http://", "ws://");
         URI uri = URI.create(wsHost + ":" + port + path);
-        clientWebSocket = HttpClient.newHttpClient().newWebSocketBuilder()
-                .subprotocols(subProtocol).buildAsync(uri, this).get();
-        getLogger().debug("Connecting to {} using the {} protocol", uri,
-                clientWebSocket.getSubprotocol());
+        wsClientFuture = HttpClient.newHttpClient().newWebSocketBuilder()
+                .subprotocols(subProtocol).buildAsync(uri, this)
+                .whenComplete((ws, err) -> {
+                    if (err == null) {
+                        getLogger().debug(
+                                "Connecting to {} using the {} protocol", uri,
+                                ws.getSubprotocol());
+                    } else {
+                        getLogger().debug("Failed to connect to {}", uri, err);
+                    }
+                });
+    }
+
+    private WebSocket clientWebSocket()
+            throws InterruptedException, ExecutionException {
+        return wsClientFuture.get();
+    }
+
+    /**
+     * Waits if necessary for the client websocket connection to be established.
+     *
+     * @throws ExecutionException
+     *             if this websocket connection failed
+     * @throws InterruptedException
+     *             if the current thread was interrupted while waiting
+     */
+    public void waitForConnection()
+            throws InterruptedException, ExecutionException {
+        wsClientFuture.get();
     }
 
     @Override
@@ -126,7 +146,7 @@ public class ViteWebsocketConnection implements Listener {
      */
     public void send(String message)
             throws InterruptedException, ExecutionException {
-        CompletableFuture<WebSocket> send = clientWebSocket.sendText(message,
+        CompletableFuture<WebSocket> send = clientWebSocket().sendText(message,
                 false);
         send.get();
     }
@@ -141,7 +161,7 @@ public class ViteWebsocketConnection implements Listener {
      */
     public void close() throws InterruptedException, ExecutionException {
         getLogger().debug("Closing the connection");
-        CompletableFuture<WebSocket> closeRequest = clientWebSocket
+        CompletableFuture<WebSocket> closeRequest = clientWebSocket()
                 .sendClose(CloseCodes.NORMAL_CLOSURE.getCode(), "");
         closeRequest.get();
     }
