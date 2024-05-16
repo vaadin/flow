@@ -82,7 +82,8 @@ public class MenuRegistry {
 
         Map<String, AvailableViewInfo> menuRoutes = new HashMap<>();
 
-        menuRoutes.putAll(collectClientMenuItems(filterClientViews));
+        menuRoutes.putAll(collectClientMenuItems(filterClientViews,
+                VaadinService.getCurrent().getDeploymentConfiguration()));
 
         collectAndAddServerMenuItems(routeConfiguration, menuRoutes);
 
@@ -169,8 +170,18 @@ public class MenuRegistry {
         return parameters;
     }
 
-    private Map<String, AvailableViewInfo> collectClientMenuItems(
-            boolean filterClientViews) {
+    /**
+     * Collect all available client routes.
+     *
+     * @param filterClientViews
+     *            true to filter routes by authentication status
+     * @param deploymentConfiguration
+     *            application deployment configuration
+     * @return map of registered routes
+     */
+    public static Map<String, AvailableViewInfo> collectClientMenuItems(
+            boolean filterClientViews,
+            DeploymentConfiguration deploymentConfiguration) {
         List<String> clientRoutes = FrontendUtils.getClientRoutes();
 
         if (clientRoutes.isEmpty()) {
@@ -178,8 +189,6 @@ public class MenuRegistry {
             return Collections.emptyMap();
         }
 
-        DeploymentConfiguration deploymentConfiguration = VaadinService
-                .getCurrent().getDeploymentConfiguration();
         URL viewsJsonAsResource = getViewsJsonAsResource(
                 deploymentConfiguration);
         if (viewsJsonAsResource == null) {
@@ -221,7 +230,7 @@ public class MenuRegistry {
         return configurations;
     }
 
-    private void collectClientViews(String basePath,
+    private static void collectClientViews(String basePath,
             AvailableViewInfo viewConfig,
             Map<String, AvailableViewInfo> configurations) {
         String path = viewConfig.route() == null || viewConfig.route().isEmpty()
@@ -238,7 +247,7 @@ public class MenuRegistry {
     public static final String FILE_ROUTES_JSON_PROD_PATH = "/META-INF/VAADIN/"
             + FILE_ROUTES_JSON_NAME;
 
-    private URL getViewsJsonAsResource(
+    private static URL getViewsJsonAsResource(
             DeploymentConfiguration deploymentConfiguration) {
         var isProductionMode = deploymentConfiguration.isProductionMode();
         if (isProductionMode) {
@@ -259,7 +268,7 @@ public class MenuRegistry {
         }
     }
 
-    private void filterClientViews(
+    private static void filterClientViews(
             Map<String, AvailableViewInfo> configurations) {
         VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
         final boolean isUserAuthenticated = vaadinRequest
@@ -330,7 +339,7 @@ public class MenuRegistry {
      *
      * @return ClassLoader
      */
-    ClassLoader getClassLoader() {
+    static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
     }
 

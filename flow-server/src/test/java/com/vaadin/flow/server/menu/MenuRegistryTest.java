@@ -33,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
@@ -56,6 +57,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
@@ -171,16 +173,17 @@ public class MenuRegistryTest {
         ClassLoader mockClassLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
                 .thenReturn(clientFiles.toURI().toURL());
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+            menuRegistry.when(() -> MenuRegistry.getClassLoader())
+                    .thenReturn(mockClassLoader);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry() {
-            @Override
-            ClassLoader getClassLoader() {
-                return mockClassLoader;
-            }
-        }.getMenuItems(true);
+            Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+                    .getMenuItems(true);
 
-        Assert.assertEquals(2, menuItems.size());
-        assertClientRoutes(menuItems);
+            Assert.assertEquals(2, menuItems.size());
+            assertClientRoutes(menuItems);
+        }
     }
 
     @Test
