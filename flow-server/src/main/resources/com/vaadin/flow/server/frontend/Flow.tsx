@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+/// <reference lib="es2018" />
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import React, { useCallback, useEffect, useRef } from "react";
 import {
@@ -47,17 +48,17 @@ function getAnchorOrigin(anchor) {
     return `${protocol}//${host}`;
 }
 
-// @ts-ignore
-export function fireRouterEvent(type, detail) {
-    return !window.dispatchEvent(new CustomEvent(
-        `vaadin-router-${type}`,
-        {cancelable: type === 'go', detail}
-    ));
+function normalizeURL(url: URL): void | string {
+    // ignore click if baseURI does not match the document (external)
+    if (!url.href.startsWith(document.baseURI)) {
+        return;
+    }
+
+    // Normalize path against baseURI
+    return '/' + url.href.slice(document.baseURI.length);
 }
 
-// @ts-ignore
-
-function extractLocation(event: MouseEvent): void | Location {
+function extractPath(event: MouseEvent): void | string {
     // ignore the click if the default action is prevented
     if (event.defaultPrevented) {
         return;
@@ -74,7 +75,7 @@ function extractLocation(event: MouseEvent): void | Location {
     }
 
     // find the <a> element that the click is at (or within)
-    let anchor = event.target;
+    let maybeAnchor = event.target;
     const path = event.composedPath
         ? event.composedPath()
         // @ts-ignore
@@ -84,43 +85,41 @@ function extractLocation(event: MouseEvent): void | Location {
     for (let i = 0; i < path.length; i++) {
         const target = path[i];
         if (target.nodeName && target.nodeName.toLowerCase() === 'a') {
-            anchor = target;
+            maybeAnchor = target;
             break;
         }
     }
 
     // @ts-ignore
-    while (anchor && anchor.nodeName.toLowerCase() !== 'a') {
+    while (maybeAnchor && maybeAnchor.nodeName.toLowerCase() !== 'a') {
         // @ts-ignore
-        anchor = anchor.parentNode;
+        maybeAnchor = maybeAnchor.parentNode;
     }
 
     // ignore the click if not at an <a> element
     // @ts-ignore
-    if (!anchor || anchor.nodeName.toLowerCase() !== 'a') {
+    if (!maybeAnchor || maybeAnchor.nodeName.toLowerCase() !== 'a') {
         return;
     }
 
+    const anchor = maybeAnchor as HTMLAnchorElement;
+
     // ignore the click if the <a> element has a non-default target
-    // @ts-ignore
     if (anchor.target && anchor.target.toLowerCase() !== '_self') {
         return;
     }
 
     // ignore the click if the <a> element has the 'download' attribute
-    // @ts-ignore
     if (anchor.hasAttribute('download')) {
         return;
     }
 
     // ignore the click if the <a> element has the 'router-ignore' attribute
-    // @ts-ignore
     if (anchor.hasAttribute('router-ignore')) {
         return;
     }
 
     // ignore the click if the target URL is a fragment on the current page
-    // @ts-ignore
     if (anchor.pathname === window.location.pathname && anchor.hash !== '') {
         // @ts-ignore
         window.location.hash = anchor.hash;
@@ -135,30 +134,13 @@ function extractLocation(event: MouseEvent): void | Location {
         return;
     }
 
-    // @ts-ignore
-    const {pathname, search, hash} = anchor;
-    return {pathname, search, hash};
+    return normalizeURL(new URL(anchor.href, anchor.baseURI));
 }
 
-type Location = Readonly<{
-    pathname: string,
-    search: string,
-    hash: string,
-}>;
-
-function toPath({pathname, search, hash}: Location): string {
-    return `${pathname}${search}${hash}`;
+function postpone() {
 }
 
-async function amendResult<T>(callback: () => void | Promise<HTMLElement | (() => void)>, fallbackAction: () => void): Promise<() => void> {
-    const result = await callback();
-    return result && !(result instanceof HTMLElement)
-        ? result
-        : fallbackAction;
-}
-
-function nop() {
-}
+const prevent = () => postpone;
 
 type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>>;
 
@@ -171,8 +153,8 @@ function Flow() {
     const containerRef = useRef<RouterContainer | undefined>(undefined);
 
     const navigateEventHandler = useCallback((event: MouseEvent) => {
-        const location = extractLocation(event);
-        if (!location) {
+        const path = extractPath(event);
+        if (!path) {
             return;
         }
 
@@ -180,7 +162,18 @@ function Flow() {
             event.preventDefault();
         }
 
-        navigate(toPath(location));
+        navigate(path);
+    }, [navigate]);
+
+    const vaadinRouterGoEventHandler = useCallback((event: CustomEvent<URL>) => {
+        const url = event.detail;
+        const path = normalizeURL(url);
+        if (!path) {
+            return;
+        }
+
+        event.preventDefault();
+        navigate(path);
     }, [navigate]);
 
     const redirect = useCallback((path: string) => {
@@ -189,6 +182,15 @@ function Flow() {
         });
     }, [navigate]);
 
+    useEffect(() => {
+        // @ts-ignore
+        window.addEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
+
+        return () => {
+            // @ts-ignore
+            window.removeEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
+        };
+    }, [vaadinRouterGoEventHandler]);
 
     useEffect(() => {
         return () => {
@@ -199,35 +201,44 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
-            const prevent = () => blocker.reset;
             const {pathname, search} = blocker.location;
             Promise.resolve(containerRef.current?.onBeforeLeave?.call(containerRef?.current, {pathname, search}, {prevent}, router))
-                .then((result: unknown) => {
-                    if (typeof result === "function") {
-                        result();
+                .then((cmd: unknown) => {
+                    if (cmd === postpone && containerRef.current) {
+                        // postponed navigation: expose existing blocker to Flow
+                        containerRef.current.serverConnected = (cancel) => {
+                            if (cancel) {
+                                blocker.reset();
+                            } else {
+                                blocker.proceed();
+                            }
+                        }
                     } else {
+                        // permitted navigation: proceed with the blocker
                         blocker.proceed();
                     }
                 });
-        } else {
-            const prevent = () => nop;
-            flow.serverSideRoutes[0].action({pathname, search})
-                .then((container) => {
-                    const outlet = ref.current?.parentNode;
-                    if (outlet && outlet !== container.parentNode) {
-                        outlet.append(container);
-                        container.onclick = navigateEventHandler;
-                        containerRef.current = container
-                    }
-                    return container.onBeforeEnter?.call(container, {pathname, search}, {prevent, redirect}, router);
-                })
-                .then((result: unknown) => {
-                    if (typeof result === "function") {
-                        result();
-                    }
-                });
         }
-    }, [blocker.state, pathname, search]);
+    }, [blocker.state, blocker.location]);
+
+    useEffect(() => {
+        flow.serverSideRoutes[0].action({pathname, search})
+            .then((container) => {
+                const outlet = ref.current?.parentNode;
+                if (outlet && outlet !== container.parentNode) {
+                    outlet.append(container);
+                    container.onclick = navigateEventHandler;
+                    containerRef.current = container
+                }
+                return container.onBeforeEnter?.call(container, {pathname, search}, {prevent, redirect}, router);
+            })
+            .then((result: unknown) => {
+                if (typeof result === "function") {
+                    result();
+                }
+            });
+    }, [pathname, search]);
+
     return <output ref={ref} />;
 }
 Flow.type = 'FlowContainer'; // This is for copilot to recognize this

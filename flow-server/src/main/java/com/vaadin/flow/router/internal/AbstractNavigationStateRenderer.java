@@ -271,6 +271,11 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
+        } else if (ui.getInternals().getSession().getConfiguration()
+                .isReactEnabled()) {
+            if (shouldPushHistoryState(event)) {
+                pushHistoryState(event);
+            }
         } else if (!event.isForwardTo()
                 && (!ui.getInternals().hasLastHandledLocation()
                         || !event.getLocation().getPathWithQueryParameters()
@@ -283,11 +288,6 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
-        } else if (ui.getInternals().getSession().getConfiguration()
-                .isReactEnabled()) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
         }
     }
 
