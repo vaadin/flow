@@ -43,6 +43,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapException;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
@@ -315,6 +316,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         Document document = getPageBuilder().getBootstrapPage(context);
         writeBootstrapPage(response, document.head(), serviceUrl);
+        UsageStatistics.markAsUsed(Constants.STATISTICS_EXPORTED_WC, null);
         return true;
     }
 

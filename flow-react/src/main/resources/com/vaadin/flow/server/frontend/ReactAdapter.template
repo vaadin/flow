@@ -109,6 +109,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
             useCustomEvent: this.useCustomEvent.bind(this)
         };
         this.#Wrapper = this.#renderWrapper.bind(this);
+        this.#markAsUsed();
     }
 
     public async connectedCallback() {
@@ -220,5 +221,17 @@ export abstract class ReactAdapterElement extends HTMLElement {
         this.#state = state;
         this.#dispatchFlowState = dispatchFlowState;
         return this.render(this.#renderHooks);
+    }
+
+    #markAsUsed() : void {
+        // @ts-ignore
+        let vaadinObject = window.Vaadin || {};
+        if (vaadinObject.developmentMode) {
+            vaadinObject.registrations = vaadinObject.registrations || [];
+            vaadinObject.registrations.push({
+                is: 'ReactAdapterElement',
+                version: '{{VAADIN_VERSION}}'
+            });
+        }
     }
 }
