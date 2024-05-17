@@ -647,17 +647,6 @@ public class NavigationStateRendererTest {
         router.getRegistry().setRoute("preservedNested",
                 PreservedNestedView.class, List.of(PreservedLayout.class));
 
-        // given the session has a cache of PreservedNestedView at this location
-        final PreservedLayout layout = new PreservedLayout();
-        final PreservedNestedView nestedView = new PreservedNestedView();
-
-        String currentLayoutUUID = layoutUUID;
-        String currentViewUUID = viewUUID;
-
-        AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
-                new Location("preservedNested"),
-                new ArrayList<>(Arrays.asList(nestedView, layout)));
-
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
         ExtendedClientDetails details = Mockito
@@ -669,6 +658,9 @@ public class NavigationStateRendererTest {
         renderer.handle(
                 new NavigationEvent(router, new Location("preservedNested"), ui,
                         NavigationTrigger.PAGE_LOAD));
+
+        String currentLayoutUUID = layoutUUID;
+        String currentViewUUID = viewUUID;
 
         Assert.assertEquals(1, layoutAttachCount.get());
         Assert.assertEquals(1, viewAttachCount.get());
@@ -707,33 +699,18 @@ public class NavigationStateRendererTest {
         // given a NavigationStateRenderer mapping to PreservedNestedView
         Router router = session.getService().getRouter();
         NavigationStateRenderer renderer = new NavigationStateRenderer(
-                new NavigationStateBuilder(router)
-                        .withTarget(PreservedNestedView.class)
+                new NavigationStateBuilder(router).withTarget(SingleView.class)
                         .withPath("single").build());
         router.getRegistry().setRoute("single", SingleView.class,
                 List.of(RouteParentLayout.class));
 
-        // given the session has a cache of PreservedNestedView at this location
-        final RouteParentLayout layout = new RouteParentLayout();
-        final SingleView view = new SingleView();
+        MockUI ui = new MockUI(session);
+
+        renderer.handle(new NavigationEvent(router, new Location("single"), ui,
+                NavigationTrigger.PAGE_LOAD));
 
         String currentLayoutUUID = layoutUUID;
         String currentViewUUID = viewUUID;
-
-        AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
-                new Location("single"),
-                new ArrayList<>(Arrays.asList(view, layout)));
-
-        // given a UI that contain a window name ROOT.123
-        MockUI ui = new MockUI(session);
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
-        ui.getInternals().setExtendedClientDetails(details);
-
-        // when a navigation event reaches the renderer
-        renderer.handle(new NavigationEvent(router, new Location("single"), ui,
-                NavigationTrigger.PAGE_LOAD));
 
         Assert.assertEquals(1, layoutAttachCount.get());
         Assert.assertEquals(1, viewAttachCount.get());
