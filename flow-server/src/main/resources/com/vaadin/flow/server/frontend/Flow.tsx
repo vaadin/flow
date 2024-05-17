@@ -59,7 +59,9 @@ export function fireRouterEvent(type, detail) {
 // @ts-ignore
 function vaadinRouterGlobalClickHandler(event) {
     // ignore the click if the default action is prevented
-    if (event.defaultPrevented) {
+    // Prevented side-nav click should be handled if targeting Flow route.
+    if (event.defaultPrevented &&
+        (event.target.tagName !== "VAADIN-SIDE-NAV-ITEM" && mountedContainer)) {
         return;
     }
 
@@ -444,7 +446,7 @@ interface Properties {
  * @param onload optional callback to be called for script onload
  * @param onerror optional callback for error loading the script
  */
-export const createWebComponent = (tag: string, props?: Properties, onload?: () => void, onerror?: (err:any) => void) => {
+export const reactElement = (tag: string, props?: Properties, onload?: () => void, onerror?: (err:any) => void) => {
     loadComponentScript(tag).then(() => onload?.(), (err) => {
         if(onerror) {
             onerror(err);

@@ -178,6 +178,12 @@ public class FrontendUtils {
      */
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
+    /**
+     * Name of the file that contains application imports, javascript, theme and
+     * style annotations used when embedding Flow as web-component.
+     */
+    public static final String IMPORTS_WEB_COMPONENT_NAME = "generated-flow-webcomponent-imports.js";
+
     public static final String THEME_IMPORTS_D_TS_NAME = "theme.d.ts";
     public static final String THEME_IMPORTS_NAME = "theme.js";
 
@@ -1219,6 +1225,21 @@ public class FrontendUtils {
      */
     public static File getFlowGeneratedImports(File frontendFolder) {
         return new File(getFlowGeneratedFolder(frontendFolder), IMPORTS_NAME);
+    }
+
+    /**
+     * Gets the location of the generated import file for exported web
+     * components.
+     *
+     * @param frontendFolder
+     *            the project frontend folder
+     * @return the location of the generated import JS file for exported web
+     *         components
+     */
+    public static File getFlowGeneratedWebComponentsImports(
+            File frontendFolder) {
+        return new File(getFlowGeneratedFolder(frontendFolder),
+                IMPORTS_WEB_COMPONENT_NAME);
     }
 
     /**

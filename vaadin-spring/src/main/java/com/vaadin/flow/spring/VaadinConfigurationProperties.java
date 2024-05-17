@@ -122,6 +122,12 @@ public class VaadinConfigurationProperties {
     private boolean launchBrowser = false;
 
     /**
+     * Timeout until a new browser should be launched on startup when in
+     * development mode.
+     */
+    private int launchBrowserDelay = 30;
+
+    /**
      * URL patterns that should not be handled by the Vaadin servlet when mapped
      * to the context root.
      */
@@ -397,6 +403,30 @@ public class VaadinConfigurationProperties {
      */
     public void setLaunchBrowser(boolean launchBrowser) {
         this.launchBrowser = launchBrowser;
+    }
+
+    /**
+     * Returns timout after which a browser should be launched again on startup
+     * when in development mode.
+     * <p>
+     *
+     * @return if a browser should be launched on startup when in development
+     *         mode
+     */
+    public int getLaunchBrowserDelay() {
+        return launchBrowserDelay;
+    }
+
+    /**
+     * Sets timout for launching a new browser on startup when in development
+     * mode.
+     *
+     * @param launchBrowser
+     *            {@code true} to launch a browser on startup when in
+     *            development mode, {@code false} otherwise
+     */
+    public void setLaunchBrowserDelay(int launchBrowser) {
+        this.launchBrowserDelay = launchBrowser;
     }
 
     /**

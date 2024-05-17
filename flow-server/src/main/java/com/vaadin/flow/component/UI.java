@@ -1246,6 +1246,18 @@ public class UI extends Component
     }
 
     /**
+     * Re-navigates to the current route. Also re-instantiates the route target
+     * component, and optionally all layouts in the route chain.
+     *
+     * @param refreshRouteChain
+     *            {@code true} to refresh all layouts in the route chain,
+     *            {@code false} to only refresh the route instance
+     */
+    public void refreshCurrentRoute(boolean refreshRouteChain) {
+        getInternals().refreshCurrentRoute(refreshRouteChain);
+    }
+
+    /**
      * Returns true if this UI instance supports navigation.
      *
      * @return true if this UI instance supports navigation, otherwise false.
