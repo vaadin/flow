@@ -271,7 +271,8 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
-        } else if (!event.isForwardTo()
+        } else if (NavigationTrigger.REFRESH != event.getTrigger()
+                && !event.isForwardTo()
                 && (!ui.getInternals().hasLastHandledLocation()
                         || !event.getLocation().getPathWithQueryParameters()
                                 .equals(ui.getInternals()
