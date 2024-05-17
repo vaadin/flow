@@ -84,7 +84,7 @@ public class FeatureFlags implements Serializable {
             "https://vaadin.com/docs/latest/tools", false, null);
 
     public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
-            "Hilla Full-stack Signals", "fullstack-signals",
+            "Hilla Full-stack Signals", "fullstackSignals",
             "https://github.com/vaadin/hilla/discussions/1902", true, null);
 
     private List<Feature> features = new ArrayList<>();
