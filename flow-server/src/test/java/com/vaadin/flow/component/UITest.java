@@ -243,8 +243,7 @@ public class UITest {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
-        Mockito.when(config.getFrontendFolder())
-                .thenReturn(new File("front"));
+        Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
 
         session.lock();
         session.setConfiguration(config);
