@@ -17,6 +17,11 @@ package com.vaadin.flow.component.html;
 
 import java.beans.IntrospectionException;
 
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class NativeTableTest extends ComponentTest {
     // Actual test methods in super class
 
@@ -26,4 +31,48 @@ public class NativeTableTest extends ComponentTest {
         whitelistProperty("captionText");
         super.setup();
     }
+
+    @Test
+    public void getCaption() {
+        var component = (NativeTable) getComponent();
+        NativeTableCaption caption = component.getCaption();
+        AssertUtils.assertEquals("Caption does not match", component.getChildren().toList().get(0), caption);
+    }
+
+    @Test
+    public void createsCaption() {
+        var component = (NativeTable) getComponent();
+        assertEquals(0, component.getChildren().count());
+        var caption = component.getCaption();
+        assertEquals(1, component.getChildren().count());
+        AssertUtils.assertEquals("Table is not the caption's father",
+                caption.getParent().orElseThrow(), component);
+    }
+
+    @Test
+    public void setCaptionText() {
+        var component = (NativeTable) getComponent();
+        String expectedText = "Test caption text.";
+        component.setCaptionText(expectedText);
+        var caption = component.getCaption();
+        assertEquals(expectedText, caption.getText());
+    }
+
+    @Test
+    public void getCaptionText() {
+        var component = (NativeTable) getComponent();
+        String expectedText = "Test caption text.";
+        var caption = component.getCaption();
+        caption.setText(expectedText);
+        assertEquals(expectedText, component.getCaptionText());
+    }
+
+    @Test
+    public void removeCaption() {
+        var component = (NativeTable) getComponent();
+        var caption = component.getCaption();
+        component.removeCaption();
+        assertTrue(caption.getParent().isEmpty());
+    }
+
 }
