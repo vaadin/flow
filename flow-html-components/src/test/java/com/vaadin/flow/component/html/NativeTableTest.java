@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.beans.IntrospectionException;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -124,6 +125,121 @@ public class NativeTableTest extends ComponentTest {
         NativeTableFooter footer = component.getFoot();
         component.removeFoot();
         assertTrue(footer.getParent().isEmpty());
+    }
+
+    @Test
+    public void addBody() {
+        var component = (NativeTable) getComponent();
+        component.addBody();
+        assertEquals(1, component.getChildren().count());
+        component.addBody();
+        assertEquals(2, component.getChildren().count());
+    }
+
+    @Test
+    public void addBodyAfterCaption() {
+        var component = (NativeTable) getComponent();
+        component.getCaption();
+        var body = component.addBody();
+        assertEquals(1, component.getChildren().toList().indexOf(body));
+    }
+
+    @Test
+    public void addBodyAfterHeader() {
+        var component = (NativeTable) getComponent();
+        component.getHead();
+        var body = component.addBody();
+        assertEquals(1, component.getChildren().toList().indexOf(body));
+    }
+
+    @Test
+    public void addBodyAfterBothCaptionAndHeader() {
+        var component = (NativeTable) getComponent();
+        component.getCaption();
+        component.getHead();
+        var body = component.addBody();
+        assertEquals(2, component.getChildren().toList().indexOf(body));
+    }
+
+    @Test
+    public void getBody() {
+        var component = (NativeTable) getComponent();
+        var body = component.getBody();
+        assertEquals(1, component.getChildren().count());
+        // add a second body
+        component.addBody();
+        assertEquals(2, component.getChildren().count());
+        // subsequent calls should return the same first body
+        var secondCallBody = component.getBody();
+        AssertUtils.assertEquals("No new body should've been created", body,
+                secondCallBody);
+    }
+
+    @Test
+    public void getBodyByIndex() {
+        var component = (NativeTable) getComponent();
+        var body = component.getBody(0);
+        assertEquals(1, component.getChildren().count());
+        var secondCallBody = component.getBody(0);
+        assertEquals(1, component.getChildren().count());
+        AssertUtils.assertEquals("No new body should've been created", body,
+                secondCallBody);
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getNonExistentBodyByIndex() {
+        var component = (NativeTable) getComponent();
+        component.getBody(1);
+    }
+
+    @Test
+    public void getBodies() {
+        var component = (NativeTable) getComponent();
+        for (int i = 0; i < 10; i++) {
+            component.addBody();
+        }
+        List<NativeTableBody> bodies = component.getBodies();
+        for (NativeTableBody body : bodies) {
+            AssertUtils.assertEquals("Body is not a child of table", component,
+                    body.getParent().orElseThrow());
+        }
+    }
+
+    @Test
+    public void removeBody() {
+        var component = (NativeTable) getComponent();
+        for (int i = 0; i < 10; i++) {
+            component.addBody();
+        }
+        var bodies = component.getBodies();
+        for (int i = 0; i < 10; i++) {
+            component.removeBody();
+            assertTrue(bodies.get(i).getParent().isEmpty());
+        }
+    }
+
+    @Test
+    public void removeBodyByIndex() {
+        var component = (NativeTable) getComponent();
+        var body0 = component.addBody();
+        var body1 = component.addBody();
+        var body2 = component.addBody();
+        component.removeBody(1);
+        assertTrue(body0.getParent().isPresent());
+        assertTrue(body1.getParent().isEmpty());
+        assertTrue(body2.getParent().isPresent());
+    }
+
+    @Test
+    public void removeBodyByReference() {
+        var component = (NativeTable) getComponent();
+        var body0 = component.addBody();
+        var body1 = component.addBody();
+        var body2 = component.addBody();
+        component.removeBody(body1);
+        assertTrue(body0.getParent().isPresent());
+        assertTrue(body1.getParent().isEmpty());
+        assertTrue(body2.getParent().isPresent());
     }
 
 }
