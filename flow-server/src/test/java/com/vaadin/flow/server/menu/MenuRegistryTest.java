@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 
 import jakarta.servlet.ServletContext;
@@ -41,13 +40,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.internal.ClientRoutesProvider;
 import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -57,7 +54,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
@@ -78,8 +74,6 @@ public class MenuRegistryTest {
     @Mock
     private DeploymentConfiguration deploymentConfiguration;
     @Mock
-    private ClientRoutesProvider provider;
-    @Mock
     private VaadinRequest request;
 
     private AutoCloseable closeable;
@@ -89,13 +83,6 @@ public class MenuRegistryTest {
         closeable = MockitoAnnotations.openMocks(this);
         servletContext = new MockServletContext();
         vaadinContext = new MockVaadinContext(servletContext);
-        Lookup lookup = vaadinContext.getAttribute(Lookup.class);
-
-        Mockito.when(lookup.lookupAll(ClientRoutesProvider.class))
-                .thenReturn(Collections.singleton(provider));
-
-        Mockito.when(provider.getClientRoutes()).thenReturn(
-                Arrays.asList("", "about", "hilla", "hilla/sub", "login"));
 
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 

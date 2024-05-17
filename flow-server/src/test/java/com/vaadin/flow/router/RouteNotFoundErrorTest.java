@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -116,6 +117,8 @@ public class RouteNotFoundErrorTest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(session.getConfiguration()).thenReturn(config);
         Mockito.when(config.isProductionMode()).thenReturn(productionMode);
+        Mockito.when(config.getFrontendFolder())
+                .thenReturn(new File("front"));
         Mockito.when(event.getUI()).thenReturn(ui);
         return event;
     }

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -190,6 +191,25 @@ public class MenuRegistry {
     }
 
     /**
+     * Get registered client routes. Possible to have all routes or only
+     * accessible routes.
+     *
+     * @param filterClientViews
+     *            {@code true}if inaccessible client routes should be filtered
+     *            out
+     * @param deploymentConfiguration
+     *            current deployment configuration
+     * @return list of available client routes
+     */
+    public static List<String> getClientRoutes(boolean filterClientViews,
+            DeploymentConfiguration deploymentConfiguration) {
+
+        VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
+        return new ArrayList<>(collectClientMenuItems(filterClientViews,
+                deploymentConfiguration, vaadinRequest).keySet());
+    }
+
+    /**
      * Collect all available client routes.
      *
      * @param filterClientViews
@@ -204,12 +224,6 @@ public class MenuRegistry {
             boolean filterClientViews,
             DeploymentConfiguration deploymentConfiguration,
             VaadinRequest vaadinRequest) {
-        List<String> clientRoutes = FrontendUtils.getClientRoutes();
-
-        if (clientRoutes.isEmpty()) {
-            // No client routes no need to do more work here.
-            return Collections.emptyMap();
-        }
 
         URL viewsJsonAsResource = getViewsJsonAsResource(
                 deploymentConfiguration);
@@ -239,12 +253,6 @@ public class MenuRegistry {
             LoggerFactory.getLogger(MenuRegistry.class).warn(
                     "Failed load {} from {}", FILE_ROUTES_JSON_NAME,
                     viewsJsonAsResource.getPath(), e);
-        }
-
-        for (String route : new HashSet<>(configurations.keySet())) {
-            if (!clientRoutes.contains(route.replaceFirst("/", ""))) {
-                configurations.remove(route);
-            }
         }
 
         if (filterClientViews) {

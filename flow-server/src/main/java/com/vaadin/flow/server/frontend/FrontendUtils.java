@@ -56,6 +56,7 @@ import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.internal.ClientRoutesProvider;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -1451,7 +1452,11 @@ public class FrontendUtils {
      * with Vaadin {@link Lookup}.
      *
      * @return a list of available client routes
+     * @deprecated use
+     *             {@link com.vaadin.flow.server.menu.MenuRegistry#getClientRoutes(boolean, DeploymentConfiguration)}
+     *             instead
      */
+    @Deprecated(forRemoval = true)
     public static List<String> getClientRoutes() {
         return Optional.ofNullable(VaadinService.getCurrent())
                 .map(VaadinService::getContext).stream()
