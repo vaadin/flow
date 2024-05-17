@@ -31,7 +31,7 @@ import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
 
-import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationAndEOL;
+import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -200,7 +200,8 @@ public class TaskGenerateReactFiles
             if (routesTsx.exists()) {
                 String defaultRoutesContent = FileUtils
                         .readFileToString(routesTsx, UTF_8);
-                if (compareIgnoringIndentationAndEOL(defaultRoutesContent,
+                if (compareIgnoringIndentationEOLAndWhiteSpace(
+                        defaultRoutesContent,
                         getFileContent(FrontendUtils.ROUTES_TSX),
                         String::equals)) {
                     routesTsx.delete();

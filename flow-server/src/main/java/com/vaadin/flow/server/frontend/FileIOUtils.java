@@ -200,11 +200,42 @@ public class FileIOUtils {
                 replaceIndentationAndEOL(content2));
     }
 
+    /**
+     * Compare two file content strings ignoring indentation, EOL characters and
+     * white space where it does not matter (before and after {, }, ' and :
+     * chars).
+     *
+     * @param content1
+     *            the first file content to compare
+     * @param content2
+     *            the second file content to compare
+     * @param compareFn
+     *            a function to compare the normalized strings
+     * @return true if the normalized strings are equal, false otherwise
+     */
+    public static boolean compareIgnoringIndentationEOLAndWhiteSpace(
+            String content1, String content2,
+            BiPredicate<String, String> compareFn) {
+        return compareFn.test(
+                replaceWhiteSpace(replaceIndentationAndEOL(content1)),
+                replaceWhiteSpace(replaceIndentationAndEOL(content2)));
+    }
+
     // Normalize EOL and removes indentation and potential EOL at the end of the
     // FILE
     private static String replaceIndentationAndEOL(String text) {
         return text.replace("\r\n", "\n").replaceFirst("\n$", "")
-                .replaceAll("(?m)^\\s+", "");
+                .replaceAll("(?m)^(\\s)+", "");
+    }
+
+    private static String replaceWhiteSpace(String text) {
+        String result = text.replaceAll("(\\s)*'", "'")
+                .replaceAll("'(\\s)*", "'").replaceAll("(\\s)*:", ":")
+                .replaceAll(":(\\s)*", ":").replaceAll("(\\s)*\\{", "{")
+                .replaceAll("\\{(\\s)*", "{").replaceAll("(\\s)*}", "}")
+                .replaceAll("}(\\s)*", "}");
+        System.err.println(result);
+        return result;
     }
 
 }
