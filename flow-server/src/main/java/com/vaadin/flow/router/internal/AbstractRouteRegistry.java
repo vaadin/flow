@@ -260,8 +260,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     private Stream<RouteData> getMenuRouteCandidates() {
         return getRegisteredRoutes().stream()
-                .filter(route -> route.getMenuData() != null)
-                .filter(route -> !route.getMenuData().isExclude());
+                .filter(route -> route.getMenuData() != null);
     }
 
     private <T> List<T> findListOf(Class<T> targetType, Collection<?> objects) {
@@ -307,6 +306,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
                 configuration, template);
 
+        var parameters = configuration.getParameters(template);
+        // exclude route from the menu if it has any required parameters
+        boolean excludeFromMenu = parameters != null && !parameters.isEmpty()
+                && parameters.values().stream()
+                        .anyMatch(param -> !param.getTemplate().contains("?"));
         MenuData menuData = AnnotationReader
                 .getAnnotationFor(target, Menu.class)
                 .map(menu -> new MenuData(
@@ -315,12 +319,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                                 : menu.title(),
                         (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null
                                 : menu.order(),
-                        false, menu.icon()))
+                        excludeFromMenu, menu.icon()))
                 .orElse(null);
 
-        RouteData route = new RouteData(parentLayouts, template,
-                configuration.getParameters(template), target, routeAliases,
-                menuData);
+        RouteData route = new RouteData(parentLayouts, template, parameters,
+                target, routeAliases, menuData);
         registeredRoutes.add(route);
     }
 

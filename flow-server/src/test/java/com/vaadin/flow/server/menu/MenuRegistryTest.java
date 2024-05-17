@@ -211,15 +211,18 @@ public class MenuRegistryTest {
         CurrentInstance.set(VaadinRequest.class, request);
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
-        Arrays.asList(MyRoute.class, MyInfo.class)
+        Arrays.asList(MyRoute.class, MyInfo.class, MyRequiredParamRoute.class,
+                MyRequiredAndOptionalParamRoute.class,
+                MyOptionalParamRoute.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .collectMenuItems();
 
-        Assert.assertEquals(6, menuItems.size());
+        Assert.assertEquals(9, menuItems.size());
         asssertClientRoutes(menuItems);
         assertServerRoutes(menuItems);
+        assertServerRoutesWithParameters(menuItems);
     }
 
     private void asssertClientRoutes(Map<String, AvailableViewInfo> menuItems) {
@@ -267,6 +270,28 @@ public class MenuRegistryTest {
         Assert.assertEquals("MyInfo", menuItems.get("/info").menu().title());
     }
 
+    private void assertServerRoutesWithParameters(
+            Map<String, AvailableViewInfo> menuItems) {
+        Assert.assertTrue("Server route '/param/:param' missing",
+                menuItems.containsKey("/param/:param"));
+        Assert.assertTrue(
+                "Server route '/param/:param' should be excluded from menu",
+                menuItems.get("/param/:param").menu().exclude());
+
+        Assert.assertTrue("Server route '/param/:param1' missing",
+                menuItems.containsKey("/param/:param1"));
+        Assert.assertTrue(
+                "Server route '/param/:param1' should be excluded from menu",
+                menuItems.get("/param/:param1").menu().exclude());
+
+        Assert.assertTrue(
+                "Server route with optional parameters '/param' missing",
+                menuItems.containsKey("/param"));
+        Assert.assertFalse(
+                "Server route '/param' should be included in the menu",
+                menuItems.get("/param").menu().exclude());
+    }
+
     @Tag("div")
     @Route("home")
     @Menu(title = "Home")
@@ -277,6 +302,24 @@ public class MenuRegistryTest {
     @Route("info")
     @Menu
     private static class MyInfo extends Component {
+    }
+
+    @Tag("div")
+    @Route("param/:param")
+    @Menu
+    private static class MyRequiredParamRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("param/:param1/:param2?")
+    @Menu
+    private static class MyRequiredAndOptionalParamRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("param/:param1?/:param2?(edit)")
+    @Menu
+    private static class MyOptionalParamRoute extends Component {
     }
 
     /**
