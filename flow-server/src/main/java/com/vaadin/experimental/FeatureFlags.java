@@ -78,6 +78,10 @@ public class FeatureFlags implements Serializable {
             "Support for editing Flow views with Copilot", "copilotFlow",
             "https://github.com/vaadin/copilot/issues/17", false, null);
 
+    public static final Feature COPILOT_I18N = new Feature(
+            "Internationalization plugin for Copilot", "copilotI18n",
+            "https://vaadin.com/docs/latest/tools", false, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -100,6 +104,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(FORM_FILLER_ADDON));
         features.add(new Feature(HILLA_I18N));
         features.add(new Feature(COPILOT_FLOW));
+        features.add(new Feature(COPILOT_I18N));
         loadProperties();
     }
 
