@@ -40,6 +40,7 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
@@ -310,7 +311,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         // exclude route from the menu if it has any required parameters
         boolean excludeFromMenu = parameters != null && !parameters.isEmpty()
                 && parameters.values().stream()
-                        .anyMatch(param -> !param.getTemplate().contains("?"));
+                        .map(RouteParameterData::getTemplate)
+                        .map(ParameterInfo::new)
+                        .anyMatch(param -> !param.isOptional()
+                                && !param.isVarargs());
         MenuData menuData = AnnotationReader
                 .getAnnotationFor(target, Menu.class)
                 .map(menu -> new MenuData(
