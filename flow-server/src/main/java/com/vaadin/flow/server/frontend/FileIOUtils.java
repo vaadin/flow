@@ -229,13 +229,10 @@ public class FileIOUtils {
     }
 
     private static String replaceWhiteSpace(String text) {
-        String result = text.replaceAll("(\\s)*'", "'")
-                .replaceAll("'(\\s)*", "'").replaceAll("(\\s)*:", ":")
-                .replaceAll(":(\\s)*", ":").replaceAll("(\\s)*\\{", "{")
-                .replaceAll("\\{(\\s)*", "{").replaceAll("(\\s)*}", "}")
-                .replaceAll("}(\\s)*", "}");
-        System.err.println(result);
-        return result;
+        return text.replaceAll("(\\s)*'", "'").replaceAll("'(\\s)*", "'")
+                .replaceAll("(\\s)*:", ":").replaceAll(":(\\s)*", ":")
+                .replaceAll("(\\s)*\\{", "{").replaceAll("\\{(\\s)*", "{")
+                .replaceAll("(\\s)*}", "}").replaceAll("}(\\s)*", "}");
     }
 
 }
