@@ -143,8 +143,9 @@ public class MenuRegistry {
         if (route.getRouteParameters() != null
                 && !route.getRouteParameters().isEmpty()) {
             String editUrl = "/" + route.getTemplate();
-            for (RouteParameterData param : route.getRouteParameters().values()
-                    .stream().filter(param -> param.getTemplate().contains("?"))
+            for (RouteParameterData param : route.getRouteParametersList()
+                    .stream()
+                    .filter(param -> param.isOptional() || param.isVarargs())
                     .toList()) {
                 editUrl = editUrl.replace("/" + param.getTemplate(), "");
             }

@@ -310,11 +310,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         var parameters = configuration.getParameters(template);
         // exclude route from the menu if it has any required parameters
         boolean excludeFromMenu = parameters != null && !parameters.isEmpty()
-                && parameters.values().stream()
-                        .map(RouteParameterData::getTemplate)
-                        .map(ParameterInfo::new)
-                        .anyMatch(param -> !param.isOptional()
-                                && !param.isVarargs());
+                && parameters.values().stream().anyMatch(
+                        param -> !param.isOptional() && !param.isVarargs());
         MenuData menuData = AnnotationReader
                 .getAnnotationFor(target, Menu.class)
                 .map(menu -> new MenuData(

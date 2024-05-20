@@ -213,13 +213,13 @@ public class MenuRegistryTest {
                 .forRegistry(registry);
         Arrays.asList(MyRoute.class, MyInfo.class, MyRequiredParamRoute.class,
                 MyRequiredAndOptionalParamRoute.class,
-                MyOptionalParamRoute.class)
+                MyOptionalParamRoute.class, MyVarargsParamRoute.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .collectMenuItems();
 
-        Assert.assertEquals(9, menuItems.size());
+        Assert.assertEquals(10, menuItems.size());
         asssertClientRoutes(menuItems);
         assertServerRoutes(menuItems);
         assertServerRoutesWithParameters(menuItems);
@@ -290,6 +290,13 @@ public class MenuRegistryTest {
         Assert.assertFalse(
                 "Server route '/param' should be included in the menu",
                 menuItems.get("/param").menu().exclude());
+
+        Assert.assertTrue(
+                "Server route with optional parameters '/param/varargs' missing",
+                menuItems.containsKey("/param/varargs"));
+        Assert.assertFalse(
+                "Server route '/param/varargs' should be included in the menu",
+                menuItems.get("/param/varargs").menu().exclude());
     }
 
     @Tag("div")
@@ -320,6 +327,12 @@ public class MenuRegistryTest {
     @Route("param/:param1?/:param2?(edit)")
     @Menu
     private static class MyOptionalParamRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("param/varargs/:param*")
+    @Menu
+    private static class MyVarargsParamRoute extends Component {
     }
 
     /**
