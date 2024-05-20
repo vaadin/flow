@@ -232,7 +232,8 @@ public class FileIOUtils {
         return text.replaceAll("(\\s)*'", "'").replaceAll("'(\\s)*", "'")
                 .replaceAll("(\\s)*:", ":").replaceAll(":(\\s)*", ":")
                 .replaceAll("(\\s)*\\{", "{").replaceAll("\\{(\\s)*", "{")
-                .replaceAll("(\\s)*}", "}").replaceAll("}(\\s)*", "}");
+                .replaceAll("(\\s)*}", "}").replaceAll("}(\\s)*", "}")
+                .replaceAll("(\\s)*\\[", "[").replaceAll("\\[(\\s)*", "[")
+                .replaceAll("(\\s)*]", "]").replaceAll("](\\s)*", "]");
     }
-
 }
