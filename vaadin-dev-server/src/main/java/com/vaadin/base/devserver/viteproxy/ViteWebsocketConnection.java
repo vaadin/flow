@@ -40,7 +40,7 @@ public class ViteWebsocketConnection implements Listener {
 
     private final Consumer<String> onMessage;
     private final Runnable onClose;
-    private final CompletableFuture<WebSocket> clientWebsocketFuture;
+    private final CompletableFuture<WebSocket> clientWebsocket;
     private final List<CharSequence> parts = new ArrayList<>();
 
     private static Logger getLogger() {
@@ -70,7 +70,7 @@ public class ViteWebsocketConnection implements Listener {
         this.onClose = onClose;
         String wsHost = ViteHandler.DEV_SERVER_HOST.replace("http://", "ws://");
         URI uri = URI.create(wsHost + ":" + port + path);
-        clientWebsocketFuture = HttpClient.newHttpClient().newWebSocketBuilder()
+        clientWebsocket = HttpClient.newHttpClient().newWebSocketBuilder()
                 .subprotocols(subProtocol).buildAsync(uri, this)
                 .whenComplete(((webSocket, failure) -> {
                     if (failure == null) {
@@ -129,7 +129,7 @@ public class ViteWebsocketConnection implements Listener {
      */
     public void send(String message)
             throws InterruptedException, ExecutionException {
-        CompletableFuture<WebSocket> send = clientWebsocketFuture.get()
+        CompletableFuture<WebSocket> send = clientWebsocket.get()
                 .sendText(message, false);
         send.get();
     }
@@ -144,7 +144,7 @@ public class ViteWebsocketConnection implements Listener {
      */
     public void close() throws InterruptedException, ExecutionException {
         getLogger().debug("Closing the connection");
-        CompletableFuture<WebSocket> closeRequest = clientWebsocketFuture.get()
+        CompletableFuture<WebSocket> closeRequest = clientWebsocket.get()
                 .sendClose(CloseCodes.NORMAL_CLOSURE.getCode(), "");
         closeRequest.get();
     }
