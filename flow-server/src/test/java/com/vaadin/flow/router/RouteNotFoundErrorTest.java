@@ -22,6 +22,7 @@ import java.util.List;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -62,7 +63,21 @@ public class RouteNotFoundErrorTest {
 
         event.getSource().getRegistry().getRegisteredRoutes();
 
-        page.setErrorParameter(event, param);
+        try (MockedStatic<VaadinService> service = Mockito
+                .mockStatic(VaadinService.class, Mockito.CALLS_REAL_METHODS)) {
+            VaadinService vaadinService = Mockito.mock(VaadinService.class);
+            DeploymentConfiguration configuration = Mockito
+                    .mock(DeploymentConfiguration.class);
+            Mockito.when(vaadinService.getDeploymentConfiguration())
+                    .thenReturn(configuration);
+            Mockito.when(configuration.isProductionMode()).thenReturn(true);
+            Mockito.when(configuration.getFrontendFolder())
+                    .thenReturn(new File("front"));
+
+            service.when(() -> VaadinService.getCurrent())
+                    .thenReturn(vaadinService);
+            page.setErrorParameter(event, param);
+        }
 
         MatcherAssert.assertThat(page.getElement().toString(),
                 CoreMatchers.not(CoreMatchers.containsString("bar")));
@@ -77,9 +92,6 @@ public class RouteNotFoundErrorTest {
                 NotFoundException.class, new NotFoundException());
 
         VaadinService vaadinService = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration deploymentConfiguration = Mockito
-                .mock(DeploymentConfiguration.class);
-        VaadinService.setCurrent(vaadinService);
         Mockito.when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(null);
 
@@ -92,11 +104,15 @@ public class RouteNotFoundErrorTest {
         event.getSource().getRegistry().getRegisteredRoutes();
 
         try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class)) {
+                .mockStatic(FrontendUtils.class);
+                MockedStatic<VaadinService> service = Mockito.mockStatic(
+                        VaadinService.class, Mockito.CALLS_REAL_METHODS);) {
             util.when(() -> FrontendUtils.getProjectFrontendDir(Mockito.any()))
                     .thenReturn(null);
             util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
                     .thenReturn(false);
+            service.when(() -> VaadinService.getCurrent())
+                    .thenReturn(vaadinService);
 
             page.setErrorParameter(event, param);
         }

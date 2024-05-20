@@ -143,10 +143,8 @@ public abstract class AbstractRouteNotFoundError extends Component {
     }
 
     private List<Element> getClientRoutes(BeforeEnterEvent event) {
-        return MenuRegistry
-                .getClientRoutes(false,
-                        event.getUI().getSession().getConfiguration())
-                .stream().filter(route -> !route.contains("$layout"))
+        return FrontendUtils.getClientRoutes().stream()
+                .filter(route -> !route.contains("$layout"))
                 .map(route -> route.replace("$index", ""))
                 .map(this::clientRouteToHtml).toList();
     }
