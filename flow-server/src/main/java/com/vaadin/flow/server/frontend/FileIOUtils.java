@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -229,11 +230,17 @@ public class FileIOUtils {
     }
 
     private static String replaceWhiteSpace(String text) {
-        return text.replaceAll("(\\s)*'", "'").replaceAll("'(\\s)*", "'")
-                .replaceAll("(\\s)*:", ":").replaceAll(":(\\s)*", ":")
-                .replaceAll("(\\s)*\\{", "{").replaceAll("\\{(\\s)*", "{")
-                .replaceAll("(\\s)*}", "}").replaceAll("}(\\s)*", "}")
-                .replaceAll("(\\s)*\\[", "[").replaceAll("\\[(\\s)*", "[")
-                .replaceAll("(\\s)*]", "]").replaceAll("](\\s)*", "]");
+        for (String character : Stream.of("{", "}", ":", "'", "[", "]")
+                .toList()) {
+            text = replaceWhiteSpaceAround(text, character);
+        }
+        return text;
+    }
+
+    private static String replaceWhiteSpaceAround(String text,
+            String character) {
+        return text
+                .replaceAll(String.format("(\\s)*\\%s", character), character)
+                .replaceAll(String.format("\\%s(\\s)*", character), character);
     }
 }
