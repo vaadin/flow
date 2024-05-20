@@ -37,7 +37,7 @@
         <!--
             maven-invoker depends on a maven-shared-utils version that currently
             conflicts with the one defined by maven-core, resulting in test failures
-            for the GenerateMavenBOMMojo. maven-shared-utils is pinned with scope test
+            for the GenerateMavenBOMMojo. maven-shared-utils is pinned with scope provided
             to make test succeed. At runtime, the correct version is picked when the
             flow generate-maven-sbom goal is executed.
         -->
