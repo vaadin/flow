@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.Platform;
+import com.vaadin.flow.server.Version;
 
 import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationAndEOL;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -153,8 +155,11 @@ public class TaskGenerateReactFiles
         try {
             writeFile(flowTsx, getFlowTsxFileContent(routesTsx.exists()));
             if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
-                writeFile(reactAdapterTsx,
-                        getFileContent(REACT_ADAPTER_TEMPLATE));
+                String reactAdapterContent = getFileContent(
+                        REACT_ADAPTER_TEMPLATE);
+                reactAdapterContent = reactAdapterContent.replace(
+                        "{{VAADIN_VERSION}}", Version.getFullVersion());
+                writeFile(reactAdapterTsx, reactAdapterContent);
             }
             if (!routesTsx.exists()) {
                 boolean isHillaUsed = FrontendUtils.isHillaUsed(
