@@ -65,6 +65,8 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
         return new String[] {
                 "org.apache.catalina.core.ApplicationContextFacade",
                 "org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler$SupplierCsrfToken",
+                "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter",
+                "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper",
                 "com.fasterxml.jackson.databind.ser.std.ToStringSerializer",
                 DefaultErrorHandler.class.getName() };
     }
