@@ -74,7 +74,7 @@ public class MenuRegistry {
      * client views are collected and any accessible server views.
      *
      * @param filterClientViews
-     *            {@code true} to filter client views by login information
+     *            {@code true} to filter routes by authentication status
      * @return routes with view information
      */
     public Map<String, AvailableViewInfo> getMenuItems(
@@ -176,7 +176,7 @@ public class MenuRegistry {
      * Collect all available client routes.
      *
      * @param filterClientViews
-     *            true to filter routes by authentication status
+     *            {@code true} to filter routes by authentication status
      * @param deploymentConfiguration
      *            application deployment configuration
      * @return map of registered routes
@@ -195,8 +195,7 @@ public class MenuRegistry {
      * accessible routes.
      *
      * @param filterClientViews
-     *            {@code true}if inaccessible client routes should be filtered
-     *            out
+     *            {@code true} to filter routes by authentication status
      * @param deploymentConfiguration
      *            current deployment configuration
      * @return list of available client routes
@@ -213,7 +212,7 @@ public class MenuRegistry {
      * Collect all available client routes.
      *
      * @param filterClientViews
-     *            true to filter routes by authentication status
+     *            {@code true} to filter routes by authentication status
      * @param deploymentConfiguration
      *            application deployment configuration
      * @param vaadinRequest
@@ -363,14 +362,10 @@ public class MenuRegistry {
             Predicate<? super String> roleAuthentication) {
         if (viewInfo.loginRequired() && !isUserAuthenticated) {
             return false;
-        } else {
-            String[] roles = viewInfo.rolesAllowed();
-            if (roles != null && roles.length > 0
-                    && !Arrays.stream(roles).anyMatch(roleAuthentication)) {
-                return false;
-            }
         }
-        return true;
+        String[] roles = viewInfo.rolesAllowed();
+        return roles == null || roles.length == 0
+                || Arrays.stream(roles).anyMatch(roleAuthentication);
     }
 
     /**
