@@ -232,8 +232,6 @@ export abstract class ReactAdapterElement extends HTMLElement {
                 is: 'ReactAdapterElement',
                 version: '{{VAADIN_VERSION}}'
             });
-            // @ts-ignore
-            window.Vaadin = vaadinObject;
         }
     }
 }
