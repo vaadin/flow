@@ -37,6 +37,8 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -356,6 +358,35 @@ public class WebComponentBootstrapHandlerViteTest {
         String result = stream.toString(StandardCharsets.UTF_8.name());
         Assert.assertTrue(
                 result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
+    }
+
+    @Test
+    public void usageStatistics() throws IOException {
+        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
+        VaadinServletService service = new MockVaadinServletService();
+        VaadinSession session = new MockVaadinSession(service);
+        session.lock();
+        session.setConfiguration(service.getDeploymentConfiguration());
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        config.setFrontendHotdeploy(false);
+        config.setProjectFolder(projectRootFolder);
+
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(request.getServletPath()).thenReturn("/");
+        Mockito.when(request.getMethod()).thenReturn("GET");
+        VaadinResponse response = getMockResponse(null);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+
+        UsageStatistics.removeEntry(Constants.STATISTICS_EXPORTED_WC);
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
+                .getName().equals(Constants.STATISTICS_EXPORTED_WC)));
     }
 
     private VaadinRequest mockRequest(boolean hasConfig) {

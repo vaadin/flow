@@ -257,6 +257,30 @@ public final class Constants implements Serializable {
     public static final String STATISTIC_ROUTING_HYBRID = "routing/hybrid";
 
     /**
+     * UsageEntry name for Flow routes definitions. Marked used, if
+     * RouteRegistry is not empty.
+     */
+    public static final String STATISTIC_HAS_FLOW_ROUTE = "has-flow-route";
+
+    /**
+     * UsageEntry name for exported web components. Marked used, if either
+     * WebComponentExporter or WebComponentExporterFactory is found in a project
+     */
+    public static final String STATISTIC_HAS_EXPORTED_WC = "has-exported-wc";
+
+    /**
+     * UsageEntry for rendering a Flow route. Marked as used, if a user
+     * navigates to a Flow route and navigation doesn't end up with an error.
+     */
+    public static final String STATISTICS_FLOW_ROUTER = "flow-router";
+
+    /**
+     * UsageEntry for rendering an exported web component. Marked as used, if an
+     * exported web component is instantiated on the server.
+     */
+    public static final String STATISTICS_EXPORTED_WC = "exported-wc";
+
+    /**
      * The name of platform core components and tools versions file.
      */
     public static final String VAADIN_CORE_VERSIONS_JSON = "vaadin-core-versions.json";
