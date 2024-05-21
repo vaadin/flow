@@ -15,14 +15,14 @@
  */
 package com.vaadin.base.devserver.viteproxy;
 
+import jakarta.websocket.MessageHandler;
+import jakarta.websocket.Session;
+
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jakarta.websocket.MessageHandler;
-import jakarta.websocket.Session;
 
 /**
  * Connects a brower-server websocket connection with a server-Vite websocket
@@ -46,13 +46,9 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
      *            the port the Vite server is running on
      * @param vitePath
      *            the path Vite is using
-     * @throws ExecutionException
-     *             if there is a problem with the connection
-     * @throws InterruptedException
-     *             if there is a problem with the connection
      */
     public ViteWebsocketProxy(Session browserSession, Integer vitePort,
-            String vitePath) throws InterruptedException, ExecutionException {
+            String vitePath) {
         viteConnection = new ViteWebsocketConnection(vitePort, vitePath,
                 browserSession.getNegotiatedSubprotocol(), msg -> {
                     try {
@@ -69,22 +65,30 @@ public class ViteWebsocketProxy implements MessageHandler.Whole<String> {
                         getLogger().debug("Error closing browser connection",
                                 e);
                     }
+                }, err -> {
+                    getLogger().error("Error creating Vite proxy connection",
+                            err);
+                    try {
+                        browserSession.close();
+                    } catch (IOException e1) {
+                        getLogger().debug("Error closing browser connection",
+                                e1);
+                    }
                 });
     }
 
-    protected Logger getLogger() {
-        return LoggerFactory.getLogger(getClass());
+    protected static Logger getLogger() {
+        return LoggerFactory.getLogger(ViteWebsocketProxy.class);
     }
 
     @Override
     public void onMessage(String message) {
-        getLogger().debug("Got message from browser: " + message);
+        getLogger().debug("Got message from browser: {}", message);
         try {
             viteConnection.send(message);
-            getLogger().debug("Sent message to Vite: " + message);
+            getLogger().debug("Sent message to Vite: {}", message);
         } catch (InterruptedException | ExecutionException e) {
-            getLogger().debug("Error sending message (" + message + ") to Vite",
-                    e);
+            getLogger().debug("Error sending message ({}) to Vite", message, e);
         }
 
     }
