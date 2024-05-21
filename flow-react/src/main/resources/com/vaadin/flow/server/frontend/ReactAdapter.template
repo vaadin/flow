@@ -226,6 +226,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
     #markAsUsed() : void {
         // @ts-ignore
         let vaadinObject = window.Vaadin || {};
+        // @ts-ignore
         if (vaadinObject.developmentMode) {
             vaadinObject.registrations = vaadinObject.registrations || [];
             vaadinObject.registrations.push({
