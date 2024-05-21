@@ -49,6 +49,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -66,6 +67,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -116,8 +118,8 @@ public class NavigationStateRendererTest {
     }
 
     @Route(value = "regular")
-    private static class RegularView extends Text {
-        RegularView() {
+    public static class RegularView extends Text {
+        public RegularView() {
             super("");
         }
     }
@@ -790,5 +792,23 @@ public class NavigationStateRendererTest {
                 "Expected preserved chain for inactive window to be removed",
                 inactive.isPresent());
 
+    }
+
+    @Test
+    public void getRouteTarget_usageStatistics() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        MockUI ui = new MockUI(new AlwaysLockedVaadinSession(service));
+        NavigationEvent event = new NavigationEvent(
+                new Router(new TestRouteRegistry()), new Location("home"), ui,
+                NavigationTrigger.UI_NAVIGATE);
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(RegularView.class));
+
+        UsageStatistics.removeEntry(Constants.STATISTICS_FLOW_ROUTER);
+
+        renderer.handle(event);
+
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
+                .getName().equals(Constants.STATISTICS_FLOW_ROUTER)));
     }
 }

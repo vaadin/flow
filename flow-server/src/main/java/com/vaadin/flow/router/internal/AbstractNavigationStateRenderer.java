@@ -41,6 +41,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -65,6 +66,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinSession;
@@ -489,6 +491,11 @@ public abstract class AbstractNavigationStateRenderer
         try {
             for (Class<? extends HasElement> elementType : typesChain) {
                 HasElement element = getRouteTarget(elementType, event);
+
+                if (!beforeNavigation.isErrorEvent()) {
+                    UsageStatistics.markAsUsed(Constants.STATISTICS_FLOW_ROUTER,
+                            null);
+                }
 
                 chain.add(element);
 
