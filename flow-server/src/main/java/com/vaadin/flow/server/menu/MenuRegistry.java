@@ -21,14 +21,19 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +44,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.internal.ParameterInfo;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -60,22 +66,26 @@ public class MenuRegistry {
      * @return routes with view information
      */
     public static Map<String, AvailableViewInfo> collectMenuItems() {
-        return new MenuRegistry().getMenuItems();
+        return new MenuRegistry().getMenuItems(true);
     }
 
     /**
      * Collect views with menu annotation for automatic menu population. All
      * client views are collected and any accessible server views.
      *
+     * @param filterClientViews
+     *            {@code true} to filter routes by authentication status
      * @return routes with view information
      */
-    public Map<String, AvailableViewInfo> getMenuItems() {
+    public Map<String, AvailableViewInfo> getMenuItems(
+            boolean filterClientViews) {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forApplicationScope();
 
         Map<String, AvailableViewInfo> menuRoutes = new HashMap<>();
 
-        menuRoutes.putAll(collectClientMenuItems());
+        menuRoutes.putAll(collectClientMenuItems(filterClientViews,
+                VaadinService.getCurrent().getDeploymentConfiguration()));
 
         collectAndAddServerMenuItems(routeConfiguration, menuRoutes);
 
@@ -162,16 +172,58 @@ public class MenuRegistry {
         return parameters;
     }
 
-    private Map<String, AvailableViewInfo> collectClientMenuItems() {
-        List<String> clientRoutes = FrontendUtils.getClientRoutes();
+    /**
+     * Collect all available client routes.
+     *
+     * @param filterClientViews
+     *            {@code true} to filter routes by authentication status
+     * @param deploymentConfiguration
+     *            application deployment configuration
+     * @return map of registered routes
+     */
+    public static Map<String, AvailableViewInfo> collectClientMenuItems(
+            boolean filterClientViews,
+            DeploymentConfiguration deploymentConfiguration) {
 
-        if (clientRoutes.isEmpty()) {
-            // No client routes no need to do more work here.
-            return Collections.emptyMap();
-        }
+        VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
+        return collectClientMenuItems(filterClientViews,
+                deploymentConfiguration, vaadinRequest);
+    }
 
-        DeploymentConfiguration deploymentConfiguration = VaadinService
-                .getCurrent().getDeploymentConfiguration();
+    /**
+     * Get registered client routes. Possible to have all routes or only
+     * accessible routes.
+     *
+     * @param filterClientViews
+     *            {@code true} to filter routes by authentication status
+     * @param deploymentConfiguration
+     *            current deployment configuration
+     * @return list of available client routes
+     */
+    public static List<String> getClientRoutes(boolean filterClientViews,
+            DeploymentConfiguration deploymentConfiguration) {
+
+        VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
+        return new ArrayList<>(collectClientMenuItems(filterClientViews,
+                deploymentConfiguration, vaadinRequest).keySet());
+    }
+
+    /**
+     * Collect all available client routes.
+     *
+     * @param filterClientViews
+     *            {@code true} to filter routes by authentication status
+     * @param deploymentConfiguration
+     *            application deployment configuration
+     * @param vaadinRequest
+     *            current request
+     * @return map of registered routes
+     */
+    public static Map<String, AvailableViewInfo> collectClientMenuItems(
+            boolean filterClientViews,
+            DeploymentConfiguration deploymentConfiguration,
+            VaadinRequest vaadinRequest) {
+
         URL viewsJsonAsResource = getViewsJsonAsResource(
                 deploymentConfiguration);
         if (viewsJsonAsResource == null) {
@@ -188,7 +240,9 @@ public class MenuRegistry {
 
         try (InputStream source = viewsJsonAsResource.openStream()) {
             if (source != null) {
-                ObjectMapper mapper = new ObjectMapper();
+                ObjectMapper mapper = new ObjectMapper().configure(
+                        DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                        false);
                 mapper.readValue(source,
                         new TypeReference<List<AvailableViewInfo>>() {
                         }).forEach(clientViewConfig -> collectClientViews("",
@@ -200,21 +254,21 @@ public class MenuRegistry {
                     viewsJsonAsResource.getPath(), e);
         }
 
-        for (String route : new HashSet<>(configurations.keySet())) {
-            if (!clientRoutes.contains(route.replaceFirst("/", ""))) {
-                configurations.remove(route);
-            }
+        if (filterClientViews) {
+            filterClientViews(configurations, vaadinRequest);
         }
 
         return configurations;
     }
 
-    private void collectClientViews(String basePath,
+    private static void collectClientViews(String basePath,
             AvailableViewInfo viewConfig,
             Map<String, AvailableViewInfo> configurations) {
         String path = viewConfig.route() == null || viewConfig.route().isEmpty()
                 ? basePath
-                : basePath + '/' + viewConfig.route();
+                : viewConfig.route().startsWith("/")
+                        ? basePath + viewConfig.route()
+                        : basePath + '/' + viewConfig.route();
         configurations.put(path, viewConfig);
         if (viewConfig.children() != null) {
             viewConfig.children().forEach(
@@ -223,10 +277,17 @@ public class MenuRegistry {
     }
 
     public static final String FILE_ROUTES_JSON_NAME = "file-routes.json";
-    public static final String FILE_ROUTES_JSON_PROD_PATH = "/META-INF/VAADIN/"
+    public static final String FILE_ROUTES_JSON_PROD_PATH = "META-INF/VAADIN/"
             + FILE_ROUTES_JSON_NAME;
 
-    private URL getViewsJsonAsResource(
+    /**
+     * Load views json as a resource.
+     *
+     * @param deploymentConfiguration
+     *            current deployment configuration
+     * @return URL to json resource
+     */
+    public static URL getViewsJsonAsResource(
             DeploymentConfiguration deploymentConfiguration) {
         var isProductionMode = deploymentConfiguration.isProductionMode();
         if (isProductionMode) {
@@ -247,14 +308,74 @@ public class MenuRegistry {
         }
     }
 
+    private static void filterClientViews(
+            Map<String, AvailableViewInfo> configurations,
+            VaadinRequest vaadinRequest) {
+        final boolean isUserAuthenticated = vaadinRequest
+                .getUserPrincipal() != null;
+
+        Set<String> clientEntries = new HashSet<>(configurations.keySet());
+        for (String key : clientEntries) {
+            AvailableViewInfo viewInfo = configurations.get(key);
+            boolean routeValid = validateViewAccessible(viewInfo,
+                    isUserAuthenticated, vaadinRequest::isUserInRole);
+
+            if (!routeValid) {
+                configurations.remove(key);
+                if (viewInfo.children() != null
+                        && !viewInfo.children().isEmpty()) {
+                    // remove all children for unauthenticated parent.
+                    removeChildren(configurations, viewInfo, key);
+                }
+            }
+        }
+    }
+
+    private static void removeChildren(
+            Map<String, AvailableViewInfo> configurations,
+            AvailableViewInfo viewInfo, String parentPath) {
+        for (AvailableViewInfo child : viewInfo.children()) {
+            configurations.remove(parentPath + "/" + child.route());
+            if (child.children() != null) {
+                removeChildren(configurations, child,
+                        parentPath + "/" + child.route());
+            }
+        }
+    }
+
     /**
-     * Get the ClassLoader.
+     * Check view against authentication state.
      * <p>
-     * Note! package protected for testing.
+     * If not authenticated and login required -> invalid. If user doesn't have
+     * correct roles -> invalid.
+     *
+     * @param viewInfo
+     *            view info
+     * @param isUserAuthenticated
+     *            user authentication state
+     * @param roleAuthentication
+     *            method to authenticate if user has role
+     * @return true if accessible, false if something is not authenticated
+     */
+    private static boolean validateViewAccessible(AvailableViewInfo viewInfo,
+            boolean isUserAuthenticated,
+            Predicate<? super String> roleAuthentication) {
+        if (viewInfo.loginRequired() && !isUserAuthenticated) {
+            return false;
+        }
+        String[] roles = viewInfo.rolesAllowed();
+        return roles == null || roles.length == 0
+                || Arrays.stream(roles).anyMatch(roleAuthentication);
+    }
+
+    /**
+     * Get the current thread ContextClassLoader.
+     * <p>
+     * Note! public for testing.
      *
      * @return ClassLoader
      */
-    ClassLoader getClassLoader() {
+    public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
     }
 
