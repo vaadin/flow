@@ -953,6 +953,13 @@ public class VaadinServletContextInitializer
             addedScanNever.forEach(scanNever::addPrefix);
         }
 
+        /**
+         * Constructor sets filterOnlyByPackageProperties to true. Only filter
+         * based on the package.properties in jar/module.
+         *
+         * @param resourceLoader
+         *            Resource loader
+         */
         public CustomResourceLoader(ResourceLoader resourceLoader) {
             super(resourceLoader);
             filterOnlyByPackageProperties = true;

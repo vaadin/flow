@@ -19,6 +19,7 @@ package com.vaadin.flow.spring.test.filtering;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.spring.test.exclude.ExcludedExternalRoute;
 import com.vaadin.flow.spring.test.exclude.ExcludedRoute;
 import com.vaadin.flow.spring.test.allowed.startup.CustomVaadinServiceInitListener;
 import com.vaadin.flow.spring.test.allowed.startup.vaadin.AllowedRoute;
@@ -71,6 +72,14 @@ public class ClassScannerIT extends ChromeBrowserTest {
     public void libExcludedModule_withExcludedJar() {
         open();
         assertClassBlocked(ExcludedRoute.class.getSimpleName());
+    }
+
+    @Test
+    public void defaultJarExclusion_externalJarExcluded() {
+        open();
+        // External Jar "spring-test-excluded.jar" is excluded by default by
+        // FilterableResourceProvider#DEFAULT_SCAN_NEVER_JAR.
+        assertClassBlocked(ExcludedExternalRoute.class.getSimpleName());
     }
 
     private void assertClassAllowed(String className) {

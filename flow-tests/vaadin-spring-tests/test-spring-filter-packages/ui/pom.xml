@@ -30,6 +30,13 @@
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>my-local-repo</id>
+			<url>file://${project.basedir}/local-lib/</url>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.vaadin</groupId>
@@ -86,6 +93,11 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.vaadin.test</groupId>
+			<artifactId>spring-test-excluded</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

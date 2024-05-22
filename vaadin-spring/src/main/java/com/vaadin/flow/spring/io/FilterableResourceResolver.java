@@ -19,6 +19,7 @@ package com.vaadin.flow.spring.io;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.JarURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
@@ -59,6 +60,7 @@ public class FilterableResourceResolver
 
     private static final String JAR_PROTOCOL = "jar:";
     private static final String JAR_KEY = ".jar!/";
+    private static final String JAR_EXTENSION = ".jar";
     private static final String PACKAGE_PROPERTIES_PATH = "META-INF/VAADIN/package.properties";
 
     /**
@@ -80,13 +82,15 @@ public class FilterableResourceResolver
             "commons-logging", "commons-exec", "commons-lang", "jackson-",
             "atmosphere-runtime", "byte-buddy", "commons-compress",
             "aspectjweaver", "hibernate-core", "hibernate-commons",
-            "hibernate-validator", "jboss-logging", "/selenium-", "slf4j",
-            "/spring-", "org/webjars/bowergithub", "snakeyaml",
+            "hibernate-validator", "jboss-logging", "selenium-", "slf4j",
+            "/spring-", "snakeyaml",
 
             "javax.", "jakarta.", "kotlin-",
 
             "gwt-elemental", "javassist", "javaparser-core",
             "javaparser-symbol", "oshi-core", "micrometer-", "nimbus-jose-jwt",
+            "jooq.", "jooq-", "directory-watcher", "classgraph.", "jsoup.",
+            "throw-if-servlet3", "ph-css", "ph-commons", "gentyref.",
 
             "/hilla-engine-core-", "/hilla-engine-runtime-",
             "/hilla-parser-jvm-", "/hilla-runtime-plugin-").toList();
@@ -172,7 +176,8 @@ public class FilterableResourceResolver
             Resource rootDirResource, URL rootDirUrl, String subPattern)
             throws IOException {
         String path = rootDirResource.getURI().toString();
-        if (DEFAULT_SCAN_NEVER_JAR.stream().anyMatch(path::contains)) {
+        String jarName = resolveJarName(rootDirResource.getURI());
+        if (DEFAULT_SCAN_NEVER_JAR.stream().anyMatch(jarName::contains)) {
             return Set.of();
         }
         String key = cachePackageProperties(path, rootDirResource, rootDirUrl);
@@ -203,10 +208,10 @@ public class FilterableResourceResolver
         var result = super.doFindAllClassPathResources(path);
         result.removeIf(res -> {
             try {
-                String resourcePath = res.getURI().getPath();
-                if (resourcePath != null && DEFAULT_SCAN_NEVER_JAR.stream()
-                        .anyMatch(resourcePath::contains)) {
-                    return false;
+                String jarName = resolveJarName(res.getURI());
+                if (DEFAULT_SCAN_NEVER_JAR.stream()
+                        .anyMatch(jarName::contains)) {
+                    return true;
                 }
             } catch (IOException e) {
                 getLogger().warn("Failed to resolve path for resource {}", res,
@@ -216,6 +221,24 @@ public class FilterableResourceResolver
             return isBlockedJar(res, key);
         });
         return result;
+    }
+
+    private String resolveJarName(URI resourceURI) {
+        String resourcePath = resourceURI.getPath();
+        if (resourcePath == null) {
+            resourcePath = resourceURI.toString();
+        }
+        int index = resourcePath.lastIndexOf(JAR_EXTENSION);
+        if (index > -1) {
+            String jarName = resourcePath.substring(0,
+                    index + JAR_EXTENSION.length());
+            index = jarName.lastIndexOf("/");
+            if (index > -1) {
+                return "/" + jarName.substring(index + 1);
+            }
+            return "/" + jarName;
+        }
+        return resourcePath;
     }
 
     private String cachePackageProperties(String path, Resource rootDirResource,
