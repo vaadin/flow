@@ -40,6 +40,7 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
@@ -315,31 +316,75 @@ public class RouteUtil {
 
         Logger logger = LoggerFactory.getLogger(RouteUtil.class);
 
+        // unhandled cases for modified class
+        // - modified/removed class is not anymore a Component:
+        // route will not be removed from registry
+        // - modified classes and session registry
+        // routes have been added manually and we do not have enough information
+        // to decide if the route should be re-added with the path from the
+        // annotation or if it should be left unchanged
+        //
+        // potentially breaking cases
+        // - not annotated classes manually added to the registry:
+        // if the class is modified the route will be removed from the registry
+
+        boolean isSessionRegistry = registry instanceof SessionRouteRegistry;
+
+        // routes for modified classes should be removed
+        // - @Route annotation has been removed
+        // - @Route annotation is present but registerAtStartup=false
+        // for session registries a modified route should never be removed
+        // because we don't know how it has been registered
+        Stream<Class<? extends Component>> toRemove = Stream
+                .concat(filterComponentClasses(deletedClasses),
+                        filterComponentClasses(modifiedClasses)
+                                .filter(clazz -> !isSessionRegistry)
+                                .filter(clazz -> !clazz
+                                        .isAnnotationPresent(Route.class)
+                                        || !clazz.getAnnotation(Route.class)
+                                                .registerAtStartup()))
+                .distinct();
+
+        Stream<Class<? extends Component>> toAdd;
+        if (isSessionRegistry) {
+            // routes on session registry are initialized programmatically so
+            // new classes should never be added automatically
+            toAdd = Stream.empty();
+        } else {
+            // New classes should be added to the registry only if they have a
+            // @Route annotation with registerAtStartup=true
+            toAdd = Stream
+                    .concat(filterComponentClasses(addedClasses),
+                            filterComponentClasses(modifiedClasses))
+                    .filter(clazz -> clazz.isAnnotationPresent(Route.class)
+                            && clazz.getAnnotation(Route.class)
+                                    .registerAtStartup())
+                    .distinct();
+        }
+
         registry.update(() -> {
             // remove deleted classes and classes that lost the annotation from
             // registry
-            Stream.concat(deletedClasses.stream(),
-                    modifiedClasses.stream().filter(
-                            clazz -> !clazz.isAnnotationPresent(Route.class)))
-                    .filter(Component.class::isAssignableFrom)
-                    .forEach(clazz -> {
-                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
-                        logger.debug("Removing route to {}", componentClass);
-                        routeConf.removeRoute(componentClass);
-                    });
+            toRemove.forEach(componentClass -> {
+                logger.debug("Removing route to {}", componentClass);
+                routeConf.removeRoute(componentClass);
+            });
             // add new routes to registry
-            Stream.concat(addedClasses.stream(), modifiedClasses.stream())
-                    .distinct().filter(Component.class::isAssignableFrom)
-                    .filter(clazz -> clazz.isAnnotationPresent(Route.class))
-                    .forEach(clazz -> {
-                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
-                        logger.debug(
-                                "Updating route {} to {}", componentClass
-                                        .getAnnotation(Route.class).value(),
-                                clazz);
-                        routeConf.removeRoute(componentClass);
-                        routeConf.setAnnotatedRoute(componentClass);
-                    });
+            toAdd.forEach(componentClass -> {
+                logger.debug("Updating route {} to {}",
+                        componentClass.getAnnotation(Route.class).value(),
+                        componentClass);
+                routeConf.removeRoute(componentClass);
+                routeConf.setAnnotatedRoute(componentClass);
+            });
         });
     }
+
+    @SuppressWarnings("unchecked")
+    private static Stream<Class<? extends Component>> filterComponentClasses(
+            Set<Class<?>> classes) {
+        return classes.stream().filter(Component.class::isAssignableFrom)
+                .map(clazz -> (Class<? extends Component>) clazz);
+    }
+
 }
