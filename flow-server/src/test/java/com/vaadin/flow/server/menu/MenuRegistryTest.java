@@ -215,15 +215,18 @@ public class MenuRegistryTest {
 
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
-        Arrays.asList(MyRoute.class, MyInfo.class)
+        Arrays.asList(MyRoute.class, MyInfo.class, MyRequiredParamRoute.class,
+                MyRequiredAndOptionalParamRoute.class,
+                MyOptionalParamRoute.class, MyVarargsParamRoute.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .collectMenuItems();
 
-        Assert.assertEquals(4, menuItems.size());
+        Assert.assertEquals(8, menuItems.size());
         assertClientRoutes(menuItems);
         assertServerRoutes(menuItems);
+        assertServerRoutesWithParameters(menuItems);
     }
 
     @Test
@@ -332,6 +335,35 @@ public class MenuRegistryTest {
         Assert.assertEquals("MyInfo", menuItems.get("/info").menu().title());
     }
 
+    private void assertServerRoutesWithParameters(
+            Map<String, AvailableViewInfo> menuItems) {
+        Assert.assertTrue("Server route '/param/:param' missing",
+                menuItems.containsKey("/param/:param"));
+        Assert.assertTrue(
+                "Server route '/param/:param' should be excluded from menu",
+                menuItems.get("/param/:param").menu().exclude());
+
+        Assert.assertTrue("Server route '/param/:param1' missing",
+                menuItems.containsKey("/param/:param1"));
+        Assert.assertTrue(
+                "Server route '/param/:param1' should be excluded from menu",
+                menuItems.get("/param/:param1").menu().exclude());
+
+        Assert.assertTrue(
+                "Server route with optional parameters '/param' missing",
+                menuItems.containsKey("/param"));
+        Assert.assertFalse(
+                "Server route '/param' should be included in the menu",
+                menuItems.get("/param").menu().exclude());
+
+        Assert.assertTrue(
+                "Server route with optional parameters '/param/varargs' missing",
+                menuItems.containsKey("/param/varargs"));
+        Assert.assertFalse(
+                "Server route '/param/varargs' should be included in the menu",
+                menuItems.get("/param/varargs").menu().exclude());
+    }
+
     @Tag("div")
     @Route("home")
     @Menu(title = "Home")
@@ -342,6 +374,30 @@ public class MenuRegistryTest {
     @Route("info")
     @Menu
     private static class MyInfo extends Component {
+    }
+
+    @Tag("div")
+    @Route("param/:param")
+    @Menu
+    private static class MyRequiredParamRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("param/:param1/:param2?")
+    @Menu
+    private static class MyRequiredAndOptionalParamRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("param/:param1?/:param2?(edit)")
+    @Menu
+    private static class MyOptionalParamRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("param/varargs/:param*")
+    @Menu
+    private static class MyVarargsParamRoute extends Component {
     }
 
     /**

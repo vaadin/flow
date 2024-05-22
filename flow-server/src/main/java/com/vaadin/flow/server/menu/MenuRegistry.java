@@ -43,6 +43,7 @@ import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -133,11 +134,37 @@ public class MenuRegistry {
             List<RouteData> registeredAccessibleMenuRoutes) {
         for (RouteData route : registeredAccessibleMenuRoutes) {
             String title = getTitle(route.getNavigationTarget());
+            final String url = getRouteUrl(route);
             Map<String, RouteParamType> parameters = getParameters(route);
-            menuRoutes.put("/" + route.getTemplate(),
-                    new AvailableViewInfo(title, null, false,
-                            "/" + route.getTemplate(), false, false,
-                            route.getMenuData(), null, parameters));
+            menuRoutes.put(url, new AvailableViewInfo(title, null, false, url,
+                    false, false, route.getMenuData(), null, parameters));
+        }
+    }
+
+    /**
+     * Get the route url for the route. If the route has optional parameters,
+     * the url is stripped off from them.
+     *
+     * @param route
+     *            route to get url for
+     * @return url for the route
+     */
+    private static String getRouteUrl(RouteData route) {
+        if (route.getRouteParameters() != null
+                && !route.getRouteParameters().isEmpty()) {
+            String editUrl = "/" + route.getTemplate();
+            for (RouteParameterData param : route.getRouteParametersList()
+                    .stream()
+                    .filter(param -> param.isOptional() || param.isVarargs())
+                    .toList()) {
+                editUrl = editUrl.replace("/" + param.getTemplate(), "");
+            }
+            if (editUrl.isEmpty()) {
+                editUrl = "/";
+            }
+            return editUrl;
+        } else {
+            return "/" + route.getTemplate();
         }
     }
 
