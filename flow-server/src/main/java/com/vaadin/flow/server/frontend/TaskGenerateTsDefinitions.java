@@ -26,7 +26,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 
-import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationAndEOL;
+import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -143,20 +143,20 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             String uncommentedDefaultContent = removeComments(defaultContent);
             String cssTypeModuleContent = uncommentedDefaultContent
                     .replace(cssModuleContent, "");
-            boolean containsExactCssModule = compareIgnoringIndentationAndEOL(
+            boolean containsExactCssModule = compareIgnoringIndentationEOLAndWhiteSpace(
                     content, cssModuleContent, String::equals)
-                    || compareIgnoringIndentationAndEOL(content,
+                    || compareIgnoringIndentationEOLAndWhiteSpace(content,
                             cssModuleContent, String::contains);
-            boolean containsExactCssTypeModule = compareIgnoringIndentationAndEOL(
+            boolean containsExactCssTypeModule = compareIgnoringIndentationEOLAndWhiteSpace(
                     content, cssTypeModuleContent, String::equals)
-                    || compareIgnoringIndentationAndEOL(content,
+                    || compareIgnoringIndentationEOLAndWhiteSpace(content,
                             cssTypeModuleContent, String::contains);
             boolean containsCssType = content.contains(DECLARE_CSSTYPE_MODULE);
             boolean containsCssModule = content.contains(DECLARE_CSS_MODULE);
 
-            if (compareIgnoringIndentationAndEOL(content, defaultContent,
-                    String::equals)
-                    || compareIgnoringIndentationAndEOL(content,
+            if (compareIgnoringIndentationEOLAndWhiteSpace(content,
+                    defaultContent, String::equals)
+                    || compareIgnoringIndentationEOLAndWhiteSpace(content,
                             uncommentedDefaultContent, String::contains)) {
                 log().debug("{} is up-to-date", TS_DEFINITIONS);
             } else if (containsExactCssModule && containsExactCssTypeModule) {
@@ -241,14 +241,14 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             throws ExecutionFailedException {
         try {
             String templateContent = getTemplateContent(".v1");
-            if (compareIgnoringIndentationAndEOL(content, templateContent,
-                    String::equals)) {
+            if (compareIgnoringIndentationEOLAndWhiteSpace(content,
+                    templateContent, String::equals)) {
                 // Current content has been written by Flow, can be replaced
                 return UpdateMode.REPLACE;
             }
             templateContent = getTemplateContent(".v2");
-            if (compareIgnoringIndentationAndEOL(content, templateContent,
-                    String::equals)) {
+            if (compareIgnoringIndentationEOLAndWhiteSpace(content,
+                    templateContent, String::equals)) {
                 // Current content has been written by Flow, can be replaced
                 return UpdateMode.REPLACE;
             }
@@ -262,10 +262,11 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             String templateContent = getTemplateContent(".hilla.v1");
             String templateV2Content = getTemplateContent(".hilla.v2");
             String uncommentedContent = removeComments(content);
-            if (compareIgnoringIndentationAndEOL(uncommentedContent,
+            if (compareIgnoringIndentationEOLAndWhiteSpace(uncommentedContent,
                     templateContent, String::equals)
-                    || compareIgnoringIndentationAndEOL(uncommentedContent,
-                            templateV2Content, String::equals)) {
+                    || compareIgnoringIndentationEOLAndWhiteSpace(
+                            uncommentedContent, templateV2Content,
+                            String::equals)) {
                 // Current content is compatible with what we expect to be in a
                 // Hilla application. Flow contents can be appended silently.
                 return UpdateMode.UPDATE;
