@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -377,8 +378,8 @@ public class RouteUtil {
             Map<? extends Class<? extends Component>, RouteTarget> routeTargets = registry
                     .getRegisteredRoutes().stream()
                     .map(routeData -> routesMap.get(routeData.getTemplate()))
-                    .collect(Collectors.toMap(RouteTarget::getTarget,
-                            Function.identity()));
+                    .filter(Objects::nonNull).collect(Collectors.toMap(
+                            RouteTarget::getTarget, Function.identity()));
             modifiedClassesRouteRemovalFilter = modifiedClassesRouteRemovalFilter
                     .and(clazz -> {
                         RouteTarget routeTarget = routeTargets.get(clazz);
