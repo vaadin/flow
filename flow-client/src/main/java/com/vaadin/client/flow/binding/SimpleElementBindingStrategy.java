@@ -31,6 +31,7 @@ import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.LitUtils;
 import com.vaadin.client.PolymerUtils;
+import com.vaadin.client.ReactUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateNode;
@@ -878,6 +879,22 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 return;
             }
             handleTemplateInTemplate(context, node, object, reactivePhase);
+        } else if (NodeProperties.INJECT_BY_NAME.equals(type)) {
+            String name = object.getString(NodeProperties.PAYLOAD);
+            String address = "name='" + name + "'";
+
+            Supplier<Element> elementLookup = () -> ElementUtil
+                    .getElementByName(context.htmlNode, name);
+
+            if (!ReactUtils.isInitialized(elementLookup)) {
+                ReactUtils.addReadyCallback((Element) context.htmlNode, () -> {
+                    doAppendVirtualChild(context, node, false, elementLookup,
+                            name, address);
+                });
+                return;
+            }
+            doAppendVirtualChild(context, node, reactivePhase, elementLookup,
+                    name, address);
         } else {
             assert false : "Unexpected payload type " + type;
         }

@@ -14,7 +14,13 @@
  * the License.
  */
 import {createRoot, Root} from "react-dom/client";
-import {createElement, type Dispatch, type ReactElement, useReducer} from "react";
+import {
+    createElement,
+    type Dispatch,
+    type ReactElement, Ref, useEffect,
+    useReducer,
+    useRef
+} from "react";
 
 type FlowStateKeyChangedAction<K extends string, V> = Readonly<{
     type: 'stateKeyChanged',
@@ -82,6 +88,10 @@ export type RenderHooks = {
     readonly useCustomEvent: ReactAdapterElement["useCustomEvent"]
 };
 
+interface ReadyCallbackFunction {
+    (): void;
+}
+
 /**
  * A base class for Web Components that render using React. Enables creating
  * adapters for integrating React components with Flow. Intended for use with
@@ -94,7 +104,10 @@ export abstract class ReactAdapterElement extends HTMLElement {
     #state: Record<string, unknown> = Object.create(null);
     #stateSetters = new Map<string, Dispatch<unknown>>();
     #customEvents = new Map<string, DispatchEvent<unknown>>();
+    #contents = new Map<string, Element>();
     #dispatchFlowState: Dispatch<FlowStateReducerAction> = emptyAction;
+
+    #readyCallback: ReadyCallbackFunction = () => {};
 
     readonly #renderHooks: RenderHooks;
 
@@ -109,13 +122,22 @@ export abstract class ReactAdapterElement extends HTMLElement {
             useCustomEvent: this.useCustomEvent.bind(this)
         };
         this.#Wrapper = this.#renderWrapper.bind(this);
-        this.#markAsUsed();
     }
 
     public async connectedCallback() {
+        for (const child of this.children) {
+            let name: string | null;
+            if (child.localName === 'flow-content-container' && (name = child.getAttribute('name'))) {
+                this.#contents.set(name, child);
+            }
+        }
         await this.#unmountComplete;
         this.#root = createRoot(this);
         this.#maybeRenderRoot();
+    }
+
+    public addReadyCallback(readyCallback: ReadyCallbackFunction) {
+        this.#readyCallback = readyCallback;
     }
 
     public async disconnectedCallback() {
@@ -206,6 +228,17 @@ export abstract class ReactAdapterElement extends HTMLElement {
      * @protected
      */
     protected abstract render(hooks: RenderHooks): ReactElement | null;
+
+    protected useContent(name: string): ReactElement | null {
+        const ref = useRef<Element>(null);
+        useEffect(() => {
+            // if (this.#contents.has(name)) {
+                this.#readyCallback();
+                // ref.current?.appendChild(this.#contents.get(name)!);
+            // }
+        }, []);
+        return createElement('flow-content-container', {name, ref, style: {display: 'contents'}});
+    }
 
     #maybeRenderRoot() {
         if (this.#rootRendered || !this.#root) {
