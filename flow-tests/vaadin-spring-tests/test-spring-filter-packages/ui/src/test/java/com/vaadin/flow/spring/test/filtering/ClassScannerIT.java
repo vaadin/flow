@@ -78,7 +78,7 @@ public class ClassScannerIT extends ChromeBrowserTest {
     public void defaultJarExclusion_externalJarExcluded() {
         open();
         // External Jar "spring-test-excluded.jar" is excluded by default by
-        // FilterableResourceProvider#DEFAULT_SCAN_NEVER_JAR.
+        // custom META-INF/VAADIN/blocked.jars.list.
         assertClassBlocked(ExcludedExternalRoute.class.getSimpleName());
     }
 

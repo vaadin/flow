@@ -22,6 +22,8 @@ import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipException;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -62,6 +65,7 @@ public class FilterableResourceResolver
     private static final String JAR_KEY = ".jar!/";
     private static final String JAR_EXTENSION = ".jar";
     private static final String PACKAGE_PROPERTIES_PATH = "META-INF/VAADIN/package.properties";
+    private static final String BLOCKED_JARS_LIST_PATH = "/META-INF/VAADIN/blocked-jars.list";
 
     /**
      * The property key for allowed packages.
@@ -76,26 +80,43 @@ public class FilterableResourceResolver
      */
     public static final String BLOCKED_JAR_PROPERTY = "vaadin.blocked-jar";
 
+    /**
+     * Jar filename patterns for excluded jars.
+     */
     private static final List<String> DEFAULT_SCAN_NEVER_JAR = Stream.of(
             "antlr", "logback-classic", "logback-classic-core",
-            "commons-codec-", "commons-fileupload", "commons-io",
-            "commons-logging", "commons-exec", "commons-lang", "jackson-",
-            "atmosphere-runtime", "byte-buddy", "commons-compress",
-            "aspectjweaver", "hibernate-core", "hibernate-commons",
-            "hibernate-validator", "jboss-logging", "selenium-", "slf4j",
-            "/spring-", "snakeyaml",
+            "commons-codec-*.*.*.jar", "commons-fileupload",
+            "commons-io-*.*.*.jar", "commons-logging", "commons-exec",
+            "commons-lang*-*.*.*.jar", "jackson-databind-", "jackson-core-",
+            "jackson-datatype-", "jackson-annotations-", "jackson-module-",
+            "jackson-datatype-", "atmosphere-runtime", "byte-buddy",
+            "commons-compress", "aspectjweaver", "hibernate-core",
+            "hibernate-commons", "hibernate-validator", "jboss-logging",
+            "selenium-", "slf4j-simple-", "slf4j-api-", "spring-*.*.*.jar",
+            "spring-webmvc-*.*.*.jar", "spring-aop-*.*.*.jar",
+            "spring-beans-*.*.*.jar", "spring-context-*.*.*.jar",
+            "spring-core-*.*.*.jar", "spring-jcl-*.*.*.jar",
+            "spring-expression-*.*.*.jar", "spring-websocket-*.*.*.jar",
+            "spring-web-*.*.*.jar", "snakeyaml-*.*.jar", "javax.", "jakarta.",
+            "kotlin-reflect-", "kotlin-stdlib-", "gwt-elemental",
+            "javassist-*.*.*-*.jar", "javaparser-core-*.*.*.jar",
+            "javaparser-symbol", "oshi-core-*.*.*.jar",
+            "micrometer-observation-*.*.*.jar", "micrometer-commons-*.*.*.jar",
+            "nimbus-jose-jwt", "jooq-*.*.*.jar", "jooq-*-*.*.*.jar",
+            "directory-watcher-*.*.*.jar", "classgraph", "jsoup-*.*.*.jar",
+            "throw-if-servlet3", "ph-css-*.*.*.jar", "ph-commons-*.*.*.jar",
+            "gentyref-*.*.*.vaadin1.jar", "asm-*.*.jar", "asm-commons-*.*.jar",
+            "asm-tree-*.*.jar", "jetty-", "tomcat-", "classmate-*.*.*.jar",
+            "reflections-*.*.*.jar", "jna-*.*.*.jar", "jna-platform-*.*.*.jar",
+            "jcip-annotations-*.*.*.jar", "activation-*.*.*.jar",
+            "httpcore5-*.*.*.jar", "httpcore5-h2-*.*.*.jar",
 
-            "javax.", "jakarta.", "kotlin-",
-
-            "gwt-elemental", "javassist", "javaparser-core",
-            "javaparser-symbol", "oshi-core", "micrometer-", "nimbus-jose-jwt",
-            "jooq.", "jooq-", "directory-watcher", "classgraph.", "jsoup.",
-            "throw-if-servlet3", "ph-css", "ph-commons", "gentyref.",
-
-            "/hilla-engine-core-", "/hilla-engine-runtime-",
-            "/hilla-parser-jvm-", "/hilla-runtime-plugin-").toList();
+            "hilla-engine-core-", "hilla-engine-runtime-", "hilla-parser-jvm-",
+            "hilla-runtime-plugin-").toList();
 
     private final Map<String, PackageInfo> propertiesCache = new HashMap<>();
+
+    private List<String> customBlockedJarsList;
 
     private record PackageInfo(Set<String> allowedPackages,
             Set<String> blockedPackages, boolean blockedJar) implements Serializable {
@@ -109,6 +130,7 @@ public class FilterableResourceResolver
      */
     public FilterableResourceResolver(ResourceLoader resourceLoader) {
         super(resourceLoader);
+        initCustomBlockedJars();
     }
 
     private static Logger getLogger() {
@@ -137,6 +159,11 @@ public class FilterableResourceResolver
      */
     protected boolean isJar(String path) {
         return path.lastIndexOf(JAR_KEY) != -1;
+    }
+
+    private List<String> getDefaultBlockedJarList() {
+        return customBlockedJarsList != null ? customBlockedJarsList
+                : DEFAULT_SCAN_NEVER_JAR;
     }
 
     private Resource doResolveRootDirResource(Resource original)
@@ -177,8 +204,8 @@ public class FilterableResourceResolver
             throws IOException {
         String path = rootDirResource.getURI().toString();
         String jarName = resolveJarName(rootDirResource.getURI());
-        if (jarName != null && DEFAULT_SCAN_NEVER_JAR.stream()
-                .anyMatch(jarName::contains)) {
+        if (jarName != null && getDefaultBlockedJarList().stream()
+                .anyMatch(pattern -> patternMatch(jarName, pattern))) {
             return Set.of();
         }
         String key = cachePackageProperties(path, rootDirResource, rootDirUrl);
@@ -210,8 +237,8 @@ public class FilterableResourceResolver
         result.removeIf(res -> {
             try {
                 String jarName = resolveJarName(res.getURI());
-                if (jarName != null && DEFAULT_SCAN_NEVER_JAR.stream()
-                        .anyMatch(jarName::contains)) {
+                if (jarName != null && getDefaultBlockedJarList().stream()
+                        .anyMatch(pattern -> patternMatch(jarName, pattern))) {
                     return true;
                 }
             } catch (IOException e) {
@@ -222,6 +249,58 @@ public class FilterableResourceResolver
             return isBlockedJar(res, key);
         });
         return result;
+    }
+
+    /**
+     * Matches given jarName with the pattern. if pattern doesn't contain '*',
+     * then match is based on startsWith(pattern). If pattern has one or more
+     * '*', pattern is split into array and each part is matched with startsWith
+     * for each part in the given jarName. '*' match any character 0-n times
+     * except '-' or content of the part following `*`. <br/>
+     * <br/>
+     * For example, "spring-*.*.*.jar" pattern matches to "spring-1.0.0.jar",
+     * "spring-abc.1.0.jar" but NOT "spring-abc-1.0.0.jar" or
+     * "spring-abc.1.0.0.jar". <br/>
+     * <br/>
+     * String operations are handled from left to right, where content of `*` is
+     * substring starting from end of the previous String to beginning of the
+     * first occurrence of the next part in the parts array. <br/>
+     * <br/>
+     * "spring-*-*.*.*.jar" pattern matches to "spring-foo-1.0.0.jar",
+     * "spring-foo-bar.1.0.jar" but NOT "spring-foo-bar-1.0.0.jar" or
+     * "spring-1.0.0.jar".<br/>
+     * <br/>
+     * "spring-*_*.*.jar" match "spring-abc.1_0.0.jar" due to the order '*' is a
+     * substring part by part from left to right. <br/>
+     * <br/>
+     * Method is not using much regex to get optimal performance.
+     */
+    private boolean patternMatch(String jarName, String pattern) {
+        if (pattern.contains("*")) {
+            var parts = pattern.split("\\*");
+            String remainingName = jarName;
+            int nextPartIndex = 0;
+            int partIndex = 0;
+            for (String part : parts) {
+                if (!remainingName.startsWith(part)) {
+                    return false;
+                }
+                if ((partIndex + 1) >= parts.length) {
+                    return true;
+                }
+                remainingName = remainingName.substring(part.length());
+                nextPartIndex = remainingName.indexOf(parts[partIndex + 1]);
+                if (nextPartIndex == -1) {
+                    return false;
+                }
+                if (remainingName.substring(0, nextPartIndex).contains("-")) {
+                    return false;
+                }
+                remainingName = remainingName.substring(nextPartIndex);
+                partIndex++;
+            }
+        }
+        return jarName.startsWith(pattern);
     }
 
     private String resolveJarName(URI resourceURI) {
@@ -235,9 +314,9 @@ public class FilterableResourceResolver
                     index + JAR_EXTENSION.length());
             index = jarName.lastIndexOf("/");
             if (index > -1) {
-                return "/" + jarName.substring(index + 1);
+                return jarName.substring(index + 1);
             }
-            return "/" + jarName;
+            return jarName;
         }
         return null;
     }
@@ -456,5 +535,27 @@ public class FilterableResourceResolver
         boolean blockedJar = Boolean.parseBoolean(
                 properties.getProperty(BLOCKED_JAR_PROPERTY, "false"));
         return new PackageInfo(allowedPackages, blockedPackages, blockedJar);
+    }
+
+    private void initCustomBlockedJars() {
+        customBlockedJarsList = null;
+        URL url = getClass().getResource(BLOCKED_JARS_LIST_PATH);
+        if (url == null) {
+            return;
+        }
+        try {
+            String content = IOUtils.toString(url, StandardCharsets.UTF_8);
+            if (content != null) {
+                if (content.isBlank()) {
+                    customBlockedJarsList = Collections.emptyList();
+                } else {
+                    customBlockedJarsList = Arrays.asList(content.split("\\R"));
+                }
+            }
+        } catch (IOException e) {
+            getLogger().error(
+                    "Failed to read {}. Falling back to default list of blocked jars.",
+                    BLOCKED_JARS_LIST_PATH, e);
+        }
     }
 }
