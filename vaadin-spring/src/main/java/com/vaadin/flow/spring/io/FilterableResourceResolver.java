@@ -177,7 +177,8 @@ public class FilterableResourceResolver
             throws IOException {
         String path = rootDirResource.getURI().toString();
         String jarName = resolveJarName(rootDirResource.getURI());
-        if (DEFAULT_SCAN_NEVER_JAR.stream().anyMatch(jarName::contains)) {
+        if (jarName != null && DEFAULT_SCAN_NEVER_JAR.stream()
+                .anyMatch(jarName::contains)) {
             return Set.of();
         }
         String key = cachePackageProperties(path, rootDirResource, rootDirUrl);
@@ -209,7 +210,7 @@ public class FilterableResourceResolver
         result.removeIf(res -> {
             try {
                 String jarName = resolveJarName(res.getURI());
-                if (DEFAULT_SCAN_NEVER_JAR.stream()
+                if (jarName != null && DEFAULT_SCAN_NEVER_JAR.stream()
                         .anyMatch(jarName::contains)) {
                     return true;
                 }
@@ -238,7 +239,7 @@ public class FilterableResourceResolver
             }
             return "/" + jarName;
         }
-        return resourcePath;
+        return null;
     }
 
     private String cachePackageProperties(String path, Resource rootDirResource,
