@@ -730,7 +730,7 @@ public class RouteUtilTest {
     }
 
     // Hotswap agent may fire CREATE, MODIFY and REMOVE events for a class
-    // change. CREATE wins over REMOVE
+    // change. MODIFY wins over CREATE and REMOVE
     @Test
     public void routeAnnotatedClassAddedModifiedAndRemoved_updateRouteRegistry_routeIsAddedToRegistry() {
         // given

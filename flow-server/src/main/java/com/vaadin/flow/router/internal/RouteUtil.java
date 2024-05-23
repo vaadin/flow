@@ -17,6 +17,7 @@ package com.vaadin.flow.router.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -312,9 +313,34 @@ public class RouteUtil {
     public static void updateRouteRegistry(RouteRegistry registry,
             Set<Class<?>> addedClasses, Set<Class<?>> modifiedClasses,
             Set<Class<?>> deletedClasses) {
+
+        if ((addedClasses == null || addedClasses.isEmpty())
+                && (modifiedClasses == null || modifiedClasses.isEmpty())
+                && (deletedClasses == null || deletedClasses.isEmpty())) {
+            // No changes to apply
+            return;
+        }
+        // safe copy to prevent concurrent modification or operation failures on
+        // immutable sets
+        modifiedClasses = modifiedClasses != null
+                ? new HashSet<>(modifiedClasses)
+                : Set.of();
+        addedClasses = addedClasses != null ? new HashSet<>(addedClasses)
+                : Set.of();
+        deletedClasses = deletedClasses != null ? new HashSet<>(deletedClasses)
+                : Set.of();
+
         RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
 
         Logger logger = LoggerFactory.getLogger(RouteUtil.class);
+
+        // the same class may be present on more than one input sets depending
+        // on how IDE and agent collect file change events.
+        // A modified call takes over added and deleted.
+        if (!modifiedClasses.isEmpty()) {
+            addedClasses.removeIf(modifiedClasses::contains);
+            deletedClasses.removeIf(modifiedClasses::contains);
+        }
 
         // unhandled cases for modified class
         // - modified/removed class is not anymore a Component:
