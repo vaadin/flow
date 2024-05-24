@@ -452,12 +452,13 @@ public class FeatureFlagsTest {
     }
 
     @Test
-    public void systemPropertiesCheckedForUnsupportedFeatureFlags()
-            throws IOException {
+    public void systemPropertiesCheckedForUnsupportedFeatureFlags() {
         Logger mockedLogger = Mockito.mock(Logger.class);
         String exampleProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
                 + "exampleFeatureFlag";
-        String unsupportedProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
+        String unsupportedDeprecatedFormatProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
+                + "unsupportedFeature";
+        String unsupportedProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + "unsupportedFeature";
         var previousValue = System.getProperty(exampleProperty);
 
@@ -468,6 +469,7 @@ public class FeatureFlagsTest {
                     .thenReturn(mockedLogger);
 
             System.setProperty(exampleProperty, "true");
+            System.setProperty(unsupportedDeprecatedFormatProperty, "true");
             System.setProperty(unsupportedProperty, "true");
             // resetting feature flags to manually retry check (because it was
             // run in @Before block)
@@ -476,6 +478,12 @@ public class FeatureFlagsTest {
 
             Mockito.verify(mockedLogger, Mockito.never()).warn(
                     "Unsupported feature flag is present: {}", exampleProperty);
+            // We do not want warning message for vaadin.featureFlag
+            Mockito.verify(mockedLogger, Mockito.never()).warn(
+                    "Unsupported feature flag is present: {}",
+                    unsupportedDeprecatedFormatProperty);
+            // We do not want warning message for
+            // vaadin.experimental.featureFlag
             Mockito.verify(mockedLogger, Mockito.times(1)).warn(
                     "Unsupported feature flag is present: {}",
                     unsupportedProperty);
@@ -485,6 +493,7 @@ public class FeatureFlagsTest {
             } else {
                 System.setProperty(exampleProperty, previousValue);
             }
+            System.clearProperty(unsupportedDeprecatedFormatProperty);
             System.clearProperty(unsupportedProperty);
         }
     }
