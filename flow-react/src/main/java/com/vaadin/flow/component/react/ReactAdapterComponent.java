@@ -56,7 +56,7 @@ import java.util.Map;
  * @since 24.4
  */
 public abstract class ReactAdapterComponent extends Component {
-    private Map<String, Element> contentMap = new HashMap<>();
+    private Map<String, Element> contentMap;
 
     /**
      * Adds the specified listener for the state change event in the React
@@ -187,6 +187,9 @@ public abstract class ReactAdapterComponent extends Component {
     }
 
     protected Element getContentElement(String name) {
+        if (contentMap == null) {
+            contentMap = new HashMap<>();
+        }
         if (!contentMap.containsKey(name)) {
             var element = new Element("flow-content-container");
             contentMap.put(name, element);

@@ -104,10 +104,9 @@ export abstract class ReactAdapterElement extends HTMLElement {
     #state: Record<string, unknown> = Object.create(null);
     #stateSetters = new Map<string, Dispatch<unknown>>();
     #customEvents = new Map<string, DispatchEvent<unknown>>();
-    #contents = new Map<string, Element>();
     #dispatchFlowState: Dispatch<FlowStateReducerAction> = emptyAction;
 
-    #readyCallback: ReadyCallbackFunction = () => {};
+    #readyCallback = new Map<string, ReadyCallbackFunction>();
 
     readonly #renderHooks: RenderHooks;
 
@@ -125,19 +124,13 @@ export abstract class ReactAdapterElement extends HTMLElement {
     }
 
     public async connectedCallback() {
-        for (const child of this.children) {
-            let name: string | null;
-            if (child.localName === 'flow-content-container' && (name = child.getAttribute('name'))) {
-                this.#contents.set(name, child);
-            }
-        }
         await this.#unmountComplete;
         this.#root = createRoot(this);
         this.#maybeRenderRoot();
     }
 
-    public addReadyCallback(readyCallback: ReadyCallbackFunction) {
-        this.#readyCallback = readyCallback;
+    public addReadyCallback(id: string, readyCallback: ReadyCallbackFunction) {
+        this.#readyCallback.set(id, readyCallback);
     }
 
     public async disconnectedCallback() {
@@ -230,14 +223,10 @@ export abstract class ReactAdapterElement extends HTMLElement {
     protected abstract render(hooks: RenderHooks): ReactElement | null;
 
     protected useContent(name: string): ReactElement | null {
-        const ref = useRef<Element>(null);
         useEffect(() => {
-            // if (this.#contents.has(name)) {
-                this.#readyCallback();
-                // ref.current?.appendChild(this.#contents.get(name)!);
-            // }
+            this.#readyCallback.get(name)?.();
         }, []);
-        return createElement('flow-content-container', {name, ref, style: {display: 'contents'}});
+        return createElement('flow-content-container', {name, style: {display: 'contents'}});
     }
 
     #maybeRenderRoot() {

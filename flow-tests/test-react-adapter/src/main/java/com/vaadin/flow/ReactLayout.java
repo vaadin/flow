@@ -29,6 +29,9 @@ import com.vaadin.flow.dom.Element;
 @Tag("react-layout")
 public class ReactLayout extends ReactAdapterComponent {
 
+    public static final String MAIN_CONTENT = "content";
+    public static final String SECONDARY_CONTENT = "second";
+
     public ReactLayout(Component... components) {
         add(components);
     }
@@ -38,13 +41,27 @@ public class ReactLayout extends ReactAdapterComponent {
     }
 
     public void add(Component components) {
-        getContentElement("content").appendChild(components.getElement());
+        getContentElement(MAIN_CONTENT).appendChild(components.getElement());
     }
 
     @Override
     public Stream<Component> getChildren() {
-        return getContentElement("content").getChildren()
+        return getContentElement(MAIN_CONTENT).getChildren()
                 .map(Element::getComponent)
                 .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty));
     }
+
+    public void addSecondary(Component... components) {
+        for (Component component : components) {
+            getContentElement(SECONDARY_CONTENT)
+                    .appendChild(component.getElement());
+        }
+    }
+
+    public Stream<Component> getSecondaryChildren() {
+        return getContentElement(SECONDARY_CONTENT).getChildren()
+                .map(Element::getComponent)
+                .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty));
+    }
+
 }

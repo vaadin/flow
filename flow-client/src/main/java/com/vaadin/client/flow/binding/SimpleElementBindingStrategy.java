@@ -887,10 +887,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     .getElementByName(context.htmlNode, name);
 
             if (!ReactUtils.isInitialized(elementLookup)) {
-                ReactUtils.addReadyCallback((Element) context.htmlNode, () -> {
-                    doAppendVirtualChild(context, node, false, elementLookup,
-                            name, address);
-                });
+                ReactUtils.addReadyCallback((Element) context.htmlNode, name,
+                        () -> {
+                            doAppendVirtualChild(context, node, false,
+                                    elementLookup, name, address);
+                        });
                 return;
             }
             doAppendVirtualChild(context, node, reactivePhase, elementLookup,

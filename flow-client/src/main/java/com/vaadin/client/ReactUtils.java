@@ -35,18 +35,18 @@ public final class ReactUtils {
      *
      * @param element
      *            react component element
+     * @param name
+     *            name of container to bind to
      * @param runnable
      *            callback function runnable
      */
-    public static native void addReadyCallback(Element element,
+    public static native void addReadyCallback(Element element, String name,
             Runnable runnable)
     /*-{
             if(element.addReadyCallback){
-                element.addReadyCallback(
-              function() {
-                runnable.@java.lang.Runnable::run(*)();
-              }
-            );
+                element.addReadyCallback(name,
+                    $entry(runnable.@java.lang.Runnable::run(*).bind(runnable))
+                );
             }
     }-*/;
 
