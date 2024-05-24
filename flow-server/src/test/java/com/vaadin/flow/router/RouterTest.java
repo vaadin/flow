@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -3763,6 +3764,8 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(configuration.getFrontendFolder())
+                .thenReturn(new File("front"));
         setNavigationTargets(OptionalParameter.class);
 
         String locationString = "optional/doesnotExist/parameter";
@@ -3790,6 +3793,8 @@ public class RouterTest extends RoutingTestBase {
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(configuration.getFrontendFolder())
+                .thenReturn(new File("front"));
         setNavigationTargets(WithoutOptionalParameter.class);
 
         String locationString = "optional";

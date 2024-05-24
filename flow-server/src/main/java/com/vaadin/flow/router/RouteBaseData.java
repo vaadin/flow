@@ -132,6 +132,16 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     }
 
     /**
+     * Get {@link Route} route parameters in a list if any.
+     *
+     * @return route parameters in a list. Never null.
+     */
+    public List<RouteParameterData> getRouteParametersList() {
+        return parameters != null ? parameters.values().stream().toList()
+                : List.of();
+    }
+
+    /**
      * Get {@link Route} navigation target.
      *
      * @return navigation target
