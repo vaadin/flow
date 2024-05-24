@@ -200,7 +200,7 @@ public class FilterableResourceResolver
         String path = rootDirResource.getURI().toString();
         String jarName = resolveJarName(rootDirResource.getURI());
         if (jarName != null && blockedJarsList.stream()
-                .anyMatch(pattern -> patternMatch(jarName, pattern))) {
+                .anyMatch(pattern -> jarNamePatternMatch(jarName, pattern))) {
             return Set.of();
         }
         String key = cachePackageProperties(path, rootDirResource, rootDirUrl);
@@ -232,8 +232,8 @@ public class FilterableResourceResolver
         result.removeIf(res -> {
             try {
                 String jarName = resolveJarName(res.getURI());
-                if (jarName != null && blockedJarsList.stream()
-                        .anyMatch(pattern -> patternMatch(jarName, pattern))) {
+                if (jarName != null && blockedJarsList.stream().anyMatch(
+                        pattern -> jarNamePatternMatch(jarName, pattern))) {
                     return true;
                 }
             } catch (IOException e) {
@@ -254,8 +254,8 @@ public class FilterableResourceResolver
      * except '-' or content of the part following `*`. <br/>
      * <br/>
      * For example, "spring-*.*.*.jar" pattern matches to "spring-1.0.0.jar",
-     * "spring-abc.1.0.jar" but NOT "spring-abc-1.0.0.jar" or
-     * "spring-abc.1.0.0.jar". <br/>
+     * "spring-abc.1.0.jar", "spring-abc.1.0.0.jar" but NOT
+     * "spring-abc-1.0.0.jar" or "spring-1.0.jar". <br/>
      * <br/>
      * String operations are handled from left to right, where content of `*` is
      * substring starting from end of the previous String to beginning of the
@@ -270,8 +270,11 @@ public class FilterableResourceResolver
      * <br/>
      * Method is not using much regex to get optimal performance.
      */
-    private boolean patternMatch(String jarName, String pattern) {
+    boolean jarNamePatternMatch(String jarName, String pattern) {
         if (pattern.contains("*")) {
+            if (pattern.equals("*")) {
+                return true;
+            }
             var parts = pattern.split("\\*");
             String remainingName = jarName;
             int nextPartIndex = 0;
