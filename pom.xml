@@ -85,14 +85,14 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>3.2.5</spring.boot.version>
+        <spring.boot.version>3.3.0</spring.boot.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.13</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.17.1</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
-        <jakarta.validation.version>3.1.0</jakarta.validation.version>
+        <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
         <jaxb.version>4.0.5</jaxb.version>
         <guava.version>33.2.0-jre</guava.version>
@@ -106,7 +106,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>9.3.0.beta2</testbench.version>
+        <testbench.version>9.3.0.rc1</testbench.version>
         <jetty.version>12.0.9</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
