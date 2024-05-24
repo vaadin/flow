@@ -116,7 +116,7 @@ public class FilterableResourceResolver
 
     private final Map<String, PackageInfo> propertiesCache = new HashMap<>();
 
-    private List<String> customBlockedJarsList;
+    private List<String> blockedJarsList;
 
     private record PackageInfo(Set<String> allowedPackages,
             Set<String> blockedPackages, boolean blockedJar) implements Serializable {
@@ -130,7 +130,7 @@ public class FilterableResourceResolver
      */
     public FilterableResourceResolver(ResourceLoader resourceLoader) {
         super(resourceLoader);
-        initCustomBlockedJars();
+        initBlockedJars();
     }
 
     private static Logger getLogger() {
@@ -159,11 +159,6 @@ public class FilterableResourceResolver
      */
     protected boolean isJar(String path) {
         return path.lastIndexOf(JAR_KEY) != -1;
-    }
-
-    private List<String> getDefaultBlockedJarList() {
-        return customBlockedJarsList != null ? customBlockedJarsList
-                : DEFAULT_SCAN_NEVER_JAR;
     }
 
     private Resource doResolveRootDirResource(Resource original)
@@ -204,7 +199,7 @@ public class FilterableResourceResolver
             throws IOException {
         String path = rootDirResource.getURI().toString();
         String jarName = resolveJarName(rootDirResource.getURI());
-        if (jarName != null && getDefaultBlockedJarList().stream()
+        if (jarName != null && blockedJarsList.stream()
                 .anyMatch(pattern -> patternMatch(jarName, pattern))) {
             return Set.of();
         }
@@ -237,7 +232,7 @@ public class FilterableResourceResolver
         result.removeIf(res -> {
             try {
                 String jarName = resolveJarName(res.getURI());
-                if (jarName != null && getDefaultBlockedJarList().stream()
+                if (jarName != null && blockedJarsList.stream()
                         .anyMatch(pattern -> patternMatch(jarName, pattern))) {
                     return true;
                 }
@@ -537,8 +532,8 @@ public class FilterableResourceResolver
         return new PackageInfo(allowedPackages, blockedPackages, blockedJar);
     }
 
-    private void initCustomBlockedJars() {
-        customBlockedJarsList = null;
+    private void initBlockedJars() {
+        blockedJarsList = DEFAULT_SCAN_NEVER_JAR;
         URL url = getClass().getResource(BLOCKED_JARS_LIST_PATH);
         if (url == null) {
             return;
@@ -547,9 +542,9 @@ public class FilterableResourceResolver
             String content = IOUtils.toString(url, StandardCharsets.UTF_8);
             if (content != null) {
                 if (content.isBlank()) {
-                    customBlockedJarsList = Collections.emptyList();
+                    blockedJarsList = Collections.emptyList();
                 } else {
-                    customBlockedJarsList = Arrays.asList(content.split("\\R"));
+                    blockedJarsList = Arrays.asList(content.split("\\R"));
                 }
             }
         } catch (IOException e) {
