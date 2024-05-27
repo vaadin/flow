@@ -486,12 +486,12 @@ public class FeatureFlagsTest {
             Mockito.verify(mockedLogger, Mockito.never()).warn(
                     "Unsupported feature flag is present: {}",
                     examplePropertyDeprecatedFormat);
-            // We do not want warning message for vaadin.featureFlag
+            // We do not want warning message for vaadin.unsupportedFeature
             Mockito.verify(mockedLogger, Mockito.never()).warn(
                     "Unsupported feature flag is present: {}",
                     unsupportedDeprecatedFormatProperty);
             // We do want warning message for
-            // vaadin.experimental.featureFlag
+            // vaadin.experimental.unsupportedFeature
             Mockito.verify(mockedLogger, Mockito.times(1)).warn(
                     "Unsupported feature flag is present: {}",
                     unsupportedProperty);
