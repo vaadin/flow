@@ -80,6 +80,9 @@ public class VaadinBeanFactoryInitializationAotProcessor
                     hasPWA = hasPWA || c.getAnnotation(PWA.class) != null;
                 }
                 if (hasPWA) {
+                    hints.jni().registerType(
+                            TypeReference.of("java.lang.System"),
+                            MemberCategory.INVOKE_PUBLIC_METHODS);
                     for (String cls : getJNIClassesForPWA()) {
                         hints.jni().registerType(TypeReference.of(cls),
                                 MemberCategory.values());
