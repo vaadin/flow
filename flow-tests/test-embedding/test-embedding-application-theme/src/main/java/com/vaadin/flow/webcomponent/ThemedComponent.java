@@ -45,5 +45,6 @@ public class ThemedComponent extends Div {
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));
+        add(new LegacyComponent());
     }
 }
