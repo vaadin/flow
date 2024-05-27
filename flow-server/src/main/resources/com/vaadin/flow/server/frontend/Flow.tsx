@@ -150,6 +150,7 @@ let lastNavigation: string;
 let lastNavigationSearch: string;
 let prevNavigation: string;
 let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
+let beforeEnterCalled: boolean = false;
 
 // @ts-ignore
 function navigateEventHandler(event) {
@@ -170,7 +171,7 @@ function navigateEventHandler(event) {
     // target path. Server will then handle updates and postpone as needed.
     // @ts-ignore
     if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length >= 1) {
-        if (mountedContainer?.onBeforeEnter) {
+        if (mountedContainer?.onBeforeEnter && !beforeEnterCalled) {
             // onBeforeEvent call will handle the Flow navigation
             mountedContainer.onBeforeEnter(
                 {
@@ -292,21 +293,23 @@ function Flow() {
                 container.onBeforeEnter(
                     {pathname, search},
                     {
-                        prevent() {},
-                        redirect: navigate
+                        prevent() {
+                            beforeEnterCalled = false;
+                            },
+                        redirect: (path) => {
+                            beforeEnterCalled = false;
+                            navigate(path);
+                        },
+                        continue: () => {
+                            beforeEnterCalled = false;
+                        }
                     },
                     router,
                 );
+                beforeEnterCalled = true;
             }
         });
         return () => {
-            window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
-            window.removeEventListener('vaadin-router-go', navigateEventHandler);
-            if (popstateListener) {
-                window.removeEventListener('popstate', popstateHandler);
-                window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
-            }
-
             let matched = matchRoutes(Array.from(routes), window.location.pathname);
 
             // if router force navigated using 'Link' we will need to remove
@@ -314,9 +317,33 @@ function Flow() {
             // If we are going to a non Flow view then we need to clean the Flow
             // view from the dom as we will not be getting a uidl response.
             // @ts-ignore
-            if(matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length == 0) {
-                mountedContainer?.parentNode?.removeChild(mountedContainer);
-                mountedContainer = undefined;
+            if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length == 0) {
+                if (mountedContainer?.onBeforeLeave) {
+                    mountedContainer?.onBeforeLeave(
+                        {pathname, search}, {
+                            prevent() {
+                            },
+                            continue() {
+                                window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
+                                window.removeEventListener('vaadin-router-go', navigateEventHandler);
+                                if (popstateListener) {
+                                    window.removeEventListener('popstate', popstateHandler);
+                                    window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
+                                }
+                                mountedContainer?.parentNode?.removeChild(mountedContainer);
+                                mountedContainer = undefined;
+                            }
+                        }, router);
+                } else {
+                    window.document.removeEventListener('click', vaadinRouterGlobalClickHandler);
+                    window.removeEventListener('vaadin-router-go', navigateEventHandler);
+                    if (popstateListener) {
+                        window.removeEventListener('popstate', popstateHandler);
+                        window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
+                    }
+                    mountedContainer?.parentNode?.removeChild(mountedContainer);
+                    mountedContainer = undefined;
+                }
             }
         };
     }, [pathname, search, hash]);
