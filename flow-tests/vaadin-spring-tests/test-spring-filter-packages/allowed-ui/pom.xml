@@ -23,19 +23,13 @@
 		<groupId>com.vaadin</groupId>
 		<version>24.5-SNAPSHOT</version>
 	</parent>
-	<artifactId>vaadin-test-spring-filter-packages-ui</artifactId>
+	<artifactId>vaadin-test-spring-filter-packages-allowed-ui</artifactId>
+	<description>Test UI with allowed-packages properties</description>
 	<packaging>jar</packaging>
 
 	<properties>
 		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
-
-	<repositories>
-		<repository>
-			<id>my-local-repo</id>
-			<url>file://${project.basedir}/local-lib/</url>
-		</repository>
-	</repositories>
 
 	<dependencies>
 		<dependency>
@@ -93,11 +87,6 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.vaadin.test</groupId>
-			<artifactId>spring-test-excluded</artifactId>
-			<version>1.0</version>
-		</dependency>
 	</dependencies>
 
 	<build>
