@@ -78,6 +78,7 @@ public class DefaultInstantiatorI18NTest {
 
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
+        VaadinService.setCurrent(service);
 
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service) {
@@ -86,28 +87,40 @@ public class DefaultInstantiatorI18NTest {
                 return urlClassLoader;
             }
         };
+        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
         I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
         Assert.assertNotNull(i18NProvider);
         Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
         Assert.assertEquals("Suomi",
                 i18NProvider.getTranslation("title", new Locale("fi", "FI")));
+        Assert.assertEquals("Suomi",
+                I18NProvider.translate(new Locale("fi", "FI"), "title"));
 
         Assert.assertEquals("deutsch",
                 i18NProvider.getTranslation("title", new Locale("de")));
+        Assert.assertEquals("deutsch",
+                I18NProvider.translate(new Locale("de"), "title"));
 
         Assert.assertEquals(
                 "non existing country should select language bundle", "deutsch",
                 i18NProvider.getTranslation("title", new Locale("de", "AT")));
+        Assert.assertEquals(
+                "non existing country should select language bundle", "deutsch",
+                I18NProvider.translate(new Locale("de", "AT"), "title"));
 
         Assert.assertEquals("Korean",
                 i18NProvider.getTranslation("title", new Locale("ko", "KR")));
+        Assert.assertEquals("Korean",
+                I18NProvider.translate(new Locale("ko", "KR"), "title"));
 
         // Note!
         // default translations.properties will be used if
         // the locale AND system default locale is not found
         Assert.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("en", "GB")));
+        Assert.assertEquals("Default lang",
+                I18NProvider.translate(new Locale("en", "GB"), "title"));
     }
 
     @Test
@@ -120,6 +133,7 @@ public class DefaultInstantiatorI18NTest {
 
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
+        VaadinService.setCurrent(service);
 
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service) {
@@ -128,24 +142,33 @@ public class DefaultInstantiatorI18NTest {
                 return urlClassLoader;
             }
         };
+        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
         I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
         Assert.assertNotNull(i18NProvider);
         Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
         Assert.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("fi", "FI")));
+        Assert.assertEquals("Default lang",
+                I18NProvider.translate(new Locale("fi", "FI"), "title"));
 
         Assert.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("de")));
+        Assert.assertEquals("Default lang",
+                I18NProvider.translate(new Locale("de"), "title"));
 
         Assert.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("ko", "KR")));
+        Assert.assertEquals("Default lang",
+                I18NProvider.translate(new Locale("ko", "KR"), "title"));
 
         // Note!
         // default translations.properties will be used if
         // the locale AND system default locale is not found
         Assert.assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("en", "GB")));
+        Assert.assertEquals("Default lang",
+                I18NProvider.translate(new Locale("en", "GB"), "title"));
     }
 
     @Test
@@ -158,6 +181,7 @@ public class DefaultInstantiatorI18NTest {
 
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
+        VaadinService.setCurrent(service);
 
         DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                 service) {
@@ -166,15 +190,31 @@ public class DefaultInstantiatorI18NTest {
                 return urlClassLoader;
             }
         };
+        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
         I18NProvider i18NProvider = defaultInstantiator.getI18NProvider();
         Assert.assertNotNull(i18NProvider);
         Assert.assertTrue(i18NProvider instanceof DefaultI18NProvider);
 
         Assert.assertEquals("No Default",
                 i18NProvider.getTranslation("title", new Locale("ja")));
+        Assert.assertEquals("No Default",
+                I18NProvider.translate(new Locale("ja"), "title"));
 
         Assert.assertEquals("title",
                 i18NProvider.getTranslation("title", new Locale("en", "GB")));
+        Assert.assertEquals("title",
+                I18NProvider.translate(new Locale("en", "GB"), "title"));
+    }
+
+    @Test
+    public void translate_withoutInstantiator_throwsIllegalStateException() {
+        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService.setCurrent(service);
+
+        Assert.assertThrows(
+                "Should throw exception without Instantiator in VaadinService",
+                IllegalStateException.class,
+                () -> I18NProvider.translate("foo.bar"));
     }
 
     private static void createTranslationFiles(File translationsFolder)

@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -96,8 +97,9 @@ public final class LocaleUtil {
      * @return the optional value of I18nProvider
      */
     public static Optional<I18NProvider> getI18NProvider() {
-        return Optional.ofNullable(
-                VaadinService.getCurrent().getInstantiator().getI18NProvider());
+        return Optional.ofNullable(VaadinService.getCurrent())
+                .map(VaadinService::getInstantiator)
+                .map(Instantiator::getI18NProvider);
     }
 
     /**
