@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -146,6 +147,57 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
         task.execute();
         assertOnlyExpectedGeneratedFilesExists(files.toArray(File[]::new));
 
+    }
+
+    @Test
+    public void execute_knownFiles_notDeleted() throws Exception {
+        Set<File> knownFiles = Set.of(new File(generatedFolder, "routes.tsx"),
+                new File(generatedFolder, "routes.ts"), generatedFolder.toPath()
+                        .resolve(Path.of("flow", "Flow.tsx")).toFile(),
+                new File(generatedFolder, "file-routes.ts"));
+        for (File file : knownFiles) {
+            file.getParentFile().mkdirs();
+            Files.writeString(file.toPath(), "TEST");
+        }
+
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
+                options);
+        task.setGeneratedFileSupport(new GeneratedFilesSupport());
+        task.execute();
+
+        assertOnlyExpectedGeneratedFilesExists(knownFiles.toArray(File[]::new));
+    }
+
+    @Test
+    public void execute_entriesInGeneratedFileList_notDeleted()
+            throws Exception {
+        Set<File> generatedFiles = new HashSet<>(
+                Set.of(new File(generatedFolder, "test.txt"),
+                        generatedFolder.toPath()
+                                .resolve(Path.of("a", "b", "c.txt")).toFile(),
+                        generatedFolder.toPath()
+                                .resolve(Path.of("a", "z", "n.txt")).toFile(),
+                        generatedFolder.toPath()
+                                .resolve(Path.of("a", "z", "y.txt")).toFile()));
+        for (File file : generatedFiles) {
+            file.getParentFile().mkdirs();
+            Files.writeString(file.toPath(), "TEST");
+        }
+        File generatedFilesList = new File(generatedFolder,
+                "generated-file-list.txt");
+        Files.writeString(generatedFilesList.toPath(), generatedFiles.stream()
+                .map(file -> generatedFolder.toPath().relativize(file.toPath()))
+                .map(Path::toString)
+                .collect(Collectors.joining(System.lineSeparator())));
+        generatedFiles.add(generatedFilesList);
+
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
+                options);
+        task.setGeneratedFileSupport(new GeneratedFilesSupport());
+        task.execute();
+
+        assertOnlyExpectedGeneratedFilesExists(
+                generatedFiles.toArray(File[]::new));
     }
 
     private void assertOnlyExpectedGeneratedFilesExists(File... expectedFiles)
