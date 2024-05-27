@@ -71,7 +71,7 @@ public class TranslationView extends Div {
 
         Span staticMethod = new Span(
                 I18NProvider.translate(Locale.ENGLISH, "label"));
-        dynamic.setId("static-method");
+        staticMethod.setId("static-method");
 
         add(defaultLang, new Div(), german, new Div(), germany, new Div(),
                 finnish, new Div(), french, new Div(), japanese, new Div(),
