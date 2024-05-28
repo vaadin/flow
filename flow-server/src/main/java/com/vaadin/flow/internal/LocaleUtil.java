@@ -103,7 +103,7 @@ public final class LocaleUtil {
     }
 
     /**
-     * Get the locale for the given UI.
+     * Get the locale from the current UI or from the given I18NProvider.
      * <p>
      * -> If UI is not null, then it is used to get the locale, -> if UI is
      * null, then the I18NProvider providedLocales first match will be returned,
@@ -120,5 +120,19 @@ public final class LocaleUtil {
                         .map(I18NProvider::getProvidedLocales)
                         .flatMap(locales -> locales.stream().findFirst()))
                 .orElseGet(Locale::getDefault);
+    }
+
+    /**
+     * Get the locale from the current UI or from the I18NProvider from the
+     * current VaadinService.
+     * <p>
+     * -> If UI is not null, then it is used to get the locale, -> if UI is
+     * null, then the I18NProvider providedLocales first match will be returned,
+     * -> if I18NProvider is null, then default locale is returned.
+     *
+     * @return the locale for the UI
+     */
+    public static Locale getLocale() {
+        return getLocale(LocaleUtil::getI18NProvider);
     }
 }

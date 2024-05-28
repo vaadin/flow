@@ -84,8 +84,7 @@ public interface I18NProvider extends Serializable {
      *             thrown if no I18NProvider found from the VaadinService
      */
     static String translate(String key, Object... params) {
-        return translate(LocaleUtil.getLocale(LocaleUtil::getI18NProvider), key,
-                params);
+        return translate(LocaleUtil.getLocale(), key, params);
     }
 
     /**
