@@ -56,6 +56,7 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
     // to ease testing
     private String[] getCommonComponentClasses() {
         return new String[] { "com.vaadin.flow.component.login.LoginI18n",
+                "com.vaadin.flow.component.login.LoginI18n$Header",
                 "com.vaadin.flow.component.login.LoginI18n$Form",
                 "com.vaadin.flow.component.login.LoginI18n$ErrorMessage",
                 "com.vaadin.flow.component.messages.MessageListItem" };
@@ -65,6 +66,8 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
         return new String[] {
                 "org.apache.catalina.core.ApplicationContextFacade",
                 "org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler$SupplierCsrfToken",
+                "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter",
+                "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper",
                 "com.fasterxml.jackson.databind.ser.std.ToStringSerializer",
                 DefaultErrorHandler.class.getName() };
     }
