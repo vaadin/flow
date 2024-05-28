@@ -168,7 +168,7 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
 
     private String openPreserveOnRefreshView(WindowType windowType) {
         String url = getTestURL().replace("/active-uis", "/preserve");
-        driver.switchTo().newWindow(WindowType.TAB).get(url);
+        driver.switchTo().newWindow(windowType).get(url);
         return driver.getWindowHandle();
     }
 
