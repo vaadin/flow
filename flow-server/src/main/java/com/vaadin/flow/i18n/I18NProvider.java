@@ -104,7 +104,7 @@ public interface I18NProvider extends Serializable {
     static String translate(Locale locale, String key, Object... params) {
         return LocaleUtil.getI18NProvider()
                 .orElseThrow(() -> new IllegalStateException(
-                        "No I18NProvider found from the VaadinService"))
+                        "I18NProvider is not available via current VaadinService. VaadinService, Instantiator or I18NProvider is null."))
                 .getTranslation(key, locale, params);
     }
 }
