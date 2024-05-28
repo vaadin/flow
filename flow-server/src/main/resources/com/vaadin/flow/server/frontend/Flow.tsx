@@ -214,10 +214,7 @@ function Flow() {
                         prevent() {
                             blocker.reset();
                         },
-                        redirect,
-                        continue: () => {
-                            blocker.proceed();
-                        }
+                        redirect
                     },
                     router));
             } else {
