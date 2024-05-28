@@ -17,6 +17,7 @@
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
 import React, { useCallback, useEffect, useRef } from "react";
 import {
+    matchRoutes,
     useBlocker,
     useLocation,
     useNavigate,
@@ -202,22 +203,45 @@ function Flow() {
     useEffect(() => {
         if (blocker.state === 'blocked') {
             const {pathname, search} = blocker.location;
-            Promise.resolve(containerRef.current?.onBeforeLeave?.call(containerRef?.current, {pathname, search}, {prevent}, router))
-                .then((cmd: unknown) => {
-                    if (cmd === postpone && containerRef.current) {
-                        // postponed navigation: expose existing blocker to Flow
-                        containerRef.current.serverConnected = (cancel) => {
-                            if (cancel) {
-                                blocker.reset();
-                            } else {
-                                blocker.proceed();
-                            }
+            let matched = matchRoutes(Array.from(routes), window.location.pathname);
+
+            // Navigation between server routes
+            // @ts-ignore
+            if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length != 0) {
+                Promise.resolve(containerRef.current?.onBeforeEnter?.call(containerRef?.current,
+                    {pathname,search},
+                    {
+                        prevent() {
+                            blocker.reset();
+                        },
+                        redirect,
+                        continue: () => {
+                            blocker.proceed();
                         }
-                    } else {
-                        // permitted navigation: proceed with the blocker
-                        blocker.proceed();
-                    }
-                });
+                    },
+                    router));
+            } else {
+                // For covering the 'server -> client' use case
+                Promise.resolve(containerRef.current?.onBeforeLeave?.call(containerRef?.current, {
+                    pathname,
+                    search
+                }, {prevent}, router))
+                    .then((cmd: unknown) => {
+                        if (cmd === postpone && containerRef.current) {
+                            // postponed navigation: expose existing blocker to Flow
+                            containerRef.current.serverConnected = (cancel) => {
+                                if (cancel) {
+                                    blocker.reset();
+                                } else {
+                                    blocker.proceed();
+                                }
+                            }
+                        } else {
+                            // permitted navigation: proceed with the blocker
+                            blocker.proceed();
+                        }
+                    });
+            }
         }
     }, [blocker.state, blocker.location]);
 
