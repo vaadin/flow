@@ -68,6 +68,7 @@ public class DefaultInstantiatorI18NTest {
     public void cleanup() throws NoSuchFieldException, IllegalAccessException {
         ResourceBundle.clearCache(urlClassLoader);
         I18NProviderTest.clearI18NProviderField();
+        VaadinService.setCurrent(null);
     }
 
     @Test
