@@ -72,6 +72,12 @@ public enum DefaultConverterFactory implements ConverterFactory {
                 StringToLongConverter::new);
         registerConverterWithMessageProvider(StringToUuidConverter.class,
                 StringToUuidConverter::new);
+        registerConverter(DoubleToIntegerConverter.class, DoubleToIntegerConverter::new);
+        registerConverter(BigDecimalToDoubleConverter.class, BigDecimalToDoubleConverter::new);
+        registerConverter(BigDecimalToIntegerConverter.class, BigDecimalToIntegerConverter::new);
+        registerConverter(IntegerToBigDecimalConverter.class, IntegerToBigDecimalConverter::new);
+        registerConverter(IntegerToDoubleConverter.class, IntegerToDoubleConverter::new);
+
     }
 
     private <C extends Converter<?, ?>> void registerConverter(
