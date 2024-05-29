@@ -210,7 +210,13 @@ function Flow() {
             // @ts-ignore
             if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length != 0) {
                 containerRef.current?.onBeforeEnter?.call(containerRef?.current,
-                    {pathname,search}, {prevent, redirect}, router);
+                    {pathname,search}, {
+                        prevent,
+                        redirect,
+                        continue() {
+                            blocker.proceed();
+                        }
+                    }, router);
                 setNavigated(true);
             } else {
                 // For covering the 'server -> client' use case
