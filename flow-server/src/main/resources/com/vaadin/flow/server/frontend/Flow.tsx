@@ -15,7 +15,7 @@
  */
 /// <reference lib="es2018" />
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     matchRoutes,
     useBlocker,
@@ -150,6 +150,7 @@ function Flow() {
     const navigate = useNavigate();
     const blocker = useBlocker(true);
     const {pathname, search, hash} = useLocation();
+    const [navigated, setNavigated] = useState(false);
 
     const containerRef = useRef<RouterContainer | undefined>(undefined);
 
@@ -208,15 +209,9 @@ function Flow() {
             // Navigation between server routes
             // @ts-ignore
             if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length != 0) {
-                Promise.resolve(containerRef.current?.onBeforeEnter?.call(containerRef?.current,
-                    {pathname,search},
-                    {
-                        prevent() {
-                            blocker.reset();
-                        },
-                        redirect
-                    },
-                    router));
+                containerRef.current?.onBeforeEnter?.call(containerRef?.current,
+                    {pathname,search}, {prevent, redirect}, router);
+                setNavigated(true);
             } else {
                 // For covering the 'server -> client' use case
                 Promise.resolve(containerRef.current?.onBeforeLeave?.call(containerRef?.current, {
@@ -243,6 +238,10 @@ function Flow() {
     }, [blocker.state, blocker.location]);
 
     useEffect(() => {
+        if(navigated) {
+            setNavigated(false);
+            return;
+        }
         flow.serverSideRoutes[0].action({pathname, search})
             .then((container) => {
                 const outlet = ref.current?.parentNode;
@@ -258,7 +257,7 @@ function Flow() {
                     result();
                 }
             });
-    }, [pathname, search]);
+    }, [pathname, search, hash]);
 
     return <output ref={ref} />;
 }
