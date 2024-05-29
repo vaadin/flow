@@ -8,7 +8,7 @@ import com.vaadin.flow.data.binder.ValueContext;
 /**
  * A converter that converts from {@link BigDecimal} to {@link Double} and back.
  *
- * @since 1.0
+ * @since 24.5
  */
 public class BigDecimalToDoubleConverter implements Converter<BigDecimal, Double> {
 
