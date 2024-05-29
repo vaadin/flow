@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
@@ -685,6 +688,36 @@ public class RouteUtilTest {
     }
 
     @Test
+    public void changedAliasesRouteAnnotatedClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
+        // given
+        @Route("a")
+        @RouteAlias("alias-new")
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+        registry.setRoute("alias", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("alias"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+        Assert.assertTrue(registry.getConfiguration().hasRoute("alias-new"));
+        Assert.assertFalse(registry.getConfiguration().hasRoute("alias"));
+    }
+
+    @Test
     public void changedToLazyRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedInRegistry() {
         // given
         @Route(value = "a", registerAtStartup = false)
@@ -699,6 +732,10 @@ public class RouteUtilTest {
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
+        // simulate a automatic registration with registerAtStartup=true
+        mutableRoutesMap(registry);
+        registry.getConfiguration().getRoutesMap().computeIfPresent("a",
+                (path, routeTarget) -> new MockRouteTarget(routeTarget, true));
         Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
@@ -707,6 +744,66 @@ public class RouteUtilTest {
 
         // then
         Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void changedFromLazyRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedInRegistry() {
+        // given
+        @Route(value = "a")
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        // simulate a manual registration with registerAtStartup=false
+        mutableRoutesMap(registry);
+        registry.getConfiguration().getRoutesMap().computeIfPresent("a",
+                (path, routeTarget) -> new MockRouteTarget(routeTarget, false));
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void modifiedLazyRouteAnnotatedClass_updateRouteRegistry_existingRoutesArePreserved() {
+        // given
+        @Route(value = "a", registerAtStartup = false)
+        class A extends Component {
+        }
+
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        // simulate a manual registration with registerAtStartup=false
+        mutableRoutesMap(registry);
+        registry.getConfiguration().getRoutesMap().computeIfPresent("a",
+                (path, routeTarget) -> new MockRouteTarget(routeTarget, false));
+
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
     }
 
     @Test
@@ -719,6 +816,10 @@ public class RouteUtilTest {
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
+        // simulate an automatic registration with registerAtStartup=true
+        mutableRoutesMap(registry);
+        registry.getConfiguration().getRoutesMap().computeIfPresent("a",
+                (path, routeTarget) -> new MockRouteTarget(routeTarget, true));
         Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
 
         // when
@@ -731,6 +832,7 @@ public class RouteUtilTest {
 
     // Hotswap agent may fire CREATE, MODIFY and REMOVE events for a class
     // change. MODIFY wins over CREATE and REMOVE
+
     @Test
     public void routeAnnotatedClassAddedModifiedAndRemoved_updateRouteRegistry_routeIsAddedToRegistry() {
         // given
@@ -780,4 +882,37 @@ public class RouteUtilTest {
         Assert.assertTrue(registry.getConfiguration().hasRoute("aa"));
     }
 
+    private static void mutableRoutesMap(AbstractRouteRegistry registry) {
+        ConfiguredRoutes configuration = registry.getConfiguration();
+        try {
+            Field routeMapField = ConfiguredRoutes.class
+                    .getDeclaredField("routeMap");
+            routeMapField.setAccessible(true);
+            Map<String, RouteTarget> routeMap = (Map<String, RouteTarget>) routeMapField
+                    .get(configuration);
+            routeMapField.set(configuration, new HashMap<>(routeMap));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static class MockRouteTarget extends RouteTarget {
+        private final Boolean registerAtStartup;
+
+        // registerAtStartup = null means not annotated route target
+        private MockRouteTarget(RouteTarget target, Boolean registerAtStartup) {
+            super(target.getTarget(), target.getParentLayouts());
+            this.registerAtStartup = registerAtStartup;
+        }
+
+        @Override
+        boolean isAnnotatedRoute() {
+            return registerAtStartup != null;
+        }
+
+        @Override
+        boolean isRegisteredAtStartup() {
+            return registerAtStartup != null && registerAtStartup;
+        }
+    }
 }

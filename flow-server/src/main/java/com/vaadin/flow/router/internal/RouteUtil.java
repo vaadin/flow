@@ -19,8 +19,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -301,6 +304,24 @@ public class RouteUtil {
      * Updates route registry as necessary when classes have been added /
      * modified / deleted.
      *
+     * Registry Update rules:
+     * <ul>
+     * <li>a route is preserved if the class does not have a {@link Route}
+     * annotation, but had not it also at registration time</li>
+     * <li>a route is preserved if the class is annotated with {@link Route} and
+     * registerAtStartup=false and the the flag has not changed</li>
+     * <li>new classes are not automatically added to session registries</li>
+     * <li>existing routes in session registries are not removed in case of
+     * class modification</li>
+     * </ul>
+     *
+     * Not handled cases:
+     * <ul>
+     * <li>Registered route class is not more a Flow Component</li>
+     * <li>v</li>
+     * </ul>
+     *
+     *
      * @param registry
      *            route registry
      * @param addedClasses
@@ -320,19 +341,17 @@ public class RouteUtil {
             // No changes to apply
             return;
         }
+        Logger logger = LoggerFactory.getLogger(RouteUtil.class);
+
         // safe copy to prevent concurrent modification or operation failures on
         // immutable sets
         modifiedClasses = modifiedClasses != null
                 ? new HashSet<>(modifiedClasses)
-                : Set.of();
+                : new HashSet<>();
         addedClasses = addedClasses != null ? new HashSet<>(addedClasses)
-                : Set.of();
+                : new HashSet<>();
         deletedClasses = deletedClasses != null ? new HashSet<>(deletedClasses)
-                : Set.of();
-
-        RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
-
-        Logger logger = LoggerFactory.getLogger(RouteUtil.class);
+                : new HashSet<>();
 
         // the same class may be present on more than one input sets depending
         // on how IDE and agent collect file change events.
@@ -342,33 +361,62 @@ public class RouteUtil {
             deletedClasses.removeIf(modifiedClasses::contains);
         }
 
-        // unhandled cases for modified class
-        // - modified/removed class is not anymore a Component:
-        // route will not be removed from registry
-        // - modified classes and session registry
-        // routes have been added manually and we do not have enough information
-        // to decide if the route should be re-added with the path from the
-        // annotation or if it should be left unchanged
-        //
-        // potentially breaking cases
-        // - not annotated classes manually added to the registry:
-        // if the class is modified the route will be removed from the registry
+        RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
+
+        // remove potential routes for classes that are no more components
+        // not all agents/JVMs support reload on class hierarchy change
+        deletedClasses.stream()
+                .filter(clazz -> !Component.class.isAssignableFrom(clazz))
+                .forEach(clazz -> routeConf.removeRoute((Class) clazz));
+        modifiedClasses.stream()
+                .filter(clazz -> !Component.class.isAssignableFrom(clazz))
+                .forEach(clazz -> routeConf.removeRoute((Class) clazz));
 
         boolean isSessionRegistry = registry instanceof SessionRouteRegistry;
+        Predicate<Class<? extends Component>> modifiedClassesRouteRemovalFilter = clazz -> !isSessionRegistry;
 
-        // routes for modified classes should be removed
-        // - @Route annotation has been removed
-        // - @Route annotation is present but registerAtStartup=false
-        // for session registries a modified route should never be removed
-        // because we don't know how it has been registered
+        if (registry instanceof AbstractRouteRegistry abstractRouteRegistry) {
+            Map<String, RouteTarget> routesMap = abstractRouteRegistry
+                    .getConfiguration().getRoutesMap();
+            Map<? extends Class<? extends Component>, RouteTarget> routeTargets = registry
+                    .getRegisteredRoutes().stream()
+                    .map(routeData -> routesMap.get(routeData.getTemplate()))
+                    .collect(Collectors.toMap(RouteTarget::getTarget,
+                            Function.identity()));
+            modifiedClassesRouteRemovalFilter = modifiedClassesRouteRemovalFilter
+                    .and(clazz -> {
+                        RouteTarget routeTarget = routeTargets.get(clazz);
+                        if (routeTarget == null) {
+                            return true;
+                        }
+                        boolean wasAnnotatedRoute = routeTarget
+                                .isAnnotatedRoute();
+                        boolean wasRegisteredAtStartup = routeTarget
+                                .isRegisteredAtStartup();
+                        boolean isAnnotatedRoute = clazz
+                                .isAnnotationPresent(Route.class);
+                        boolean isRegisteredAtStartup = isAnnotatedRoute
+                                && clazz.getAnnotation(Route.class)
+                                        .registerAtStartup();
+                        if (!isAnnotatedRoute && !wasAnnotatedRoute) {
+                            // route was previously registered manually, do not
+                            // remove it
+                            return false;
+                        }
+                        if (isAnnotatedRoute && wasAnnotatedRoute
+                                && !isRegisteredAtStartup
+                                && !wasRegisteredAtStartup) {
+                            // a lazy annotated route has changed, but it was
+                            // previously registered manually, do not remove it
+                            return false;
+                        }
+                        return !isAnnotatedRoute || !isRegisteredAtStartup;
+                    });
+        }
         Stream<Class<? extends Component>> toRemove = Stream
                 .concat(filterComponentClasses(deletedClasses),
                         filterComponentClasses(modifiedClasses)
-                                .filter(clazz -> !isSessionRegistry)
-                                .filter(clazz -> !clazz
-                                        .isAnnotationPresent(Route.class)
-                                        || !clazz.getAnnotation(Route.class)
-                                                .registerAtStartup()))
+                                .filter(modifiedClassesRouteRemovalFilter))
                 .distinct();
 
         Stream<Class<? extends Component>> toAdd;
