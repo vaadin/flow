@@ -75,6 +75,7 @@ public enum DefaultConverterFactory implements ConverterFactory {
         registerConverter(DoubleToIntegerConverter.class, DoubleToIntegerConverter::new);
         registerConverter(BigDecimalToDoubleConverter.class, BigDecimalToDoubleConverter::new);
         registerConverter(BigDecimalToIntegerConverter.class, BigDecimalToIntegerConverter::new);
+        registerConverter(DoubleToBigDecimalConverter.class, DoubleToBigDecimalConverter::new);
         registerConverter(IntegerToBigDecimalConverter.class, IntegerToBigDecimalConverter::new);
         registerConverter(IntegerToDoubleConverter.class, IntegerToDoubleConverter::new);
 
