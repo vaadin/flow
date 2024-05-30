@@ -85,17 +85,17 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>3.2.5</spring.boot.version>
+        <spring.boot.version>3.3.0</spring.boot.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.13</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.17.0</jackson.version>
+        <jackson.version>2.17.1</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
         <jaxb.version>4.0.5</jaxb.version>
-        <guava.version>33.1.0-jre</guava.version>
+        <guava.version>33.2.0-jre</guava.version>
         <jakarta.websocket.version>2.1.1</jakarta.websocket.version>
 
         <!-- Plugins -->
@@ -106,11 +106,11 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>9.3.0.beta1</testbench.version>
-        <jetty.version>12.0.8</jetty.version>
+        <testbench.version>9.3.0.rc1</testbench.version>
+        <jetty.version>12.0.9</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
-        <build-helper-maven-plugin.version>3.5.0</build-helper-maven-plugin.version>
-        <maven.version>3.9.6</maven.version>
+        <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
+        <maven.version>3.9.7</maven.version>
 
         <!-- Frontend -->
         <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
@@ -120,7 +120,7 @@
         <jsoup.version>1.17.2</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
         <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
-        <atmosphere.client.version>3.1.3</atmosphere.client.version>
+        <atmosphere.client.version>4.0.0</atmosphere.client.version>
 
         <!-- OSGi -->
         <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
@@ -241,7 +241,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.14.14</version>
+                <version>1.14.16</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>
@@ -268,7 +268,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.11.0</version>
+                <version>5.12.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>

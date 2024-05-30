@@ -34,7 +34,7 @@ import org.springframework.security.concurrent.DelegatingSecurityContextExecutor
 @Route(value = "private", layout = MainView.class)
 @PageTitle("Private View")
 @PermitAll
-@Menu(order = 2)
+@Menu(order = 1.5)
 public class PrivateView extends VerticalLayout {
 
     private BankService bankService;

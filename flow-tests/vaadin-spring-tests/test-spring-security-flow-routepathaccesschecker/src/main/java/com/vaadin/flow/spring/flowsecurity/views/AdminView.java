@@ -14,7 +14,7 @@ import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 @Route(value = "admin", layout = MainView.class)
 @RouteAlias(value = "alias-for-admin", layout = MainView.class)
 @PageTitle("Admin View")
-@Menu(order = 3)
+@Menu(order = 1.10001)
 public class AdminView extends VerticalLayout {
 
     public AdminView(SecurityUtils securityUtils) {
