@@ -119,7 +119,7 @@ public enum DefaultConverterFactory implements ConverterFactory {
 
         private Key(Class<?> presentationType, Class<?> modelType) {
             assert presentationType != null && modelType != null;
-            this.presentationType = presentationType;
+            this.presentationType = ReflectTools.convertPrimitiveType(presentationType);
             this.modelType = ReflectTools.convertPrimitiveType(modelType);
         }
 

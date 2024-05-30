@@ -116,6 +116,8 @@ public class DefaultConverterFactoryTest {
 
     private Class<?> toPrimitiveTypeIfExist(Class<?> type) {
         if (!type.isPrimitive()) {
+            return type;
+        }
             if (type.equals(Boolean.class)) {
                 type = Boolean.TYPE;
             } else if (type.equals(Integer.class)) {
@@ -133,7 +135,7 @@ public class DefaultConverterFactoryTest {
             } else if (type.equals(Long.class)) {
                 type = Long.TYPE;
             }
-        }
+        
         return type;
     }
 
