@@ -147,10 +147,21 @@ type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["actio
 
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
+    const prevHistoryState = useRef<any>(null);
     const navigate = useNavigate();
-    const blocker = useBlocker(true);
+    const blocker = useBlocker(({nextLocation, historyAction}) => {
+        const reactRouterHistory = !!prevHistoryState.current && typeof prevHistoryState.current === "object" && "idx" in prevHistoryState.current;
+        const reactRouterNavigation = !!window.history.state && typeof window.history.state === "object" && "idx" in window.history.state;
+        prevHistoryState.current = window.history.state;
+        // @ts-ignore
+        if(event && event.state && event.state === "vaadin-router-ignore") {
+            prevHistoryState.current = {"idx":0};
+            return true && historyAction === "POP";
+        }
+        return !(historyAction === "POP" && reactRouterHistory && reactRouterNavigation);
+    });
     const {pathname, search, hash} = useLocation();
-    const [navigated, setNavigated] = useState(false);
+    const navigated = useRef<boolean>(false);
 
     const containerRef = useRef<RouterContainer | undefined>(undefined);
 
@@ -217,7 +228,7 @@ function Flow() {
                             blocker.proceed();
                         }
                     }, router);
-                setNavigated(true);
+                navigated.current = true;
             } else {
                 // For covering the 'server -> client' use case
                 Promise.resolve(containerRef.current?.onBeforeLeave?.call(containerRef?.current, {
@@ -244,8 +255,8 @@ function Flow() {
     }, [blocker.state, blocker.location]);
 
     useEffect(() => {
-        if(navigated) {
-            setNavigated(false);
+        if(navigated.current) {
+            navigated.current = false;
             return;
         }
         flow.serverSideRoutes[0].action({pathname, search})
