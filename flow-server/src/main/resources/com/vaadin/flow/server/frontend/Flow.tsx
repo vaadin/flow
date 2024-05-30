@@ -176,7 +176,7 @@ function Flow() {
         }
 
         event.preventDefault();
-        navigate(path, {replace: event.detail.replace || event.detail.clientNavigation});
+        navigate(path, {replace: event.detail.replace});
     }, [navigate]);
 
     const redirect = useCallback((path: string) => {
