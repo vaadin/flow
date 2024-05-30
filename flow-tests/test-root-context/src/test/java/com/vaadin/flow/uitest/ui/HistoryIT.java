@@ -51,6 +51,9 @@ public class HistoryIT extends ChromeBrowserTest {
         pushButton.click();
 
         Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
+        Assert.assertEquals(Arrays.asList("New location: asdf",
+                "New state: {\"foo\":true}"), getStatusMessages());
+        clearButton.click();
 
         // Back to original state
         backButton.click();
@@ -68,6 +71,9 @@ public class HistoryIT extends ChromeBrowserTest {
         replaceButton.click();
 
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
+        Assert.assertEquals(Arrays.asList("New location: qwerty"),
+                getStatusMessages());
+        clearButton.click();
 
         // Forward to originally pushed state
         forwardButton.click();

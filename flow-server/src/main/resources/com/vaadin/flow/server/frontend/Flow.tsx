@@ -142,6 +142,7 @@ function postpone() {
 }
 
 const prevent = () => postpone;
+let popstateListener: { type: string, listener: EventListener, useCapture: boolean };
 
 type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>>;
 
@@ -167,15 +168,15 @@ function Flow() {
         navigate(path);
     }, [navigate]);
 
-    const vaadinRouterGoEventHandler = useCallback((event: CustomEvent<URL>) => {
-        const url = event.detail;
+    const vaadinRouterGoEventHandler = useCallback((event: CustomEvent<any>) => {
+        const url = event.detail as URL;
         const path = normalizeURL(url);
         if (!path) {
             return;
         }
 
         event.preventDefault();
-        navigate(path);
+        navigate(path, {replace: event.detail.replace || event.detail.clientNavigation});
     }, [navigate]);
 
     const redirect = useCallback((path: string) => {
@@ -184,13 +185,51 @@ function Flow() {
         });
     }, [navigate]);
 
+    function popstateHandler(event: PopStateEvent) {
+        if(event.state && event.state === 'vaadin-router-ignore') {
+            if(pathname.endsWith('/') && !window.location.pathname.endsWith('/') && window.location.pathname === pathname.substring(0, pathname.length - 1)) {
+                // path was probably trimmed in server side, skip navigation
+                return;
+            }
+            popstateListener.listener(event);
+        } else {
+            let url: any = new URL(window.location.pathname, document.baseURI)
+            url["replace"] = true;
+            // @ts-ignore
+            window.dispatchEvent(new CustomEvent('vaadin-router-go', {
+                cancelable: true,
+                detail: url
+            }));
+        }
+    }
+
     useEffect(() => {
         // @ts-ignore
         window.addEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
 
+        if(popstateListener) {
+            // If we have gotten the router popstate handle that
+            window.removeEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
+            window.addEventListener('popstate', popstateHandler);
+        } else {
+            // @ts-ignore
+            let popstateListeners = window.getEventListeners('popstate');
+            if (popstateListeners.length > 0) {
+                // pick the first popstate and use that in future.
+
+                popstateListener = popstateListeners[0];
+                window.removeEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
+                window.addEventListener('popstate', popstateHandler);
+            }
+        }
+
         return () => {
             // @ts-ignore
             window.removeEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
+            if (popstateListener) {
+                window.removeEventListener('popstate', popstateHandler);
+                window.addEventListener('popstate', popstateListener.listener, popstateListener.useCapture);
+            }
         };
     }, [vaadinRouterGoEventHandler]);
 
@@ -203,7 +242,7 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
-            const {pathname, search} = blocker.location;
+            const {pathname, search, hash} = blocker.location;
             let matched = matchRoutes(Array.from(routes), window.location.pathname);
 
             // Navigation between server routes
@@ -214,9 +253,9 @@ function Flow() {
                         prevent,
                         redirect,
                         continue() {
-                            blocker.proceed();
+                          blocker.proceed();
                         }
-                    }, router);
+                       }, router);
                 setNavigated(true);
             } else {
                 // For covering the 'server -> client' use case
@@ -272,6 +311,84 @@ Flow.type = 'FlowContainer'; // This is for copilot to recognize this
 export const serverSideRoutes = [
     { path: '/*', element: <Flow/> },
 ];
+
+(function () {
+    "use strict";
+    [Document, Window].forEach((cst) => {
+        if (typeof cst === "function") {
+            const eventListenerList = {};
+            function pushEventListener(type: string, listener: EventListener,
+                                       useCapture: boolean = false) {
+                // @ts-ignore
+                if (!eventListenerList[type]) {
+                    // @ts-ignore
+                    eventListenerList[type] = [];
+                }
+                // @ts-ignore
+                eventListenerList[type].push({ type, listener, useCapture });
+            }
+            function removeEventListener(type: string, listener: EventListener,
+                                         useCapture: boolean = false) {
+                // @ts-ignore
+                if (!eventListenerList[type]) {
+                    return;
+                }
+                // Find the event in the list, If a listener is registered twice, one
+                // with capture and one without, remove each one separately. Removal of
+                // a capturing listener does not affect a non-capturing version of the
+                // same listener, and vice versa.
+                // @ts-ignore
+                for (let i = 0; i < eventListenerList[type].length; i++) {
+                    if (
+                        // @ts-ignore
+                        eventListenerList[type][i].listener === listener &&
+                        // @ts-ignore
+                        eventListenerList[type][i].useCapture === useCapture
+                    ) {
+                        // @ts-ignore
+                        eventListenerList[type].splice(i, 1);
+                        break;
+                    }
+                }
+                // if no more events of the removed event type are left,remove the group
+                // @ts-ignore
+                if (eventListenerList[type].length == 0) {
+                    // @ts-ignore
+                    delete eventListenerList[type];
+                }
+            }
+            function getEventListener(type: string) {
+                if (!eventListenerList) return [];
+                if (type == undefined) return eventListenerList;
+                // @ts-ignore
+                if(eventListenerList[type] == undefined) return [];
+                // @ts-ignore
+                return eventListenerList[type];
+            }
+
+            // save the original methods before overwriting them
+            const originalAddEventListener = cst.prototype.addEventListener;
+            const originalRemoveEventListener = cst.prototype.removeEventListener;
+
+            cst.prototype.addEventListener = function (type: string, listener: EventListener,
+                                                       useCapture: boolean = false) {
+                originalAddEventListener.call(this, type, listener, useCapture);
+                pushEventListener(type, listener, useCapture);
+            };
+
+            cst.prototype.removeEventListener = function (type: string, listener: EventListener,
+                                                          useCapture: boolean = false) {
+                originalRemoveEventListener.call(this, type, listener, useCapture);
+                removeEventListener(type, listener, useCapture);
+            };
+
+            // @ts-ignore
+            cst.prototype.getEventListeners = function (type: string) {
+                return getEventListener(type);
+            };
+        }
+    });
+})();
 
 /**
  * Load the script for an exported WebComponent with the given tag
