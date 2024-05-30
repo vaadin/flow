@@ -186,9 +186,10 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs(
-                "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })",
-                state, pathWithQueryParameters);
+        final String pushStateScript = ui.getSession().getService().getDeploymentConfiguration().isReactEnabled()
+                ? "window.history.pushState($0, '', $1);"
+                : "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })";
+        ui.getPage().executeJs(pushStateScript, state, pathWithQueryParameters);
     }
 
     /**
@@ -225,9 +226,10 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs(
-                "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })",
-                state, pathWithQueryParameters);
+        final String replaceStateScript = ui.getSession().getService().getDeploymentConfiguration().isReactEnabled()
+                ? "window.history.replaceState($0, '', $1);"
+                : "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })";
+        ui.getPage().executeJs(replaceStateScript, state, pathWithQueryParameters);
     }
 
     /**
