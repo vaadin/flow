@@ -1868,18 +1868,12 @@ public class UI extends Component
         if (!location.getPath().equals(route) && !getInternals()
                 .containsPendingJavascript("window.history.replaceState")) {
             // See InternalRedirectHandler invoked via Router.
-            getPage().executeJs(
-                    "setTimeout(() => { window.history.replaceState($0, '', $1);})",
-                    null,
-                    Optional.ofNullable(location)
-                            .map(Location::getPathWithQueryParameters)
-                            .map(path -> path.isEmpty() ? "." : path)
-                            .orElse(null));
+            getPage().getHistory().replaceState(null, location);
         }
     }
 
     /**
-     * Check that the view can be left. This method is invoked when the client
+     * Check that the view can be leave. This method is invoked when the client
      * router tries to navigate to a client route while the current route is a
      * server route.
      * <p>
