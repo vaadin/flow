@@ -145,26 +145,20 @@ const prevent = () => postpone;
 
 type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>>;
 
-function isReactRouterState(state: unknown) {
-    return !!state && typeof state === 'object' && 'idx' in state;
-}
-
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const prevHistoryState = useRef<any>(null);
     const navigate = useNavigate();
     const blocker = useBlocker(({nextLocation, historyAction}) => {
-        const reactRouterHistory = isReactRouterState(prevHistoryState);
-        const reactRouterNavigation = isReactRouterState(window.history.state);
+        const reactRouterHistory = !!prevHistoryState.current && typeof prevHistoryState.current === "object" && "idx" in prevHistoryState.current;
+        const reactRouterNavigation = !!window.history.state && typeof window.history.state === "object" && "idx" in window.history.state;
         prevHistoryState.current = window.history.state;
-        switch (historyAction) {
-            case "POP":
-                return reactRouterHistory;
-            case "PUSH":
-                return reactRouterNavigation;
-            default:
-                return true;
+        // @ts-ignore
+        if(event && event.state && event.state === "vaadin-router-ignore") {
+            prevHistoryState.current = {"idx":0};
+            return true && historyAction === "POP";
         }
+        return !(historyAction === "POP" && reactRouterHistory && reactRouterNavigation);
     });
     const {pathname, search, hash} = useLocation();
     const navigated = useRef<boolean>(false);
