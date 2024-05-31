@@ -194,7 +194,7 @@ function Flow() {
     }, [navigate]);
 
     const vaadinNavigateEventHandler = useCallback((event: CustomEvent<{state: unknown, url: string, replace?: boolean}>) => {
-        const path =  normalizeURL(new URL(document.baseURI + event.detail.url));
+        const path = '/' + event.detail.url;
         navigated.current = true;
         navigate(path, { state: event.detail.state, replace: event.detail.replace});
     }, [navigate]);
