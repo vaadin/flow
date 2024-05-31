@@ -145,13 +145,17 @@ const prevent = () => postpone;
 
 type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>>;
 
+function isReactRouterState(state: unknown) {
+    return !!state && typeof state === 'object' && 'idx' in state;
+}
+
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const prevHistoryState = useRef<any>(null);
     const navigate = useNavigate();
     const blocker = useBlocker(({nextLocation, historyAction}) => {
-        const reactRouterHistory = !!prevHistoryState.current && typeof prevHistoryState.current === "object" && "idx" in prevHistoryState.current;
-        const reactRouterNavigation = !!window.history.state && typeof window.history.state === "object" && "idx" in window.history.state;
+        const reactRouterHistory = isReactRouterState(prevHistoryState.current);
+        const reactRouterNavigation = isReactRouterState(window.history.state);
         prevHistoryState.current = window.history.state;
         // @ts-ignore
         if(event && event.state && event.state === "vaadin-router-ignore") {
