@@ -19,11 +19,15 @@ package com.vaadin.flow.spring.io;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.JarURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -33,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipException;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -58,7 +63,9 @@ public class FilterableResourceResolver
 
     private static final String JAR_PROTOCOL = "jar:";
     private static final String JAR_KEY = ".jar!/";
+    private static final String JAR_EXTENSION = ".jar";
     private static final String PACKAGE_PROPERTIES_PATH = "META-INF/VAADIN/package.properties";
+    private static final String BLOCKED_JARS_LIST_PATH = "/META-INF/VAADIN/blocked-jars.list";
 
     /**
      * The property key for allowed packages.
@@ -68,11 +75,51 @@ public class FilterableResourceResolver
      * The property key for blocked packages.
      */
     public static final String BLOCKED_PACKAGES_PROPERTY = "vaadin.blocked-packages";
+    /**
+     * The property key for blocked JAR file.
+     */
+    public static final String BLOCKED_JAR_PROPERTY = "vaadin.blocked-jar";
+
+    /**
+     * Jar filename patterns for excluded jars.
+     */
+    private static final List<String> DEFAULT_SCAN_NEVER_JAR = Stream.of(
+            "antlr", "logback-classic", "logback-classic-core",
+            "commons-codec-*.*.*.jar", "commons-fileupload",
+            "commons-io-*.*.*.jar", "commons-logging", "commons-exec",
+            "commons-lang*-*.*.*.jar", "jackson-databind-", "jackson-core-",
+            "jackson-datatype-", "jackson-annotations-", "jackson-module-",
+            "jackson-datatype-", "atmosphere-runtime", "byte-buddy",
+            "commons-compress", "aspectjweaver", "hibernate-core",
+            "hibernate-commons", "hibernate-validator", "jboss-logging",
+            "selenium-", "slf4j-simple-", "slf4j-api-", "spring-*.*.*.jar",
+            "spring-webmvc-*.*.*.jar", "spring-aop-*.*.*.jar",
+            "spring-beans-*.*.*.jar", "spring-context-*.*.*.jar",
+            "spring-core-*.*.*.jar", "spring-jcl-*.*.*.jar",
+            "spring-expression-*.*.*.jar", "spring-websocket-*.*.*.jar",
+            "spring-web-*.*.*.jar", "snakeyaml-*.*.jar", "javax.", "jakarta.",
+            "kotlin-reflect-", "kotlin-stdlib-", "gwt-elemental",
+            "javassist-*.*.*-*.jar", "javaparser-core-*.*.*.jar",
+            "javaparser-symbol", "oshi-core-*.*.*.jar",
+            "micrometer-observation-*.*.*.jar", "micrometer-commons-*.*.*.jar",
+            "nimbus-jose-jwt", "jooq-*.*.*.jar", "jooq-*-*.*.*.jar",
+            "directory-watcher-*.*.*.jar", "classgraph", "jsoup-*.*.*.jar",
+            "throw-if-servlet3", "ph-css-*.*.*.jar", "ph-commons-*.*.*.jar",
+            "gentyref-*.*.*.vaadin1.jar", "asm-*.*.jar", "asm-commons-*.*.jar",
+            "asm-tree-*.*.jar", "jetty-", "tomcat-", "classmate-*.*.*.jar",
+            "reflections-*.*.*.jar", "jna-*.*.*.jar", "jna-platform-*.*.*.jar",
+            "jcip-annotations-*.*.*.jar", "activation-*.*.*.jar",
+            "httpcore5-*.*.*.jar", "httpcore5-h2-*.*.*.jar",
+
+            "hilla-engine-core-", "hilla-engine-runtime-", "hilla-parser-jvm-",
+            "hilla-runtime-plugin-").toList();
 
     private final Map<String, PackageInfo> propertiesCache = new HashMap<>();
 
+    private List<String> blockedJarsList;
+
     private record PackageInfo(Set<String> allowedPackages,
-            Set<String> blockedPackages) implements Serializable {
+            Set<String> blockedPackages, boolean blockedJar) implements Serializable {
     }
 
     /**
@@ -83,6 +130,7 @@ public class FilterableResourceResolver
      */
     public FilterableResourceResolver(ResourceLoader resourceLoader) {
         super(resourceLoader);
+        initBlockedJars();
     }
 
     private static Logger getLogger() {
@@ -116,6 +164,9 @@ public class FilterableResourceResolver
     private Resource doResolveRootDirResource(Resource original)
             throws IOException {
         String rootDirPath = original.getURI().getPath();
+        if (rootDirPath == null) {
+            rootDirPath = original.getURI().toString();
+        }
         if (rootDirPath != null) {
             int index = rootDirPath.lastIndexOf(JAR_KEY);
             if (index != -1) {
@@ -147,9 +198,14 @@ public class FilterableResourceResolver
             Resource rootDirResource, URL rootDirUrl, String subPattern)
             throws IOException {
         String path = rootDirResource.getURI().toString();
-        cachePackageProperties(path, rootDirResource, rootDirUrl);
+        String jarName = resolveJarName(rootDirResource.getURI());
+        if (jarName != null && blockedJarsList.stream()
+                .anyMatch(pattern -> jarNamePatternMatch(jarName, pattern))) {
+            return Set.of();
+        }
+        String key = cachePackageProperties(path, rootDirResource, rootDirUrl);
 
-        if (isBlockedJar(rootDirResource)) {
+        if (isBlockedJar(rootDirResource, key)) {
             return Collections.emptySet();
         }
         return super.doFindPathMatchingJarResources(rootDirResource, rootDirUrl,
@@ -174,42 +230,128 @@ public class FilterableResourceResolver
             throws IOException {
         var result = super.doFindAllClassPathResources(path);
         result.removeIf(res -> {
-            cachePackageProperties(res);
-            return isBlockedJar(res);
+            try {
+                String jarName = resolveJarName(res.getURI());
+                if (jarName != null && blockedJarsList.stream().anyMatch(
+                        pattern -> jarNamePatternMatch(jarName, pattern))) {
+                    return true;
+                }
+            } catch (IOException e) {
+                getLogger().warn("Failed to resolve path for resource {}", res,
+                        e);
+            }
+            String key = cachePackageProperties(res);
+            return isBlockedJar(res, key);
         });
         return result;
     }
 
-    private void cachePackageProperties(String path, Resource rootDirResource,
-            URL rootDirUrl) throws IOException {
-        if (!propertiesCache.containsKey(path)) {
-            if (isJar(path)) {
-                String jarPath = pathToKey(path);
-                propertiesCache.put(jarPath, readPackageProperties(rootDirUrl,
-                        path, doResolveRootDirResource(rootDirResource)));
-                getLogger().trace("Caching package.properties of JAR {}", path);
-            } else {
-                Resource resource = doFindPathMatchingFileResources(
-                        rootDirResource, PACKAGE_PROPERTIES_PATH).stream()
-                        .findFirst().orElse(null);
-                Properties properties = resource != null
-                        ? PropertiesLoaderUtils.loadProperties(resource)
-                        : null;
-                propertiesCache.put(path, createPackageInfo(properties));
-                getLogger().trace("Caching package.properties of directory {}",
-                        path);
+    /**
+     * Matches given jarName with the pattern. if pattern doesn't contain '*',
+     * then match is based on startsWith(pattern). If pattern has one or more
+     * '*', pattern is split into array and each part is matched with startsWith
+     * for each part in the given jarName. '*' match any character 0-n times
+     * except '-' or content of the part following `*`. <br/>
+     * <br/>
+     * For example, "spring-*.*.*.jar" pattern matches to "spring-1.0.0.jar",
+     * "spring-abc.1.0.jar", "spring-abc.1.0.0.jar" but NOT
+     * "spring-abc-1.0.0.jar" or "spring-1.0.jar". <br/>
+     * <br/>
+     * String operations are handled from left to right, where content of `*` is
+     * substring starting from end of the previous String to beginning of the
+     * first occurrence of the next part in the parts array. <br/>
+     * <br/>
+     * "spring-*-*.*.*.jar" pattern matches to "spring-foo-1.0.0.jar",
+     * "spring-foo-bar.1.0.jar" but NOT "spring-foo-bar-1.0.0.jar" or
+     * "spring-1.0.0.jar".<br/>
+     * <br/>
+     * "spring-*_*.*.jar" match "spring-abc.1_0.0.jar" due to the order '*' is a
+     * substring part by part from left to right. <br/>
+     * <br/>
+     * Method is not using much regex to get optimal performance.
+     */
+    boolean jarNamePatternMatch(String jarName, String pattern) {
+        if (pattern.contains("*")) {
+            if (pattern.equals("*")) {
+                return true;
+            }
+            var parts = pattern.split("\\*");
+            String remainingName = jarName;
+            int nextPartIndex = 0;
+            int partIndex = 0;
+            for (String part : parts) {
+                if (!remainingName.startsWith(part)) {
+                    return false;
+                }
+                if ((partIndex + 1) >= parts.length) {
+                    return true;
+                }
+                remainingName = remainingName.substring(part.length());
+                nextPartIndex = remainingName.indexOf(parts[partIndex + 1]);
+                if (nextPartIndex == -1) {
+                    return false;
+                }
+                if (remainingName.substring(0, nextPartIndex).contains("-")) {
+                    return false;
+                }
+                remainingName = remainingName.substring(nextPartIndex);
+                partIndex++;
             }
         }
+        return jarName.startsWith(pattern);
     }
 
-    private void cachePackageProperties(Resource res) {
+    private String resolveJarName(URI resourceURI) {
+        String resourcePath = resourceURI.getPath();
+        if (resourcePath == null) {
+            resourcePath = resourceURI.toString();
+        }
+        int index = resourcePath.lastIndexOf(JAR_EXTENSION);
+        if (index > -1) {
+            String jarName = resourcePath.substring(0,
+                    index + JAR_EXTENSION.length());
+            index = jarName.lastIndexOf("/");
+            if (index > -1) {
+                return jarName.substring(index + 1);
+            }
+            return jarName;
+        }
+        return null;
+    }
+
+    private String cachePackageProperties(String path, Resource rootDirResource,
+            URL rootDirUrl) throws IOException {
+        String key = path;
+        if (isJar(path)) {
+            key = pathToKey(path);
+            if (!propertiesCache.containsKey(key)) {
+                propertiesCache.put(key, readPackageProperties(rootDirUrl, path,
+                        doResolveRootDirResource(rootDirResource)));
+                getLogger().trace("Caching package.properties of JAR {}", path);
+            }
+        } else if (!propertiesCache.containsKey(path)) {
+            Resource resource = doFindPathMatchingFileResources(rootDirResource,
+                    PACKAGE_PROPERTIES_PATH).stream().findFirst().orElse(null);
+            Properties properties = resource != null
+                    ? PropertiesLoaderUtils.loadProperties(resource)
+                    : null;
+            propertiesCache.put(path, createPackageInfo(properties));
+            getLogger().trace("Caching package.properties of directory {}",
+                    path);
+        }
+        return key;
+    }
+
+    private String cachePackageProperties(Resource res) {
+        String key = null;
         try {
             Resource rootDirResource = convertClassLoaderURL(res.getURL());
             String rootDirPath = rootDirResource.getURI().toString();
             String rootPath = rootDirResource.getURI().getPath();
+            key = rootPath;
             if (rootPath != null && isJar(rootDirPath)) {
                 String jarPath = toJarPath(rootDirPath);
-                String key = pathToKey(rootPath);
+                key = pathToKey(rootPath);
                 if (!propertiesCache.containsKey(key)) {
                     propertiesCache.put(key, readPackageProperties(null,
                             jarPath, rootDirResource));
@@ -232,6 +374,7 @@ public class FilterableResourceResolver
             getLogger().warn("Failed to find {} for path {}",
                     PACKAGE_PROPERTIES_PATH, res, e);
         }
+        return key;
     }
 
     /**
@@ -240,12 +383,16 @@ public class FilterableResourceResolver
      *
      * @param resource
      *            the resource to check
+     * @param key
+     *            the key for the package info
      * @return {@code true} if the resource is a blocked jar, {@code false}
      *         otherwise
      */
-    protected boolean isBlockedJar(Resource resource) {
-        // placeholder to handle case of package.properties with
-        // vaadin.blocked-jar=true
+    protected boolean isBlockedJar(Resource resource, String key) {
+        if (resource != null && key != null) {
+            PackageInfo pkgInfo = propertiesCache.get(key);
+            return pkgInfo != null && pkgInfo.blockedJar();
+        }
         return false;
     }
 
@@ -383,6 +530,30 @@ public class FilterableResourceResolver
                         .split(","))
                 .filter(pkg -> !pkg.isBlank()).map(String::trim)
                 .map(pkg -> pkg.replace(".", "/")).collect(Collectors.toSet());
-        return new PackageInfo(allowedPackages, blockedPackages);
+        boolean blockedJar = Boolean.parseBoolean(
+                properties.getProperty(BLOCKED_JAR_PROPERTY, "false"));
+        return new PackageInfo(allowedPackages, blockedPackages, blockedJar);
+    }
+
+    private void initBlockedJars() {
+        blockedJarsList = DEFAULT_SCAN_NEVER_JAR;
+        URL url = getClass().getResource(BLOCKED_JARS_LIST_PATH);
+        if (url == null) {
+            return;
+        }
+        try {
+            String content = IOUtils.toString(url, StandardCharsets.UTF_8);
+            if (content != null) {
+                if (content.isBlank()) {
+                    blockedJarsList = Collections.emptyList();
+                } else {
+                    blockedJarsList = Arrays.asList(content.split("\\R"));
+                }
+            }
+        } catch (IOException e) {
+            getLogger().error(
+                    "Failed to read {}. Falling back to default list of blocked jars.",
+                    BLOCKED_JARS_LIST_PATH, e);
+        }
     }
 }

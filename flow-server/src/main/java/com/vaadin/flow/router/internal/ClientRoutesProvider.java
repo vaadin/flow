@@ -19,9 +19,16 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.List;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
 /**
  * Interface for providing client side routes.
+ *
+ * @deprecated Provider is deprecated, use
+ *             {@link FrontendUtils#getClientRoutes()} instead.
  */
+@Deprecated(forRemoval = true)
 public interface ClientRoutesProvider extends Serializable {
 
     /**
