@@ -282,14 +282,23 @@ public abstract class AbstractNavigationStateRenderer
                                         .getPathWithQueryParameters()))) {
 
             if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
+                if (ui.getInternals().getSession().getConfiguration()
+                        .isReactEnabled()) {
+                    ui.getPage().executeJs(
+                            "setTimeout(() => { window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { url: $0 } })); })",
+                            event.getLocation().getPathWithQueryParameters());
+                } else {
+                    pushHistoryState(event);
+                }
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
         } else if (ui.getInternals().getSession().getConfiguration()
                 .isReactEnabled()) {
             if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
+                ui.getPage().executeJs(
+                        "setTimeout(() => { window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { url: $0 } })); })",
+                        event.getLocation().getPathWithQueryParameters());
             }
         }
     }
