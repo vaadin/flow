@@ -282,7 +282,8 @@ public abstract class AbstractNavigationStateRenderer
                                         .getPathWithQueryParameters()))) {
 
             if (shouldPushHistoryState(event)) {
-                if (ui.getSession().getConfiguration().isReactEnabled()) {
+                if (ui.getInternals().getSession().getConfiguration()
+                        .isReactEnabled()) {
                     ui.getPage().executeJs(
                             "setTimeout(() => { window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { url: $0 } })); })",
                             event.getLocation().getPathWithQueryParameters());
@@ -292,7 +293,8 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
-        } else if (ui.getSession().getConfiguration().isReactEnabled()) {
+        } else if (ui.getInternals().getSession().getConfiguration()
+                .isReactEnabled()) {
             if (shouldPushHistoryState(event)) {
                 ui.getPage().executeJs(
                         "setTimeout(() => { window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { url: $0 } })); })",

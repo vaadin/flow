@@ -50,7 +50,6 @@ import com.vaadin.flow.server.VaadinSessionState;
 public class JavaScriptBootstrapUITest {
 
     private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })";
-    private static final String REACT_PUSHSTATE_TO = "setTimeout(() => { window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { url: $0 } })); })";
 
     private MockServletServiceSessionSetup mocks;
     private UI ui;
@@ -412,7 +411,7 @@ public class JavaScriptBootstrapUITest {
 
         UIInternals internals = mockUIInternals();
 
-        VaadinSession session = mocks.getSession();
+        VaadinSession session = Mockito.mock(VaadinSession.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(internals.getSession()).thenReturn(session);
@@ -438,19 +437,12 @@ public class JavaScriptBootstrapUITest {
         ui.navigate("clean/1");
         Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
-        boolean reactEnabled = ui.getSession().getConfiguration()
-                .isReactEnabled();
+        assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+
         final Serializable[] execValues = execArg.getValue();
-        if (reactEnabled) {
-            assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
-            assertEquals(1, execValues.length);
-            assertEquals("clean/1", execValues[0]);
-        } else {
-            assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-            assertEquals(2, execValues.length);
-            assertNull(execValues[0]);
-            assertEquals("clean/1", execValues[1]);
-        }
+        assertEquals(2, execValues.length);
+        assertNull(execValues[0]);
+        assertEquals("clean/1", execValues[1]);
     }
 
     @Test
@@ -491,19 +483,12 @@ public class JavaScriptBootstrapUITest {
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
-        boolean reactEnabled = ui.getSession().getConfiguration()
-                .isReactEnabled();
+        assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+
         final Serializable[] execValues = execArg.getValue();
-        if (reactEnabled) {
-            assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
-            assertEquals(1, execValues.length);
-            assertEquals("dirty", execValues[0]);
-        } else {
-            assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-            assertEquals(2, execValues.length);
-            assertNull(execValues[0]);
-            assertEquals("dirty", execValues[1]);
-        }
+        assertEquals(2, execValues.length);
+        assertNull(execValues[0]);
+        assertEquals("dirty", execValues[1]);
     }
 
     @Test
