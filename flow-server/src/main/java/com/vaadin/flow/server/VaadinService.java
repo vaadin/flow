@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1370,6 +1371,8 @@ public abstract class VaadinService implements Serializable {
                     getLogger().debug("Closing inactive UI #{} in session {}",
                             ui.getUIId(), sessionId);
                     ui.close();
+                    AbstractNavigationStateRenderer
+                            .purgeInactiveUIPreservedChainCache(ui);
                 });
             }
         }
