@@ -12,7 +12,7 @@ import { serverSideRoutes } from 'Frontend/generated/flow/Flow';
 function build() {
     const routes = [...serverSideRoutes] as RouteObject[];
     return {
-        router: createBrowserRouter(routes, { basename: new URL(document.baseURI).pathname }),
+        router: createBrowserRouter(routes),
         routes
     };
 }
