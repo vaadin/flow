@@ -193,12 +193,6 @@ function Flow() {
         navigate(path);
     }, [navigate]);
 
-    const vaadinNavigateEventHandler = useCallback((event: CustomEvent<{state: unknown, url: string, replace?: boolean}>) => {
-        const path = '/' + event.detail.url;
-        navigated.current = true;
-        navigate(path, { state: event.detail.state, replace: event.detail.replace});
-    }, [navigate]);
-
     const redirect = useCallback((path: string) => {
         return (() => {
             navigate(path, {replace: true});
@@ -209,16 +203,11 @@ function Flow() {
         // @ts-ignore
         window.addEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
 
-        // @ts-ignore
-        window.addEventListener('vaadin-navigate', vaadinNavigateEventHandler);
-
         return () => {
             // @ts-ignore
             window.removeEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
-            // @ts-ignore
-            window.removeEventListener('vaadin-navigate', vaadinNavigateEventHandler);
         };
-    }, [vaadinRouterGoEventHandler, vaadinNavigateEventHandler]);
+    }, [vaadinRouterGoEventHandler]);
 
     useEffect(() => {
         return () => {

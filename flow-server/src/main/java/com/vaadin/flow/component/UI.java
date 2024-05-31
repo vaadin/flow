@@ -1868,14 +1868,13 @@ public class UI extends Component
         if (!location.getPath().equals(route) && !getInternals()
                 .containsPendingJavascript("window.history.replaceState")) {
             // See InternalRedirectHandler invoked via Router.
-            getPage().getHistory().replaceState(null, location);
-            // getPage().executeJs(
-            // "setTimeout(() => { window.history.replaceState($0, '', $1);})",
-            // null,
-            // Optional.ofNullable(location)
-            // .map(Location::getPathWithQueryParameters)
-            // .map(path -> path.isEmpty() ? "." : path)
-            // .orElse(null));
+            getPage().executeJs(
+                    "setTimeout(() => { window.history.replaceState($0, '', $1);})",
+                    null,
+                    Optional.ofNullable(location)
+                            .map(Location::getPathWithQueryParameters)
+                            .map(path -> path.isEmpty() ? "." : path)
+                            .orElse(null));
         }
     }
 
