@@ -119,7 +119,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
         @Override
         public boolean remove(Object o) {
-        	if (!contains(o)) {
+            if (!contains(o)) {
                 return false;
             }
             T removedItem = nodeList.remove(nodeList.indexOf((T) o));
