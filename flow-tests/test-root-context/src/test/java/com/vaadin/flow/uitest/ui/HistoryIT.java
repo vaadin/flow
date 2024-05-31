@@ -47,21 +47,26 @@ public class HistoryIT extends ChromeBrowserTest {
         WebElement clearButton = findElement(By.id("clear"));
 
         stateField.setValue("{'foo':true}");
-        locationField.setValue("asdf");
+        locationField.setValue("pushedState1");
+        pushButton.click();
+        Assert.assertEquals(baseUrl.resolve("pushedState1"), getCurrentUrl());
+
+        locationField.setValue("pushedState2");
         pushButton.click();
 
-        Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
+        Assert.assertEquals(baseUrl.resolve("pushedState2"), getCurrentUrl());
 
         // Back to original state
+        backButton.click();
         backButton.click();
 
         Assert.assertEquals(baseUrl, getCurrentUrl());
         // idx value in history state is added by react-router
-//        Assert.assertEquals(
-//                Arrays.asList("New location: asdf", "New state: {\"foo\":true}",
-//                        "New location: com.vaadin.flow.uitest.ui.HistoryView",
-//                        "New state: {\"idx\":0}"),
-//                getStatusMessages());
+        Assert.assertEquals(
+                Arrays.asList("New location: pushedState1", "New state: {\"foo\":true}",
+                        "New location: com.vaadin.flow.uitest.ui.HistoryView"
+                        ),
+                getStatusMessages());
         clearButton.click();
 
         stateField.clear();
@@ -73,17 +78,21 @@ public class HistoryIT extends ChromeBrowserTest {
 
         // Forward to originally pushed state
         forwardButton.click();
-        Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
-//        Assert.assertEquals(Arrays.asList("New location: qwerty",
-//                "New location: asdf", "New state: {\"foo\":true}"),
-//                getStatusMessages());
+        Assert.assertEquals(baseUrl.resolve("pushedState1"), getCurrentUrl());
+        forwardButton.click();
+        Assert.assertEquals(baseUrl.resolve("pushedState2"), getCurrentUrl());
+
+        Assert.assertEquals(Arrays.asList("New location: pushedState1",
+                "New location: pushedState2"),
+                getStatusMessages());
         clearButton.click();
 
         // Back to the replaced state
         backButton.click();
+        backButton.click();
 
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: qwerty"),
+        Assert.assertEquals(Arrays.asList("New location: pushedState1","New location: qwerty"),
                 getStatusMessages());
 
         // Navigate to empty string should go to the context path root
