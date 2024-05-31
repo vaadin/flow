@@ -1512,7 +1512,7 @@ public class Binder<BEAN> implements Serializable {
 
             if (binder != null) {
                 // Inform binder of changes; if setBean: writeIfValid
-                getBinder().handleFieldValueChange(this);
+                getBinder().handleFieldValueChange(this, event);
                 getBinder().fireEvent(event);
             }
         }
@@ -1809,6 +1809,7 @@ public class Binder<BEAN> implements Serializable {
 
     private BindingExceptionHandler exceptionHandler = new DefaultBindingExceptionHandler();
 
+    private Map<Binding<BEAN, ?>, Object> bindingInitialValuesMap = new HashMap<>();
     private Set<Binding<BEAN, ?>> changedBindings = new LinkedHashSet<>();
 
     private boolean validatorsDisabled = false;
@@ -1918,8 +1919,9 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Informs the Binder that a value in Binding was changed.
      *
-     * If {@link #readBean(Object)} was used, this method will only validate the
-     * changed binding and ignore state of other bindings.
+     * If {@link #readBean(Object)} was used, this method will check if the value is reverted 
+     * to initial value, in this case the binding will be removed from the changed bindings. 
+     * This method will also validate the changed binding and ignore state of other bindings.
      *
      * If {@link #setBean(Object)} was used, all pending changed bindings will
      * be validated and non-changed ones will be ignored. The changed value will
@@ -1928,18 +1930,41 @@ public class Binder<BEAN> implements Serializable {
      *
      * @param binding
      *            the binding whose value has been changed
+     * @param event
+     *            the value change event
      */
-    protected void handleFieldValueChange(Binding<BEAN, ?> binding) {
-        changedBindings.add(binding);
-
+    protected void handleFieldValueChange(Binding<BEAN, ?> binding, ValueChangeEvent<?> event) {
         if (getBean() == null) {
+        	if (!bindingInitialValuesMap.containsKey(binding)) {
+        		// If the field is changed the first time, keep the old value as the initial value
+        		bindingInitialValuesMap.put(binding, event.getOldValue());
+        		changedBindings.add(binding);
+        	} else if (isRevertedToInitialValue(binding, event.getValue())) {
+        		changedBindings.remove(binding);
+        	}
             binding.validate();
         } else {
+        	changedBindings.add(binding);
             doWriteIfValid(getBean(), changedBindings);
         }
     }
 
+    
     /**
+     * If {@link #readBean(Object)} was used, checks if the field value is 
+     * reverted to the initial value in bean
+     * 
+     * @param binding
+     *            the binding whose value has been changed
+     * @param newValue
+     *            the new value if the field
+     * @return true if the field value is reverted
+     */
+    protected boolean isRevertedToInitialValue(Binding<BEAN, ?> binding, Object newValue) {
+		return Objects.equals(bindingInitialValuesMap.get(binding), newValue);
+	}
+
+	/**
      * Returns the bean that has been bound with {@link #bind}, or null if a
      * bean is not currently bound.
      *
@@ -2307,7 +2332,7 @@ public class Binder<BEAN> implements Serializable {
                     binding.initFieldValue(bean, false);
                 }
             });
-            changedBindings.clear();
+            clearChangedBindings();
             getValidationStatusHandler().statusChange(
                     BinderValidationStatus.createUnresolvedStatus(this));
             fireStatusChangeEvent(false);
@@ -2561,14 +2586,14 @@ public class Binder<BEAN> implements Serializable {
                  * Changes have been successfully saved. The set is only cleared
                  * when the changes are stored in the currently set bean.
                  */
-                changedBindings.clear();
+            	clearChangedBindings();
             } else if (getBean() == null) {
                 /*
                  * When using readBean and writeBean there is no knowledge of
                  * which bean the changes come from or are stored in. Binder is
                  * no longer "changed" when saved succesfully to any bean.
                  */
-                changedBindings.clear();
+            	clearChangedBindings();
             }
         }
 
@@ -2738,7 +2763,15 @@ public class Binder<BEAN> implements Serializable {
         if (hasChanges()) {
             fireStatusChangeEvent(false);
         }
-        changedBindings.clear();
+        clearChangedBindings();
+    }
+    
+    /**
+     * Clear changed bindings and initial values cache
+     */
+    private void clearChangedBindings() {
+    	bindingInitialValuesMap.clear();
+    	changedBindings.clear();
     }
 
     /**
@@ -3312,7 +3345,7 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private void doRemoveBean(boolean fireStatusEvent) {
-        changedBindings.clear();
+    	clearChangedBindings();
         if (bean != null) {
             bean = null;
         }
@@ -3773,6 +3806,7 @@ public class Binder<BEAN> implements Serializable {
             boundProperties.entrySet()
                     .removeIf(entry -> entry.getValue().equals(binding));
             changedBindings.remove(binding);
+            bindingInitialValuesMap.remove(binding);
         }
     }
 
