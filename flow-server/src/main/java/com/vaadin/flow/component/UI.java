@@ -1848,7 +1848,7 @@ public class UI extends Component
         } else if (isPostponed()) {
             serverPaused();
         } else {
-            if (serverForwarded) {
+            if (!firstNavigation && serverForwarded) {
                 cancelClient();
             } else {
                 // acknowledge client, but cancel if session not open
