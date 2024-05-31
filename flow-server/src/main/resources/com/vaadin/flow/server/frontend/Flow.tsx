@@ -157,12 +157,14 @@ function Flow() {
         const reactRouterHistory = isReactRouterState(prevHistoryState.current);
         const reactRouterNavigation = isReactRouterState(window.history.state);
         prevHistoryState.current = window.history.state;
-        // @ts-ignore
-        if(event && event.state && event.state === "vaadin-router-ignore") {
-            prevHistoryState.current = {"idx":0};
-            return true && historyAction === "POP";
+        switch (historyAction) {
+            case "POP":
+                return reactRouterHistory;
+            case "PUSH":
+                return reactRouterNavigation && !navigated.current;
+            default:
+                return true;
         }
-        return !(historyAction === "POP" && reactRouterHistory && reactRouterNavigation);
     });
     const {pathname, search, hash} = useLocation();
     const navigated = useRef<boolean>(false);
