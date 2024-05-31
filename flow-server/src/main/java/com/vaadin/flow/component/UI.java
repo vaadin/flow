@@ -1694,6 +1694,7 @@ public class UI extends Component
     private boolean navigationInProgress = false;
 
     private String forwardToClientUrl = null;
+    private boolean serverForwarded = false;
 
     private boolean firstNavigation = true;
 
@@ -1847,9 +1848,13 @@ public class UI extends Component
         } else if (isPostponed()) {
             serverPaused();
         } else {
-            // acknowledge client, but cancel if session not open
-            serverConnected(
-                    !getSession().getState().equals(VaadinSessionState.OPEN));
+            if (serverForwarded) {
+                cancelClient();
+            } else {
+                // acknowledge client, but cancel if session not open
+                serverConnected(!getSession().getState()
+                        .equals(VaadinSessionState.OPEN));
+            }
             replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
     }
@@ -2007,7 +2012,7 @@ public class UI extends Component
 
             forwardToClientUrl = clientNavigationStateRenderer
                     .getClientForwardRoute();
-
+            serverForwarded = clientNavigationStateRenderer.isServerForwarded();
             adjustPageTitle();
 
         } catch (Exception exception) {

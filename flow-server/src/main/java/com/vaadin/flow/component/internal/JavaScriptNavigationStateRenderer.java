@@ -46,6 +46,7 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     static final String NOT_SUPPORT_REROUTE = "BeforeEvent.rerouteTo() with a client side route is not supported";
 
     private String clientForwardRoute;
+    private boolean serverForwarded = false;
 
     private ContinueNavigationAction continueNavigationAction;
 
@@ -69,6 +70,15 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
         return clientForwardRoute;
     }
 
+    /**
+     * Gets the server forwarded flag.
+     *
+     * @return the server forwarded flag.
+     */
+    public boolean isServerForwarded() {
+        return serverForwarded;
+    }
+
     @Override
     public int handle(NavigationEvent event) {
 
@@ -90,6 +100,9 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
                 clientForwardRoute = beforeEvent.getUnknownForward();
                 return Optional.of(HttpStatusCode.OK.getCode());
             }
+        } else if (beforeEvent.hasForwardTarget()) {
+            // Forwarded to another route, e.g. a login view
+            serverForwarded = true;
         }
 
         if (beforeEvent.hasUnknownReroute()) {
