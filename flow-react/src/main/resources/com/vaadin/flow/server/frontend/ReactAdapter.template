@@ -129,6 +129,16 @@ export abstract class ReactAdapterElement extends HTMLElement {
         this.#maybeRenderRoot();
     }
 
+    /**
+     * Add a callback for specified element identifier to be called when
+     * react element is ready.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param id element identifier that callback is for
+     * @param readyCallback callback method to be informed on element ready state
+     * @internal
+     */
     public addReadyCallback(id: string, readyCallback: ReadyCallbackFunction) {
         this.#readyCallback.set(id, readyCallback);
     }
