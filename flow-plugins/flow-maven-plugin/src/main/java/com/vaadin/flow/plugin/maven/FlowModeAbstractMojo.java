@@ -501,7 +501,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             return frontendHotdeploy;
         }
         File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
-        return FrontendUtils.isHillaUsed(frontendDirectory);
+        return isHillaUsed(project, frontendDirectory);
     }
 
     @Override
