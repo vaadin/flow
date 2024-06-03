@@ -87,6 +87,34 @@ public class I18NProviderTest {
                 VaadinSession.getCurrent().getLocale());
     }
 
+    @Test
+    public void translate_calls_provider()
+            throws ServletException, ServiceException {
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
+                TestProvider.class.getName());
+
+        initServletAndService(config);
+
+        Assert.assertEquals("translate method should return a value",
+                "!foo.bar!", I18NProvider.translate("foo.bar"));
+    }
+
+    @Test
+    public void translate_withoutVaadinService_throwIllegalStateException()
+            throws ServletException, ServiceException {
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
+                TestProvider.class.getName());
+
+        initServletAndService(config);
+
+        VaadinService.setCurrent(null);
+
+        Assert.assertThrows(
+                "Should throw exception without active VaadinService",
+                IllegalStateException.class,
+                () -> I18NProvider.translate("foo.bar"));
+    }
+
     @Before
     public void initState()
             throws NoSuchFieldException, IllegalAccessException {

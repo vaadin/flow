@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -192,6 +193,8 @@ public class NodeTasks implements FallibleCommand {
                             webComponentPath -> FilenameUtils.removeExtension(
                                     webComponentPath.getName()))
                             .collect(Collectors.toSet());
+                    UsageStatistics.markAsUsed(
+                            Constants.STATISTIC_HAS_EXPORTED_WC, null);
                 }
             }
 

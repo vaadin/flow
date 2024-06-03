@@ -13,14 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.test.blocked;
+
+package com.vaadin.flow.spring.test.filtering;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
-@Route("allowed-route-in-another-jar")
-public class ScannedAllowedRoute extends Div {
+@Route("")
+public class ClassScannerView extends Div {
 
-    public ScannedAllowedRoute() {
+    public static Set<Class<?>> classes = Collections.emptySet();
+    public static final String SCANNED_CLASSES = "scanned-classes";
+
+    public ClassScannerView() {
+        Span scannedClasses = new Span(classes.stream()
+                .map(Class::getSimpleName).collect(Collectors.joining(",")));
+        scannedClasses.setId(SCANNED_CLASSES);
+        add(scannedClasses);
     }
+
 }
