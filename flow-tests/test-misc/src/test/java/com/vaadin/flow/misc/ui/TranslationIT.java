@@ -55,6 +55,9 @@ public class TranslationIT extends ChromeBrowserTest {
                 $(SpanElement.class).id("french").getText());
         Assert.assertEquals("日本語",
                 $(SpanElement.class).id("japanese").getText());
+
+        Assert.assertEquals("Default",
+                $(SpanElement.class).id("static-method").getText());
     }
 
     @Test

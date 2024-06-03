@@ -91,6 +91,7 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-boot-contextpath': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-reverseproxy': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-filter-packages/ui': { pos: 4, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring-filter-packages/allowed-ui': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-filter-packages/lib-allowed': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-filter-packages/lib-blocked': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-filter-packages/lib-exclude': { pos: 4, weight: 4 },
