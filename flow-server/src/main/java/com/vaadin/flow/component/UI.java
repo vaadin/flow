@@ -1867,6 +1867,9 @@ public class UI extends Component
             Location location) {
         if (!location.getPath().equals(route) && !getInternals()
                 .containsPendingJavascript("window.history.replaceState")) {
+            if(location.getPath().endsWith("/") ^ route.endsWith("/")) {
+                return; // ignore trailing slash difference
+            }
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
         }
