@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.Version;
 
 import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
@@ -168,6 +167,7 @@ public class TaskGenerateReactFiles
                         getFileContent(isHillaUsed ? FrontendUtils.ROUTES_TSX
                                 : FrontendUtils.ROUTES_FLOW_TSX));
             } else {
+                track(routesTsx);
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
                 routesContent = StringUtil.removeComments(routesContent);

@@ -452,12 +452,15 @@ public class FeatureFlagsTest {
     }
 
     @Test
-    public void systemPropertiesCheckedForUnsupportedFeatureFlags()
-            throws IOException {
+    public void systemPropertiesCheckedForUnsupportedFeatureFlags() {
         Logger mockedLogger = Mockito.mock(Logger.class);
-        String exampleProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
+        String examplePropertyDeprecatedFormat = FeatureFlags.SYSTEM_PROPERTY_PREFIX
                 + "exampleFeatureFlag";
-        String unsupportedProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
+        String exampleProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                + "exampleFeatureFlag";
+        String unsupportedDeprecatedFormatProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
+                + "unsupportedFeature";
+        String unsupportedProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + "unsupportedFeature";
         var previousValue = System.getProperty(exampleProperty);
 
@@ -467,24 +470,39 @@ public class FeatureFlagsTest {
                     .when(() -> LoggerFactory.getLogger(FeatureFlags.class))
                     .thenReturn(mockedLogger);
 
+            System.setProperty(examplePropertyDeprecatedFormat, "true");
             System.setProperty(exampleProperty, "true");
+            System.setProperty(unsupportedDeprecatedFormatProperty, "true");
             System.setProperty(unsupportedProperty, "true");
             // resetting feature flags to manually retry check (because it was
             // run in @Before block)
             context.removeAttribute(FeatureFlags.FeatureFlagsWrapper.class);
             featureFlags = FeatureFlags.get(context);
 
+            // We do not want warning message for valid flag name with either
+            // prefix
             Mockito.verify(mockedLogger, Mockito.never()).warn(
                     "Unsupported feature flag is present: {}", exampleProperty);
+            Mockito.verify(mockedLogger, Mockito.never()).warn(
+                    "Unsupported feature flag is present: {}",
+                    examplePropertyDeprecatedFormat);
+            // We do not want warning message for vaadin.unsupportedFeature
+            Mockito.verify(mockedLogger, Mockito.never()).warn(
+                    "Unsupported feature flag is present: {}",
+                    unsupportedDeprecatedFormatProperty);
+            // We do want warning message for
+            // vaadin.experimental.unsupportedFeature
             Mockito.verify(mockedLogger, Mockito.times(1)).warn(
                     "Unsupported feature flag is present: {}",
                     unsupportedProperty);
         } finally {
             if (previousValue == null) {
                 System.clearProperty(exampleProperty);
+                System.clearProperty(examplePropertyDeprecatedFormat);
             } else {
                 System.setProperty(exampleProperty, previousValue);
             }
+            System.clearProperty(unsupportedDeprecatedFormatProperty);
             System.clearProperty(unsupportedProperty);
         }
     }

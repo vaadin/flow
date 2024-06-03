@@ -131,12 +131,47 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
         Path flowGeneratedWebComponentImports = FrontendUtils
                 .getFlowGeneratedWebComponentsImports(frontendFolder).toPath()
                 .toAbsolutePath();
-        return path -> path.equals(flowGeneratedImports)
-                || path.equals(flowGeneratedWebComponentImports)
-                || path.equals(flowGeneratedImports
-                        .resolveSibling(FrontendUtils.IMPORTS_D_TS_NAME))
-                || path.getFileName().toString()
-                        .matches("theme(\\.(js|d\\.ts)|-.*\\.generated.js)");
+        Set<Path> knownFiles = new HashSet<>();
+        knownFiles.add(flowGeneratedImports);
+        knownFiles.add(flowGeneratedWebComponentImports);
+        knownFiles.add(flowGeneratedImports
+                .resolveSibling(FrontendUtils.IMPORTS_D_TS_NAME));
+        knownFiles.add(normalizePath(frontendGeneratedFolder.resolve(
+                new File(TaskGenerateReactFiles.FLOW_FLOW_TSX).toPath())));
+        knownFiles.add(normalizePath(
+                frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TSX)));
+        knownFiles.add(normalizePath(
+                frontendGeneratedFolder.resolve(FrontendUtils.ROUTES_TS)));
+        knownFiles.add(normalizePath(
+                frontendGeneratedFolder.resolve("file-routes.ts")));
+        knownFiles.add(normalizePath(
+                frontendGeneratedFolder.resolve("file-routes.json")));
+        knownFiles.addAll(hillaGeneratedFiles());
+        return path -> knownFiles.contains(path) || path.getFileName()
+                .toString().matches("theme(\\.(js|d\\.ts)|-.*\\.generated.js)");
+    }
+
+    private Set<Path> hillaGeneratedFiles() {
+        Set<Path> generatedFiles = new HashSet<>();
+        Path hillaGeneratedFilesList = frontendGeneratedFolder
+                .resolve("generated-file-list.txt");
+        generatedFiles.add(normalizePath(hillaGeneratedFilesList));
+        if (Files.exists(hillaGeneratedFilesList)) {
+            try {
+                Files.readAllLines(hillaGeneratedFilesList).stream()
+                        .map(file -> new File(file).toPath())
+                        .map(file -> normalizePath(
+                                frontendGeneratedFolder.resolve(file)))
+                        .forEach(generatedFiles::add);
+            } catch (IOException e) {
+                LOGGER.debug("Cannot read generated-file-list.txt files");
+            }
+        }
+        return generatedFiles;
+    }
+
+    private static Path normalizePath(Path path) {
+        return path.toAbsolutePath().normalize();
     }
 
     @Override
