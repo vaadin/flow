@@ -156,7 +156,7 @@ function Flow() {
         // @ts-ignore
         if(event && event.state && event.state === "vaadin-router-ignore") {
             prevHistoryState.current = {"idx":0};
-            return true && historyAction === "POP";
+            return historyAction === "POP";
         }
         return !(historyAction === "POP" && reactRouterHistory && reactRouterNavigation);
     });
