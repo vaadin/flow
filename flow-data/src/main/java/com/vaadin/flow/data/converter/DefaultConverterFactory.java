@@ -72,8 +72,6 @@ public enum DefaultConverterFactory implements ConverterFactory {
                 StringToLongConverter::new);
         registerConverterWithMessageProvider(StringToUuidConverter.class,
                 StringToUuidConverter::new);
-        registerConverter(DoubleToIntegerConverter.class,
-                DoubleToIntegerConverter::new);
         registerConverter(BigDecimalToDoubleConverter.class,
                 BigDecimalToDoubleConverter::new);
         registerConverter(BigDecimalToIntegerConverter.class,
@@ -84,8 +82,6 @@ public enum DefaultConverterFactory implements ConverterFactory {
                 IntegerToBigDecimalConverter::new);
         registerConverter(IntegerToDoubleConverter.class,
                 IntegerToDoubleConverter::new);
-        registerConverter(IntegerToFloatConverter.class,
-                IntegerToFloatConverter::new);
         registerConverter(IntegerToLongConverter.class,
                 IntegerToLongConverter::new);
         registerConverter(DoubleToLongConverter.class,
@@ -96,10 +92,6 @@ public enum DefaultConverterFactory implements ConverterFactory {
                 BigDecimalToLongConverter::new);
         registerConverter(LongToBigDecimalConverter.class,
                 LongToBigDecimalConverter::new);
-        registerConverter(LongToDoubleConverter.class,
-                LongToDoubleConverter::new);
-        registerConverter(LongToIntegerConverter.class,
-                LongToIntegerConverter::new);
 
         registerConverter(FloatToIntegerConverter.class,
                 FloatToIntegerConverter::new);

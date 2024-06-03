@@ -43,7 +43,7 @@ public class DefaultConverterFactoryTest {
 
     @Test
     public void newInstance_unknownConversion_converterNotFound() {
-        // assertThatConversionIsNotSupported(Integer.class, Float.class);
+        assertThatConversionIsNotSupported(Integer.class, Float.class);
         assertThatConversionIsNotSupported(String.class, ZonedDateTime.class);
         assertThatConversionIsNotSupported(String.class, Timestamp.class);
     }
