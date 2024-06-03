@@ -9,13 +9,13 @@ import com.vaadin.flow.data.binder.Result;
 
 import java.math.BigDecimal;
 
-public class IntegerToBigDecimalConverterTest {
+public class FloatToBigDecimalConverterTest {
 
-    IntegerToBigDecimalConverter converter = new IntegerToBigDecimalConverter();
+    FloatToBigDecimalConverter converter = new FloatToBigDecimalConverter();
 
     @Test
     public void testNullConversionToModel() {
-        assertEquals(converter.convertToModel(null, null), Result.ok(null));
+        assertEquals(Result.ok(null), converter.convertToModel(null, null));
     }
 
     @Test
@@ -25,13 +25,14 @@ public class IntegerToBigDecimalConverterTest {
 
     @Test
     public void testConvertToModel() {
-        assertEquals(Result.ok(BigDecimal.valueOf(42)),
-                converter.convertToModel(42, null));
+        Result<BigDecimal> result = converter.convertToModel(42.0f, null);
+        assertEquals(Result.ok(BigDecimal.valueOf(42.0f)), result);
     }
 
     @Test
     public void testConvertToPresentation() {
-        assertEquals(Integer.valueOf(42),
-                converter.convertToPresentation(BigDecimal.valueOf(42), null));
+        Float value = converter.convertToPresentation(BigDecimal.valueOf(42.0f),
+                null);
+        assertEquals(Float.valueOf(42.0f), value);
     }
 }

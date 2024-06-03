@@ -25,7 +25,8 @@ public class BigDecimalToDoubleConverterTest {
 
     @Test
     public void testConvertToModel() {
-        Result<Double> result = converter.convertToModel(BigDecimal.valueOf(42.42), null);
+        Result<Double> result = converter
+                .convertToModel(BigDecimal.valueOf(42.42), null);
         assertEquals(Result.ok(42.42), result);
     }
 
@@ -37,7 +38,8 @@ public class BigDecimalToDoubleConverterTest {
 
     @Test
     public void testConvertToModelWithDifferentScales() {
-        Result<Double> result = converter.convertToModel(new BigDecimal("42.420"), null);
+        Result<Double> result = converter
+                .convertToModel(new BigDecimal("42.420"), null);
         assertEquals(Result.ok(42.42), result);
     }
 

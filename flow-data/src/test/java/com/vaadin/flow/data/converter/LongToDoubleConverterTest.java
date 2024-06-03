@@ -7,13 +7,13 @@ import org.junit.Test;
 
 import com.vaadin.flow.data.binder.Result;
 
-public class IntegerToDoubleConverterTest {
+public class LongToDoubleConverterTest {
 
-    IntegerToDoubleConverter converter = new IntegerToDoubleConverter();
+    LongToDoubleConverter converter = new LongToDoubleConverter();
 
     @Test
     public void testNullConversionToModel() {
-        assertEquals(converter.convertToModel(null, null), Result.ok(null));
+        assertEquals(Result.ok(null), converter.convertToModel(null, null));
     }
 
     @Test
@@ -23,12 +23,13 @@ public class IntegerToDoubleConverterTest {
 
     @Test
     public void testConvertToModel() {
-        assertEquals(Result.ok(42.0), converter.convertToModel(42, null));
+        Result<Double> result = converter.convertToModel(42L, null);
+        assertEquals(Result.ok(42.0), result);
     }
 
     @Test
     public void testConvertToPresentation() {
-        assertEquals(Integer.valueOf(42),
-                converter.convertToPresentation(42.0, null));
+        Long value = converter.convertToPresentation(42.0, null);
+        assertEquals(Long.valueOf(42), value);
     }
 }

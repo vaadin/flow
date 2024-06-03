@@ -72,13 +72,39 @@ public enum DefaultConverterFactory implements ConverterFactory {
                 StringToLongConverter::new);
         registerConverterWithMessageProvider(StringToUuidConverter.class,
                 StringToUuidConverter::new);
-        registerConverter(DoubleToIntegerConverter.class, DoubleToIntegerConverter::new);
-        registerConverter(BigDecimalToDoubleConverter.class, BigDecimalToDoubleConverter::new);
-        registerConverter(BigDecimalToIntegerConverter.class, BigDecimalToIntegerConverter::new);
-        registerConverter(DoubleToBigDecimalConverter.class, DoubleToBigDecimalConverter::new);
-        registerConverter(IntegerToBigDecimalConverter.class, IntegerToBigDecimalConverter::new);
-        registerConverter(IntegerToDoubleConverter.class, IntegerToDoubleConverter::new);
+        registerConverter(DoubleToIntegerConverter.class,
+                DoubleToIntegerConverter::new);
+        registerConverter(BigDecimalToDoubleConverter.class,
+                BigDecimalToDoubleConverter::new);
+        registerConverter(BigDecimalToIntegerConverter.class,
+                BigDecimalToIntegerConverter::new);
+        registerConverter(DoubleToBigDecimalConverter.class,
+                DoubleToBigDecimalConverter::new);
+        registerConverter(IntegerToBigDecimalConverter.class,
+                IntegerToBigDecimalConverter::new);
+        registerConverter(IntegerToDoubleConverter.class,
+                IntegerToDoubleConverter::new);
+        registerConverter(IntegerToFloatConverter.class,
+                IntegerToFloatConverter::new);
+        registerConverter(IntegerToLongConverter.class,
+                IntegerToLongConverter::new);
+        registerConverter(DoubleToLongConverter.class,
+                DoubleToLongConverter::new);
+        registerConverter(BigDecimalToFloatConverter.class,
+                BigDecimalToFloatConverter::new);
+        registerConverter(BigDecimalToLongConverter.class,
+                BigDecimalToLongConverter::new);
+        registerConverter(LongToBigDecimalConverter.class,
+                LongToBigDecimalConverter::new);
+        registerConverter(LongToDoubleConverter.class,
+                LongToDoubleConverter::new);
+        registerConverter(LongToIntegerConverter.class,
+                LongToIntegerConverter::new);
 
+        registerConverter(FloatToIntegerConverter.class,
+                FloatToIntegerConverter::new);
+        registerConverter(FloatToBigDecimalConverter.class,
+                FloatToBigDecimalConverter::new);
     }
 
     private <C extends Converter<?, ?>> void registerConverter(
@@ -119,7 +145,8 @@ public enum DefaultConverterFactory implements ConverterFactory {
 
         private Key(Class<?> presentationType, Class<?> modelType) {
             assert presentationType != null && modelType != null;
-            this.presentationType = ReflectTools.convertPrimitiveType(presentationType);
+            this.presentationType = ReflectTools
+                    .convertPrimitiveType(presentationType);
             this.modelType = ReflectTools.convertPrimitiveType(modelType);
         }
 

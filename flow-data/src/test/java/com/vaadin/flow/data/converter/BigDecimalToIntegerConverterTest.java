@@ -25,7 +25,8 @@ public class BigDecimalToIntegerConverterTest {
 
     @Test
     public void testConvertToModel() {
-        Result<Integer> result = converter.convertToModel(BigDecimal.valueOf(42), null);
+        Result<Integer> result = converter
+                .convertToModel(BigDecimal.valueOf(42), null);
         assertEquals(Result.ok(42), result);
     }
 
@@ -37,7 +38,8 @@ public class BigDecimalToIntegerConverterTest {
 
     @Test
     public void testConvertToModelWithDecimalValue() {
-        Result<Integer> result = converter.convertToModel(BigDecimal.valueOf(42.99), null);
+        Result<Integer> result = converter
+                .convertToModel(BigDecimal.valueOf(42.99), null);
         assertEquals(Result.ok(42), result);
     }
 

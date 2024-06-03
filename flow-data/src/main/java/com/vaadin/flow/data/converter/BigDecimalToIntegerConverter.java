@@ -6,14 +6,17 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts from {@link BigDecimal} to {@link Integer} and back.
+ * A converter that converts from {@link BigDecimal} to {@link Integer} and
+ * back.
  *
  * @since 24.5
  */
-public class BigDecimalToIntegerConverter implements Converter<BigDecimal, Integer> {
+public class BigDecimalToIntegerConverter
+        implements Converter<BigDecimal, Integer> {
 
     @Override
-    public Result<Integer> convertToModel(BigDecimal value, ValueContext context) {
+    public Result<Integer> convertToModel(BigDecimal value,
+            ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -22,7 +25,8 @@ public class BigDecimalToIntegerConverter implements Converter<BigDecimal, Integ
     }
 
     @Override
-    public BigDecimal convertToPresentation(Integer value, ValueContext context) {
+    public BigDecimal convertToPresentation(Integer value,
+            ValueContext context) {
         if (value == null) {
             return null;
         }
