@@ -295,6 +295,7 @@ public abstract class VaadinService implements Serializable {
             UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
                     Version.getFullVersion());
         }
+        UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_FLOW_ROUTE, null);
     }
 
     /**

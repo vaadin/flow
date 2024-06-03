@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -52,6 +53,7 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
                 getDriver().getCurrentUrl().endsWith(currentTarget));
     }
 
+    @Ignore("https://github.com/vaadin/flow/issues/19492")
     @Test
     public void postpone_cancelResetsUrlOnBack() {
         open();
