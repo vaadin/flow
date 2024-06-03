@@ -87,8 +87,10 @@ public class RequiredFieldConfiguratorUtil {
             Converter converter = ((BindingBuilderImpl<?, ?, ?>) binding)
                     .getConverterValidatorChain();
 
+            Binder<?> binder = ((BindingBuilderImpl<?, ?, ?>) binding)
+                    .getBinder();
             Result<?> result = converter.convertToModel(field.getEmptyValue(),
-                    BindingImpl.createValueContext(field));
+                    BindingImpl.createValueContext(binder, field));
 
             if (!result.isError()) {
                 Object convertedEmptyValue = result
