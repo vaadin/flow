@@ -13,30 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.converter;
 
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
-/**
- * A converter that converts from {@link Float} to {@link Integer} and back.
- */
-public class FloatToIntegerConverter implements Converter<Float, Integer> {
+public class FloatToDoubleConverter implements Converter<Float, Double> {
 
     @Override
-    public Result<Integer> convertToModel(Float value, ValueContext context) {
+    public Result<Double> convertToModel(Float value, ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
-        return Result.ok(value.intValue());
+        return Result.ok(value.doubleValue());
     }
 
     @Override
-    public Float convertToPresentation(Integer value, ValueContext context) {
+    public Float convertToPresentation(Double value, ValueContext context) {
         if (value == null) {
             return null;
         }
         return value.floatValue();
     }
 }
+

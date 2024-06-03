@@ -84,19 +84,16 @@ public enum DefaultConverterFactory implements ConverterFactory {
                 IntegerToDoubleConverter::new);
         registerConverter(IntegerToLongConverter.class,
                 IntegerToLongConverter::new);
-        registerConverter(DoubleToLongConverter.class,
-                DoubleToLongConverter::new);
         registerConverter(BigDecimalToFloatConverter.class,
                 BigDecimalToFloatConverter::new);
         registerConverter(BigDecimalToLongConverter.class,
                 BigDecimalToLongConverter::new);
         registerConverter(LongToBigDecimalConverter.class,
                 LongToBigDecimalConverter::new);
-
-        registerConverter(FloatToIntegerConverter.class,
-                FloatToIntegerConverter::new);
         registerConverter(FloatToBigDecimalConverter.class,
                 FloatToBigDecimalConverter::new);
+        registerConverter(FloatToDoubleConverter.class,
+                FloatToDoubleConverter::new);
     }
 
     private <C extends Converter<?, ?>> void registerConverter(
