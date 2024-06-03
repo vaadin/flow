@@ -148,17 +148,31 @@ type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["actio
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const prevHistoryState = useRef<any>(null);
+    const prevBlockedHistoryState = useRef<any>(null);
     const navigate = useNavigate();
     const blocker = useBlocker(({nextLocation, historyAction}) => {
         const reactRouterHistory = !!prevHistoryState.current && typeof prevHistoryState.current === "object" && "idx" in prevHistoryState.current;
         const reactRouterNavigation = !!window.history.state && typeof window.history.state === "object" && "idx" in window.history.state;
-        prevHistoryState.current = window.history.state;
+        let blocked = false;
         // @ts-ignore
         if(event && event.state && event.state === "vaadin-router-ignore") {
+            prevHistoryState.current = window.history.state;
             prevHistoryState.current = {"idx":0};
-            return historyAction === "POP";
-        }
-        return !(historyAction === "POP" && reactRouterHistory && reactRouterNavigation);
+            blocked = historyAction === "POP";
+            prevBlockedHistoryState.current = blocked ? prevHistoryState.current : null;
+        } else {
+             let matched = matchRoutes(Array.from(routes), window.location.pathname);
+             // @ts-ignore
+             if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length != 0) {
+                 // Navigation between server routes. Always block.
+                 blocked = true;
+             } else {
+                 blocked = !(historyAction === "POP" && reactRouterHistory && reactRouterNavigation);
+             }
+             prevBlockedHistoryState.current = blocked ? prevHistoryState.current : null;
+             prevHistoryState.current = window.history.state;
+         }
+        return blocked;
     });
     const {pathname, search, hash} = useLocation();
     const navigated = useRef<boolean>(false);
@@ -241,6 +255,8 @@ function Flow() {
                             containerRef.current.serverConnected = (cancel) => {
                                 if (cancel) {
                                     blocker.reset();
+                                    // reset prevHistoryState
+                                    prevHistoryState.current = prevBlockedHistoryState.current;
                                 } else {
                                     blocker.proceed();
                                 }

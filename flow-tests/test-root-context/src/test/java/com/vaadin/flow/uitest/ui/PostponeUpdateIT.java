@@ -53,7 +53,6 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
                 getDriver().getCurrentUrl().endsWith(currentTarget));
     }
 
-    @Ignore("https://github.com/vaadin/flow/issues/19492")
     @Test
     public void postpone_cancelResetsUrlOnBack() {
         open();
@@ -67,13 +66,13 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
         getDriver().navigate().back();
         waitUntil(driver -> isElementPresent(By.id("cancelButton")));
 
-        Assert.assertFalse(
-                "Before cancel, the URL in the address updates to previous.",
+        Assert.assertTrue(
+                "Before cancel, the URL in the address stays same for postponed navigation.",
                 getDriver().getCurrentUrl().equals(updatedUrl));
 
         $(NativeButtonElement.class).id("cancelButton").click();
 
-        Assert.assertTrue("Canceling should revert to " + updatedUrl,
+        Assert.assertTrue("Canceling keeps the address same " + updatedUrl,
                 getDriver().getCurrentUrl().equals(updatedUrl));
     }
 
