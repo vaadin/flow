@@ -42,6 +42,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.LoadMode;
 
+import elemental.client.Browser;
 import elemental.dom.Node;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -222,6 +223,23 @@ public class MessageHandler {
 
         if (!hasResynchronize && registry.getMessageSender()
                 .getResynchronizationState() == ResynchronizationState.WAITING_FOR_RESPONSE) {
+
+            JsonObject json = valueMap.cast();
+            if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
+                JsonArray commands = json
+                        .getArray(JsonConstants.UIDL_KEY_EXECUTE);
+                for (int i = 0; i < commands.length(); i++) {
+                    JsonArray command = commands.getArray(i);
+                    if (command.length() > 0 && "window.location.reload();"
+                            .equals(command.getString(0))) {
+                        Console.warn(
+                                "Executing forced page reload while a resync request is ongoing.");
+                        Browser.getWindow().getLocation().reload();
+                        return;
+                    }
+                }
+            }
+
             Console.warn(
                     "Ignoring message from the server as a resync request is ongoing.");
             return;
