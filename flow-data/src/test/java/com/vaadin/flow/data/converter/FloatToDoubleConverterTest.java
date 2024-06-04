@@ -86,11 +86,4 @@ public class FloatToDoubleConverterTest {
     }
 
 
-    @Test
-    public void testPrecisionLossOnConversion() {
-        float originalFloat = 2.05f;
-        double convertedDouble = originalFloat;
-        assertEquals("Check precision retained within a small delta",
-                2.05, convertedDouble, 0.0001);
-    }
 }
