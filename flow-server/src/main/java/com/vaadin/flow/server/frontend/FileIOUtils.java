@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -200,11 +201,46 @@ public class FileIOUtils {
                 replaceIndentationAndEOL(content2));
     }
 
+    /**
+     * Compare two file content strings ignoring indentation, EOL characters and
+     * white space where it does not matter (before and after {, }, ' and :
+     * chars).
+     *
+     * @param content1
+     *            the first file content to compare
+     * @param content2
+     *            the second file content to compare
+     * @param compareFn
+     *            a function to compare the normalized strings
+     * @return true if the normalized strings are equal, false otherwise
+     */
+    public static boolean compareIgnoringIndentationEOLAndWhiteSpace(
+            String content1, String content2,
+            BiPredicate<String, String> compareFn) {
+        return compareFn.test(
+                replaceWhiteSpace(replaceIndentationAndEOL(content1)),
+                replaceWhiteSpace(replaceIndentationAndEOL(content2)));
+    }
+
     // Normalize EOL and removes indentation and potential EOL at the end of the
     // FILE
     private static String replaceIndentationAndEOL(String text) {
         return text.replace("\r\n", "\n").replaceFirst("\n$", "")
-                .replaceAll("(?m)^\\s+", "");
+                .replaceAll("(?m)^(\\s)+", "");
     }
 
+    private static String replaceWhiteSpace(String text) {
+        for (String character : Stream.of("{", "}", ":", "'", "[", "]")
+                .toList()) {
+            text = replaceWhiteSpaceAround(text, character);
+        }
+        return text;
+    }
+
+    private static String replaceWhiteSpaceAround(String text,
+            String character) {
+        return text
+                .replaceAll(String.format("(\\s)*\\%s", character), character)
+                .replaceAll(String.format("\\%s(\\s)*", character), character);
+    }
 }

@@ -32,7 +32,20 @@
         <dependency>
             <groupId>org.apache.maven.shared</groupId>
             <artifactId>maven-invoker</artifactId>
-            <version>3.2.0</version>
+            <version>3.3.0</version>
+        </dependency>
+        <!--
+            maven-invoker depends on a maven-shared-utils version that currently
+            conflicts with the one defined by maven-core, resulting in test failures
+            for the GenerateMavenBOMMojo. maven-shared-utils is pinned with scope provided
+            to make test succeed. At runtime, the correct version is picked when the
+            flow generate-maven-sbom goal is executed.
+        -->
+        <dependency>
+            <groupId>org.apache.maven.shared</groupId>
+            <artifactId>maven-shared-utils</artifactId>
+            <version>3.4.2</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
@@ -77,7 +90,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.13.0</version>
+                    <version>3.13.1</version>
                     <configuration>
                         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                         <goalPrefix>flow</goalPrefix>

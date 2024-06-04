@@ -134,6 +134,8 @@ public class VaadinServiceTest {
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName())));
         Assert.assertFalse(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
+                e -> Constants.STATISTIC_HAS_FLOW_ROUTE.equals(e.getName())));
     }
 
     @Test

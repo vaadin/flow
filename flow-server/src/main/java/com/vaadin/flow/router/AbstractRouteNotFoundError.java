@@ -43,6 +43,7 @@ import com.vaadin.flow.router.internal.ClientRoutesProvider;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.menu.MenuRegistry;
 
 /**
  * This is abstract error view for routing exceptions.
@@ -136,12 +137,12 @@ public abstract class AbstractRouteNotFoundError extends Component {
         routeTemplates.forEach(
                 (k, v) -> routeElements.add(routeTemplateToHtml(k, v)));
 
-        routeElements.addAll(getClientRoutes());
+        routeElements.addAll(getClientRoutes(event));
         return routeElements.stream().map(Element::outerHtml)
                 .collect(Collectors.joining());
     }
 
-    private List<Element> getClientRoutes() {
+    private List<Element> getClientRoutes(BeforeEnterEvent event) {
         return FrontendUtils.getClientRoutes().stream()
                 .filter(route -> !route.contains("$layout"))
                 .map(route -> route.replace("$index", ""))

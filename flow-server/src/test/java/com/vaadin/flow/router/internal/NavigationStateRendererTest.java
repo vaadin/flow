@@ -50,6 +50,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -67,6 +68,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -116,8 +118,8 @@ public class NavigationStateRendererTest {
     }
 
     @Route(value = "regular")
-    private static class RegularView extends Text {
-        RegularView() {
+    public static class RegularView extends Text {
+        public RegularView() {
             super("");
         }
     }
@@ -647,17 +649,6 @@ public class NavigationStateRendererTest {
         router.getRegistry().setRoute("preservedNested",
                 PreservedNestedView.class, List.of(PreservedLayout.class));
 
-        // given the session has a cache of PreservedNestedView at this location
-        final PreservedLayout layout = new PreservedLayout();
-        final PreservedNestedView nestedView = new PreservedNestedView();
-
-        String currentLayoutUUID = layoutUUID;
-        String currentViewUUID = viewUUID;
-
-        AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
-                new Location("preservedNested"),
-                new ArrayList<>(Arrays.asList(nestedView, layout)));
-
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
         ExtendedClientDetails details = Mockito
@@ -669,6 +660,9 @@ public class NavigationStateRendererTest {
         renderer.handle(
                 new NavigationEvent(router, new Location("preservedNested"), ui,
                         NavigationTrigger.PAGE_LOAD));
+
+        String currentLayoutUUID = layoutUUID;
+        String currentViewUUID = viewUUID;
 
         Assert.assertEquals(1, layoutAttachCount.get());
         Assert.assertEquals(1, viewAttachCount.get());
@@ -707,33 +701,18 @@ public class NavigationStateRendererTest {
         // given a NavigationStateRenderer mapping to PreservedNestedView
         Router router = session.getService().getRouter();
         NavigationStateRenderer renderer = new NavigationStateRenderer(
-                new NavigationStateBuilder(router)
-                        .withTarget(PreservedNestedView.class)
+                new NavigationStateBuilder(router).withTarget(SingleView.class)
                         .withPath("single").build());
         router.getRegistry().setRoute("single", SingleView.class,
                 List.of(RouteParentLayout.class));
 
-        // given the session has a cache of PreservedNestedView at this location
-        final RouteParentLayout layout = new RouteParentLayout();
-        final SingleView view = new SingleView();
+        MockUI ui = new MockUI(session);
+
+        renderer.handle(new NavigationEvent(router, new Location("single"), ui,
+                NavigationTrigger.PAGE_LOAD));
 
         String currentLayoutUUID = layoutUUID;
         String currentViewUUID = viewUUID;
-
-        AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
-                new Location("single"),
-                new ArrayList<>(Arrays.asList(view, layout)));
-
-        // given a UI that contain a window name ROOT.123
-        MockUI ui = new MockUI(session);
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
-        ui.getInternals().setExtendedClientDetails(details);
-
-        // when a navigation event reaches the renderer
-        renderer.handle(new NavigationEvent(router, new Location("single"), ui,
-                NavigationTrigger.PAGE_LOAD));
 
         Assert.assertEquals(1, layoutAttachCount.get());
         Assert.assertEquals(1, viewAttachCount.get());
@@ -939,5 +918,23 @@ public class NavigationStateRendererTest {
                 "Expected preserved chain for inactive window to be removed",
                 inactive.isPresent());
 
+    }
+
+    @Test
+    public void getRouteTarget_usageStatistics() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        MockUI ui = new MockUI(new AlwaysLockedVaadinSession(service));
+        NavigationEvent event = new NavigationEvent(
+                new Router(new TestRouteRegistry()), new Location("home"), ui,
+                NavigationTrigger.UI_NAVIGATE);
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(RegularView.class));
+
+        UsageStatistics.removeEntry(Constants.STATISTICS_FLOW_ROUTER);
+
+        renderer.handle(event);
+
+        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
+                .getName().equals(Constants.STATISTICS_FLOW_ROUTER)));
     }
 }
