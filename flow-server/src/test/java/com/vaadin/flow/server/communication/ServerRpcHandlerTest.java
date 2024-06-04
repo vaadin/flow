@@ -20,6 +20,7 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -27,6 +28,7 @@ public class ServerRpcHandlerTest {
     private VaadinRequest request;
     private VaadinService service;
     private VaadinSession session;
+    private WrappedSession wrappedSession;
     private UI ui;
     private UIInternals uiInternals;
     private DependencyList dependencyList;
@@ -44,11 +46,13 @@ public class ServerRpcHandlerTest {
         request = Mockito.mock(VaadinRequest.class);
         service = Mockito.mock(VaadinService.class);
         session = Mockito.mock(VaadinSession.class);
+        wrappedSession = Mockito.mock(WrappedSession.class);
         ui = Mockito.mock(UI.class);
         uiInternals = Mockito.mock(UIInternals.class);
         dependencyList = Mockito.mock(DependencyList.class);
 
         Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
         Mockito.when(session.getService()).thenReturn(service);
 
         Mockito.when(ui.getInternals()).thenReturn(uiInternals);
