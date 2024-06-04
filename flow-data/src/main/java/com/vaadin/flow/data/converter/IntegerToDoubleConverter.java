@@ -22,7 +22,7 @@ import com.vaadin.flow.data.binder.ValueContext;
  * A converter that converts from {@link Integer} to {@link Double} and back.
  *
  * @since 24.5
- * @author Alaina Faisal
+ * @author Vaadin Ltd
  */
 
 public class IntegerToDoubleConverter implements Converter<Integer, Double> {
