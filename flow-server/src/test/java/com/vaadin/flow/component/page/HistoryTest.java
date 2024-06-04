@@ -59,8 +59,8 @@ public class HistoryTest {
     private TestPage page = new TestPage(ui);
     private History history;
 
-    private static final String PUSH_STATE_JS = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })";
-    private static final String REPLACE_STATE_JS = "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })";
+    private static final String PUSH_STATE_JS = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })";
+    private static final String REPLACE_STATE_JS = "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })";
 
     @Before
     public void setup() {

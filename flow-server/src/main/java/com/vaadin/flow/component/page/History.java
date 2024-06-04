@@ -187,7 +187,7 @@ public class History implements Serializable {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJs(
-                "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })",
+                "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })",
                 state, pathWithQueryParameters);
     }
 
@@ -226,7 +226,7 @@ public class History implements Serializable {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJs(
-                "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })",
+                "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })",
                 state, pathWithQueryParameters);
     }
 
