@@ -182,8 +182,8 @@ function Flow() {
             // @ts-ignore
             window.history.pushState(null, "", previousLocation.current);
         }
-        // reset prevHistoryState
-        prevHistoryState.current = prevBlockedHistoryState.current;
+        // resets prevHistoryState
+        currentHistorySate.current = prevBlockedHistoryState.current;
     }
     const prevent = () => postpone;
 
@@ -265,8 +265,8 @@ function Flow() {
                             containerRef.current.serverConnected = (cancel) => {
                                 if (cancel) {
                                     blocker.reset();
-                                    // reset prevHistoryState
-                                    prevHistoryState.current = prevBlockedHistoryState.current;
+                                    // resets prevHistoryState
+                                    currentHistorySate.current = prevBlockedHistoryState.current;
                                 } else {
                                     blocker.proceed();
                                 }
