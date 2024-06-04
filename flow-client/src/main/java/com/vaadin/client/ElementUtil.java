@@ -72,4 +72,7 @@ public class ElementUtil {
        }
     }-*/;
 
+    public static native Element getElementByName(Node context, String name) /*-{
+        return Array.from(context.querySelectorAll('[name]')).find(function(e) {return e.getAttribute('name') == name});
+    }-*/;
 }
