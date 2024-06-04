@@ -331,6 +331,15 @@ public class ServerRpcHandler implements Serializable {
                     + " the network infrastructure (load balancer, proxy) terminating a push (websocket or long-polling) connection."
                     + " If you are using push with a proxy, make sure the push timeout is set to be smaller than the proxy connection timeout");
 
+            if (request.getWrappedSession().getAttributeNames().stream()
+                    .anyMatch(name -> name
+                            .startsWith("com.vaadin.server.VaadinSession"))) {
+                getLogger().warn(
+                        "MPR is in use, so full page reload will be done to achieve re-sync.");
+                ui.getPage().reload();
+                return;
+            }
+
             // Run detach listeners and re-attach all nodes again to the
             // state tree, in order to send changes for a full re-build of
             // the client-side state tree in the response
