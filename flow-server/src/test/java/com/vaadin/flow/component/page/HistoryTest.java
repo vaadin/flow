@@ -59,9 +59,6 @@ public class HistoryTest {
     private TestPage page = new TestPage(ui);
     private History history;
 
-    private static final String PUSH_STATE_JS = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })";
-    private static final String REPLACE_STATE_JS = "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })";
-
     @Before
     public void setup() {
         history = new History(ui);
@@ -71,7 +68,8 @@ public class HistoryTest {
     public void pushState_locationWithQueryParameters_queryParametersRetained() {
         history.pushState(Json.create("{foo:bar;}"), "context/view?param=4");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.pushState($0, '', $1))",
                 page.expression);
         Assert.assertEquals("push state not included", "{foo:bar;}",
                 ((JsonString) page.parameters[0]).getString());
@@ -80,7 +78,8 @@ public class HistoryTest {
 
         history.pushState(Json.create("{foo:bar;}"), "context/view/?param=4");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.pushState($0, '', $1))",
                 page.expression);
         Assert.assertEquals("push state not included", "{foo:bar;}",
                 ((JsonString) page.parameters[0]).getString());
@@ -92,7 +91,8 @@ public class HistoryTest {
     public void pushState_locationWithFragment_fragmentRetained() {
         history.pushState(null, "context/view#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.pushState($0, '', $1))",
                 page.expression);
         Assert.assertEquals(null, page.parameters[0]);
         Assert.assertEquals("fragment not retained", "context/view#foobar",
@@ -100,7 +100,8 @@ public class HistoryTest {
 
         history.pushState(null, "context/view/#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.pushState($0, '', $1))",
                 page.expression);
         Assert.assertEquals(null, page.parameters[0]);
         Assert.assertEquals("fragment not retained", "context/view/#foobar",
@@ -111,7 +112,8 @@ public class HistoryTest {
     public void pushState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.pushState(null, "context/view?foo=bar#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.pushState($0, '', $1))",
                 page.expression);
         Assert.assertEquals(null, page.parameters[0]);
         Assert.assertEquals("invalid location", "context/view?foo=bar#foobar",
@@ -119,7 +121,8 @@ public class HistoryTest {
 
         history.pushState(null, "context/view/?foo=bar#foobar");
 
-        Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.pushState($0, '', $1))",
                 page.expression);
         Assert.assertEquals(null, page.parameters[0]);
         Assert.assertEquals("invalid location", "context/view/?foo=bar#foobar",
@@ -130,7 +133,8 @@ public class HistoryTest {
     public void replaceState_locationWithQueryParametersAndFragment_QueryParametersAndFragmentRetained() {
         history.replaceState(null, "context/view?foo=bar#foobar");
 
-        Assert.assertEquals("replace state JS not included", REPLACE_STATE_JS,
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.replaceState($0, '', $1))",
                 page.expression);
         Assert.assertEquals(null, page.parameters[0]);
         Assert.assertEquals("invalid location", "context/view?foo=bar#foobar",
@@ -138,7 +142,8 @@ public class HistoryTest {
 
         history.replaceState(null, "context/view/?foo=bar#foobar");
 
-        Assert.assertEquals("replace state JS not included", REPLACE_STATE_JS,
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.replaceState($0, '', $1))",
                 page.expression);
         Assert.assertEquals(null, page.parameters[0]);
         Assert.assertEquals("invalid location", "context/view/?foo=bar#foobar",
@@ -148,7 +153,8 @@ public class HistoryTest {
     @Test // #11628
     public void replaceState_locationEmpty_pushesPeriod() {
         history.replaceState(null, "");
-        Assert.assertEquals("replace state JS not included", REPLACE_STATE_JS,
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.replaceState($0, '', $1))",
                 page.expression);
         Assert.assertEquals(null, page.parameters[0]);
         Assert.assertEquals("location should be '.'", ".", page.parameters[1]);
