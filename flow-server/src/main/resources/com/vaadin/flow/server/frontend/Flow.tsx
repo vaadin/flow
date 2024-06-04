@@ -138,44 +138,54 @@ function extractPath(event: MouseEvent): void | string {
     return normalizeURL(new URL(anchor.href, anchor.baseURI));
 }
 
-function postpone() {
-}
-
-const prevent = () => postpone;
-
 type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>>;
 
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
+    const previousLocation = useRef<any>(null);
+    const currentLocation = useRef<any>(null);
+    const currentHistorySate = useRef<any>(null);
     const prevHistoryState = useRef<any>(null);
     const prevBlockedHistoryState = useRef<any>(null);
     const navigate = useNavigate();
     const blocker = useBlocker(({nextLocation, historyAction}) => {
+        prevHistoryState.current = currentHistorySate.current;
+        currentHistorySate.current = window.history.state;
         const reactRouterHistory = !!prevHistoryState.current && typeof prevHistoryState.current === "object" && "idx" in prevHistoryState.current;
-        const reactRouterNavigation = !!window.history.state && typeof window.history.state === "object" && "idx" in window.history.state;
+        const reactRouterNavigation = !!currentHistorySate.current && typeof currentHistorySate.current === "object" && "idx" in currentHistorySate.current;
         let blocked = false;
         // @ts-ignore
         if(event && event.state && event.state === "vaadin-router-ignore") {
-            prevHistoryState.current = window.history.state;
-            prevHistoryState.current = {"idx":0};
+            if(!prevHistoryState.current) {
+                prevHistoryState.current = {"idx":0};
+            }
             blocked = historyAction === "POP";
             prevBlockedHistoryState.current = blocked ? prevHistoryState.current : null;
         } else {
              let matched = matchRoutes(Array.from(routes), window.location.pathname);
              // @ts-ignore
              if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length != 0) {
-                 // Navigation between server routes. Always block.
-                 blocked = true;
+                 // Navigation between server routes.
+                 blocked = !(historyAction === "POP" && reactRouterNavigation && prevHistoryState.current?.idx !== currentHistorySate.current?.idx);
+                 prevBlockedHistoryState.current = prevHistoryState.current;
              } else {
                  blocked = !(historyAction === "POP" && reactRouterHistory && reactRouterNavigation);
+                 prevBlockedHistoryState.current = blocked ? prevHistoryState.current : null;
              }
-             prevBlockedHistoryState.current = blocked ? prevHistoryState.current : null;
-             prevHistoryState.current = window.history.state;
-         }
+        }
         return blocked;
     });
     const {pathname, search, hash} = useLocation();
     const navigated = useRef<boolean>(false);
+    const postpone = () => {
+        if (previousLocation.current) {
+            // @ts-ignore
+            window.history.pushState(null, "", previousLocation.current);
+        }
+        // reset prevHistoryState
+        prevHistoryState.current = prevBlockedHistoryState.current;
+    }
+    const prevent = () => postpone;
 
     const containerRef = useRef<RouterContainer | undefined>(undefined);
 
@@ -271,6 +281,8 @@ function Flow() {
     }, [blocker.state, blocker.location]);
 
     useEffect(() => {
+        previousLocation.current = currentLocation.current;
+        currentLocation.current = window.location.href;
         if(navigated.current) {
             navigated.current = false;
             return;
