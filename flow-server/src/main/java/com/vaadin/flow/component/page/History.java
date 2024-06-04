@@ -186,8 +186,16 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
+        String stateString = "let state = $0;";
+        if(ui.getSession().getConfiguration().isReactEnabled()) {
+            if(state == null) {
+                stateString = stateString + "if(window.history.state &&  \"idx\" in window.history.state) { state = {idx: window.history.state['idx']+1}};";
+            } else {
+                stateString = stateString + "if(window.history.state &&  \"idx\" in window.history.state) { state = { ...$0, idx: window.history.state['idx']+1 }; }";
+            }
+        }
         ui.getPage().executeJs(
-                "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })",
+                "setTimeout(() => { " + stateString + " window.history.pushState(state, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })",
                 state, pathWithQueryParameters);
     }
 
@@ -225,8 +233,16 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
+        String stateString = "let state = $0;";
+        if(ui.getSession().getConfiguration().isReactEnabled()) {
+            if(state == null) {
+                stateString = stateString + "if(window.history.state &&  \"idx\" in window.history.state) { state = {idx: window.history.state['idx']}};";
+            } else {
+                stateString = stateString + "if(window.history.state &&  \"idx\" in window.history.state) { state = { ...$0, idx: window.history.state['idx'] }; }";
+            }
+        }
         ui.getPage().executeJs(
-                "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })",
+                "setTimeout(() => { " + stateString + " window.history.replaceState(state, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })",
                 state, pathWithQueryParameters);
     }
 

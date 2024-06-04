@@ -147,19 +147,8 @@ type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["actio
 
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
-    const prevHistoryState = useRef<any>(null);
     const navigate = useNavigate();
-    const blocker = useBlocker(({nextLocation, historyAction}) => {
-        const reactRouterHistory = !!prevHistoryState.current && typeof prevHistoryState.current === "object" && "idx" in prevHistoryState.current;
-        const reactRouterNavigation = !!window.history.state && typeof window.history.state === "object" && "idx" in window.history.state;
-        prevHistoryState.current = window.history.state;
-        // @ts-ignore
-        if(event && event.state && event.state === "vaadin-router-ignore") {
-            prevHistoryState.current = {"idx":0};
-            return historyAction === "POP";
-        }
-        return !(historyAction === "POP" && reactRouterHistory && reactRouterNavigation);
-    });
+    const blocker = useBlocker(true);
     const {pathname, search, hash} = useLocation();
     const navigated = useRef<boolean>(false);
 
@@ -222,7 +211,9 @@ function Flow() {
             if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length != 0) {
                 containerRef.current?.onBeforeEnter?.call(containerRef?.current,
                     {pathname,search}, {
-                        prevent,
+                        prevent() {
+                            blocker.reset();
+                        },
                         redirect,
                         continue() {
                             blocker.proceed();
