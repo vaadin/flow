@@ -218,7 +218,7 @@ function Flow() {
     useEffect(() => {
         if (blocker.state === 'blocked') {
             if(navigated.current) {
-                blocker.proceed();
+                proceedLater(blocker);
                 return;
             }
             const {pathname, search} = blocker.location;
@@ -235,7 +235,7 @@ function Flow() {
                         },
                         redirect,
                         continue() {
-                            blocker.proceed();
+                            proceedLater(blocker);
                         }
                     }, router);
                 navigated.current = true;
@@ -252,12 +252,12 @@ function Flow() {
                                 if (cancel) {
                                     blocker.reset();
                                 } else {
-                                    blocker.proceed();
+                                    proceedLater(blocker);
                                 }
                             }
                         } else {
                             // permitted navigation: proceed with the blocker
-                            blocker.proceed();
+                            proceedLater(blocker);
                         }
                     });
             }
@@ -349,3 +349,7 @@ export const reactElement = (tag: string, props?: Properties, onload?: () => voi
 };
 
 export default Flow;
+function proceedLater(blocker: any) {
+    setTimeout( () => proceedLater(blocker), 200);
+}
+
