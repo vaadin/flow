@@ -28,6 +28,7 @@ import com.vaadin.flow.server.Command;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.impl.JreJsonNull;
 
 @Route("com.vaadin.flow.uitest.ui.HistoryView")
 public class HistoryView extends AbstractDivView {
@@ -54,9 +55,12 @@ public class HistoryView extends AbstractDivView {
 
             e.getState().ifPresent(
                     state -> {
-                        JsonObject usr = ((JsonObject) state).getObject("usr");
-                        if(usr != null) {
-                            addStatus("New state: " + usr.toJson());
+                        if(state instanceof JsonObject) {
+                            JsonObject usr = ((JsonObject) state).getObject(
+                                    "usr");
+                            if (usr != null) {
+                                addStatus("New state: " + usr.toJson());
+                            }
                         }
                     });
         });

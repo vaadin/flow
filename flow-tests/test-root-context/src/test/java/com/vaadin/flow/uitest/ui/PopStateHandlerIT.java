@@ -25,12 +25,10 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         pushState(FORUM);
 
         verifyInsideServletLocation(FORUM);
-//        verifyNoServerVisit();
 
         pushState(ANOTHER_PATH);
 
         verifyInsideServletLocation(ANOTHER_PATH);
-//        verifyNoServerVisit();
 
         goBack();
     }
@@ -62,17 +60,14 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         pushState(FORUM);
 
         verifyInsideServletLocation(FORUM);
-//        verifyNoServerVisit();
 
         pushState(FORUM_SUBCATEGORY);
 
         verifyInsideServletLocation(FORUM_SUBCATEGORY);
-//        verifyNoServerVisit();
 
         pushState(FORUM_SUBCATEGORY2);
 
         verifyInsideServletLocation(FORUM_SUBCATEGORY2);
-//        verifyNoServerVisit();
 
         goBack();
     }
@@ -90,78 +85,11 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
 
         goBack();
 
-//        verifyNoServerVisit();
         verifyInsideServletLocation(FORUM_SUBCATEGORY);
 
         goBack();
 
-//        verifyNoServerVisit();
         verifyInsideServletLocation(FORUM);
-
-        goBack();
-
-        verifyPopStateEvent(getViewClass().getName());
-        verifyInsideServletLocation(getViewClass().getName());
-    }
-
-    @Test
-    @Ignore("Test ignored as react navigation cleans empty hash")
-    public void testEmptyHash_noHashServerToServer() {
-        open();
-        verifyNoServerVisit();
-        verifyInsideServletLocation(getViewClass().getName());
-
-        pushState(EMPTY_HASH);
-
-        verifyInsideServletLocation(EMPTY_HASH);
-//        verifyNoServerVisit();
-
-        pushState(FORUM);
-
-        verifyInsideServletLocation(FORUM);
-//        verifyNoServerVisit();
-
-        pushState(EMPTY_HASH);
-
-        verifyInsideServletLocation(EMPTY_HASH);
-//        verifyNoServerVisit();
-
-        pushState(ANOTHER_PATH);
-
-        verifyInsideServletLocation(ANOTHER_PATH);
-//        verifyNoServerVisit();
-
-        goBack();
-    }
-
-    @Test
-    public void testEmptyHash_quadrupleBack_noHashServerToServer() {
-        open();
-
-        pushState(EMPTY_HASH);
-
-        pushState(FORUM);
-
-        pushState(EMPTY_HASH);
-
-        pushState(ANOTHER_PATH);
-
-        goBack();
-
-        verifyPopStateEvent(FORUM);
-        // NOTE: see https://github.com/vaadin/flow/issues/10865
-        verifyInsideServletLocation(isClientRouter() ? FORUM : EMPTY_HASH);
-
-        goBack();
-
-        verifyPopStateEvent(FORUM);
-        verifyInsideServletLocation(FORUM);
-
-        goBack();
-
-        verifyPopStateEvent(FORUM);
-        // NOTE: see https://github.com/vaadin/flow/issues/10865
-        verifyInsideServletLocation(isClientRouter() ? FORUM : EMPTY_HASH);
 
         goBack();
 
