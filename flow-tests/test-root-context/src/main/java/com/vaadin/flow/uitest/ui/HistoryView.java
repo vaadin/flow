@@ -24,12 +24,14 @@ import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.Command;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
 @Route("com.vaadin.flow.uitest.ui.HistoryView")
+@RouteAlias("com.vaadin.flow.uitest.ui.HistoryView2")
 public class HistoryView extends AbstractDivView {
 
     private final Element stateJsonInput = createSynchronizedInput("state");
