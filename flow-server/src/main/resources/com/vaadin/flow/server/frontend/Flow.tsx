@@ -148,7 +148,10 @@ type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["actio
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const navigate = useNavigate();
-    const blocker = useBlocker(true);
+    const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+        navigated.current = currentLocation.pathname === nextLocation.pathname;
+        return true;
+    });
     const {pathname, search, hash} = useLocation();
     const navigated = useRef<boolean>(false);
 
@@ -164,6 +167,7 @@ function Flow() {
             event.preventDefault();
         }
 
+        navigated.current = false;
         navigate(path);
     }, [navigate]);
 
@@ -178,6 +182,12 @@ function Flow() {
         navigate(path);
     }, [navigate]);
 
+    const vaadinNavigateEventHandler = useCallback((event: CustomEvent<{state: unknown, url: string, replace?: boolean}>) => {
+        const path = '/' + event.detail.url;
+        navigated.current = true;
+        navigate(path, { state: event.detail.state, replace: event.detail.replace});
+    }, [navigate]);
+
     const redirect = useCallback((path: string) => {
         return (() => {
             navigate(path, {replace: true});
@@ -187,12 +197,16 @@ function Flow() {
     useEffect(() => {
         // @ts-ignore
         window.addEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
+        // @ts-ignore
+        window.addEventListener('vaadin-navigate', vaadinNavigateEventHandler);
 
         return () => {
             // @ts-ignore
             window.removeEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
+            // @ts-ignore
+            window.removeEventListener('vaadin-navigate', vaadinNavigateEventHandler);
         };
-    }, [vaadinRouterGoEventHandler]);
+    }, [vaadinRouterGoEventHandler, vaadinNavigateEventHandler]);
 
     useEffect(() => {
         return () => {
@@ -203,6 +217,10 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            if(navigated.current) {
+                blocker.proceed();
+                return;
+            }
             const {pathname, search} = blocker.location;
             let matched = matchRoutes(Array.from(routes), window.location.pathname);
 
@@ -213,6 +231,7 @@ function Flow() {
                     {pathname,search}, {
                         prevent() {
                             blocker.reset();
+                            navigated.current = false;
                         },
                         redirect,
                         continue() {
