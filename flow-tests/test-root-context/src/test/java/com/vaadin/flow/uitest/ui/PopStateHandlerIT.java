@@ -1,7 +1,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -14,7 +13,6 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     private static final String FORUM_SUBCATEGORY = "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/#!/category/1";
     private static final String FORUM_SUBCATEGORY2 = "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/#!/category/2";
     private static final String ANOTHER_PATH = "com.vaadin.flow.uitest.ui.PopStateHandlerUI/another/";
-    private static final String EMPTY_HASH = "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/#";
 
     @Test
     public void testDifferentPath_ServerSideEvent() {
@@ -110,10 +108,12 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     }
 
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
-        Assert.assertEquals("Invalid URL",
-                trimPathForClientRouter(
-                        getRootURL() + "/view/" + pathAfterServletMapping),
-                trimPathForClientRouter(getDriver().getCurrentUrl()));
+        waitUntil(driver -> {
+            String expected = trimPathForClientRouter(
+                    getRootURL() + "/view/" + pathAfterServletMapping);
+            String actual = trimPathForClientRouter(driver.getCurrentUrl());
+            return expected.equals(actual);
+        });
     }
 
     private void verifyNoServerVisit() {
