@@ -53,7 +53,12 @@ public class HistoryView extends AbstractDivView {
             addStatus("New location: " + e.getLocation().getPath());
 
             e.getState().ifPresent(
-                    state -> addStatus("New state: " + state.toJson()));
+                    state -> {
+                        JsonObject usr = ((JsonObject) state).getObject("usr");
+                        if(usr != null) {
+                            addStatus("New state: " + usr.toJson());
+                        }
+                    });
         });
     }
 
