@@ -149,7 +149,7 @@ function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const navigate = useNavigate();
     const blocker = useBlocker(({ currentLocation, nextLocation }) => {
-        navigated.current = currentLocation.pathname === nextLocation.pathname;
+        navigated.current = nextLocation.pathname === currentLocation.pathname && nextLocation.search === currentLocation.search && nextLocation.hash === currentLocation.hash;
         return true;
     });
     const {pathname, search, hash} = useLocation();
