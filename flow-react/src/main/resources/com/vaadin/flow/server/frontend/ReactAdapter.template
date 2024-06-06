@@ -121,6 +121,7 @@ export abstract class ReactAdapterElement extends HTMLElement {
             useCustomEvent: this.useCustomEvent.bind(this)
         };
         this.#Wrapper = this.#renderWrapper.bind(this);
+        this.#markAsUsed();
     }
 
     public async connectedCallback() {
