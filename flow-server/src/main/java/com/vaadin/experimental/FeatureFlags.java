@@ -91,7 +91,7 @@ public class FeatureFlags implements Serializable {
             "https://vaadin.com/docs/latest/tools", false, null);
 
     public static final Feature COPILOT_EXPERIMENTAL = new Feature(
-            "Copilot experimental features", "copilotI18n",
+            "Copilot experimental features", "copilotExperimentalFeatures",
             "https://vaadin.com/docs/latest/tools", false, null);
 
     public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
