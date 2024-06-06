@@ -82,6 +82,10 @@ public class FeatureFlags implements Serializable {
             "Internationalization plugin for Copilot", "copilotI18n",
             "https://vaadin.com/docs/latest/tools", false, null);
 
+    public static final Feature COPILOT_EXPERIMENTAL = new Feature(
+            "Copilot experimental features", "copilotExperimentalFeatures",
+            "https://vaadin.com/docs/latest/tools", false, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -105,6 +109,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(HILLA_I18N));
         features.add(new Feature(COPILOT_FLOW));
         features.add(new Feature(COPILOT_I18N));
+        features.add(new Feature(COPILOT_EXPERIMENTAL));
         loadProperties();
     }
 
