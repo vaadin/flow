@@ -138,6 +138,22 @@ function extractPath(event: MouseEvent): void | string {
     return normalizeURL(new URL(anchor.href, anchor.baseURI));
 }
 
+/**
+ * Fire 'vaadin-navigated' event to inform components of navigation.
+ * @param pathname pathname of navigation
+ * @param search search of navigation
+ */
+function fireNavigated(pathname:string, search: string) {
+    setTimeout(() =>
+        window.dispatchEvent(new CustomEvent('vaadin-navigated', {
+            detail: {
+                pathname,
+                search
+            }
+        }))
+    )
+}
+
 function postpone() {
 }
 
@@ -267,6 +283,7 @@ function Flow() {
     useEffect(() => {
         if(navigated.current) {
             navigated.current = false;
+            fireNavigated(pathname,search);
             return;
         }
         flow.serverSideRoutes[0].action({pathname, search})
@@ -277,7 +294,8 @@ function Flow() {
                     container.onclick = navigateEventHandler;
                     containerRef.current = container
                 }
-                return container.onBeforeEnter?.call(container, {pathname, search}, {prevent, redirect}, router);
+                return container.onBeforeEnter?.call(container, {pathname, search}, {prevent, redirect, continue() {
+                        fireNavigated(pathname,search);}}, router);
             })
             .then((result: unknown) => {
                 if (typeof result === "function") {
