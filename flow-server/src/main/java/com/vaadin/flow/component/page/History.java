@@ -190,7 +190,7 @@ public class History implements Serializable {
             ui.getPage().executeJs("window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false } }));",
                     state, pathWithQueryParameters);
         } else {
-            ui.getPage().executeJs("setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })",
+            ui.getPage().executeJs("setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
                     state, pathWithQueryParameters);
         }
     }
@@ -233,7 +233,7 @@ public class History implements Serializable {
             ui.getPage().executeJs("window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }));",
                     state, pathWithQueryParameters);
         } else {
-            ui.getPage().executeJs("setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigate')); })",
+            ui.getPage().executeJs("setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
                     state, pathWithQueryParameters);
         }
     }
