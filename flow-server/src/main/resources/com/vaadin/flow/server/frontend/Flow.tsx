@@ -252,7 +252,6 @@ function Flow() {
                         redirect,
                         continue() {
                             blocker.proceed();
-                            fireNavigated(pathname,search);
                         }
                     }, router);
                 navigated.current = true;
@@ -270,13 +269,11 @@ function Flow() {
                                     blocker.reset();
                                 } else {
                                     blocker.proceed();
-                                    fireNavigated(pathname,search);
                                 }
                             }
                         } else {
                             // permitted navigation: proceed with the blocker
                             blocker.proceed();
-                            fireNavigated(pathname,search);
                         }
                     });
             }
@@ -286,6 +283,7 @@ function Flow() {
     useEffect(() => {
         if(navigated.current) {
             navigated.current = false;
+            fireNavigated(pathname,search);
             return;
         }
         flow.serverSideRoutes[0].action({pathname, search})
