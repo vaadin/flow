@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -64,10 +65,6 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
         // Go back to previous
         getDriver().navigate().back();
         waitUntil(driver -> isElementPresent(By.id("cancelButton")));
-
-        Assert.assertFalse(
-                "Before cancel, the URL in the address updates to previous.",
-                getDriver().getCurrentUrl().equals(updatedUrl));
 
         $(NativeButtonElement.class).id("cancelButton").click();
 

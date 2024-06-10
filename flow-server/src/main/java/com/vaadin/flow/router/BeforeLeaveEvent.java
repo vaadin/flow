@@ -94,7 +94,12 @@ public class BeforeLeaveEvent extends BeforeEvent {
                             event.getLocation(), event.getUI(),
                             NavigationTrigger.PROGRAMMATIC);
                 }
+
+                final UI ui = event.getUI();
                 handler.handle(event);
+                if (ui.getSession().getConfiguration().isReactEnabled()) {
+                    ui.getInternals().clearLastHandledNavigation();
+                }
                 setReferences(null, null);
             }
         }
