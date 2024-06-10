@@ -49,6 +49,7 @@ import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -259,7 +260,17 @@ public class NavigationStateRendererTest {
                     return (T) ReflectTools.createInstance(routeProxyClass);
                 }
             });
-            MockUI ui = new MockUI(new AlwaysLockedVaadinSession(service));
+            DeploymentConfiguration configuration = Mockito
+                    .mock(DeploymentConfiguration.class);
+            AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                    service) {
+                @Override
+                public DeploymentConfiguration getConfiguration() {
+                    return configuration;
+                }
+            };
+            Mockito.when(configuration.isReactEnabled()).thenReturn(true);
+            MockUI ui = new MockUI(session);
 
             NavigationEvent event = new NavigationEvent(
                     new Router(new TestRouteRegistry()), new Location("child"),
@@ -922,8 +933,19 @@ public class NavigationStateRendererTest {
 
     @Test
     public void getRouteTarget_usageStatistics() {
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
         MockVaadinServletService service = new MockVaadinServletService();
-        MockUI ui = new MockUI(new AlwaysLockedVaadinSession(service));
+        AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
+                service) {
+            @Override
+            public DeploymentConfiguration getConfiguration() {
+                return configuration;
+            }
+        };
+        Mockito.when(configuration.isReactEnabled()).thenReturn(true);
+
+        MockUI ui = new MockUI(session);
         NavigationEvent event = new NavigationEvent(
                 new Router(new TestRouteRegistry()), new Location("home"), ui,
                 NavigationTrigger.UI_NAVIGATE);

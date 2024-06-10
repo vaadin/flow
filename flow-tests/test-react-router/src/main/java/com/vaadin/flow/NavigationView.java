@@ -78,6 +78,9 @@ public class NavigationView extends Div {
                 "com.vaadin.flow.AnchorView?test=anchor", "AnchorQuery");
         anchorViewQuery.setId(ANCHOR_QUERY_ID);
         add(new Div(), anchorViewQuery);
+
+        getElement().executeJs(
+                "if(!window.test) { window.addEventListener('vaadin-navigated', (e) => { window.testMessage = 'navigated to ' + window.location.pathname; }); window.test = true; }");
     }
 
 }
