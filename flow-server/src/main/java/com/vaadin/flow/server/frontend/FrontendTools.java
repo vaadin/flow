@@ -159,6 +159,9 @@ public class FrontendTools {
         }
 
         String getCommand() {
+            if (name.equals("bun")) {
+                return name;
+            }
             return FrontendUtils.isWindows() ? name + ".cmd" : name;
         }
 
