@@ -425,4 +425,15 @@ public class NavigationIT extends ChromeBrowserTest {
         checkNavigatedEvent(
                 "navigated to /view/com.vaadin.flow.NavigationView");
     }
+
+    @Test
+    public void testNavigation_HasUrlParameter_setParameterCalledOnce() {
+        open();
+
+        $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
+        Assert.assertEquals("ServerView",
+                $(SpanElement.class).first().getText());
+        Assert.assertEquals("1", $(SpanElement.class)
+                .id(NavigationView.SET_PARAMETER_COUNTER_ID).getText());
+    }
 }
