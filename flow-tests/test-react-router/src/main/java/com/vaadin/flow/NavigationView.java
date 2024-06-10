@@ -36,6 +36,7 @@ public class NavigationView extends Div {
 
     public static final String REACT_ANCHOR_ID = "anchor-react-navigation";
     public static final String REACT_ID = "react-navigation";
+    public static final String SET_PARAMETER_COUNTER_ID = "set-parameter-counter";
 
     public NavigationView() {
         Anchor anchorNavigation = new Anchor("com.vaadin.flow.AnchorView",
