@@ -308,9 +308,9 @@ public class RouteUtil {
      * Registry Update rules:
      * <ul>
      * <li>a route is preserved if the class does not have a {@link Route}
-     * annotation, but had not it also at registration time</li>
+     * annotation and did not have it at registration time</li>
      * <li>a route is preserved if the class is annotated with {@link Route} and
-     * registerAtStartup=false and the the flag has not changed</li>
+     * {@code registerAtStartup=false} and the the flag has not changed</li>
      * <li>new classes are not automatically added to session registries</li>
      * <li>existing routes in session registries are not removed in case of
      * class modification</li>
