@@ -303,7 +303,8 @@ public class RouteUtil {
     /**
      * Updates route registry as necessary when classes have been added /
      * modified / deleted.
-     *
+     * <p>
+     * </p>
      * Registry Update rules:
      * <ul>
      * <li>a route is preserved if the class does not have a {@link Route}
@@ -314,13 +315,6 @@ public class RouteUtil {
      * <li>existing routes in session registries are not removed in case of
      * class modification</li>
      * </ul>
-     *
-     * Not handled cases:
-     * <ul>
-     * <li>Registered route class is not more a Flow Component</li>
-     * <li>v</li>
-     * </ul>
-     *
      *
      * @param registry
      *            route registry
@@ -363,14 +357,16 @@ public class RouteUtil {
 
         RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
 
-        // remove potential routes for classes that are no more components
-        // not all agents/JVMs support reload on class hierarchy change
+        // collect classes for that are no more Flow components and should be
+        // removed from the registry
+        // NOTE: not all agents/JVMs support reload on class hierarchy change
+        Set<Class<?>> nonFlowComponentsToRemove = new HashSet<>();
         deletedClasses.stream()
                 .filter(clazz -> !Component.class.isAssignableFrom(clazz))
-                .forEach(clazz -> routeConf.removeRoute((Class) clazz));
+                .forEach(nonFlowComponentsToRemove::add);
         modifiedClasses.stream()
                 .filter(clazz -> !Component.class.isAssignableFrom(clazz))
-                .forEach(clazz -> routeConf.removeRoute((Class) clazz));
+                .forEach(nonFlowComponentsToRemove::add);
 
         boolean isSessionRegistry = registry instanceof SessionRouteRegistry;
         Predicate<Class<? extends Component>> modifiedClassesRouteRemovalFilter = clazz -> !isSessionRegistry;
@@ -437,6 +433,10 @@ public class RouteUtil {
         }
 
         registry.update(() -> {
+            // remove potential routes for classes that are not Flow
+            // components anymore
+            nonFlowComponentsToRemove
+                    .forEach(clazz -> routeConf.removeRoute((Class) clazz));
             // remove deleted classes and classes that lost the annotation from
             // registry
             toRemove.forEach(componentClass -> {
