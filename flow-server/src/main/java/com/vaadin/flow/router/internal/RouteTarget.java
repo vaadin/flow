@@ -107,8 +107,8 @@ public class RouteTarget implements Serializable {
      * Gets if the route navigation target is a {@link Route} annotated class or
      * not.
      *
-     * @return {@literal true} if the route was registered at application
-     *         startup, otherwise {@literal false}.
+     * @return {@literal true} if the navigation target class is annotated
+     *         with @{@link Route} annotation, otherwise {@literal false}.
      */
     boolean isAnnotatedRoute() {
         return annotatedRoute;
