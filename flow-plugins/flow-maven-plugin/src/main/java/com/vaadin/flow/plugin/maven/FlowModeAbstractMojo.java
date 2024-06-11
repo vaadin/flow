@@ -232,6 +232,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactEnable;
 
+    @Parameter(defaultValue = "${null}")
+    private List<String> projectFileExtensions;
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
@@ -522,4 +525,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
         return FrontendUtils.isReactRouterRequired(frontendDirectory);
     }
+
+    @Override
+    public List<String> projectFileExtensions() {
+        if(projectFileExtensions != null) {
+            return projectFileExtensions;
+        }
+
+        return List.of(".js", ".js.map", ".ts", ".ts.map", ".tsx", ".tsx.map", ".css", ".css.map");
+    }
+
 }

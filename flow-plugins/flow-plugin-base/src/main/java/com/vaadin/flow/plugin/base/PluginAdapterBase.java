@@ -326,4 +326,11 @@ public interface PluginAdapterBase {
      *         router and excluding React dependencies
      */
     boolean isReactEnabled();
+
+    /**
+     * Get the list of project file extensions.
+     *
+     * @return list of project file extensions
+     */
+    List<String> projectFileExtensions();
 }
