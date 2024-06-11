@@ -112,6 +112,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
             String expected = trimPathForClientRouter(
                     getRootURL() + "/view/" + pathAfterServletMapping);
             String actual = trimPathForClientRouter(driver.getCurrentUrl());
+            System.out.println("========== Expected URL: " + expected
+                    + ", Current URL: " + actual);
             return expected.equals(actual);
         });
     }
