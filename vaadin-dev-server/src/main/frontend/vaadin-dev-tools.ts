@@ -589,16 +589,8 @@ export class VaadinDevTools extends LitElement {
     return active === null || active !== 'false';
   }
 
-  static notificationDismissed(persistentId: string) {
-    const shown = window.localStorage.getItem(VaadinDevTools.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE);
-    return shown !== null && shown.includes(persistentId);
-  }
-
   @property({ type: String, attribute: false })
   splashMessage?: string;
-
-  @property({ type: Array, attribute: false })
-  notifications: Message[] = [];
 
   @property({ type: String, attribute: false })
   frontendStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
@@ -831,137 +823,15 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  showNotification(
-    type: MessageType,
-    message: string,
-    details?: string,
-    link?: string,
-    persistentId?: string,
-    dontShowAgainMessage?: string
-  ) {
-    if (persistentId === undefined || !VaadinDevTools.notificationDismissed(persistentId!)) {
-      // Do not open persistent message if another is already visible with the same persistentId
-      const matchingVisibleNotifications = this.notifications
-        .filter((notification) => notification.persistentId === persistentId)
-        .filter((notification) => !notification.deleted);
-      if (matchingVisibleNotifications.length > 0) {
-        return;
-      }
-      const id = this.nextMessageId;
-      this.nextMessageId += 1;
-      this.notifications.push({
-        id,
-        type,
-        message,
-        details,
-        link,
-        persistentId,
-        dontShowAgain: false,
-        dontShowAgainMessage,
-        deleted: false
-      });
-      // automatically move notification to message tray after a certain amount of time unless it contains a link
-      if (link === undefined) {
-        setTimeout(() => {
-          this.dismissNotification(id);
-        }, VaadinDevTools.AUTO_DEMOTE_NOTIFICATION_DELAY);
-      }
-      this.requestUpdate();
-    }
-  }
-
-  dismissNotification(id: number) {
-    const index = this.findNotificationIndex(id);
-    if (index !== -1 && !this.notifications[index].deleted) {
-      const notification = this.notifications[index];
-
-      // user is explicitly dismissing a notification---after that we won't bug them with it
-      if (
-        notification.dontShowAgain &&
-        notification.persistentId &&
-        !VaadinDevTools.notificationDismissed(notification.persistentId)
-      ) {
-        let dismissed = window.localStorage.getItem(VaadinDevTools.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE);
-        dismissed = dismissed === null ? notification.persistentId : `${dismissed},${notification.persistentId}`;
-        window.localStorage.setItem(VaadinDevTools.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE, dismissed);
-      }
-
-      notification.deleted = true;
-
-      // give some time for the animation
-      setTimeout(() => {
-        const idx = this.findNotificationIndex(id);
-        if (idx !== -1) {
-          this.notifications.splice(idx, 1);
-          this.requestUpdate();
-        }
-      }, this.transitionDuration);
-    }
-  }
-
-  findNotificationIndex(id: number): number {
-    let index = -1;
-    this.notifications.some((notification, idx) => {
-      if (notification.id === id) {
-        index = idx;
-        return true;
-      } else {
-        return false;
-      }
-    });
-    return index;
-  }
-
-  toggleDontShowAgain(id: number) {
-    const index = this.findNotificationIndex(id);
-    if (index !== -1 && !this.notifications[index].deleted) {
-      const notification = this.notifications[index];
-      notification.dontShowAgain = !notification.dontShowAgain;
-      this.requestUpdate();
-    }
-  }
-
   setActive(yes: boolean) {
     this.frontendConnection?.setActive(yes);
     this.javaConnection?.setActive(yes);
     window.sessionStorage.setItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE, yes ? 'true' : 'false');
   }
 
-  /* eslint-disable lit/no-template-arrow */
-  renderMessage(messageObject: Message) {
-    return html`
-      <div
-        class="message ${messageObject.type} ${messageObject.deleted ? 'animate-out' : ''} ${messageObject.details ||
-        messageObject.link
-          ? 'has-details'
-          : ''}"
-      >
-        <div class="message-content">
-          <div class="message-heading">${messageObject.message}</div>
-          <div class="message-details" ?hidden="${!messageObject.details && !messageObject.link}">
-            ${messageObject.details ? html`<p>${messageObject.details}</p>` : ''}
-            ${messageObject.link
-              ? html`<a class="ahreflike" href="${messageObject.link}" target="_blank">Learn more</a>`
-              : ''}
-          </div>
-          ${messageObject.persistentId
-            ? html`<div
-                class="persist ${messageObject.dontShowAgain ? 'on' : 'off'}"
-                @click=${() => this.toggleDontShowAgain(messageObject.id)}
-              >
-                ${messageObject.dontShowAgainMessage || 'Don’t show again'}
-              </div>`
-            : ''}
-        </div>
-        <div class="dismiss-message" @click=${() => this.dismissNotification(messageObject.id)}>Dismiss</div>
-      </div>
-    `;
-  }
-
   /* eslint-disable lit/no-template-map */
   render() {
     return html` 
-      <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
       <div
         style="display: none"
         class="dev-tools ${this.splashMessage ? 'active' : ''}"
