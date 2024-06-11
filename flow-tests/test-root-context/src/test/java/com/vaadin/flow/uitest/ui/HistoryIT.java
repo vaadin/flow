@@ -82,7 +82,6 @@ public class HistoryIT extends ChromeBrowserTest {
         backButton.click();
 
         waitForUrlChange(baseUrl.resolve("qwerty"));
-        Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
         Assert.assertEquals(Arrays.asList("New location: qwerty"),
                 getStatusMessages());
 
@@ -106,7 +105,10 @@ public class HistoryIT extends ChromeBrowserTest {
     private void waitForUrlChange(URI expectedUrl) {
         waitUntil(d -> {
             try {
-                return expectedUrl.equals(getCurrentUrl());
+                URI currentUrl = getCurrentUrl();
+                System.out.println("========== Expected URL: " + expectedUrl
+                        + ", Current URL: " + currentUrl);
+                return expectedUrl.equals(currentUrl);
             } catch (URISyntaxException e) {
                 return false;
             }
