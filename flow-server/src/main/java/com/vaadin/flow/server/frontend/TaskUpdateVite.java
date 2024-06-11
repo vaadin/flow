@@ -127,7 +127,11 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .replace("#webComponentTags#",
                         webComponentTags == null || webComponentTags.isEmpty()
                                 ? ""
-                                : String.join(";", webComponentTags));
+                                : String.join(";", webComponentTags))
+                .replace("#projectFileExtensions#",
+                        options.getProjectFileExtensions().stream()
+                                .map(ext -> "'" + ext + "'")
+                                .reduce((a, b) -> a + ", " + b).orElse(""));
         template = updateFileSystemRouterVitePlugin(template);
 
         FileIOUtils.writeIfChanged(generatedConfigFile, template);

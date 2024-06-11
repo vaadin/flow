@@ -337,4 +337,11 @@ public interface PluginAdapterBase {
      *         {@literal blank}.
      */
     String applicationIdentifier();
+
+    /**
+     * Get the list of project file extensions.
+     *
+     * @return list of project file extensions
+     */
+    List<String> projectFileExtensions();
 }

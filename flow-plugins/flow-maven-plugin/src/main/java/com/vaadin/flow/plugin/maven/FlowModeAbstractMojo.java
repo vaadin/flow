@@ -234,6 +234,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactEnable;
 
+    @Parameter(defaultValue = "${null}")
+    private List<String> projectFileExtensions;
+
     /**
      * Identifier for the application.
      * <p>
@@ -570,4 +573,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                 project.getGroupId() + ":" + project.getArtifactId(),
                 StandardCharsets.UTF_8);
     }
+
+    @Override
+    public List<String> projectFileExtensions() {
+        if(projectFileExtensions != null) {
+            return projectFileExtensions;
+        }
+
+        return List.of(".js", ".js.map", ".ts", ".ts.map", ".tsx", ".tsx.map", ".css", ".css.map");
+    }
+
 }
