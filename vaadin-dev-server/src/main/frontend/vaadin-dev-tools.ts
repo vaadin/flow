@@ -703,16 +703,6 @@ export class VaadinDevTools extends LitElement {
         this.javaStatus = status;
       };
     }
-
-    if (!this.conf.backend) {
-      this.showNotification(
-        MessageType.WARNING,
-        'Java live reload unavailable',
-        'Live reload for Java changes is currently not set up. Find out how to make use of this functionality to boost your workflow.',
-        'https://vaadin.com/docs/latest/flow/configuration/live-reload',
-        'liveReloadUnavailable'
-      );
-    }
   }
 
   tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {
