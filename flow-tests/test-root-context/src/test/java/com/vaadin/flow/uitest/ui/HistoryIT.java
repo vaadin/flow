@@ -55,7 +55,7 @@ public class HistoryIT extends ChromeBrowserTest {
         // Back to original state
         backButton.click();
 
-        Assert.assertEquals(baseUrl, getCurrentUrl());
+        waitForUrlChange(baseUrl);
         // idx value in history state is added by react-router
         Assert.assertEquals(
                 Arrays.asList(
@@ -68,11 +68,11 @@ public class HistoryIT extends ChromeBrowserTest {
         locationField.setValue("qwerty");
         replaceButton.click();
 
-        Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
+        waitForUrlChange(baseUrl.resolve("qwerty"));
 
         // Forward to originally pushed state
         forwardButton.click();
-        Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
+        waitForUrlChange(baseUrl.resolve("asdf"));
         Assert.assertEquals(Arrays.asList("New location: qwerty",
                 "New location: asdf", "New state: {\"foo\":true}"),
                 getStatusMessages());
@@ -81,6 +81,7 @@ public class HistoryIT extends ChromeBrowserTest {
         // Back to the replaced state
         backButton.click();
 
+        waitForUrlChange(baseUrl.resolve("qwerty"));
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
         Assert.assertEquals(Arrays.asList("New location: qwerty"),
                 getStatusMessages());
@@ -92,14 +93,24 @@ public class HistoryIT extends ChromeBrowserTest {
         locationField.clear();
         pushButton.click();
 
-        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
+        waitForUrlChange(baseUrl.resolve("."));
 
         // Replacing with empty string should go to the context path root
         locationField.setValue("qwerty/x");
         replaceButton.click();
         locationField.clear();
         replaceButton.click();
-        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
+        waitForUrlChange(baseUrl.resolve("."));
+    }
+
+    private void waitForUrlChange(URI expectedUrl) {
+        waitUntil(d -> {
+            try {
+                return expectedUrl.equals(getCurrentUrl());
+            } catch (URISyntaxException e) {
+                return false;
+            }
+        });
     }
 
     private URI getCurrentUrl() throws URISyntaxException {
