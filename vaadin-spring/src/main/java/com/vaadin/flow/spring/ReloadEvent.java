@@ -51,7 +51,7 @@ class ReloadEvent implements Serializable {
     }
 
     private Set<String> extractPackageNames(Set<String> classNames) {
-        return classNames.stream().map(name -> name.replace("/", "."))
+        return classNames.stream()
                 .map(name -> name.contains(".")
                         ? name.substring(0, name.lastIndexOf("."))
                         : name)
