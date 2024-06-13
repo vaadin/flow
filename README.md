@@ -1,5 +1,3 @@
-<a target="_blank" href="https://discord.gg/MYFq5RTbBn"><img src="https://discord.com/assets/e4923594e694a21542a489471ecffa50.svg" width="100" alt="Join the discussion in Vaadin Flow Discord"></img></a>
-
 Vaadin Flow
 ======
 *[Vaadin Flow](https://vaadin.com/flow) is the Java framework of Vaadin Platform for building modern websites that look great, perform well and make you and your users happy.*
@@ -10,7 +8,7 @@ Vaadin Flow
 
 **For issues related to [Hilla](https://hilla.dev/), please refer to the https://github.com/vaadin/hilla repository.**
 
-Join Vaadin Flow community chat in https://discord.gg/MYFq5RTbBn
+Ask questions about Vaadin Flow in our [forum](https://vaadin.com/forum/c/flow/8).
 
 Since [Vaadin platform 23.0](https://github.com/vaadin/platform), Flow major and minor versions are aligned with platform versions:
 
