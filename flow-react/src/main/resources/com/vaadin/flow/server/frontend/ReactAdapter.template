@@ -233,6 +233,12 @@ export abstract class ReactAdapterElement extends HTMLElement {
      */
     protected abstract render(hooks: RenderHooks): ReactElement | null;
 
+    /**
+     * Prepare content container for Flow to bind server Element to.
+     *
+     * @param name container name attribute matching server name attribute
+     * @protected
+     */
     protected useContent(name: string): ReactElement | null {
         useEffect(() => {
             this.#readyCallback.get(name)?.();
