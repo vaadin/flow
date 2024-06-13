@@ -310,7 +310,7 @@ public class MenuRegistry {
      * Load views json as a resource.
      *
      * @param configuration
-     *            current deployment configuration
+     *            current application configuration
      * @return URL to json resource
      */
     public static URL getViewsJsonAsResource(
