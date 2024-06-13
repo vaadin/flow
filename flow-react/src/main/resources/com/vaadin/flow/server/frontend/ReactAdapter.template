@@ -86,6 +86,13 @@ export type RenderHooks = {
      * @protected
      */
     readonly useCustomEvent: ReactAdapterElement["useCustomEvent"]
+
+    /**
+     * A hook helper to generate the content element for binding Flow element.
+     *
+     * @param name - The name attribute of the element
+     */
+    readonly useContent:  ReactAdapterElement["useContent"]
 };
 
 interface ReadyCallbackFunction {
@@ -118,7 +125,8 @@ export abstract class ReactAdapterElement extends HTMLElement {
         super();
         this.#renderHooks = {
             useState: this.useState.bind(this),
-            useCustomEvent: this.useCustomEvent.bind(this)
+            useCustomEvent: this.useCustomEvent.bind(this),
+            useContent: this.useContent.bind(this)
         };
         this.#Wrapper = this.#renderWrapper.bind(this);
         this.#markAsUsed();
