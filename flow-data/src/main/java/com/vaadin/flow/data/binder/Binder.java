@@ -963,7 +963,9 @@ public class Binder<BEAN> implements Serializable {
          * @param equalityPredicate the predicate to use for equality comparison
          * @return this {@code BindingBuilder}, for method chaining
          */
-        public BindingBuilder<BEAN, TARGET> withEqualityPredicate(SerializableBiPredicate<Object, Object> equalityPredicate);
+        public default BindingBuilder<BEAN, TARGET> withEqualityPredicate(SerializableBiPredicate<Object, Object> equalityPredicate) {
+        	return this;
+        }
     }
 
     /**
