@@ -1968,9 +1968,8 @@ public class Binder<BEAN> implements Serializable {
      *
      * @param binding
      *            the binding whose value has been changed
-     *            
-     * @Deprecated(since = "24.5", forRemoval = true)
      */
+    @Deprecated(since = "24.5", forRemoval = true)
     protected void handleFieldValueChange(Binding<BEAN, ?> binding) {
         if (getBean() == null) {
             binding.validate();
