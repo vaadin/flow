@@ -20,8 +20,8 @@ plugins {
 
 def pom = new XmlSlurper().parse(rootProject.file('pom.xml'))
 defaultTasks('jar', 'test')
-group pom.parent.groupId
-version = project.hasProperty('vaadin.version') ? project.getProperty('vaadin.version') : pom.parent.version
+group 'com.vaadin.flow'
+version = '24.4.1'
 archivesBaseName = pom.artifactId
 sourceCompatibility = 17
 targetCompatibility = 17
@@ -87,7 +87,7 @@ jar {
     manifest{
         attributes(
                 'Vaadin-Package-Version': 1,
-                'Implementation-Title': 'Vaadin Gradle Plugin',
+                'Implementation-Title': 'Flow Gradle Plugin',
                 'Implementation-Version': archiveVersion,
                 'Implementation-Vendor': 'Vaadin Ltd',
         )
@@ -142,7 +142,7 @@ gradlePlugin {
     testSourceSets sourceSets.functionalTest
     plugins {
         vaadinPlugin {
-            id = 'com.vaadin'
+            id = 'com.vaadin.flow'
             implementationClass = 'com.vaadin.gradle.VaadinPlugin'
         }
     }
@@ -151,12 +151,12 @@ gradlePlugin {
 pluginBundle {
     website = 'https://vaadin.com/docs/latest/flow/guide/start/gradle'
     vcsUrl = 'https://github.com/vaadin/flow'
-    description = 'Build Vaadin applications with Gradle. Please follow the link below to learn which Plugin version to use with particular Vaadin version. Vaadin recommends using the latest Vaadin LTS version.'
+    description = 'Build Vaadin Flow applications with Gradle. Please follow the link below to learn which Plugin version to use with particular Vaadin version. Vaadin recommends using the latest Vaadin LTS version.'
     tags = ['vaadin']
     plugins {
         vaadinPlugin {
             id = gradlePlugin.plugins.vaadinPlugin.id
-            displayName = 'Vaadin Gradle Plugin'
+            displayName = 'Flow Gradle Plugin'
         }
     }
     mavenCoordinates {
@@ -167,6 +167,10 @@ pluginBundle {
 
 publishing {
 	publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+
 		maven(MavenPublication) {
 			groupId = project.group
 			artifactId = project.archivesBaseName
@@ -175,6 +179,10 @@ publishing {
 			from components.java
 		}
 	}
+
+    repositories {
+        mavenLocal() // for publishing to ~/.m2/repository
+    }
 }
 
 /***********************************************************************************************************************
