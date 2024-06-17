@@ -208,12 +208,11 @@ public class MenuRegistry {
      * @return map of registered routes
      */
     public static Map<String, AvailableViewInfo> collectClientMenuItems(
-            boolean filterClientViews,
-            AbstractConfiguration configuration) {
+            boolean filterClientViews, AbstractConfiguration configuration) {
 
         VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
-        return collectClientMenuItems(filterClientViews,
-                configuration, vaadinRequest);
+        return collectClientMenuItems(filterClientViews, configuration,
+                vaadinRequest);
     }
 
     /**
@@ -227,7 +226,7 @@ public class MenuRegistry {
      * @return list of available client routes
      */
     public static List<String> getClientRoutes(boolean filterClientViews,
-                                               AbstractConfiguration configuration) {
+            AbstractConfiguration configuration) {
 
         VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
         return new ArrayList<>(collectClientMenuItems(filterClientViews,
@@ -246,18 +245,15 @@ public class MenuRegistry {
      * @return map of registered routes
      */
     public static Map<String, AvailableViewInfo> collectClientMenuItems(
-            boolean filterClientViews,
-            AbstractConfiguration configuration,
+            boolean filterClientViews, AbstractConfiguration configuration,
             VaadinRequest vaadinRequest) {
 
-        URL viewsJsonAsResource = getViewsJsonAsResource(
-                configuration);
+        URL viewsJsonAsResource = getViewsJsonAsResource(configuration);
         if (viewsJsonAsResource == null) {
             LoggerFactory.getLogger(MenuRegistry.class).debug(
                     "No {} found under {} directory. Skipping client route registration.",
                     FILE_ROUTES_JSON_NAME,
-                    configuration.isProductionMode()
-                            ? "'META-INF/VAADIN'"
+                    configuration.isProductionMode() ? "'META-INF/VAADIN'"
                             : "'frontend/generated'");
             return Collections.emptyMap();
         }
@@ -320,8 +316,8 @@ public class MenuRegistry {
             return getClassLoader().getResource(FILE_ROUTES_JSON_PROD_PATH);
         }
         try {
-            Path fileRoutes = configuration.getFrontendFolder()
-                    .toPath().resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
+            Path fileRoutes = configuration.getFrontendFolder().toPath()
+                    .resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
             if (fileRoutes.toFile().exists()) {
                 return fileRoutes.toUri().toURL();
             }
