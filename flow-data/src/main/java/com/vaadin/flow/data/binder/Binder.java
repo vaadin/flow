@@ -54,6 +54,7 @@ import com.vaadin.flow.data.converter.DefaultConverterFactory;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.BeanValidator;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -320,6 +321,8 @@ public class Binder<BEAN> implements Serializable {
          *         changes, otherwise {@literal false}.
          */
         boolean hasChanges();
+        
+        SerializableBiPredicate<Object, Object> getEqualityPredicate();
     }
 
     /**
@@ -949,6 +952,18 @@ public class Binder<BEAN> implements Serializable {
          */
         public BindingBuilder<BEAN, TARGET> asRequired(
                 Validator<TARGET> customRequiredValidator);
+        
+        /**
+         * Sets the {@code equalityPredicate} used to compare the current value of a field with its initial value.
+         * <p>
+         * The default implementation uses {@link Objects#equals(Object, Object)}, but a custom equality predicate
+         * can be provided for cases where the value type does not support the standard {@code equals} method.
+         * </p>
+         * 
+         * @param equalityPredicate the predicate to use for equality comparison
+         * @return this {@code BindingBuilder}, for method chaining
+         */
+        public BindingBuilder<BEAN, TARGET> withEqualityPredicate(SerializableBiPredicate<Object, Object> equalityPredicate);
     }
 
     /**
@@ -983,6 +998,13 @@ public class Binder<BEAN> implements Serializable {
         private boolean asRequiredSet;
 
         private Boolean defaultValidatorEnabled;
+        
+        /**
+         * A predicate used to compare the current value of a field with its initial value.
+         * The default implementation is {@link Objects#equals(Object, Object)} 
+         * but can be customized if the value type does not support equals 
+         */
+        private SerializableBiPredicate<Object, Object> equalityPredicate = (val1, val2) -> Objects.equals(val1, val2);
 
         /**
          * Creates a new binding builder associated with the given field.
@@ -1201,6 +1223,13 @@ public class Binder<BEAN> implements Serializable {
                 }
             });
         }
+        
+        @Override
+        public BindingBuilder<BEAN, TARGET> withEqualityPredicate(SerializableBiPredicate<Object, Object> equalityPredicate) {
+        	Objects.requireNonNull(equalityPredicate, "equality predicate cannot be null");
+        	this.equalityPredicate = equalityPredicate;
+        	return this;
+        }
 
         /**
          * Implements {@link #withConverter(Converter)} method with additional
@@ -1315,6 +1344,8 @@ public class Binder<BEAN> implements Serializable {
         private Registration onValidationStatusChange;
 
         private Boolean defaultValidatorEnabled;
+        
+        private SerializableBiPredicate<Object, Object> equalityPredicate;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
@@ -1326,6 +1357,8 @@ public class Binder<BEAN> implements Serializable {
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
 
             defaultValidatorEnabled = builder.defaultValidatorEnabled;
+            
+            equalityPredicate = builder.equalityPredicate;
 
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
@@ -1702,6 +1735,11 @@ public class Binder<BEAN> implements Serializable {
 
             return this.binder.hasChanges(this);
         }
+
+		@Override
+		public SerializableBiPredicate<Object, Object> getEqualityPredicate() {
+			return equalityPredicate;
+		}
     }
 
     /**
@@ -1920,6 +1958,30 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Informs the Binder that a value in Binding was changed.
      *
+     * If {@link #readBean(Object)} was used, this method will only validate the
+     * changed binding and ignore state of other bindings.
+     *
+     * If {@link #setBean(Object)} was used, all pending changed bindings will
+     * be validated and non-changed ones will be ignored. The changed value will
+     * be written to the bean immediately, assuming that Binder-level validators
+     * also pass.
+     *
+     * @param binding
+     *            the binding whose value has been changed
+     *            
+     * @Deprecated(since = "24.5", forRemoval = true)
+     */
+    protected void handleFieldValueChange(Binding<BEAN, ?> binding) {
+        if (getBean() == null) {
+            binding.validate();
+        } else {
+            doWriteIfValid(getBean(), changedBindings);
+        }
+    }
+    
+    /**
+     * Informs the Binder that a value in Binding was changed.
+     *
      * If {@link #readBean(Object)} was used, this method will check if the value is reverted 
      * to initial value, in this case the binding will be removed from the changed bindings. 
      * This method will also validate the changed binding and ignore state of other bindings.
@@ -1962,7 +2024,7 @@ public class Binder<BEAN> implements Serializable {
      * @return true if the field value is reverted
      */
     protected boolean isRevertedToInitialValue(Binding<BEAN, ?> binding, Object newValue) {
-		return Objects.equals(bindingInitialValuesMap.get(binding), newValue);
+    	return binding.getEqualityPredicate().test(bindingInitialValuesMap.get(binding), newValue);
 	}
 
 	/**
