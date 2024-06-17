@@ -171,7 +171,6 @@ public class HistoryTest {
         Assert.assertEquals("location should be '.'", ".", page.parameters[1]);
     }
 
-
     @Test
     public void pushState_locationWithQueryParameters_queryParametersRetained_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
