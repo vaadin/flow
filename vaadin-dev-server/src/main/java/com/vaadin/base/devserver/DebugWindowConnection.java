@@ -324,7 +324,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     break;
                 }
             }
-            if (!handled && command != null && !command.startsWith("copilot-")) {
+            if (!handled && command != null
+                    && !command.startsWith("copilot-")) {
                 getLogger()
                         .info("Unknown command from the browser: " + command);
             }
