@@ -268,6 +268,10 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             Set<Class<?>> changedClasses) {
         List<HasElement> targetsChain = new ArrayList<>(
                 ui.getActiveRouterTargetsChain());
+        if (targetsChain.isEmpty()) {
+            // Navigation to a view has not yet happened
+            return UIRefreshStrategy.SKIP;
+        }
         HasElement route = targetsChain.get(0);
         boolean pushEnabled = ui.getPushConfiguration().getPushMode()
                 .isEnabled();
