@@ -1,5 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -107,11 +109,16 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         return isClientRouter() ? PathUtil.trimPath(path) : path;
     }
 
+    private final AtomicInteger counter = new AtomicInteger();
+
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
+        int idx = counter.incrementAndGet();
         waitUntil(driver -> {
             String expected = trimPathForClientRouter(
                     getRootURL() + "/view/" + pathAfterServletMapping);
             String actual = trimPathForClientRouter(driver.getCurrentUrl());
+            System.out.println("================ PopStateHandlerIT " + idx
+                    + " :: ACT: " + actual + ", EXP: " + expected);
             return expected.equals(actual);
         });
     }

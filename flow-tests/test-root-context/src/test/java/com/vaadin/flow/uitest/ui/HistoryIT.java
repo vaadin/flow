@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -103,10 +104,16 @@ public class HistoryIT extends ChromeBrowserTest {
         waitForUrlChange(baseUrl.resolve("."));
     }
 
+    private static final AtomicInteger counter = new AtomicInteger();
+
     private void waitForUrlChange(URI expectedUrl) {
+        int idx = counter.incrementAndGet();
         waitUntil(d -> {
             try {
-                return expectedUrl.equals(getCurrentUrl());
+                URI currentUrl = getCurrentUrl();
+                System.out.println("================ HistoryIT " + idx
+                        + " :: ACT: " + currentUrl + ", EXP: " + expectedUrl);
+                return expectedUrl.equals(currentUrl);
             } catch (URISyntaxException e) {
                 return false;
             }
