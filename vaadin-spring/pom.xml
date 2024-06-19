@@ -173,13 +173,8 @@
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>0.10.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.javassist</groupId>
-                    <artifactId>javassist</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
+	<!-- overwrite the javassist version used in reflections -->
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
