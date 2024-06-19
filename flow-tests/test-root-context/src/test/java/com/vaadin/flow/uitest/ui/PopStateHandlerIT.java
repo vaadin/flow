@@ -97,7 +97,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     }
 
     private void goBack() {
-        executeScript("window.history.back()");
+        // executeScript("window.history.back()");
+        driver.navigate().back();
     }
 
     private void pushState(String id) {
