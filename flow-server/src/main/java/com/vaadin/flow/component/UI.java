@@ -1865,12 +1865,12 @@ public class UI extends Component
      */
     private void replaceStateIfDiffersAndNoReplacePending(String route,
             Location location) {
-        boolean locationChanged =
-                !location.getPath().equals(route) && route.startsWith("/") &&
-                        !location.getPath().equals(route.substring(1));
-        boolean containsPendingReplace = !getInternals().containsPendingJavascript(
-                "window.history.replaceState") &&
-                !getInternals().containsPendingJavascript(
+        boolean locationChanged = !location.getPath().equals(route)
+                && route.startsWith("/")
+                && !location.getPath().equals(route.substring(1));
+        boolean containsPendingReplace = !getInternals()
+                .containsPendingJavascript("window.history.replaceState")
+                && !getInternals().containsPendingJavascript(
                         "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }");
         if (locationChanged && containsPendingReplace) {
             // See InternalRedirectHandler invoked via Router.

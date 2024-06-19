@@ -21,8 +21,7 @@ import com.vaadin.flow.data.binder.ValueContext;
 import java.math.BigDecimal;
 
 /**
- * A converter that converts from {@link Float} to {@link Double} and
- * back.
+ * A converter that converts from {@link Float} to {@link Double} and back.
  *
  * @since 24.5
  */
@@ -44,4 +43,3 @@ public class FloatToDoubleConverter implements Converter<Float, Double> {
         return value.floatValue();
     }
 }
-
