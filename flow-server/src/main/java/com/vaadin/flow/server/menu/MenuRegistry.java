@@ -38,16 +38,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.internal.ParameterInfo;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
@@ -204,17 +203,16 @@ public class MenuRegistry {
      *
      * @param filterClientViews
      *            {@code true} to filter routes by authentication status
-     * @param deploymentConfiguration
-     *            application deployment configuration
+     * @param configuration
+     *            application configuration
      * @return map of registered routes
      */
     public static Map<String, AvailableViewInfo> collectClientMenuItems(
-            boolean filterClientViews,
-            DeploymentConfiguration deploymentConfiguration) {
+            boolean filterClientViews, AbstractConfiguration configuration) {
 
         VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
-        return collectClientMenuItems(filterClientViews,
-                deploymentConfiguration, vaadinRequest);
+        return collectClientMenuItems(filterClientViews, configuration,
+                vaadinRequest);
     }
 
     /**
@@ -223,16 +221,16 @@ public class MenuRegistry {
      *
      * @param filterClientViews
      *            {@code true} to filter routes by authentication status
-     * @param deploymentConfiguration
-     *            current deployment configuration
+     * @param configuration
+     *            application configuration
      * @return list of available client routes
      */
     public static List<String> getClientRoutes(boolean filterClientViews,
-            DeploymentConfiguration deploymentConfiguration) {
+            AbstractConfiguration configuration) {
 
         VaadinRequest vaadinRequest = VaadinRequest.getCurrent();
         return new ArrayList<>(collectClientMenuItems(filterClientViews,
-                deploymentConfiguration, vaadinRequest).keySet());
+                configuration, vaadinRequest).keySet());
     }
 
     /**
@@ -240,25 +238,22 @@ public class MenuRegistry {
      *
      * @param filterClientViews
      *            {@code true} to filter routes by authentication status
-     * @param deploymentConfiguration
-     *            application deployment configuration
+     * @param configuration
+     *            application configuration
      * @param vaadinRequest
      *            current request
      * @return map of registered routes
      */
     public static Map<String, AvailableViewInfo> collectClientMenuItems(
-            boolean filterClientViews,
-            DeploymentConfiguration deploymentConfiguration,
+            boolean filterClientViews, AbstractConfiguration configuration,
             VaadinRequest vaadinRequest) {
 
-        URL viewsJsonAsResource = getViewsJsonAsResource(
-                deploymentConfiguration);
+        URL viewsJsonAsResource = getViewsJsonAsResource(configuration);
         if (viewsJsonAsResource == null) {
             LoggerFactory.getLogger(MenuRegistry.class).debug(
                     "No {} found under {} directory. Skipping client route registration.",
                     FILE_ROUTES_JSON_NAME,
-                    deploymentConfiguration.isProductionMode()
-                            ? "'META-INF/VAADIN'"
+                    configuration.isProductionMode() ? "'META-INF/VAADIN'"
                             : "'frontend/generated'");
             return Collections.emptyMap();
         }
@@ -310,19 +305,19 @@ public class MenuRegistry {
     /**
      * Load views json as a resource.
      *
-     * @param deploymentConfiguration
-     *            current deployment configuration
+     * @param configuration
+     *            current application configuration
      * @return URL to json resource
      */
     public static URL getViewsJsonAsResource(
-            DeploymentConfiguration deploymentConfiguration) {
-        var isProductionMode = deploymentConfiguration.isProductionMode();
+            AbstractConfiguration configuration) {
+        var isProductionMode = configuration.isProductionMode();
         if (isProductionMode) {
             return getClassLoader().getResource(FILE_ROUTES_JSON_PROD_PATH);
         }
         try {
-            Path fileRoutes = deploymentConfiguration.getFrontendFolder()
-                    .toPath().resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
+            Path fileRoutes = configuration.getFrontendFolder().toPath()
+                    .resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
             if (fileRoutes.toFile().exists()) {
                 return fileRoutes.toUri().toURL();
             }
