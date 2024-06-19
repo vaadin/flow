@@ -63,8 +63,11 @@ class ReloadListener
 
     private String convertToClassName(String fileName) {
         if (fileName.endsWith(".class")) {
-            return fileName.replace(".class", "").replace(File.separatorChar,
-                    '.');
+            String name = fileName.replace(".class", "").replace('/', '.');
+            if (File.separatorChar != '/') {
+                return name.replace(File.separatorChar, '.');
+            }
+            return name;
         } else {
             return null;
         }
