@@ -832,7 +832,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             if (devMode) {
               scripts.push({
                 tag: 'script',
-                attrs: { type: 'module', src: `/generated/vite-devmode.ts` },
+                attrs: { type: 'module', src: `/generated/vite-devmode.ts`, onerror: "document.location.reload()" },
                 injectTo: 'head'
               });
             }
