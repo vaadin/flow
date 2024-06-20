@@ -2,6 +2,8 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -9,6 +11,7 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+@NotThreadSafe
 public class PopStateHandlerIT extends ChromeBrowserTest {
 
     private static final String FORUM = "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/";
@@ -122,6 +125,14 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
                     + " :: ACT: " + actual + ", EXP: " + expected);
             return expected.equals(actual);
         });
+    }
+
+    @After
+    public void dumpLogs() {
+        int idx = counter.get();
+        getLogEntries(java.util.logging.Level.ALL).stream()
+                .map(le -> idx + " " + le.toString())
+                .forEach(System.out::println);
     }
 
     private void verifyNoServerVisit() {

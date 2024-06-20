@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -30,6 +32,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+@NotThreadSafe
 public class HistoryIT extends ChromeBrowserTest {
 
     @Test
@@ -118,6 +121,14 @@ public class HistoryIT extends ChromeBrowserTest {
                 return false;
             }
         });
+    }
+
+    @After
+    public void dumpLogs() {
+        int idx = counter.get();
+        getLogEntries(java.util.logging.Level.ALL).stream()
+                .map(le -> idx + " " + le.toString())
+                .forEach(System.out::println);
     }
 
     private URI getCurrentUrl() throws URISyntaxException {
