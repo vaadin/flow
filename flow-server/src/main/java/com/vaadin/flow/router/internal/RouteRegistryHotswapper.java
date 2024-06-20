@@ -17,6 +17,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.hotswap.VaadinHotswapper;
@@ -60,15 +61,13 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
         Set<Class<?>> modifiedClasses = redefined ? classes : Set.of();
         Set<Class<?>> removedClasses = Set.of();
 
-        if (hasNoComponentClasses(addedClasses)
-                && hasNoComponentClasses(modifiedClasses)
-                && hasNoComponentClasses(removedClasses)) {
-            return false;
+        if (hasComponentClasses(addedClasses, modifiedClasses,
+                removedClasses)) {
+            ApplicationRouteRegistry appRegistry = ApplicationRouteRegistry
+                    .getInstance(vaadinService.getContext());
+            RouteUtil.updateRouteRegistry(appRegistry, addedClasses,
+                    modifiedClasses, removedClasses);
         }
-        ApplicationRouteRegistry appRegistry = ApplicationRouteRegistry
-                .getInstance(vaadinService.getContext());
-        RouteUtil.updateRouteRegistry(appRegistry, addedClasses,
-                modifiedClasses, removedClasses);
         return false;
     }
 
@@ -78,12 +77,9 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
         Set<Class<?>> addedClasses = redefined ? Set.of() : classes;
         Set<Class<?>> modifiedClasses = redefined ? classes : Set.of();
         Set<Class<?>> removedClasses = Set.of();
-        if (hasNoComponentClasses(addedClasses)
-                && hasNoComponentClasses(modifiedClasses)
-                && hasNoComponentClasses(removedClasses)) {
-            return false;
-        }
-        if (session.getAttribute(SessionRouteRegistry.class) != null) {
+        if (session.getAttribute(SessionRouteRegistry.class) != null
+                && hasComponentClasses(addedClasses, modifiedClasses,
+                        removedClasses)) {
             RouteUtil.updateRouteRegistry(
                     SessionRouteRegistry.getSessionRegistry(session), Set.of(),
                     modifiedClasses, removedClasses);
@@ -91,8 +87,12 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
         return false;
     }
 
-    private boolean hasNoComponentClasses(Set<Class<?>> classes) {
-        return classes == null || classes.isEmpty() || classes.stream()
-                .noneMatch(Component.class::isAssignableFrom);
+    @SafeVarargs
+    private boolean hasComponentClasses(Set<Class<?>>... classes) {
+        return Stream.of(classes)
+                .filter(classSet -> classSet != null && !classSet.isEmpty())
+                .flatMap(Set::stream)
+                .anyMatch(Component.class::isAssignableFrom);
     }
+
 }

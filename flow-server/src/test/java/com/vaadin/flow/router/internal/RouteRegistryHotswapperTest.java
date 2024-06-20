@@ -206,6 +206,26 @@ public class RouteRegistryHotswapperTest {
                         && appRouteRegistryTracker.added.isEmpty());
     }
 
+    @Test
+    public void updateRegistries_emptyClassSet_registriesNotUpdated() {
+        updater.onClassLoadEvent(vaadinService, Set.of(), false);
+        updater.onClassLoadEvent(vaadinService, Set.of(), true);
+
+        Assert.assertTrue("Expected registry not to be updated",
+                appRouteRegistryTracker.removed.isEmpty()
+                        && appRouteRegistryTracker.added.isEmpty());
+    }
+
+    @Test
+    public void updateRegistries_nullClassSet_registriesNotUpdated() {
+        updater.onClassLoadEvent(vaadinService, null, false);
+        updater.onClassLoadEvent(vaadinService, null, true);
+
+        Assert.assertTrue("Expected registry not to be updated",
+                appRouteRegistryTracker.removed.isEmpty()
+                        && appRouteRegistryTracker.added.isEmpty());
+    }
+
     @Tag("div")
     @Route("A")
     private static class MyRouteA extends Component {
