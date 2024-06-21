@@ -274,6 +274,8 @@ public class UI extends Component
                     this::leaveNavigation);
             getEventBus().addListener(BrowserNavigateEvent.class,
                     this::browserNavigate);
+            getEventBus().addListener(BrowserRefreshEvent.class,
+                    this::browserRefresh);
 
         }
 
@@ -1257,6 +1259,10 @@ public class UI extends Component
         getInternals().refreshCurrentRoute(refreshRouteChain);
     }
 
+    private void browserRefresh(BrowserRefreshEvent event) {
+        refreshCurrentRoute(event.refreshRouteChain);
+    }
+
     /**
      * Returns true if this UI instance supports navigation.
      *
@@ -1769,6 +1775,19 @@ public class UI extends Component
             this.trigger = trigger;
         }
 
+    }
+
+    @DomEvent(BrowserRefreshEvent.EVENT_NAME)
+    public static class BrowserRefreshEvent extends ComponentEvent<UI> {
+        public static final String EVENT_NAME = "ui-refresh";
+
+        private final boolean refreshRouteChain;
+
+        public BrowserRefreshEvent(UI source, boolean fromClient,
+                @EventData("fullRefresh") boolean refreshRouteChain) {
+            super(source, true);
+            this.refreshRouteChain = refreshRouteChain;
+        }
     }
 
     /**
