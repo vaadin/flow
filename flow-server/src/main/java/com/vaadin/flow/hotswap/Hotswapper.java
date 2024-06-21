@@ -89,6 +89,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     private final Set<VaadinSession> sessions = ConcurrentHashMap.newKeySet();
     private final VaadinService vaadinService;
     private final BrowserLiveReload liveReload;
+    private volatile boolean serviceDestroyed = false;
 
     Hotswapper(VaadinService vaadinService) {
         this.vaadinService = Objects.requireNonNull(vaadinService,
@@ -122,6 +123,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     // Hotswap agent will call this method by reflection, and it fails to
     // identify it if it has primitive parameters
     public void onHotswap(String[] classes, Boolean redefined) {
+        if (serviceDestroyed) {
+            LOGGER.debug(
+                    "Hotswap classes change event ignored because VaadinService has been destroyed.");
+            return;
+        }
         if (classes == null || classes.length == 0) {
             LOGGER.debug(
                     "Hotswap event ignored because Hotswapper has been called without changes to apply.");
@@ -152,6 +158,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      */
     public void onHotswap(URI[] createdResources, URI[] modifiedResources,
             URI[] deletedResources) {
+        if (serviceDestroyed) {
+            LOGGER.debug(
+                    "Hotswap resources change event ignored because VaadinService has been destroyed.");
+            return;
+        }
         // no-op for the moment, just logging for debugging purpose
         // entry point for future implementations, like reloading I18n provider
         if (LOGGER.isTraceEnabled()) {
@@ -391,6 +402,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
 
     @Override
     public void serviceDestroy(ServiceDestroyEvent event) {
+        serviceDestroyed = true;
         sessions.clear();
     }
 

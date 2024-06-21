@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.ServiceDestroyListener;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionDestroyEvent;
@@ -103,14 +104,22 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_nullArguments_registriesNotUpdated() {
+    public void onHotswap_nullArguments_hotswappersNotInvoked() {
         hotswapper.onHotswap(null, true);
         Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
     }
 
     @Test
-    public void updateRegistries_emptyArguments_registriesNotUpdated() {
+    public void onHotswap_emptyArguments_hotswappersNotInvoked() {
         hotswapper.onHotswap(new String[0], true);
+        Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
+    }
+
+    @Test
+    public void onHotswap_serviceDestroyed_hotswappersNotInvoked() {
+        hotswapper.serviceDestroy(new ServiceDestroyEvent(service));
+        hotswapper.onHotswap(new String[] { Integer.class.getName(),
+                String.class.getName() }, true);
         Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
     }
 
