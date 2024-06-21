@@ -101,12 +101,12 @@
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
         <maven.surefire.plugin.version>3.3.0</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>3.2.5</maven.failsafe.plugin.version>
+        <maven.failsafe.plugin.version>3.3.0</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
-        <maven.clean.plugin.version>3.3.2</maven.clean.plugin.version>
+        <maven.clean.plugin.version>3.4.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>9.3.0</testbench.version>
+        <testbench.version>9.3.1</testbench.version>
         <jetty.version>12.0.10</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
@@ -251,7 +251,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.12.12</version>
+                <version>1.12.13</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -508,7 +508,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.4.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
