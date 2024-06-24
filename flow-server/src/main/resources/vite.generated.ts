@@ -757,7 +757,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),
-      devBundle && preserveUsageStats(),
+      !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
       postcssLit({
         include: ['**/*.css', /.*\/.*\.css\?.*/],
