@@ -332,5 +332,5 @@ public interface PluginAdapterBase {
      *
      * @return list of project file extensions
      */
-    List<String> projectFileExtensions();
+    List<String> extraProjectFileExtensions();
 }

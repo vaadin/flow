@@ -279,11 +279,11 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val cleanFrontendFiles: Property<Boolean>
 
     /**
-     * The list of file extensions that are considered project files.
+     * The list of extra file extensions that are considered project files.
      * Hashes are calculated for these files as part of detecting if a new prod
      * bundle should be generated.
      */
-    public abstract val projectFileExtensions: ListProperty<String>
+    public abstract val extraProjectFileExtensions: ListProperty<String>
 
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter
@@ -435,8 +435,8 @@ public class PluginEffectiveConfiguration(
     public val cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
             .convention(true)
 
-    public val projectFileExtensions: ListProperty<String> = extension.projectFileExtensions
-            .convention(listOf(".js", ".js.map", ".ts", ".ts.map", ".tsx", ".tsx.map", ".css", ".css.map"))
+    public val extraProjectFileExtensions: ListProperty<String> = extension.extraProjectFileExtensions
+            .convention(emptyList())
 
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
@@ -487,7 +487,7 @@ public class PluginEffectiveConfiguration(
             "frontendHotdeploy=${frontendHotdeploy.get()}," +
             "reactEnable=${reactEnable.get()}," +
             "cleanFrontendFiles=${cleanFrontendFiles.get()}" +
-            "projectFileExtensions=${projectFileExtensions.get()}" +
+            "extraProjectFileExtensions=${extraProjectFileExtensions.get()}" +
             ")"
     public companion object {
         public fun get(project: Project): PluginEffectiveConfiguration =
