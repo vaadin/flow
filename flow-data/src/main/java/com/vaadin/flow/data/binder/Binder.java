@@ -718,7 +718,8 @@ public class Binder<BEAN> implements Serializable {
          * @param toPresentation
          *            the function which can convert from the new target type to
          *            the old target type
-         * @return this BindingBuilder configured with a new converter that maps between {@code TARGET} and {@code NEWTARGET}
+         * @return this BindingBuilder configured with a new converter that maps
+         *         between {@code TARGET} and {@code NEWTARGET}
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
