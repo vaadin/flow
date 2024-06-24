@@ -977,7 +977,8 @@ public class Options implements Serializable {
      *            the project file extensions
      * @return this builder
      */
-    public Options withExtraProjectFileExtensions(List<String> extraProjectFileExtensions) {
+    public Options withExtraProjectFileExtensions(
+            List<String> extraProjectFileExtensions) {
         this.extraProjectFileExtensions = extraProjectFileExtensions;
         return this;
     }
