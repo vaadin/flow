@@ -186,6 +186,14 @@ public abstract class ReactAdapterComponent extends Component {
         return JsonUtils.writeValue(object);
     }
 
+    /**
+     * Get the Flow container element that is set up in React template for given
+     * name attribute.
+     *
+     * @param name
+     *            the name attribute for the container element
+     * @return Element for the Flow container under ReactAdapter element
+     */
     protected Element getContentElement(String name) {
         if (contentMap == null) {
             contentMap = new HashMap<>();
