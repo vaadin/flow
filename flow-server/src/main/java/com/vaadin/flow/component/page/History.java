@@ -186,11 +186,13 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        if(ui.getSession().getConfiguration().isReactEnabled()) {
-            ui.getPage().executeJs("window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false } }));",
+        if (ui.getSession().getConfiguration().isReactEnabled()) {
+            ui.getPage().executeJs(
+                    "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false } }));",
                     state, pathWithQueryParameters);
         } else {
-            ui.getPage().executeJs("setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
+            ui.getPage().executeJs(
+                    "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
                     state, pathWithQueryParameters);
         }
     }
@@ -229,11 +231,13 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        if(ui.getSession().getConfiguration().isReactEnabled()) {
-            ui.getPage().executeJs("window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }));",
+        if (ui.getSession().getConfiguration().isReactEnabled()) {
+            ui.getPage().executeJs(
+                    "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }));",
                     state, pathWithQueryParameters);
         } else {
-            ui.getPage().executeJs("setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
+            ui.getPage().executeJs(
+                    "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
                     state, pathWithQueryParameters);
         }
     }

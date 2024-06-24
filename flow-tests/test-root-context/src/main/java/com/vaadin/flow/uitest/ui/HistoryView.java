@@ -54,16 +54,14 @@ public class HistoryView extends AbstractDivView {
         history.setHistoryStateChangeHandler(e -> {
             addStatus("New location: " + e.getLocation().getPath());
 
-            e.getState().ifPresent(
-                    state -> {
-                        if(state instanceof JsonObject) {
-                            JsonValue usr = ((JsonObject) state).get(
-                                    "usr");
-                            if (usr != null && !(usr instanceof JreJsonNull)) {
-                                addStatus("New state: " + usr.toJson());
-                            }
-                        }
-                    });
+            e.getState().ifPresent(state -> {
+                if (state instanceof JsonObject) {
+                    JsonValue usr = ((JsonObject) state).get("usr");
+                    if (usr != null && !(usr instanceof JreJsonNull)) {
+                        addStatus("New state: " + usr.toJson());
+                    }
+                }
+            });
         });
     }
 

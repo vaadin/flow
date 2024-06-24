@@ -246,18 +246,20 @@ public class VaadinServletServiceTest {
 
     private static void stubSessionAttributes(HttpSession session,
             Map<String, Object> attributes) {
-        when(
-                session.getAttribute(Mockito.anyString())).thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
-        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0), invocation.getArgument(1))).when(
-                session).setAttribute(Mockito.anyString(), Mockito.anyString());
+        when(session.getAttribute(Mockito.anyString())).thenAnswer(
+                invocation -> attributes.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+                invocation.getArgument(1))).when(session)
+                .setAttribute(Mockito.anyString(), Mockito.anyString());
     }
 
     private static void stubAttributes(HttpServletRequest request,
             Map<String, Object> attributes) {
-        when(
-                request.getAttribute(Mockito.anyString())).thenAnswer(invocation -> attributes.get(invocation.getArgument(0)));
-        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0), invocation.getArgument(1))).when(
-                request).setAttribute(Mockito.anyString(), Mockito.anyString());
+        when(request.getAttribute(Mockito.anyString())).thenAnswer(
+                invocation -> attributes.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+                invocation.getArgument(1))).when(request)
+                .setAttribute(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
