@@ -529,7 +529,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public List<String> extraProjectFileExtensions() {
-        if(extraProjectFileExtensions != null) {
+        if (extraProjectFileExtensions != null) {
             return extraProjectFileExtensions;
         }
 
