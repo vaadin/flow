@@ -58,9 +58,11 @@ import org.mockito.Mockito;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import elemental.json.Json;
@@ -100,10 +102,13 @@ public class BuildFrontendMojoTest {
 
     private File tokenFile;
 
+    private MockedStatic<LicenseChecker> licenseChecker;
+
     private final BuildFrontendMojo mojo = new BuildFrontendMojo();
 
     @Before
     public void setup() throws Exception {
+        licenseChecker = Mockito.mockStatic(LicenseChecker.class);
         MavenProject project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getRuntimeClasspathElements())
                 .thenReturn(getClassPath());
@@ -176,6 +181,7 @@ public class BuildFrontendMojoTest {
 
     @After
     public void teardown() throws IOException {
+        licenseChecker.close();
         if (FileUtils.fileExists(packageJson)) {
             FileUtils.fileDelete(packageJson);
         }
@@ -450,6 +456,10 @@ public class BuildFrontendMojoTest {
         mojo.runWebpack(tools);
 
         // terminates successfully
+
+        // license check for prod build
+        licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
+                Version.getFullVersion(), BuildType.PRODUCTION));
     }
 
     @Test
@@ -458,26 +468,22 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "compatibility", true);
         FrontendTools tools = Mockito.mock(FrontendTools.class);
 
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
-            try {
-                mojo.runWebpack(tools);
-            } catch (IllegalStateException e) {
-                // expected 'Unable to locate webpack executable ...'
-            }
-            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true),
-                    times(0));
-
-            ReflectionUtils.setVariableValueInObject(mojo, "compatibility",
-                    false);
-
-            try {
-                mojo.runWebpack(tools);
-            } catch (IllegalStateException e) {
-                // expected 'Unable to locate webpack executable ...'
-            }
-            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true));
+        try {
+            mojo.runWebpack(tools);
+        } catch (IllegalStateException e) {
+            // expected 'Unable to locate webpack executable ...'
         }
+        licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true),
+                times(0));
+
+        ReflectionUtils.setVariableValueInObject(mojo, "compatibility", false);
+
+        try {
+            mojo.runWebpack(tools);
+        } catch (IllegalStateException e) {
+            // expected 'Unable to locate webpack executable ...'
+        }
+        licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true));
     }
 
     @Test
@@ -487,26 +493,23 @@ public class BuildFrontendMojoTest {
                 true);
         FrontendTools tools = Mockito.mock(FrontendTools.class);
 
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
-            try {
-                mojo.runWebpack(tools);
-            } catch (IllegalStateException e) {
-                // expected 'Unable to locate webpack executable ...'
-            }
-            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true),
-                    times(0));
-
-            ReflectionUtils.setVariableValueInObject(mojo, "oldLicenseChecker",
-                    false);
-
-            try {
-                mojo.runWebpack(tools);
-            } catch (IllegalStateException e) {
-                // expected 'Unable to locate webpack executable ...'
-            }
-            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true));
+        try {
+            mojo.runWebpack(tools);
+        } catch (IllegalStateException e) {
+            // expected 'Unable to locate webpack executable ...'
         }
+        licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true),
+                times(0));
+
+        ReflectionUtils.setVariableValueInObject(mojo, "oldLicenseChecker",
+                false);
+
+        try {
+            mojo.runWebpack(tools);
+        } catch (IllegalStateException e) {
+            // expected 'Unable to locate webpack executable ...'
+        }
+        licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true));
     }
 
     @Test

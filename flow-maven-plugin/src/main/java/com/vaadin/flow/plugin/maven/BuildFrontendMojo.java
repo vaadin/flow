@@ -51,6 +51,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.frontend.CvdlProducts;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -233,6 +234,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         if (!oldLicenseChecker && !compatibility) {
             LicenseChecker.setStrictOffline(true);
         }
+        validateLicense();
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(npmFolder,
                 NODE_MODULES + webpackCommand);
@@ -280,6 +282,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         // Check License
         validateLicenses();
+    }
+
+    private static void validateLicense() {
+        LicenseChecker.checkLicense("flow", Version.getFullVersion(),
+                BuildType.PRODUCTION);
     }
 
     // package-private for a sake of testing
