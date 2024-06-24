@@ -88,7 +88,21 @@ export type RenderHooks = {
     readonly useCustomEvent: ReactAdapterElement["useCustomEvent"]
 
     /**
-     * A hook helper to generate the content element for binding Flow element.
+     * A hook helper to generate the content element with name attribute to bind
+     * the server-side Flow element for this component.
+     *
+     * This is used together with {@link ReactAdapterComponent::getContentElement}
+     * to have server-side component attach to the correct client element.
+     *
+     * Usage as follows:
+     *
+     * const content = hooks.useContent('content');
+     * return <>
+     *             {content}
+     * </>;
+     *
+     * Note! Not adding the 'content' element into the dom will have the
+     * server throw a IllegalStateException for element with tag name not found.
      *
      * @param name - The name attribute of the element
      */
