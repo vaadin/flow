@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -235,7 +236,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private Boolean reactEnable;
 
     @Parameter(defaultValue = "${null}")
-    private List<String> projectFileExtensions;
+    private List<String> extraProjectFileExtensions;
 
     /**
      * Identifier for the application.
@@ -575,12 +576,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public List<String> projectFileExtensions() {
-        if(projectFileExtensions != null) {
-            return projectFileExtensions;
+    public List<String> extraProjectFileExtensions() {
+        if(extraProjectFileExtensions != null) {
+            return extraProjectFileExtensions;
         }
 
-        return List.of(".js", ".js.map", ".ts", ".ts.map", ".tsx", ".tsx.map", ".css", ".css.map");
+        return Collections.emptyList();
     }
 
 }
