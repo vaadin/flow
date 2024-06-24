@@ -1,4 +1,5 @@
 package com.vaadin.flow.ui;
+
 /**
  * Copyright (C) 2024 Vaadin Ltd
  *
