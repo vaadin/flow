@@ -72,7 +72,7 @@ public class ValueContext implements Serializable {
      * @param binder
      *            the Binder using the value context
      * @param component
-     *            The component related to current value. Can be null. If the
+     *            The component related to current value. Cannot be null. If the
      *            component implements {@link HasValue}, it will be returned by
      *            {@link #getHasValue()} as well.
      */
@@ -95,7 +95,7 @@ public class ValueContext implements Serializable {
      * @param binder
      *            the Binder using the value context
      * @param component
-     *            The component related to current value. Can be null.
+     *            The component related to current value. Cannot be null.
      * @param hasValue
      *            The value source related to current value. Can be null.
      */
@@ -162,7 +162,7 @@ public class ValueContext implements Serializable {
      * Constructor for {@code ValueContext}.
      *
      * @param component
-     *            The component related to current value. Can be null. If the
+     *            The component related to current value. Cannot be null. If the
      *            component implements {@link HasValue}, it will be returned by
      *            {@link #getHasValue()} as well.
      * @deprecated Use the version with binder reference instead
@@ -185,7 +185,7 @@ public class ValueContext implements Serializable {
      * Constructor for {@code ValueContext}.
      *
      * @param component
-     *            The component related to current value. Can be null.
+     *            The component related to current value. Cannot be null.
      * @param hasValue
      *            The value source related to current value. Can be null.
      * @deprecated Use the version with binder reference instead
