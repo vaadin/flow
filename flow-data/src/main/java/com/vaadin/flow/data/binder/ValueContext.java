@@ -72,14 +72,12 @@ public class ValueContext implements Serializable {
      * @param binder
      *            the Binder using the value context
      * @param component
-     *            The component related to current value. Cannot be null. If the
+     *            The component related to current value. Can be null. If the
      *            component implements {@link HasValue}, it will be returned by
      *            {@link #getHasValue()} as well.
      */
     public ValueContext(Binder binder, Component component) {
         this.binder = binder;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         if (component instanceof HasValue) {
             hasValue = (HasValue<?, ?>) component;
@@ -95,15 +93,13 @@ public class ValueContext implements Serializable {
      * @param binder
      *            the Binder using the value context
      * @param component
-     *            The component related to current value. Cannot be null.
+     *            The component related to current value. Can be null.
      * @param hasValue
      *            The value source related to current value. Can be null.
      */
     public ValueContext(Binder binder, Component component,
             HasValue<?, ?> hasValue) {
         this.binder = binder;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         this.hasValue = hasValue;
         locale = findLocale(component);
@@ -162,7 +158,7 @@ public class ValueContext implements Serializable {
      * Constructor for {@code ValueContext}.
      *
      * @param component
-     *            The component related to current value. Cannot be null. If the
+     *            The component related to current value. Can be null. If the
      *            component implements {@link HasValue}, it will be returned by
      *            {@link #getHasValue()} as well.
      * @deprecated Use the version with binder reference instead
@@ -170,8 +166,6 @@ public class ValueContext implements Serializable {
     @Deprecated
     public ValueContext(Component component) {
         this.binder = null;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         if (component instanceof HasValue) {
             hasValue = (HasValue<?, ?>) component;
@@ -185,7 +179,7 @@ public class ValueContext implements Serializable {
      * Constructor for {@code ValueContext}.
      *
      * @param component
-     *            The component related to current value. Cannot be null.
+     *            The component related to current value. Can be null.
      * @param hasValue
      *            The value source related to current value. Can be null.
      * @deprecated Use the version with binder reference instead
@@ -193,8 +187,6 @@ public class ValueContext implements Serializable {
     @Deprecated
     public ValueContext(Component component, HasValue<?, ?> hasValue) {
         this.binder = null;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         this.hasValue = hasValue;
         locale = findLocale(component);
