@@ -78,8 +78,6 @@ public class ValueContext implements Serializable {
      */
     public ValueContext(Binder binder, Component component) {
         this.binder = binder;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         if (component instanceof HasValue) {
             hasValue = (HasValue<?, ?>) component;
@@ -102,8 +100,6 @@ public class ValueContext implements Serializable {
     public ValueContext(Binder binder, Component component,
             HasValue<?, ?> hasValue) {
         this.binder = binder;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         this.hasValue = hasValue;
         locale = findLocale(component);
@@ -170,8 +166,6 @@ public class ValueContext implements Serializable {
     @Deprecated
     public ValueContext(Component component) {
         this.binder = null;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         if (component instanceof HasValue) {
             hasValue = (HasValue<?, ?>) component;
@@ -193,8 +187,6 @@ public class ValueContext implements Serializable {
     @Deprecated
     public ValueContext(Component component, HasValue<?, ?> hasValue) {
         this.binder = null;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         this.hasValue = hasValue;
         locale = findLocale(component);
