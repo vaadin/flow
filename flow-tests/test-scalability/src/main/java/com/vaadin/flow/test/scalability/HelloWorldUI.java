@@ -14,8 +14,8 @@ import com.vaadin.flow.server.VaadinServletConfiguration;
  *
  * This program is available under Vaadin Commercial License and Service Terms.
  *
- * See <https://vaadin.com/commercial-license-and-service-terms> for the full
- * license.
+ * See {@literal <https://vaadin.com/commercial-license-and-service-terms>} for
+ * the full license.
  */
 
 public class HelloWorldUI extends UI {
