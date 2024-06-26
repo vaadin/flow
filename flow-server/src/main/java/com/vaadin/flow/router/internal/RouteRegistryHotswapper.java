@@ -38,7 +38,7 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
  * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 24.4
+ * @since 24.5
  */
 public class RouteRegistryHotswapper implements VaadinHotswapper {
 
