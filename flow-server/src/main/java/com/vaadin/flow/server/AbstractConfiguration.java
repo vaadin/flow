@@ -230,9 +230,9 @@ public interface AbstractConfiguration extends Serializable {
          */
         String baseDirCandidate = System.getProperty("user.dir", ".");
         Path path = Paths.get(baseDirCandidate);
-        if (path.toFile().isDirectory()
-                && (path.resolve("pom.xml").toFile().exists()
-                        || path.resolve("build.gradle").toFile().exists())) {
+        if (path.toFile().isDirectory() && (path.resolve("pom.xml").toFile()
+                .exists() || path.resolve("build.gradle").toFile().exists()
+                || path.resolve("build.gradle.kts").toFile().exists())) {
             return path.toAbsolutePath().toFile();
         } else {
             throw new IllegalStateException(String.format(
