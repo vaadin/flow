@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -231,6 +232,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "${null}")
     private Boolean reactEnable;
+
+    @Parameter(defaultValue = "${null}")
+    private List<String> extraProjectFileExtensions;
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -522,4 +526,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
         return FrontendUtils.isReactRouterRequired(frontendDirectory);
     }
+
+    @Override
+    public List<String> extraProjectFileExtensions() {
+        if (extraProjectFileExtensions != null) {
+            return extraProjectFileExtensions;
+        }
+
+        return Collections.emptyList();
+    }
+
 }
