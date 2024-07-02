@@ -1,5 +1,9 @@
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -7,6 +11,7 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+@NotThreadSafe
 public class PopStateHandlerIT extends ChromeBrowserTest {
 
     private static final String FORUM = "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/";
@@ -95,7 +100,8 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
     }
 
     private void goBack() {
-        executeScript("window.history.back()");
+        // executeScript("window.history.back()");
+        driver.navigate().back();
     }
 
     private void pushState(String id) {
@@ -107,13 +113,26 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         return isClientRouter() ? PathUtil.trimPath(path) : path;
     }
 
+    private final AtomicInteger counter = new AtomicInteger();
+
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
+        int idx = counter.incrementAndGet();
         waitUntil(driver -> {
             String expected = trimPathForClientRouter(
                     getRootURL() + "/view/" + pathAfterServletMapping);
             String actual = trimPathForClientRouter(driver.getCurrentUrl());
+            System.out.println("================ PopStateHandlerIT " + idx
+                    + " :: ACT: " + actual + ", EXP: " + expected);
             return expected.equals(actual);
         });
+    }
+
+    @After
+    public void dumpLogs() {
+        int idx = counter.get();
+        getLogEntries(java.util.logging.Level.ALL).stream()
+                .map(le -> idx + " " + le.toString())
+                .forEach(System.out::println);
     }
 
     private void verifyNoServerVisit() {

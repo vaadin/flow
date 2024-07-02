@@ -19,8 +19,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -29,6 +32,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+@NotThreadSafe
 public class HistoryIT extends ChromeBrowserTest {
 
     @Test
@@ -55,7 +59,7 @@ public class HistoryIT extends ChromeBrowserTest {
         // Back to original state
         backButton.click();
 
-        Assert.assertEquals(baseUrl, getCurrentUrl());
+        waitForUrlChange(baseUrl);
         // idx value in history state is added by react-router
         Assert.assertEquals(
                 Arrays.asList(
@@ -68,11 +72,11 @@ public class HistoryIT extends ChromeBrowserTest {
         locationField.setValue("qwerty");
         replaceButton.click();
 
-        Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
+        waitForUrlChange(baseUrl.resolve("qwerty"));
 
         // Forward to originally pushed state
         forwardButton.click();
-        Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
+        waitForUrlChange(baseUrl.resolve("asdf"));
         Assert.assertEquals(Arrays.asList("New location: qwerty",
                 "New location: asdf", "New state: {\"foo\":true}"),
                 getStatusMessages());
@@ -81,6 +85,7 @@ public class HistoryIT extends ChromeBrowserTest {
         // Back to the replaced state
         backButton.click();
 
+        waitForUrlChange(baseUrl.resolve("qwerty"));
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
         Assert.assertEquals(Arrays.asList("New location: qwerty"),
                 getStatusMessages());
@@ -92,14 +97,38 @@ public class HistoryIT extends ChromeBrowserTest {
         locationField.clear();
         pushButton.click();
 
-        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
+        waitForUrlChange(baseUrl.resolve("."));
 
         // Replacing with empty string should go to the context path root
         locationField.setValue("qwerty/x");
         replaceButton.click();
         locationField.clear();
         replaceButton.click();
-        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
+        waitForUrlChange(baseUrl.resolve("."));
+    }
+
+    private static final AtomicInteger counter = new AtomicInteger();
+
+    private void waitForUrlChange(URI expectedUrl) {
+        int idx = counter.incrementAndGet();
+        waitUntil(d -> {
+            try {
+                URI currentUrl = getCurrentUrl();
+                System.out.println("================ HistoryIT " + idx
+                        + " :: ACT: " + currentUrl + ", EXP: " + expectedUrl);
+                return expectedUrl.equals(currentUrl);
+            } catch (URISyntaxException e) {
+                return false;
+            }
+        });
+    }
+
+    @After
+    public void dumpLogs() {
+        int idx = counter.get();
+        getLogEntries(java.util.logging.Level.ALL).stream()
+                .map(le -> idx + " " + le.toString())
+                .forEach(System.out::println);
     }
 
     private URI getCurrentUrl() throws URISyntaxException {
