@@ -19,8 +19,8 @@ import React from "react";
 
 class ReactLayoutElement extends ReactAdapterElement {
     protected render(hooks: RenderHooks): React.ReactElement | null {
-        const content = this.useContent('content');
-        const second = this.useContent('second');
+        const content = hooks.useContent('content');
+        const second = hooks.useContent('second');
         return <>
             <span>Before Flow components content</span>
             {content}

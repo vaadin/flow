@@ -763,7 +763,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),
-      devBundle && preserveUsageStats(),
+      !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
       postcssLit({
         include: ['**/*.css', /.*\/.*\.css\?.*/],
@@ -784,7 +784,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
           presets: [['@babel/preset-react', { runtime: 'automatic', development: !productionMode }]],
           // React writes the source location for where components are used, this writes for where they are defined
           plugins: [
-            !productionMode && addFunctionComponentSourceLocationBabel()
+            !productionMode && addFunctionComponentSourceLocationBabel(),
+            [
+              'module:@preact/signals-react-transform',
+              {
+                mode: 'all' // Needed to include translations which do not use something.value
+              }
+            ]
           ].filter(Boolean)
         }
       }),
