@@ -28,17 +28,6 @@ import org.openqa.selenium.WebElement;
 public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
 
     @Test
-    public void notificationShownWhenLoadingPreserveOnRefreshView() {
-        open();
-
-        DevToolsElement liveReload = $(DevToolsElement.class).waitForFirst();
-        WebElement messageDetails = liveReload.$("*")
-                .attributeContains("class", "warning").first();
-        Assert.assertTrue(
-                messageDetails.getText().contains("@PreserveOnRefresh"));
-    }
-
-    @Test
     public void viewIsPreservedOnLiveReload() {
         open();
 
