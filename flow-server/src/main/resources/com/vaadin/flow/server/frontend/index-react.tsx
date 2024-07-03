@@ -19,4 +19,8 @@ function App() {
     return <RouterProvider router={router} />;
 }
 
-createRoot(document.getElementById('outlet')!).render(createElement(App));
+const outlet = document.getElementById('outlet')!;
+let root = (outlet as any)._root ?? createRoot(outlet);
+(outlet as any)._root = root;
+root.render(createElement(App));
+
