@@ -224,7 +224,7 @@ public class TaskGenerateReactFiles
                     Files.copy(routesTsx.toPath(),
                             new File(frontendDirectory,
                                     FrontendUtils.ROUTES_TSX + ".flowBackup")
-                                            .toPath(),
+                                    .toPath(),
                             StandardCopyOption.REPLACE_EXISTING);
                     routesTsx.delete();
                     log().warn(
