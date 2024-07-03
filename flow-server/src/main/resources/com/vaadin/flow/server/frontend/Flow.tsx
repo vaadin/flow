@@ -15,14 +15,13 @@
  */
 /// <reference lib="es2018" />
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
     matchRoutes,
     useBlocker,
     useLocation,
     useNavigate,
 } from "react-router-dom";
-import { routes } from "%routesJsImportPath%";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -238,7 +237,8 @@ function Flow() {
                 return;
             }
             const {pathname, search} = blocker.location;
-            let matched = matchRoutes(Array.from(routes), window.location.pathname);
+            const routes = (window as any)?.Vaadin?.routesConfig || [];
+            let matched = matchRoutes(routes, window.location.pathname);
 
             // Navigation between server routes
             // @ts-ignore

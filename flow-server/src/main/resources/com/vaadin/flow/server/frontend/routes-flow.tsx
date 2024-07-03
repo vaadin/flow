@@ -16,4 +16,7 @@ function build() {
         routes
     };
 }
-export const { router, routes } = build()
+export const { router, routes } = build();
+
+(window as any).Vaadin ??= {};
+(window as any).Vaadin.routesConfig = routes;
