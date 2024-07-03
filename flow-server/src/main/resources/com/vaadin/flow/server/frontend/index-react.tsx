@@ -13,10 +13,11 @@
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
-import { router } from '%routesJsImportPath%';
+import { router, routes } from '%routesJsImportPath%';
+import { RoutesContext } from './RoutesContext.js';
 
 function App() {
-    return <RouterProvider router={router} />;
+    return <RoutesContext.Provider value={routes}><RouterProvider router={router} /></RoutesContext.Provider>;
 }
 
 const outlet = document.getElementById('outlet')!;

@@ -22,7 +22,7 @@ import {
     useLocation,
     useNavigate,
 } from "react-router-dom";
-import { RoutesContext } from "./RoutesContext";
+import { RoutesContext } from "../RoutesContext.js";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")

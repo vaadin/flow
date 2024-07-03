@@ -146,7 +146,8 @@ public class TaskGenerateReactFiles
         File frontendDirectory = options.getFrontendDirectory();
         File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
-        File routesContext = new File(frontendGeneratedFolder, ROUTES_CONTEXT_TSX);
+        File routesContext = new File(frontendGeneratedFolder,
+                ROUTES_CONTEXT_TSX);
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
@@ -194,7 +195,8 @@ public class TaskGenerateReactFiles
             File frontendDirectory = options.getFrontendDirectory();
             File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
             File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
-            File routesContext = new File(frontendGeneratedFolder, ROUTES_CONTEXT_TSX);
+            File routesContext = new File(frontendGeneratedFolder,
+                    ROUTES_CONTEXT_TSX);
             File reactAdapterTsx = new File(frontendGeneratedFolder,
                     FLOW_REACT_ADAPTER_TSX);
             File frontendGeneratedFolderRoutesTsx = new File(
