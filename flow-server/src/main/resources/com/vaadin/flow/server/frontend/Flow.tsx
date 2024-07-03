@@ -269,11 +269,13 @@ function Flow() {
                                     blocker.reset();
                                 } else {
                                     blocker.proceed();
+                                    window.removeEventListener('click',  navigateEventHandler);
                                 }
                             }
                         } else {
                             // permitted navigation: proceed with the blocker
                             blocker.proceed();
+                            window.removeEventListener('click',  navigateEventHandler);
                         }
                     });
             }
@@ -291,7 +293,7 @@ function Flow() {
                 const outlet = ref.current?.parentNode;
                 if (outlet && outlet !== container.parentNode) {
                     outlet.append(container);
-                    container.onclick = navigateEventHandler;
+                    window.addEventListener('click',  navigateEventHandler);
                     containerRef.current = container
                 }
                 return container.onBeforeEnter?.call(container, {pathname, search}, {prevent, redirect, continue() {
