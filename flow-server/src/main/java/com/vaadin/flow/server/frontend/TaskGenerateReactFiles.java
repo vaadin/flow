@@ -99,11 +99,11 @@ public class TaskGenerateReactFiles
             """;
 
     private static final String FLOW_TSX = "Flow.tsx";
+    private static final String ROUTES_CONTEXT_TSX = "RoutesContext.tsx";
     private static final String REACT_ADAPTER_TEMPLATE = "ReactAdapter.template";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
-    private static final String ROUTES_JS_IMPORT_PATH_TOKEN = "%routesJsImportPath%";
 
     // matches setting the server-side routes from Flow.tsx:
     // import { serverSideRoutes } from "Frontend/generated/flow/Flow";
@@ -146,13 +146,15 @@ public class TaskGenerateReactFiles
         File frontendDirectory = options.getFrontendDirectory();
         File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+        File routesContext = new File(frontendGeneratedFolder, ROUTES_CONTEXT_TSX);
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         File frontendGeneratedFolderRoutesTsx = new File(
                 frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFlowTsxFileContent(routesTsx.exists()));
+            writeFile(flowTsx, getFileContent(FLOW_TSX));
+            writeFile(routesContext, getFileContent(ROUTES_CONTEXT_TSX));
             if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
                 String reactAdapterContent = getFileContent(
                         REACT_ADAPTER_TEMPLATE);
@@ -192,11 +194,13 @@ public class TaskGenerateReactFiles
             File frontendDirectory = options.getFrontendDirectory();
             File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
             File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+            File routesContext = new File(frontendGeneratedFolder, ROUTES_CONTEXT_TSX);
             File reactAdapterTsx = new File(frontendGeneratedFolder,
                     FLOW_REACT_ADAPTER_TSX);
             File frontendGeneratedFolderRoutesTsx = new File(
                     frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
             FileUtils.deleteQuietly(flowTsx);
+            FileUtils.deleteQuietly(routesContext);
             FileUtils.deleteQuietly(reactAdapterTsx);
             FileUtils.deleteQuietly(frontendGeneratedFolderRoutesTsx);
 
@@ -228,17 +232,6 @@ public class TaskGenerateReactFiles
             throw new ExecutionFailedException("Failed to clean up .tsx files",
                     e);
         }
-    }
-
-    private String getFlowTsxFileContent(boolean frontendRoutesTsExists)
-            throws IOException {
-        return getFileContent(FLOW_TSX).replace(ROUTES_JS_IMPORT_PATH_TOKEN,
-                (frontendRoutesTsExists)
-                        ? FrontendUtils.FRONTEND_FOLDER_ALIAS
-                                + FrontendUtils.ROUTES_JS
-                        : FrontendUtils.FRONTEND_FOLDER_ALIAS
-                                + FrontendUtils.GENERATED
-                                + FrontendUtils.ROUTES_JS);
     }
 
     private boolean fileAvailable(String fileName) {

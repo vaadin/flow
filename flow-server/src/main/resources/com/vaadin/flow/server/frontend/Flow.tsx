@@ -15,14 +15,14 @@
  */
 /// <reference lib="es2018" />
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useContext } from "react";
 import {
     matchRoutes,
     useBlocker,
     useLocation,
     useNavigate,
 } from "react-router-dom";
-import { routes } from "%routesJsImportPath%";
+import { RoutesContext } from "./RoutesContext";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -231,6 +231,7 @@ function Flow() {
         };
     }, []);
 
+    const routes = useContext(RoutesContext);
     useEffect(() => {
         if (blocker.state === 'blocked') {
             if(navigated.current) {
