@@ -15,14 +15,14 @@
  */
 /// <reference lib="es2018" />
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
     matchRoutes,
     useBlocker,
     useLocation,
-    useNavigate,
+    useNavigate
 } from "react-router-dom";
-import { routes } from "%routesJsImportPath%";
+import type { AgnosticRouteObject } from '@remix-run/router';
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -238,6 +238,7 @@ function Flow() {
                 return;
             }
             const {pathname, search} = blocker.location;
+            const routes = ((window as any)?.Vaadin?.routesConfig || []) as AgnosticRouteObject[];
             let matched = matchRoutes(Array.from(routes), window.location.pathname);
 
             // Navigation between server routes
@@ -369,3 +370,17 @@ export const reactElement = (tag: string, props?: Properties, onload?: () => voi
 };
 
 export default Flow;
+
+// @ts-ignore
+if (import.meta.hot) {
+  // @ts-ignore
+  import.meta.hot.accept((newModule) => {
+    // A hot module replace for Flow.tsx happens when any JS/TS imported through @JsModule
+    // or similar is updated because this updates generated-flow-imports.js and that in turn
+    // is imported by this file. We have no means of hot replacing those files, e.g. some
+    // custom lit element so we need to reload the page. */
+    if (newModule) {
+      window.location.reload();
+    }
+  });
+}
