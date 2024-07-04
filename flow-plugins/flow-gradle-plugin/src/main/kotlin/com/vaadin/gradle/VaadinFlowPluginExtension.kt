@@ -278,6 +278,8 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     public abstract val cleanFrontendFiles: Property<Boolean>
 
+    public abstract val applicationIdentifier: Property<String>
+
     public fun filterClasspath(@DelegatesTo(value = ClasspathFilter::class, strategy = Closure.DELEGATE_FIRST) block: Closure<*>) {
         block.delegate = classpathFilter
         block.resolveStrategy = Closure.DELEGATE_FIRST
@@ -302,7 +304,7 @@ public class PluginEffectiveConfiguration(
 ) {
     public val productionMode: Provider<Boolean> = extension.productionMode
         .convention(false)
-        .overrideWithSystemProperty("vaadin.productionMode")
+        .overrideWithSystemPropertyFlag("vaadin.productionMode")
 
     public val sourceSetName: Property<String> = extension.sourceSetName
         .convention("main")
@@ -333,22 +335,22 @@ public class PluginEffectiveConfiguration(
 
     public val pnpmEnable: Provider<Boolean> = extension.pnpmEnable
         .convention(Constants.ENABLE_PNPM_DEFAULT)
-        .overrideWithSystemProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)
+        .overrideWithSystemPropertyFlag(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)
 
     public val bunEnable: Provider<Boolean> = extension.bunEnable
         .convention(Constants.ENABLE_BUN_DEFAULT)
-        .overrideWithSystemProperty(InitParameters.SERVLET_PARAMETER_ENABLE_BUN)
+        .overrideWithSystemPropertyFlag(InitParameters.SERVLET_PARAMETER_ENABLE_BUN)
 
     public val useGlobalPnpm: Provider<Boolean> = extension.useGlobalPnpm
         .convention(Constants.GLOBAL_PNPM_DEFAULT)
-        .overrideWithSystemProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)
+        .overrideWithSystemPropertyFlag(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM)
 
     public val requireHomeNodeExec: Property<Boolean> = extension.requireHomeNodeExec
         .convention(false)
 
     public val eagerServerLoad: Provider<Boolean> = extension.eagerServerLoad
         .convention(false)
-        .overrideWithSystemProperty("vaadin.eagerServerLoad")
+        .overrideWithSystemPropertyFlag("vaadin.eagerServerLoad")
 
     public val applicationProperties: Property<File> = extension.applicationProperties
         .convention(File(project.projectDir, "src/main/resources/application.properties"))
@@ -405,43 +407,59 @@ public class PluginEffectiveConfiguration(
 
     public val frontendHotdeploy: Provider<Boolean> = extension.frontendHotdeploy
         .convention(FrontendUtils.isHillaUsed(BuildFrontendUtil.getFrontendDirectory(GradlePluginAdapter(project, this, true))))
-        .overrideWithSystemProperty(InitParameters.FRONTEND_HOTDEPLOY)
+        .overrideWithSystemPropertyFlag(InitParameters.FRONTEND_HOTDEPLOY)
 
     public val ciBuild: Provider<Boolean> = extension.ciBuild
         .convention(false)
-        .overrideWithSystemProperty(InitParameters.CI_BUILD)
+        .overrideWithSystemPropertyFlag(InitParameters.CI_BUILD)
 
     public val skipDevBundleBuild: Property<Boolean> = extension.skipDevBundleBuild
         .convention(false)
 
     public val forceProductionBuild: Provider<Boolean> = extension.forceProductionBuild
         .convention(false)
-        .overrideWithSystemProperty(InitParameters.FORCE_PRODUCTION_BUILD)
+        .overrideWithSystemPropertyFlag(InitParameters.FORCE_PRODUCTION_BUILD)
 
     public val alwaysExecutePrepareFrontend: Property<Boolean> = extension.alwaysExecutePrepareFrontend
         .convention(false)
 
     public val reactEnable: Provider<Boolean> = extension.reactEnable
         .convention(FrontendUtils.isReactRouterRequired(BuildFrontendUtil.getFrontendDirectory(GradlePluginAdapter(project, this, true))))
-        .overrideWithSystemProperty(InitParameters.REACT_ENABLE)
+        .overrideWithSystemPropertyFlag(InitParameters.REACT_ENABLE)
 
     public val cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
             .convention(true)
+
+    public val applicationIdentifier: Provider<String> = extension.applicationIdentifier.convention(project.name)
+        .overrideWithSystemProperty("vaadin.${InitParameters.APPLICATION_IDENTIFIER}")
+
     /**
      * Finds the value of a boolean property. It searches in gradle and system properties.
      *
-     * If the property is defined in both gradle and system properties, then the gradle property is taken.
+     * If the property is defined in both gradle and system properties, then the system property is taken.
      *
      * @param propertyName the property name
      * @return a new provider of the value, which either takes the original value if the system/gradle property is not present,
      * `true` if it's defined or if it's set to "true" and `false` otherwise.
      */
-    private fun Provider<Boolean>.overrideWithSystemProperty(propertyName: String) : Provider<Boolean> = map { originalValue ->
+    private fun Provider<Boolean>.overrideWithSystemPropertyFlag(propertyName: String) : Provider<Boolean> = map { originalValue ->
         project.getBooleanProperty(propertyName) ?: originalValue
+    }
+    /**
+     * Finds the value of a string property. It searches in gradle and system properties.
+     *
+     * If the property is defined in both gradle and system properties, then the system property is taken.
+     *
+     * @param propertyName the property name
+     * @return a new provider of the value, which either takes the original value if the system/gradle property is not present.
+     */
+    private fun Provider<String>.overrideWithSystemProperty(propertyName: String) : Provider<String> = map { originalValue ->
+        project.getStringProperty(propertyName) ?: originalValue
     }
 
     override fun toString(): String = "PluginEffectiveConfiguration(" +
             "productionMode=${productionMode.get()}, " +
+            "applicationIdentifier=${applicationIdentifier.get()}, " +
             "webpackOutputDirectory=${webpackOutputDirectory.get()}, " +
             "npmFolder=${npmFolder.get()}, " +
             "frontendDirectory=${frontendDirectory.get()}, " +

@@ -140,6 +140,9 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     public fun getReactEnable(): Provider<Boolean> = config.reactEnable
 
     @Input
+    public fun getApplicationIdentifier(): Provider<String> = config.applicationIdentifier
+
+    @Input
     @Optional
     public fun getNodeExecutablePath(): Provider<String> = tools
         .mapOrNull { it.nodeBinary }
