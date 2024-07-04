@@ -20,9 +20,9 @@ import {
     matchRoutes,
     useBlocker,
     useLocation,
-    useNavigate,
-    AgnosticRouteObject
+    useNavigate
 } from "react-router-dom";
+import type { AgnosticRouteObject } from '@remix-run/router';
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
