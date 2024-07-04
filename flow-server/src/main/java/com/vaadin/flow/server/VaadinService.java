@@ -77,6 +77,8 @@ import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
+import com.vaadin.flow.server.dau.DAUCustomizer;
+import com.vaadin.flow.server.dau.DAUVaadinRequestInterceptor;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -232,6 +234,30 @@ public abstract class VaadinService implements Serializable {
 
         ServiceInitEvent event = new ServiceInitEvent(this);
 
+        VaadinRequestInterceptor dauInterceptorWrapper;
+        // TODO: force removal of dau.enable system property to check only on
+        // flow-build-info?
+        System.clearProperty("vaadin." + Constants.DAU_TOKEN);
+        if (deploymentConfiguration.isProductionMode()
+                && deploymentConfiguration
+                        .getBooleanProperty(Constants.DAU_TOKEN, false)) {
+            getLogger().info("Daily Active User tracking enabled");
+
+            DAUCustomizer dauCustomizer = Optional
+                    .ofNullable(getContext().getAttribute(Lookup.class))
+                    .map(lookup -> lookup.lookup(DAUCustomizer.class))
+                    .orElse(null);
+            getContext().setAttribute(DAUCustomizer.class, dauCustomizer);
+
+            DAUVaadinRequestInterceptor dauInterceptor = new DAUVaadinRequestInterceptor(
+                    getDeploymentConfiguration(), dauCustomizer);
+            dauInterceptor.serviceInit(event);
+            dauInterceptorWrapper = new VaadinSessionOnRequestStartInterceptorWrapper(
+                    dauInterceptor);
+        } else {
+            dauInterceptorWrapper = null;
+        }
+
         // allow service init listeners and DI to use thread local access to
         // e.g. application scoped route registry
         runWithServiceContext(() -> {
@@ -246,7 +272,10 @@ public abstract class VaadinService implements Serializable {
 
             event.getAddedVaadinRequestInterceptor()
                     .forEach(requestInterceptors::add);
-
+            // DAU interceptor should always run first
+            if (dauInterceptorWrapper != null) {
+                requestInterceptors.add(dauInterceptorWrapper);
+            }
             Collections.reverse(requestInterceptors);
 
             vaadinRequestInterceptors = Collections
@@ -2470,6 +2499,54 @@ public abstract class VaadinService implements Serializable {
 
         if (getClassLoader() == null) {
             setDefaultClassLoader();
+        }
+    }
+
+    // Tries to get VaadinSession to make it available during
+    // VaadinRequestInterceptor.requestStart call
+    static class VaadinSessionOnRequestStartInterceptorWrapper
+            implements VaadinRequestInterceptor {
+
+        final VaadinRequestInterceptor delegate;
+
+        public VaadinSessionOnRequestStartInterceptorWrapper(
+                VaadinRequestInterceptor delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void requestStart(VaadinRequest request,
+                VaadinResponse response) {
+            VaadinSession session = Optional
+                    .ofNullable(request.getWrappedSession(false))
+                    .map(request.getService()::loadSession).orElse(null);
+
+            if (session != null) {
+                session.getLockInstance().lock();
+                VaadinSession.setCurrent(session);
+            }
+            try {
+                delegate.requestStart(request, response);
+            } finally {
+                if (session != null) {
+                    session.getLockInstance().unlock();
+                }
+                VaadinSession.setCurrent(null);
+            }
+
+        }
+
+        @Override
+        public void handleException(VaadinRequest request,
+                VaadinResponse response, VaadinSession vaadinSession,
+                Exception t) {
+            delegate.handleException(request, response, vaadinSession, t);
+        }
+
+        @Override
+        public void requestEnd(VaadinRequest request, VaadinResponse response,
+                VaadinSession session) {
+            delegate.requestEnd(request, response, session);
         }
     }
 }
