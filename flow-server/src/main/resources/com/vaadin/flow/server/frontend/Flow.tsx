@@ -237,7 +237,7 @@ function Flow() {
                 return;
             }
             const {pathname, search} = blocker.location;
-            const routes = (window as any)?.Vaadin?.routesConfig || [];
+            const routes = ((window as any)?.Vaadin?.routesConfig || []) as AgnosticRouteObject[];
             let matched = matchRoutes(Array.from(routes), window.location.pathname);
 
             // Navigation between server routes
