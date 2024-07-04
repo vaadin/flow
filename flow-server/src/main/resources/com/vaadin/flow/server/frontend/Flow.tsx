@@ -21,6 +21,7 @@ import {
     useBlocker,
     useLocation,
     useNavigate,
+    AgnosticRouteObject
 } from "react-router-dom";
 
 const flow = new _Flow({
