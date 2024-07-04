@@ -82,6 +82,8 @@ public class Options implements Serializable {
 
     private boolean compressBundle = true;
 
+    private List<String> extraProjectFileExtensions = null;
+
     /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example <code>"v16.0.0"</code>. Defaults to
@@ -953,5 +955,27 @@ public class Options implements Serializable {
      */
     public boolean isCleanOldGeneratedFiles() {
         return cleanOldGeneratedFiles;
+    }
+
+    /**
+     * Sets the extra project file extensions.
+     *
+     * @param extraProjectFileExtensions
+     *            the project file extensions
+     * @return this builder
+     */
+    public Options withExtraProjectFileExtensions(
+            List<String> extraProjectFileExtensions) {
+        this.extraProjectFileExtensions = extraProjectFileExtensions;
+        return this;
+    }
+
+    /**
+     * Gets the project file extensions.
+     *
+     * @return the project file extensions
+     */
+    public List<String> getExtraProjectFileExtensions() {
+        return extraProjectFileExtensions;
     }
 }

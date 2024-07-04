@@ -22,10 +22,14 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.atmosphere.util.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +131,17 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .replace("#webComponentTags#",
                         webComponentTags == null || webComponentTags.isEmpty()
                                 ? ""
-                                : String.join(";", webComponentTags));
+                                : String.join(";", webComponentTags))
+                .replace("#extraProjectFileExtensions#", Optional
+                        .ofNullable(options.getExtraProjectFileExtensions())
+                        .orElse(Collections.emptyList()).stream().map(ext -> {
+                            try {
+                                return "'" + StringEscapeUtils.escapeJava(ext)
+                                        + "'";
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        }).collect(Collectors.joining(", ")));
         template = updateFileSystemRouterVitePlugin(template);
 
         FileIOUtils.writeIfChanged(generatedConfigFile, template);

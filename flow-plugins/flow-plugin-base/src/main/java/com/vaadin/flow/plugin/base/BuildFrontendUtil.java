@@ -163,7 +163,9 @@ public class BuildFrontendUtil {
                 .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                 .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                 .setJavaResourceFolder(adapter.javaResourceFolder())
-                .withProductionMode(false).withReact(adapter.isReactEnabled());
+                .withProductionMode(false).withReact(adapter.isReactEnabled())
+                .withExtraProjectFileExtensions(
+                        adapter.extraProjectFileExtensions());
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());
@@ -403,7 +405,9 @@ public class BuildFrontendUtil {
                     .withBundleBuild(true)
                     .skipDevBundleBuild(adapter.skipDevBundleBuild())
                     .withCompressBundle(adapter.compressBundle())
-                    .withReact(adapter.isReactEnabled());
+                    .withReact(adapter.isReactEnabled())
+                    .withExtraProjectFileExtensions(
+                            adapter.extraProjectFileExtensions());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
