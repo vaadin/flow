@@ -370,3 +370,17 @@ export const reactElement = (tag: string, props?: Properties, onload?: () => voi
 };
 
 export default Flow;
+
+// @ts-ignore
+if (import.meta.hot) {
+  // @ts-ignore
+  import.meta.hot.accept((newModule) => {
+    // A hot module replace for Flow.tsx happens when any JS/TS imported through @JsModule
+    // or similar is updated because this updates generated-flow-imports.js and that in turn
+    // is imported by this file. We have no means of hot replacing those files, e.g. some
+    // custom lit element so we need to reload the page. */
+    if (newModule) {
+      window.location.reload();
+    }
+  });
+}
