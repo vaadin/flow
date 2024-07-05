@@ -1,34 +1,52 @@
-/*
- * Copyright 2000-2020 Vaadin Ltd.
+/**
+ * Copyright (C) 2024 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See {@literal <https://vaadin.com/commercial-license-and-service-terms>}  for the full
+ * license.
  */
 package com.vaadin.flow.server;
 
+import java.util.Properties;
+
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class VaadinServletTest {
+
+    private MockedStatic<LicenseChecker> licenseChecker;
+    private final DeploymentConfiguration configuration = Mockito
+            .mock(DeploymentConfiguration.class);
+
+    @Before
+    public void setup() {
+        licenseChecker = Mockito.mockStatic(LicenseChecker.class);
+        Mockito.when(configuration.getInitParameters())
+                .thenReturn(new Properties());
+    }
+
+    @After
+    public void cleanup() {
+        licenseChecker.close();
+    }
 
     @Test
     public void testGetLastPathParameter() {
@@ -68,7 +86,6 @@ public class VaadinServletTest {
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2/"));
     }
 
-    @Ignore
     @Test
     public void nonexistingFrontendFileReturns404() throws Exception {
         MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
@@ -80,7 +97,6 @@ public class VaadinServletTest {
         mocks.cleanup();
     }
 
-    @Ignore
     @Test
     public void existingFrontendFileFound() throws Exception {
         MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
@@ -93,6 +109,23 @@ public class VaadinServletTest {
         // code
         Assert.assertEquals(0, response.getErrorCode());
         mocks.cleanup();
+    }
+
+    @Test
+    public void checkLicense_devMode_licenseIsChecked()
+            throws ServletException {
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        triggerLicenseChecking();
+        licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
+                Version.getFullVersion(), BuildType.DEVELOPMENT));
+    }
+
+    @Test
+    public void checkLicense_prodMode_licenseIsNotChecked()
+            throws ServletException {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        triggerLicenseChecking();
+        licenseChecker.verifyNoInteractions();
     }
 
     private HttpServletRequest createRequest(
@@ -116,5 +149,36 @@ public class VaadinServletTest {
                 return mocks.getServletContext();
             }
         };
+    }
+
+    private void triggerLicenseChecking() throws ServletException {
+        VaadinServlet vaadinServlet = new VaadinServletWithConfiguration() {
+            @Override
+            protected VaadinServletService createServletService() {
+                VaadinServletService service = Mockito
+                        .mock(VaadinServletService.class);
+                Mockito.when(service.getDeploymentConfiguration())
+                        .thenReturn(configuration);
+                return service;
+            }
+        };
+
+        ServletConfig config = mockConfig();
+
+        vaadinServlet.init(config);
+    }
+
+    private ServletConfig mockConfig() {
+        ServletConfig config = Mockito.mock(ServletConfig.class);
+        ServletContext context = Mockito.mock(ServletContext.class);
+        Mockito.when(config.getServletContext()).thenReturn(context);
+        return config;
+    }
+
+    private class VaadinServletWithConfiguration extends VaadinServlet {
+        @Override
+        protected DeploymentConfiguration createDeploymentConfiguration() {
+            return configuration;
+        }
     }
 }
