@@ -176,12 +176,14 @@ public class DefaultDeploymentConfiguration
     /**
      * {@inheritDoc}
      *
-     * Throws UnsupportedOperationException if called when compatibility mode is enabled.
+     * Throws UnsupportedOperationException if called when compatibility mode is
+     * enabled.
      */
-    @Deprecated(forRemoval = true, since="2.10")
+    @Deprecated(forRemoval = true, since = "2.10")
     @Override
     public boolean isBowerMode() {
-            throw new UnsupportedOperationException("Bower mode is deprecated and no longer supported. Please update your configuration.");
+        throw new UnsupportedOperationException(
+                "Bower mode is deprecated and no longer supported. Please update your configuration.");
     }
 
     /**

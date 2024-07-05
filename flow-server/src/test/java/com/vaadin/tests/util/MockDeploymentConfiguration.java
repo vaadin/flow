@@ -38,7 +38,8 @@ public class MockDeploymentConfiguration
     @Deprecated()
     @Override
     public boolean isBowerMode() {
-        throw new UnsupportedOperationException("Bower mode is deprecated and no longer supported as of version 2.10. Please update your configuration.");
+        throw new UnsupportedOperationException(
+                "Bower mode is deprecated and no longer supported as of version 2.10. Please update your configuration.");
     }
 
     @Override

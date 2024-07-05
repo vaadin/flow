@@ -451,14 +451,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 VaadinSession session) {
             servletPathToContextRoot = contextRootRelatiePath;
             DeploymentConfiguration config = session.getConfiguration();
-                if (session.getBrowser().isEs6Supported()) {
-                    frontendRootUrl = config.getEs6FrontendPrefix();
-                } else {
-                    frontendRootUrl = config.getEs5FrontendPrefix();
-                }
-//             else {
-//                frontendRootUrl = config.getNpmFrontendPrefix();
-//            }
+            if (session.getBrowser().isEs6Supported()) {
+                frontendRootUrl = config.getEs6FrontendPrefix();
+            } else {
+                frontendRootUrl = config.getEs5FrontendPrefix();
+            }
+            // else {
+            // frontendRootUrl = config.getNpmFrontendPrefix();
+            // }
             assert frontendRootUrl.endsWith("/");
             assert servletPathToContextRoot.endsWith("/");
         }
@@ -678,7 +678,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!config.isProductionMode()) {
                 addLicenseChecker(document, config);
                 // Since Bower mode is deprecated,
-                // avoid calling isBowerMode() and directly proceed to use NPM statistics.
+                // avoid calling isBowerMode() and directly proceed to use NPM
+                // statistics.
                 exportNpmUsageStatistics(document);
             }
 
@@ -714,7 +715,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 }
             }
         }
-
 
         private void exportNpmUsageStatistics(Document document) {
             String entries = UsageStatistics.getEntries()

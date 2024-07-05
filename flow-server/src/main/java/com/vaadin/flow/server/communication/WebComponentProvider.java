@@ -175,7 +175,6 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
     }
 
-
     private String generateAddPolyfillsScript(String polyFillsUri,
             String jsParentRef) {
         return "var scriptUri = " + jsParentRef + ".src;"

@@ -152,13 +152,15 @@ public class PropertyDeploymentConfiguration
     @Deprecated()
     @Override
     public boolean isBowerMode() {
-       // return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false);
-        throw new UnsupportedOperationException("Bower mode is deprecated and no longer supported as of version 2.10. Please update your configuration.");
+        // return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false);
+        throw new UnsupportedOperationException(
+                "Bower mode is deprecated and no longer supported as of version 2.10. Please update your configuration.");
     }
 
     @Override
     public boolean isCompatibilityMode() {
-        throw new UnsupportedOperationException("Compatibility mode and Bower mode are deprecated and will be removed. Please update your configuration.");
+        throw new UnsupportedOperationException(
+                "Compatibility mode and Bower mode are deprecated and will be removed. Please update your configuration.");
     }
 
     @Override

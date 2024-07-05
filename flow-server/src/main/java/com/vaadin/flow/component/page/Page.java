@@ -306,7 +306,7 @@ public class Page implements Serializable {
      */
     public void addHtmlImport(String url, LoadMode loadMode) {
         throw new UnsupportedOperationException("Adding html imports is "
-                    + "not supported supported since compatibility mode is deprecated.");
+                + "not supported supported since compatibility mode is deprecated.");
     }
 
     /**
