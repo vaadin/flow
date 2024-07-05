@@ -30,7 +30,6 @@ import com.vaadin.flow.utils.LookupImpl;
 
 /**
  * Gives access to plugin-specific implementations and configurations.
- *
  */
 public interface PluginAdapterBase {
 
@@ -326,4 +325,16 @@ public interface PluginAdapterBase {
      *         router and excluding React dependencies
      */
     boolean isReactEnabled();
+
+    /**
+     * Gets the application identifier.
+     * <p>
+     * The application identifier is usually computed against project unique
+     * information, such as {@literal groupId} and {@literal artifactId}, but it
+     * can be any kind of not blank string.
+     *
+     * @return application identifier, never {@literal null} nor
+     *         {@literal blank}.
+     */
+    String applicationIdentifier();
 }
