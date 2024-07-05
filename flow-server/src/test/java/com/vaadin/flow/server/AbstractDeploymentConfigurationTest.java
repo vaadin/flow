@@ -73,9 +73,10 @@ public class AbstractDeploymentConfigurationTest {
             return false;
         }
 
+        @Deprecated()
         @Override
         public boolean isBowerMode() {
-            return false;
+            throw new UnsupportedOperationException("Bower mode is deprecated and no longer supported as of version 2.10. Please update your configuration.");
         }
 
         @Override

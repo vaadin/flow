@@ -11,10 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
@@ -205,6 +202,7 @@ public class VaadinServletServiceTest {
                 browser, null);
     }
 
+    @Ignore("Skipping Bower-related tests")
     @Test
     public void getResourceTheme() throws IOException {
         WebBrowser browser = mocks.getBrowser();

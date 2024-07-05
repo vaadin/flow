@@ -1,0 +1,2 @@
+52643
+/usr/local/opt/openjdk/libexec/openjdk.jdk/Contents/Home/bin/java -classpath /usr/local/Cellar/maven/3.9.8/libexec/boot/plexus-classworlds-2.8.0.jar -Dclassworlds.conf=/usr/local/Cellar/maven/3.9.8/libexec/bin/m2.conf -Dmaven.home=/usr/local/Cellar/maven/3.9.8/libexec -Dlibrary.jansi.path=/usr/local/Cellar/maven/3.9.8/libexec/lib/jansi-native -Dmaven.multiModuleProjectDirectory=/Users/alainafaisal/Vaadin_flow/flow/flow-tests/test-express-build org.codehaus.plexus.classworlds.launcher.Launcher -Dmaven.test.skip install

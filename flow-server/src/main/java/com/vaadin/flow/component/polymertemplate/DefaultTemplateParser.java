@@ -83,6 +83,13 @@ public final class DefaultTemplateParser implements TemplateParser {
                 .map(htmlImport -> new Dependency(Type.HTML_IMPORT,
                         htmlImport.value(), htmlImport.loadMode()))
                 .collect(Collectors.toList());
+        if (!dependencies.isEmpty()) {
+            if (logEnabled) {
+                getLogger().error("Use of @HtmlImport is deprecated and will be removed in future releases. ");
+            }
+            throw new UnsupportedOperationException("Use of @HtmlImport is deprecated and will be removed. "
+                    + "Detected usage in class: " + clazz.getName());
+        }
 
         FilterContext filterContext = new FilterContext(service, browser);
         for (DependencyFilter filter : service.getDependencyFilters()) {

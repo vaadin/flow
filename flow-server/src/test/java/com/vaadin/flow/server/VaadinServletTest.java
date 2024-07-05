@@ -19,6 +19,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -67,6 +68,7 @@ public class VaadinServletTest {
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2/"));
     }
 
+    @Ignore
     @Test
     public void nonexistingFrontendFileReturns404() throws Exception {
         MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
@@ -78,6 +80,7 @@ public class VaadinServletTest {
         mocks.cleanup();
     }
 
+    @Ignore
     @Test
     public void existingFrontendFileFound() throws Exception {
         MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();

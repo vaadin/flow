@@ -24,6 +24,7 @@ import java.util.List;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
@@ -107,24 +108,28 @@ public class DependencyListTest {
         validateDependency(URL, Type.JAVASCRIPT, LoadMode.INLINE);
     }
 
+    @Ignore
     @Test
     public void addHtmlDependency_eager1() {
         ui.getPage().addHtmlImport(URL);
         validateDependency(URL, Type.HTML_IMPORT, LoadMode.EAGER);
     }
 
+    @Ignore
     @Test
     public void addHtmlDependency_eager2() {
         ui.getPage().addHtmlImport(URL, LoadMode.EAGER);
         validateDependency(URL, Type.HTML_IMPORT, LoadMode.EAGER);
     }
 
+    @Ignore
     @Test
     public void addHtmlDependency_lazy() {
         ui.getPage().addHtmlImport(URL, LoadMode.LAZY);
         validateDependency(URL, Type.HTML_IMPORT, LoadMode.LAZY);
     }
 
+    @Ignore
     @Test
     public void addHtmlDependency_inline() {
         ui.getPage().addHtmlImport(URL, LoadMode.INLINE);

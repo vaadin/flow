@@ -35,9 +35,10 @@ public class MockDeploymentConfiguration
         return productionMode;
     }
 
+    @Deprecated()
     @Override
     public boolean isBowerMode() {
-        return compatibilityMode;
+        throw new UnsupportedOperationException("Bower mode is deprecated and no longer supported as of version 2.10. Please update your configuration.");
     }
 
     @Override
