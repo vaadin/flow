@@ -25,6 +25,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -48,6 +49,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -130,6 +133,10 @@ public class PolymerTemplateTest extends HasCurrentService {
             extends PolymerTemplate<ModelClass> {
         public TestPolymerTemplate() {
             super(new SimpleTemplateParser());
+        }
+
+        public TestPolymerTemplate(VaadinService service) {
+            super(new SimpleTemplateParser(), service);
         }
     }
 
@@ -515,6 +522,52 @@ public class PolymerTemplateTest extends HasCurrentService {
                 .thenReturn(NpmTemplateParser.getInstance());
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         return service;
+    }
+
+    @Test
+    public void licenseCheck_devMode_licenseCheckedOnce() {
+        try (MockedStatic<LicenseChecker> checker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            AtomicInteger counter = new AtomicInteger(0);
+            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
+                    Mockito.anyString(), Mockito.eq(BuildType.DEVELOPMENT)))
+                    .then(ignore -> counter.incrementAndGet());
+
+            DeploymentConfiguration configuration = Mockito
+                    .mock(DeploymentConfiguration.class);
+            Mockito.when(configuration.isProductionMode()).thenReturn(false);
+
+            VaadinService service = Mockito.mock(VaadinService.class);
+            Mockito.when(service.getDeploymentConfiguration())
+                    .thenReturn(configuration);
+
+            new TestPolymerTemplate(service);
+            Assert.assertEquals(1, counter.get());
+            new TestPolymerTemplate(service);
+            Assert.assertEquals(1, counter.get());
+        }
+    }
+
+    @Test
+    public void licenseCheck_prodMode_licenseNotChecked() {
+        try (MockedStatic<LicenseChecker> checker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            AtomicInteger counter = new AtomicInteger(0);
+            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
+                    Mockito.anyString(), Mockito.eq(BuildType.DEVELOPMENT)))
+                    .then(ignore -> counter.incrementAndGet());
+
+            DeploymentConfiguration configuration = Mockito
+                    .mock(DeploymentConfiguration.class);
+            Mockito.when(configuration.isProductionMode()).thenReturn(true);
+
+            VaadinService service = Mockito.mock(VaadinService.class);
+            Mockito.when(service.getDeploymentConfiguration())
+                    .thenReturn(configuration);
+
+            new TestPolymerTemplate(service);
+            Assert.assertEquals(0, counter.get());
+        }
     }
 
     @Test
