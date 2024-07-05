@@ -1019,14 +1019,13 @@ public class PolymerTemplateTest extends HasCurrentService {
             Mockito.when(service.getDeploymentConfiguration())
                     .thenReturn(configuration);
 
-            ((AtomicBoolean) licenseChecked.get(null)).set(false);
+            licenseCheckedHolder.set(false);
             new TestPolymerTemplate(service);
             Assert.assertEquals(1, counter.get());
             new TestPolymerTemplate(service);
             Assert.assertEquals(1, counter.get());
         } finally {
-            ((AtomicBoolean) licenseChecked.get(null)).compareAndSet(true,
-                    licenseCheckedInitValue);
+            licenseCheckedHolder.compareAndSet(true, licenseCheckedInitValue);
         }
     }
 
