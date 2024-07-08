@@ -444,14 +444,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 VaadinSession session) {
             servletPathToContextRoot = contextRootRelatiePath;
             DeploymentConfiguration config = session.getConfiguration();
-            if (session.getBrowser().isEs6Supported()) {
-                frontendRootUrl = config.getEs6FrontendPrefix();
-            } else {
-                frontendRootUrl = config.getEs5FrontendPrefix();
-            }
-            // else {
-            // frontendRootUrl = config.getNpmFrontendPrefix();
-            // }
+            frontendRootUrl = config.getNpmFrontendPrefix();
+
             assert frontendRootUrl.endsWith("/");
             assert servletPathToContextRoot.endsWith("/");
         }
@@ -962,6 +956,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             conf.getPolyfills().forEach(
                     polyfill -> head.appendChild(createJavaScriptElement(
                             "./" + VAADIN_MAPPING + polyfill, false)));
+            appendSafari10ScriptNoModuleFix(head, context);
             try {
                 appendNpmBundle(head, service, context);
             } catch (IOException e) {
@@ -1282,6 +1277,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 dependencyElement = createJavaScriptElement(url, false,
                         "module");
                 break;
+            case HTML_IMPORT:
+                throw new UnsupportedOperationException(
+                        "@HtmlImport annotations are no"
+                                + " longer supported by Flow since version 2.11, as well as Bower and"
+                                + " compatibility mode. Please use npm/pnpm package managers and"
+                                + " @NpmPackage/@jsmodule annotations.");
             default:
                 throw new IllegalStateException(
                         "Unsupported dependency type: " + type);

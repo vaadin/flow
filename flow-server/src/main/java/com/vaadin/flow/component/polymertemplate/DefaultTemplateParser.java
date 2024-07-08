@@ -77,12 +77,8 @@ public final class DefaultTemplateParser implements TemplateParser {
                         htmlImport.value(), htmlImport.loadMode()))
                 .collect(Collectors.toList());
         if (!dependencies.isEmpty()) {
-            if (logEnabled) {
-                getLogger().error(
-                        "Use of @HtmlImport is deprecated and will be removed in future releases. ");
-            }
             throw new UnsupportedOperationException(
-                    "Use of @HtmlImport is deprecated and will be removed. "
+                    "@HtmlImport annotations are no longer supported by Flow since version 2.11, as well as Bower and compatibility mode. Please use npm/pnpm package managers and @NpmPackage/@jsmodule annotations. "
                             + "Detected usage in class: " + clazz.getName());
         }
 

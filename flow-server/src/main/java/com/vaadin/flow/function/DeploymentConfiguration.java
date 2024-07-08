@@ -43,27 +43,28 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
      *
-     * NOTE: compatibility mode will be unsupported in future versions. This
-     * method is deprecated as of version 2.10 and is planned for removal.
+     * NOTE: Compatibility mode is no longer supported by Flow since version
+     * 2.11. This method will throw a runtime exception when invoked.
      *
      * @deprecated Bower WebJars are being deprecated, so compatibility mode
      *             should no longer be used and will be removed in near future.
      *
      * @return true if in compatibility mode, false otherwise.
      */
-    @Deprecated(forRemoval = true, since = "2.10")
+    @Deprecated(forRemoval = true, since = "2.11")
     boolean isBowerMode();
 
     /**
      * Returns whether Vaadin is running in Vaadin 13 compatibility mode. This
-     * method is deprecated as of version 2.10 and is planned for removal.
+     * method is deprecated as of version 2.11. This method will throw a runtime
+     * exception when invoked.
      *
      * @deprecated Bower WebJars are being deprecated, so compatibility mode
      *             should no longer be used and will be removed in near future.
      *
      * @return true if in compatibility mode, false otherwise.
      */
-    @Deprecated(forRemoval = true, since = "2.10")
+    @Deprecated(forRemoval = true, since = "2.11")
     default boolean isCompatibilityMode() {
         return isBowerMode();
     }

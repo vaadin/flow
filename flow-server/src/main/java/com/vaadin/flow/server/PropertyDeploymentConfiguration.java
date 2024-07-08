@@ -142,10 +142,9 @@ public class PropertyDeploymentConfiguration
         return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
     }
 
-    @Deprecated()
+    @Deprecated(forRemoval = true, since = "2.10")
     @Override
     public boolean isBowerMode() {
-        // return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false);
         throw new UnsupportedOperationException(
                 "Bower mode is deprecated and no longer supported as of version 2.10. Please update your configuration.");
     }

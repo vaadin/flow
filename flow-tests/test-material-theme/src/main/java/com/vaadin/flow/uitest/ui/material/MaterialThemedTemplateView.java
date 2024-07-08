@@ -17,7 +17,6 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
 
 @Tag("material-themed-template")
-@HtmlImport("frontend://bower_components/themed-template/src/MaterialThemedTemplate.html")
 @Route(value = "com.vaadin.flow.uitest.ui.material.MaterialThemedTemplateView")
 @Theme(Material.class)
 public class MaterialThemedTemplateView extends PolymerTemplate<TemplateModel> {

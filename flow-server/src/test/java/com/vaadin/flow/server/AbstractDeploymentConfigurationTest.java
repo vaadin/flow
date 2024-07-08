@@ -66,7 +66,6 @@ public class AbstractDeploymentConfigurationTest {
             return false;
         }
 
-        @Deprecated()
         @Override
         public boolean isBowerMode() {
             throw new UnsupportedOperationException(

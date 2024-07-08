@@ -288,18 +288,22 @@ public class Page implements Serializable {
      * @throws java.lang.UnsupportedOperationException
      *             always throws a runtime exception as Flow doesn't support HtmlImport, nor it supports Bower and compatibility mode. Please use npm or pnpm (used by default) for frontend package installation.
      */
+    @Deprecated(since = "2.11", forRemoval = true)
     public void addHtmlImport(String url) {
-        throw new UnsupportedOperationException("Adding html imports is "
-                + "not supported supported since compatibility mode is deprecated.");
+        throw new UnsupportedOperationException(
+                "Html imports are not supported by Flow since version 2.11,"
+                        + " as well as Bower and compatibility mode. Please use npm or pnpm (used by default) for frontend package installation");
     }
 
     /**
      * @throws java.lang.UnsupportedOperationException
      *             if called as compatibility mode is deprecated since 2.10.
      */
+    @Deprecated(since = "2.11", forRemoval = true)
     public void addHtmlImport(String url, LoadMode loadMode) {
-        throw new UnsupportedOperationException("Adding html imports is "
-                + "not supported supported since compatibility mode is deprecated.");
+        throw new UnsupportedOperationException(
+                "Html imports are not supported by Flow since version 2.11, as well as Bower and compatibility mode."
+                        + " Please use npm or pnpm (used by default) for frontend package installation");
     }
 
     /**

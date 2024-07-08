@@ -715,9 +715,6 @@ public class UIInternals implements Serializable {
         assert target != null;
         assert viewLocation != null;
 
-        if (getSession().getConfiguration().isCompatibilityMode()) {
-            updateTheme(target, path);
-        }
 
         HasElement oldRoot = null;
         if (!routerTargetChain.isEmpty()) {

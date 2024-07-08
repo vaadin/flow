@@ -172,11 +172,14 @@ public class DefaultDeploymentConfiguration
      * Throws UnsupportedOperationException if called when compatibility mode is
      * enabled.
      */
-    @Deprecated(forRemoval = true, since = "2.10")
+    @Deprecated(forRemoval = true, since = "2.11")
     @Override
     public boolean isBowerMode() {
         throw new UnsupportedOperationException(
-                "Bower mode is deprecated and no longer supported. Please update your configuration.");
+                "Bower mode is deprecated and no longer supported. "
+                        + "Please don't use bower and compatibility mode "
+                        + "(set to false or delete bowerMode and compatibilityMode configuration parameters), "
+                        + "instead use npm or pnpm package manager (used by default)");
     }
 
     /**
