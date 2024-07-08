@@ -17,7 +17,6 @@ package com.vaadin.flow.data.binder;
 
 import java.io.Serializable;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
@@ -214,11 +213,11 @@ public class ValueContext implements Serializable {
     }
 
     private Locale findLocale(Component component) {
-    	UI ui = null;
+        UI ui = null;
         if (component != null) {
             ui = component.getUI().orElseGet(UI::getCurrent);
         } else {
-        	ui = UI.getCurrent();
+            ui = UI.getCurrent();
         }
         if (ui != null) {
             return ui.getLocale();
