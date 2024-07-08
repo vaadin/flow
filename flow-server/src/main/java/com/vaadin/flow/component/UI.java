@@ -1346,7 +1346,8 @@ public class UI extends Component
                     "The 'execution' parameter may not be null");
         }
 
-        if (component.getUI().isPresent() && component.getUI().get() != this) {
+        Optional<UI> componentUi = component.getUI();
+        if (componentUi.isPresent() && componentUi.get() != this) {
             throw new IllegalArgumentException(
                     "The given component doesn't belong to the UI the task to be executed on");
         }
