@@ -117,8 +117,7 @@ public class ShortcutRegistration implements Registration, Serializable {
              * initialization immediately.
              */
             for (Component component : listenOnComponents) {
-                Optional<UI> ui = component.getUI();
-                if (ui.isPresent() && ui.get().isClosing()) {
+                if (component.getUI().map(UI::isClosing).orElse(false)) {
                     reinit = true;
                     break;
                 }
