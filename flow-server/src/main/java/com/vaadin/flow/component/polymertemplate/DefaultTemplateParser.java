@@ -78,7 +78,7 @@ public final class DefaultTemplateParser implements TemplateParser {
                 .collect(Collectors.toList());
         if (!dependencies.isEmpty()) {
             throw new UnsupportedOperationException(
-                    "@HtmlImport annotations are no longer supported by Flow since version 2.11, as well as Bower and compatibility mode. Please use npm/pnpm package managers and @NpmPackage/@jsmodule annotations. "
+                    "@HtmlImport annotations, Bower and compatibility mode are no longer supported by Flow since version 2.11. Please use npm/pnpm package managers and @NpmPackage/@jsmodule annotations. "
                             + "Detected usage in class: " + clazz.getName());
         }
 
