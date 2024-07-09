@@ -115,7 +115,8 @@ public class DndUtil {
     public static void addDndConnectorWhenComponentAttached(
             Component component) {
         component.getElement().getNode().runWhenAttached(ui -> {
-            if (ComponentUtil.getData(ui, DND_CONNECTOR_COMPATIBILITY) == null) {
+            if (ComponentUtil.getData(ui,
+                    DND_CONNECTOR_COMPATIBILITY) == null) {
                 ui.getPage().addJavaScript(DND_CONNECTOR_COMPATIBILITY,
                         LoadMode.EAGER);
                 ComponentUtil.setData(ui, DND_CONNECTOR_COMPATIBILITY, true);

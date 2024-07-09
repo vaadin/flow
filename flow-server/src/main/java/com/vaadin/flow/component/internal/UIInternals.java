@@ -715,7 +715,6 @@ public class UIInternals implements Serializable {
         assert target != null;
         assert viewLocation != null;
 
-
         HasElement oldRoot = null;
         if (!routerTargetChain.isEmpty()) {
             oldRoot = routerTargetChain.get(routerTargetChain.size() - 1);

@@ -198,24 +198,24 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
 
-            // Find UI class
-            Class<? extends UI> uiClass = getUIClass(request);
+        // Find UI class
+        Class<? extends UI> uiClass = getUIClass(request);
 
-            BootstrapContext context = createAndInitUI(uiClass, request,
-                    response, session);
+        BootstrapContext context = createAndInitUI(uiClass, request, response,
+                session);
 
-            if (handleWebComponentResyncRequest(context, request, response)) {
-                return true;
-            }
-
-            HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
-                    response::setDateHeader);
-
-            String serviceUrl = getServiceUrl(request, response);
-
-            Document document = getPageBuilder().getBootstrapPage(context);
-            writeBootstrapPage(response, document.head(), serviceUrl);
+        if (handleWebComponentResyncRequest(context, request, response)) {
             return true;
+        }
+
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
+                response::setDateHeader);
+
+        String serviceUrl = getServiceUrl(request, response);
+
+        Document document = getPageBuilder().getBootstrapPage(context);
+        writeBootstrapPage(response, document.head(), serviceUrl);
+        return true;
 
     }
 

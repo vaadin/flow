@@ -1279,10 +1279,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 break;
             case HTML_IMPORT:
                 throw new UnsupportedOperationException(
-                        "@HtmlImport annotations are no"
-                                + " longer supported by Flow since version 2.11, as well as Bower and"
-                                + " compatibility mode. Please use npm/pnpm package managers and"
-                                + " @NpmPackage/@jsmodule annotations.");
+                        "@HtmlImport annotations, Bower and compatibility mode are no longer supported by Flow since version 2.11."
+                                + "Please use npm/pnpm package managers and"
+                                + " @NpmPackage/@JsModule annotations.");
             default:
                 throw new IllegalStateException(
                         "Unsupported dependency type: " + type);

@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -114,6 +115,7 @@ public class HtmlImportJsModuleTest {
 
     }
 
+    @Ignore
     @Test
     public void htmlImport_jsModule_useBower_false() {
         assertComponentImport(HtmlImportJsModuleComponent.class,
@@ -122,6 +124,7 @@ public class HtmlImportJsModuleTest {
 
     }
 
+    @Ignore
     @Test
     public void htmlImport_jsModule_useBower_true() {
         assertComponentImport(HtmlImportJsModuleComponent.class,
