@@ -2966,7 +2966,7 @@ public class RouterTest extends RoutingTestBase {
                 FooBarNavigationTarget.events.size());
     }
 
-    @Ignore("This test is ignored because bower/compatibility mode is deprecated since 2.10")
+    @Ignore("This test is ignored because bower/compatibility mode is deprecated since 2.11")
     @Test // 3384
     public void theme_is_gotten_from_the_super_class()
             throws InvalidRouteConfigurationException, Exception {
