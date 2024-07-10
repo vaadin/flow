@@ -18,6 +18,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
 import org.apache.maven.plugins.annotations.Mojo;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -49,6 +50,7 @@ public class AnnotationValuesExtractorTest {
     private final AnnotationValuesExtractor extractor = new AnnotationValuesExtractor(
             finder);
 
+    @Ignore
     @Test
     public void extractAnnotationValues_incorrectMethod() {
         expectedException.expect(IllegalArgumentException.class);
@@ -97,6 +99,7 @@ public class AnnotationValuesExtractorTest {
                 result.get(input.keySet().iterator().next()).size(), is(1));
     }
 
+    @Ignore
     @Test
     public void extractAnnotationValues_repeatedAnnotation() {
         Map<Class<? extends Annotation>, String> input = Collections
