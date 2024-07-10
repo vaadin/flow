@@ -88,6 +88,19 @@ public class MockUI extends UI {
         return new MockUI(session);
     }
 
+    private static DeploymentConfiguration createConfiguration() {
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        return configuration;
+    }
+
+    public static MockUI createUI() {
+        DeploymentConfiguration configuration = createConfiguration();
+        VaadinSession session = createSession();
+        session.setConfiguration(configuration);
+        return new MockUI(session);
+    }
+
     public static MockUI createNpmModeUI() {
         DeploymentConfiguration configuration = createConfiguration(false);
         VaadinSession session = createSession();

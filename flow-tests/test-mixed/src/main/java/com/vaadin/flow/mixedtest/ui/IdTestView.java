@@ -24,7 +24,6 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 @Route(value = "route-path")
 @Tag("my-component")
 @JsModule("./my-component.js")
-@HtmlImport("my-component.html")
 public class IdTestView extends PolymerTemplate<TemplateModel> {
 
     @WebServlet("/servlet-path/*")

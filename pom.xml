@@ -30,7 +30,6 @@
         <module>flow-test-util</module>
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
-        <module>flow-server-compatibility-mode</module>
         <module>flow-component-demo-helpers</module>
         <module>flow-migration</module>
         <module>flow-maven-plugin</module>

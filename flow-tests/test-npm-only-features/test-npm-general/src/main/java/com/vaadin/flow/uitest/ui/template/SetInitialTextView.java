@@ -11,7 +11,6 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -24,7 +23,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.SetInitialTextView", layout = ViewTestLayout.class)
 @Tag("set-initial-text")
 @JsModule("SetInitialText.js")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/SetInitialText.html")
 public class SetInitialTextView extends PolymerTemplate<TemplateModel>
         implements HasComponents {
 

@@ -1000,7 +1000,6 @@ public class BootstrapHandlerTest {
                                 + "window.messages.push(\"inline.js\");</style>")));
     }
 
-
     @Test
     public void index_appended_to_head_in_npm()
             throws InvalidRouteConfigurationException {
@@ -1041,7 +1040,6 @@ public class BootstrapHandlerTest {
                                         + testUI.getInternals().getAppId()
                                         + "\"></script>")));
     }
-
 
     @Test
     public void headHasMetaTags() throws Exception {
@@ -1102,7 +1100,7 @@ public class BootstrapHandlerTest {
         List<DependencyFilter> filters = Arrays.asList((list, context) -> {
             list.clear(); // remove everything
             return list;
-        },  (list, context) -> {
+        }, (list, context) -> {
             list.add(new Dependency(Dependency.Type.JAVASCRIPT,
                     "imported-by-filter.js", LoadMode.EAGER));
             list.add(new Dependency(Dependency.Type.JAVASCRIPT,
@@ -1193,8 +1191,6 @@ public class BootstrapHandlerTest {
                 + "foo", urlES6);
     }
 
-
-
     // This test is not applicable for npm mode
     @Test
     public void frontendProtocol_productionModeAndWithProperties_useProperties_es5() {
@@ -1216,7 +1212,6 @@ public class BootstrapHandlerTest {
                 "In development mode, es5 prefix should be equal to '%s' parameter value",
                 Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
     }
-
 
     @Test
     public void bootstrapPage_configJsonPatternIsReplacedBeforeInitialUidl() {

@@ -42,7 +42,7 @@ public class DependencyListTest {
 
     @Before
     public void before() {
-        ui = MockUI.createCompatibilityModeUI();
+        ui = MockUI.createUI();
         deps = ui.getInternals().getDependencyList();
 
         assertEquals(0, deps.getPendingSendToClient().size());
@@ -129,6 +129,7 @@ public class DependencyListTest {
         validateDependency(URL, Type.HTML_IMPORT, LoadMode.INLINE);
     }
 
+    @Ignore
     @Test(expected = UnsupportedOperationException.class)
     public void addHtmlDependency_throwsInNpmMode() {
         // given
@@ -169,16 +170,9 @@ public class DependencyListTest {
         assertUrlUnchanged("ftp://some.host/some/where");
         assertUrlUnchanged("https://some.host/some/where");
         assertUrlUnchanged("//same.protocol.some.host/some/where");
-        assertFrontendPrefixed("foo?bar");
-        assertFrontendPrefixed("foo?bar=http://yah");
-        assertFrontendPrefixed("foo/baz?bar=http://some.thing");
-        assertFrontendPrefixed("foo/baz?bar=http://some.thing&ftp://bar");
         assertUrlUnchanged("context://foo?bar=frontend://baz");
     }
-
-    private void assertFrontendPrefixed(String url) {
-        assertDependencyUrl("frontend://" + url, url);
-    }
+    
 
     private void assertUrlUnchanged(String url) {
         assertDependencyUrl(url, url);

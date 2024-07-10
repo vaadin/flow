@@ -54,7 +54,6 @@ public class TestComponents {
     public static class VaadinNpmComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
     @JsModule("vaadin-mixed-component/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }

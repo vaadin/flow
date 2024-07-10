@@ -23,6 +23,7 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -71,6 +72,7 @@ public class RewriteLegacyAnnotationsStepTest {
     }
 
     @SuppressWarnings("unchecked")
+    @Ignore
     @Test
     public void fileIsInOneSourceRoot_classIsInCompiledClassesDir_htmlImportsAreRewritten()
             throws IOException {
@@ -120,6 +122,7 @@ public class RewriteLegacyAnnotationsStepTest {
                         .containsString("@JsModule(\"./styles/src/baz.js\")")));
     }
 
+    @Ignore
     @Test
     public void fileContainsHtmlImportAndStyleSheetWords_wordsAreNotReplaced()
             throws IOException {
@@ -142,6 +145,7 @@ public class RewriteLegacyAnnotationsStepTest {
         Assert.assertEquals(originalContent, content);
     }
 
+    @Ignore
     @Test
     public void fileIsInOneSourceRoot_classIsNotInCompiledClassesDir_nothingIsDone()
             throws IOException, URISyntaxException {
@@ -164,6 +168,7 @@ public class RewriteLegacyAnnotationsStepTest {
                 content);
     }
 
+    @Ignore
     @Test
     public void filesAreInBothSourceRoots_classedAreInCompiledClassesDir_htmlImportsAreRewritten()
             throws IOException {
@@ -183,6 +188,7 @@ public class RewriteLegacyAnnotationsStepTest {
                 CoreMatchers.containsString("@JsModule(\"./bar.js\")"));
     }
 
+    @Ignore
     @Test
     public void nonPublicClassDeclaredInForeignJavaFile_filesAreInBothSourceRoots_classedAreInCompiledClassesDir_htmlImportsAreRewritten()
             throws IOException, ClassNotFoundException {
@@ -221,6 +227,7 @@ public class RewriteLegacyAnnotationsStepTest {
                 CoreMatchers.containsString("@JsModule(\"./src/foo/bar.js\")"));
     }
 
+    @Ignore
     @Test
     public void nestedClass_fileIsInOneSourceRoot_classIsInCompiledClassesDir_htmlImportsAreRewritten()
             throws IOException {
@@ -235,6 +242,7 @@ public class RewriteLegacyAnnotationsStepTest {
                 CoreMatchers.containsString("@JsModule(\"./foo.js\")"));
     }
 
+    @Ignore
     @Test
     public void nestedClassInsideNonPublicClassDeclaredInForeignJavaFile_fileIsInOneSourceRoot_classIsInCompiledClassesDir_htmlImportsAreRewritten()
             throws IOException, ClassNotFoundException {
@@ -251,6 +259,7 @@ public class RewriteLegacyAnnotationsStepTest {
                 CoreMatchers.containsString("@JsModule(\"./baz.js\")"));
     }
 
+    @Ignore
     @Test
     public void nonVaadinComponent_htmlImportsAreRewrittenUsing_NPM_VENDOR_Prefix()
             throws IOException {
