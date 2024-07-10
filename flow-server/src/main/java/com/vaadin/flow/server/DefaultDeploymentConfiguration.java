@@ -172,7 +172,7 @@ public class DefaultDeploymentConfiguration
      * Throws UnsupportedOperationException if called when compatibility mode is
      * enabled.
      */
-    @Deprecated(forRemoval = true, since = "2.11")
+    @Deprecated()
     @Override
     public boolean isBowerMode() {
         throw new UnsupportedOperationException(

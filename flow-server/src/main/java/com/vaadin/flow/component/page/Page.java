@@ -291,7 +291,7 @@ public class Page implements Serializable {
      *             Please use npm or pnpm (used by default) for frontend package
      *             installation.
      */
-    @Deprecated(since = "2.11", forRemoval = true)
+    @Deprecated()
     public void addHtmlImport(String url) {
         throw new UnsupportedOperationException(
                 "@HtmlImport annotations, Bower and compatibility mode are no longer supported by Flow since version 2.11."
@@ -302,7 +302,7 @@ public class Page implements Serializable {
      * @throws java.lang.UnsupportedOperationException
      *             if called as compatibility mode is deprecated since 2.11.
      */
-    @Deprecated(since = "2.11", forRemoval = true)
+    @Deprecated()
     public void addHtmlImport(String url, LoadMode loadMode) {
         throw new UnsupportedOperationException(
                 "@HtmlImport annotations, Bower and compatibility mode are no longer supported by Flow since version 2.11."

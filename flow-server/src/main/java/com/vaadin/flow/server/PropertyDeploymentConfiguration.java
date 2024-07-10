@@ -142,7 +142,7 @@ public class PropertyDeploymentConfiguration
         return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
     }
 
-    @Deprecated(forRemoval = true, since = "2.11")
+    @Deprecated()
     @Override
     public boolean isBowerMode() {
         throw new UnsupportedOperationException(
