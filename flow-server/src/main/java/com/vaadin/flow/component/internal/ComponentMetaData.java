@@ -65,15 +65,10 @@ public class ComponentMetaData {
      * Framework internal class, thus package-private.
      */
     public static class DependencyInfo {
-        private final List<HtmlImportDependency> htmlImports = new ArrayList<>();
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<JsModule> jsModules = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
         private final List<CssImport> cssImports = new ArrayList<>();
-
-        List<HtmlImportDependency> getHtmlImports() {
-            return Collections.unmodifiableList(htmlImports);
-        }
 
         List<JavaScript> getJavaScripts() {
             return Collections.unmodifiableList(javaScripts);

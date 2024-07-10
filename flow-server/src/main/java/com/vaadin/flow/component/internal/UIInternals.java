@@ -38,7 +38,6 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
-import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.Push;
@@ -918,17 +917,9 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
-        if (getSession().getConfiguration().isCompatibilityMode()) {
-            dependencies.getHtmlImports()
-                    .forEach(html -> addHtmlImport(html, page));
-            dependencies.getJavaScripts().forEach(
-                    js -> page.addJavaScript(js.value(), js.loadMode()));
-        } else {
-            // In npm mode, add external JavaScripts directly to the page.
-            addExternalDependencies(dependencies);
-            addFallbackDependencies(dependencies);
-
-        }
+        // In npm mode, add external JavaScripts directly to the page.
+        addExternalDependencies(dependencies);
+        addFallbackDependencies(dependencies);
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
     }
@@ -1004,17 +995,6 @@ public class UIInternals implements Serializable {
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
                 .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
-    }
-
-    private void addHtmlImport(HtmlImportDependency dependency, Page page) {
-        // The HTML dependency parser does not consider themes so it can
-        // cache raw information (e.g. vaadin-button/src/vaadin-button.html
-        // import) and not take into consideration which themes might
-        // contain versions for which files. They must be translated before
-        // added to page though, as whatever is added there is sent without
-        // modifications to the client
-        dependency.getUris().forEach(uri -> page
-                .addHtmlImport(translateTheme(uri), dependency.getLoadMode()));
     }
 
     private String translateTheme(String importValue) {

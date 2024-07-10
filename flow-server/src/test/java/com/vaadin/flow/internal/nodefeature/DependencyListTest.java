@@ -172,7 +172,6 @@ public class DependencyListTest {
         assertUrlUnchanged("//same.protocol.some.host/some/where");
         assertUrlUnchanged("context://foo?bar=frontend://baz");
     }
-    
 
     private void assertUrlUnchanged(String url) {
         assertDependencyUrl(url, url);

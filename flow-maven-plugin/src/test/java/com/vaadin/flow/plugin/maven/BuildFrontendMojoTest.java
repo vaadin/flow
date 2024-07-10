@@ -70,7 +70,6 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -149,8 +148,6 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
-                "false");
         ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
                 FrontendTools.DEFAULT_NODE_VERSION);
@@ -362,7 +359,6 @@ public class BuildFrontendMojoTest {
                 webpackOutputDirectory);
 
         JsonObject initialBuildInfo = Json.createObject();
-        initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         initialBuildInfo.put(Constants.NPM_TOKEN, "npm");
         initialBuildInfo.put(Constants.GENERATED_TOKEN, "generated");
@@ -382,8 +378,6 @@ public class BuildFrontendMojoTest {
         JsonObject buildInfo = JsonUtil.parse(json);
         Assert.assertNotNull("devMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
-        Assert.assertNotNull("compatibilityMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
         Assert.assertNull("npmFolder should have been removed",

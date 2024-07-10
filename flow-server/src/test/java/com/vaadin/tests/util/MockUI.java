@@ -81,13 +81,6 @@ public class MockUI extends UI {
         return configuration;
     }
 
-    public static MockUI createCompatibilityModeUI() {
-        DeploymentConfiguration configuration = createConfiguration(true);
-        VaadinSession session = createSession();
-        session.setConfiguration(configuration);
-        return new MockUI(session);
-    }
-
     private static DeploymentConfiguration createConfiguration() {
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);

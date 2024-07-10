@@ -274,40 +274,11 @@ public abstract class VaadinService implements Serializable {
             getRouteRegistry().getRegisteredRoutes().stream()
                     .map(Object::toString).forEach(logger::debug);
 
-            if (configuration.isCompatibilityMode()) {
-                UsageStatistics.markAsUsed("flow/Bower", null);
-            } else {
-                UsageStatistics.markAsUsed("flow/npm", null);
-            }
+            UsageStatistics.markAsUsed("flow/npm", null);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
             UsageStatistics.markAsUsed("flow/pnpm", null);
         }
-
-        htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
-            List<String> dependencies = new ArrayList<>();
-            WebBrowser browser = FakeBrowser.getEs6();
-            HtmlImportParser.parseImports(path,
-                    resourcePath -> getResourceAsStream(resourcePath, browser,
-                            null),
-                    resourcePath -> resolveResource(resourcePath, browser),
-                    dependency -> {
-                        if (!dependency.startsWith(
-                                "frontend://bower_components/polymer/")) {
-                            dependencies.add(dependency);
-                        }
-                    });
-
-            return dependencies;
-        });
-
-        /*
-         * When all reflection caches are cleared, we also clear the HMTL
-         * dependnecy cache so that the reflection caches managed by
-         * ComponentMetaData won't keep using previously parsed data.
-         */
-        htmlImportDependencyCacheClearRegistration = ReflectionCache
-                .addClearAllAction(htmlImportDependencyCache::clear);
 
         initialized = true;
     }
@@ -2118,8 +2089,6 @@ public abstract class VaadinService implements Serializable {
      * @see Servlet#destroy()
      */
     public void destroy() {
-        htmlImportDependencyCacheClearRegistration.remove();
-
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
         serviceDestroyListeners
                 .forEach(listener -> listener.serviceDestroy(event));
