@@ -1173,6 +1173,7 @@ public class BootstrapHandlerTest {
     }
 
     // This test is not applicable for npm mode
+    @Ignore
     @Test
     public void frontendProtocol_productionMode_useDifferentUrlsForEs5AndEs6() {
         deploymentConfiguration.setCompatibilityMode(true);

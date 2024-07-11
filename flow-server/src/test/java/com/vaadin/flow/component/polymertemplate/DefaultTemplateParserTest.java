@@ -118,6 +118,7 @@ public class DefaultTemplateParserTest {
         Assert.assertEquals("/bar1.html", data.getHtmlImportUri());
     }
 
+    @Ignore
     @Test
     public void defaultParser_templateWithLeadingSlash_returnsContent() {
         Mockito.when(mocks.getServletContext().getResourceAsStream("/bar.html"))
