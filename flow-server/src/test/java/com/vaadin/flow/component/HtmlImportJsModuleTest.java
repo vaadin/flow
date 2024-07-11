@@ -103,15 +103,7 @@ public class HtmlImportJsModuleTest {
     public void htmlImport_useBower_false() {
         assertComponentImport(HtmlImportComponent.class,
                 "/node_modules/@vaadin/vaadin-ordered-layout/src/vaadin-vertical-layout.js",
-                LoadMode.LAZY, false);
-
-    }
-
-    @Test
-    public void htmlImport_useBower_true() {
-        assertComponentImport(HtmlImportComponent.class,
-                "frontend://bower_components/vaadin-ordered-layout/src/vaadin-vertical-layout.html",
-                LoadMode.LAZY, true);
+                LoadMode.LAZY);
 
     }
 
@@ -120,24 +112,12 @@ public class HtmlImportJsModuleTest {
     public void htmlImport_jsModule_useBower_false() {
         assertComponentImport(HtmlImportJsModuleComponent.class,
                 "/node_modules/@vaadin/vaadin-ordered-layout/src/vaadin-vertical-layout.js",
-                LoadMode.INLINE, false);
-
-    }
-
-    @Ignore
-    @Test
-    public void htmlImport_jsModule_useBower_true() {
-        assertComponentImport(HtmlImportJsModuleComponent.class,
-                "frontend://bower_components/vaadin-ordered-layout/src/vaadin-vertical-layout.html",
-                LoadMode.EAGER, true);
+                LoadMode.INLINE);
 
     }
 
     private void assertComponentImport(Class componentClass, String importValue,
-            LoadMode importLoadMode, boolean isBowerMode) {
-
-        Mockito.when(configuration.isCompatibilityMode())
-                .thenReturn(isBowerMode);
+            LoadMode importLoadMode) {
 
         UIInternals uiInternals = new UIInternals(ui);
         uiInternals.setSession(session);
@@ -149,17 +129,8 @@ public class HtmlImportJsModuleTest {
 
         uiInternals.addComponentDependencies(componentClass);
 
-        if (isBowerMode) {
-            Mockito.verify(page).addHtmlImport(valueArgumentCaptor.capture(),
-                    loadModeArgumentCaptor.capture());
-            Assert.assertEquals("Incorrect import value.", importValue,
-                    valueArgumentCaptor.getValue());
-            Assert.assertEquals("Incorrect import load mode.", importLoadMode,
-                    loadModeArgumentCaptor.getValue());
-        } else {
-            Mockito.verify(page, Mockito.never())
-                    .addHtmlImport(Mockito.anyString());
-        }
+        Mockito.verify(page, Mockito.never())
+                .addHtmlImport(Mockito.anyString());
     }
 
     @HtmlImport(value = "frontend://bower_components/vaadin-ordered-layout/src/vaadin-vertical-layout.html", loadMode = LoadMode.LAZY)

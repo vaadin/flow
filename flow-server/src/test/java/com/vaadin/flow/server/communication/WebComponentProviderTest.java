@@ -107,8 +107,6 @@ public class WebComponentProviderTest {
         Mockito.doCallRealMethod().when(service)
                 .getContextRootRelativePath(Mockito.any());
 
-        Mockito.when(configuration.isCompatibilityMode()).thenReturn(false);
-
         provider = new WebComponentProvider();
     }
 

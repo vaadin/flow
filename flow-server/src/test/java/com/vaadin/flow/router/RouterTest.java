@@ -2969,25 +2969,6 @@ public class RouterTest extends RoutingTestBase {
                 FooBarNavigationTarget.events.size());
     }
 
-    @Ignore("This test is ignored because bower/compatibility mode is deprecated since 2.11")
-    @Test // 3384
-    public void theme_is_gotten_from_the_super_class()
-            throws InvalidRouteConfigurationException, Exception {
-
-        // Feature enabled only for bower mode
-        Mockito.when(configuration.isCompatibilityMode()).thenReturn(true);
-
-        setNavigationTargets(ExtendingView.class);
-
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-
-        Field theme = UIInternals.class.getDeclaredField("theme");
-        theme.setAccessible(true);
-        Object themeObject = theme.get(ui.getInternals());
-
-        Assert.assertEquals(MyTheme.class, themeObject.getClass());
-    }
-
     @Test
     public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
             throws InvalidRouteConfigurationException, Exception {

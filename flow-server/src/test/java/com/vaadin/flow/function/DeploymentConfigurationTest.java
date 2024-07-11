@@ -25,16 +25,8 @@ public class DeploymentConfigurationTest {
             .spy(TestDeploymentConfiguration.class);
 
     @Test
-    public void useCompiledFrontendResources_compatibilityMode_productionMode_returnTrue() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(configuration.isCompatibilityMode()).thenReturn(true);
-        Assert.assertTrue(configuration.useCompiledFrontendResources());
-    }
-
-    @Test
     public void useCompiledFrontendResources_notCompatibilityMode_productionMode_returnFalse() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(configuration.isCompatibilityMode()).thenReturn(false);
         Assert.assertFalse(configuration.useCompiledFrontendResources());
     }
 

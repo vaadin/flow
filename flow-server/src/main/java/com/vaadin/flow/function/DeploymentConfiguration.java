@@ -340,9 +340,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return {@code true} if Flow should use compiled frontend resources.
      */
     default boolean useCompiledFrontendResources() {
-        return isProductionMode() && isCompatibilityMode()
-                && !getBooleanProperty(
-                        InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES, false);
+        return false;
     }
 
     /**
@@ -442,7 +440,7 @@ public interface DeploymentConfiguration extends Serializable {
      *         otherwise
      */
     default boolean isDevModeLiveReloadEnabled() {
-        return !isProductionMode() && !isCompatibilityMode()
+        return !isProductionMode()
                 && getBooleanProperty(
                         SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
                 && enableDevServer(); // gizmo excluded from prod bundle
