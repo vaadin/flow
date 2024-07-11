@@ -52,14 +52,11 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
-    @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
     @JavaScript(value = "inline.js", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE)
-    @HtmlImport(value = "inline.html", loadMode = LoadMode.INLINE)
     @JavaScript("eager.js")
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
-    @HtmlImport("eager.html")
     private static class UIAnnotated_LoadingOrderTest extends UI {
     }
 
@@ -68,14 +65,11 @@ public class BootstrapHandlerDependenciesTest {
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("lazy.js", LoadMode.LAZY);
             getPage().addStyleSheet("lazy.css", LoadMode.LAZY);
-            getPage().addHtmlImport("lazy.html", LoadMode.LAZY);
             getPage().addJavaScript("inline.js", LoadMode.INLINE);
             getPage().addStyleSheet("inline.css", LoadMode.INLINE);
-            getPage().addHtmlImport("inline.html", LoadMode.INLINE);
             getPage().addJavaScript("eager.js");
             getPage().addStyleSheet("context://eager-relative.css");
             getPage().addStyleSheet("eager.css");
-            getPage().addHtmlImport("eager.html");
         }
     }
 
@@ -122,8 +116,6 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript("2.js")
     @StyleSheet("1.css")
     @StyleSheet("2.css")
-    @HtmlImport("1.html")
-    @HtmlImport("2.html")
     private static class UIAnnotated_ImportOrderTest_Eager extends UI {
     }
 
@@ -131,8 +123,6 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "1.css", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "2.css", loadMode = LoadMode.LAZY)
-    @HtmlImport(value = "1.html", loadMode = LoadMode.LAZY)
-    @HtmlImport(value = "2.html", loadMode = LoadMode.LAZY)
     private static class UIAnnotated_ImportOrderTest_Lazy extends UI {
     }
 
@@ -140,8 +130,6 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript(value = "2.js", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "1.css", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "2.css", loadMode = LoadMode.INLINE)
-    @HtmlImport(value = "1.html", loadMode = LoadMode.INLINE)
-    @HtmlImport(value = "2.html", loadMode = LoadMode.INLINE)
     private static class UIAnnotated_ImportOrderTest_Inline extends UI {
     }
 
@@ -152,8 +140,6 @@ public class BootstrapHandlerDependenciesTest {
             getPage().addJavaScript("2.js");
             getPage().addStyleSheet("1.css");
             getPage().addStyleSheet("2.css");
-            getPage().addHtmlImport("1.html");
-            getPage().addHtmlImport("2.html");
         }
     }
 
@@ -164,8 +150,6 @@ public class BootstrapHandlerDependenciesTest {
             getPage().addJavaScript("2.js", LoadMode.LAZY);
             getPage().addStyleSheet("1.css", LoadMode.LAZY);
             getPage().addStyleSheet("2.css", LoadMode.LAZY);
-            getPage().addHtmlImport("1.html", LoadMode.LAZY);
-            getPage().addHtmlImport("2.html", LoadMode.LAZY);
         }
     }
 
@@ -176,8 +160,6 @@ public class BootstrapHandlerDependenciesTest {
             getPage().addJavaScript("2.js", LoadMode.INLINE);
             getPage().addStyleSheet("1.css", LoadMode.INLINE);
             getPage().addStyleSheet("2.css", LoadMode.INLINE);
-            getPage().addHtmlImport("1.html", LoadMode.INLINE);
-            getPage().addHtmlImport("2.html", LoadMode.INLINE);
         }
     }
 
@@ -261,7 +243,6 @@ public class BootstrapHandlerDependenciesTest {
     public void setup() throws Exception {
 
         mocks = new MockServletServiceSessionSetup();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         service = mocks.getService();
         service.setRouter(createRouter());
@@ -328,15 +309,12 @@ public class BootstrapHandlerDependenciesTest {
             assertCssElementLoadedEagerly(head, "./frontend/eager.css");
             assertCssElementLoadedEagerly(head, "./eager-relative.css");
             assertJavaScriptElementLoadedEagerly(head, "./frontend/eager.js");
-            assertHtmlElementLoadedEagerly(head, "./frontend/eager.html");
 
             assertCssElementInlined(head, "/frontend/inline.css");
             assertJavaScriptElementInlined(head, "/frontend/inline.js");
-            assertHtmlElementInlined(page.body(), "/frontend/inline.html");
 
             assertElementLazyLoaded(head, "./lazy.js");
             assertElementLazyLoaded(head, "./lazy.css");
-            assertElementLazyLoaded(head, "./lazy.html");
         };
         testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
                 new UIWithMethods_LoadingOrderTest());
@@ -352,11 +330,9 @@ public class BootstrapHandlerDependenciesTest {
 
             assertFalse(uidlData.contains("inline.js"));
             assertFalse(uidlData.contains("inline.css"));
-            assertFalse(uidlData.contains("inline.html"));
 
             assertTrue(uidlData.contains("lazy.js"));
             assertTrue(uidlData.contains("lazy.css"));
-            assertTrue(uidlData.contains("lazy.html"));
         };
         testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
                 new UIWithMethods_LoadingOrderTest());
@@ -402,11 +378,6 @@ public class BootstrapHandlerDependenciesTest {
                     .collect(Collectors.toList());
             assertImportOrder(cssImportUrls, "1.css", "2.css");
 
-            List<String> htmlImportUrls = head.getElementsByTag("link").stream()
-                    .filter(element -> "import".equals(element.attr("rel")))
-                    .map(element -> element.attr("href"))
-                    .collect(Collectors.toList());
-            assertImportOrder(htmlImportUrls, "1.html", "2.html");
         };
         testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Eager(),
                 new UIWithMethods_ImportOrderTest_Eager());
@@ -441,11 +412,6 @@ public class BootstrapHandlerDependenciesTest {
                     .collect(Collectors.toList());
             assertImportOrder(cssImportContents, "1.css", "2.css");
 
-            List<String> htmlImportContents = page.body()
-                    .getElementsByTag("span").stream()
-                    .filter(element -> element.hasAttr("hidden"))
-                    .map(Element::toString).collect(Collectors.toList());
-            assertImportOrder(htmlImportContents, "1.html", "2.html");
         };
         testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Inline(),
                 new UIWithMethods_ImportOrderTest_Inline());
