@@ -240,14 +240,6 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
-        configuration.setCompatibilityMode(true);
-        assertNull(DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null)));
-        Thread.sleep(150); // NOSONAR
-    }
-
-    @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         int port = prepareHttpServer(0, HTTP_OK, "bar");
         DevModeHandler handler = DevModeHandler.start(port, configuration,
