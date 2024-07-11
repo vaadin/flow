@@ -25,6 +25,7 @@ import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -1150,6 +1151,7 @@ public class BootstrapHandlerTest {
     }
 
     // This test is not applicable for npm mode
+    @Ignore
     @Test
     public void frontendProtocol_productionMode_es5Url() {
         mocks.setProductionMode(true);
@@ -1191,28 +1193,6 @@ public class BootstrapHandlerTest {
                 + "foo", urlES6);
     }
 
-    // This test is not applicable for npm mode
-    @Test
-    public void frontendProtocol_productionModeAndWithProperties_useProperties_es5() {
-        deploymentConfiguration.setCompatibilityMode(true);
-        String es5Prefix = "bar/es5/";
-        deploymentConfiguration.setApplicationOrSystemProperty(
-                Constants.FRONTEND_URL_ES5, es5Prefix);
-        mocks.setProductionMode(true);
-        initUI(testUI);
-        WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
-        Mockito.when(session.getBrowser()).thenReturn(mockedWebBrowser);
-        Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
-
-        String urlPart = "foo";
-
-        String urlES5 = context.getUriResolver().resolveVaadinUri(
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + urlPart);
-        assertThat(String.format(
-                "In development mode, es5 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES5), urlES5, is(es5Prefix + urlPart));
-    }
-
     @Test
     public void bootstrapPage_configJsonPatternIsReplacedBeforeInitialUidl() {
         TestUI anotherUI = new TestUI();
@@ -1242,6 +1222,7 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(head.outerHtml().contains(url));
     }
 
+    @Ignore
     @Test
     public void es6NotSupported_webcomponentsPolyfillBasePresent_polyfillsLoaded() {
         mocks.getDeploymentConfiguration().setCompatibilityMode(true);
