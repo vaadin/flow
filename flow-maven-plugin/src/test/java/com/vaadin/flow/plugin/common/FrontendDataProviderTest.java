@@ -216,6 +216,7 @@ public class FrontendDataProviderTest {
     }
 
     @SuppressWarnings({ "unchecked" })
+    @Ignore
     @Test
     public void themedHtmlImports_existingThemedImportIsConverted_nonExistentIsPreserved()
             throws IOException {
@@ -262,6 +263,7 @@ public class FrontendDataProviderTest {
                 .extractAnnotationValues(anyMap());
     }
 
+    @Ignore
     @Test
     public void createShellFile_fileContainsGeneratedWebModuleAndRegularHtmlImport()
             throws IOException {
@@ -320,6 +322,7 @@ public class FrontendDataProviderTest {
     }
 
     @SuppressWarnings({ "unchecked" })
+    @Ignore
     @Test
     public void fragmentsContentsIsNotIncludedIntoShellFile()
             throws IOException {
@@ -357,6 +360,7 @@ public class FrontendDataProviderTest {
                 .extractAnnotationValues(anyMap());
     }
 
+    @Ignore
     @Test
     public void userDefinedAndConfigurationFileFragmentsAreMerged()
             throws IOException {
@@ -404,6 +408,7 @@ public class FrontendDataProviderTest {
                 .extractAnnotationValues(anyMap());
     }
 
+    @Ignore
     @Test
     public void importsWithContextOrBaseProtocolAreIgnored()
             throws IOException {

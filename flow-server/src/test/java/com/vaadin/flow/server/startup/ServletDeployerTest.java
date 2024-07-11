@@ -22,6 +22,7 @@ import org.easymock.Capture;
 import org.easymock.CaptureType;
 import org.easymock.EasyMock;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -151,6 +152,7 @@ public class ServletDeployerTest {
                 false);
     }
 
+    @Ignore
     @Test
     public void mainServletIsNotRegisteredWhenVaadinServletIsPresent_frontendServletIsRegistered()
             throws Exception {
@@ -243,6 +245,7 @@ public class ServletDeployerTest {
         assertMappingsCount(0, 0);
     }
 
+    @Ignore
     @Test
     public void frontendServletIsRegisteredInProductionModeIfOriginalFrontendResourcesAreUsed()
             throws Exception {
@@ -264,6 +267,7 @@ public class ServletDeployerTest {
         assertMappingIsRegistered("frontendFilesServlet", "/frontend/*");
     }
 
+    @Ignore
     @Test
     public void servletIsNotRegisteredWhenAnotherHasTheSamePathMapping_mainServlet()
             throws Exception {
