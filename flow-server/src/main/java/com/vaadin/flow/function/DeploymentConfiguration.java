@@ -51,7 +51,7 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return true if in compatibility mode, false otherwise.
      */
-    @Deprecated()
+    @Deprecated
     boolean isBowerMode();
 
     /**
@@ -64,7 +64,7 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return true if in compatibility mode, false otherwise.
      */
-    @Deprecated()
+    @Deprecated
     default boolean isCompatibilityMode() {
         return isBowerMode();
     }

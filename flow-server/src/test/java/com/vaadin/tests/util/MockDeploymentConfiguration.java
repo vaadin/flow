@@ -35,7 +35,7 @@ public class MockDeploymentConfiguration
         return productionMode;
     }
 
-    @Deprecated()
+    @Deprecated
     @Override
     public boolean isBowerMode() {
         throw new UnsupportedOperationException(
