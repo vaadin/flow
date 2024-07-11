@@ -451,16 +451,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
     private static void verifyMode(CompatibilityModeStatus value,
             boolean hasTokenFile, boolean hasWebpackConfig) {
-        // Don't handle the case when compatibility mode is enabled.
 
-        // If no compatibility mode setting is defined
-        // and the project/working directory doesn't contain an appropriate
-        // webpack.config.js, then show the error message.
-        if (value == CompatibilityModeStatus.UNDEFINED) {
-            if (!hasWebpackConfig) {
-                throw new IllegalStateException(ERROR_COMPATIBILITY_MODE_UNSET);
-            }
-        } else if (!hasTokenFile && !hasWebpackConfig) {
+        if (!hasTokenFile && !hasWebpackConfig) {
             // If compatibility mode is explicitly set to false, no
             // flow-build-info.json file exists, and no appropriate
             // webpack.config.js is found in the current working directory, then

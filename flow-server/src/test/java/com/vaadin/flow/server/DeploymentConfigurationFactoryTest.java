@@ -276,13 +276,6 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void should_throwIfModeNotSet() throws Exception {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unable to determine mode of operation.");
-        createConfig(emptyMap());
-    }
-
-    @Test
     public void should_throwIfCompatibilityModeIsFalseButNoTokenFile()
             throws Exception {
         exception.expect(IllegalStateException.class);
