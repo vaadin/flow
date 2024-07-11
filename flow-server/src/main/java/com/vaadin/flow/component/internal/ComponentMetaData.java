@@ -182,7 +182,7 @@ public class ComponentMetaData {
 
         scannedClasses.add(componentClass);
 
-        if (service.getDeploymentConfiguration().isCompatibilityMode()) {
+        if (!getHtmlImportDependencies(service, componentClass).isEmpty()) {
             throw new UnsupportedOperationException(
                     "@HtmlImport annotations, Bower and compatibility mode are no longer supported"
                             + " by Flow since version 2.11.Please use npm/pnpm package managers and"
@@ -190,23 +190,8 @@ public class ComponentMetaData {
         } else {
             List<JsModule> jsModules = AnnotationReader
                     .getJsModuleAnnotations(componentClass);
-
-            // Ignore @HtmlImport(s) when @JsModule(s) present.
             if (!jsModules.isEmpty()) {
                 dependencyInfo.jsModules.addAll(jsModules);
-            } else {
-                // Show a warning when @HtmlImport is present and there is no
-                // @JsModule or @CssImport.
-                if (!getHtmlImportDependencies(service, componentClass)
-                        .isEmpty()
-                        && AnnotationReader
-                                .getCssImportAnnotations(componentClass)
-                                .isEmpty()) {
-                    throw new UnsupportedOperationException(
-                            "@HtmlImport annotations, Bower and compatibility mode are no longer supported"
-                                    + " by Flow since version 2.11.Please use npm/pnpm package managers and"
-                                    + " @NpmPackage/@JsModule annotations.");
-                }
             }
         }
 
