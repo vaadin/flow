@@ -76,7 +76,6 @@ public class ResponseWriter implements Serializable {
 
     private final int bufferSize;
     private final boolean brotliEnabled;
-    private final boolean compatibilityMode;
 
     /**
      * Create a response writer with buffer size equal to
@@ -103,7 +102,7 @@ public class ResponseWriter implements Serializable {
      */
     @Deprecated
     public ResponseWriter(int bufferSize) {
-        this(bufferSize, false, true);
+        this(bufferSize, false);
     }
 
     /**
@@ -113,15 +112,12 @@ public class ResponseWriter implements Serializable {
      *            the deployment configuration to use, not <code>null</code>
      */
     public ResponseWriter(DeploymentConfiguration deploymentConfiguration) {
-        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli(),
-                deploymentConfiguration.isCompatibilityMode());
+        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli());
     }
 
-    private ResponseWriter(int bufferSize, boolean brotliEnabled,
-            boolean compatibilityMode) {
+    private ResponseWriter(int bufferSize, boolean brotliEnabled) {
         this.brotliEnabled = brotliEnabled;
         this.bufferSize = bufferSize;
-        this.compatibilityMode = compatibilityMode;
     }
 
     /**
@@ -439,14 +435,6 @@ public class ResponseWriter implements Serializable {
      * @return true if we are ok to try serving the file
      */
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
-        if (compatibilityMode) {
-            getLogger().trace(
-                    "Serving from the classpath in legacy "
-                            + "mode is not accepted. "
-                            + "Letting request for '{}' go to servlet context.",
-                    filenameWithPath);
-            return false;
-        }
         // Check that we target VAADIN/build and do not have '/../'
         if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
                 || filenameWithPath.contains("/../")) {
