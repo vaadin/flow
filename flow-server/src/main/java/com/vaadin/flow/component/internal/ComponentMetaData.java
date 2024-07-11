@@ -182,17 +182,10 @@ public class ComponentMetaData {
 
         scannedClasses.add(componentClass);
 
-        if (!getHtmlImportDependencies(service, componentClass).isEmpty()) {
-            throw new UnsupportedOperationException(
-                    "@HtmlImport annotations, Bower and compatibility mode are no longer supported"
-                            + " by Flow since version 2.11.Please use npm/pnpm package managers and"
-                            + " @NpmPackage/@JsModule annotations.");
-        } else {
-            List<JsModule> jsModules = AnnotationReader
-                    .getJsModuleAnnotations(componentClass);
-            if (!jsModules.isEmpty()) {
-                dependencyInfo.jsModules.addAll(jsModules);
-            }
+        List<JsModule> jsModules = AnnotationReader
+                .getJsModuleAnnotations(componentClass);
+        if (!jsModules.isEmpty()) {
+            dependencyInfo.jsModules.addAll(jsModules);
         }
 
         dependencyInfo.javaScripts.addAll(
@@ -245,27 +238,6 @@ public class ComponentMetaData {
                     event -> dependencyInfo.remove(service));
             return findDependencies(service, componentClass);
         });
-    }
-
-    private static Collection<HtmlImportDependency> getHtmlImportDependencies(
-            VaadinService service, Class<? extends Component> componentClass) {
-        return AnnotationReader.getHtmlImportAnnotations(componentClass)
-                .stream().map(htmlImport -> getHtmlImportDependencies(service,
-                        htmlImport))
-                .collect(Collectors.toList());
-    }
-
-    private static HtmlImportDependency getHtmlImportDependencies(
-            VaadinService service, HtmlImport htmlImport) {
-        String importPath = SharedUtil.prefixIfRelative(htmlImport.value(),
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-
-        DependencyTreeCache<String> cache = service
-                .getHtmlImportDependencyCache();
-
-        Set<String> dependencies = cache.getDependencies(importPath);
-
-        return new HtmlImportDependency(dependencies, htmlImport.loadMode());
     }
 
     /**

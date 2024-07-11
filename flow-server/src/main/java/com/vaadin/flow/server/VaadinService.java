@@ -197,10 +197,6 @@ public abstract class VaadinService implements Serializable {
 
     private Instantiator instantiator;
 
-    private DependencyTreeCache<String> htmlImportDependencyCache;
-
-    private Registration htmlImportDependencyCacheClearRegistration;
-
     private VaadinContext vaadinContext;
 
     /**
@@ -2341,9 +2337,11 @@ public abstract class VaadinService implements Serializable {
      * Gets the HTML import dependency cache that is used by this service.
      *
      * @return the HTML dependency cache
+     *
+     * @deprecated HtmlImports are no longer supported.
      */
     public DependencyTreeCache<String> getHtmlImportDependencyCache() {
-        return htmlImportDependencyCache;
+        return null;
     }
 
     /**

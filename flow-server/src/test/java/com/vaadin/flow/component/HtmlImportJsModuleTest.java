@@ -94,9 +94,6 @@ public class HtmlImportJsModuleTest {
                         return set;
                     }
                 });
-
-        Mockito.when(service.getHtmlImportDependencyCache())
-                .thenReturn(dependencyCache);
     }
 
     @Test
