@@ -125,22 +125,6 @@ public class UnsupportedBrowserHandlerTest {
     }
 
     @Test
-    public void testUnsupportedBrowserHandler_IE11WithDevelopmentMode_returnsIE11RequiresProductionModePage()
-            throws IOException {
-        initMocks(false, false, true, false);
-        configuration.setCompatibilityMode(true);
-
-        Assert.assertTrue("Request should have been handled",
-                handler.synchronizedHandleRequest(session, request, response));
-
-        Mockito.verify(writer).write(pageCapture.capture());
-
-        Assert.assertTrue("Unsupported browser page not used",
-                pageCapture.getValue().contains(
-                        "Internet Explorer 11 requires Vaadin Flow to be run in production mode."));
-    }
-
-    @Test
     public void testUnsupportedBrowserHandler_IE11WithDevelopmentMode_returnsTranspilationRequiredPage()
             throws IOException {
         initMocks(false, false, true, false);
