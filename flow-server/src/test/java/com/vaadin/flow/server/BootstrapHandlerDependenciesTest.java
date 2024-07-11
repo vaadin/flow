@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.di.Lookup;
@@ -49,12 +48,9 @@ import static org.mockito.Mockito.mock;
 public class BootstrapHandlerDependenciesTest {
     private static final String BOOTSTRAP_SCRIPT_CONTENTS = "//<![CDATA[\n";
 
-    @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
-    @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
+
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
-    @JavaScript(value = "inline.js", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE)
-    @JavaScript("eager.js")
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
     private static class UIAnnotated_LoadingOrderTest extends UI {
@@ -112,22 +108,16 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
-    @JavaScript("1.js")
-    @JavaScript("2.js")
     @StyleSheet("1.css")
     @StyleSheet("2.css")
     private static class UIAnnotated_ImportOrderTest_Eager extends UI {
     }
 
-    @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
-    @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "1.css", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "2.css", loadMode = LoadMode.LAZY)
     private static class UIAnnotated_ImportOrderTest_Lazy extends UI {
     }
 
-    @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
-    @JavaScript(value = "2.js", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "1.css", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "2.css", loadMode = LoadMode.INLINE)
     private static class UIAnnotated_ImportOrderTest_Inline extends UI {
@@ -136,8 +126,6 @@ public class BootstrapHandlerDependenciesTest {
     private static class UIWithMethods_ImportOrderTest_Eager extends UI {
         @Override
         public void init(VaadinRequest request) {
-            getPage().addJavaScript("1.js");
-            getPage().addJavaScript("2.js");
             getPage().addStyleSheet("1.css");
             getPage().addStyleSheet("2.css");
         }
@@ -163,24 +151,27 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
-    @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
-    @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
-    @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
+    @StyleSheet(value = "1.css", loadMode = LoadMode.LAZY)
+    @StyleSheet(value = "2.css", loadMode = LoadMode.LAZY)
+    @StyleSheet(value = "1.css", loadMode = LoadMode.LAZY)
     private static class UIAnnotated_DuplicateDependencies_Lazy extends UI {
     }
 
     private static class UIWithMethods_DuplicateDependencies_Lazy extends UI {
         @Override
         protected void init(VaadinRequest request) {
+            getPage().addStyleSheet("1.css", LoadMode.LAZY);
+            getPage().addStyleSheet("2.css", LoadMode.LAZY);
+            getPage().addStyleSheet("1.css", LoadMode.LAZY);
             getPage().addJavaScript("1.js", LoadMode.LAZY);
             getPage().addJavaScript("2.js", LoadMode.LAZY);
             getPage().addJavaScript("1.js", LoadMode.LAZY);
         }
     }
 
-    @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
-    @JavaScript(value = "2.js", loadMode = LoadMode.INLINE)
-    @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
+    @StyleSheet(value = "1.css", loadMode = LoadMode.INLINE)
+    @StyleSheet(value = "2.css", loadMode = LoadMode.INLINE)
+    @StyleSheet(value = "1.css", loadMode = LoadMode.INLINE)
     private static class UIAnnotated_DuplicateDependencies_Inline extends UI {
 
         private static class UIWithMethods_DuplicateDependencies_Inline
@@ -197,15 +188,18 @@ public class BootstrapHandlerDependenciesTest {
     private static class UIWithMethods_DuplicateDependencies_Inline extends UI {
         @Override
         protected void init(VaadinRequest request) {
+            getPage().addStyleSheet("1.css", LoadMode.INLINE);
+            getPage().addStyleSheet("2.css", LoadMode.INLINE);
+            getPage().addStyleSheet("1.css", LoadMode.INLINE);
             getPage().addJavaScript("1.js", LoadMode.INLINE);
             getPage().addJavaScript("2.js", LoadMode.INLINE);
             getPage().addJavaScript("1.js", LoadMode.INLINE);
         }
     }
 
-    @JavaScript("1.js")
-    @JavaScript("2.js")
-    @JavaScript("1.js")
+    @StyleSheet("1.css")
+    @StyleSheet("2.css")
+    @StyleSheet("1.css")
     private static class UIAnnotated_DuplicateDependencies_Eager extends UI {
         @Override
         protected void init(VaadinRequest request) {
@@ -218,6 +212,9 @@ public class BootstrapHandlerDependenciesTest {
     private static class UIWithMethods_DuplicateDependencies_Eager extends UI {
         @Override
         protected void init(VaadinRequest request) {
+            getPage().addStyleSheet("1.css");
+            getPage().addStyleSheet("2.css");
+            getPage().addStyleSheet("1.css");
             getPage().addJavaScript("1.js");
             getPage().addJavaScript("2.js");
             getPage().addJavaScript("1.js");
@@ -228,7 +225,7 @@ public class BootstrapHandlerDependenciesTest {
         Router router = Mockito.mock(Router.class);
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
         Mockito.when(
-                router.resolveNavigationTarget(Mockito.any(), Mockito.any()))
+                        router.resolveNavigationTarget(Mockito.any(), Mockito.any()))
                 .thenReturn(Optional.empty());
         Mockito.when(router.getRegistry()).thenReturn(registry);
         return router;
@@ -247,15 +244,13 @@ public class BootstrapHandlerDependenciesTest {
         service = mocks.getService();
         service.setRouter(createRouter());
         TestVaadinServlet servlet = mocks.getServlet();
-        for (String type : new String[] { "html", "js", "css" }) {
-            servlet.addServletContextResource("/frontend/inline." + type,
-                    "/frontend/inline." + type);
-            servlet.addServletContextResource("/frontend/1." + type,
-                    "/frontend/1." + type);
-            servlet.addServletContextResource("/frontend/2." + type,
-                    "/frontend/2." + type);
+        for (String type : new String[]{"js", "css"}) {
+            servlet.addServletContextResource("inline." + type,
+                    "inline." + type);
+            servlet.addServletContextResource("1." + type, "1." + type);
+            servlet.addServletContextResource("2." + type, "2." + type);
         }
-        servlet.addServletContextResource("/frontend/new.js");
+        servlet.addServletContextResource("new.js");
 
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
@@ -278,11 +273,11 @@ public class BootstrapHandlerDependenciesTest {
     @Test
     public void testUiWithSameDependencyInDifferentModes() {
         Stream.of(new UIAnnotated_BothLazyAndEagerTest(),
-                new UIWithMethods_BothBothLazyAndEagerTest(),
-                new UIAnnotated_BothInlineAndEagerTest(),
-                new UIWithMethods_BothBothInlineAndEagerTest(),
-                new UIAnnotated_BothLazyAndInlineTest(),
-                new UIWithMethods_BothBothLazyAndInlineTest())
+                        new UIWithMethods_BothBothLazyAndEagerTest(),
+                        new UIAnnotated_BothInlineAndEagerTest(),
+                        new UIWithMethods_BothBothInlineAndEagerTest(),
+                        new UIAnnotated_BothLazyAndInlineTest(),
+                        new UIWithMethods_BothBothLazyAndInlineTest())
                 .forEach(this::checkUiWithNoException);
     }
 
@@ -302,26 +297,55 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     @Test
-    public void checkDependenciesPresence() {
+    public void checkDependenciesPresence_addedViaAnnotation() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
-            assertCssElementLoadedEagerly(head, "./frontend/eager.css");
+            assertCssElementLoadedEagerly(head, "eager.css");
             assertCssElementLoadedEagerly(head, "./eager-relative.css");
-            assertJavaScriptElementLoadedEagerly(head, "./frontend/eager.js");
 
-            assertCssElementInlined(head, "/frontend/inline.css");
-            assertJavaScriptElementInlined(head, "/frontend/inline.js");
+            assertCssElementInlined(head, "inline.css");
 
-            assertElementLazyLoaded(head, "./lazy.js");
-            assertElementLazyLoaded(head, "./lazy.css");
+            assertElementLazyLoaded(head, "lazy.css");
         };
-        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
-                new UIWithMethods_LoadingOrderTest());
+        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest());
     }
 
     @Test
-    public void checkUidlDependencies() {
+    public void checkDependenciesPresence_addedViaAPI() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            Element head = page.head();
+
+            assertJavaScriptElementLoadedEagerly(head, "eager.js");
+            assertCssElementLoadedEagerly(head, "eager.css");
+            assertCssElementLoadedEagerly(head, "./eager-relative.css");
+
+            assertCssElementInlined(head, "inline.css");
+            assertJavaScriptElementInlined(head, "inline.js");
+
+            assertElementLazyLoaded(head, "lazy.js");
+            assertElementLazyLoaded(head, "lazy.css");
+        };
+        testUis(uiPageTestingMethod, new UIWithMethods_LoadingOrderTest());
+
+    }
+
+    @Test
+    public void checkUidlDependencies_addedViaAnnotations() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            String uidlData = extractUidlData(page);
+            assertFalse(uidlData.contains("eager.css"));
+            assertFalse(uidlData.contains("./eager-relative.css"));
+
+            assertFalse(uidlData.contains("inline.css"));
+
+            assertTrue(uidlData.contains("lazy.css"));
+        };
+        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest());
+    }
+
+    @Test
+    public void checkUidlDependencies_addedViaAPI() {
         Consumer<Document> uiPageTestingMethod = page -> {
             String uidlData = extractUidlData(page);
             assertFalse(uidlData.contains("eager.css"));
@@ -334,8 +358,7 @@ public class BootstrapHandlerDependenciesTest {
             assertTrue(uidlData.contains("lazy.js"));
             assertTrue(uidlData.contains("lazy.css"));
         };
-        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
-                new UIWithMethods_LoadingOrderTest());
+        testUis(uiPageTestingMethod, new UIWithMethods_LoadingOrderTest());
     }
 
     @Test
@@ -347,9 +370,11 @@ public class BootstrapHandlerDependenciesTest {
             // Ignore polyfills that should be loaded immediately and
             // scripts without src (separate test)
             jsElements.removeIf(element -> {
+                String type = element.attr("type");
                 String jsUrl = element.attr("src");
                 return jsUrl.isEmpty() || jsUrl.contains("es6-collections.js")
-                        || jsUrl.contains("webcomponents-loader.js");
+                        || jsUrl.contains("webcomponents-loader.js")
+                        || type.equals("module");
             });
 
             assertEquals(
@@ -366,11 +391,6 @@ public class BootstrapHandlerDependenciesTest {
     public void eagerDependenciesAreImportedInConsequentOrder() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
-
-            List<String> jsImportUrls = head.getElementsByTag("script").stream()
-                    .map(element -> element.attr("src"))
-                    .collect(Collectors.toList());
-            assertImportOrder(jsImportUrls, "1.js", "2.js");
 
             List<String> cssImportUrls = head.getElementsByTag("link").stream()
                     .filter(element -> "stylesheet".equals(element.attr("rel")))
@@ -389,14 +409,26 @@ public class BootstrapHandlerDependenciesTest {
             String uidlData = extractUidlData(page);
             assertDependenciesOrderInUidl(uidlData, "1.js", "2.js");
             assertDependenciesOrderInUidl(uidlData, "1.css", "2.css");
-            assertDependenciesOrderInUidl(uidlData, "1.html", "2.html");
         };
         testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Lazy(),
                 new UIWithMethods_ImportOrderTest_Lazy());
     }
 
     @Test
-    public void inlineDependenciesAreImportedInConsequentOrder() {
+    public void inlineDependenciesAreImportedInConsequentOrder_depsAreAddedViaAnnotations() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            Element head = page.head();
+
+            List<String> cssImportContents = head.getElementsByTag("style")
+                    .stream().map(Element::toString)
+                    .collect(Collectors.toList());
+            assertImportOrder(cssImportContents, "1.css", "2.css");
+        };
+        testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Inline());
+    }
+
+    @Test
+    public void inlineDependenciesAreImportedInConsequentOrder_depsAreAddedViaAPI() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
@@ -413,12 +445,27 @@ public class BootstrapHandlerDependenciesTest {
             assertImportOrder(cssImportContents, "1.css", "2.css");
 
         };
-        testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Inline(),
+        testUis(uiPageTestingMethod,
                 new UIWithMethods_ImportOrderTest_Inline());
     }
 
     @Test
     public void duplicateDependenciesAreDiscarded_Eager() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            Element head = page.head();
+
+            List<String> jsImportUrls = head.getElementsByTag("link").stream()
+                    .filter(el -> el.attr("type").equals("text/css"))
+                    .map(Element::toString).collect(Collectors.toList());
+            assertImportOrder(jsImportUrls, "1.css", "2.css");
+        };
+        testUis(uiPageTestingMethod,
+                new UIAnnotated_DuplicateDependencies_Eager(),
+                new UIWithMethods_DuplicateDependencies_Eager());
+    }
+
+    @Test
+    public void duplicateDependenciesAreDiscarded_Eager_JSDepsAddedViaAPI() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
@@ -428,7 +475,6 @@ public class BootstrapHandlerDependenciesTest {
             assertImportOrder(jsImportUrls, "1.js", "2.js");
         };
         testUis(uiPageTestingMethod,
-                new UIAnnotated_DuplicateDependencies_Eager(),
                 new UIWithMethods_DuplicateDependencies_Eager());
     }
 
@@ -436,7 +482,7 @@ public class BootstrapHandlerDependenciesTest {
     public void duplicateDependenciesAreDiscarded_Lazy() {
         Consumer<Document> uiPageTestingMethod = page -> {
             String uidlData = extractUidlData(page);
-            assertDependenciesOrderInUidl(uidlData, "1.js", "2.js");
+            assertDependenciesOrderInUidl(uidlData, "1.css", "2.css");
         };
         testUis(uiPageTestingMethod,
                 new UIAnnotated_DuplicateDependencies_Lazy(),
@@ -444,7 +490,32 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     @Test
+    public void duplicateDependenciesAreDiscarded_Lazy_JSdepsAreAddedViaAPI() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            String uidlData = extractUidlData(page);
+            assertDependenciesOrderInUidl(uidlData, "1.js", "2.js");
+        };
+        testUis(uiPageTestingMethod,
+                new UIWithMethods_DuplicateDependencies_Lazy());
+    }
+
+    @Test
     public void duplicateDependenciesAreDiscarded_Inline() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            Element head = page.head();
+
+            List<String> jsImportContents = head.getElementsByTag("style")
+                    .stream().map(Element::toString)
+                    .collect(Collectors.toList());
+            assertImportOrder(jsImportContents, "1.css", "2.css");
+        };
+        testUis(uiPageTestingMethod,
+                new UIAnnotated_DuplicateDependencies_Inline(),
+                new UIWithMethods_DuplicateDependencies_Inline());
+    }
+
+    @Test
+    public void duplicateDependenciesAreDiscarded_Inline_JSDepsAddedViaAPI() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
@@ -456,7 +527,6 @@ public class BootstrapHandlerDependenciesTest {
             assertImportOrder(jsImportContents, "1.js", "2.js");
         };
         testUis(uiPageTestingMethod,
-                new UIAnnotated_DuplicateDependencies_Inline(),
                 new UIWithMethods_DuplicateDependencies_Inline());
     }
 
@@ -525,6 +595,7 @@ public class BootstrapHandlerDependenciesTest {
                 new UIWithMethods_LoadingOrderTest());
     }
 
+
     @Test
     public void checkThatJsImportsWithoutSrcHaveNoDeferAttribute() {
         Consumer<Document> uiPageTestingMethod = page -> {
@@ -549,7 +620,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private void testUis(Consumer<Document> uiPageTestingMethod,
-            UI... uisToTest) {
+                         UI... uisToTest) {
         assertTrue("Got no uis to test", uisToTest.length > 0);
         Stream.of(uisToTest).forEach(
                 ui -> uiPageTestingMethod.accept(initUIAndGetPage(ui)));
@@ -590,7 +661,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private void assertJavaScriptElementLoadedEagerly(Element head,
-            String url) {
+                                                      String url) {
         Elements jsLinks = head.getElementsByAttributeValue("src", url);
         assertEquals(1, jsLinks.size());
         Element linkElement = jsLinks.get(0);
@@ -619,7 +690,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private void assertJavaScriptElementInlined(Element head,
-            String expectedContents) {
+                                                String expectedContents) {
         List<Element> scriptsWithoutExpectedContents = head
                 .getElementsByTag("script").stream()
                 .filter(element -> element.toString()
@@ -639,7 +710,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private void assertCssElementInlined(Element head,
-            String expectedContents) {
+                                         String expectedContents) {
         List<Element> stylesWithExpectedContents = head
                 .getElementsByTag("style").stream()
                 .filter(element -> element.toString()
@@ -655,7 +726,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private void assertHtmlElementInlined(Element body,
-            String expectedContents) {
+                                          String expectedContents) {
         List<Element> inlinedHtmlElements = body.getElementsByTag("span")
                 .stream()
                 .filter(element -> element.toString()
@@ -682,7 +753,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private void assertImportOrder(List<String> allContents,
-            String firstContents, String secondContents) {
+                                   String firstContents, String secondContents) {
         int firstPosition = -1;
         int secondPosition = -1;
         for (int i = 0; i < allContents.size(); i++) {
@@ -703,7 +774,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private void assertDependenciesOrderInUidl(String uidlData,
-            String firstDependencyUrl, String secondDependencyUrl) {
+                                               String firstDependencyUrl, String secondDependencyUrl) {
         int firstPosition = uidlData.indexOf(firstDependencyUrl);
         int secondPosition = uidlData.indexOf(secondDependencyUrl);
         assertCorrectDependencyPositions(firstDependencyUrl,
@@ -711,15 +782,16 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private void assertCorrectDependencyPositions(String firstDependencyUrl,
-            String secondDependencyUrl, int firstPosition, int secondPosition) {
+                                                  String secondDependencyUrl, int firstPosition, int secondPosition) {
         assertNotEquals(String.format("Could not find url %s in uidl",
                 firstDependencyUrl), -1, firstPosition);
         assertNotEquals(String.format("Could not find url %s in uidl",
                 secondDependencyUrl), -1, secondPosition);
 
         assertTrue(String.format(
-                "Expected url %s to be contained before url %s in the uidl, because it is expected to be first to be imported",
-                firstDependencyUrl, secondDependencyUrl),
+                        "Expected url %s to be contained before url %s in the uidl, because it is expected to be first to be imported",
+                        firstDependencyUrl, secondDependencyUrl),
                 firstPosition < secondPosition);
     }
+
 }

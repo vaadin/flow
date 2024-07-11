@@ -1127,8 +1127,6 @@ public class ComponentTest {
                 ui.getInternals().getDependencyList().getPendingSendToClient());
         Assert.assertEquals(4, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
         assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
                 pendingDependencies);
         assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
@@ -1149,8 +1147,6 @@ public class ComponentTest {
                 internals.getDependencyList().getPendingSendToClient());
         Assert.assertEquals(5, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "usesuses.html",
-                pendingDependencies);
         assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
                 pendingDependencies);
         assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
@@ -1165,7 +1161,6 @@ public class ComponentTest {
     public void circularDependencies() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(

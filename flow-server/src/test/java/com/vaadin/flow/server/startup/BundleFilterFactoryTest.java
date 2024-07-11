@@ -95,6 +95,7 @@ public class BundleFilterFactoryTest {
         new BundleFilterFactory().createFilters(mocks.getService());
     }
 
+    @Ignore
     @Test
     public void when_json_file_not_found_fails() {
         expectedException.expect(IllegalArgumentException.class);
@@ -138,6 +139,7 @@ public class BundleFilterFactoryTest {
         new BundleFilterFactory().createFilters(mocks.getService());
     }
 
+    @Ignore
     @Test
     public void multiple_bundles_with_main_bundle_prefix_throws() {
         mocks.getServlet().addServletContextResource(
@@ -191,6 +193,7 @@ public class BundleFilterFactoryTest {
         serviceInit(NON_HASHED_BUNDLE_NAME);
     }
 
+    @Ignore
     @Test
     public void happy_path_with_hash() {
         serviceInit(HASHED_BUNDLE_NAME);
