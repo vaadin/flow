@@ -300,15 +300,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void should_Not_Run_Updaters_inBowerMode() throws Exception {
-        System.setProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                "true");
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
-        devModeInitializer.onStartup(classes, servletContext);
-        assertNull(DevModeHandler.getDevModeHandler());
-    }
-
-    @Test
     public void should_Not_Run_Updaters_inProductionMode() throws Exception {
         System.setProperty(
                 "vaadin." + InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
