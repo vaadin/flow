@@ -203,14 +203,6 @@ public class PackageForProductionMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        super.execute();
-
-        // Do nothing when not in compatibility mode
-        if (!compatibility) {
-            getLog().info(
-                    "Skipped `package-for-production` goal because compatibility mode is not set.");
-            return;
-        }
 
         if (transpileOutputDirectory == null) {
             if ("jar".equals(project.getPackaging()) && project.getArtifactMap()
@@ -293,10 +285,5 @@ public class PackageForProductionMojo extends FlowModeAbstractMojo {
         return new ProxyConfig.Proxy(proxy.getId(), proxy.getProtocol(),
                 proxy.getHost(), proxy.getPort(), proxy.getUsername(),
                 proxy.getPassword(), proxy.getNonProxyHosts());
-    }
-
-    @Override
-    boolean isDefaultCompatibility() {
-        return true;
     }
 }

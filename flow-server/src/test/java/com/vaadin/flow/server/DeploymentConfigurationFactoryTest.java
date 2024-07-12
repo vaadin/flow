@@ -92,9 +92,6 @@ public class DeploymentConfigurationFactoryTest {
         FileUtils.writeLines(tokenFile, Arrays.asList("{", "}"));
         contextMock = mock(ServletContext.class);
 
-        defaultServletParams.put(
-                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
         defaultServletParams.put(PARAM_TOKEN_FILE, tokenFile.getPath());
     }
 
@@ -298,8 +295,6 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> map = new HashMap<>();
         map.put(FrontendUtils.PROJECT_BASEDIR,
                 temporaryFolder.getRoot().getAbsolutePath());
-        map.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
 
         File webPack = new File(temporaryFolder.getRoot().getAbsolutePath(),
                 FrontendUtils.WEBPACK_CONFIG);

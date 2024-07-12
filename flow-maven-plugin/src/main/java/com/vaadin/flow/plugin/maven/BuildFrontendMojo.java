@@ -155,14 +155,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        super.execute();
-
-        // Do nothing when compatibility mode
-        if (compatibility) {
-            getLog().info(
-                    "Skipped 'build-frontend' goal because compatibility mode is set to true.");
-            return;
-        }
 
         updateBuildFile();
 
@@ -224,7 +216,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     void runWebpack(FrontendTools tools) throws MojoExecutionException {
-        if (!oldLicenseChecker && !compatibility) {
+        if (!oldLicenseChecker) {
             LicenseChecker.setStrictOffline(true);
         }
         validateLicense();
@@ -284,7 +276,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     // package-private for a sake of testing
     void validateLicenses() {
-        if (compatibility || oldLicenseChecker) {
+        if (oldLicenseChecker) {
             return;
         }
 
@@ -441,27 +433,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             getLog().warn("Unable to read token file", e);
-        }
-    }
-
-    @Override
-    boolean isDefaultCompatibility() {
-        File tokenFile = getTokenFile();
-        if (!tokenFile.exists()) {
-            getLog().warn("'build-frontend' goal was called without previously "
-                    + "calling 'prepare-frontend'");
-            return true;
-        }
-        try {
-            String json = FileUtils.readFileToString(tokenFile,
-                    StandardCharsets.UTF_8.name());
-            JsonObject buildInfo = JsonUtil.parse(json);
-            return buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)
-                    ? buildInfo.getBoolean(SERVLET_PARAMETER_COMPATIBILITY_MODE)
-                    : true;
-        } catch (IOException e) {
-            getLog().warn("Unable to read token file", e);
-            return true;
         }
     }
 

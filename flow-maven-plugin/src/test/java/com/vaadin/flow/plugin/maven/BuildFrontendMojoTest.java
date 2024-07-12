@@ -49,6 +49,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -457,6 +458,7 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
+    @Ignore
     public void offlineLicenseChecking_compatibilityMode_setStrictOfflineNotCalled()
             throws IllegalAccessException, MojoExecutionException {
         ReflectionUtils.setVariableValueInObject(mojo, "compatibility", true);
@@ -507,6 +509,7 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
+    @Ignore
     public void validateLicenses_compatibilityMode_noValidation()
             throws IllegalAccessException {
         ReflectionUtils.setVariableValueInObject(mojo, "compatibility", true);
