@@ -105,7 +105,7 @@ public class DataCommunicator<T> implements Serializable {
     private int assumedSize;
     private int lastSent = -1;
 
-    private boolean resendEntireRange = true;
+    protected boolean resendEntireRange = true;
     private boolean assumeEmptyClient = true;
 
     private int nextUpdateId = 0;
@@ -1120,11 +1120,11 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private void requestFlush() {
+    protected void requestFlush() {
         requestFlush(false);
     }
 
-    private void requestFlush(boolean forced) {
+    protected void requestFlush(boolean forced) {
         if (!shouldRequestFlush(forced)) {
             return;
         }
@@ -1329,7 +1329,7 @@ public class DataCommunicator<T> implements Serializable {
         updatedData.clear();
     }
 
-    private void unregisterPassivatedKeys() {
+    protected void unregisterPassivatedKeys() {
         /*
          * Actually unregister anything that was removed in an update that the
          * client has confirmed that it has applied.
