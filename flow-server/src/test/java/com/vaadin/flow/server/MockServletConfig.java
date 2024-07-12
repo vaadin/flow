@@ -23,11 +23,6 @@ public class MockServletConfig implements ServletConfig {
 
     private ServletContext context = new MockServletContext();
     private static final Properties DEFAULT_PROPERTIES = new Properties();
-    {
-        DEFAULT_PROPERTIES.setProperty(
-                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
-    }
 
     private final Properties initParameters;
 

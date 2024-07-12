@@ -452,7 +452,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
     private static void verifyMode(CompatibilityModeStatus value,
             boolean hasTokenFile, boolean hasWebpackConfig) {
 
-        if (!hasTokenFile && !hasWebpackConfig) {
+        if (value == CompatibilityModeStatus.UNDEFINED) {
+            // NOP, no need to care about this case anymore
+        } else if (!hasTokenFile && !hasWebpackConfig) {
             // If compatibility mode is explicitly set to false, no
             // flow-build-info.json file exists, and no appropriate
             // webpack.config.js is found in the current working directory, then
