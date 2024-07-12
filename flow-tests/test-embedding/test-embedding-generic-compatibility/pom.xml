@@ -23,12 +23,6 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-compatibility-mode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
             <artifactId>flow-embedding-test-assets</artifactId>
             <version>${project.version}</version>
         </dependency>
