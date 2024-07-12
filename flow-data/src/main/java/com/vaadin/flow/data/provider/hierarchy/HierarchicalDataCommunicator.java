@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.DataCommunicator;
@@ -60,10 +61,10 @@ import elemental.json.JsonValue;
  */
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
-    private final HierarchicalArrayUpdater arrayUpdater;
+    // private final ArrayUpdater arrayUpdater;
     private final StateNode stateNode;
     private HierarchyMapper<T, ?> mapper;
-    private DataGenerator<T> dataGenerator;
+    // private DataGenerator<T> dataGenerator;
     private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
 
     private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
@@ -85,12 +86,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            default key generator.
      */
     public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator,
-            HierarchicalArrayUpdater arrayUpdater,
+            ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
             SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier) {
         super(dataGenerator, arrayUpdater, dataUpdater, stateNode);
-        this.dataGenerator = dataGenerator;
-        this.arrayUpdater = arrayUpdater;
+        // this.dataGenerator = dataGenerator;
+        // this.arrayUpdater = arrayUpdater;
         this.stateNode = stateNode;
         this.uniqueKeyProviderSupplier = uniqueKeyProviderSupplier;
 
@@ -106,12 +107,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 .put("parentUniqueKey", getKeyMapper().key(parent)));
     }
 
-    private void requestFlush(HierarchicalUpdate update) {
-        SerializableConsumer<ExecutionContext> flushRequest = context -> update
-                .commit();
-        stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode, flushRequest));
-    }
+    // private void requestFlush(HierarchicalUpdate update) {
+    //     SerializableConsumer<ExecutionContext> flushRequest = context -> update
+    //             .commit();
+    //     stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
+    //             .beforeClientResponse(stateNode, flushRequest));
+    // }
 
     private void requestFlush(HierarchicalCommunicationController<T> update) {
         SerializableConsumer<ExecutionContext> flushRequest = context -> update
@@ -129,52 +130,52 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     public void reset() {
         super.reset();
 
-        if (!dataControllers.isEmpty()) {
-            dataControllers.values().forEach(
-                    HierarchicalCommunicationController::unregisterPassivatedKeys);
-            dataControllers.clear();
-        }
+        // if (!dataControllers.isEmpty()) {
+        //     dataControllers.values().forEach(
+        //             HierarchicalCommunicationController::unregisterPassivatedKeys);
+        //     dataControllers.clear();
+        // }
 
-        if (getHierarchyMapper() != null) {
-            HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(getHierarchyMapper().getRootSize());
-            update.enqueue("$connector.ensureHierarchy");
+        // if (getHierarchyMapper() != null) {
+        //     HierarchicalUpdate update = arrayUpdater
+        //             .startUpdate(getHierarchyMapper().getRootSize());
+        //     update.enqueue("$connector.ensureHierarchy");
 
-            Collection<T> expandedItems = getHierarchyMapper()
-                    .getExpandedItems();
-            if (!expandedItems.isEmpty()) {
-                update.enqueue("$connector.expandItems", expandedItems.stream()
-                        .map(getKeyMapper()::key).map(key -> {
-                            JsonObject json = Json.createObject();
-                            json.put("key", key);
-                            return json;
-                        }).collect(JsonUtils.asArray()));
-            }
+        //     Collection<T> expandedItems = getHierarchyMapper()
+        //             .getExpandedItems();
+        //     if (!expandedItems.isEmpty()) {
+        //         update.enqueue("$connector.expandItems", expandedItems.stream()
+        //                 .map(getKeyMapper()::key).map(key -> {
+        //                     JsonObject json = Json.createObject();
+        //                     json.put("key", key);
+        //                     return json;
+        //                 }).collect(JsonUtils.asArray()));
+        //     }
 
-            requestFlush(update);
-        }
+        //     requestFlush(update);
+        // }
     }
 
     @Override
     protected void handleDataRefreshEvent(
             DataChangeEvent.DataRefreshEvent<T> event) {
-        if (event.isRefreshChildren()) {
-            T item = event.getItem();
-            if (isExpanded(item)) {
-                String parentKey = getKeyMapper().key(item);
+        // if (event.isRefreshChildren()) {
+        //     T item = event.getItem();
+        //     if (isExpanded(item)) {
+        //         String parentKey = getKeyMapper().key(item);
 
-                if (!dataControllers.containsKey(parentKey)) {
-                    setParentRequestedRange(0, mapper.countChildItems(item),
-                            item);
-                }
-                HierarchicalCommunicationController<T> dataController = dataControllers
-                        .get(parentKey);
-                if (dataController != null) {
-                    dataController.setResendEntireRange(true);
-                    requestFlush(dataController);
-                }
-            }
-        }
+        //         if (!dataControllers.containsKey(parentKey)) {
+        //             setParentRequestedRange(0, mapper.countChildItems(item),
+        //                     item);
+        //         }
+        //         HierarchicalCommunicationController<T> dataController = dataControllers
+        //                 .get(parentKey);
+        //         if (dataController != null) {
+        //             dataController.setResendEntireRange(true);
+        //             requestFlush(dataController);
+        //         }
+        //     }
+        // }
         super.handleDataRefreshEvent(event);
     }
 
@@ -182,25 +183,25 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     public Stream<T> fetchFromProvider(int offset, int limit) {
         // Instead of adding logic to this class, delegate request to the
         // separate object handling hierarchies.
-        return mapper.fetchRootItems(Range.withLength(offset, limit));
+        return mapper.fetchHierarchyItems(Range.withLength(offset, limit));
     }
 
     public void setParentRequestedRange(int start, int length, T parentItem) {
-        String parentKey = getKeyMapper().key(parentItem);
-        HierarchicalCommunicationController<T> controller = dataControllers
-                .computeIfAbsent(parentKey,
-                        key -> new HierarchicalCommunicationController<>(
-                                parentKey, getKeyMapper(), mapper,
-                                dataGenerator,
-                                size -> arrayUpdater
-                                        .startUpdate(getDataProviderSize()),
-                                (pkey, range) -> mapper.fetchChildItems(
-                                        getKeyMapper().get(pkey), range)));
-        controller.setHasUniqueKeyProviderSupplier(
-                uniqueKeyProviderSupplier.get() != null);
-        Range range = computeRequestedRange(start, length);
-        controller.setRequestRange(range.getStart(), range.length());
-        requestFlush(controller);
+        // String parentKey = getKeyMapper().key(parentItem);
+        // HierarchicalCommunicationController<T> controller = dataControllers
+        //         .computeIfAbsent(parentKey,
+        //                 key -> new HierarchicalCommunicationController<>(
+        //                         parentKey, getKeyMapper(), mapper,
+        //                         dataGenerator,
+        //                         size -> arrayUpdater
+        //                                 .startUpdate(getDataProviderSize()),
+        //                         (pkey, range) -> mapper.fetchChildItems(
+        //                                 getKeyMapper().get(pkey), range)));
+        // controller.setHasUniqueKeyProviderSupplier(
+        //         uniqueKeyProviderSupplier.get() != null);
+        // Range range = computeRequestedRange(start, length);
+        // controller.setRequestRange(range.getStart(), range.length());
+        // requestFlush(controller);
     }
 
     @Override
@@ -345,21 +346,24 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         items.forEach(item -> {
             if (mapper.collapse(item)) {
                 collapsedItems.add(item);
-                HierarchicalCommunicationController<T> controller = dataControllers
-                        .remove(getKeyMapper().key(item));
-                if (controller != null) {
-                    controller.unregisterPassivatedKeys();
-                }
+                // HierarchicalCommunicationController<T> controller = dataControllers
+                //         .remove(getKeyMapper().key(item));
+                // if (controller != null) {
+                //     controller.unregisterPassivatedKeys();
+                // }
+                unregisterPassivatedKeys();
             }
         });
         if (syncClient && !collapsedItems.isEmpty()) {
-            HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(getHierarchyMapper().getRootSize());
-            update.enqueue("$connector.collapseItems",
-                    collapsedItems.stream()
-                            .map(this::generateJsonForExpandedOrCollapsedItem)
-                            .collect(JsonUtils.asArray()));
-            requestFlush(update);
+        //     HierarchicalUpdate update = arrayUpdater
+        //             .startUpdate(getHierarchyMapper().getRootSize());
+        //     update.enqueue("$connector.collapseItems",
+        //             collapsedItems.stream()
+        //                     .map(this::generateJsonForExpandedOrCollapsedItem)
+        //                     .collect(JsonUtils.asArray()));
+        //     requestFlush(update);
+            resendEntireRange = true;
+            requestFlush();
         }
         return collapsedItems;
     }
@@ -414,13 +418,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
         });
         if (syncClient && !expandedItems.isEmpty()) {
-            HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(getHierarchyMapper().getRootSize());
-            update.enqueue("$connector.expandItems",
-                    expandedItems.stream()
-                            .map(this::generateJsonForExpandedOrCollapsedItem)
-                            .collect(JsonUtils.asArray()));
-            requestFlush(update);
+            // HierarchicalUpdate update = arrayUpdater
+            //         .startUpdate(getHierarchyMapper().getRootSize());
+            // update.enqueue("$connector.expandItems",
+            //         expandedItems.stream()
+            //                 .map(this::generateJsonForExpandedOrCollapsedItem)
+            //                 .collect(JsonUtils.asArray()));
+            resendEntireRange = true;
+            requestFlush();
         }
         return expandedItems;
     }
@@ -494,7 +499,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @Override
     public int getDataProviderSize() {
-        return mapper.getRootSize();
+        return mapper.getTreeSize();
     }
 
     @Override
