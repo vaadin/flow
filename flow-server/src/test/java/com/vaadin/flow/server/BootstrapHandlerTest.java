@@ -1124,8 +1124,8 @@ public class BootstrapHandlerTest {
         Document page = pageBuilder.getBootstrapPage(bootstrapContext);
 
         Elements scripts = page.head().getElementsByTag("script");
-        boolean found = scripts.stream().anyMatch(
-                element -> element.attr("src").equals("imported-by-filter.js"));
+        boolean found = scripts.stream().anyMatch(element -> element.attr("src")
+                .equals("./frontend/imported-by-filter.js"));
         Assert.assertTrue(
                 "imported-by-filter.js should be in the head of the page",
                 found);
@@ -1143,7 +1143,7 @@ public class BootstrapHandlerTest {
 
         Elements links = page.head().getElementsByTag("link");
         found = links.stream().anyMatch(element -> element.attr("href")
-                .equals("imported-by-filter.css"));
+                .equals("./frontend/imported-by-filter.css"));
         Assert.assertTrue(
                 "imported-by-filter.css should be in the head of the page",
                 found);
