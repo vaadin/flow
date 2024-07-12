@@ -15,7 +15,6 @@ import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -25,12 +24,6 @@ import com.vaadin.flow.theme.AbstractTheme;
  *
  * @since 1.0
  */
-@HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
-@HtmlImport("frontend://bower_components/vaadin-lumo-styles/typography.html")
-@HtmlImport("frontend://bower_components/vaadin-lumo-styles/sizing.html")
-@HtmlImport("frontend://bower_components/vaadin-lumo-styles/spacing.html")
-@HtmlImport("frontend://bower_components/vaadin-lumo-styles/style.html")
-@HtmlImport("frontend://bower_components/vaadin-lumo-styles/icons.html")
 @NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.6.1")
 @JsModule("@vaadin/vaadin-lumo-styles/color.js")
 @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
