@@ -827,7 +827,7 @@ export class VaadinDevTools extends LitElement {
     return html` 
       <div
         style="display: none"
-        class="dev-tools}"
+        class="dev-tools"
       >
       </div>`;
   }
