@@ -31,6 +31,7 @@ public class ClientCallableHandlersTest {
     @Tag("div")
     static class NonTemplateComponentWithEventHandler extends Component {
 
+
         @ClientCallable
         public void publishedMethod1() {
 
