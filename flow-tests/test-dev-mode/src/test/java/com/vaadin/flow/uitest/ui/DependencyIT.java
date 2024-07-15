@@ -59,7 +59,6 @@ public class DependencyIT extends ChromeBrowserTest {
                 addedJsText);
     }
 
-
     @Test
     public void loadingUnavailableResources() {
         open();

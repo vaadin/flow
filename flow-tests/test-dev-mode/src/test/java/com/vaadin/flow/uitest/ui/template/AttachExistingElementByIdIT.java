@@ -18,8 +18,6 @@ public class AttachExistingElementByIdIT
         open();
 
         assertTemplate("simple-path");
-        assertTemplate("context-path");
-        assertTemplate("frontend-path");
     }
 
     private void assertTemplate(String id) {

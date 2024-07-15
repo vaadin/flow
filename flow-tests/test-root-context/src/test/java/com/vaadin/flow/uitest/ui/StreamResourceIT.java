@@ -43,8 +43,8 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
 
     private void assertDownloadedContent() throws IOException {
         WebElement link = findElement(By.id("link"));
-        Assert.assertEquals("Anchor element should have router-ignore " +
-                        "attribute", "",
+        Assert.assertEquals(
+                "Anchor element should have router-ignore " + "attribute", "",
                 link.getAttribute("router-ignore"));
         String url = link.getAttribute("href");
 

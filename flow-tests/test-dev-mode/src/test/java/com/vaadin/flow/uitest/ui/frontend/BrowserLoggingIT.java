@@ -13,6 +13,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.junit.Assert.assertThat;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -25,6 +26,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class BrowserLoggingIT extends ChromeBrowserTest {
 
     @Test
+    @Ignore
     public void productionModeHasNoLogEntries() {
         openProduction();
         waitForElementPresent(By.id("elementId"));

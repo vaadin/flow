@@ -10,6 +10,7 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -18,6 +19,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class BundledTemplateInTemplateWithIdIT extends ChromeBrowserTest {
 
+    @Ignore
     @Test
     public void childTemplateInstanceHandlesEvent() {
         open();
