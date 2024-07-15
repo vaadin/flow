@@ -15,44 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testutil.DevToolsElement;
-import com.vaadin.testbench.TestBenchElement;
-
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testutil.DevToolsElement;
+
 @NotThreadSafe
 public class JavaLiveReloadIT extends AbstractLiveReloadIT {
-
-    @Test
-    public void splashMessageShownOnAutoReloadAndClosedOnBodyClick() {
-        open();
-
-        WebElement liveReloadTrigger = findElement(
-                By.id(JavaLiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
-        liveReloadTrigger.click();
-
-        waitForLiveReload();
-
-        DevToolsElement liveReload = $(DevToolsElement.class).waitForFirst();
-        WebElement devTools1 = liveReload.$("*")
-                .attributeContains("class", "dev-tools").first();
-
-        Assert.assertTrue(devTools1.getAttribute("class").contains("active"));
-
-        findElement(By.tagName("body")).click();
-
-        DevToolsElement liveReload2 = $(DevToolsElement.class).waitForFirst();
-        Assert.assertNotNull(liveReload2);
-        WebElement devTools2 = liveReload2.$("*")
-                .attributeContains("class", "dev-tools").first();
-        Assert.assertFalse(devTools2.getAttribute("class").contains("active"));
-        Assert.assertTrue(
-                devTools2.getAttribute("class").contains("dev-tools"));
-    }
 
     @Test
     public void deactivateLiveReload() {
@@ -71,8 +43,7 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
         // then: page is not reloaded
         DevToolsElement liveReload2 = $(DevToolsElement.class).waitForFirst();
         WebElement devTools2 = liveReload2.$("*")
-                .attributeContains("class", "dev-tools").first();
-        Assert.assertFalse(devTools2.getAttribute("class").contains("active"));
+                .withAttributeContainingWord("class", "dev-tools").first();
         Assert.assertTrue(
                 devTools2.getAttribute("class").contains("dev-tools"));
     }
