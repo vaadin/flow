@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -33,34 +34,28 @@ public class OrderedDependencyIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void inheritedHtmlInjection() {
+    public void inheritedModuleInjection() {
         open();
 
-        // Initial HTML import logs a message on the page
         List<String> messages = getMessages();
 
-        Assert.assertEquals(2, messages.size());
-        Assert.assertEquals(messages.get(0),
-                "Messagehandler initialized in HTML import 1");
-        Assert.assertEquals(messages.get(1),
-                "Messagehandler initialized in HTML import 2");
+        int index = messages.indexOf("Messagehandler initialized in module 1");
+        Assert.assertTrue("Js Module is not found on the page", index >= 0);
+
+        Assert.assertEquals("Messagehandler initialized in module 2",
+                messages.get(index + 1));
     }
 
     @Test
     public void inheritedScriptInjection() {
         open();
 
-        findElementById("addJs").click();
-        // Initial HTML import logs a message on the page
         List<String> messages = getMessages();
 
-        Assert.assertEquals(4, messages.size());
-        Assert.assertEquals(messages.get(0),
-                "Messagehandler initialized in HTML import 1");
-        Assert.assertEquals(messages.get(1),
-                "Messagehandler initialized in HTML import 2");
-        Assert.assertEquals(messages.get(2), "script1 is loaded");
-        Assert.assertEquals(messages.get(3), "script2 is loaded");
+        int index = messages.indexOf("script1 is loaded");
+        Assert.assertTrue("Js Module is not found on the page", index >= 0);
+
+        Assert.assertEquals("script2 is loaded", messages.get(index + 1));
 
     }
 

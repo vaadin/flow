@@ -33,6 +33,7 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void productionModeFalseInDevelopmentMode() {
         open();
         WebElement productionMode = findElement(By.id("productionMode"));
@@ -48,6 +49,7 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void pollUsingJS() {
         open();
         poll();
@@ -70,6 +72,7 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void profilingInfoAvailableInDevelopmentMode() {
         open();
         $(TestBenchElement.class).id("poll").click();

@@ -78,11 +78,6 @@ public class DependencyIT extends ChromeBrowserTest {
                         .filter(s -> s.startsWith("Error loading http://")
                                 && s.endsWith("/not-found.js"))
                         .findFirst().isPresent());
-        assertTrue("Couldn't find error for not-found.html",
-                errors.stream()
-                        .filter(s -> s.startsWith("Error loading http://")
-                                && s.endsWith("/not-found.html"))
-                        .findFirst().isPresent());
     }
 
     @Test

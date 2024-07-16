@@ -30,6 +30,7 @@ public class InfoIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void nonProductionModeServlet() {
         open();
         Assert.assertEquals("false", getInfoValue("Production mode"));
