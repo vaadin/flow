@@ -19,7 +19,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.OrderedDependencyView", layout = ViewTestLayout.class)
-@JavaScript("./test-files/js/init-log-message.js")
+@JavaScript("context://test-files/js/init-log-message.js")
 public class OrderedDependencyView extends AbstractDivView {
 
     @Tag("div")
@@ -41,7 +41,7 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
-    @JavaScript("./test-files/js/script1.js")
+    @JavaScript("context://test-files/js/script1.js")
     static class ScriptComponent extends Component implements HasText {
 
         public ScriptComponent() {
@@ -50,7 +50,7 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
-    @JavaScript("./test-files/js/script2.js")
+    @JavaScript("context://test-files/js/script2.js")
     static class Script2Component extends ScriptComponent {
 
         public Script2Component() {
