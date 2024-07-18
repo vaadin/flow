@@ -31,7 +31,7 @@ class NonPublicClassWithinForeignUnitFile<T extends List<? extends Number> & Ser
 abstract class NonPublicClassWithNestedClass<T extends Serializable>
         implements List<List<? extends Serializable>> {
 
-        public static class NestedClassInsideNonPublicClass extends Component {
+    public static class NestedClassInsideNonPublicClass extends Component {
 
     }
 }

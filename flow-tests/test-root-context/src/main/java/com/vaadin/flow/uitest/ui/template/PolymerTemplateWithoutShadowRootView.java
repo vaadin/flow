@@ -23,7 +23,7 @@ public class PolymerTemplateWithoutShadowRootView extends Div {
 
     @JsModule("./template-without-shadow-root-view.js")
     @Tag("template-without-shadow-root-view")
-        public static class Template extends PolymerTemplate<TemplateModel> {
+    public static class Template extends PolymerTemplate<TemplateModel> {
 
         @Id("content")
         private Div div;

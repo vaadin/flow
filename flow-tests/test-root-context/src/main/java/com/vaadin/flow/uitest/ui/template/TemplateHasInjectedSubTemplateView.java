@@ -23,7 +23,7 @@ public class TemplateHasInjectedSubTemplateView
         extends PolymerTemplate<Message> {
 
     @Tag("injected-child")
-        @JsModule("./InjectedChild.js")
+    @JsModule("./InjectedChild.js")
     public static class InjectedChild extends PolymerTemplate<Message> {
         @Override
         protected Message getModel() {

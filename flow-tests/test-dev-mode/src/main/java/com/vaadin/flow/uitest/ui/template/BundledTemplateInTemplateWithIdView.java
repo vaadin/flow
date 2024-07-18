@@ -22,17 +22,17 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class BundledTemplateInTemplateWithIdView extends AbstractDivView {
 
     @Tag("parent-id-template-bundled")
-        // This will make the DependencyFilter remove all other imports and add the
+    // This will make the DependencyFilter remove all other imports and add the
     // proper bundle
-        @Uses(ChildTemplate.class)
+    @Uses(ChildTemplate.class)
     public static class ParentTemplate extends PolymerTemplate<TemplateModel> {
 
     }
 
     @Tag("child-id-template-bundled")
-        // This will make the DependencyFilter remove all other imports and add the
+    // This will make the DependencyFilter remove all other imports and add the
     // proper bundle
-        public static class ChildTemplate extends PolymerTemplate<TemplateModel> {
+    public static class ChildTemplate extends PolymerTemplate<TemplateModel> {
         @Id("text")
         Div div;
 

@@ -1156,7 +1156,7 @@ public class RouterTest extends RoutingTestBase {
     public static class SubLayout extends Component {
     }
 
-        public static class MyTheme implements AbstractTheme {
+    public static class MyTheme implements AbstractTheme {
 
         @Override
         public String getBaseUrl() {

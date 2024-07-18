@@ -1080,7 +1080,7 @@ public class ComponentTest {
     }
 
     @Tag("div")
-        @JavaScript("js.js")
+    @JavaScript("js.js")
     @StyleSheet("css.css")
     public static class ComponentWithDependencies extends Component {
 
@@ -1095,7 +1095,7 @@ public class ComponentTest {
 
     @Tag("span")
     @Uses(UsesComponentWithDependencies.class)
-        public static class UsesUsesComponentWithDependencies extends Component {
+    public static class UsesUsesComponentWithDependencies extends Component {
 
     }
 

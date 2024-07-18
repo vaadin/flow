@@ -32,7 +32,7 @@ public class ToggleNullListView extends AbstractDivView {
     }
 
     @Tag("server-model-null-list")
-        @JsModule("ServerModelNullList.js")
+    @JsModule("ServerModelNullList.js")
     public static class ServerModelNullListTemplate
             extends PolymerTemplate<ServerModelNullListTemplate.Model> {
         public interface Model extends TemplateModel {

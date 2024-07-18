@@ -8,7 +8,6 @@
  */
 package com.vaadin.flow.migration.samplecode;
 
-
 public class NonVaadinComponent {
 
 }

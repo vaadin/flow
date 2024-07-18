@@ -400,7 +400,7 @@ public class NpmTemplateParserTest {
     }
 
     @Tag("review-list")
-        @JsModule("./src/views/reviewslist/reviews-list")
+    @JsModule("./src/views/reviewslist/reviews-list")
     public class ReviewList extends PolymerTemplate<TemplateModel> {
     }
 

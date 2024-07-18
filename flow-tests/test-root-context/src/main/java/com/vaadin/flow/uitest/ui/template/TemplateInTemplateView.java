@@ -22,14 +22,14 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class TemplateInTemplateView extends AbstractDivView {
 
     @Tag("parent-template")
-        @Uses(ChildTemplate.class)
+    @Uses(ChildTemplate.class)
     @JsModule("ParentTemplate.js")
     public static class ParentTemplate extends PolymerTemplate<Message> {
 
     }
 
     @Tag("child-template")
-        @JsModule("ChildTemplate.js")
+    @JsModule("ChildTemplate.js")
     public static class ChildTemplate extends PolymerTemplate<Message> {
 
         @EventHandler

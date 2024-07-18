@@ -15,7 +15,7 @@ import com.vaadin.flow.router.Route;
 @Route("com.vaadin.flow.uitest.ui.template.AttachExistingElementByIdView")
 public class AttachExistingElementByIdView extends AbstractDivView {
 
-        @Tag("existing-element")
+    @Tag("existing-element")
     public static class AttachExistingElementByIdTemplate
             extends AbstractAttachExistingElementByIdTemplate {
 
@@ -24,7 +24,7 @@ public class AttachExistingElementByIdView extends AbstractDivView {
         }
     }
 
-        @Tag("context-existing-element")
+    @Tag("context-existing-element")
     public static class ContextAttachExistingElementByIdTemplate
             extends AbstractAttachExistingElementByIdTemplate {
 
@@ -33,7 +33,7 @@ public class AttachExistingElementByIdView extends AbstractDivView {
         }
     }
 
-        @Tag("frontend-existing-element")
+    @Tag("frontend-existing-element")
     public static class FrontendAttachExistingElementByIdTemplate
             extends AbstractAttachExistingElementByIdTemplate {
 

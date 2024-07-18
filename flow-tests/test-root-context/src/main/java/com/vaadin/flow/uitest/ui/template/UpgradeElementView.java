@@ -21,7 +21,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class UpgradeElementView extends AbstractDivView {
 
     @Tag("upgrade-element")
-        @JsModule("UpgradeElement.js")
+    @JsModule("UpgradeElement.js")
     public static class UpgradeElement extends PolymerTemplate<Message> {
 
         @EventHandler

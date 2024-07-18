@@ -19,7 +19,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class PolymerPropertyMutationInObserverView extends AbstractDivView {
 
     @Tag("property-mutation-in-observer")
-        @JsModule("PolymerPropertyMutationInObserver.js")
+    @JsModule("PolymerPropertyMutationInObserver.js")
     public static class PolymerPropertyMutationInObserver
             extends PolymerTemplate<Message> {
 

@@ -20,7 +20,7 @@ public class InnerTemplateVisibilityView extends AbstractDivView {
 
     @Tag("template-inner")
     @JsModule("./template-inner.js")
-        public static class Inner extends PolymerTemplate<Inner.Model> {
+    public static class Inner extends PolymerTemplate<Inner.Model> {
         public static class Model implements TemplateModel {
         }
 
@@ -30,7 +30,7 @@ public class InnerTemplateVisibilityView extends AbstractDivView {
 
     @Tag("template-outer")
     @JsModule("./template-outer.js")
-        public static class Outer extends PolymerTemplate<Outer.Model> {
+    public static class Outer extends PolymerTemplate<Outer.Model> {
         public static class Model implements TemplateModel {
         }
 

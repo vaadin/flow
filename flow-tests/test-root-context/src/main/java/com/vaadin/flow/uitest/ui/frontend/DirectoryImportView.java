@@ -12,7 +12,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class DirectoryImportView extends Div {
 
     @Tag("a-directory-component")
-        @JsModule("importdir.js")
+    @JsModule("importdir.js")
     public static class DirectoryComponent
             extends PolymerTemplate<TemplateModel> {
 

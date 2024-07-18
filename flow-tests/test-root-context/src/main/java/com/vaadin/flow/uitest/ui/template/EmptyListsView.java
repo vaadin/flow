@@ -23,7 +23,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 @Route("com.vaadin.flow.uitest.ui.template.EmptyListsView")
 public class EmptyListsView extends AbstractDivView {
 
-        @JsModule("EmptyLists.js")
+    @JsModule("EmptyLists.js")
     @com.vaadin.flow.component.Tag("empty-list")
     public static class EmptyLists extends PolymerTemplate<EmptyListsModel> {
         public EmptyLists() {

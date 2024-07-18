@@ -11,10 +11,9 @@ package com.vaadin.flow.migration.samplecode;
 import java.io.Serializable;
 import java.util.List;
 
-
 public class EnclosingClassWithNestedClass {
 
-        public abstract static class NestedComponent<T extends List<? extends Number> & Serializable, U extends Object>
+    public abstract static class NestedComponent<T extends List<? extends Number> & Serializable, U extends Object>
             extends GenericComponent<T, U> {
 
     }

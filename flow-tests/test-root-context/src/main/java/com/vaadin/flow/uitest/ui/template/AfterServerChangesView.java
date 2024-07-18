@@ -21,7 +21,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class AfterServerChangesView extends AbstractDivView {
 
     @Tag("after-server-changes")
-        @JsModule("AfterServerChanges.js")
+    @JsModule("AfterServerChanges.js")
     public static class AfterServerChanges extends PolymerTemplate<Message> {
 
         @Override

@@ -11,7 +11,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class PropertiesUpdatedBeforeChangeEventsView extends AbstractDivView {
 
     @Tag("properties-updated-before-change-events")
-        @JsModule("PropertiesUpdatedBeforeChangeEvents.js")
+    @JsModule("PropertiesUpdatedBeforeChangeEvents.js")
     public static class PropertiesUpdatedBeforeChangeEvents
             extends PolymerTemplate<Message> {
 

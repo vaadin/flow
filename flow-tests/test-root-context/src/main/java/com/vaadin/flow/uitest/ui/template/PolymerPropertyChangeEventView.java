@@ -20,7 +20,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class PolymerPropertyChangeEventView extends AbstractDivView {
 
     @Tag("property-change")
-        @JsModule("PolymerPropertyChange.js")
+    @JsModule("PolymerPropertyChange.js")
     public static class PolymerPropertyChange extends PolymerTemplate<Message> {
 
     }

@@ -22,7 +22,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class BasicTypeInListView extends AbstractDivView {
 
     @Tag("basic-type-list")
-        @JsModule("BasicTypeList.js")
+    @JsModule("BasicTypeList.js")
     public static class BasicTypeList extends PolymerTemplate<ItemsModel> {
 
         BasicTypeList() {

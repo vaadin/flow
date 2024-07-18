@@ -23,14 +23,14 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class TemplateInTemplateWithIdView extends AbstractDivView {
 
     @Tag("parent-id-template")
-        @JsModule("ParentIdTemplate.js")
+    @JsModule("ParentIdTemplate.js")
     @Uses(ChildTemplate.class)
     public static class ParentTemplate extends PolymerTemplate<TemplateModel> {
 
     }
 
     @Tag("child-id-template")
-        @JsModule("ChildIdTemplate.js")
+    @JsModule("ChildIdTemplate.js")
     public static class ChildTemplate extends PolymerTemplate<TemplateModel> {
         @Id("text")
         Div div;
