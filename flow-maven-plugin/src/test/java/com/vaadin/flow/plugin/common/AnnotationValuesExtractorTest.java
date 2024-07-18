@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
