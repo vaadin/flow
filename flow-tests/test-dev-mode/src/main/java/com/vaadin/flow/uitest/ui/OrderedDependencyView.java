@@ -23,7 +23,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class OrderedDependencyView extends AbstractDivView {
 
     @Tag("div")
-    @StyleSheet("./test-files/css/allred.css")
+    @StyleSheet("context://test-files/css/allred.css")
     static class HtmlComponent extends Component implements HasText {
 
         public HtmlComponent() {
@@ -32,7 +32,7 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
-    @StyleSheet("./test-files/css/allblueimportant.css")
+    @StyleSheet("context://test-files/css/allblueimportant.css")
     static class Html2Component extends HtmlComponent {
 
         public Html2Component() {

@@ -50,7 +50,10 @@ public class OrderedDependencyIT extends ChromeBrowserTest {
     public void inheritedScriptInjection() {
         open();
 
+        findElementById("addJs").click();
+
         List<String> messages = getMessages();
+        Assert.assertEquals(3, messages.size());
 
         int index = messages.indexOf("script1 is loaded");
         Assert.assertTrue("Js Module is not found on the page", index >= 0);
