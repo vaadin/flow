@@ -49,6 +49,10 @@
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bcpg-jdk15on</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>net.java.dev.jna</groupId>
+                    <artifactId>jna</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

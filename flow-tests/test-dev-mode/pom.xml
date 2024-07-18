@@ -50,15 +50,6 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <!--  re-use the test resources already present in es6 folder -->
-                            <name>vaadin.frontend.url.es5</name>
-                            <value>context://frontend-es6/</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -1,8 +1,8 @@
 /**
  * Copyright (C) 2024 Vaadin Ltd
- *
+ * <p>
  * This program is available under Vaadin Commercial License and Service Terms.
- *
+ * <p>
  * See {@literal <https://vaadin.com/commercial-license-and-service-terms>}  for the full
  * license.
  */
@@ -11,20 +11,19 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.OrderedDependencyView", layout = ViewTestLayout.class)
+@JavaScript("./test-files/js/init-log-message.js")
 public class OrderedDependencyView extends AbstractDivView {
 
     @Tag("div")
-    @HtmlImport("/test-files/html/htmlimport1.html")
-    @StyleSheet("/test-files/css/allred.css")
+    @StyleSheet("./test-files/css/allred.css")
     static class HtmlComponent extends Component implements HasText {
 
         public HtmlComponent() {
@@ -33,8 +32,7 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
-    @HtmlImport("/test-files/html/htmlimport2.html")
-    @StyleSheet("/test-files/css/allblueimportant.css")
+    @StyleSheet("./test-files/css/allblueimportant.css")
     static class Html2Component extends HtmlComponent {
 
         public Html2Component() {
@@ -43,7 +41,7 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
-    @JavaScript("/test-files/js/script1.js")
+    @JavaScript("./test-files/js/script1.js")
     static class ScriptComponent extends Component implements HasText {
 
         public ScriptComponent() {
@@ -52,7 +50,7 @@ public class OrderedDependencyView extends AbstractDivView {
     }
 
     @Tag("div")
-    @JavaScript("/test-files/js/script2.js")
+    @JavaScript("./test-files/js/script2.js")
     static class Script2Component extends ScriptComponent {
 
         public Script2Component() {
