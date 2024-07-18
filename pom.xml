@@ -222,22 +222,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.webjars.bowergithub.webcomponents</groupId>
-                <artifactId>webcomponentsjs</artifactId>
-                <version>1.2.6</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.webcomponents</groupId>
-                <artifactId>shadycss</artifactId>
-                <version>1.8.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bowergithub.polymer</groupId>
-                <artifactId>polymer</artifactId>
-                <version>${polymer.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
                 <version>1.12.19</version>

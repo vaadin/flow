@@ -19,11 +19,6 @@
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.webjars.bowergithub.polymer</groupId>
-            <artifactId>polymer</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

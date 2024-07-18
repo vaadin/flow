@@ -31,34 +31,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.webjars.bowergithub.polymerelements</groupId>
-            <artifactId>paper-input</artifactId>
-            <version>2.2.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.bowergithub.polymerelements</groupId>
-            <artifactId>iron-flex-layout</artifactId>
-            <version>2.0.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.bowergithub.polymerelements</groupId>
-            <artifactId>paper-slider</artifactId>
-            <version>2.0.6</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.bowergithub.webcomponents</groupId>
-            <artifactId>shadycss</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.bowergithub.vaadin</groupId>
-            <artifactId>vaadin-usage-statistics</artifactId>
-            <version>2.0.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
@@ -211,103 +183,6 @@
                                 </resourceBases>
                             </webAppConfig>
                         </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>web-jar-repackage</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>unpack-dependencies</id>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>unpack-dependencies</goal>
-                                </goals>
-                                <configuration>
-                                    <includes>**/webjars/**</includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.7</version>
-                        <executions>
-                            <execution>
-                                <id>clean-ui-classes</id>
-                                <phase>initialize</phase>
-                                <configuration>
-                                    <tasks>
-                                        <delete
-                                            dir="${ui.jar.classes}"></delete>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>repackage-webjars</id>
-                                <phase>process-resources</phase>
-                                <configuration>
-                                    <tasks>
-                                        <mkdir
-                                            dir="${ui.jar.classes}/frontend/bower_components"></mkdir>
-                                        <copy
-                                            todir="${ui.jar.classes}/frontend/bower_components">
-                                            <fileset
-                                                dir="${project.build.directory}/dependency/META-INF/resources/webjars/" />
-                                        </copy>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>ui-jar-classes</id>
-                                <phase>package</phase>
-                                <configuration>
-                                    <tasks>
-                                        <copy
-                                            todir="${ui.jar.classes}">
-                                            <fileset
-                                                dir="${project.build.outputDirectory}" />
-                                        </copy>
-                                        <copy
-                                            todir="${ui.jar.classes}/META-INF/resources/frontend/bower_components">
-                                            <fileset
-                                                dir="${ui.jar.classes}/frontend/bower_components" />
-                                        </copy>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>ui</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                                <configuration>
-                                    <classesDirectory>${ui.jar.classes}</classesDirectory>
-                                    <classifier>ui</classifier>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>

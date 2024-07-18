@@ -19,18 +19,6 @@
             <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- Mobile DnD polyfills for iOS support -->
-        <!-- using an npm based webjar because it will contain the version number in the path for the resources -->
-        <dependency>
-            <groupId>org.webjars.npm</groupId>
-            <artifactId>vaadin__vaadin-mobile-drag-drop</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars.npm</groupId>
-            <artifactId>mobile-drag-drop</artifactId>
-            <version>2.3.0-rc.1</version>
-        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-osgi</artifactId>
