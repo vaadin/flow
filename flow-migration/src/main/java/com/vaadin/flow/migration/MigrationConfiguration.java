@@ -11,6 +11,7 @@ package com.vaadin.flow.migration;
 import java.io.File;
 import java.util.Objects;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
