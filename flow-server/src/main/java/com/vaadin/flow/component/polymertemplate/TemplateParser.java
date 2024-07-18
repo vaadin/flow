@@ -10,6 +10,7 @@ package com.vaadin.flow.component.polymertemplate;
 
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.server.VaadinService;
 
 /**

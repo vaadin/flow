@@ -8,6 +8,7 @@
  */
 package com.vaadin.flow.shared.ui;
 
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 
