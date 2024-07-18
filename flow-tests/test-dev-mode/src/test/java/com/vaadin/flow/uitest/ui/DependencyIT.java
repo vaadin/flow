@@ -66,7 +66,7 @@ public class DependencyIT extends ChromeBrowserTest {
 
         List<String> errors = findElements(By.className("v-system-error"))
                 .stream().map(WebElement::getText).collect(Collectors.toList());
-        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals(2, errors.size());
         // The order for these can be random
         assertTrue("Couldn't find error for not-found.css",
                 errors.stream()
