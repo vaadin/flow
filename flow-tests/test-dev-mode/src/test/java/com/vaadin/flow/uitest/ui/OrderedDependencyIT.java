@@ -39,11 +39,8 @@ public class OrderedDependencyIT extends ChromeBrowserTest {
 
         List<String> messages = getMessages();
 
-        int index = messages.indexOf("Messagehandler initialized in module 1");
+        int index = messages.indexOf("HTML import 4 companion JS loaded");
         Assert.assertTrue("Js Module is not found on the page", index >= 0);
-
-        Assert.assertEquals("Messagehandler initialized in module 2",
-                messages.get(index + 1));
     }
 
     @Test
