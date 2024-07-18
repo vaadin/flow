@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
@@ -1081,8 +1080,7 @@ public class ComponentTest {
     }
 
     @Tag("div")
-    @HtmlImport("html.html")
-    @JavaScript("js.js")
+        @JavaScript("js.js")
     @StyleSheet("css.css")
     public static class ComponentWithDependencies extends Component {
 
@@ -1097,8 +1095,7 @@ public class ComponentTest {
 
     @Tag("span")
     @Uses(UsesComponentWithDependencies.class)
-    @HtmlImport("usesuses.html")
-    public static class UsesUsesComponentWithDependencies extends Component {
+        public static class UsesUsesComponentWithDependencies extends Component {
 
     }
 

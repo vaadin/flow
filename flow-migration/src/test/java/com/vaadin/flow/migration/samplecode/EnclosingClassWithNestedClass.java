@@ -11,12 +11,10 @@ package com.vaadin.flow.migration.samplecode;
 import java.io.Serializable;
 import java.util.List;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 
 public class EnclosingClassWithNestedClass {
 
-    @HtmlImport("./foo.html")
-    public abstract static class NestedComponent<T extends List<? extends Number> & Serializable, U extends Object>
+        public abstract static class NestedComponent<T extends List<? extends Number> & Serializable, U extends Object>
             extends GenericComponent<T, U> {
 
     }

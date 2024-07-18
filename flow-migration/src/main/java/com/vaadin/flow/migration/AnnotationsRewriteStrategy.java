@@ -8,7 +8,6 @@
  */
 package com.vaadin.flow.migration;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 
 /**

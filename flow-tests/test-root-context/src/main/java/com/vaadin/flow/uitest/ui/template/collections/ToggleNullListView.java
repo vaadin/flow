@@ -3,7 +3,6 @@ package com.vaadin.flow.uitest.ui.template.collections;
 import java.util.List;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -33,8 +32,7 @@ public class ToggleNullListView extends AbstractDivView {
     }
 
     @Tag("server-model-null-list")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ServerModelNullList.html")
-    @JsModule("ServerModelNullList.js")
+        @JsModule("ServerModelNullList.js")
     public static class ServerModelNullListTemplate
             extends PolymerTemplate<ServerModelNullListTemplate.Model> {
         public interface Model extends TemplateModel {

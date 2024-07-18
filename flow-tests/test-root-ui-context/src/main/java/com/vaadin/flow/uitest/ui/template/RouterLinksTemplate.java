@@ -9,11 +9,9 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("router-link")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/RouterLinks.html")
 public class RouterLinksTemplate extends PolymerTemplate<TemplateModel> {
 }

@@ -11,7 +11,6 @@ package com.vaadin.flow.mixedtest.ui;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;

@@ -1,7 +1,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -21,8 +20,7 @@ public class InnerTemplateVisibilityView extends AbstractDivView {
 
     @Tag("template-inner")
     @JsModule("./template-inner.js")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-inner.html")
-    public static class Inner extends PolymerTemplate<Inner.Model> {
+        public static class Inner extends PolymerTemplate<Inner.Model> {
         public static class Model implements TemplateModel {
         }
 
@@ -32,8 +30,7 @@ public class InnerTemplateVisibilityView extends AbstractDivView {
 
     @Tag("template-outer")
     @JsModule("./template-outer.js")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-outer.html")
-    public static class Outer extends PolymerTemplate<Outer.Model> {
+        public static class Outer extends PolymerTemplate<Outer.Model> {
         public static class Model implements TemplateModel {
         }
 

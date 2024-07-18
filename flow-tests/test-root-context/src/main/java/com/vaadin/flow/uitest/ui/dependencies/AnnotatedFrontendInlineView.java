@@ -9,7 +9,6 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -21,7 +20,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.dependencies.AnnotatedFrontendInlineView", layout = ViewTestLayout.class)
 @Tag("frontend-inline")
 @JavaScript(value = "components/frontend-inline.js", loadMode = LoadMode.INLINE)
-@HtmlImport(value = "components/frontend-inline.html", loadMode = LoadMode.INLINE)
 @StyleSheet(value = "components/frontend-inline.css", loadMode = LoadMode.INLINE)
 public class AnnotatedFrontendInlineView
         extends PolymerTemplate<TemplateModel> {

@@ -11,7 +11,6 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.UUID;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
@@ -22,8 +21,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class AfterServerChangesView extends AbstractDivView {
 
     @Tag("after-server-changes")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/AfterServerChanges.html")
-    @JsModule("AfterServerChanges.js")
+        @JsModule("AfterServerChanges.js")
     public static class AfterServerChanges extends PolymerTemplate<Message> {
 
         @Override

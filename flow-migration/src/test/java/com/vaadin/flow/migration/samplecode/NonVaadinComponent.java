@@ -8,9 +8,7 @@
  */
 package com.vaadin.flow.migration.samplecode;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 
-@HtmlImport("bower_components/non-vaadin/non-vaadin.html")
 public class NonVaadinComponent {
 
 }

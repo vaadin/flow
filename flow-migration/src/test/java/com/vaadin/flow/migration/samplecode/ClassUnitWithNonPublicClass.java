@@ -12,7 +12,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.migration.samplecode.NonPublicClassWithNestedClass.NestedClassInsideNonPublicClass;
 
 public class ClassUnitWithNonPublicClass {
@@ -24,7 +23,6 @@ public class ClassUnitWithNonPublicClass {
 
 }
 
-@HtmlImport("src/foo/bar.html")
 class NonPublicClassWithinForeignUnitFile<T extends List<? extends Number> & Serializable, U extends Object>
         extends GenericComponent<T, U> {
 
@@ -33,8 +31,7 @@ class NonPublicClassWithinForeignUnitFile<T extends List<? extends Number> & Ser
 abstract class NonPublicClassWithNestedClass<T extends Serializable>
         implements List<List<? extends Serializable>> {
 
-    @HtmlImport("baz.html")
-    public static class NestedClassInsideNonPublicClass extends Component {
+        public static class NestedClassInsideNonPublicClass extends Component {
 
     }
 }
