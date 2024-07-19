@@ -6,7 +6,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 
 @Route("com.vaadin.flow.uitest.ui.dependencies.DependencyFilterView")
-@JavaScript("./eager.js")
+@JavaScript("./com/vaadin/flow/uitest/ui/dependencies/eager.js")
 @StyleSheet("./non-existing.css")
 public class DependencyFilterView extends DependenciesLoadingBaseView {
 
