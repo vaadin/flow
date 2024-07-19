@@ -1,4 +1,4 @@
-function attachTestDiv(textContent) {
+window.attachTestDiv = function attachTestDiv(textContent) {
   const div = document.createElement("div");
   div.className = "dependenciesTest";
   div.textContent = textContent;
@@ -15,4 +15,4 @@ window.messages = {
   push: attachTestDiv
 };
 
-attachTestDiv("eager.js");
+window.attachTestDiv("eager.js");
