@@ -388,16 +388,14 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void registration_fails_for_navigation_target_with_inherited_title_annotation()
+    public void registration_succeeds_for_navigation_target_with_inherited_title_annotation()
             throws ServletException {
-        expectedEx.expect(DuplicateNavigationTitleException.class);
-        expectedEx.expectMessage(String.format(
-                "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
-                ChildWithDynamicTitle.class.getName()));
-
         routeRegistryInitializer.process(
                 Collections.singleton(ChildWithDynamicTitle.class),
                 servletContext);
+
+        Assert.assertEquals("bar",
+                registry.getTargetUrl(ChildWithDynamicTitle.class).get());
     }
 
     @Route("")
