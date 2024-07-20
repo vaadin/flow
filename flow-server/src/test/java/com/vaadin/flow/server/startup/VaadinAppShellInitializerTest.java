@@ -66,8 +66,16 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class VaadinAppShellInitializerTest {
 
+    public interface InterfaceAppShellWithoutAnnotations
+            extends AppShellConfigurator {
+    }
+
+    public static abstract class AbstractAppShellWithoutAnnotations
+            implements InterfaceAppShellWithoutAnnotations {
+    }
+
     public static class MyAppShellWithoutAnnotations
-            implements AppShellConfigurator {
+            extends AbstractAppShellWithoutAnnotations {
     }
 
     @Meta(name = "foo", content = "bar")
@@ -396,6 +404,15 @@ public class VaadinAppShellInitializerTest {
 
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(MyAppShellWithMultipleAnnotations.class);
+        initializer.process(classes, servletContext);
+    }
+
+    @Test
+    public void should_not_throw_when_interface_and_abstract_and_concrete_AppShell()
+            throws Exception {
+        classes.add(InterfaceAppShellWithoutAnnotations.class);
+        classes.add(AbstractAppShellWithoutAnnotations.class);
+        classes.add(MyAppShellWithoutAnnotations.class);
         initializer.process(classes, servletContext);
     }
 
