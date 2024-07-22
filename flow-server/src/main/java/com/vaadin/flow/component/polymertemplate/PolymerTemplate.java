@@ -23,9 +23,9 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
- * markup should be loaded using the {@link JsModule} annotation
- * and the components should be associated with the web component element using
- * the {@link Tag @Tag} annotation.
+ * markup should be loaded using the {@link JsModule} annotation and the
+ * components should be associated with the web component element using the
+ * {@link Tag @Tag} annotation.
  * <p>
  * You may use {@link Id} annotation inside your template class for a field to
  * reference an element inside your template via <b>id</b> attribute value. Note
