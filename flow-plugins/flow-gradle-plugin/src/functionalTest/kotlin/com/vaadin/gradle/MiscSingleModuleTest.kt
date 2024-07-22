@@ -16,6 +16,8 @@
 
 package com.vaadin.gradle
 
+import com.vaadin.flow.server.InitParameters
+import elemental.json.Json
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Test
@@ -66,6 +68,18 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Test
     fun testWarProjectProductionMode() {
         doTestWarProjectProductionMode()
+        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = Json.parse(tokenFile.readText())
+        expect(testProject.dir.name) { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
+    }
+
+    @Test
+    fun testWarProjectProductionModeWithCustomName() {
+        testProject.settingsFile.writeText("rootProject.name = 'my-test-project'")
+        doTestWarProjectProductionMode()
+        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        val tokenFileContent = Json.parse(tokenFile.readText())
+        expect("my-test-project") { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
     }
 
     /**

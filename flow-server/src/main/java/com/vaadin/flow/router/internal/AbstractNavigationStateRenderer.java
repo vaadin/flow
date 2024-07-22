@@ -235,7 +235,6 @@ public abstract class AbstractNavigationStateRenderer
         // on the UI.
         if (preserveOnRefreshTarget) {
             setPreservedChain(chain, event);
-            warnAboutPreserveOnRefreshAndLiveReloadCombo(ui);
         }
 
         @SuppressWarnings("unchecked")
@@ -1040,14 +1039,4 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
-    private static void warnAboutPreserveOnRefreshAndLiveReloadCombo(UI ui) {
-        // Show a warning that live-reload may work counter-intuitively
-        DeploymentConfiguration configuration = ui.getSession()
-                .getConfiguration();
-        if (configuration.getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
-                && configuration.isDevModeLiveReloadEnabled()) {
-            ui.getPage().executeJs(
-                    "Vaadin.devTools.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
-        }
-    }
 }
