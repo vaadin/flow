@@ -176,6 +176,7 @@
                             <execution>
                                 <goals>
                                     <goal>copy-production-files</goal>
+                                    <goal>prepare-frontend</goal>
                                     <goal>package-for-production</goal>
                                 </goals>
                                 <configuration>
