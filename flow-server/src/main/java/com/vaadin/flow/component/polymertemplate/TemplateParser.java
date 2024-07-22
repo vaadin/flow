@@ -21,7 +21,7 @@ import com.vaadin.flow.server.VaadinService;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @see DefaultTemplateParser
+ * @see NpmTemplateParser
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -33,7 +33,7 @@ public interface TemplateParser {
     /**
      * Wrapper for the parsing result.
      * <p>
-     * The data contains {@link HtmlImport} uri where the template is declared
+     * The data contains path uri where the template is declared
      * and its content as an {@link Element} instance.
      *
      * @author Vaadin Ltd
@@ -42,21 +42,21 @@ public interface TemplateParser {
      */
     class TemplateData {
 
-        private final String htmlImportUri;
+        private final String modulePath;
         private final Element templateElement;
 
         public TemplateData(String uri, Element element) {
-            htmlImportUri = uri;
+            modulePath = uri;
             templateElement = element;
         }
 
         /**
-         * Gets the {@link HtmlImport} uri where the template is declared.
+         * Gets the uri where the template is declared.
          *
          * @return template uri
          */
-        public String getHtmlImportUri() {
-            return htmlImportUri;
+        public String getModulePath() {
+            return modulePath;
         }
 
         /**

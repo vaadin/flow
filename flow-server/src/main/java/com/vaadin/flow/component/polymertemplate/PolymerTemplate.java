@@ -15,6 +15,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
@@ -22,7 +23,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
- * markup should be loaded using the {@link HtmlImport @HtmlImport} annotation
+ * markup should be loaded using the {@link JsModule} annotation
  * and the components should be associated with the web component element using
  * the {@link Tag @Tag} annotation.
  * <p>
@@ -37,7 +38,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  * @param <M>
  *            a model class that will be used for template data propagation
  *
- * @see HtmlImport
+ * @see JsModule
  * @see Tag
  * @see Id
  *
