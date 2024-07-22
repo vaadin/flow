@@ -69,35 +69,6 @@ import elemental.json.JsonObject;
  */
 class BootstrapUtils {
 
-    static class ThemeSettings {
-        private List<JsonObject> headContents;
-        private JsonObject headInjectedContent;
-        private Map<String, String> htmlAttributes;
-
-        public List<JsonObject> getHeadContents() {
-            return headContents;
-        }
-
-        public void setHeadContents(List<JsonObject> headContents) {
-            this.headContents = headContents;
-        }
-
-        public JsonObject getHeadInjectedContent() {
-            return headInjectedContent;
-        }
-
-        public void setHeadInjectedContent(JsonObject headInjectedContent) {
-            this.headInjectedContent = headInjectedContent;
-        }
-
-        public Map<String, String> getHtmlAttributes() {
-            return htmlAttributes;
-        }
-
-        public void setHtmlAttributes(Map<String, String> htmlAttributes) {
-            this.htmlAttributes = htmlAttributes;
-        }
-    }
 
     private BootstrapUtils() {
     }
@@ -309,128 +280,9 @@ class BootstrapUtils {
         return stream;
     }
 
-    static ThemeSettings getThemeSettings(
-            BootstrapHandler.BootstrapContext context) {
-        Optional<ThemeDefinition> themeDefinition = context.getTheme();
-        if (themeDefinition.isPresent()) {
-            return getThemeSettings(context, themeDefinition.get());
-        }
-        return null;
-    }
-
-    private static ThemeSettings getThemeSettings(
-            BootstrapHandler.BootstrapContext context,
-            ThemeDefinition themeDefinition) {
-
-        ThemeSettings settings = new ThemeSettings();
-        Class<? extends AbstractTheme> themeClass = themeDefinition.getTheme();
-        AbstractTheme theme = ReflectTools.createInstance(themeClass);
-
-        if (!context.isProductionMode()) {
-            List<JsonObject> head = Stream
-                    .of(themeClass.getAnnotationsByType(HtmlImport.class))
-                    .map(HtmlImport::value)
-                    .map(url -> createImportLink(context.getUriResolver(), url))
-                    .map(BootstrapUtils::createInlineDependencyObject)
-                    .collect(Collectors.toList());
-            settings.setHeadContents(head);
-        }
-
-        settings.setHeadInjectedContent(createHeaderInlineScript(theme));
-
-        settings.setHtmlAttributes(
-                theme.getHtmlAttributes(themeDefinition.getVariant()));
-
-        return settings;
-    }
-
-    private static JsonObject createHeaderInlineScript(AbstractTheme theme) {
-        StringBuilder builder = new StringBuilder();
-
-        for (String content : theme.getHeaderInlineContents()) {
-            StringBuilder inlineContent = createHeaderInjectionCall(content);
-            builder.insert(0, inlineContent.toString());
-        }
-
-        builder.insert(0, "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n");
-        builder.insert(0, "<script id='_theme-header-injection'>\n");
-        builder.append(
-                "var script = document.getElementById('_theme-header-injection');"
-                        + "if ( script ) { document.head.removeChild(script);}\n");
-        builder.append("</script>");
-        return createInlineDependencyObject(builder.toString());
-    }
-
-    private static StringBuilder createHeaderInjectionCall(String content) {
-        StringBuilder inlineContent = new StringBuilder();
-        Document document = Jsoup.parse(content.replaceAll("\\R+", " ").trim(),
-                "", Parser.xmlParser());
-        for (Element element : document.children()) {
-            String tagName = element.tagName();
-            inlineContent.append("_inlineHeader('");
-            inlineContent.append(tagName).append("',");
-            inlineContent.append(makeJsString(element.html().trim()));
-            inlineContent.append(");\n");
-        }
-        return inlineContent;
-    }
 
     /**
-     * Makes a JS string from the {@code value}.
-     *
-     * @param value
-     *            a string
-     * @return a JS literal representing the {@code value}
-     */
-    private static String makeJsString(String value) {
-        // We are using single quote for the string
-        StringBuilder builder = new StringBuilder("'");
-        if (value.indexOf('\'') == -1) {
-            // if there are not quotes in the string just wrap it
-            builder.append(value);
-        } else if (!value.contains("\\'")) {
-            // if ther are no escaped single quotes then just replace quotes
-            // inside string to \x27
-            builder.append(value.replace("'", "\\x27"));
-        } else {
-            // Now there are escaped quotes, they should be preserved as is,
-            // don't want to parse it. Let's just replace escaped quotes to some
-            // unique token, replace un-escaped quotes and return escaped quotes
-            // back via replacing the token.
-            String unique;
-            do {
-                unique = UUID.randomUUID().toString();
-            } while (value.contains(unique));
-            String modified = value.replace("\\'", unique);
-            modified = modified.replace("'", "\\x27");
-            builder.append(modified.replace(unique, "\\'"));
-        }
-        builder.append("'");
-        return builder.toString();
-    }
-
-    private static String createImportLink(
-            BootstrapUriResolver bootstrapUriResolver, String href) {
-        String resolvedLink = bootstrapUriResolver.resolveVaadinUri(href);
-        return "<link rel=\"import\" href=\"" + resolvedLink + "\">";
-
-    }
-
-    private static JsonObject createInlineDependencyObject(String content) {
-        JsonObject dependency = Json.createObject();
-        dependency.put(Dependency.KEY_TYPE, "none");
-        dependency.put("LoadMode", LoadMode.INLINE.toString());
-        dependency.put(Dependency.KEY_CONTENTS, content);
-        return dependency;
-    }
-
-    /**
-     * Finds the class on on which page configuration annotation should be
+     * Finds the class on which page configuration annotation should be
      * defined.
      *
      * @param ui
