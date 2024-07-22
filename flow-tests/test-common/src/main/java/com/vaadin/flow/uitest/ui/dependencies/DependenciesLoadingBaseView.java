@@ -16,7 +16,7 @@ public class DependenciesLoadingBaseView extends AbstractDivView {
     static final String INLINE_CSS_TEST_DIV_ID = "inlineCssTestDiv";
     static final String DOM_CHANGE_TEXT = "I appear after inline and eager dependencies and before lazy";
 
-    protected DependenciesLoadingBaseView(String cssSuffix) {
+    public DependenciesLoadingBaseView(String cssSuffix) {
         add(createDiv(PRELOADED_DIV_ID + cssSuffix, "Preloaded div"),
                 createDiv(INLINE_CSS_TEST_DIV_ID + cssSuffix,
                         "A div for testing inline css"));
