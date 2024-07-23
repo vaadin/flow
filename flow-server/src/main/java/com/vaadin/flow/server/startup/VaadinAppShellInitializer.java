@@ -16,6 +16,7 @@ import javax.servlet.annotation.WebListener;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -120,6 +121,7 @@ public class VaadinAppShellInitializer
         List<String> offendingAnnotations = new ArrayList<>();
 
         classes.stream()
+                .filter(clazz -> !Modifier.isAbstract(clazz.getModifiers()))
                 // sort classes by putting the app shell in first position
                 .sorted((a, b) -> registry.isShell(a) ? -1
                         : registry.isShell(b) ? 1 : 0)

@@ -10,6 +10,7 @@ package com.vaadin.flow.component.page;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -25,6 +26,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 @Repeatable(Inline.Container.class)
+@Inherited
 public @interface Inline {
     /**
      * File content wrapping enum.
@@ -75,6 +77,7 @@ public @interface Inline {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     @Documented
+    @Inherited
     @interface Container {
 
         /**
