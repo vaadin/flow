@@ -154,7 +154,7 @@ jobs:
           node-version: '18.12.1'
       - uses: pnpm/action-setup@v2
         with:
-          version: '5.15.0'
+          version: '8.6.11'
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
