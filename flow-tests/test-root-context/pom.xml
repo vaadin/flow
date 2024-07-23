@@ -79,14 +79,6 @@
             <version>3.0.1</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- To be removed after TestBench 8.2.7 release -->
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-devtools-v126</artifactId>
-            <version>4.23.0</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
