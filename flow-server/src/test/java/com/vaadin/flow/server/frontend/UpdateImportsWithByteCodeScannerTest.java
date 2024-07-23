@@ -149,7 +149,7 @@ public class UpdateImportsWithByteCodeScannerTest
         Assert.assertTrue(output.containsKey(flowGeneratedImports));
         Assert.assertTrue(output.containsKey(flowGeneratedImportsDTs));
 
-        Optional<File> chunkFile = findOptionalChunkFile(output);
+        Optional<File> chunkFile = findOptionalChunkFile(output, false);
         Assert.assertTrue(chunkFile.isPresent());
         Assert.assertTrue(output.containsKey(chunkFile.get()));
 
@@ -187,9 +187,11 @@ public class UpdateImportsWithByteCodeScannerTest
         Assert.assertTrue(output.containsKey(flowGeneratedImports));
         Assert.assertTrue(output.containsKey(flowGeneratedImportsDTs));
 
-        Optional<File> chunkFile = findOptionalChunkFile(output);
+        Optional<File> chunkFile = findOptionalChunkFile(output, false);
         Assert.assertTrue(chunkFile.isPresent());
         Assert.assertTrue(output.containsKey(chunkFile.get()));
+
+        Assert.assertTrue(findOptionalChunkFile(output, true).isEmpty());
 
         String mainImportContent = String.join("\n",
                 output.get(flowGeneratedImports));
@@ -303,15 +305,18 @@ public class UpdateImportsWithByteCodeScannerTest
         Map<File, List<String>> output = updater.getOutput();
 
         Assert.assertNotNull(output);
-        Assert.assertEquals(3, output.size());
+        // output should contain generated imports and chunks for both Flow app
+        // and exported webcomponets
+        Assert.assertEquals(4, output.size());
 
-        Optional<File> chunkFile = findOptionalChunkFile(output);
+        Optional<File> chunkFile = findOptionalChunkFile(output, false);
         Assert.assertTrue(chunkFile.isPresent());
 
         List<String> chunkLines = output.get(chunkFile.get());
         assertOnce("import { injectGlobalCss } from", chunkLines);
         assertOnce("from 'Frontend/foo.css?inline';", chunkLines);
         assertOnce("import $cssFromFile_0 from", chunkLines);
+        assertOnce("injectGlobalCss($cssFromFile_0", chunkLines);
 
         // assert lines order is preserved
         Assert.assertEquals(
@@ -320,12 +325,32 @@ public class UpdateImportsWithByteCodeScannerTest
         Assert.assertEquals(
                 "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';",
                 chunkLines.get(1));
+
+        // Webcomponents chunk
+        chunkFile = findOptionalChunkFile(output, true);
+        Assert.assertTrue(chunkFile.isPresent());
+
+        chunkLines = output.get(chunkFile.get());
+        assertOnce("import { injectGlobalWebcomponentCss } from", chunkLines);
+        assertOnce("from 'Frontend/foo.css?inline';", chunkLines);
+        assertOnce("import $cssFromFile_0 from", chunkLines);
+        assertOnce("injectGlobalWebcomponentCss($cssFromFile_0", chunkLines);
+
+        // assert lines order is preserved
+        Assert.assertEquals(
+                "import { injectGlobalWebcomponentCss } from 'Frontend/generated/jar-resources/theme-util.js';\n",
+                chunkLines.get(0));
+        Assert.assertEquals(
+                "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';",
+                chunkLines.get(1));
+
     }
 
     private static Optional<File> findOptionalChunkFile(
-            Map<File, List<String>> output) {
+            Map<File, List<String>> output, boolean forWebcomponent) {
+        String prefix = ((forWebcomponent) ? "wc-" : "") + "chunk-";
         return output.keySet().stream()
-                .filter(file -> file.getName().contains("chunk-")).findAny();
+                .filter(file -> file.getName().startsWith(prefix)).findAny();
     }
 
     private void assertImports(String mainImportContent,

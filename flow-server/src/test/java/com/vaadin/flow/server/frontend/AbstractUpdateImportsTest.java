@@ -56,7 +56,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -435,9 +434,48 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Check that imports other than lumo globals are the same
         flowImports.removeAll(updater.webComponentImports);
+        flowImports.removeIf(line -> line.contains("injectGlobalCss"));
         assertTrue(
                 "Flow and web-component imports must be the same, except for lumo globals",
                 flowImports.stream().allMatch(lumoGlobalsMatcher));
+
+    }
+
+    @Test
+    public void generate_embeddedImports_doNotAddGlobalStyles()
+            throws IOException {
+        Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
+                UI.class, AllEagerAppConf.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        Pattern injectGlobalCssPattern = Pattern
+                .compile("^\\s*injectGlobalCss\\(([^,]+),.*");
+        Predicate<String> globalCssImporter = injectGlobalCssPattern
+                .asPredicate();
+
+        List<String> globalCss = updater.getOutput()
+                .get(updater.generatedFlowImports).stream()
+                .filter(globalCssImporter).map(line -> {
+                    Matcher matcher = injectGlobalCssPattern.matcher(line);
+                    matcher.find();
+                    return matcher.group(1);
+                }).collect(Collectors.toList());
+
+        assertTrue("Import for web-components should not inject global CSS",
+                updater.webComponentImports.stream()
+                        .noneMatch(globalCssImporter));
+
+        assertTrue(
+                "Should contain function to import global CSS into embedded component",
+                updater.webComponentImports.stream().anyMatch(line -> line
+                        .contains("import { injectGlobalWebcomponentCss }")));
+        globalCss.forEach(css -> assertTrue(
+                "Should register global CSS " + css + " for webcomponent",
+                updater.webComponentImports.stream()
+                        .anyMatch(line -> line.contains(
+                                "injectGlobalWebcomponentCss(" + css + ");"))));
 
     }
 
@@ -569,6 +607,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.contains("const loadOnDemand"))
                 .filter(row -> !row.contains(
                         "@vaadin/common-frontend/ConnectionIndicator"))
+                .filter(row -> !row.contains(
+                        "window.Vaadin.Flow.restoreCustomElementDefine"))
                 .toList();
 
         Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
@@ -591,6 +631,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.contains("const loadOnDemand"))
                 .filter(row -> !row.contains(
                         "@vaadin/common-frontend/ConnectionIndicator"))
+                .filter(row -> !row.contains(
+                        "window.Vaadin.Flow.restoreCustomElementDefine"))
                 .toList();
         Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
                 "import 'Frontend/jsm-all2.js';",
