@@ -34,8 +34,8 @@
         <!-- To be removed after TestBench 8.2.7 release -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-devtools-v123</artifactId>
-            <version>4.21.0</version>
+            <artifactId>selenium-devtools-v126</artifactId>
+            <version>4.23.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
