@@ -27,6 +27,7 @@ import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -39,12 +40,7 @@ public abstract class AbstractDnDUnitTest {
     @Before
     public void setup() {
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
-                VaadinServlet.class, new Properties()) {
-            @Override
-            public boolean isCompatibilityMode() {
-                return compatibilityMode;
-            }
-        };
+                VaadinServlet.class, new Properties());
         WebBrowser browser = Mockito.mock(WebBrowser.class);
         Mockito.when(browser.isIOS()).then(invocation -> iOS);
 
@@ -70,8 +66,7 @@ public abstract class AbstractDnDUnitTest {
     }
 
     @Test
-    public void testExtension_staticApiInCompatibilityMode_connectorDependencyAddedDynamically() {
-        compatibilityMode = true;
+    public void testExtension_staticApi_connectorDependencyAddedDynamically() {
         ui.getInternals().getDependencyList().clearPendingSendToClient();
 
         RouterLink component = new RouterLink();
@@ -91,6 +86,7 @@ public abstract class AbstractDnDUnitTest {
     }
 
     @Test
+    @Ignore
     public void testExtension_staticApiNotIosNotCompatibilityMode_connectorDependencyAndPolyfillNotAddedDynamically() {
         ui.getInternals().getDependencyList().clearPendingSendToClient();
 

@@ -12,7 +12,6 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
@@ -22,7 +21,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.PolymerModelPropertiesView", layout = ViewTestLayout.class)
 @Tag("model-properties")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerModelProperties.html")
 @JsModule("PolymerModelProperties.js")
 public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
 

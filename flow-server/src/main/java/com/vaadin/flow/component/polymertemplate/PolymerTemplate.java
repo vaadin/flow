@@ -15,6 +15,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
@@ -22,9 +23,9 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
- * markup should be loaded using the {@link HtmlImport @HtmlImport} annotation
- * and the components should be associated with the web component element using
- * the {@link Tag @Tag} annotation.
+ * markup should be loaded using the {@link JsModule} annotation and the
+ * components should be associated with the web component element using the
+ * {@link Tag @Tag} annotation.
  * <p>
  * You may use {@link Id} annotation inside your template class for a field to
  * reference an element inside your template via <b>id</b> attribute value. Note
@@ -37,7 +38,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  * @param <M>
  *            a model class that will be used for template data propagation
  *
- * @see HtmlImport
+ * @see JsModule
  * @see Tag
  * @see Id
  *
@@ -96,11 +97,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * functionality.
      */
     public PolymerTemplate() {
-        this(VaadinService.getCurrent().getDeploymentConfiguration()
-                .isCompatibilityMode()
-                        ? DefaultTemplateParser.getInstance()
-                        : VaadinService.getCurrent().getInstantiator()
-                                .getTemplateParser(),
+        this(VaadinService.getCurrent().getInstantiator().getTemplateParser(),
                 VaadinService.getCurrent());
     }
 

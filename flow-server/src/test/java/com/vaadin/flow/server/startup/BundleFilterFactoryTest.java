@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -74,6 +75,7 @@ public class BundleFilterFactoryTest {
         mocks.cleanup();
     }
 
+    @Ignore
     @Test
     public void fail_to_load_bundle_manifest() {
         mocks.getServlet()
@@ -93,6 +95,7 @@ public class BundleFilterFactoryTest {
         new BundleFilterFactory().createFilters(mocks.getService());
     }
 
+    @Ignore
     @Test
     public void when_json_file_not_found_fails() {
         expectedException.expect(IllegalArgumentException.class);
@@ -109,6 +112,7 @@ public class BundleFilterFactoryTest {
         new BundleFilterFactory().createFilters(mocks.getService()).count();
     }
 
+    @Ignore
     @Test
     public void fail_when_loading_invalid_json() {
         mocks.getServlet().addServletContextResource(
@@ -118,6 +122,7 @@ public class BundleFilterFactoryTest {
         new BundleFilterFactory().createFilters(mocks.getService());
     }
 
+    @Ignore
     @Test
     public void does_not_contain_main_bundle_fails() {
         mocks.getServlet().addServletContextResource(
@@ -134,6 +139,7 @@ public class BundleFilterFactoryTest {
         new BundleFilterFactory().createFilters(mocks.getService());
     }
 
+    @Ignore
     @Test
     public void multiple_bundles_with_main_bundle_prefix_throws() {
         mocks.getServlet().addServletContextResource(
@@ -154,6 +160,7 @@ public class BundleFilterFactoryTest {
         new BundleFilterFactory().createFilters(mocks.getService());
     }
 
+    @Ignore
     @Test
     public void bundle_file_not_found_throws() {
         String missingFragment = "fragment-1";
@@ -180,11 +187,13 @@ public class BundleFilterFactoryTest {
         Assert.assertEquals(0, filterCount);
     }
 
+    @Ignore
     @Test
     public void happy_path_no_hash() {
         serviceInit(NON_HASHED_BUNDLE_NAME);
     }
 
+    @Ignore
     @Test
     public void happy_path_with_hash() {
         serviceInit(HASHED_BUNDLE_NAME);

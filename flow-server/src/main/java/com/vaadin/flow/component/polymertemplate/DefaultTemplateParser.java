@@ -76,6 +76,11 @@ public final class DefaultTemplateParser implements TemplateParser {
                 .map(htmlImport -> new Dependency(Type.HTML_IMPORT,
                         htmlImport.value(), htmlImport.loadMode()))
                 .collect(Collectors.toList());
+        if (!dependencies.isEmpty()) {
+            throw new UnsupportedOperationException(
+                    "@HtmlImport annotations, Bower and compatibility mode are no longer supported by Flow since version 2.11. Please use npm/pnpm package managers and @NpmPackage/@jsmodule annotations. "
+                            + "Detected usage in class: " + clazz.getName());
+        }
 
         FilterContext filterContext = new FilterContext(service, browser);
         for (DependencyFilter filter : service.getDependencyFilters()) {

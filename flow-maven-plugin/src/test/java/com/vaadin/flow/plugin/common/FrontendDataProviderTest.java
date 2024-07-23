@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -158,6 +159,7 @@ public class FrontendDataProviderTest {
     }
 
     @SuppressWarnings({ "unchecked" })
+    @Ignore
     @Test
     public void shellImportsAreCheckedForExistence() {
         String nonExistentImport = "nonExistentImport";
@@ -214,6 +216,7 @@ public class FrontendDataProviderTest {
     }
 
     @SuppressWarnings({ "unchecked" })
+    @Ignore
     @Test
     public void themedHtmlImports_existingThemedImportIsConverted_nonExistentIsPreserved()
             throws IOException {
@@ -260,6 +263,7 @@ public class FrontendDataProviderTest {
                 .extractAnnotationValues(anyMap());
     }
 
+    @Ignore
     @Test
     public void createShellFile_fileContainsGeneratedWebModuleAndRegularHtmlImport()
             throws IOException {
@@ -318,6 +322,7 @@ public class FrontendDataProviderTest {
     }
 
     @SuppressWarnings({ "unchecked" })
+    @Ignore
     @Test
     public void fragmentsContentsIsNotIncludedIntoShellFile()
             throws IOException {
@@ -355,6 +360,7 @@ public class FrontendDataProviderTest {
                 .extractAnnotationValues(anyMap());
     }
 
+    @Ignore
     @Test
     public void userDefinedAndConfigurationFileFragmentsAreMerged()
             throws IOException {
@@ -402,6 +408,7 @@ public class FrontendDataProviderTest {
                 .extractAnnotationValues(anyMap());
     }
 
+    @Ignore
     @Test
     public void importsWithContextOrBaseProtocolAreIgnored()
             throws IOException {

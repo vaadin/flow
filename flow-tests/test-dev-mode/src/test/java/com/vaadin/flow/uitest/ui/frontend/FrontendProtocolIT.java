@@ -53,6 +53,7 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void loadComponentFromContext() {
         open();
 

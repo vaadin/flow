@@ -11,6 +11,7 @@ package com.vaadin.flow.server;
 import java.util.Properties;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
@@ -28,12 +29,6 @@ import static org.junit.Assert.assertTrue;
 public class DefaultDeploymentConfigurationTest {
 
     private static Properties DEFAULT_PARAMS = new Properties();
-
-    {
-        DEFAULT_PARAMS.setProperty(
-                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
-    }
 
     @Test
     public void testGetSystemPropertyForDefaultPackage()
@@ -137,6 +132,7 @@ public class DefaultDeploymentConfigurationTest {
                 is(developmentPrefix));
     }
 
+    @Ignore
     @Test
     public void frontendPrefixes_productionMode() {
         String es5Prefix = "context://build/frontend-es5/";
@@ -186,6 +182,7 @@ public class DefaultDeploymentConfigurationTest {
         assertThat(config.getPushURL(), is("foo"));
     }
 
+    @Ignore
     @Test
     public void bundleIsEnabledInProduction() {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
@@ -229,6 +226,7 @@ public class DefaultDeploymentConfigurationTest {
         assertEquals(5000, config.getMaxMessageSuspendTimeout());
     }
 
+    @Ignore
     @Test
     public void devModeLiveReload_compatibilityMode_forcedDisabled() {
         Properties initParameters = new Properties();

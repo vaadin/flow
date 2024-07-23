@@ -9,9 +9,7 @@
 package com.vaadin.flow.migration.samplecode;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.HtmlImport;
 
-@HtmlImport("bar.html")
 public class Component3 extends Component {
 
 }

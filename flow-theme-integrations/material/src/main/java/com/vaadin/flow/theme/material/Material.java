@@ -14,7 +14,6 @@ import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -24,8 +23,6 @@ import com.vaadin.flow.theme.AbstractTheme;
  *
  * @since 1.2
  */
-@HtmlImport("frontend://bower_components/vaadin-material-styles/color.html")
-@HtmlImport("frontend://bower_components/vaadin-material-styles/typography.html")
 @NpmPackage(value = "@vaadin/vaadin-material-styles", version = "1.3.2")
 @JsModule("@vaadin/vaadin-material-styles/color.js")
 @JsModule("@vaadin/vaadin-material-styles/typography.js")

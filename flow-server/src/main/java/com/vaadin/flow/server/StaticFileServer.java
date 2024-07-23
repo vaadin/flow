@@ -372,14 +372,6 @@ public class StaticFileServer implements StaticFileHandler {
      * @return true if we are ok to try serving the file
      */
     private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
-        if (deploymentConfiguration.isCompatibilityMode()) {
-            getLogger().trace(
-                    "Serving from the classpath in legacy "
-                            + "mode is not accepted. "
-                            + "Letting request for '{}' go to servlet context.",
-                    filenameWithPath);
-            return false;
-        }
         // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
         return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
                 || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)

@@ -118,21 +118,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        super.execute();
-
         if (nodeDownloadRoot == null) {
             nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
         }
 
         // propagate info via System properties and token file
         propagateBuildInfo();
-
-        // Do nothing when compatibility mode
-        if (compatibility) {
-            getLog().debug(
-                    "Skipped 'prepare-frontend' goal because compatibility mode is set.");
-            return;
-        }
 
         final URI nodeDownloadRootURI;
         try {
@@ -192,7 +183,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // token file with the information about the build
         File token = new File(webpackOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
-        buildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, compatibility);
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
@@ -225,8 +215,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             + ".properties:%n productionMode: %s%n bowerMode:"
                             + " %s%n compatibilityMode: %s%n webpackPort: %s%n "
                             + "project.basedir: %s%nGoal parameters:%n "
-                            + "productionMode: %s%n compatibilityMode: %s%n "
-                            + "compatibility: %b%n npmFolder: %s%nToken file: "
+                            + "productionMode: %s%n npmFolder: %s%nToken file: "
                             + "%s%n" + "Token content: %s%n",
                     project.getName(),
                     System.getProperty("vaadin.productionMode"),
@@ -234,13 +223,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     System.getProperty("vaadin.compatibiityMode"),
                     System.getProperty("vaadin.devmode.webpack.running-port"),
                     System.getProperty("project.basedir"), productionMode,
-                    compatibilityMode, compatibility, npmFolder,
-                    token.getAbsolutePath(), buildInfo.toJson()));
+                    npmFolder, token.getAbsolutePath(), buildInfo.toJson()));
         }
-    }
-
-    @Override
-    boolean isDefaultCompatibility() {
-        return false;
     }
 }

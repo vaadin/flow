@@ -11,7 +11,6 @@ package com.vaadin.flow.misc.ui;
 import java.util.Collections;
 import java.util.List;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.misc.ui.MiscelaneousView.MyTheme;
@@ -24,7 +23,6 @@ import com.vaadin.flow.theme.Theme;
 
 // Import a test component that sets CSS properties.
 @JsModule("./src/my-component-themed.js")
-@HtmlImport("frontend://src/my-component-themed.html")
 
 // `src/` in component above should be replaced by `theme/my-theme`
 @Theme(MyTheme.class)

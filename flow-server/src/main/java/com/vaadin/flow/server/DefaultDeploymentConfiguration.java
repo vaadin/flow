@@ -169,11 +169,17 @@ public class DefaultDeploymentConfiguration
     /**
      * {@inheritDoc}
      *
-     * The default is false.
+     * Throws UnsupportedOperationException if called when compatibility mode is
+     * enabled.
      */
+    @Deprecated
     @Override
     public boolean isBowerMode() {
-        return compatibilityMode;
+        throw new UnsupportedOperationException(
+                "Bower mode is deprecated and no longer supported. "
+                        + "Please don't use bower and compatibility mode "
+                        + "(set to false or delete bowerMode and compatibilityMode configuration parameters), "
+                        + "instead use npm or pnpm package manager (used by default)");
     }
 
     /**
@@ -292,9 +298,10 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a warning if Vaadin is running in compatibility mode. Throw
+     * Check for compatibility mode / Bower mode setting. Throw
      * {@link IllegalStateException} if the mode could not be determined from
-     * parameters.
+     * parameters. Throw {@link UnsupportedOperationException} compatibility
+     * mode / Bower mode is enabled.
      */
     private void checkCompatibilityMode(boolean logWarning) {
         boolean explicitlySet = false;
@@ -322,14 +329,18 @@ public class DefaultDeploymentConfiguration
             }
         }
 
-        if (compatibilityMode && logWarning) {
-            warnings.add(WARNING_COMPATIBILITY_MODE);
+        if (compatibilityMode) {
+            throw new UnsupportedOperationException(
+                    "Bower mode / compatibility mode is deprecated and no longer supported. "
+                            + "Please don't use bower / compatibility mode "
+                            + "(set to false or delete bowerMode and compatibilityMode configuration parameters), "
+                            + "instead use npm or pnpm package manager (used by default)");
         }
     }
 
     /**
-     * Log a warning if new license checker is enabled in compatibility mode or
-     * while the live reload is off.
+     * Log a warning if new license checker is enabled while the live reload is
+     * off.
      */
     private void checkNewLicenseChecker(boolean logWarning) {
         boolean enableNewLicenseChecker = !getBooleanProperty(

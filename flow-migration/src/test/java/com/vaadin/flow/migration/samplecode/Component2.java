@@ -9,9 +9,7 @@
 package com.vaadin.flow.migration.samplecode;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.HtmlImport;
 
-@HtmlImport("frontend://foo.html")
 public class Component2 extends Component {
 
 }

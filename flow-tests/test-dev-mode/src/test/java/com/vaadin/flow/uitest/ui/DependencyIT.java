@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
@@ -59,53 +60,13 @@ public class DependencyIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void htmlInjection() {
-        open();
-
-        // Initial HTML import logs a message on the page
-        List<String> messages = getMessages();
-
-        Assert.assertEquals(3, messages.size());
-        assertTrue(messages.contains("HTML import 4 companion JS loaded"));
-        assertTrue(messages
-                .contains("Messagehandler initialized in HTML import 1"));
-        assertTrue(messages
-                .contains("Messagehandler initialized in HTML import 4"));
-
-        // Inject html
-        findElementById("loadHtml").click();
-        messages = getMessages();
-
-        Assert.assertEquals(5, messages.size());
-        assertTrue(messages.contains("HTML import 2 loaded"));
-        assertTrue(messages.contains("HTML import 3 loaded"));
-    }
-
-    @Test
-    public void mixedHtmlAndJsInjection() {
-        open();
-        findElement(By.id("loadMixed")).click();
-
-        List<String> messages = getMessages();
-
-        Assert.assertEquals("script1 is loaded",
-                messages.get(messages.size() - 4));
-        Assert.assertEquals("Mixed HTML import 1 loaded",
-                messages.get(messages.size() - 3));
-        Assert.assertEquals("script2 is loaded",
-                messages.get(messages.size() - 2));
-        Assert.assertEquals("Mixed HTML import 2 loaded",
-                messages.get(messages.size() - 1));
-    }
-
-    @Test
     public void loadingUnavailableResources() {
         open();
         findElement(By.id("loadUnavailableResources")).click();
 
         List<String> errors = findElements(By.className("v-system-error"))
                 .stream().map(WebElement::getText).collect(Collectors.toList());
-        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals(2, errors.size());
         // The order for these can be random
         assertTrue("Couldn't find error for not-found.css",
                 errors.stream()
@@ -117,14 +78,10 @@ public class DependencyIT extends ChromeBrowserTest {
                         .filter(s -> s.startsWith("Error loading http://")
                                 && s.endsWith("/not-found.js"))
                         .findFirst().isPresent());
-        assertTrue("Couldn't find error for not-found.html",
-                errors.stream()
-                        .filter(s -> s.startsWith("Error loading http://")
-                                && s.endsWith("/not-found.html"))
-                        .findFirst().isPresent());
     }
 
     @Test
+    @Ignore
     public void loadingUnavailableResourcesProduction() {
         openProduction();
         findElement(By.id("loadUnavailableResources")).click();

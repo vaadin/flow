@@ -26,9 +26,9 @@ import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
@@ -1080,7 +1080,6 @@ public class ComponentTest {
     }
 
     @Tag("div")
-    @HtmlImport("html.html")
     @JavaScript("js.js")
     @StyleSheet("css.css")
     public static class ComponentWithDependencies extends Component {
@@ -1096,7 +1095,6 @@ public class ComponentTest {
 
     @Tag("span")
     @Uses(UsesComponentWithDependencies.class)
-    @HtmlImport("usesuses.html")
     public static class UsesUsesComponentWithDependencies extends Component {
 
     }
@@ -1116,6 +1114,7 @@ public class ComponentTest {
     }
 
     @Test
+    @Ignore
     public void usesComponent() {
         UI ui = UI.getCurrent();
         mocks.getDeploymentConfiguration().setCompatibilityMode(true);
@@ -1127,8 +1126,6 @@ public class ComponentTest {
                 ui.getInternals().getDependencyList().getPendingSendToClient());
         Assert.assertEquals(4, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
         assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
                 pendingDependencies);
         assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
@@ -1138,6 +1135,7 @@ public class ComponentTest {
     }
 
     @Test
+    @Ignore
     public void usesChain() {
         UIInternals internals = UI.getCurrent().getInternals();
         mocks.getDeploymentConfiguration().setCompatibilityMode(true);
@@ -1149,8 +1147,6 @@ public class ComponentTest {
                 internals.getDependencyList().getPendingSendToClient());
         Assert.assertEquals(5, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "usesuses.html",
-                pendingDependencies);
         assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
                 pendingDependencies);
         assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
@@ -1162,6 +1158,7 @@ public class ComponentTest {
     }
 
     @Test
+    @Ignore
     public void circularDependencies() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();

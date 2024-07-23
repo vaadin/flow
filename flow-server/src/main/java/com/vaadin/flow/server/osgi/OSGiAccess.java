@@ -233,23 +233,6 @@ public final class OSGiAccess {
         }
 
         @Override
-        public String getInitParameter(String name) {
-            // OSGi is supported in compatibiity mode only. So set it by default
-            // for every ServletContainerInitializer
-            if (InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE
-                    .equals(name)) {
-                return Boolean.TRUE.toString();
-            }
-            return null;
-        }
-
-        @Override
-        public Enumeration<String> getInitParameterNames() {
-            return Collections.enumeration(Collections.singletonList(
-                    InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE));
-        }
-
-        @Override
         public Map<String, ? extends ServletRegistration> getServletRegistrations() {
             return Collections.emptyMap();
         }

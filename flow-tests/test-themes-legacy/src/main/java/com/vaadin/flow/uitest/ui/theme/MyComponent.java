@@ -10,9 +10,7 @@ package com.vaadin.flow.uitest.ui.theme;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 
 @Tag("my-component")
-@HtmlImport("frontend://bower_components/my-component/src/my-component.html")
 public class MyComponent extends Component {
 }

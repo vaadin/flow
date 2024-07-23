@@ -15,9 +15,7 @@ import java.util.function.Function;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_BOWER_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
@@ -142,19 +140,17 @@ public class PropertyDeploymentConfiguration
         return getBooleanProperty(SERVLET_PARAMETER_PRODUCTION_MODE, false);
     }
 
+    @Deprecated
     @Override
     public boolean isBowerMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false);
+        throw new UnsupportedOperationException(
+                "Bower mode is deprecated and no longer supported as of version 2.11. Please update your configuration.");
     }
 
     @Override
     public boolean isCompatibilityMode() {
-        String bower = getStringProperty(SERVLET_PARAMETER_BOWER_MODE, null);
-        if (bower == null) {
-            return getBooleanProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                    false);
-        }
-        return isBowerMode();
+        throw new UnsupportedOperationException(
+                "Compatibility mode and Bower mode are deprecated and will be removed. Please update your configuration.");
     }
 
     @Override

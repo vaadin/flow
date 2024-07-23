@@ -200,7 +200,6 @@ public final class DevModeHandler implements RequestHandler {
             DeploymentConfiguration configuration, File npmFolder,
             CompletableFuture<Void> waitFor) {
         if (configuration.isProductionMode()
-                || configuration.isCompatibilityMode()
                 || !configuration.enableDevServer()) {
             return null;
         }

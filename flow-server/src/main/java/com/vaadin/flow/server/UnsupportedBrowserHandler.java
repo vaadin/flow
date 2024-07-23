@@ -88,17 +88,9 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
             return true; // request handled
         }
 
-        // check for trying to run ie11 in development mode
-        if (browser.isIE() && !session.getConfiguration().isProductionMode()
-                && session.getConfiguration().isCompatibilityMode()) {
-            writeIE11InDevelopmentModePage(response);
-            return true;
-        }
-
         // check for trying to run non-ES6 browser in dev mode without
         // transpilation
-        if (!session.getConfiguration().isCompatibilityMode()
-                && !session.getConfiguration().isProductionMode()
+        if (!session.getConfiguration().isProductionMode()
                 && !browser.isEs6Supported()
                 && !session.getConfiguration().getBooleanProperty(
                         SERVLET_PARAMETER_DEVMODE_TRANSPILE,

@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
+
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -264,10 +265,12 @@ public class FrontendDataProvider {
                 .extractAnnotationValues(Collections.singletonMap(
                         HtmlImport.class, ThemedURLTranslator.VALUE))
                 .values();
-        Set<String> htmlImportUrls = htmlImports.isEmpty()
-                ? Collections.emptySet()
-                : htmlImports.iterator().next();
+        if (!htmlImports.isEmpty()) {
+            throw new RuntimeException(
+                    "Usage of HtmlImport is deprecated and not supported. Please remove all HtmlImport annotations and use standard JavaScript or CSS imports.");
+        }
 
+        Set<String> htmlImportUrls = Collections.emptySet();
         annotationValues.put(HtmlImport.class,
                 getTranslator(es6SourceDirectory, annotationValuesExtractor)
                         .applyTheme(htmlImportUrls));

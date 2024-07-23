@@ -8,14 +8,12 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 
 @Route(value = "com.vaadin.flow.uitest.ui.theme.CustomStylesView")
 @Theme(MyTheme.class)
-@HtmlImport("styles/shared-styles.html")
 public class CustomStylesView extends Div {
 
     public CustomStylesView() {

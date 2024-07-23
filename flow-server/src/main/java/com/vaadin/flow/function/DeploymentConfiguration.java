@@ -43,7 +43,8 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
      *
-     * NOTE: compatibility mode will be unsupported in future versions.
+     * NOTE: Compatibility mode is no longer supported by Flow since version
+     * 2.11. This method will throw a runtime exception when invoked.
      *
      * @deprecated Bower WebJars are being deprecated, so compatibility mode
      *             should no longer be used and will be removed in near future.
@@ -54,7 +55,9 @@ public interface DeploymentConfiguration extends Serializable {
     boolean isBowerMode();
 
     /**
-     * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
+     * Returns whether Vaadin is running in Vaadin 13 compatibility mode. This
+     * method is deprecated as of version 2.11. This method will throw a runtime
+     * exception when invoked.
      *
      * @deprecated Bower WebJars are being deprecated, so compatibility mode
      *             should no longer be used and will be removed in near future.
@@ -337,9 +340,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return {@code true} if Flow should use compiled frontend resources.
      */
     default boolean useCompiledFrontendResources() {
-        return isProductionMode() && isCompatibilityMode()
-                && !getBooleanProperty(
-                        InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES, false);
+        return false;
     }
 
     /**
@@ -439,7 +440,7 @@ public interface DeploymentConfiguration extends Serializable {
      *         otherwise
      */
     default boolean isDevModeLiveReloadEnabled() {
-        return !isProductionMode() && !isCompatibilityMode()
+        return !isProductionMode()
                 && getBooleanProperty(
                         SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
                 && enableDevServer(); // gizmo excluded from prod bundle

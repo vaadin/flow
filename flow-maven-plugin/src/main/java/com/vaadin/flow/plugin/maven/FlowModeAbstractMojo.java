@@ -31,13 +31,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
  * @since 2.0
  */
 public abstract class FlowModeAbstractMojo extends AbstractMojo {
-    static final String VAADIN_COMPATIBILITY_MODE = "vaadin.compatibilityMode";
-
-    /**
-     * Whether or not we are running in compatibility mode.
-     */
-    @Parameter(defaultValue = "${vaadin.bowerMode}", alias = "bowerMode")
-    public String compatibilityMode;
 
     /**
      * Whether or not we are running in productionMode.
@@ -54,11 +47,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File webpackOutputDirectory;
 
     /**
-     * The actual compatibility mode boolean.
-     */
-    protected boolean compatibility;
-
-    /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
     @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
@@ -72,19 +60,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = "false")
     protected boolean requireHomeNodeExec;
-
-    @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        if (compatibilityMode == null) {
-            compatibilityMode = System.getProperty(VAADIN_COMPATIBILITY_MODE);
-        }
-        // Default mode for V14 is bower true
-        compatibility = compatibilityMode != null
-                ? Boolean.valueOf(compatibilityMode)
-                : isDefaultCompatibility();
-    }
-
-    abstract boolean isDefaultCompatibility();
 
     /**
      * The node.js version to be used when node.js is installed automatically by

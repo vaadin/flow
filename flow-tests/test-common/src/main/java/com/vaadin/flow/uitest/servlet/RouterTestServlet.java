@@ -14,6 +14,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -59,7 +60,8 @@ public class RouterTestServlet extends VaadinServlet {
         }
 
         @Override
-        public void setParameter(BeforeEvent event, String parameter) {
+        public void setParameter(BeforeEvent event,
+                @OptionalParameter String parameter) {
             setText(String.format("Hello, %s!", parameter));
         }
     }

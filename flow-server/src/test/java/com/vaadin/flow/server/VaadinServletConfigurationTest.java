@@ -30,9 +30,6 @@ public class VaadinServletConfigurationTest {
     @Test
     public void testEnclosingUIClass() throws Exception {
         Properties servletInitParams = new Properties();
-        servletInitParams.setProperty(
-                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
 
         ServletInUI servlet = new MockUIContainingServlet.ServletInUI();
         servlet.init(createServletConfig(servletInitParams));
@@ -49,9 +46,6 @@ public class VaadinServletConfigurationTest {
         Properties servletInitParams = new Properties();
         servletInitParams.setProperty(
                 InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
-                Boolean.TRUE.toString());
-        servletInitParams.setProperty(
-                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 Boolean.TRUE.toString());
 
         TestServlet servlet = new TestServlet();
@@ -85,9 +79,6 @@ public class VaadinServletConfigurationTest {
                 Integer.toString(expectedInt));
         servletInitParams.setProperty(
                 InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
-                Boolean.TRUE.toString());
-        servletInitParams.setProperty(
-                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 Boolean.TRUE.toString());
 
         TestServlet servlet = new TestServlet();

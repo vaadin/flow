@@ -27,7 +27,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -80,7 +79,6 @@ public class UidlWriterTest {
     @Tag("div")
     @JavaScript("super-JAVASCRIPT")
     @StyleSheet("super-STYLESHEET")
-    @HtmlImport("super-HTML_IMPORT")
     public static class SuperComponent extends Component {
     }
 
@@ -90,7 +88,6 @@ public class UidlWriterTest {
 
     @JavaScript("JAVASCRIPT")
     @StyleSheet("STYLESHEET")
-    @HtmlImport("HTML_IMPORT")
     public static class ActualComponent extends EmptyClassWithInterface
             implements ComponentInterface {
     }
@@ -99,46 +96,37 @@ public class UidlWriterTest {
     @JavaScript("child2-JAVASCRIPT")
     @StyleSheet("child1-STYLESHEET")
     @StyleSheet("child2-STYLESHEET")
-    @HtmlImport("child1-HTML_IMPORT")
-    @HtmlImport("child2-HTML_IMPORT")
     public static class ChildComponent extends ActualComponent
             implements ChildComponentInterface2 {
     }
 
     @JavaScript("interface-JAVASCRIPT")
     @StyleSheet("interface-STYLESHEET")
-    @HtmlImport("interface-HTML_IMPORT")
     public interface ComponentInterface {
     }
 
     @JavaScript("anotherinterface-JAVASCRIPT")
     @StyleSheet("anotherinterface-STYLESHEET")
-    @HtmlImport("anotherinterface-HTML_IMPORT")
     public interface AnotherComponentInterface {
     }
 
     @JavaScript("childinterface1-JAVASCRIPT")
     @StyleSheet("childinterface1-STYLESHEET")
-    @HtmlImport("childinterface1-HTML_IMPORT")
     public interface ChildComponentInterface1 {
     }
 
     @JavaScript("childinterface2-JAVASCRIPT")
     @StyleSheet("childinterface2-STYLESHEET")
-    @HtmlImport("childinterface2-HTML_IMPORT")
     public interface ChildComponentInterface2 extends ChildComponentInterface1 {
     }
 
     @Tag("test")
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
-    @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
     @JavaScript(value = "inline.js", loadMode = LoadMode.INLINE)
     @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE)
-    @HtmlImport(value = "inline.html", loadMode = LoadMode.INLINE)
     @JavaScript("eager.js")
     @StyleSheet("eager.css")
-    @HtmlImport("eager.html")
     public static class ComponentWithAllDependencyTypes extends Component {
     }
 
@@ -147,25 +135,20 @@ public class UidlWriterTest {
             + "inline.js", loadMode = LoadMode.INLINE)
     @StyleSheet(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
             + "inline.css", loadMode = LoadMode.INLINE)
-    @HtmlImport(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
-            + "inline.html", loadMode = LoadMode.INLINE)
     public static class ComponentWithFrontendProtocol extends Component {
     }
 
     @Tag("base")
-    @HtmlImport("2.html")
     @Route(value = "", layout = ParentClass.class)
     public static class BaseClass extends Component {
     }
 
     @Tag("parent")
-    @HtmlImport("1.html")
     @ParentLayout(SuperParentClass.class)
     public static class ParentClass extends Component implements RouterLayout {
     }
 
     @Tag("super-parent")
-    @HtmlImport("0.html")
     public static class SuperParentClass extends Component
             implements RouterLayout {
     }
@@ -340,24 +323,6 @@ public class UidlWriterTest {
         assertEquals(
                 "Expected to have exactly 3 eager dependencies in uidl, actual: %d",
                 eagerDependencies.length(), 3);
-
-        List<Class<?>> expectedClassOrder = Arrays.asList(
-                SuperParentClass.class, ParentClass.class, BaseClass.class);
-
-        for (int i = 0; i < expectedClassOrder.size(); i++) {
-            Class<?> expectedClass = expectedClassOrder.get(i);
-            HtmlImport htmlImport = expectedClass
-                    .getAnnotation(HtmlImport.class);
-
-            JsonValue actualDependency = eagerDependencies.get(i);
-            JsonObject expectedDependency = new Dependency(
-                    Dependency.Type.HTML_IMPORT, htmlImport.value(),
-                    htmlImport.loadMode()).toJson();
-            assertTrue(String.format(
-                    "Unexpected dependency. Expected: '%s', actual: '%s', class: '%s'",
-                    expectedDependency, actualDependency, expectedClass),
-                    expectedDependency.jsEquals(actualDependency));
-        }
     }
 
     @Test

@@ -9,7 +9,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -24,7 +23,6 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  * Tests a scalability bug #5806 with adding many buttons to a view.
  */
 @Tag("template-scalability-view")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-scalability-view.html")
 @JsModule("./template-scalability-view.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateScalabilityView")
 @PageTitle("Template scalability")

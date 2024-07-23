@@ -92,7 +92,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
-    public static final String POLYFILLS_JS = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
     public static final String SERVICE_WORKER_HEADER = "Service-Worker";
 
     private static final String SCRIPT = "script";
@@ -445,15 +444,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 VaadinSession session) {
             servletPathToContextRoot = contextRootRelatiePath;
             DeploymentConfiguration config = session.getConfiguration();
-            if (config.isCompatibilityMode()) {
-                if (session.getBrowser().isEs6Supported()) {
-                    frontendRootUrl = config.getEs6FrontendPrefix();
-                } else {
-                    frontendRootUrl = config.getEs5FrontendPrefix();
-                }
-            } else {
-                frontendRootUrl = config.getNpmFrontendPrefix();
-            }
+            frontendRootUrl = config.getNpmFrontendPrefix();
+
             assert frontendRootUrl.endsWith("/");
             assert servletPathToContextRoot.endsWith("/");
         }
@@ -670,23 +662,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     initialPageSettings -> handleInitialPageSettings(context,
                             head, initialPageSettings));
 
-            if (config.isCompatibilityMode()) {
-                /* Append any theme elements to initial page. */
-                handleThemeContents(context, document);
-            }
-
             if (!config.isProductionMode()) {
                 addLicenseChecker(document, config);
-                if (config.isBowerMode()) {
-                    exportBowerUsageStatistics(document);
-                } else {
-                    exportNpmUsageStatistics(document);
-                }
+                // Since Bower mode is deprecated,
+                // avoid calling isBowerMode() and directly proceed to use NPM
+                // statistics.
+                exportNpmUsageStatistics(document);
             }
 
             setupPwa(document, context);
 
-            if (!config.isCompatibilityMode() && !config.isProductionMode()) {
+            if (!config.isProductionMode()) {
                 checkWebpackStatus(document);
             }
 
@@ -714,23 +700,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                     + "<pre>" + errorMsg + "</pre>");
                     document.body().appendChild(errorElement);
                 }
-            }
-        }
-
-        private void exportBowerUsageStatistics(Document document) {
-            String registerScript = UsageStatistics.getEntries().map(entry -> {
-                String json = createUsageStatisticsJson(entry);
-
-                String escapedName = Json.create(entry.getName()).toJson();
-
-                // Registers the entry in a way that is picked up as a Vaadin
-                // WebComponent by the usage stats gatherer
-                return String.format("window.Vaadin[%s]=%s;", escapedName,
-                        json);
-            }).collect(Collectors.joining("\n"));
-
-            if (!registerScript.isEmpty()) {
-                document.body().appendElement(SCRIPT_TAG).text(registerScript);
             }
         }
 
@@ -961,12 +930,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 Element dependencyElement = createDependencyElement(uriResolver,
                         loadMode, dependencyJson, dependencyType);
 
-                if (loadMode == LoadMode.INLINE
-                        && dependencyType == Dependency.Type.HTML_IMPORT) {
-                    dependenciesToInlineInBody.add(dependencyElement);
-                } else {
-                    head.appendChild(dependencyElement);
-                }
+                head.appendChild(dependencyElement);
             }
             return dependenciesToInlineInBody;
         }
@@ -989,23 +953,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinService service = context.getSession().getService();
             DeploymentConfiguration conf = service.getDeploymentConfiguration();
 
-            if (conf.isCompatibilityMode()) {
-                inlineEs6Collections(head, context);
-                appendWebComponentsPolyfills(head, context);
-            } else {
-                conf.getPolyfills().forEach(
-                        polyfill -> head.appendChild(createJavaScriptElement(
-                                "./" + VAADIN_MAPPING + polyfill, false)));
-
-                // #6817
-                appendSafari10ScriptNoModuleFix(head, context);
-
-                try {
-                    appendNpmBundle(head, service, context);
-                } catch (IOException e) {
-                    throw new BootstrapException(
-                            "Unable to read webpack stats file.", e);
-                }
+            conf.getPolyfills().forEach(
+                    polyfill -> head.appendChild(createJavaScriptElement(
+                            "./" + VAADIN_MAPPING + polyfill, false)));
+            appendSafari10ScriptNoModuleFix(head, context);
+            try {
+                appendNpmBundle(head, service, context);
+            } catch (IOException e) {
+                throw new BootstrapException(
+                        "Unable to read webpack stats file.", e);
             }
 
             if (context.getPushMode().isEnabled()) {
@@ -1271,44 +1227,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-        private void appendWebComponentsPolyfills(Element head,
-                BootstrapContext context) {
-            VaadinSession session = context.getSession();
-            DeploymentConfiguration config = session.getConfiguration();
-
-            String es5AdapterUrl = "frontend://bower_components/webcomponentsjs/custom-elements-es5-adapter.js";
-            VaadinService service = session.getService();
-            if (!service.isResourceAvailable(POLYFILLS_JS, session.getBrowser(),
-                    null)) {
-                // No webcomponents polyfill, load nothing
-                return;
-            }
-
-            boolean loadEs5Adapter = config
-                    .getBooleanProperty(Constants.LOAD_ES5_ADAPTERS, true);
-            if (loadEs5Adapter && !session.getBrowser().isEs6Supported()) {
-                // This adapter is required since lots of our current customers
-                // use polymer-cli to transpile sources,
-                // this tool adds babel-helpers dependency into each file, see:
-                // https://github.com/Polymer/polymer-cli/blob/master/src/build/build.ts#L64
-                // and
-                // https://github.com/Polymer/polymer-cli/blob/master/src/build/optimize-streams.ts#L119
-                head.appendChild(
-                        createInlineJavaScriptElement(BABEL_HELPERS_JS));
-
-                if (session.getBrowser().isEs5AdapterNeeded()) {
-                    head.appendChild(
-                            createJavaScriptElement(context.getUriResolver()
-                                    .resolveVaadinUri(es5AdapterUrl), false));
-                }
-            }
-
-            String resolvedUrl = context.getUriResolver()
-                    .resolveVaadinUri(POLYFILLS_JS);
-            head.appendChild(createJavaScriptElement(resolvedUrl, false));
-
-        }
-
         private Element createInlineJavaScriptElement(
                 String javaScriptContents) {
             // defer makes no sense without src:
@@ -1360,8 +1278,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         "module");
                 break;
             case HTML_IMPORT:
-                dependencyElement = createHtmlImportElement(url);
-                break;
+                throw new UnsupportedOperationException(
+                        "@HtmlImport annotations, Bower and compatibility mode are no longer supported by Flow since version 2.11."
+                                + "Please use npm/pnpm package managers and"
+                                + " @NpmPackage/@JsModule annotations.");
             default:
                 throw new IllegalStateException(
                         "Unsupported dependency type: " + type);

@@ -116,11 +116,6 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
         }
     }
 
-    @Override
-    boolean isDefaultCompatibility() {
-        return false;
-    }
-
     /**
      * Try to remove the node_modules folder.
      * <p>

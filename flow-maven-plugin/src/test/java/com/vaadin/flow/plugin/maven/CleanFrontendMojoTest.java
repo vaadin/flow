@@ -89,8 +89,6 @@ public class CleanFrontendMojoTest {
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 frontendDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
-                "false");
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
                 FrontendTools.DEFAULT_NODE_VERSION);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",

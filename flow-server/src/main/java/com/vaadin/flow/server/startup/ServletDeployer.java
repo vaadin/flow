@@ -234,7 +234,6 @@ public class ServletDeployer implements ServletContextListener {
 
         boolean enableServlets = true;
         boolean hasDevelopmentMode = servletConfigurations.isEmpty();
-        boolean isCompatibilityMode = false;
         boolean productionMode = false;
         for (DeploymentConfiguration configuration : servletConfigurations) {
             enableServlets = enableServlets
@@ -242,10 +241,6 @@ public class ServletDeployer implements ServletContextListener {
             boolean devMode = !configuration.useCompiledFrontendResources();
             hasDevelopmentMode = hasDevelopmentMode || devMode;
             productionMode = productionMode || configuration.isProductionMode();
-            if (devMode) {
-                isCompatibilityMode = isCompatibilityMode
-                        || configuration.isCompatibilityMode();
-            }
         }
 
         /*
@@ -261,14 +256,6 @@ public class ServletDeployer implements ServletContextListener {
         }
         VaadinServletCreation servletCreation = createAppServlet(context);
         logServletCreation(servletCreation, context, productionMode);
-        if (servletCreation == VaadinServletCreation.SERVLET_EXISTS
-                && hasDevelopmentMode && isCompatibilityMode) {
-            createServletIfNotExists(context, "frontendFilesServlet",
-                    FrontendVaadinServlet.class, "/frontend/*",
-                    Collections.singletonMap(
-                            InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                            Boolean.TRUE.toString()));
-        }
     }
 
     private void logServletCreation(VaadinServletCreation servletCreation,

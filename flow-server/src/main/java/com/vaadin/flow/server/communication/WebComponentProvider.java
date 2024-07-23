@@ -83,8 +83,6 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
 
-        final boolean compatibilityMode = session.getService()
-                .getDeploymentConfiguration().isCompatibilityMode();
         final ComponentInfo componentInfo = new ComponentInfo(pathInfo);
 
         if (!componentInfo.hasExtension()) {
@@ -102,17 +100,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        if (componentInfo.isHTML() && !compatibilityMode) {
+        if (componentInfo.isHTML()) {
             LoggerFactory.getLogger(WebComponentProvider.class).info(
                     "Received web-component request for html component in npm"
-                            + " mode with request path {}",
-                    pathInfo);
-            return false;
-        }
-
-        if (componentInfo.isJS() && compatibilityMode) {
-            LoggerFactory.getLogger(WebComponentProvider.class).info(
-                    "Received web-component request for js component in compatibility"
                             + " mode with request path {}",
                     pathInfo);
             return false;
@@ -130,14 +120,11 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
             String generated;
             Supplier<String> responder;
-            if (compatibilityMode) {
-                responder = () -> generateBowerResponse(
-                        webComponentConfiguration, session, request, response);
-            } else {
-                response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
-                responder = () -> generateNPMResponse(
-                        webComponentConfiguration.getTag(), request, response);
-            }
+
+            response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
+            responder = () -> generateNPMResponse(
+                    webComponentConfiguration.getTag(), request, response);
+
             if (cache == null) {
                 generated = responder.get();
             } else {
@@ -179,37 +166,6 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         } else {
             cache = null;
         }
-    }
-
-    private String generateBowerResponse(
-            WebComponentConfiguration<? extends Component> configuration,
-            VaadinSession session, VaadinRequest request,
-            VaadinResponse response) {
-        if (session.getConfiguration().useCompiledFrontendResources()) {
-            response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
-            return generateCompiledUIDeclaration(session, request,
-                    configuration.getTag());
-        } else {
-            response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
-            return WebComponentGenerator.generateModule(configuration,
-                    getFrontendPath(request), true, null);
-        }
-    }
-
-    private String generateCompiledUIDeclaration(VaadinSession session,
-            VaadinRequest request, String tagName) {
-        String contextRootRelativePath = request.getService()
-                .getContextRootRelativePath(request);
-
-        BootstrapUriResolver resolver = new BootstrapUriResolver(
-                contextRootRelativePath, session);
-        String polyFillsUri = resolver
-                .resolveVaadinUri(BootstrapHandler.POLYFILLS_JS);
-
-        // `thisScript` below allows to refer the currently executing script
-        return getThisScript(tagName)
-                + generateAddPolyfillsScript(polyFillsUri, "thisScript")
-                + generateUiImport("thisScript");
     }
 
     private String generateAddPolyfillsScript(String polyFillsUri,

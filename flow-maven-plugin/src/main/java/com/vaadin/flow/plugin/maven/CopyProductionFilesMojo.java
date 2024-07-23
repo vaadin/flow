@@ -66,46 +66,5 @@ public class CopyProductionFilesMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        super.execute();
-
-        // Do nothing when not in compatibility mode
-        if (!compatibility) {
-            getLog().info(
-                    "Skipped `copy-production-files` goal because compatibility mode is not set.");
-            return;
-        }
-
-        List<ArtifactData> projectArtifacts = project.getArtifacts().stream()
-                .filter(artifact -> "jar".equals(artifact.getType()))
-                .map(artifact -> new ArtifactData(artifact.getFile(),
-                        artifact.getArtifactId(), artifact.getVersion()))
-                .collect(Collectors.toList());
-
-        if (frontendWorkingDirectory == null) {
-            // No directory given, try to find from common locations
-            final List<String> potentialFrontEndDirectories = Arrays.asList(
-                    "src/main/webapp/frontend", ADD_ON_FRONTEND,
-                    "src/main/resources/META-INF/resources/frontend",
-                    "src/main/resources/public/frontend",
-                    "src/main/resources/static/frontend",
-                    "src/main/resources/resources/frontend");
-            for (String dir : potentialFrontEndDirectories) {
-                File directory = new File(project.getBasedir(), dir);
-                if (directory.exists()) {
-                    frontendWorkingDirectory = directory;
-                    break;
-                }
-            }
-        }
-
-        new ProductionModeCopyStep(new JarContentsManager(), projectArtifacts)
-                .copyWebApplicationFiles(copyOutputDirectory,
-                        frontendWorkingDirectory, excludes);
     }
-
-    @Override
-    boolean isDefaultCompatibility() {
-        return true;
-    }
-
 }

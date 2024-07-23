@@ -23,7 +23,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
@@ -401,7 +400,6 @@ public class NpmTemplateParserTest {
     }
 
     @Tag("review-list")
-    @HtmlImport("frontend://src/views/reviewslist/reviews-list.html")
     @JsModule("./src/views/reviewslist/reviews-list")
     public class ReviewList extends PolymerTemplate<TemplateModel> {
     }

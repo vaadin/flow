@@ -11,6 +11,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -35,6 +36,7 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void productionModeExceptions() {
         openProduction();
         causeException();

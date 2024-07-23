@@ -47,7 +47,7 @@ public class ThemeUtilTest {
 
     @Test
     public void navigationTargetWithTheme_subclassGetsTheme() {
-        UI ui = mockUI(false);
+        UI ui = mockUI();
 
         ThemeDefinition theme = ThemeUtil.findThemeForNavigationTarget(ui,
                 ThemeSingleNavigationTargetSubclass.class, "single");
@@ -59,19 +59,8 @@ public class ThemeUtilTest {
     }
 
     @Test
-    public void navigationTargetWithImprovedThemeInCompatibilityMode_throwsException() {
-        UI ui = mockUI(true);
-
-        Assert.assertThrows(
-                "themeFolder value in compatibilityMode should throw.",
-                IllegalStateException.class,
-                () -> ThemeUtil.findThemeForNavigationTarget(ui,
-                        ImprovedThemeSupport.class, ""));
-    }
-
-    @Test
     public void navigationTargetWithImprovedThemeInNpmMode_getsTheme() {
-        UI ui = mockUI(false);
+        UI ui = mockUI();
 
         ThemeDefinition theme = ThemeUtil.findThemeForNavigationTarget(ui,
                 ImprovedThemeSupport.class, "");
@@ -79,7 +68,7 @@ public class ThemeUtilTest {
         Assert.assertNotNull("Theme should be gotten in npm mode", theme);
     }
 
-    private UI mockUI(final boolean compatibilityMode) {
+    private UI mockUI() {
         RouteRegistry registry = Mockito.mock(RouteRegistry.class);
         Router router = new Router(registry);
 
@@ -95,8 +84,6 @@ public class ThemeUtilTest {
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(configuration.isCompatibilityMode())
-                .thenReturn(compatibilityMode);
 
         return ui;
     }

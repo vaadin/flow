@@ -65,15 +65,10 @@ public class ComponentMetaData {
      * Framework internal class, thus package-private.
      */
     public static class DependencyInfo {
-        private final List<HtmlImportDependency> htmlImports = new ArrayList<>();
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<JsModule> jsModules = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
         private final List<CssImport> cssImports = new ArrayList<>();
-
-        List<HtmlImportDependency> getHtmlImports() {
-            return Collections.unmodifiableList(htmlImports);
-        }
 
         List<JavaScript> getJavaScripts() {
             return Collections.unmodifiableList(javaScripts);
@@ -187,29 +182,10 @@ public class ComponentMetaData {
 
         scannedClasses.add(componentClass);
 
-        if (service.getDeploymentConfiguration().isCompatibilityMode()) {
-            dependencyInfo.htmlImports
-                    .addAll(getHtmlImportDependencies(service, componentClass));
-
-        } else {
-            List<JsModule> jsModules = AnnotationReader
-                    .getJsModuleAnnotations(componentClass);
-
-            // Ignore @HtmlImport(s) when @JsModule(s) present.
-            if (!jsModules.isEmpty()) {
-                dependencyInfo.jsModules.addAll(jsModules);
-            } else {
-                // Show a warning when @HtmlImport is present and there is no
-                // @JsModule or @CssImport.
-                if (!getHtmlImportDependencies(service, componentClass)
-                        .isEmpty()
-                        && AnnotationReader
-                                .getCssImportAnnotations(componentClass)
-                                .isEmpty()) {
-                    getLogger().error(HTML_IMPORT_WITHOUT_JS_MODULE_WARNING,
-                            componentClass.getName());
-                }
-            }
+        List<JsModule> jsModules = AnnotationReader
+                .getJsModuleAnnotations(componentClass);
+        if (!jsModules.isEmpty()) {
+            dependencyInfo.jsModules.addAll(jsModules);
         }
 
         dependencyInfo.javaScripts.addAll(
@@ -262,27 +238,6 @@ public class ComponentMetaData {
                     event -> dependencyInfo.remove(service));
             return findDependencies(service, componentClass);
         });
-    }
-
-    private static Collection<HtmlImportDependency> getHtmlImportDependencies(
-            VaadinService service, Class<? extends Component> componentClass) {
-        return AnnotationReader.getHtmlImportAnnotations(componentClass)
-                .stream().map(htmlImport -> getHtmlImportDependencies(service,
-                        htmlImport))
-                .collect(Collectors.toList());
-    }
-
-    private static HtmlImportDependency getHtmlImportDependencies(
-            VaadinService service, HtmlImport htmlImport) {
-        String importPath = SharedUtil.prefixIfRelative(htmlImport.value(),
-                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-
-        DependencyTreeCache<String> cache = service
-                .getHtmlImportDependencyCache();
-
-        Set<String> dependencies = cache.getDependencies(importPath);
-
-        return new HtmlImportDependency(dependencies, htmlImport.loadMode());
     }
 
     /**

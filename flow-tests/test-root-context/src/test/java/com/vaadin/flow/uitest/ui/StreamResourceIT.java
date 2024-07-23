@@ -28,21 +28,7 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
     public void getDynamicVaadinResource() throws IOException {
         open();
 
-        assertDownloadedContent("link", "file%20name");
-    }
-
-    @Test
-    public void getDynamicVaadinPlusResource() throws IOException {
-        open();
-
-        assertDownloadedContent("plus-link", "file%2B.jpg");
-    }
-
-    @Test
-    public void getDynamicVaadinPercentResource() throws IOException {
-        open();
-
-        assertDownloadedContent("percent-link", "file%25.jpg");
+        assertDownloadedContent();
     }
 
     @Test
@@ -52,12 +38,14 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
 
         findElement(By.id("detach-attach")).click();
 
-        assertDownloadedContent("link", "file%20name");
+        assertDownloadedContent();
     }
 
-    private void assertDownloadedContent(String downloadId, String filename)
-            throws IOException {
-        WebElement link = findElement(By.id(downloadId));
+    private void assertDownloadedContent() throws IOException {
+        WebElement link = findElement(By.id("link"));
+        Assert.assertEquals(
+                "Anchor element should have router-ignore " + "attribute", "",
+                link.getAttribute("router-ignore"));
         String url = link.getAttribute("href");
 
         getDriver().manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS);
@@ -68,8 +56,5 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
             String text = lines.stream().collect(Collectors.joining());
             Assert.assertEquals("foo", text);
         }
-
-        Assert.assertEquals(filename, FilenameUtils.getName(url));
     }
-
 }

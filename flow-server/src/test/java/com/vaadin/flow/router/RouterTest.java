@@ -9,7 +9,6 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +27,7 @@ import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,7 +40,6 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.dom.Element;
@@ -61,7 +60,6 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -1158,7 +1156,6 @@ public class RouterTest extends RoutingTestBase {
     public static class SubLayout extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
     public static class MyTheme implements AbstractTheme {
 
         @Override
@@ -2968,24 +2965,6 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 FooBarNavigationTarget.events.size());
-    }
-
-    @Test // 3384
-    public void theme_is_gotten_from_the_super_class()
-            throws InvalidRouteConfigurationException, Exception {
-
-        // Feature enabled only for bower mode
-        Mockito.when(configuration.isCompatibilityMode()).thenReturn(true);
-
-        setNavigationTargets(ExtendingView.class);
-
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-
-        Field theme = UIInternals.class.getDeclaredField("theme");
-        theme.setAccessible(true);
-        Object themeObject = theme.get(ui.getInternals());
-
-        Assert.assertEquals(MyTheme.class, themeObject.getClass());
     }
 
     @Test

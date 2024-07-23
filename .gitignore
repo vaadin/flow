@@ -48,3 +48,5 @@ package.json
 package-lock.json
 /flow-tests/**/*.generated.js
 /flow-tests/**/frontend/generated/
+/flow-tests/**/*.d.ts
+/flow-tests/**/.flow-node-tasks.lock

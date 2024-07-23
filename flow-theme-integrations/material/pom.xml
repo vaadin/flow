@@ -15,13 +15,6 @@
     </description>
     <packaging>jar</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.webjars.bowergithub.vaadin</groupId>
-            <artifactId>vaadin-material-styles</artifactId>
-            <version>1.3.2</version>
-        </dependency>
-    </dependencies>
     <build>
         <plugins>
             <plugin>

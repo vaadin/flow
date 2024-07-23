@@ -9,7 +9,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.Id;
@@ -19,7 +18,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.InjectsJsTemplateView", layout = ViewTestLayout.class)
 @Tag("injects-js-template")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/InjectsJsTemplate.html")
 @JsModule("InjectsJsTemplate.js")
 public class InjectsJsTemplateView extends PolymerTemplate<TemplateModel> {
 

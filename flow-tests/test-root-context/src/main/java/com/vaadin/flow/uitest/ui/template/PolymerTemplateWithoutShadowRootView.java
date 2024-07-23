@@ -9,7 +9,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.Id;
@@ -24,7 +23,6 @@ public class PolymerTemplateWithoutShadowRootView extends Div {
 
     @JsModule("./template-without-shadow-root-view.js")
     @Tag("template-without-shadow-root-view")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/template-without-shadow-root-view.html")
     public static class Template extends PolymerTemplate<TemplateModel> {
 
         @Id("content")
