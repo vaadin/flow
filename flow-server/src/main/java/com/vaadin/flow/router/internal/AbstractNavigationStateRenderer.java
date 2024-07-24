@@ -38,7 +38,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -66,7 +65,6 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -286,7 +284,8 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
+        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())
+                || NavigationTrigger.REFRESH.equals(event.getTrigger());
     }
 
     private boolean isRouterLinkNotFoundNavigationError(
