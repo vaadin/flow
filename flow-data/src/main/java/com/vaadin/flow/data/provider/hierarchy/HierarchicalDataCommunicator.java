@@ -351,7 +351,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 // if (controller != null) {
                 //     controller.unregisterPassivatedKeys();
                 // }
-                unregisterPassivatedKeys();
             }
         });
         if (syncClient && !collapsedItems.isEmpty()) {
