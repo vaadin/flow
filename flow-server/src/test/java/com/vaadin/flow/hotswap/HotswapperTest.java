@@ -263,7 +263,7 @@ public class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -277,7 +277,7 @@ public class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyLayout.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -292,7 +292,7 @@ public class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -307,7 +307,7 @@ public class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -322,7 +322,7 @@ public class HotswapperTest {
                 MyLayout.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -337,7 +337,7 @@ public class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -352,6 +352,7 @@ public class HotswapperTest {
 
         ui.assertNotRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -367,6 +368,7 @@ public class HotswapperTest {
 
         ui.assertRouteRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -383,6 +385,7 @@ public class HotswapperTest {
 
         ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -400,6 +403,7 @@ public class HotswapperTest {
 
         ui.assertRouteRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -417,6 +421,7 @@ public class HotswapperTest {
 
         ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -434,6 +439,7 @@ public class HotswapperTest {
 
         ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -451,6 +457,7 @@ public class HotswapperTest {
 
         ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -467,6 +474,7 @@ public class HotswapperTest {
 
         ui.assertNotRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -488,7 +496,7 @@ public class HotswapperTest {
 
         pushUI.assertNotRefreshed();
         notPushUI.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test

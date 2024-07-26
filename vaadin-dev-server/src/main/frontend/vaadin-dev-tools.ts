@@ -648,13 +648,27 @@ export class VaadinDevTools extends LitElement {
       return;
     }
     const onConnectionError = (msg: string) => console.error(msg);
-    const onReload = () => {
-      this.showSplashMessage('Reloading…');
-      const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
-      const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
-      window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
-      window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
-      window.location.reload();
+    const onReload = (strategy: string = 'reload') => {
+      if (strategy === 'refresh' || strategy === 'full-refresh') {
+        const anyVaadin = window.Vaadin as any;
+        // TODO: do it in Flow client. Maybe raise a custom vaadin-refresh-ui event
+        //  and handle it in Flow client?
+        Object.keys(anyVaadin.Flow.clients)
+            .filter((key) => key !== 'TypeScript')
+            .map((id) => anyVaadin.Flow.clients[id])
+            .forEach((client) => {
+              client.sendEventMessage(1, "ui-refresh", {
+                fullRefresh: strategy === 'full-refresh'
+              })
+            });
+      } else {
+        this.showSplashMessage('Reloading…');
+        const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
+        const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
+        window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
+        window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
+        window.location.reload();
+      }
     };
     const onUpdate = (path: string, content: string) => {
       let styleTag = document.head.querySelector(`style[data-file-path='${path}']`);
