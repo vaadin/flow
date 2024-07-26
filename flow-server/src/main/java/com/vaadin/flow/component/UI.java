@@ -274,6 +274,8 @@ public class UI extends Component
                     this::leaveNavigation);
             getEventBus().addListener(BrowserNavigateEvent.class,
                     this::browserNavigate);
+            getEventBus().addListener(BrowserRefreshEvent.class,
+                    this::browserRefresh);
 
         }
 
@@ -1257,6 +1259,10 @@ public class UI extends Component
         getInternals().refreshCurrentRoute(refreshRouteChain);
     }
 
+    private void browserRefresh(BrowserRefreshEvent event) {
+        refreshCurrentRoute(event.refreshRouteChain);
+    }
+
     /**
      * Returns true if this UI instance supports navigation.
      *
@@ -1770,6 +1776,43 @@ public class UI extends Component
             this.trigger = trigger;
         }
 
+    }
+
+    /**
+     * Event fired by the client to request a refresh of the user interface, by
+     * re-navigating to the current route.
+     * <p>
+     * </p>
+     * The route target component is re-instantiated, as well as all layouts in
+     * the route chain if the {@code fullRefresh} event flag is active.
+     *
+     * @see #refreshCurrentRoute(boolean)
+     */
+    @DomEvent(BrowserRefreshEvent.EVENT_NAME)
+    public static class BrowserRefreshEvent extends ComponentEvent<UI> {
+        public static final String EVENT_NAME = "ui-refresh";
+
+        private final boolean refreshRouteChain;
+
+        /**
+         * Creates a new event instance.
+         *
+         * @param source
+         *            the UI for which the refresh is requested.
+         * @param fromClient
+         *            <code>true</code> if the event originated from the client
+         *            side, <code>false</code> otherwise. NOTE: for technical
+         *            reason the argument must be added to the constructor, but
+         *            this event the value is always true.
+         * @param refreshRouteChain
+         *            {@code true} to refresh all layouts in the route chain,
+         *            {@code false} to only refresh the route instance
+         */
+        public BrowserRefreshEvent(UI source, boolean fromClient,
+                @EventData("fullRefresh") boolean refreshRouteChain) {
+            super(source, true);
+            this.refreshRouteChain = refreshRouteChain;
+        }
     }
 
     /**
