@@ -111,7 +111,17 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         super(finder, featureFlags);
 
         long start = System.currentTimeMillis();
-        this.annotationFinder = annotationFinder;
+        // Wraps the finder function to provide debugging information in case of
+        // failures
+        this.annotationFinder = (clazz, loadedAnnotation) -> {
+            try {
+                return annotationFinder.apply(clazz, loadedAnnotation);
+            } catch (RuntimeException exception) {
+                getLogger().error("Could not read {} annotation from class {}.",
+                        loadedAnnotation.getName(), clazz.getName(), exception);
+                throw exception;
+            }
+        };
 
         try {
             abstractTheme = finder.loadClass(AbstractTheme.class.getName());
