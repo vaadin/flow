@@ -191,7 +191,7 @@ public class UpdateImportsWithByteCodeScannerTest
         Assert.assertTrue(chunkFile.isPresent());
         Assert.assertTrue(output.containsKey(chunkFile.get()));
 
-        Assert.assertTrue(findOptionalChunkFile(output, true).isEmpty());
+        Assert.assertTrue(findOptionalChunkFile(output, true).isPresent());
 
         String mainImportContent = String.join("\n",
                 output.get(flowGeneratedImports));
