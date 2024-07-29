@@ -604,6 +604,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("export "))
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
+                .filter(row -> !row.contains("composeLoadOnDemand"))
                 .filter(row -> !row.contains("const loadOnDemand"))
                 .filter(row -> !row.contains(
                         "@vaadin/common-frontend/ConnectionIndicator"))
@@ -628,6 +629,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("export "))
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
+                .filter(row -> !row.contains("composeLoadOnDemand"))
                 .filter(row -> !row.contains("const loadOnDemand"))
                 .filter(row -> !row.contains(
                         "@vaadin/common-frontend/ConnectionIndicator"))
@@ -757,6 +759,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         List<String> result = updater.getMergedOutput();
         result.removeIf(line -> line.startsWith("import { injectGlobalCss }"));
+        result.removeIf(
+                line -> line.startsWith("import { composeLoadOnDemand }"));
         result.removeIf(line -> line.startsWith("export "));
         result.removeIf(line -> line.isBlank());
         result.removeIf(line -> line.contains("loadOnDemand"));

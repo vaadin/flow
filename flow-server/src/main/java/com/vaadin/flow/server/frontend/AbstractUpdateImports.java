@@ -404,10 +404,10 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> mainCssLines = getCssLines(eagerCssData);
         if (!mainCssLines.isEmpty()) {
             mainLines.add(IMPORT_INJECT);
-            mainLines.add(IMPORT_COMPOSE_LOAD_ON_DEMAND);
             mainLines.add(THEMABLE_MIXIN_IMPORT);
             mainLines.addAll(mainCssLines);
         }
+        mainLines.add(0, IMPORT_COMPOSE_LOAD_ON_DEMAND);
         mainLines.addAll(getModuleLines(eagerJavascript));
 
         // Move all imports to the top
