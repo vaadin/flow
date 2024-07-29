@@ -106,7 +106,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.4.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>9.3.2</testbench.version>
+        <testbench.version>9.3.3</testbench.version>
         <jetty.version>12.0.11</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
@@ -117,7 +117,7 @@
         <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
         <!-- Used in OSGi manifests -->
-        <jsoup.version>1.17.2</jsoup.version>
+        <jsoup.version>1.18.1</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
         <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
         <atmosphere.client.version>4.0.0</atmosphere.client.version>
@@ -348,7 +348,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.8.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>

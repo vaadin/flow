@@ -219,11 +219,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         }
         EnumMap<UIRefreshStrategy, List<UI>> refreshActions = computeRefreshStrategies(
                 vaadinSessions, classes);
-        forceBrowserReload |= refreshActions
-                .containsKey(UIRefreshStrategy.RELOAD);
-        boolean uiTreeNeedsRefresh = refreshActions
-                .containsKey(UIRefreshStrategy.REFRESH_CHAIN)
-                || refreshActions.containsKey(UIRefreshStrategy.REFRESH_ROUTE);
+        boolean uiTreeNeedsRefresh = !refreshActions.isEmpty();
         if (forceBrowserReload || uiTreeNeedsRefresh) {
             triggerClientUpdate(refreshActions, forceBrowserReload);
         }
@@ -239,13 +235,17 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
          */
         RELOAD,
         /**
-         * Refresh only route instance.
+         * Refresh UI without a page reload.
          */
-        REFRESH_ROUTE,
+        REFRESH,
         /**
-         * Refresh all layouts in the route chain.
+         * Refresh only route instance via UI PUSH connection.
          */
-        REFRESH_CHAIN,
+        PUSH_REFRESH_ROUTE,
+        /**
+         * Refresh all layouts in the route chain via UI PUSH connection.
+         */
+        PUSH_REFRESH_CHAIN,
         /**
          * Refresh not needed.
          */
@@ -298,8 +298,8 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         if (!targetChainChangedItems.isEmpty()) {
             refreshStrategy = targetChainChangedItems.stream()
                     .allMatch(chainItem -> chainItem == route)
-                            ? UIRefreshStrategy.REFRESH_ROUTE
-                            : UIRefreshStrategy.REFRESH_CHAIN;
+                            ? UIRefreshStrategy.PUSH_REFRESH_ROUTE
+                            : UIRefreshStrategy.PUSH_REFRESH_CHAIN;
         } else {
             // Look into the UI tree to find if any component is instance of
             // a changed class. If so, detect its parent route or layout to
@@ -308,9 +308,9 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                     changedClasses, targetsChain, route);
         }
 
-        // If push is not enabled we can only request a full page reload
+        // If push is not enabled we can only request a full page refresh
         if (refreshStrategy != UIRefreshStrategy.SKIP && !pushEnabled) {
-            refreshStrategy = UIRefreshStrategy.RELOAD;
+            refreshStrategy = UIRefreshStrategy.REFRESH;
         }
         return refreshStrategy;
     }
@@ -336,10 +336,10 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                     if (!targetsChain.contains(parent)) {
                         parent = parent.getParent().orElse(null);
                     } else if (parent == route) {
-                        refreshStrategy = UIRefreshStrategy.REFRESH_ROUTE;
+                        refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_ROUTE;
                         parent = null;
                     } else {
-                        refreshStrategy = UIRefreshStrategy.REFRESH_CHAIN;
+                        refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
                         parent = null;
                         stack.clear();
                     }
@@ -355,19 +355,26 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             EnumMap<UIRefreshStrategy, List<UI>> uisToRefresh,
             boolean forceReload) {
 
-        // If some UI has push not enabled, BrowserLiveReload should be used
-        // to trigger a client update. However, BrowserLiveReload broadcasts
-        // the reload request to all active client connection, making calls to
-        // UI.refreshCurrentRoute() useless.
-        if (forceReload) {
-            if (liveReload != null) {
-                LOGGER.debug(
-                        "Triggering browser live reload triggered because of classes changes");
-                liveReload.reload();
-            } else {
+        boolean refreshRequested = uisToRefresh
+                .containsKey(UIRefreshStrategy.REFRESH);
+
+        // If some UI has push not enabled, BrowserLiveReload should be used to
+        // trigger a client update. However, BrowserLiveReload broadcasts the
+        // reload/refresh request to all active client connection, making calls
+        // to UI.refreshCurrentRoute() useless.
+        if (forceReload || refreshRequested) {
+            if (liveReload == null) {
                 LOGGER.debug(
                         "A change to one or more classes requires a browser page reload, but BrowserLiveReload is not available. "
                                 + "Please reload the browser page manually to make changes effective.");
+            } else if (forceReload) {
+                LOGGER.debug(
+                        "Triggering browser live reload because of classes changes");
+                liveReload.reload();
+            } else {
+                LOGGER.debug(
+                        "Triggering browser live refresh because of classes changes");
+                liveReload.refresh(true);
             }
         } else {
             LOGGER.debug(
@@ -375,7 +382,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             for (UIRefreshStrategy action : uisToRefresh.keySet()) {
                 uisToRefresh.get(action)
                         .forEach(ui -> ui.access(() -> ui.refreshCurrentRoute(
-                                action == UIRefreshStrategy.REFRESH_CHAIN)));
+                                action == UIRefreshStrategy.PUSH_REFRESH_CHAIN)));
             }
         }
     }
