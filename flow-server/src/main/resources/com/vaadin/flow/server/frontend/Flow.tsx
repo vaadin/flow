@@ -233,10 +233,6 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
-            if(navigated.current) {
-                blocker.proceed();
-                return;
-            }
             const {pathname, search} = blocker.location;
             const routes = ((window as any)?.Vaadin?.routesConfig || []) as AgnosticRouteObject[];
             let matched = matchRoutes(Array.from(routes), window.location.pathname);
