@@ -170,7 +170,7 @@ function Flow() {
     });
     const {pathname, search, hash} = useLocation();
     const navigated = useRef<boolean>(false);
-
+    const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
 
     const navigateEventHandler = useCallback((event: MouseEvent) => {
@@ -184,6 +184,7 @@ function Flow() {
         }
 
         navigated.current = false;
+        fromAnchor.current = true;
         navigate(path);
     }, [navigate]);
 
@@ -233,6 +234,11 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            if (navigated.current && !fromAnchor.current) {
+                fromAnchor.current = false;
+                blocker.proceed();
+                return;
+            }
             const {pathname, search} = blocker.location;
             const routes = ((window as any)?.Vaadin?.routesConfig || []) as AgnosticRouteObject[];
             let matched = matchRoutes(Array.from(routes), window.location.pathname);
@@ -280,7 +286,7 @@ function Flow() {
     }, [blocker.state, blocker.location]);
 
     useEffect(() => {
-        if(navigated.current) {
+        if (navigated.current) {
             navigated.current = false;
             fireNavigated(pathname,search);
             return;
