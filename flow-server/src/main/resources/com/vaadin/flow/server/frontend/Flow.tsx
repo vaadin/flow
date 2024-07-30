@@ -184,6 +184,8 @@ function Flow() {
         }
 
         navigated.current = false;
+        // When navigation is triggered by click on a link, fromAnchor is set to true
+        // in order to get a server round-trip even when navigating to the same URL again
         fromAnchor.current = true;
         navigate(path);
     }, [navigate]);
@@ -234,6 +236,7 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            // Do not skip server round-trip if navigation originates from a click on a link
             if (navigated.current && !fromAnchor.current) {
                 blocker.proceed();
                 return;
