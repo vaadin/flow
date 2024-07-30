@@ -41,9 +41,10 @@ public class NavigationEventsView extends Div
                 NavigationEventsView.class);
         routerLink.setId("router-link");
         Anchor anchor = new Anchor(
-                "http://localhost:8888/view/com.vaadin.flow.uitest.ui.NavigationEventsView",
+                "/view/com.vaadin.flow.uitest.ui.NavigationEventsView",
                 "Anchor to self");
         anchor.setId("anchor");
+
         add(routerLink, anchor);
     }
 
