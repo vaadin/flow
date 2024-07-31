@@ -32,51 +32,31 @@ public class NavigationEventsIT extends ChromeBrowserTest {
     public void assertNavigationToSelfProducesNavigationEvents() {
         open();
 
-        assertMessages(0, "BeforeEnterEvent", "AfterNavigationEvent");
+        // Initially there should be one round of navigation events
+        assertMessages(2);
 
+        // RouterLink click should cause second set of events
         $(AnchorElement.class).id("router-link").click();
-        assertMessages(2, "BeforeEnterEvent", "AfterNavigationEvent");
+        assertMessages(4);
 
+        // Anchor click should cause third set of events
         $(AnchorElement.class).id("anchor").click();
-        assertMessages(4, "BeforeEnterEvent", "AfterNavigationEvent");
+        assertMessages(6);
     }
 
-    private void assertMessages(int skip, String... expectedTail) {
-        List<WebElement> messages = getMessages();
-        if (messages.size() < skip) {
-            Assert.fail("Cannot skip " + skip + " messages when there are only "
-                    + messages.size() + "messages. " + joinMessages(messages));
-        }
+    private void assertMessages(int expectedSize) {
+        List<String> messages = getMessages();
+        Assert.assertEquals(expectedSize, messages.size());
+        Assert.assertEquals(NavigationEventsView.BEFORE_ENTER,
+                messages.get(expectedSize - 2));
+        Assert.assertEquals(NavigationEventsView.AFTER_NAVIGATION,
+                messages.get(expectedSize - 1));
 
-        messages = messages.subList(skip, messages.size());
-
-        if (messages.size() < expectedTail.length) {
-            Assert.fail("Expected " + expectedTail.length
-                    + " messages, but there are only " + messages.size() + ". "
-                    + joinMessages(messages));
-        }
-
-        for (int i = 0; i < expectedTail.length; i++) {
-            Assert.assertEquals("Unexpected message at index " + i,
-                    expectedTail[i], messages.get(i).getText());
-        }
-
-        if (messages.size() > expectedTail.length) {
-            Assert.fail("There are unexpected messages at the end. "
-                    + joinMessages(messages.subList(expectedTail.length,
-                            messages.size())));
-        }
     }
 
-    private static String joinMessages(List<WebElement> messages) {
-        return messages.stream().map(WebElement::getText)
-                .collect(Collectors.joining("\n", "\n", ""));
-    }
-
-    private List<WebElement> getMessages() {
-        WebElement messagesHolder = findElement(By.id("messages"));
-        List<WebElement> messages = messagesHolder
-                .findElements(By.cssSelector("div"));
-        return messages;
+    private List<String> getMessages() {
+        return findElement(By.id("messages"))
+                .findElements(By.cssSelector("div")).stream()
+                .map(WebElement::getText).collect(Collectors.toList());
     }
 }

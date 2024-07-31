@@ -31,6 +31,9 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class NavigationEventsView extends Div
         implements BeforeEnterObserver, AfterNavigationObserver {
 
+    public static final String BEFORE_ENTER = "BeforeEnterEvent";
+    public static final String AFTER_NAVIGATION = "AfterNavigationEvent";
+
     private final Element messages = new Element("div");
 
     public NavigationEventsView() {
@@ -50,12 +53,12 @@ public class NavigationEventsView extends Div
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        addMessage("BeforeEnterEvent");
+        addMessage(BEFORE_ENTER);
     }
 
     @Override
     public void afterNavigation(AfterNavigationEvent afterNavigationEvent) {
-        addMessage("AfterNavigationEvent");
+        addMessage(AFTER_NAVIGATION);
     }
 
     private void addMessage(String message) {
