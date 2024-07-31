@@ -46,10 +46,13 @@ public class NavigationEventsIT extends ChromeBrowserTest {
 
     private void assertMessages(int expectedSize) {
         List<String> messages = getMessages();
-        Assert.assertEquals(expectedSize, messages.size());
-        Assert.assertEquals(NavigationEventsView.BEFORE_ENTER,
+        Assert.assertEquals("Unexpected amount of navigation events",
+                expectedSize, messages.size());
+        Assert.assertEquals("Second to last event should be BeforeEnter",
+                NavigationEventsView.BEFORE_ENTER,
                 messages.get(expectedSize - 2));
-        Assert.assertEquals(NavigationEventsView.AFTER_NAVIGATION,
+        Assert.assertEquals("Last event should be AfterNavigation",
+                NavigationEventsView.AFTER_NAVIGATION,
                 messages.get(expectedSize - 1));
 
     }
