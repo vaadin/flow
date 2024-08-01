@@ -194,7 +194,7 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.pushState</code> in the browser with the given
-     * parameters.
+     * parameters. Does not make a callback to the server by default.
      *
      * @param state
      *            the JSON state to push to the history stack, or
@@ -281,7 +281,7 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.replaceState</code> in the browser with the given
-     * parameters.
+     * parameters. Does not make a callback to the server by default.
      *
      * @param state
      *            the JSON state to push to the history stack, or
@@ -291,7 +291,7 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void replaceState(JsonValue state, Location location) {
-        replaceState(state, location, true);
+        replaceState(state, location, false);
     }
 
     /**
