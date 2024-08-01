@@ -27,7 +27,7 @@ public class CssImportComponent extends Div {
     public CssImportComponent(String id) {
         setId(id);
         Div div = new Div(
-                "CssImport styles should be apply, this should not be black");
+                "Global CssImport styles should be applied inside embedded web component, this should not be black");
         div.setClassName("cssimport");
         add(div);
     }

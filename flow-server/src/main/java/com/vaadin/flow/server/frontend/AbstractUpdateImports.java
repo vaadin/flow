@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -230,20 +231,22 @@ abstract class AbstractUpdateImports implements Runnable {
             List<String> copy = new ArrayList<>(lines);
             copy.add(0, IMPORT_WC_INJECT);
             copy.removeIf(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate());
-            // Replace global CSS imports with a per-webcomponent registration
-            // to prevent leaking styles into the embedding document
-            copy.replaceAll(this::adaptCssInjectForWebComponent);
+            // Add global CSS imports with a per-webcomponent registration
+            final ListIterator<String> li = copy.listIterator();
+            while (li.hasNext()) {
+                adaptCssInjectForWebComponent(li, li.next());
+            }
             return copy;
         }
         return lines;
     }
 
-    private String adaptCssInjectForWebComponent(String line) {
+    private void adaptCssInjectForWebComponent(ListIterator<String> iterator,
+            String line) {
         Matcher matcher = INJECT_CSS_PATTERN.matcher(line);
         if (matcher.matches()) {
-            return String.format(INJECT_WC_CSS, matcher.group(1));
+            iterator.add(String.format(INJECT_WC_CSS, matcher.group(1)));
         }
-        return line;
     }
 
     private void writeWebComponentImports(List<String> lines) {
@@ -344,23 +347,9 @@ abstract class AbstractUpdateImports implements Runnable {
                         .map(hash -> String.format("key === '%s'", hash))
                         .collect(Collectors.joining(" || "));
                 chunkLoader.add(String.format("  if (%s) {", ifClauses));
-                String importChunkExpression = String.format(
+                chunkLoader.add(String.format(
                         "    pending.push(import('./chunks/%s'));",
-                        chunkFilename);
-                // For lazy css, we need a separated chunk for webcomponents
-                // that prevents loading styles into the embedding document
-                if (hasLazyCss) {
-                    // Using a runtime expression for the import directive will
-                    // break Vite build when it parsers imports.
-                    chunkLoader.add("    if (isWebcomponent) {");
-                    chunkLoader.add("  " + importChunkExpression
-                            .replace("/chunks/", "/chunks/wc-"));
-                    chunkLoader.add("    } else {");
-                    chunkLoader.add("  " + importChunkExpression);
-                    chunkLoader.add("    }");
-                } else {
-                    chunkLoader.add(importChunkExpression);
-                }
+                        chunkFilename));
                 chunkLoader.add("  }");
 
                 boolean chunkNotExist = processedChunkHashes
@@ -368,22 +357,6 @@ abstract class AbstractUpdateImports implements Runnable {
                 if (chunkNotExist) {
                     File chunkFile = new File(chunkFolder, chunkFilename);
                     files.put(chunkFile, chunkLines);
-
-                    // create a separate chunk to be imported by exported
-                    // webcomponents, to prevent leaking styles into embedding
-                    // document
-                    if (hasLazyCss) {
-                        List<String> wcChunkLines = new ArrayList<>(chunkLines);
-                        wcChunkLines.replaceAll(line -> {
-                            if (IMPORT_INJECT.equals(line)) {
-                                return IMPORT_WC_INJECT;
-                            }
-                            return adaptCssInjectForWebComponent(line);
-                        });
-                        chunkFile = new File(chunkFolder,
-                                "wc-" + chunkFilename);
-                        files.put(chunkFile, wcChunkLines);
-                    }
                 }
             }
 
@@ -407,7 +380,6 @@ abstract class AbstractUpdateImports implements Runnable {
             mainLines.add(THEMABLE_MIXIN_IMPORT);
             mainLines.addAll(mainCssLines);
         }
-        mainLines.add(0, IMPORT_COMPOSE_LOAD_ON_DEMAND);
         mainLines.addAll(getModuleLines(eagerJavascript));
 
         // Move all imports to the top
@@ -419,30 +391,7 @@ abstract class AbstractUpdateImports implements Runnable {
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");
         mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
-        // Ugly hack to prevent exported webcomponent to fail beacuse of
-        // dom-module being registered multiple time when embedding many Vaadin
-        // applications: wraps the window.customElements.define to add a guard
-        // before calling the original.
-        mainLines
-                .add("""
-                        if (!window.Vaadin.Flow.restoreCustomElementDefine) {
-                            const customElementDefine = window.customElements.define;
-                            window.Vaadin.Flow.restoreCustomElementDefine = () => {
-                                window.customElements.define = customElementDefine;
-                            };
-                            window.customElements.define = (name, constructor, options) => {
-                                if (window.customElements.get(name)) {
-                                    console.debug(name + " custom element is already defined");
-                                } else {
-                                    customElementDefine.apply(window.customElements, [name, constructor, options]);
-                                }
-                            }
-                        };
-                        """);
-        // When embedding multiple Vaadin applications, make `loadOnDemand` is
-        // not overwritten, preventing chunks lazy loading
-        mainLines.add(
-                "window.Vaadin.Flow.loadOnDemand = composeLoadOnDemand(loadOnDemand,window.Vaadin.Flow.loadOnDemand);");
+        mainLines.add("window.Vaadin.Flow.loadOnDemand = loadOnDemand;");
         mainLines.add("window.Vaadin.Flow.resetFocus = " + RESET_FOCUS_JS);
 
         files.put(generatedFlowImports, mainLines);

@@ -232,8 +232,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 2l, getCommandExecutor().executeScript(
                         "return document.head.querySelectorAll('link[rel=stylesheet][href^=\"https://fonts.googleapis.com\"]').length"));
         Assert.assertEquals(
-                "Project contains 2 css injections to document and both should be hashed",
-                2l, getCommandExecutor().executeScript(
+                "Project contains 3 css injections to document and all should be hashed",
+                3l, getCommandExecutor().executeScript(
                         "return window.Vaadin.theme.injectedGlobalCss.length"));
     }
 
@@ -257,7 +257,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void cssImportAnnotation_doNotLeakEmbeddingPage() {
+    public void cssImportAnnotation_applyToEmbeddingPage() {
         open();
         checkLogsForErrors();
 
@@ -267,12 +267,9 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         final DivElement element = $(DivElement.class).withId("cssimport")
                 .waitForFirst();
-        Assert.assertFalse(
-                "Lumo styles (typography) should not have been applied to elements in embedding page",
-                element.getCssValue("font-family").contains("Roboto"));
         Assert.assertEquals(
-                "Lumo styles (colors) should not have been applied to elements in embedding page",
-                "rgba(0, 0, 0, 1)", element.getCssValue("color"));
+                "CssImport styles (colors) should have been applied to elements in embedding page",
+                "rgba(255, 215, 0, 1)", element.getCssValue("color"));
 
     }
 

@@ -432,9 +432,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 updater.webComponentImports.stream()
                         .noneMatch(lumoGlobalsMatcher));
 
-        // Check that imports other than lumo globals are the same
+        // Check that imports other than lumo globals and
+        // injectGlobalWebcomponentCss are the same
         flowImports.removeAll(updater.webComponentImports);
-        flowImports.removeIf(line -> line.contains("injectGlobalCss"));
         assertTrue(
                 "Flow and web-component imports must be the same, except for lumo globals",
                 flowImports.stream().allMatch(lumoGlobalsMatcher));
@@ -442,7 +442,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void generate_embeddedImports_doNotAddGlobalStyles()
+    public void generate_embeddedImports_addAlsoGlobalStyles()
             throws IOException {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class };
@@ -463,9 +463,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     return matcher.group(1);
                 }).collect(Collectors.toList());
 
-        assertTrue("Import for web-components should not inject global CSS",
+        assertTrue("Import for web-components should also inject global CSS",
                 updater.webComponentImports.stream()
-                        .noneMatch(globalCssImporter));
+                        .anyMatch(globalCssImporter));
 
         assertTrue(
                 "Should contain function to import global CSS into embedded component",
@@ -604,12 +604,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("export "))
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
-                .filter(row -> !row.contains("composeLoadOnDemand"))
                 .filter(row -> !row.contains("const loadOnDemand"))
                 .filter(row -> !row.contains(
                         "@vaadin/common-frontend/ConnectionIndicator"))
-                .filter(row -> !row.contains(
-                        "window.Vaadin.Flow.restoreCustomElementDefine"))
                 .toList();
 
         Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
@@ -629,12 +626,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .filter(row -> !row.startsWith("export "))
                 .filter(row -> !row.startsWith("window.Vaadin"))
                 .filter(row -> !row.contains("Frontend/generated/flow"))
-                .filter(row -> !row.contains("composeLoadOnDemand"))
                 .filter(row -> !row.contains("const loadOnDemand"))
                 .filter(row -> !row.contains(
                         "@vaadin/common-frontend/ConnectionIndicator"))
-                .filter(row -> !row.contains(
-                        "window.Vaadin.Flow.restoreCustomElementDefine"))
                 .toList();
         Assert.assertEquals(List.of("import 'Frontend/jsm-all.js';",
                 "import 'Frontend/jsm-all2.js';",
@@ -759,8 +753,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         List<String> result = updater.getMergedOutput();
         result.removeIf(line -> line.startsWith("import { injectGlobalCss }"));
-        result.removeIf(
-                line -> line.startsWith("import { composeLoadOnDemand }"));
         result.removeIf(line -> line.startsWith("export "));
         result.removeIf(line -> line.isBlank());
         result.removeIf(line -> line.contains("loadOnDemand"));
