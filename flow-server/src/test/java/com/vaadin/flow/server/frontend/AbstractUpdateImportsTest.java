@@ -432,8 +432,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 updater.webComponentImports.stream()
                         .noneMatch(lumoGlobalsMatcher));
 
-        // Check that imports other than lumo globals and
-        // injectGlobalWebcomponentCss are the same
+        // Check that imports other than lumo globals are the same
         flowImports.removeAll(updater.webComponentImports);
         assertTrue(
                 "Flow and web-component imports must be the same, except for lumo globals",
