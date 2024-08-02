@@ -139,13 +139,6 @@ export const webcomponentGlobalCssInjector = (registrar) => {
   webcomponentGlobalCss.css.forEach(wrapper);
 };
 
-export const composeLoadOnDemand = (f1, f2) => {
-  if (f1 !== undefined && f2 !== undefined) {
-    return (key, isWebcomponent) => Promise.all([f1(key, isWebcomponent), f2(key, isWebcomponent)]);
-  }
-  return f1 || f2;
-}
-
 /**
  * Calculate a 32 bit FNV-1a hash
  * Found here: https://gist.github.com/vaiorabbit/5657561

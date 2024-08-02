@@ -47,7 +47,6 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -964,10 +963,8 @@ public class UIInternals implements Serializable {
                 clazz = clazz.getSuperclass();
             }
         }
-        boolean isWebcomponent = ui instanceof WebComponentUI;
-        chunkIds.forEach(chunkId -> ui.getPage()
-                .addDynamicImport("return window.Vaadin.Flow.loadOnDemand('"
-                        + chunkId + "', " + isWebcomponent + ");"));
+        chunkIds.forEach(chunkId -> ui.getPage().addDynamicImport(
+                "return window.Vaadin.Flow.loadOnDemand('" + chunkId + "');"));
     }
 
     private void warnForUnavailableBundledDependencies(

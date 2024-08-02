@@ -228,7 +228,7 @@ public class UidlWriterTest {
                         .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
                 .map(key -> key
                         .replace("return window.Vaadin.Flow.loadOnDemand('", "")
-                        .replace("', false);", ""))
+                        .replace("');", ""))
                 .collect(Collectors.toSet());
 
         Set<String> expectedChunks = Stream
@@ -254,7 +254,7 @@ public class UidlWriterTest {
                         .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
                 .map(key -> key
                         .replace("return window.Vaadin.Flow.loadOnDemand('", "")
-                        .replace("', false);", ""))
+                        .replace("');", ""))
                 .collect(Collectors.toSet());
 
         Set<String> expectedChunks = Stream

@@ -78,7 +78,6 @@ abstract class AbstractUpdateImports implements Runnable {
             + " tpl.innerHTML = block;\n"
             + " document.head.appendChild(tpl.content);\n" + "}";
     private static final String IMPORT_INJECT = "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
-    private static final String IMPORT_COMPOSE_LOAD_ON_DEMAND = "import { composeLoadOnDemand } from 'Frontend/generated/jar-resources/theme-util.js';\n";
     private static final String IMPORT_WC_INJECT = "import { injectGlobalWebcomponentCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
 
     private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n";
@@ -314,7 +313,7 @@ abstract class AbstractUpdateImports implements Runnable {
             start = System.nanoTime();
 
             chunkLoader.add("");
-            chunkLoader.add("const loadOnDemand = (key, isWebcomponent) => {");
+            chunkLoader.add("const loadOnDemand = (key) => {");
             chunkLoader.add("  const pending = [];");
             Set<ChunkInfo> mergedChunkKeys = merge(lazyJavascript.keySet(),
                     lazyCss.keySet());
