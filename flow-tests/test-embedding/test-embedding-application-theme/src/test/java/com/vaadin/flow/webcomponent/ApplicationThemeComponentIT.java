@@ -97,6 +97,14 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Color should have been applied",
                 "rgba(0, 128, 0, 1)", handElement.getCssValue("color"));
+
+        // Ensure @CssImport styles are applied
+        final WebElement cssImportElement = embeddedComponent
+                .$("css-import-component").first().$(DivElement.class).first();
+        Assert.assertEquals(
+                "Color fom CSSImport annotation should have been applied",
+                "rgba(255, 215, 0, 1)", cssImportElement.getCssValue("color"));
+
     }
 
     @Test
@@ -217,8 +225,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 2l, getCommandExecutor().executeScript(
                         "return document.head.querySelectorAll(\"link[rel=stylesheet]\").length"));
         Assert.assertEquals(
-                "Project contains 2 css injections to document and both should be hashed",
-                2l, getCommandExecutor().executeScript(
+                "Project contains 3 css injections to document and all should be hashed",
+                3l, getCommandExecutor().executeScript(
                         "return window.Vaadin.theme.injectedGlobalCss.length"));
     }
 
@@ -240,4 +248,22 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 "rgba(0, 0, 0, 1)", element.getCssValue("color"));
 
     }
+
+    @Test
+    public void cssImportAnnotation_applyToEmbeddingPage() {
+        open();
+        checkLogsForErrors();
+
+        // Ensure embedded components are loaded before testing embedding page
+        validateEmbeddedComponent($("themed-component").id("first"), "first");
+        validateEmbeddedComponent($("themed-component").id("second"), "second");
+
+        final DivElement element = $(DivElement.class)
+                .attribute("id", "cssimport").waitForFirst();
+        Assert.assertEquals(
+                "CssImport styles (colors) should have been applied to elements in embedding page",
+                "rgba(255, 215, 0, 1)", element.getCssValue("color"));
+
+    }
+
 }

@@ -38,16 +38,16 @@ const createLinkReferences = (css, target) => {
   // [4] matches the url in '@import "..."'
   // [5] matches media query on @import statement
   const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import\\s*(?:url\\(\\s*['"]?(.+?)['"]?\\s*\\)|(["'])((?:\\\\.|[^\\\\])*?)\\3)([^;]*);(?:})?/g
-  
+
   // Only cleanup if comment exist
   if(/\\/\\*(.|[\\r\\n])*?\\*\\//gm.exec(css) != null) {
     // clean up comments
     css = stripCssComments(css);
   }
-  
+
   var match;
   var styleCss = css;
-  
+
   // For each external url import add a link reference
   while((match = importMatcher.exec(css)) !== null) {
     styleCss = styleCss.replace(match[0], "");
@@ -101,6 +101,7 @@ export const injectGlobalCss = (css, target, first) => {
 function generateThemeFile(themeFolder, themeName, themeProperties, productionMode) {
   const styles = path.resolve(themeFolder, stylesCssFile);
   const document = path.resolve(themeFolder, documentCssFile);
+  const autoInjectGlobalCssImports = themeProperties.autoInjectGlobalCssImports ?? false;
   const componentsFiles = glob.sync('*.css', {
     cwd: path.resolve(themeFolder, themeComponentsFolder),
     nodir: true
@@ -119,6 +120,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
 
   themeFile += createLinkReferences;
   themeFile += injectGlobalCssMethod;
+  themeFile += `import { webcomponentGlobalCssInjector } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
 
   const imports = [];
   const globalCssCode = [];
@@ -255,16 +257,24 @@ function hashFnv32a(str) {
  */
 function getHash(input) {
   let h1 = hashFnv32a(input); // returns 32 bit (as 8 byte hex string)
-  return h1 + hashFnv32a(h1 + input); 
+  return h1 + hashFnv32a(h1 + input);
 }
 `;
 
   // Don't format as the generated file formatting will get wonky!
   // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
+    if (target !== document) {
+      ${autoInjectGlobalCssImports ? `
+        webcomponentGlobalCssInjector((css) => {
+          injectGlobalCss(css, '', target);
+        });
+        ` : ''}
+    }
+  }
   ${parentTheme}
   ${globalCssCode.join('')}
-  
+
   if (!document['${componentCssFlag}']) {
     ${componentCssCode.join('')}
     document['${componentCssFlag}'] = true;

@@ -25,8 +25,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,7 +65,8 @@ abstract class AbstractUpdateImports implements Runnable {
             + " tpl.innerHTML = block;\n"
             + " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);\n"
             + "};";
-
+    private static final String IMPORT_WC_INJECT = "import { injectGlobalWebcomponentCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
+    
     private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n" //
             + "const $css_%1$d = typeof $cssFromFile_%1$d  === 'string' ? unsafeCSS($cssFromFile_%1$d) : $cssFromFile_%1$d;";
     private static final String CSS_PRE = CSS_IMPORT + "%n" + "addCssBlock(`";
@@ -77,7 +80,10 @@ abstract class AbstractUpdateImports implements Runnable {
             + " let ae=document.activeElement;"
             + " while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;"
             + " return !ae || ae.blur() || ae.focus() || true;" + "}";
-
+    private static final Pattern INJECT_CSS_PATTERN = Pattern
+            .compile("^\\s*addCssBlock\\(([^,]+),.*$");
+    private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
+    
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
     // Used to recognize and sort FRONTEND/ imports in the final
@@ -136,13 +142,30 @@ abstract class AbstractUpdateImports implements Runnable {
     List<String> filterWebComponentImports(List<String> lines) {
         if (lines != null) {
             // Exclude Lumo global imports for exported web-component
-            return lines.stream()
-                    .filter(line -> !line.contains("/lumo-includes.ts"))
-                    .collect(Collectors.toList());
+            List<String> copy = new ArrayList<>(lines);
+            copy.add(0, IMPORT_WC_INJECT);
+            copy.removeIf(line -> line.contains("/lumo-includes.ts"));
+            // Add global CSS imports with a per-webcomponent registration
+            final ListIterator<String> li = copy.listIterator();
+            while (li.hasNext()) {
+                adaptCssInjectForWebComponent(li, li.next());
+            }
+            return copy;
         }
         return lines;
     }
 
+    private void adaptCssInjectForWebComponent(ListIterator<String> iterator,
+                                               String line) {
+        Matcher matcher = INJECT_CSS_PATTERN.matcher(line);
+        if (matcher.matches()) {
+            String cssToInject = matcher.group(1);
+            if (cssToInject.contains("<style include=")) {
+                iterator.add(String.format(INJECT_WC_CSS, cssToInject));
+            }
+        }
+    }
+    
     /**
      * Get all ES6 modules needed for run the application. Modules that are
      * theme dependencies are guaranteed to precede other modules in the result.
