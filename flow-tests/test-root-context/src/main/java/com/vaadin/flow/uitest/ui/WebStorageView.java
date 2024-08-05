@@ -32,6 +32,7 @@ public class WebStorageView extends Div {
         value.setId("input");
         NativeButton setData = new NativeButton();
         NativeButton detect = new NativeButton();
+        NativeButton detectCF = new NativeButton();
         NativeButton remove = new NativeButton();
         NativeButton clear = new NativeButton();
         Div msg = new Div();
@@ -50,6 +51,18 @@ public class WebStorageView extends Div {
         detect.setId("detect");
         detect.addClickListener(e -> {
             WebStorage.getItem("test", v -> {
+                if (v == null) {
+                    msg.setText(VALUE_NOT_SET);
+                } else {
+                    msg.setText(v);
+                }
+            });
+        });
+
+        detect.setText("Detect CompletableFuture");
+        detect.setId("detectCF");
+        detect.addClickListener(e -> {
+            WebStorage.getItem("test").thenAccept(v -> {
                 if (v == null) {
                     msg.setText(VALUE_NOT_SET);
                 } else {

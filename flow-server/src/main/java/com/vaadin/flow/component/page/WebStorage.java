@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.component.page;
 
-import com.vaadin.flow.component.UI;
 import java.io.Serializable;
+import java.util.concurrent.CompletableFuture;
+
+import com.vaadin.flow.component.UI;
 
 /**
  * Wrapper for similarly named Browser API. WebStorage may be handy to save some
@@ -226,6 +228,53 @@ public interface WebStorage extends Serializable {
                     // for error (most likely non-existing mapping), return null
                     callback.onValueDetected(null);
                 });
+    }
+
+    /**
+     * Asynchronously gets an item from the Storage.localStorage
+     *
+     * @param key
+     *            the key for which the value will be fetched
+     * @return a CompletableFuture that will be completed with the value once
+     *         transferred from the client side
+     */
+    public static CompletableFuture<String> getItem(String key) {
+        return getItem(Storage.LOCAL_STORAGE, key);
+    }
+
+    /**
+     * Asynchronously gets an item from the given storage
+     *
+     * @param storage
+     *            the storage
+     * @param key
+     *            the key for which the value will be fetched
+     * @return a CompletableFuture that will be completed with the value once
+     *         transferred from the client side
+     */
+    public static CompletableFuture<String> getItem(Storage storage,
+            String key) {
+        return getItem(UI.getCurrent(), storage, key);
+    }
+
+    /**
+     * Asynchronously gets an item from the given storage
+     *
+     * @param ui
+     *            the UI for which the storage is related to
+     * @param storage
+     *            the storage
+     * @param key
+     *            the key for which the value will be fetched
+     * @return a CompletableFuture that will be completed with the value once
+     *         transferred from the client side
+     */
+    public static CompletableFuture<String> getItem(UI ui, Storage storage,
+            String key) {
+        return ui
+                .getPage().executeJs("return window[$0].getItem($1);",
+                        storage.toString(), key)
+                .toCompletableFuture(String.class);
     }
 
 }

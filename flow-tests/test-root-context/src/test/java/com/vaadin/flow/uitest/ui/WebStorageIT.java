@@ -25,7 +25,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class WebStorageIT extends ChromeBrowserTest {
 
     @Test
-    public void testWebstorageSetAndRemove() {
+    public void testWebStorageSetAndRemove() {
         open();
 
         WebElement input = findElement(By.id("input"));
@@ -49,7 +49,7 @@ public class WebStorageIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void testWebstorageSetAndClear() {
+    public void testWebStorageSetAndClear() {
         open();
 
         WebElement input = findElement(By.id("input"));
@@ -72,4 +72,51 @@ public class WebStorageIT extends ChromeBrowserTest {
                 WebStorageView.VALUE_NOT_SET));
     }
 
+    @Test
+    public void testWebStorageSetAndRemoveCF() {
+        open();
+
+        WebElement input = findElement(By.id("input"));
+        WebElement set = findElement(By.id("setText"));
+        WebElement detect = findElement(By.id("detectCF"));
+        WebElement remove = findElement(By.id("remove"));
+
+        input.clear();
+        input.sendKeys("foobar", "\n");
+
+        set.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), "foobar"));
+
+        remove.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
+                WebStorageView.VALUE_NOT_SET));
+    }
+
+    @Test
+    public void testWebStorageSetAndClearCF() {
+        open();
+
+        WebElement input = findElement(By.id("input"));
+        WebElement set = findElement(By.id("setText"));
+        WebElement detect = findElement(By.id("detectCF"));
+        WebElement clear = findElement(By.id("clear"));
+
+        input.clear();
+        input.sendKeys("foobar", "\n");
+
+        set.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"), "foobar"));
+
+        clear.click();
+        detect.click();
+
+        waitUntil(ExpectedConditions.textToBe(By.id("msg"),
+                WebStorageView.VALUE_NOT_SET));
+    }
 }
