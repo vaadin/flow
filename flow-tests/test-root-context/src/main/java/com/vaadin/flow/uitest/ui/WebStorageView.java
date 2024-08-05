@@ -37,7 +37,7 @@ public class WebStorageView extends Div {
         NativeButton clear = new NativeButton();
         Div msg = new Div();
         msg.setId("msg");
-        add(value, setData, detect, remove, clear, msg);
+        add(value, setData, detect, detectCF, remove, clear, msg);
 
         value.setValue(LocalDateTime.now().toString());
 
@@ -59,9 +59,9 @@ public class WebStorageView extends Div {
             });
         });
 
-        detect.setText("Detect CompletableFuture");
-        detect.setId("detectCF");
-        detect.addClickListener(e -> {
+        detectCF.setText("Detect CompletableFuture");
+        detectCF.setId("detectCF");
+        detectCF.addClickListener(e -> {
             WebStorage.getItem("test").thenAccept(v -> {
                 if (v == null) {
                     msg.setText(VALUE_NOT_SET);
