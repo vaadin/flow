@@ -56,6 +56,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -448,7 +449,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class };
         ClassFinder classFinder = getClassFinder(testClasses);
-        updater = new UpdateImports(getScanner(classFinder), options);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                options);
         updater.run();
 
         Pattern injectGlobalCssPattern = Pattern
