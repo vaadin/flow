@@ -33,12 +33,14 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,6 +78,7 @@ abstract class AbstractUpdateImports implements Runnable {
             + " tpl.innerHTML = block;\n"
             + " document.head.appendChild(tpl.content);\n" + "}";
     private static final String IMPORT_INJECT = "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
+    private static final String IMPORT_WC_INJECT = "import { injectGlobalWebcomponentCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
 
     private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n";
     private static final String CSS_IMPORT_AND_MAKE_LIT_CSS = CSS_IMPORT
@@ -87,6 +90,10 @@ abstract class AbstractUpdateImports implements Runnable {
             + "<style%s>${$css_%1$d}</style>" + CSS_POST;
     private static final String INJECT_CSS = CSS_IMPORT
             + "%ninjectGlobalCss($cssFromFile_%1$d.toString(), 'CSSImport end', document);%n";
+    private static final Pattern INJECT_CSS_PATTERN = Pattern
+            .compile("^\\s*injectGlobalCss\\(([^,]+),.*$");
+    private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
+
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
             + "%n" + "registerStyles('%s', $css_%1$d%s);";
@@ -211,11 +218,25 @@ abstract class AbstractUpdateImports implements Runnable {
     List<String> filterWebComponentImports(List<String> lines) {
         if (lines != null) {
             // Exclude Lumo global imports for exported web-component
-            return lines.stream()
-                    .filter(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate().negate())
-                    .collect(Collectors.toList());
+            List<String> copy = new ArrayList<>(lines);
+            copy.add(0, IMPORT_WC_INJECT);
+            copy.removeIf(VAADIN_LUMO_GLOBAL_IMPORT.asPredicate());
+            // Add global CSS imports with a per-webcomponent registration
+            final ListIterator<String> li = copy.listIterator();
+            while (li.hasNext()) {
+                adaptCssInjectForWebComponent(li, li.next());
+            }
+            return copy;
         }
         return lines;
+    }
+
+    private void adaptCssInjectForWebComponent(ListIterator<String> iterator,
+            String line) {
+        Matcher matcher = INJECT_CSS_PATTERN.matcher(line);
+        if (matcher.matches()) {
+            iterator.add(String.format(INJECT_WC_CSS, matcher.group(1)));
+        }
     }
 
     private void writeWebComponentImports(List<String> lines) {
@@ -295,7 +316,8 @@ abstract class AbstractUpdateImports implements Runnable {
                     chunkLines.addAll(
                             getModuleLines(lazyJavascript.get(chunkInfo)));
                 }
-                if (lazyCss.containsKey(chunkInfo)) {
+                boolean hasLazyCss = lazyCss.containsKey(chunkInfo);
+                if (hasLazyCss) {
                     chunkLines.add(IMPORT_INJECT);
                     chunkLines.add(THEMABLE_MIXIN_IMPORT);
                     chunkLines.addAll(lazyCss.get(chunkInfo));
@@ -348,6 +370,13 @@ abstract class AbstractUpdateImports implements Runnable {
             mainLines.addAll(mainCssLines);
         }
         mainLines.addAll(getModuleLines(eagerJavascript));
+
+        // Move all imports to the top
+        List<String> copy = new ArrayList<>(mainLines);
+        copy.removeIf(line -> !line.startsWith("import "));
+        mainLines.removeIf(line -> line.startsWith("import "));
+        mainLines.addAll(0, copy);
+
         mainLines.addAll(chunkLoader);
         mainLines.add("window.Vaadin = window.Vaadin || {};");
         mainLines.add("window.Vaadin.Flow = window.Vaadin.Flow || {};");
