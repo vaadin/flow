@@ -107,7 +107,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         // Ensure @CssImport styles are applied
         final WebElement cssImportElement = embeddedComponent
-                .$("css-import-component").first().$(DivElement.class).single();
+                .$("css-import-component").first().$(DivElement.class).first();
         Assert.assertEquals(
                 "Color fom CSSImport annotation should have been applied",
                 "rgba(255, 215, 0, 1)", cssImportElement.getCssValue("color"));
@@ -265,8 +265,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         validateEmbeddedComponent($("themed-component").id("first"), "first");
         validateEmbeddedComponent($("themed-component").id("second"), "second");
 
-        final DivElement element = $(DivElement.class).withId("cssimport")
-                .waitForFirst();
+        final DivElement element = $(DivElement.class)
+                .attribute("id", "cssimport").waitForFirst();
         Assert.assertEquals(
                 "CssImport styles (colors) should have been applied to elements in embedding page",
                 "rgba(255, 215, 0, 1)", element.getCssValue("color"));
