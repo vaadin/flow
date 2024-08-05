@@ -27,7 +27,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-@Ignore("Fails in Containers")
 public class IdTestIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
@@ -47,17 +46,6 @@ public class IdTestIT extends ChromeBrowserTest {
 
         TestBenchElement myComponent = $("my-component").first();
 
-        // wait for polymer initalisation
-        waitUntillWithMessage(driver -> getCommandExecutor().executeScript(
-                "return !!window.Polymer || !!arguments[0].constructor.polymerElementVersion",
-                myComponent),
-                "Failed to load constructor.polymerElementVersion for 'my-component'");
-
-        waitUntillWithMessage(
-                driver -> getCommandExecutor().executeScript(
-                        "return arguments[0].$ !== undefined", myComponent),
-                "Failed to load $ for 'my-component'");
-
         WebElement content = myComponent.$(TestBenchElement.class)
                 .id("content");
         Assert.assertEquals("", content.getText());
@@ -68,11 +56,6 @@ public class IdTestIT extends ChromeBrowserTest {
 
         button.click();
         Assert.assertEquals("2", content.getText());
-    }
-
-    private void waitUntillWithMessage(ExpectedCondition<?> condition,
-            String message) {
-        waitUntilWithMessage(condition, message, 10);
     }
 
     private void waitUntilWithMessage(ExpectedCondition<?> condition,

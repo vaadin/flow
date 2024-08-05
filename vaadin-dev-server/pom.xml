@@ -36,13 +36,13 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>open</artifactId>
-            <version>8.5.0</version>
+            <version>8.5.0.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
-            <version>3.25.10</version>
+            <version>3.26.1</version>
         </dependency>
         <dependency>
             <groupId>io.methvin</groupId>
@@ -102,9 +102,20 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Dependencies>jdk.unsupported</Dependencies>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>npm-install</id>

@@ -2,13 +2,13 @@ package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,8 +19,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.ArrayList;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -33,19 +38,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import static java.util.Collections.emptyMap;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.startup.AbstractConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
-import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -326,7 +325,8 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS,
                 InitParameters.COMPILED_WEB_COMPONENTS_PATH,
                 InitParameters.NODE_VERSION, InitParameters.NODE_DOWNLOAD_ROOT,
-                InitParameters.BUILD_FOLDER));
+                InitParameters.BUILD_FOLDER,
+                InitParameters.APPLICATION_IDENTIFIER));
         Field[] initParamFields = InitParameters.class.getDeclaredFields();
         String mockTokenJsonString = generateJsonStringFromFields(
                 initParamFields, stringParams);

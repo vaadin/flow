@@ -19,13 +19,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.JsonUtils;
 
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.NodeProperties;
+
 import elemental.json.Json;
 import elemental.json.JsonValue;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An abstract implementation of an adapter for integrating with React
@@ -49,6 +56,8 @@ import elemental.json.JsonValue;
  * @since 24.4
  */
 public abstract class ReactAdapterComponent extends Component {
+    private Map<String, Element> contentMap;
+
     /**
      * Adds the specified listener for the state change event in the React
      * adapter.
@@ -175,6 +184,30 @@ public abstract class ReactAdapterComponent extends Component {
      */
     protected static JsonValue writeAsJson(Object object) {
         return JsonUtils.writeValue(object);
+    }
+
+    /**
+     * Get the Flow container element that is set up in React template for given
+     * name attribute.
+     *
+     * @param name
+     *            the name attribute for the container element
+     * @return Element for the Flow container under ReactAdapter element
+     */
+    protected Element getContentElement(String name) {
+        if (contentMap == null) {
+            contentMap = new HashMap<>();
+        }
+        if (!contentMap.containsKey(name)) {
+            var element = new Element("flow-content-container");
+            contentMap.put(name, element);
+            getElement().getStateProvider().appendVirtualChild(
+                    getElement().getNode(), element,
+                    NodeProperties.INJECT_BY_NAME, name);
+            return element;
+        }
+
+        return contentMap.get(name);
     }
 
     private JsonValue getPropertyJson(String propertyName) {

@@ -69,9 +69,13 @@ public class TranslationView extends Div {
         dynamic = new Span("waiting");
         dynamic.setId("dynamic");
 
+        Span staticMethod = new Span(
+                I18NProvider.translate(Locale.ENGLISH, "label"));
+        staticMethod.setId("static-method");
+
         add(defaultLang, new Div(), german, new Div(), germany, new Div(),
                 finnish, new Div(), french, new Div(), japanese, new Div(),
-                dynamic);
+                dynamic, new Div(), staticMethod);
     }
 
     @Override

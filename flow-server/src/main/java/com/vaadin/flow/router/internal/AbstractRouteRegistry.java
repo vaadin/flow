@@ -40,6 +40,7 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
@@ -54,6 +55,7 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.server.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
 import static java.util.stream.Collectors.toList;
@@ -259,8 +261,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     private Stream<RouteData> getMenuRouteCandidates() {
         return getRegisteredRoutes().stream()
-                .filter(route -> route.getMenuData() != null)
-                .filter(route -> !route.getMenuData().isExclude());
+                .filter(route -> route.getMenuData() != null);
     }
 
     private <T> List<T> findListOf(Class<T> targetType, Collection<?> objects) {
@@ -306,16 +307,24 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
                 configuration, template);
 
+        var parameters = configuration.getParameters(template);
+        // exclude route from the menu if it has any required parameters
+        boolean excludeFromMenu = parameters != null && !parameters.isEmpty()
+                && parameters.values().stream().anyMatch(
+                        param -> !param.isOptional() && !param.isVarargs());
         MenuData menuData = AnnotationReader
                 .getAnnotationFor(target, Menu.class)
-                .map(menu -> new MenuData(menu.title(),
-                        (menu.order() == Long.MIN_VALUE) ? null : menu.order(),
-                        false, menu.icon()))
+                .map(menu -> new MenuData(
+                        (menu.title() == null || menu.title().isBlank())
+                                ? MenuRegistry.getTitle(target)
+                                : menu.title(),
+                        (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null
+                                : menu.order(),
+                        excludeFromMenu, menu.icon()))
                 .orElse(null);
 
-        RouteData route = new RouteData(parentLayouts, template,
-                configuration.getParameters(template), target, routeAliases,
-                menuData);
+        RouteData route = new RouteData(parentLayouts, template, parameters,
+                target, routeAliases, menuData);
         registeredRoutes.add(route);
     }
 

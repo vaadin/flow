@@ -13,14 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.test.blocked;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
+package com.vaadin.flow.misc.ui;
 
-@Route("allowed-route-in-another-jar")
-public class ScannedAllowedRoute extends Div {
+import jakarta.servlet.annotation.WebInitParam;
+import jakarta.servlet.annotation.WebServlet;
 
-    public ScannedAllowedRoute() {
-    }
+import com.vaadin.flow.server.VaadinServlet;
+
+@WebServlet(urlPatterns = "/*", asyncSupported = true, initParams = {
+        @WebInitParam(name = "heartbeatInterval", value = "5") })
+public class CustomServlet extends VaadinServlet {
+    public static long HEARTBEAT_INTERVAL = 5;
 }

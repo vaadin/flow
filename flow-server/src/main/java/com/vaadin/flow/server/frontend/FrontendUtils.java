@@ -56,9 +56,12 @@ import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.internal.ClientRoutesProvider;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.menu.MenuRegistry;
 
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
@@ -1446,19 +1449,13 @@ public class FrontendUtils {
     }
 
     /**
-     * Get all available client routes in a distinct list of route paths
-     * collected from all {@link ClientRoutesProvider} implementations found
-     * with Vaadin {@link Lookup}.
+     * Get all available client routes in a distinct list of route paths.
      *
      * @return a list of available client routes
      */
     public static List<String> getClientRoutes() {
-        return Optional.ofNullable(VaadinService.getCurrent())
-                .map(VaadinService::getContext).stream()
-                .flatMap(ctx -> ctx.getAttribute(Lookup.class)
-                        .lookupAll(ClientRoutesProvider.class).stream())
-                .flatMap(provider -> provider.getClientRoutes().stream())
-                .filter(Objects::nonNull).distinct().toList();
+        return MenuRegistry.getClientRoutes(false,
+                VaadinService.getCurrent().getDeploymentConfiguration());
     }
 
 }

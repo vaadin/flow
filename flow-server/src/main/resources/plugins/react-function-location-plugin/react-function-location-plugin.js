@@ -66,7 +66,9 @@ export function addFunctionComponentSourceLocationBabel() {
           return;
         }
         const filename = state.file.opts.filename;
-        addDebugInfo(path, name, filename, node.body.loc);
+        if (node.body.loc) {
+          addDebugInfo(path, name, filename, node.body.loc);
+        }
       }
     }
   };

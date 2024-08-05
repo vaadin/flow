@@ -521,6 +521,35 @@ public class UIInternalsTest {
                 internals.isDirty());
     }
 
+    @Test
+    public void setTitle_titleAndPendingJsInvocationSetsCorrectTitle() {
+        internals.setTitle("new title");
+        Assert.assertEquals("new title", internals.getTitle());
+
+        Assert.assertEquals("one pending JavaScript invocation should exist", 1,
+                internals.getPendingJavaScriptInvocations().count());
+
+        var pendingJavaScriptInvocation = internals
+                .getPendingJavaScriptInvocations().findFirst().orElse(null);
+        Assert.assertNotNull("pendingJavaScriptInvocation should not be null",
+                pendingJavaScriptInvocation);
+        Assert.assertEquals("new title", pendingJavaScriptInvocation
+                .getInvocation().getParameters().get(0));
+        Assert.assertTrue("document.title should be set via JavaScript",
+                pendingJavaScriptInvocation.getInvocation().getExpression()
+                        .contains("document.title = $0"));
+        Assert.assertTrue(
+                "window.Vaadin.documentTitleSignal.value should be set conditionally via JavaScript",
+                pendingJavaScriptInvocation.getInvocation().getExpression()
+                        .contains(
+                                """
+                                            if(window?.Vaadin?.documentTitleSignal) {
+                                                window.Vaadin.documentTitleSignal.value = $0;
+                                            }
+                                        """
+                                        .stripIndent()));
+    }
+
     private PushConfiguration setUpInitialPush() {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);

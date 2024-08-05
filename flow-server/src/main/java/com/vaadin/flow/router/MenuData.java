@@ -24,31 +24,7 @@ import java.util.Objects;
  * <p>
  * Only for read as data is immutable.
  */
-public class MenuData implements Serializable {
-
-    private final String title;
-    private final Long order;
-    private final boolean exclude;
-    private final String icon;
-
-    /**
-     * Creates a new instance of the menu data.
-     *
-     * @param title
-     *            the title of the menu item
-     * @param order
-     *            the order of the menu item
-     * @param exclude
-     *            whether the menu item should be excluded
-     * @param icon
-     *            the icon of the menu item
-     */
-    public MenuData(String title, Long order, boolean exclude, String icon) {
-        this.title = title;
-        this.order = order;
-        this.exclude = exclude;
-        this.icon = icon;
-    }
+public record MenuData(String title, Double order, boolean exclude, String icon) implements Serializable {
 
     /**
      * Gets the title of the menu item.
@@ -64,7 +40,7 @@ public class MenuData implements Serializable {
      *
      * @return the order of the menu item
      */
-    public Long getOrder() {
+    public Double getOrder() {
         return order;
     }
 

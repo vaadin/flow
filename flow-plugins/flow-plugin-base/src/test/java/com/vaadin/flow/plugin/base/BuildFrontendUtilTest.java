@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,22 +19,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentMatchers;
-import org.mockito.InOrder;
-import org.mockito.MockedConstruction;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -46,9 +35,20 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.utils.LookupImpl;
 import com.vaadin.pro.licensechecker.Product;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InOrder;
+import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -75,6 +75,7 @@ public class BuildFrontendUtilTest {
                 .thenReturn(new File(baseDir, "src/main/frontend/generated"));
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
+        Mockito.when(adapter.applicationIdentifier()).thenReturn("TEST_APP_ID");
         ClassFinder classFinder = Mockito.mock(ClassFinder.class);
         Mockito.when(classFinder.loadClass(ArgumentMatchers.anyString())).then(
                 i -> getClass().getClassLoader().loadClass(i.getArgument(0)));
@@ -299,6 +300,63 @@ public class BuildFrontendUtilTest {
         Assert.assertEquals("Expecting same generated files to be present",
                 expectedGeneratedFiles, generatedFiles);
 
+    }
+
+    @Test
+    public void updateBuildFile_tokenFileNotExisting_doNothing()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.updateBuildFile(adapter);
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertFalse("Token file should not have been created",
+                tokenFile.exists());
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_developmentEntriesRemoved()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+        JsonObject buildInfoJsonDev = Json
+                .parse(Files.readString(tokenFile.toPath()));
+
+        BuildFrontendUtil.updateBuildFile(adapter);
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+
+        Set<String> removedKeys = Arrays.stream(buildInfoJsonDev.keys())
+                .filter(key -> !buildInfoJsonProd.hasKey(key))
+                .collect(Collectors.toSet());
+        Assert.assertFalse(
+                "Development entries have not been removed from token file",
+                removedKeys.isEmpty());
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_applicationIdentifierAdded()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+
+        BuildFrontendUtil.updateBuildFile(adapter);
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+        Assert.assertEquals("Wrong application identifier in token file",
+                "TEST_APP_ID", buildInfoJsonProd
+                        .getString(InitParameters.APPLICATION_IDENTIFIER));
     }
 
     private void fillAdapter() throws URISyntaxException {

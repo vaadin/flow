@@ -65,7 +65,7 @@ final class RouteSegment implements Serializable {
     /**
      * Parameter details.
      */
-    private RouteFormat.ParameterInfo info;
+    private ParameterInfo info;
 
     /**
      * Parameter matching regex.
@@ -118,7 +118,7 @@ final class RouteSegment implements Serializable {
         this.isRoot = isRoot;
 
         if (RouteFormat.isParameter(segmentTemplate)) {
-            info = new RouteFormat.ParameterInfo(segmentTemplate);
+            info = new ParameterInfo(segmentTemplate);
 
             getRegex().ifPresent(s -> pattern = Pattern.compile(s));
 

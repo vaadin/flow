@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.File;
 import java.util.Arrays;
 
 import org.junit.After;
@@ -88,6 +89,7 @@ public class InvalidUrlTest {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(config.isProductionMode()).thenReturn(false);
+        Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
 
         session.lock();
         session.setConfiguration(config);

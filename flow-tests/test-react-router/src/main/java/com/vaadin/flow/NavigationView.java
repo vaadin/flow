@@ -36,6 +36,7 @@ public class NavigationView extends Div {
 
     public static final String REACT_ANCHOR_ID = "anchor-react-navigation";
     public static final String REACT_ID = "react-navigation";
+    public static final String SET_PARAMETER_COUNTER_ID = "set-parameter-counter";
 
     public NavigationView() {
         Anchor anchorNavigation = new Anchor("com.vaadin.flow.AnchorView",
@@ -78,6 +79,9 @@ public class NavigationView extends Div {
                 "com.vaadin.flow.AnchorView?test=anchor", "AnchorQuery");
         anchorViewQuery.setId(ANCHOR_QUERY_ID);
         add(new Div(), anchorViewQuery);
+
+        getElement().executeJs(
+                "if(!window.test) { window.addEventListener('vaadin-navigated', (e) => { window.testMessage = 'navigated to ' + window.location.pathname; }); window.test = true; }");
     }
 
 }

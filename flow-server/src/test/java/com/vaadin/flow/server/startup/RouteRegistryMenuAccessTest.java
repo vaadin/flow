@@ -76,7 +76,8 @@ public class RouteRegistryMenuAccessTest {
         Assert.assertEquals(
                 "No accessible menu routes should be available without VaadinService.",
                 0,
-                registry.getRegisteredAccessibleMenuRoutes(vaadinRequest, null).size());
+                registry.getRegisteredAccessibleMenuRoutes(vaadinRequest, null)
+                        .size());
     }
 
     @Test

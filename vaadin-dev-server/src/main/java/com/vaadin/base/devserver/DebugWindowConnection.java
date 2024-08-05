@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
@@ -267,6 +268,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     @Override
+    public void refresh(boolean refreshLayouts) {
+        JsonObject msg = Json.createObject();
+        msg.put("command", "reload");
+        msg.put("strategy", refreshLayouts ? "full-refresh" : "refresh");
+        send(msg);
+    }
+
+    @Override
     public void update(String path, String content) {
         JsonObject msg = Json.createObject();
         msg.put("command", "update");
@@ -324,7 +333,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     break;
                 }
             }
-            if (!handled) {
+            if (!handled && command != null
+                    && !command.startsWith("copilot-")) {
                 getLogger()
                         .info("Unknown command from the browser: " + command);
             }

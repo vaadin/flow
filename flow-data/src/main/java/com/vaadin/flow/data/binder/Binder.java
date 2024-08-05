@@ -682,7 +682,7 @@ public class Binder<BEAN> implements Serializable {
          *            the type to convert to
          * @param converter
          *            the converter to use, not null
-         * @return a new binding with the appropriate type
+         * @return this BindingBuilder configured with the specified converter
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
@@ -718,7 +718,8 @@ public class Binder<BEAN> implements Serializable {
          * @param toPresentation
          *            the function which can convert from the new target type to
          *            the old target type
-         * @return a new binding with the appropriate type
+         * @return this BindingBuilder configured with a new converter that maps
+         *         between {@code TARGET} and {@code NEWTARGET}
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
@@ -762,7 +763,7 @@ public class Binder<BEAN> implements Serializable {
          * @param errorMessage
          *            the error message to use if conversion using
          *            <code>toModel</code> fails
-         * @return a new binding with the appropriate type
+         * @return this BindingBuilder configured with the appropriate type
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
@@ -780,7 +781,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @param nullRepresentation
          *            the value to use instead of {@code null}
-         * @return a new binding with null representation handling.
+         * @return this BindingBuilder with null representation handling.
          */
         default BindingBuilder<BEAN, TARGET> withNullRepresentation(
                 TARGET nullRepresentation) {
@@ -1216,7 +1217,7 @@ public class Binder<BEAN> implements Serializable {
          * @param resetNullRepresentation
          *            if {@code true} then default null representation will be
          *            deactivated (if not yet), otherwise it won't be removed
-         * @return a new binding with the appropriate type
+         * @return this BindingBuilder configured with the appropriate type
          * @param <NEWTARGET>
          *            the type to convert to
          * @throws IllegalStateException
@@ -1444,14 +1445,15 @@ public class Binder<BEAN> implements Serializable {
          * @return the value context
          */
         protected ValueContext createValueContext() {
-            return createValueContext(field);
+            return createValueContext(binder, field);
         }
 
-        static ValueContext createValueContext(HasValue<?, ?> field) {
+        static ValueContext createValueContext(Binder binder,
+                HasValue<?, ?> field) {
             if (field instanceof Component) {
-                return new ValueContext((Component) field, field);
+                return new ValueContext(binder, (Component) field, field);
             }
-            return new ValueContext(null, field, findLocale());
+            return new ValueContext(binder, null, field, findLocale());
         }
 
         /**
@@ -2858,7 +2860,7 @@ public class Binder<BEAN> implements Serializable {
     private List<ValidationResult> validateBean(BEAN bean) {
         Objects.requireNonNull(bean, "bean cannot be null");
         return validators.stream()
-                .map(validator -> validator.apply(bean, new ValueContext()))
+                .map(validator -> validator.apply(bean, new ValueContext(this)))
                 .collect(Collectors.collectingAndThen(Collectors.toList(),
                         Collections::unmodifiableList));
     }

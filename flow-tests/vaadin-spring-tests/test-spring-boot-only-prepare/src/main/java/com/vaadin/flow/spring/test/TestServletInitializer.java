@@ -34,26 +34,4 @@ public class TestServletInitializer {
     public static void main(String[] args) {
         SpringApplication.run(TestServletInitializer.class, args);
     }
-
-    @Bean
-    public ClientRoutesProvider hillaClientRoutesProvider() {
-        return new ClientRoutesProvider() {
-            @Override
-            public List<String> getClientRoutes() {
-                return List.of("$index", "$layout", "/hilla",
-                        "/hilla/person/:id", "/hilla/persons/:id?");
-            }
-        };
-    }
-
-    @Bean
-    public ClientRoutesProvider anotherhillaClientRoutesProvider() {
-        return new ClientRoutesProvider() {
-            @Override
-            public List<String> getClientRoutes() {
-                return List.of("/$layout", "/hilla", "/hilla/hilla/$index",
-                        "/anotherhilla");
-            }
-        };
-    }
 }

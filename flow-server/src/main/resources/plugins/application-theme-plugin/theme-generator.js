@@ -112,7 +112,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   let variable = camelCase(filename);
 
   /* LUMO */
-  const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
+  const lumoImports = themeProperties.lumoImports || ['typography', 'color', 'spacing', 'badge', 'utility'] ;
   if (lumoImports) {
     lumoImports.forEach((lumoImport) => {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);

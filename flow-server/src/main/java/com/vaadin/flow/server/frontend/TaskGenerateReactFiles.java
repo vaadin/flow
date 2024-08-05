@@ -30,8 +30,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.Version;
 
-import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationAndEOL;
+import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -98,6 +99,7 @@ public class TaskGenerateReactFiles
             """;
 
     private static final String FLOW_TSX = "Flow.tsx";
+    private static final String VAADIN_REACT_TSX = "vaadin-react.tsx";
     private static final String REACT_ADAPTER_TEMPLATE = "ReactAdapter.template";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
@@ -145,16 +147,23 @@ public class TaskGenerateReactFiles
         File frontendDirectory = options.getFrontendDirectory();
         File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+        File vaadinReactTsx = new File(frontendGeneratedFolder,
+                VAADIN_REACT_TSX);
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         File frontendGeneratedFolderRoutesTsx = new File(
                 frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
         try {
-            writeFile(flowTsx, getFlowTsxFileContent(routesTsx.exists()));
+            writeFile(flowTsx, getFileContent(FLOW_TSX));
+            writeFile(vaadinReactTsx,
+                    getVaadinReactTsContent(routesTsx.exists()));
             if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
-                writeFile(reactAdapterTsx,
-                        getFileContent(REACT_ADAPTER_TEMPLATE));
+                String reactAdapterContent = getFileContent(
+                        REACT_ADAPTER_TEMPLATE);
+                reactAdapterContent = reactAdapterContent.replace(
+                        "{{VAADIN_VERSION}}", Version.getFullVersion());
+                writeFile(reactAdapterTsx, reactAdapterContent);
             }
             if (!routesTsx.exists()) {
                 boolean isHillaUsed = FrontendUtils.isHillaUsed(
@@ -163,6 +172,7 @@ public class TaskGenerateReactFiles
                         getFileContent(isHillaUsed ? FrontendUtils.ROUTES_TSX
                                 : FrontendUtils.ROUTES_FLOW_TSX));
             } else {
+                track(routesTsx);
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
                 routesContent = StringUtil.removeComments(routesContent);
@@ -187,11 +197,14 @@ public class TaskGenerateReactFiles
             File frontendDirectory = options.getFrontendDirectory();
             File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
             File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
+            File vaadinReactTsx = new File(frontendGeneratedFolder,
+                    VAADIN_REACT_TSX);
             File reactAdapterTsx = new File(frontendGeneratedFolder,
                     FLOW_REACT_ADAPTER_TSX);
             File frontendGeneratedFolderRoutesTsx = new File(
                     frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
             FileUtils.deleteQuietly(flowTsx);
+            FileUtils.deleteQuietly(vaadinReactTsx);
             FileUtils.deleteQuietly(reactAdapterTsx);
             FileUtils.deleteQuietly(frontendGeneratedFolderRoutesTsx);
 
@@ -200,7 +213,8 @@ public class TaskGenerateReactFiles
             if (routesTsx.exists()) {
                 String defaultRoutesContent = FileUtils
                         .readFileToString(routesTsx, UTF_8);
-                if (compareIgnoringIndentationAndEOL(defaultRoutesContent,
+                if (compareIgnoringIndentationEOLAndWhiteSpace(
+                        defaultRoutesContent,
                         getFileContent(FrontendUtils.ROUTES_TSX),
                         String::equals)) {
                     routesTsx.delete();
@@ -224,9 +238,10 @@ public class TaskGenerateReactFiles
         }
     }
 
-    private String getFlowTsxFileContent(boolean frontendRoutesTsExists)
+    private String getVaadinReactTsContent(boolean frontendRoutesTsExists)
             throws IOException {
-        return getFileContent(FLOW_TSX).replace(ROUTES_JS_IMPORT_PATH_TOKEN,
+        return getFileContent(VAADIN_REACT_TSX).replace(
+                ROUTES_JS_IMPORT_PATH_TOKEN,
                 (frontendRoutesTsExists)
                         ? FrontendUtils.FRONTEND_FOLDER_ALIAS
                                 + FrontendUtils.ROUTES_JS

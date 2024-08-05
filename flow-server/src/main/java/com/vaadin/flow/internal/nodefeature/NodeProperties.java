@@ -69,6 +69,11 @@ public final class NodeProperties {
     public static final String INJECT_BY_ID = "@id";
 
     /**
+     * JsonObject {@code @name} type value for {@link VirtualChildrenList}.
+     */
+    public static final String INJECT_BY_NAME = "@name";
+
+    /**
      * JsonObject template-in-template type value for
      * {@link VirtualChildrenList}.
      */

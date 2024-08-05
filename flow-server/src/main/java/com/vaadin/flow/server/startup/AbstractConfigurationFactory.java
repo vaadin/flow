@@ -24,14 +24,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.apache.commons.io.FileUtils;
-
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-
 import elemental.json.JsonObject;
+import org.apache.commons.io.FileUtils;
 
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -45,6 +43,7 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
@@ -170,6 +169,10 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.hasKey(REACT_ENABLE)) {
             params.put(REACT_ENABLE,
                     String.valueOf(buildInfo.getBoolean(REACT_ENABLE)));
+        }
+        if (buildInfo.hasKey(APPLICATION_IDENTIFIER)) {
+            params.put(APPLICATION_IDENTIFIER,
+                    buildInfo.getString(APPLICATION_IDENTIFIER));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);
