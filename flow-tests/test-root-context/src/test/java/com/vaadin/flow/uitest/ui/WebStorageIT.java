@@ -73,7 +73,7 @@ public class WebStorageIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void testWebStorageSetAndRemoveCF() {
+    public void testWebStorageSetAndRemove_completableFuture() {
         open();
 
         WebElement input = findElement(By.id("input"));
@@ -97,7 +97,7 @@ public class WebStorageIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void testWebStorageSetAndClearCF() {
+    public void testWebStorageSetAndClear_completableFuture() {
         open();
 
         WebElement input = findElement(By.id("input"));
