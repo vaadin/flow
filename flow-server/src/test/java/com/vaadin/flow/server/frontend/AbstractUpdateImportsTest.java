@@ -449,14 +449,14 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     public void generate_embeddedImports_addAlsoGlobalStyles()
             throws IOException {
-        Class<?>[] testClasses = { UI.class };
+        Class<?>[] testClasses = { SimpleCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 tmpRoot, new File(tmpRoot, TOKEN_FILE), true, featureFlags);
         updater.run();
 
-        Pattern injectGlobalCssPattern = Pattern
-                .compile("^\\s*addCssBlock\\(([^,]+),.*");
+        Pattern injectGlobalCssPattern = Pattern.compile(
+                "^\\s*addCssBlock\\(`<style>\\$\\{([^}]+)\\}</style>`\\);.*$");
         Predicate<String> globalCssImporter = injectGlobalCssPattern
                 .asPredicate();
 

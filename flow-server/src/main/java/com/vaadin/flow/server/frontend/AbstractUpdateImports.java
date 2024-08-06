@@ -66,7 +66,7 @@ abstract class AbstractUpdateImports implements Runnable {
             + " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);\n"
             + "};";
     private static final String IMPORT_WC_INJECT = "import { injectGlobalWebcomponentCss } from 'Frontend/generated/jar-resources/theme-util.js';\n";
-    
+
     private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n" //
             + "const $css_%1$d = typeof $cssFromFile_%1$d  === 'string' ? unsafeCSS($cssFromFile_%1$d) : $cssFromFile_%1$d;";
     private static final String CSS_PRE = CSS_IMPORT + "%n" + "addCssBlock(`";
@@ -80,10 +80,10 @@ abstract class AbstractUpdateImports implements Runnable {
             + " let ae=document.activeElement;"
             + " while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;"
             + " return !ae || ae.blur() || ae.focus() || true;" + "}";
-    private static final Pattern INJECT_CSS_PATTERN = Pattern
-            .compile("^\\s*addCssBlock\\(`<style>\\$\\{([^}]+)\\}</style>`\\);.*$");
+    private static final Pattern INJECT_CSS_PATTERN = Pattern.compile(
+            "^\\s*addCssBlock\\(`<style>\\$\\{([^}]+)\\}</style>`\\);.*$");
     private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
-    
+
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
     // Used to recognize and sort FRONTEND/ imports in the final
@@ -156,13 +156,13 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     private void adaptCssInjectForWebComponent(ListIterator<String> iterator,
-                                               String line) {
+            String line) {
         Matcher matcher = INJECT_CSS_PATTERN.matcher(line);
         if (matcher.matches()) {
             iterator.add(String.format(INJECT_WC_CSS, matcher.group(1)));
         }
     }
-    
+
     /**
      * Get all ES6 modules needed for run the application. Modules that are
      * theme dependencies are guaranteed to precede other modules in the result.
