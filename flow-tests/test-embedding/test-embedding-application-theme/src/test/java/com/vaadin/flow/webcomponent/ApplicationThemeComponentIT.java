@@ -225,8 +225,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 2l, getCommandExecutor().executeScript(
                         "return document.head.querySelectorAll(\"link[rel=stylesheet]\").length"));
         Assert.assertEquals(
-                "Project contains 3 css injections to document and all should be hashed",
-                3l, getCommandExecutor().executeScript(
+                "Project contains 2 css injections to document and both should be hashed",
+                2l, getCommandExecutor().executeScript(
                         "return window.Vaadin.theme.injectedGlobalCss.length"));
     }
 
