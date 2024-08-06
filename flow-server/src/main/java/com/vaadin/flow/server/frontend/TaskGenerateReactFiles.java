@@ -165,13 +165,14 @@ public class TaskGenerateReactFiles
                         "{{VAADIN_VERSION}}", Version.getFullVersion());
                 writeFile(reactAdapterTsx, reactAdapterContent);
             }
-            if (!routesTsx.exists()) {
-                boolean isHillaUsed = FrontendUtils.isHillaUsed(
-                        frontendDirectory, options.getClassFinder());
-                writeFile(frontendGeneratedFolderRoutesTsx,
-                        getFileContent(isHillaUsed ? FrontendUtils.ROUTES_TSX
-                                : FrontendUtils.ROUTES_FLOW_TSX));
-            } else {
+
+            boolean isHillaUsed = FrontendUtils.isHillaUsed(frontendDirectory,
+                    options.getClassFinder());
+            writeFile(frontendGeneratedFolderRoutesTsx,
+                    getFileContent(isHillaUsed ? FrontendUtils.ROUTES_TSX
+                            : FrontendUtils.ROUTES_FLOW_TSX));
+
+            if (routesTsx.exists()) {
                 track(routesTsx);
                 String routesContent = FileUtils.readFileToString(routesTsx,
                         UTF_8);
