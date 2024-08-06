@@ -174,6 +174,9 @@ public abstract class AbstractRouteNotFoundError extends Component {
         if (text.isEmpty()) {
             text = "<root>";
         }
+        if (text.startsWith("/")) {
+            text = text.substring(1);
+        }
         if (!route.contains(":")) {
             return elementAsLink(route, text);
         } else {
