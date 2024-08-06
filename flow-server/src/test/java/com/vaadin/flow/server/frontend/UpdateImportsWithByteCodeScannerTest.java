@@ -312,6 +312,7 @@ public class UpdateImportsWithByteCodeScannerTest
         assertOnce("import { injectGlobalCss } from", chunkLines);
         assertOnce("from 'Frontend/foo.css?inline';", chunkLines);
         assertOnce("import $cssFromFile_0 from", chunkLines);
+        assertOnce("injectGlobalCss($cssFromFile_0", chunkLines);
 
         // assert lines order is preserved
         Assert.assertEquals(
