@@ -179,20 +179,20 @@ public interface WebStorage extends Serializable {
     }
 
     /**
-     * Asynchronously gets an item from the Storage.localStorage
+     * Asynchronously gets an item from the local storage.
      *
      * @param key
      *            the key for which the value will be fetched
      * @param callback
      *            the callback that gets the value once transferred from the
-     *            client side
+     *            client side or <code>null</code> if the value was not set
      */
     public static void getItem(String key, Callback callback) {
         getItem(Storage.LOCAL_STORAGE, key, callback);
     }
 
     /**
-     * Asynchronously gets an item from the given storage
+     * Asynchronously gets an item from the given storage.
      *
      * @param storage
      *            the storage
@@ -200,14 +200,14 @@ public interface WebStorage extends Serializable {
      *            the key for which the value will be fetched
      * @param callback
      *            the callback that gets the value once transferred from the
-     *            client side
+     *            client side or <code>null</code> if the value was not set
      */
     public static void getItem(Storage storage, String key, Callback callback) {
         getItem(UI.getCurrent(), storage, key, callback);
     }
 
     /**
-     * Asynchronously gets an item from the given storage
+     * Asynchronously gets an item from the given storage.
      *
      * @param ui
      *            the UI for which the storage is related to
@@ -217,7 +217,7 @@ public interface WebStorage extends Serializable {
      *            the key for which the value will be fetched
      * @param callback
      *            the callback that gets the value once transferred from the
-     *            client side
+     *            client side or <code>null</code> if the value was not set
      */
     public static void getItem(UI ui, Storage storage, String key,
             Callback callback) {
@@ -231,26 +231,39 @@ public interface WebStorage extends Serializable {
     }
 
     /**
-     * Asynchronously gets an item from the Storage.localStorage
+     * Asynchronously gets an item from the local storage.
+     * <p>
+     * It is not possible to synchronously wait for the result of the execution
+     * while holding the session lock since the request handling thread that
+     * makes the result available will also need to lock the session. <br>
+     * See {@link PendingJavaScriptResult#toCompletableFuture} for more
+     * information.
      *
      * @param key
      *            the key for which the value will be fetched
      * @return a CompletableFuture that will be completed with the value once
-     *         transferred from the client side
+     *         transferred from the client side or <code>null</code> if the
+     *         value was not set
      */
     public static CompletableFuture<String> getItem(String key) {
         return getItem(Storage.LOCAL_STORAGE, key);
     }
 
     /**
-     * Asynchronously gets an item from the given storage
+     * Asynchronously gets an item from the given storage.
+     * <p>
+     * It is not possible to synchronously wait for the result of the execution
+     * while holding the session lock. <br>
+     * See {@link PendingJavaScriptResult#toCompletableFuture} for more
+     * information.
      *
      * @param storage
      *            the storage
      * @param key
      *            the key for which the value will be fetched
      * @return a CompletableFuture that will be completed with the value once
-     *         transferred from the client side
+     *         transferred from the client side or <code>null</code> if the
+     *         value was not set
      */
     public static CompletableFuture<String> getItem(Storage storage,
             String key) {
@@ -258,7 +271,13 @@ public interface WebStorage extends Serializable {
     }
 
     /**
-     * Asynchronously gets an item from the given storage
+     * Asynchronously gets an item from the given storage.
+     * <p>
+     * It is not possible to synchronously wait for the result of the execution
+     * while holding the session lock since the request handling thread that
+     * makes the result available will also need to lock the session. <br>
+     * See {@link PendingJavaScriptResult#toCompletableFuture} for more
+     * information.
      *
      * @param ui
      *            the UI for which the storage is related to
@@ -267,7 +286,8 @@ public interface WebStorage extends Serializable {
      * @param key
      *            the key for which the value will be fetched
      * @return a CompletableFuture that will be completed with the value once
-     *         transferred from the client side
+     *         transferred from the client side or <code>null</code> if the
+     *         value was not set
      */
     public static CompletableFuture<String> getItem(UI ui, Storage storage,
             String key) {
