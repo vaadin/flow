@@ -264,13 +264,12 @@ function getHash(input) {
   // Don't format as the generated file formatting will get wonky!
   // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
-    if (target !== document) {
-      ${autoInjectGlobalCssImports ? `
-        webcomponentGlobalCssInjector((css) => {
-          injectGlobalCss(css, '', target);
-        });
-        ` : ''}
-    }
+  if (target !== document) {
+    ${autoInjectGlobalCssImports ? `
+      webcomponentGlobalCssInjector((css) => {
+        injectGlobalCss(css, target);
+      });
+      ` : ''}
   }
   ${parentTheme}
   ${globalCssCode.join('')}

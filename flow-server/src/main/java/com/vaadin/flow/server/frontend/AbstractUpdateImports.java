@@ -81,7 +81,7 @@ abstract class AbstractUpdateImports implements Runnable {
             + " while(ae&&ae.shadowRoot) ae = ae.shadowRoot.activeElement;"
             + " return !ae || ae.blur() || ae.focus() || true;" + "}";
     private static final Pattern INJECT_CSS_PATTERN = Pattern
-            .compile("^\\s*addCssBlock\\(([^,]+),.*$");
+            .compile("^\\s*addCssBlock\\(`<style>\\$\\{([^}]+)\\}</style>`\\);.*$");
     private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
     
     private static final String IMPORT_TEMPLATE = "import '%s';";
@@ -159,10 +159,7 @@ abstract class AbstractUpdateImports implements Runnable {
                                                String line) {
         Matcher matcher = INJECT_CSS_PATTERN.matcher(line);
         if (matcher.matches()) {
-            String cssToInject = matcher.group(1);
-            if (cssToInject.contains("<style include=")) {
-                iterator.add(String.format(INJECT_WC_CSS, cssToInject));
-            }
+            iterator.add(String.format(INJECT_WC_CSS, matcher.group(1)));
         }
     }
     
