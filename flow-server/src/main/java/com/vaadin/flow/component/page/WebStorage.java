@@ -223,10 +223,8 @@ public interface WebStorage extends Serializable {
      */
     public static void getItem(UI ui, Storage storage, String key,
             Callback callback) {
-        ui.getPage()
-                .executeJs("return window[$0].getItem($1);", storage.toString(),
-                        key)
-                .then(String.class, callback::onValueDetected, s -> {
+        requestItem(ui, storage, key).then(String.class,
+                callback::onValueDetected, s -> {
                     LoggerFactory.getLogger(WebStorage.class.getName()).debug(
                             "Error while getting value for key '{}' from storage '{}': {}",
                             key, storage, s);
@@ -296,10 +294,13 @@ public interface WebStorage extends Serializable {
      */
     public static CompletableFuture<String> getItem(UI ui, Storage storage,
             String key) {
-        return ui
-                .getPage().executeJs("return window[$0].getItem($1);",
-                        storage.toString(), key)
-                .toCompletableFuture(String.class);
+        return requestItem(ui, storage, key).toCompletableFuture(String.class);
+    }
+
+    private static PendingJavaScriptResult requestItem(UI ui, Storage storage,
+            String key) {
+        return ui.getPage().executeJs("return window[$0].getItem($1);",
+                storage.toString(), key);
     }
 
 }
