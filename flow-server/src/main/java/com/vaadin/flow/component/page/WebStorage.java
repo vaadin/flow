@@ -18,6 +18,8 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 
 /**
@@ -225,7 +227,10 @@ public interface WebStorage extends Serializable {
                 .executeJs("return window[$0].getItem($1);", storage.toString(),
                         key)
                 .then(String.class, callback::onValueDetected, s -> {
-                    // for error (most likely non-existing mapping), return null
+                    LoggerFactory.getLogger(WebStorage.class.getName()).debug(
+                            "Error while getting value for key '{}' from storage '{}': {}",
+                            key, storage, s);
+                    // fallback to null if there was an error
                     callback.onValueDetected(null);
                 });
     }
