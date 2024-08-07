@@ -108,6 +108,17 @@ public interface WebStorage extends Serializable {
     }
 
     /**
+     * Removes the value associated by the given key from the
+     * Storage.localStorage
+     *
+     * @param key
+     *            the key to be deleted
+     */
+    public static void removeItem(String key) {
+        removeItem(Storage.LOCAL_STORAGE, key);
+    }
+
+    /**
      * Removes the value associated by the given key from the provided storage
      * type
      *
@@ -174,8 +185,8 @@ public interface WebStorage extends Serializable {
      *            the callback that gets the value once transferred from the
      *            client side
      */
-    public static void getItems(String key, Callback callback) {
-        getItems(Storage.LOCAL_STORAGE, key, callback);
+    public static void getItem(String key, Callback callback) {
+        getItem(Storage.LOCAL_STORAGE, key, callback);
     }
 
     /**
@@ -189,9 +200,8 @@ public interface WebStorage extends Serializable {
      *            the callback that gets the value once transferred from the
      *            client side
      */
-    public static void getItems(Storage storage, String key,
-            Callback callback) {
-        getItems(UI.getCurrent(), storage, key, callback);
+    public static void getItem(Storage storage, String key, Callback callback) {
+        getItem(UI.getCurrent(), storage, key, callback);
     }
 
     /**
@@ -207,7 +217,7 @@ public interface WebStorage extends Serializable {
      *            the callback that gets the value once transferred from the
      *            client side
      */
-    public static void getItems(UI ui, Storage storage, String key,
+    public static void getItem(UI ui, Storage storage, String key,
             Callback callback) {
         ui.getPage()
                 .executeJs("return window[$0].getItem($1);", storage.toString(),
