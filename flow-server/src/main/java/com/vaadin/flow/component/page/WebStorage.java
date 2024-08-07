@@ -17,6 +17,7 @@ package com.vaadin.flow.component.page;
 
 import com.vaadin.flow.component.UI;
 import java.io.Serializable;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Wrapper for similarly named Browser API. WebStorage may be handy to save some
@@ -202,6 +203,11 @@ public interface WebStorage extends Serializable {
      */
     public static void getItem(Storage storage, String key, Callback callback) {
         getItem(UI.getCurrent(), storage, key, callback);
+    }
+
+    public static CompletableFuture<String> getItem(Storage storage,
+            String key) {
+        return null;
     }
 
     /**
