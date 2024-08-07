@@ -534,9 +534,12 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     	person.setAge(20);
     	
     	Binder<Person> binder = new Binder<>();
-    	Binding<Person, String> nameBinding = binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .withEqualityPredicate((oldVal, newVal) -> Objects.equals(oldVal, newVal))
+                .bind(Person::getFirstName, Person::setFirstName);
         Binding<Person, Integer> ageBinding = binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter(""))
+                .withEqualityPredicate((oldVal, newVal) -> Objects.equals(oldVal, newVal))
                 .bind(Person::getAge, Person::setAge);
         
     	binder.readBean(person);
