@@ -525,39 +525,42 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals(nameValue, updatedPerson.getFirstName());
         Assert.assertEquals(0, updatedPerson.getAge());
     }
-    
+
     @Test
-    public void update_to_initial_value_removes_binding_from_changedBindings() throws ValidationException {
-    	Person person = new Person();
-    	String initialName = "Foo";
-    	person.setFirstName(initialName);
-    	person.setAge(20);
-    	
-    	Binder<Person> binder = new Binder<>();
+    public void update_to_initial_value_removes_binding_from_changedBindings()
+            throws ValidationException {
+        Person person = new Person();
+        String initialName = "Foo";
+        person.setFirstName(initialName);
+        person.setAge(20);
+
+        Binder<Person> binder = new Binder<>();
         Binding<Person, String> nameBinding = binder.forField(nameField)
-                .withEqualityPredicate((oldVal, newVal) -> Objects.equals(oldVal, newVal))
+                .withEqualityPredicate(
+                        (oldVal, newVal) -> Objects.equals(oldVal, newVal))
                 .bind(Person::getFirstName, Person::setFirstName);
         Binding<Person, Integer> ageBinding = binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter(""))
-                .withEqualityPredicate((oldVal, newVal) -> Objects.equals(oldVal, newVal))
+                .withEqualityPredicate(
+                        (oldVal, newVal) -> Objects.equals(oldVal, newVal))
                 .bind(Person::getAge, Person::setAge);
-        
-    	binder.readBean(person);
-    	nameField.setValue("Bar");
-    	
-    	assertEquals(1, binder.getChangedBindings().size());
-    	assertTrue(binder.getChangedBindings().contains(nameBinding));
-    	
-    	ageField.setValue("21");
-    	assertEquals(2, binder.getChangedBindings().size());
-    	
-        nameField.setValue(initialName);
-        
+
+        binder.readBean(person);
+        nameField.setValue("Bar");
+
         assertEquals(1, binder.getChangedBindings().size());
-    	assertTrue(binder.getChangedBindings().contains(ageBinding));
-    	
-    	ageField.setValue("20");
-    	assertTrue(binder.getChangedBindings().isEmpty());
+        assertTrue(binder.getChangedBindings().contains(nameBinding));
+
+        ageField.setValue("21");
+        assertEquals(2, binder.getChangedBindings().size());
+
+        nameField.setValue(initialName);
+
+        assertEquals(1, binder.getChangedBindings().size());
+        assertTrue(binder.getChangedBindings().contains(ageBinding));
+
+        ageField.setValue("20");
+        assertTrue(binder.getChangedBindings().isEmpty());
     }
 
     @Test

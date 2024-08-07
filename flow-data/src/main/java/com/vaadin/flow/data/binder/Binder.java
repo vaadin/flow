@@ -321,13 +321,15 @@ public class Binder<BEAN> implements Serializable {
          *         changes, otherwise {@literal false}.
          */
         boolean hasChanges();
-        
+
         /**
-         * Used in comparison of the current value of a field with its initial value.
+         * Used in comparison of the current value of a field with its initial
+         * value.
          * <p>
-         * Once set, the value of the field that binding uses will be compared with the initial value for hasChanged.
+         * Once set, the value of the field that binding uses will be compared
+         * with the initial value for hasChanged.
          * </p>
-         * 
+         *
          * @return the predicate to use for equality comparison
          */
         SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate();
@@ -961,20 +963,25 @@ public class Binder<BEAN> implements Serializable {
          */
         public BindingBuilder<BEAN, TARGET> asRequired(
                 Validator<TARGET> customRequiredValidator);
-        
+
         /**
-         * Sets the {@code equalityPredicate} used to compare the current value of a field with its initial value.
+         * Sets the {@code equalityPredicate} used to compare the current value
+         * of a field with its initial value.
          * <p>
-         * By default it is {@literal null}, meaning the initial value comparison is not active.
-         * Once it is set, the value of the field will be compared with its initial value. 
-         * If the value of the field is set back to its initial value, it will not be considered as having uncommitted changes.
+         * By default it is {@literal null}, meaning the initial value
+         * comparison is not active. Once it is set, the value of the field will
+         * be compared with its initial value. If the value of the field is set
+         * back to its initial value, it will not be considered as having
+         * uncommitted changes.
          * </p>
-         * 
-         * @param equalityPredicate the predicate to use for equality comparison
+         *
+         * @param equalityPredicate
+         *            the predicate to use for equality comparison
          * @return this {@code BindingBuilder}, for method chaining
          */
-        public default BindingBuilder<BEAN, TARGET> withEqualityPredicate(SerializableBiPredicate<TARGET, TARGET> equalityPredicate) {
-        	return this;
+        public default BindingBuilder<BEAN, TARGET> withEqualityPredicate(
+                SerializableBiPredicate<TARGET, TARGET> equalityPredicate) {
+            return this;
         }
     }
 
@@ -1010,10 +1017,11 @@ public class Binder<BEAN> implements Serializable {
         private boolean asRequiredSet;
 
         private Boolean defaultValidatorEnabled;
-        
+
         /**
-         * A predicate used to compare the current value of a field with its initial value.
-         * By default it is {@literal null} meaning that the initial value comparison is not active 
+         * A predicate used to compare the current value of a field with its
+         * initial value. By default it is {@literal null} meaning that the
+         * initial value comparison is not active
          */
         private SerializableBiPredicate<TARGET, TARGET> equalityPredicate = null;
 
@@ -1234,12 +1242,14 @@ public class Binder<BEAN> implements Serializable {
                 }
             });
         }
-        
+
         @Override
-        public BindingBuilder<BEAN, TARGET> withEqualityPredicate(SerializableBiPredicate<TARGET, TARGET> equalityPredicate) {
-        	Objects.requireNonNull(equalityPredicate, "equality predicate cannot be null");
-        	this.equalityPredicate = equalityPredicate;
-        	return this;
+        public BindingBuilder<BEAN, TARGET> withEqualityPredicate(
+                SerializableBiPredicate<TARGET, TARGET> equalityPredicate) {
+            Objects.requireNonNull(equalityPredicate,
+                    "equality predicate cannot be null");
+            this.equalityPredicate = equalityPredicate;
+            return this;
         }
 
         /**
@@ -1355,9 +1365,9 @@ public class Binder<BEAN> implements Serializable {
         private Registration onValidationStatusChange;
 
         private Boolean defaultValidatorEnabled;
-        
+
         private SerializableBiPredicate<TARGET, TARGET> equalityPredicate;
-        
+
         private TARGET initialValue;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
@@ -1370,7 +1380,7 @@ public class Binder<BEAN> implements Serializable {
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
 
             defaultValidatorEnabled = builder.defaultValidatorEnabled;
-            
+
             equalityPredicate = builder.equalityPredicate;
 
             onValueChange = getField().addValueChangeListener(
@@ -1560,8 +1570,10 @@ public class Binder<BEAN> implements Serializable {
             if (binder != null) {
                 // Inform binder of changes; if setBean: writeIfValid
                 getBinder().handleFieldValueChange(this);
-                // Compare the value with initial value, and remove the binder from changed bindings if reverted
-                removeFromChangedBindingsIfReverted(getBinder()::removeFromChangedBindings);
+                // Compare the value with initial value, and remove the binder
+                // from changed bindings if reverted
+                removeFromChangedBindingsIfReverted(
+                        getBinder()::removeFromChangedBindings);
                 getBinder().fireEvent(event);
             }
         }
@@ -1752,27 +1764,30 @@ public class Binder<BEAN> implements Serializable {
             return this.binder.hasChanges(this);
         }
 
-		@Override
-		public SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate() {
-			return equalityPredicate;
-		}
+        @Override
+        public SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate() {
+            return equalityPredicate;
+        }
 
-		/**
-		 * if {@code equalityPredicate} is set, compares the new value of the field with its initial value, 
-		 * and removes the current binding from the {@code changeBindings}
-		 * 
-		 * @param removeBindingAction
-         *            the binding consumer that removes the binding from the {@code changeBindings}
-		 */
-		private void removeFromChangedBindingsIfReverted(SerializableConsumer<Binding<BEAN, TARGET>> removeBindingAction) {
-			if (equalityPredicate != null) {
-				doConversion().ifOk(convertedValue -> {
-					if (equalityPredicate.test(initialValue, convertedValue)) {
-						removeBindingAction.accept(this);
-					}
-				});
-			}
-		}
+        /**
+         * if {@code equalityPredicate} is set, compares the new value of the
+         * field with its initial value, and removes the current binding from
+         * the {@code changeBindings}
+         *
+         * @param removeBindingAction
+         *            the binding consumer that removes the binding from the
+         *            {@code changeBindings}
+         */
+        private void removeFromChangedBindingsIfReverted(
+                SerializableConsumer<Binding<BEAN, TARGET>> removeBindingAction) {
+            if (equalityPredicate != null) {
+                doConversion().ifOk(convertedValue -> {
+                    if (equalityPredicate.test(initialValue, convertedValue)) {
+                        removeBindingAction.accept(this);
+                    }
+                });
+            }
+        }
     }
 
     /**
@@ -2002,16 +2017,16 @@ public class Binder<BEAN> implements Serializable {
      *            the binding whose value has been changed
      */
     protected void handleFieldValueChange(Binding<BEAN, ?> binding) {
-    	changedBindings.add(binding);
-    	
+        changedBindings.add(binding);
+
         if (getBean() == null) {
             binding.validate();
         } else {
             doWriteIfValid(getBean(), changedBindings);
         }
     }
-    
-	/**
+
+    /**
      * Returns the bean that has been bound with {@link #bind}, or null if a
      * bean is not currently bound.
      *
@@ -2633,14 +2648,14 @@ public class Binder<BEAN> implements Serializable {
                  * Changes have been successfully saved. The set is only cleared
                  * when the changes are stored in the currently set bean.
                  */
-            	changedBindings.clear();
+                changedBindings.clear();
             } else if (getBean() == null) {
                 /*
                  * When using readBean and writeBean there is no knowledge of
                  * which bean the changes come from or are stored in. Binder is
                  * no longer "changed" when saved succesfully to any bean.
                  */
-            	changedBindings.clear();
+                changedBindings.clear();
             }
         }
 
@@ -2812,7 +2827,7 @@ public class Binder<BEAN> implements Serializable {
         }
         changedBindings.clear();
     }
-    
+
     /**
      * Validates the values of all bound fields and returns the validation
      * status.
@@ -3384,7 +3399,7 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private void doRemoveBean(boolean fireStatusEvent) {
-    	changedBindings.clear();
+        changedBindings.clear();
         if (bean != null) {
             bean = null;
         }
@@ -3847,13 +3862,12 @@ public class Binder<BEAN> implements Serializable {
             removeFromChangedBindings(binding);
         }
     }
-    
-    
+
     /**
      * Removes (internally) the {@code Binding} from the changed bindings
      */
     private void removeFromChangedBindings(Binding<BEAN, ?> binding) {
-    	changedBindings.remove(binding);
+        changedBindings.remove(binding);
     }
 
     /**
