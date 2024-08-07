@@ -202,12 +202,8 @@ public interface WebStorage extends Serializable {
      *            client side
      */
     public static void getItem(Storage storage, String key, Callback callback) {
+        System.out.println("HEY!");
         getItem(UI.getCurrent(), storage, key, callback);
-    }
-
-    public static CompletableFuture<String> getItem(Storage storage,
-            String key) {
-        return null;
     }
 
     /**
