@@ -49,7 +49,7 @@ public class WebStorageView extends Div {
         detect.setText("Detect");
         detect.setId("detect");
         detect.addClickListener(e -> {
-            WebStorage.getItem("test", v -> {
+            WebStorage.getItems("test", v -> {
                 if (v == null) {
                     msg.setText(VALUE_NOT_SET);
                 } else {
