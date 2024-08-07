@@ -11,7 +11,6 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
-
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME)
@@ -20,6 +19,7 @@ public class ThemedComponent extends Div {
     public static final String TEST_TEXT_ID = "test-text";
 
     public static final String MY_COMPONENT_ID = "field";
+    public static final String CSS_IMPORT_COMPONENT_ID = "embedded-cssimport";
     public static final String EMBEDDED_ID = "embedded";
 
     public static final String HAND_ID = "sparkle-hand";
@@ -38,5 +38,6 @@ public class ThemedComponent extends Div {
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));
+        add(new CssImportComponent(CSS_IMPORT_COMPONENT_ID));
     }
 }

@@ -447,6 +447,43 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    public void generate_embeddedImports_addAlsoGlobalStyles()
+            throws IOException {
+        Class<?>[] testClasses = { SimpleCssImport.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                tmpRoot, new File(tmpRoot, TOKEN_FILE), true, featureFlags);
+        updater.run();
+
+        Pattern injectGlobalCssPattern = Pattern.compile(
+                "^\\s*addCssBlock\\(`<style>\\$\\{([^}]+)\\}</style>`\\);.*$");
+        Predicate<String> globalCssImporter = injectGlobalCssPattern
+                .asPredicate();
+
+        List<String> globalCss = updater.resultingLines.stream()
+                .filter(globalCssImporter).map(line -> {
+                    Matcher matcher = injectGlobalCssPattern.matcher(line);
+                    matcher.find();
+                    return matcher.group(1);
+                }).collect(Collectors.toList());
+
+        assertTrue("Import for web-components should also inject global CSS",
+                updater.webcomponentImports.stream()
+                        .anyMatch(globalCssImporter));
+
+        assertTrue(
+                "Should contain function to import global CSS into embedded component",
+                updater.webcomponentImports.stream().anyMatch(line -> line
+                        .contains("import { injectGlobalWebcomponentCss }")));
+        globalCss.forEach(css -> assertTrue(
+                "Should register global CSS " + css + " for webcomponent",
+                updater.webcomponentImports.stream()
+                        .anyMatch(line -> line.contains(
+                                "injectGlobalWebcomponentCss(" + css + ");"))));
+
+    }
+
+    @Test
     public void jsModulesOrderIsPreservedAnsAfterJsModules() {
         updater.run();
 
