@@ -18,6 +18,7 @@ package com.vaadin.flow;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.flow.component.html.testbench.AnchorElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
@@ -324,4 +325,115 @@ public class NavigationIT extends ChromeBrowserTest {
                 getDriver().getCurrentUrl().endsWith("?test=anchor"));
     }
 
+    private void checkNavigatedEvent(String log) {
+        Object message = ((JavascriptExecutor) getDriver())
+                .executeScript("return window.testMessage;");
+
+        Assert.assertTrue(message instanceof String);
+        Assert.assertTrue(message.equals(log));
+    }
+
+    @Test
+    public void testNavigatedEvent() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+        checkNavigatedEvent(
+                "navigated to /view/com.vaadin.flow.NavigationView");
+
+        $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
+        Assert.assertEquals("AnchorView",
+                $(SpanElement.class).first().getText());
+        checkNavigatedEvent("navigated to /view/com.vaadin.flow.AnchorView");
+        $(AnchorElement.class).id(NavigationView.ANCHOR_ID).click();
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+        checkNavigatedEvent(
+                "navigated to /view/com.vaadin.flow.NavigationView");
+
+        $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
+        Assert.assertEquals("ServerView",
+                $(SpanElement.class).first().getText());
+        checkNavigatedEvent("navigated to /view/com.vaadin.flow.ServerView");
+        $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+        checkNavigatedEvent(
+                "navigated to /view/com.vaadin.flow.NavigationView");
+
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
+        Assert.assertEquals("RouterView",
+                $(SpanElement.class).first().getText());
+        checkNavigatedEvent("navigated to /view/com.vaadin.flow.RouterView");
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_ID).click();
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+        checkNavigatedEvent(
+                "navigated to /view/com.vaadin.flow.NavigationView");
+    }
+
+    @Test
+    public void testNavigatedForPostponeView() {
+        open();
+
+        Assert.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        $(AnchorElement.class).id(NavigationView.POSTPONE_ID).click();
+
+        Assert.assertEquals("PostponeView",
+                $(SpanElement.class).first().getText());
+        checkNavigatedEvent("navigated to /view/com.vaadin.flow.PostponeView");
+
+        $(AnchorElement.class).id(PostponeView.NAVIGATION_ID).click();
+
+        Assert.assertEquals("Navigation should have postponed", "PostponeView",
+                $(SpanElement.class).first().getText());
+        checkNavigatedEvent("navigated to /view/com.vaadin.flow.PostponeView");
+
+        Assert.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.CONTINUE_ID).isDisplayed());
+        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
+
+        $(NativeButtonElement.class).id(PostponeView.STAY_ID).click();
+
+        Assert.assertEquals(0, $(NativeButtonElement.class).all().size());
+
+        Assert.assertTrue("Url should not have changed",
+                getDriver().getCurrentUrl().endsWith("PostponeView"));
+        checkNavigatedEvent("navigated to /view/com.vaadin.flow.PostponeView");
+
+        $(AnchorElement.class).id(PostponeView.NAVIGATION_ID).click();
+
+        Assert.assertEquals(
+                "Navigation should have fired and be postponed again",
+                "PostponeView", $(SpanElement.class).first().getText());
+        checkNavigatedEvent("navigated to /view/com.vaadin.flow.PostponeView");
+
+        Assert.assertTrue($(NativeButtonElement.class)
+                .id(PostponeView.CONTINUE_ID).isDisplayed());
+        Assert.assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
+
+        $(NativeButtonElement.class).id(PostponeView.CONTINUE_ID).click();
+
+        Assert.assertEquals(
+                "Navigation should have continued to NavigationView",
+                "NavigationView", $(SpanElement.class).first().getText());
+        checkNavigatedEvent(
+                "navigated to /view/com.vaadin.flow.NavigationView");
+    }
+
+    @Test
+    public void testNavigation_HasUrlParameter_setParameterCalledOnce() {
+        open();
+
+        $(NativeButtonElement.class).id(NavigationView.SERVER_ID).click();
+        Assert.assertEquals("ServerView",
+                $(SpanElement.class).first().getText());
+        Assert.assertEquals("1", $(SpanElement.class)
+                .id(NavigationView.SET_PARAMETER_COUNTER_ID).getText());
+    }
 }

@@ -17,7 +17,6 @@ package com.vaadin.flow.data.binder;
 
 import java.io.Serializable;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
@@ -78,8 +77,6 @@ public class ValueContext implements Serializable {
      */
     public ValueContext(Binder binder, Component component) {
         this.binder = binder;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         if (component instanceof HasValue) {
             hasValue = (HasValue<?, ?>) component;
@@ -102,8 +99,6 @@ public class ValueContext implements Serializable {
     public ValueContext(Binder binder, Component component,
             HasValue<?, ?> hasValue) {
         this.binder = binder;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         this.hasValue = hasValue;
         locale = findLocale(component);
@@ -170,8 +165,6 @@ public class ValueContext implements Serializable {
     @Deprecated
     public ValueContext(Component component) {
         this.binder = null;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         if (component instanceof HasValue) {
             hasValue = (HasValue<?, ?>) component;
@@ -193,8 +186,6 @@ public class ValueContext implements Serializable {
     @Deprecated
     public ValueContext(Component component, HasValue<?, ?> hasValue) {
         this.binder = null;
-        Objects.requireNonNull(component,
-                "Component can't be null in ValueContext construction");
         this.component = component;
         this.hasValue = hasValue;
         locale = findLocale(component);
@@ -222,17 +213,17 @@ public class ValueContext implements Serializable {
     }
 
     private Locale findLocale(Component component) {
-        if (component != null && component.getUI().isPresent()) {
-            return component.getUI().get().getLocale();
+        UI ui = null;
+        if (component != null) {
+            ui = component.getUI().orElseGet(UI::getCurrent);
+        } else {
+            ui = UI.getCurrent();
         }
-        Locale locale = null;
-        if (UI.getCurrent() != null) {
-            locale = UI.getCurrent().getLocale();
+        if (ui != null) {
+            return ui.getLocale();
+        } else {
+            return Locale.getDefault();
         }
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return locale;
     }
 
     /**

@@ -9,6 +9,7 @@
 package com.vaadin.flow.component.polymertemplate;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -25,6 +27,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -48,6 +51,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.templatemodel.AllowClientUpdates;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -130,6 +135,10 @@ public class PolymerTemplateTest extends HasCurrentService {
             extends PolymerTemplate<ModelClass> {
         public TestPolymerTemplate() {
             super(new SimpleTemplateParser());
+        }
+
+        public TestPolymerTemplate(VaadinService service) {
+            super(new SimpleTemplateParser(), service);
         }
     }
 
@@ -983,6 +992,63 @@ public class PolymerTemplateTest extends HasCurrentService {
         // all model properties except 'list' which has no getter
         Assert.assertTrue(props.contains("message"));
         Assert.assertTrue(props.contains("title"));
+    }
+
+    @Test
+    public void licenseCheck_devMode_licenseCheckedOnce()
+            throws NoSuchFieldException, IllegalAccessException {
+        Field licenseChecked = PolymerTemplate.class
+                .getDeclaredField("licenseChecked");
+        licenseChecked.setAccessible(true);
+        AtomicBoolean licenseCheckedHolder = (AtomicBoolean) licenseChecked
+                .get(null);
+        boolean licenseCheckedInitValue = licenseCheckedHolder.get();
+
+        try (MockedStatic<LicenseChecker> checker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            AtomicInteger counter = new AtomicInteger(0);
+            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
+                    Mockito.anyString(), Mockito.eq(BuildType.DEVELOPMENT)))
+                    .then(ignore -> counter.incrementAndGet());
+
+            DeploymentConfiguration configuration = Mockito
+                    .mock(DeploymentConfiguration.class);
+            Mockito.when(configuration.isProductionMode()).thenReturn(false);
+
+            VaadinService service = Mockito.mock(VaadinService.class);
+            Mockito.when(service.getDeploymentConfiguration())
+                    .thenReturn(configuration);
+
+            licenseCheckedHolder.set(false);
+            new TestPolymerTemplate(service);
+            Assert.assertEquals(1, counter.get());
+            new TestPolymerTemplate(service);
+            Assert.assertEquals(1, counter.get());
+        } finally {
+            licenseCheckedHolder.compareAndSet(true, licenseCheckedInitValue);
+        }
+    }
+
+    @Test
+    public void licenseCheck_prodMode_licenseNotChecked() {
+        try (MockedStatic<LicenseChecker> checker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            AtomicInteger counter = new AtomicInteger(0);
+            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
+                    Mockito.anyString(), Mockito.eq(BuildType.DEVELOPMENT)))
+                    .then(ignore -> counter.incrementAndGet());
+
+            DeploymentConfiguration configuration = Mockito
+                    .mock(DeploymentConfiguration.class);
+            Mockito.when(configuration.isProductionMode()).thenReturn(true);
+
+            VaadinService service = Mockito.mock(VaadinService.class);
+            Mockito.when(service.getDeploymentConfiguration())
+                    .thenReturn(configuration);
+
+            new TestPolymerTemplate(service);
+            Assert.assertEquals(0, counter.get());
+        }
     }
 
     private void doParseTemplate_hasIdChild_childIsRegisteredInFeature(

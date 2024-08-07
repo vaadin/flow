@@ -51,6 +51,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const styles = resolve(themeFolder, stylesCssFilename);
   const documentCssFile = resolve(themeFolder, documentCssFilename);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
+  const autoInjectGlobalCssImports = themeProperties.autoInjectGlobalCssImports ?? false;
   const globalFilename = 'theme-' + themeName + '.global.generated.js';
   const componentsFilename = 'theme-' + themeName + '.components.generated.js';
   const themeFilename = 'theme-' + themeName + '.generated.js';
@@ -77,6 +78,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   }
 
   themeFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import { webcomponentGlobalCssInjector } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
   themeFileContent += `import './${componentsFilename}';\n`;
 
   themeFileContent += `let needsReloadOnChanges = false;\n`;
@@ -112,7 +114,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   let variable = camelCase(filename);
 
   /* LUMO */
-  const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
+  const lumoImports = themeProperties.lumoImports || ['typography', 'color', 'spacing', 'badge', 'utility'] ;
   if (lumoImports) {
     lumoImports.forEach((lumoImport) => {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
@@ -222,6 +224,11 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     const removers = [];
     if (target !== document) {
       ${shadowOnlyCss.join('')}
+      ${autoInjectGlobalCssImports ? `
+        webcomponentGlobalCssInjector((css) => {
+          removers.push(injectGlobalCss(css, '', target));
+        });
+        ` : ''}
     }
     ${parentTheme}
     ${globalCssCode.join('')}
@@ -232,7 +239,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     }
 
   }
-  
+
 `;
   componentsFileContent += `
 ${componentCssImports.join('')}

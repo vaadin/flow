@@ -15,14 +15,14 @@
  */
 /// <reference lib="es2018" />
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
     matchRoutes,
     useBlocker,
     useLocation,
-    useNavigate,
+    useNavigate
 } from "react-router-dom";
-import { routes } from "%routesJsImportPath%";
+import type { AgnosticRouteObject } from '@remix-run/router';
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -138,6 +138,22 @@ function extractPath(event: MouseEvent): void | string {
     return normalizeURL(new URL(anchor.href, anchor.baseURI));
 }
 
+/**
+ * Fire 'vaadin-navigated' event to inform components of navigation.
+ * @param pathname pathname of navigation
+ * @param search search of navigation
+ */
+function fireNavigated(pathname:string, search: string) {
+    setTimeout(() =>
+        window.dispatchEvent(new CustomEvent('vaadin-navigated', {
+            detail: {
+                pathname,
+                search
+            }
+        }))
+    )
+}
+
 function postpone() {
 }
 
@@ -147,22 +163,14 @@ type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["actio
 
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
-    const prevHistoryState = useRef<any>(null);
     const navigate = useNavigate();
-    const blocker = useBlocker(({nextLocation, historyAction}) => {
-        const reactRouterHistory = !!prevHistoryState.current && typeof prevHistoryState.current === "object" && "idx" in prevHistoryState.current;
-        const reactRouterNavigation = !!window.history.state && typeof window.history.state === "object" && "idx" in window.history.state;
-        prevHistoryState.current = window.history.state;
-        // @ts-ignore
-        if(event && event.state && event.state === "vaadin-router-ignore") {
-            prevHistoryState.current = {"idx":0};
-            return historyAction === "POP";
-        }
-        return !(historyAction === "POP" && reactRouterHistory && reactRouterNavigation);
+    const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+        navigated.current = navigated.current || (nextLocation.pathname === currentLocation.pathname && nextLocation.search === currentLocation.search && nextLocation.hash === currentLocation.hash);
+        return true;
     });
     const {pathname, search, hash} = useLocation();
     const navigated = useRef<boolean>(false);
-
+    const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
 
     const navigateEventHandler = useCallback((event: MouseEvent) => {
@@ -175,6 +183,10 @@ function Flow() {
             event.preventDefault();
         }
 
+        navigated.current = false;
+        // When navigation is triggered by click on a link, fromAnchor is set to true
+        // in order to get a server round-trip even when navigating to the same URL again
+        fromAnchor.current = true;
         navigate(path);
     }, [navigate]);
 
@@ -189,6 +201,12 @@ function Flow() {
         navigate(path);
     }, [navigate]);
 
+    const vaadinNavigateEventHandler = useCallback((event: CustomEvent<{state: unknown, url: string, replace?: boolean}>) => {
+        const path = '/' + event.detail.url;
+        navigated.current = !event.detail.replace;
+        navigate(path, { state: event.detail.state, replace: event.detail.replace});
+    }, [navigate]);
+
     const redirect = useCallback((path: string) => {
         return (() => {
             navigate(path, {replace: true});
@@ -198,12 +216,16 @@ function Flow() {
     useEffect(() => {
         // @ts-ignore
         window.addEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
+        // @ts-ignore
+        window.addEventListener('vaadin-navigate', vaadinNavigateEventHandler);
 
         return () => {
             // @ts-ignore
             window.removeEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
+            // @ts-ignore
+            window.removeEventListener('vaadin-navigate', vaadinNavigateEventHandler);
         };
-    }, [vaadinRouterGoEventHandler]);
+    }, [vaadinRouterGoEventHandler, vaadinNavigateEventHandler]);
 
     useEffect(() => {
         return () => {
@@ -214,7 +236,14 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            // Do not skip server round-trip if navigation originates from a click on a link
+            if (navigated.current && !fromAnchor.current) {
+                blocker.proceed();
+                return;
+            }
+            fromAnchor.current = false;
             const {pathname, search} = blocker.location;
+            const routes = ((window as any)?.Vaadin?.routesConfig || []) as AgnosticRouteObject[];
             let matched = matchRoutes(Array.from(routes), window.location.pathname);
 
             // Navigation between server routes
@@ -222,7 +251,10 @@ function Flow() {
             if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length != 0) {
                 containerRef.current?.onBeforeEnter?.call(containerRef?.current,
                     {pathname,search}, {
-                        prevent,
+                        prevent() {
+                            blocker.reset();
+                            navigated.current = false;
+                        },
                         redirect,
                         continue() {
                             blocker.proceed();
@@ -243,11 +275,13 @@ function Flow() {
                                     blocker.reset();
                                 } else {
                                     blocker.proceed();
+                                    window.removeEventListener('click',  navigateEventHandler);
                                 }
                             }
                         } else {
                             // permitted navigation: proceed with the blocker
                             blocker.proceed();
+                            window.removeEventListener('click',  navigateEventHandler);
                         }
                     });
             }
@@ -255,8 +289,9 @@ function Flow() {
     }, [blocker.state, blocker.location]);
 
     useEffect(() => {
-        if(navigated.current) {
+        if (navigated.current) {
             navigated.current = false;
+            fireNavigated(pathname,search);
             return;
         }
         flow.serverSideRoutes[0].action({pathname, search})
@@ -264,10 +299,11 @@ function Flow() {
                 const outlet = ref.current?.parentNode;
                 if (outlet && outlet !== container.parentNode) {
                     outlet.append(container);
-                    container.onclick = navigateEventHandler;
+                    window.addEventListener('click',  navigateEventHandler);
                     containerRef.current = container
                 }
-                return container.onBeforeEnter?.call(container, {pathname, search}, {prevent, redirect}, router);
+                return container.onBeforeEnter?.call(container, {pathname, search}, {prevent, redirect, continue() {
+                        fireNavigated(pathname,search);}}, router);
             })
             .then((result: unknown) => {
                 if (typeof result === "function") {
@@ -339,3 +375,17 @@ export const reactElement = (tag: string, props?: Properties, onload?: () => voi
 };
 
 export default Flow;
+
+// @ts-ignore
+if (import.meta.hot) {
+  // @ts-ignore
+  import.meta.hot.accept((newModule) => {
+    // A hot module replace for Flow.tsx happens when any JS/TS imported through @JsModule
+    // or similar is updated because this updates generated-flow-imports.js and that in turn
+    // is imported by this file. We have no means of hot replacing those files, e.g. some
+    // custom lit element so we need to reload the page. */
+    if (newModule) {
+      window.location.reload();
+    }
+  });
+}

@@ -22,7 +22,7 @@ export class LiveReloadConnection extends Connection {
     }, Connection.HEARTBEAT_INTERVAL);
   }
 
-  onReload() {
+  onReload(_strategy: string) {
     // Intentionally empty
   }
 
@@ -40,7 +40,8 @@ export class LiveReloadConnection extends Connection {
       this.onHandshake();
     } else if (json.command === 'reload') {
       if (this.status === ConnectionStatus.ACTIVE) {
-        this.onReload();
+        const strategy = json.strategy || 'reload'
+        this.onReload(strategy);
       }
     } else {
       this.handleError(`Unknown message from the livereload server: ${msg}`);
