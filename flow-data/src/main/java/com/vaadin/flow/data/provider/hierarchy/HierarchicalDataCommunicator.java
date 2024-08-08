@@ -189,7 +189,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         String parentKey = getKeyMapper().key(parentItem);
         HierarchicalCommunicationController<T> controller = dataControllers
                 .computeIfAbsent(parentKey,
-                        key -> new HierarchicalCommunicationController<>(
+                        key -> new HierarchicalCommunicationController<>(this,
                                 parentKey, getKeyMapper(), mapper,
                                 dataGenerator,
                                 size -> arrayUpdater
@@ -549,6 +549,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             T item = getKeyMapper().get(key);
             if (item != null) {
                 T parent = getParentItem(item);
+                // Short-circuit root item removal
+                if (parent == null) {
+                    return !isExpanded(item);
+                }
                 while (parent != null) {
                     if (!isItemActive(parent) || !isExpanded(parent)) {
                         return true;

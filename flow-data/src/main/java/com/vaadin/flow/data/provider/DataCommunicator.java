@@ -941,6 +941,18 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
+    /**
+     * Removes keys from pending passivation. This is needed when root items are
+     * moved down in the hierarchy to preserve them in the key mapper.
+     *
+     * @param keys
+     *            Set of keys for which to cancel passivation
+     */
+    public void removeFromPassivation(Set<String> keys) {
+        passivatedByUpdate.values().stream()
+                .forEach(set -> set.removeAll(keys));
+    }
+
     private void updateUndefinedSize() {
         assert !definedSize
                 : "This method should never be called when using defined size";

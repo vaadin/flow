@@ -47,6 +47,7 @@ import elemental.json.JsonValue;
  */
 public class HierarchicalCommunicationController<T> implements Serializable {
 
+    private final HierarchicalDataCommunicator<T> communicator;
     private final DataKeyMapper<T> keyMapper;
     private final DataGenerator<T> dataGenerator;
     private final SerializableFunction<Integer, HierarchicalUpdate> startUpdate;
@@ -85,6 +86,8 @@ public class HierarchicalCommunicationController<T> implements Serializable {
      * Constructs communication controller with support for hierarchical data
      * structure.
      *
+     * @param communicator
+     *            HierarchicalDataCommunicator that owns this controller
      * @param parentKey
      *            parent key or null if root
      * @param keyMapper
@@ -99,11 +102,13 @@ public class HierarchicalCommunicationController<T> implements Serializable {
      *            Function for fetching items for target parent and specified
      *            range
      */
-    public HierarchicalCommunicationController(String parentKey,
+    public HierarchicalCommunicationController(
+            HierarchicalDataCommunicator<T> communicator, String parentKey,
             DataKeyMapper<T> keyMapper, HierarchyMapper<T, ?> mapper,
             DataGenerator<T> dataGenerator,
             SerializableFunction<Integer, HierarchicalUpdate> startUpdate,
             SerializableBiFunction<String, Range, Stream<T>> fetchItems) {
+        this.communicator = communicator;
         this.parentKey = parentKey;
         this.keyMapper = keyMapper;
         this.mapper = mapper;
@@ -331,10 +336,12 @@ public class HierarchicalCommunicationController<T> implements Serializable {
     }
 
     private List<JsonValue> getJsonItems(Range range) {
-        return range.stream()
+        Set<String> keys = range.stream()
                 .mapToObj(index -> activeKeyOrder.get(index - activeStart))
-                .map(keyMapper::get).map(this::generateJson)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
+        communicator.removeFromPassivation(keys);
+        return keys.stream().map(keyMapper::get).map(this::generateJson)
+                .toList();
     }
 
     public JsonValue generateJson(T item) {

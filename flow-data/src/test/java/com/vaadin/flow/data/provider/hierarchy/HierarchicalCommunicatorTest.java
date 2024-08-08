@@ -236,13 +236,19 @@ public class HierarchicalCommunicatorTest {
         invokeFlush();
 
         dataProvider.getTreeData().setParent(secondRoot, ROOT);
+        communicator.expand(ROOT);
         dataProvider.refreshAll();
 
-        invokeFlush();
-        communicator.confirmUpdate(1);
+        fakeClientCommunication();
 
         assertTrue("SECONDROOT key is missing from KeyMapper",
                 communicator.getKeyMapper().has(secondRoot));
+    }
+
+    private void fakeClientCommunication() {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().getStateTree().collectChanges(ignore -> {
+        });
     }
 
     private void invokeFlush() {
