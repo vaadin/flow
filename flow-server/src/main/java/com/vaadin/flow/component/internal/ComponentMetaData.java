@@ -115,6 +115,7 @@ public class ComponentMetaData {
     private final Collection<SynchronizedPropertyInfo> synchronizedProperties;
     private final ConcurrentHashMap<VaadinService, DependencyInfo> dependencyInfo = new ConcurrentHashMap<>();
     private final Class<? extends Component> componentClass;
+    private final Map<String, Set<Class<? extends Component>>> tagToComponentsMap = new HashMap<>();
 
     /**
      * Scans the given component class and creates a new instance based on found
@@ -126,6 +127,23 @@ public class ComponentMetaData {
     public ComponentMetaData(Class<? extends Component> componentClass) {
         this.componentClass = componentClass;
         synchronizedProperties = findSynchronizedProperties(componentClass);
+        mapTagToComponent(componentClass);
+    }
+
+    private void mapTagToComponent(Class<? extends Component> componentClass) {
+        AnnotationReader.getTagAnnotation(componentClass).ifPresent(tag -> {
+            tagToComponentsMap.computeIfAbsent(tag.value(), k -> new HashSet<>()).add(componentClass);
+        });
+
+    }
+    /**
+     * Gets the components associated with a specific HTML tag.
+     *
+     * @param tag the tag to look up
+     * @return a set of component classes associated with the tag
+     */
+    public Set<Class<? extends Component>> getComponentsByTag(String tag) {
+        return tagToComponentsMap.getOrDefault(tag, Collections.emptySet());
     }
 
     /**
