@@ -190,12 +190,7 @@ public class SystemErrorHandler {
         var elements = document.getElementsByTagName(elementName);
         for (var i = 0 ; i < elements.length ; ++i) {
             var elem = elements[i];
-            elem.$server.disconnected = function(){
-            if (!elem.isConnected) {
-                    // Perform necessary clean-up or state management
-                    console.log("Handling disconnection for", elem);
-                }
-               }; // mock disconnected callback not to throw TypeError
+            elem.$server.disconnected = function(){} // mock disconnected callback not to throw TypeError
             elem.parentNode.replaceChild(elem.cloneNode(false), elem);
         }
     }-*/;
