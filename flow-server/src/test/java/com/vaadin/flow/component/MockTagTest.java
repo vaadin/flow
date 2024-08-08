@@ -35,10 +35,13 @@ package com.vaadin.flow.component;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Set;
 
 import com.vaadin.flow.component.internal.ComponentMetaData;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
 
 public class MockTagTest {
     public static class MockComponent extends Component {
@@ -50,14 +53,29 @@ public class MockTagTest {
         @Tag("another-tag")
         public static class Sample extends Component {}
     }
+
     private ComponentMetaData metaDataSample;
     private ComponentMetaData metaDataAnotherSample;
+    private VaadinService mockedVaadinService;
+    private DeploymentConfiguration mockedDeploymentConfiguration;
 
     @Before
     public void setup() {
+        // Create and configure mocks for VaadinService and DeploymentConfiguration
+        mockedVaadinService = Mockito.mock(VaadinService.class);
+        mockedDeploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
+
+        Mockito.when(mockedVaadinService.getDeploymentConfiguration()).thenReturn(mockedDeploymentConfiguration);
+        Mockito.when(mockedDeploymentConfiguration.isProductionMode()).thenReturn(false);
+
+        // Set the current VaadinService to the mocked one
+        VaadinService.setCurrent(mockedVaadinService);
+
+        // Initialize ComponentMetaData instances for testing
         metaDataSample = new ComponentMetaData(MockComponent.Sample.class);
         metaDataAnotherSample = new ComponentMetaData(AnotherMockComponent.Sample.class);
     }
+
     @Test
     public void getComponentsByTag_correctlyMapsTags() {
         Set<Class<? extends Component>> components = metaDataSample.getComponentsByTag("mock-tag");
@@ -73,5 +91,14 @@ public class MockTagTest {
     public void getComponentsByTag_returnsEmptyForUnknownTag() {
         Set<Class<? extends Component>> components = metaDataSample.getComponentsByTag("non-existent-tag");
         Assert.assertTrue("The set should be empty for a non-existent tag", components.isEmpty());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void getComponentsByTag_throwsExceptionInProductionMode() {
+        // Simulate production mode
+        Mockito.when(mockedDeploymentConfiguration.isProductionMode()).thenReturn(true);
+
+        // Attempt to retrieve tags, which should throw an exception
+        metaDataSample.getComponentsByTag("mock-tag");
     }
 }
