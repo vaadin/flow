@@ -43,9 +43,7 @@ import java.util.Set;
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.SessionExpiredException;
-import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 
 public class MockTagTest {
@@ -58,38 +56,16 @@ public class MockTagTest {
         @Tag("another-tag")
         public static class Sample extends Component {}
     }
-
     private ComponentMetaData metaDataSample;
     private ComponentMetaData metaDataAnotherSample;
-    private VaadinService mockedVaadinService;
-    private DeploymentConfiguration mockedDeploymentConfiguration;
 
     @Before
-    public void setup() throws SessionExpiredException {
-        // Create and configure mocks for VaadinService and DeploymentConfiguration
-        mockedVaadinService = Mockito.mock(VaadinService.class);
-        mockedDeploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
-
-        Mockito.when(mockedVaadinService.getDeploymentConfiguration()).thenReturn(mockedDeploymentConfiguration);
-        Mockito.when(mockedDeploymentConfiguration.isProductionMode()).thenReturn(false);
-
-        VaadinService.setCurrent(mockedVaadinService);
-
-        VaadinSession mockedSession = Mockito.mock(VaadinSession.class);
-        Mockito.when(mockedSession.getService()).thenReturn(mockedVaadinService);
-
-        // Correct usage of mockStatic in a try-with-resources statement
-        try (MockedStatic<VaadinSession> mocked = Mockito.mockStatic(VaadinSession.class)) {
-            mocked.when(VaadinSession::getCurrent).thenReturn(mockedSession);
-        }
-
-        // Initialize ComponentMetaData instances for testing
+    public void setup() {
         metaDataSample = new ComponentMetaData(MockComponent.Sample.class);
         metaDataAnotherSample = new ComponentMetaData(AnotherMockComponent.Sample.class);
     }
-
     @Test
-    public void getComponentsByTag_correctlyMapsTags() throws SessionExpiredException {
+    public void getComponentsByTag_correctlyMapsTags() {
         Set<Class<? extends Component>> components = metaDataSample.getComponentsByTag("mock-tag");
         Assert.assertTrue("The set should contain the MockComponent.Sample class",
                 components.contains(MockComponent.Sample.class));
@@ -100,14 +76,8 @@ public class MockTagTest {
     }
 
     @Test
-    public void getComponentsByTag_returnsEmptyForUnknownTag() throws SessionExpiredException {
+    public void getComponentsByTag_returnsEmptyForUnknownTag() {
         Set<Class<? extends Component>> components = metaDataSample.getComponentsByTag("non-existent-tag");
         Assert.assertTrue("The set should be empty for a non-existent tag", components.isEmpty());
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void getComponentsByTag_throwsExceptionInProductionMode() throws SessionExpiredException {
-        Mockito.when(mockedDeploymentConfiguration.isProductionMode()).thenReturn(true);
-        metaDataSample.getComponentsByTag("mock-tag");
     }
 }

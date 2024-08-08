@@ -127,11 +127,8 @@ public class ComponentMetaData {
     public ComponentMetaData(Class<? extends Component> componentClass) {
         this.componentClass = componentClass;
         synchronizedProperties = findSynchronizedProperties(componentClass);
+        mapTagToComponent(componentClass);
 
-        //To check if the current mode is Dev mode
-        if (!VaadinService.getCurrent().getDeploymentConfiguration().isProductionMode()) {
-            mapTagToComponent(componentClass);
-        }
     }
 
     private void mapTagToComponent(Class<? extends Component> componentClass) {
@@ -147,9 +144,6 @@ public class ComponentMetaData {
      * @return a set of component classes associated with the tag
      */
     public Set<Class<? extends Component>> getComponentsByTag(String tag) {
-        if (VaadinService.getCurrent().getDeploymentConfiguration().isProductionMode()) {
-            throw new UnsupportedOperationException("Tag-to-component mapping is only available in development mode.");
-        }
         return tagToComponentsMap.getOrDefault(tag, Collections.emptySet());
     }
 
