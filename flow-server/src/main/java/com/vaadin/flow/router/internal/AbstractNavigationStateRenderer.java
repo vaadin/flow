@@ -729,7 +729,7 @@ public abstract class AbstractNavigationStateRenderer
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
         newNavigationEvent.getUI().getPage().getHistory().replaceState(null,
-                newNavigationEvent.getLocation());
+                newNavigationEvent.getLocation(), true);
 
         return handler.handle(newNavigationEvent);
     }
