@@ -105,7 +105,7 @@ public class NodeTasks implements FallibleCommand {
     public NodeTasks(Options options) {
         // Lock file is created in the project root folder and not in target/ so
         // that Maven does not remove it
-        lockFile = new File(options.getNpmFolder(), ".flow-node-tasks.lock")
+        lockFile = new File(options.getNpmFolder(), ".vaadin-node-tasks.lock")
                 .toPath();
 
         ClassFinder classFinder = options.getClassFinder();
