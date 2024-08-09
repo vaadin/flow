@@ -639,4 +639,21 @@ public class HierarchyMapper<T, F> implements Serializable {
     public Collection<T> getExpandedItems() {
         return Collections.unmodifiableCollection(expandedItems.values());
     }
+
+    /**
+     * Returns true if the given item is on any currently active child list.
+     *
+     * @param item
+     *            Item to test
+     * @return {@literal true} if item is an active child, {@literal false}
+     *         otherwise.
+     */
+    public boolean hasChild(T item) {
+        for (Set<T> children : childMap.values()) {
+            if (children.contains(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
