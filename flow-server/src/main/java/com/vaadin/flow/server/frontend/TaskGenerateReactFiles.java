@@ -101,9 +101,12 @@ public class TaskGenerateReactFiles
     private static final String FLOW_TSX = "Flow.tsx";
     private static final String VAADIN_REACT_TSX = "vaadin-react.tsx";
     private static final String REACT_ADAPTER_TEMPLATE = "ReactAdapter.template";
+    private static final String REACT_OUTLET_TEMPLATE = "ReactRouterOutletElement.template";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
+    private static final String REACT_OUTLET_TSX = "ReactRouterOutletElement.tsx";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
+    static final String FLOW_REACT_OUTLET_TSX = "flow/" + REACT_OUTLET_TSX;
     private static final String ROUTES_JS_IMPORT_PATH_TOKEN = "%routesJsImportPath%";
 
     // matches setting the server-side routes from Flow.tsx:
@@ -151,6 +154,8 @@ public class TaskGenerateReactFiles
                 VAADIN_REACT_TSX);
         File reactAdapterTsx = new File(frontendGeneratedFolder,
                 FLOW_REACT_ADAPTER_TSX);
+        File reactOutletTsx = new File(frontendGeneratedFolder,
+                FLOW_REACT_OUTLET_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         File frontendGeneratedFolderRoutesTsx = new File(
                 frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
@@ -164,6 +169,9 @@ public class TaskGenerateReactFiles
                 reactAdapterContent = reactAdapterContent.replace(
                         "{{VAADIN_VERSION}}", Version.getFullVersion());
                 writeFile(reactAdapterTsx, reactAdapterContent);
+            }
+            if(fileAvailable(REACT_OUTLET_TEMPLATE)) {
+                writeFile(reactOutletTsx, getFileContent(REACT_OUTLET_TEMPLATE));
             }
 
             boolean isHillaUsed = FrontendUtils.isHillaUsed(frontendDirectory,
