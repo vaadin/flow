@@ -57,13 +57,31 @@ public class MessageDigestUtil {
      * @return 32 bytes making up the hash
      */
     public static byte[] sha256(String string, Charset charset) {
-        return getSha256().digest(string.getBytes(charset));
+        return getSha256(null).digest(string.getBytes(charset));
     }
 
-    private static MessageDigest getSha256() {
+    /**
+     * Calculates the SHA-256 hash of the given string with the given salt
+     * representation using the supplied charset.
+     *
+     * @param string
+     *            the string to hash
+     * @param salt
+     *            salt to be added into hash calculation
+     *
+     * @return 32 bytes making up the hash
+     */
+    public static byte[] sha256(String string, byte[] salt, Charset charset) {
+        return getSha256(salt).digest(string.getBytes(charset));
+    }
+
+    private static MessageDigest getSha256(byte[] salt) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             assert digest.getDigestLength() == 32;
+            if (salt != null && salt.length > 0) {
+                digest.update(salt);
+            }
             return digest;
         } catch (NoSuchAlgorithmException e) {
             throw new UnsupportedOperationException(

@@ -85,9 +85,9 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
             }
         }
         LicenseChecker.setStrictOffline(true)
-        BuildFrontendUtil.validateLicenses(adapter)
+        val licenseRequired = BuildFrontendUtil.validateLicenses(adapter)
 
-        BuildFrontendUtil.updateBuildFile(adapter)
+        BuildFrontendUtil.updateBuildFile(adapter, licenseRequired)
     }
 
 
