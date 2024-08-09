@@ -49,6 +49,7 @@ import com.vaadin.flow.server.communication.rpc.NavigationRpcHandler;
 import com.vaadin.flow.server.communication.rpc.PublishedServerEventHandlerRpcHandler;
 import com.vaadin.flow.server.communication.rpc.RpcInvocationHandler;
 import com.vaadin.flow.server.dau.DAUUtils;
+import com.vaadin.flow.server.dau.FlowDauIntegration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -187,7 +188,6 @@ public class ServerRpcHandler implements Serializable {
          * will be shared.
          *
          * @return the raw JSON object that was received from the client
-         *
          */
         public JsonObject getRawJson() {
             return json;
@@ -324,8 +324,7 @@ public class ServerRpcHandler implements Serializable {
             // Message id ok, process RPCs
             ui.getInternals().setLastProcessedClientToServerId(expectedId,
                     messageHash);
-            DAUUtils.applyEnforcement(request,
-                    shouldApplyEnforcement(rpcRequest));
+            enforceIfNeeded(request, rpcRequest);
             handleInvocations(ui, rpcRequest.getRpcInvocationsData());
         }
 
@@ -368,6 +367,13 @@ public class ServerRpcHandler implements Serializable {
             }
         }
 
+    }
+
+    private void enforceIfNeeded(VaadinRequest request, RpcRequest rpcRequest) {
+        if (DAUUtils.isDauEnabled(request.getService())) {
+            FlowDauIntegration.applyEnforcement(request,
+                    shouldApplyEnforcement(rpcRequest));
+        }
     }
 
     private Predicate<VaadinRequest> shouldApplyEnforcement(

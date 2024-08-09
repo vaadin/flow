@@ -56,7 +56,7 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
                                 .apply(new UserIdentityContext(request,
                                         vaadinSession)))
                         .orElse(null);
-                DAUUtils.trackUser(request, dauCookie.trackingHash(),
+                FlowDauIntegration.trackUser(request, dauCookie.trackingHash(),
                         userIdentity);
             }
 
@@ -64,7 +64,7 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
             // response can be null, for example for PUSH websocket requests
 
             // DAU cookie is created if not present and re-created if invalid
-            Cookie cookie = DAUUtils.generateNewCookie(request);
+            Cookie cookie = FlowDauIntegration.generateNewCookie(request);
             response.addCookie(cookie);
         }
     }

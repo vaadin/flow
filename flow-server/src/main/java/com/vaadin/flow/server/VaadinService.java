@@ -78,6 +78,7 @@ import com.vaadin.flow.server.communication.UidlRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.dau.DAUCustomizer;
+import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DAUVaadinRequestInterceptor;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -235,12 +236,7 @@ public abstract class VaadinService implements Serializable {
         ServiceInitEvent event = new ServiceInitEvent(this);
 
         VaadinRequestInterceptor dauInterceptorWrapper;
-        // TODO: force removal of dau.enable system property to check only on
-        // flow-build-info?
-        System.clearProperty("vaadin." + Constants.DAU_TOKEN);
-        if (deploymentConfiguration.isProductionMode()
-                && deploymentConfiguration
-                        .getBooleanProperty(Constants.DAU_TOKEN, false)) {
+        if (DAUUtils.isDauEnabled(this)) {
             getLogger().info("Daily Active User tracking enabled");
 
             DAUCustomizer dauCustomizer = Optional
@@ -798,7 +794,7 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * Note: Overriding this method is not recommended, for custom lock storage
      * strategy override {@link #getSessionLock(WrappedSession)} and
-     * {@link #setSessionLock(WrappedSession,Lock)} instead.
+     * {@link #setSessionLock(WrappedSession, Lock)} instead.
      *
      * @param wrappedSession
      *            The session to lock
@@ -850,7 +846,7 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * Note: Overriding this method is not recommended, for custom lock storage
      * strategy override {@link #getSessionLock(WrappedSession)} and
-     * {@link #setSessionLock(WrappedSession,Lock)} instead.
+     * {@link #setSessionLock(WrappedSession, Lock)} instead.
      *
      * @param wrappedSession
      *            The session to unlock
@@ -2362,7 +2358,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Resolves the given {@code url} resource to be useful for
-     * {@link #getResource(String)} and {@link #getResourceAsStream(String )}.
+     * {@link #getResource(String)} and {@link #getResourceAsStream(String)}.
      *
      * @param url
      *            the resource to resolve, not <code>null</code>
@@ -2394,7 +2390,6 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     *
      * Executes a {@code runnable} with a {@link VaadinService} available in the
      * {@link CurrentInstance} context.
      *

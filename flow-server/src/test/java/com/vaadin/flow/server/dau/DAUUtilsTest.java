@@ -65,11 +65,12 @@ public class DAUUtilsTest {
                     .when(() -> DauIntegration.trackUser("trackingHash", null))
                     .thenThrow(new EnforcementException("STOP"));
 
-            DAUUtils.trackUser(request, "trackingHash", null);
+            FlowDauIntegration.trackUser(request, "trackingHash", null);
             dauIntegration.verifyNoInteractions();
 
             Assert.assertThrows(DauEnforcementException.class,
-                    () -> DAUUtils.applyEnforcement(request, unused -> true));
+                    () -> FlowDauIntegration.applyEnforcement(request,
+                            unused -> true));
             dauIntegration.verify(
                     () -> DauIntegration.trackUser("trackingHash", null));
         } finally {
@@ -96,12 +97,13 @@ public class DAUUtilsTest {
                     .when(() -> DauIntegration.trackUser("trackingHash", null))
                     .thenThrow(new EnforcementException("STOP"));
 
-            DAUUtils.trackUser(request, "trackingHash", null);
+            FlowDauIntegration.trackUser(request, "trackingHash", null);
             dauIntegration.verify(
                     () -> DauIntegration.trackUser("trackingHash", null));
 
             Assert.assertThrows(DauEnforcementException.class,
-                    () -> DAUUtils.applyEnforcement(request, unused -> true));
+                    () -> FlowDauIntegration.applyEnforcement(request,
+                            unused -> true));
 
         } finally {
             VaadinSession.setCurrent(null);

@@ -6,13 +6,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.PwaRegistry;
@@ -21,8 +21,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.pro.licensechecker.dau.DauIntegration;
-import com.vaadin.pro.licensechecker.dau.EnforcementException;
 
 /**
  * A utility class for various daily active users collecting methods.
@@ -42,10 +40,28 @@ public final class DAUUtils {
     static final int DAU_COOKIE_MAX_AGE_IN_SECONDS = 24 * 3600;
 
     static final long DAU_MIN_ACTIVITY_IN_SECONDS = 60L;
+
     public static final String ENFORCEMENT_EXCEPTION_KEY = DAUUtils.class
             .getName() + ".EnforcementException";
 
     private DAUUtils() {
+    }
+
+    /**
+     * Checks if Daily Active User integration is enabled for the application.
+     *
+     * @param service
+     *            the VaadinService instance.
+     * @return {@literal true} if DAU integration is enabled, otherwise
+     *         {@literal false}.
+     */
+    public static boolean isDauEnabled(VaadinService service) {
+        // TODO: force removal of dau.enable system property to check only on
+        // flow-build-info?
+        System.clearProperty("vaadin." + Constants.DAU_TOKEN);
+        return service.getDeploymentConfiguration().isProductionMode()
+                && service.getDeploymentConfiguration()
+                        .getBooleanProperty(Constants.DAU_TOKEN, false);
     }
 
     /**
@@ -71,31 +87,6 @@ public final class DAUUtils {
     }
 
     /**
-     * Generates a new cookie for counting daily active users within 24 hour
-     * time interval.
-     * <p>
-     * </p>
-     * Cookie value is formatted as {@code  trackingHash$creationTime}, with
-     * {@code creationTime} expressed as number of milliseconds from the epoch
-     * of 1970-01-01T00:00:00Z. The cookie creation time is required on
-     * subsequent requests to detect active users. By default, the cookie
-     * expires after 24 hours.
-     *
-     * @param request
-     *            http request from browser
-     * @return http cookie to be used to count application's end-users daily
-     */
-    public static Cookie generateNewCookie(VaadinRequest request) {
-        String cookieValue = DauIntegration.newTrackingHash() + '$'
-                + Instant.now().toEpochMilli();
-        Cookie cookie = new Cookie(DAU_COOKIE_NAME, cookieValue);
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(DAU_COOKIE_MAX_AGE_IN_SECONDS);
-        cookie.setPath("/");
-        return cookie;
-    }
-
-    /**
      * Parses DAU cookie value to extract tracking information.
      * <p>
      * </p>
@@ -111,7 +102,7 @@ public final class DAUUtils {
      * @return a data structure representing the information stored in the
      *         cookie, or an empty Optional if the cookie value is malformed or
      *         contains invalid data.
-     * @see #generateNewCookie(VaadinRequest)
+     * @see FlowDauIntegration#generateNewCookie(VaadinRequest)
      */
     static Optional<DauCookie> parserCookie(Cookie cookie) {
         String cookieValue = cookie.getValue();
@@ -231,9 +222,6 @@ public final class DAUUtils {
         }
     }
 
-    private record TrackingDetails(String trackingHash, String userIdentity) {
-    }
-
     /**
      * Gets if a request should be considered for DAU tracking or not.
      * <p>
@@ -303,85 +291,4 @@ public final class DAUUtils {
         return false;
     }
 
-    /**
-     * Tracks the current user with the given optional identity.
-     * <p>
-     * </p>
-     * Tracking the user may raise an enforcement exception, that is stored and
-     * applied later by calling
-     * {@link #applyEnforcement(VaadinRequest, Predicate)} method.
-     * <p>
-     * </p>
-     * Tracking for UIDL requests is postponed until the message is parsed, to
-     * prevent UI poll events to be considered as user interaction.
-     *
-     * @param request
-     *            the Vaadin request.
-     * @param trackingHash
-     *            user tracking hash, never {@literal null}.
-     * @param userIdentity
-     *            user identity, can be {@literal null}.
-     */
-    static void trackUser(VaadinRequest request, String trackingHash,
-            String userIdentity) {
-        if (HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.UIDL)) {
-            // postpone tracking for UIDL requests to ServerRpcHandler to
-            // prevent counting and blocking poll requests, that are not
-            // consider active interaction with the application
-            request.setAttribute(TrackingDetails.class.getName(),
-                    new TrackingDetails(trackingHash, userIdentity));
-        } else {
-            try {
-                DauIntegration.trackUser(trackingHash, userIdentity);
-            } catch (EnforcementException ex) {
-                // request will be blocked in ServerRpcHandler to prevent
-                // blocking poll requests, that are not consider active
-                // interaction with the application
-                request.setAttribute(ENFORCEMENT_EXCEPTION_KEY, ex);
-            }
-        }
-    }
-
-    /**
-     * Potentially applies enforcement to the current request if DAU limit is
-     * exceeded.
-     * <p>
-     * </p>
-     * If enforcement has to be applied an {@link EnforcementException} is
-     * thrown.
-     *
-     * @param request
-     *            the Vaadin request
-     * @param enforceableRequest
-     *            predicate to check if the request can be blocked or not.
-     * @throws DauEnforcementException
-     *             if request must be blocked because of DAU limit exceeded.
-     */
-    public static void applyEnforcement(VaadinRequest request,
-            Predicate<VaadinRequest> enforceableRequest) {
-        TrackingDetails trackingDetails = (TrackingDetails) request
-                .getAttribute(TrackingDetails.class.getName());
-        EnforcementException enforcementException = (EnforcementException) request
-                .getAttribute(ENFORCEMENT_EXCEPTION_KEY);
-        try {
-            if ((enforcementException != null || trackingDetails != null)
-                    && enforceableRequest.test(request)) {
-                if (trackingDetails != null) {
-                    try {
-                        DauIntegration.trackUser(trackingDetails.trackingHash(),
-                                trackingDetails.userIdentity());
-                    } catch (EnforcementException ex) {
-                        enforcementException = ex;
-                    }
-                }
-                if (enforcementException != null) {
-                    throw new DauEnforcementException(enforcementException);
-                }
-            }
-        } finally {
-            request.removeAttribute(ENFORCEMENT_EXCEPTION_KEY);
-            request.removeAttribute(TrackingDetails.class.getName());
-        }
-    }
 }
