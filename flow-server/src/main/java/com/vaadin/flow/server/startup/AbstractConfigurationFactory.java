@@ -24,16 +24,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.apache.commons.io.FileUtils;
+
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+
 import elemental.json.JsonObject;
-import org.apache.commons.io.FileUtils;
 
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.DAU_TOKEN;
 import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE_TOKEN;
@@ -173,6 +176,10 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.hasKey(APPLICATION_IDENTIFIER)) {
             params.put(APPLICATION_IDENTIFIER,
                     buildInfo.getString(APPLICATION_IDENTIFIER));
+        }
+        if (buildInfo.hasKey(DAU_TOKEN)) {
+            params.put(DAU_TOKEN,
+                    String.valueOf(buildInfo.getBoolean(DAU_TOKEN)));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);
