@@ -155,9 +155,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             }
         }
         LicenseChecker.setStrictOffline(true);
-        BuildFrontendUtil.validateLicenses(this);
+        boolean licenseRequired = BuildFrontendUtil.validateLicenses(this);
 
-        BuildFrontendUtil.updateBuildFile(this);
+        BuildFrontendUtil.updateBuildFile(this, licenseRequired);
 
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("Build frontend completed in " + ms + " ms.");
