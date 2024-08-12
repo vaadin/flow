@@ -648,7 +648,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return {@literal true} if item is an active child, {@literal false}
      *         otherwise.
      */
-    public boolean hasChild(T item) {
+    boolean hasCurrentlyActiveChild(T item) {
         for (Set<T> children : childMap.values()) {
             if (children.contains(item)) {
                 return true;

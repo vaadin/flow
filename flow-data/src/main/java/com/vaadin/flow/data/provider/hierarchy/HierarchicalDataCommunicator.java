@@ -573,7 +573,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 if (item != null) {
                     // If item has an active child list, do not remove it from
                     // keyMapper
-                    if (!mapper.hasChild(item)) {
+                    if (!mapper.hasCurrentlyActiveChild(item)) {
                         dataGenerator.destroyData(item);
                         getKeyMapper().remove(item);
                     }
