@@ -18,6 +18,7 @@ package com.vaadin.flow.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,6 +31,16 @@ import com.vaadin.flow.di.ResourceProvider;
  * @since
  */
 class ResourceProviderImpl implements ResourceProvider {
+
+    private ClassLoader classLoader;
+
+    ResourceProviderImpl() {
+        this(ResourceProviderImpl.class.getClassLoader());
+    }
+
+    ResourceProviderImpl(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 
     @Override
     public URL getApplicationResource(String path) {
