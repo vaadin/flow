@@ -37,7 +37,7 @@ import kotlin.contracts.contract
 /**
  * Finds the value of a boolean property. It searches in gradle and system properties.
  *
- * If the property is defined in both gradle and system properties, then the gradle property is taken.
+ * If the property is defined in both gradle and system properties, then the system property is taken.
  *
  * @param propertyName the property name
  *
@@ -56,6 +56,29 @@ public fun Project.getBooleanProperty(propertyName: String) : Boolean? {
         val valueBoolean: Boolean = value.isBlank() || value.toBoolean()
         logger.info("Set $propertyName to $valueBoolean because of Gradle project property $propertyName='$value'")
         return valueBoolean
+    }
+    return null
+}
+
+/**
+ * Finds the value of a string property. It searches in gradle and system properties.
+ *
+ * If the property is defined in both gradle and system properties, then the system property is taken.
+ *
+ * @param propertyName the property name
+ *
+ * @return the value of the property or `null` if the property is not present.
+ */
+public fun Project.getStringProperty(propertyName: String) : String? {
+    if (System.getProperty(propertyName) != null) {
+        val value: String = System.getProperty(propertyName)
+        logger.info("Set $propertyName to $value because of System property $propertyName='$value'")
+        return value
+    }
+    if (project.hasProperty(propertyName)) {
+        val value: String = project.property(propertyName) as String
+        logger.info("Set $propertyName to $value because of Gradle project property $propertyName='$value'")
+        return value
     }
     return null
 }

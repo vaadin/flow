@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -55,7 +56,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -124,6 +124,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     class UpdateImports extends AbstractUpdateImports {
 
         private Map<File, List<String>> output;
+        private List<String> webComponentImports;
 
         UpdateImports(FrontendDependenciesScanner scanner, Options options) {
             super(options, scanner);
@@ -132,6 +133,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         @Override
         protected void writeOutput(Map<File, List<String>> output) {
             this.output = output;
+        }
+
+        @Override
+        List<String> filterWebComponentImports(List<String> lines) {
+            webComponentImports = super.filterWebComponentImports(lines);
+            return webComponentImports;
         }
 
         public Map<File, List<String>> getOutput() {
@@ -398,11 +405,77 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         updater.run();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
+                "@vaadin/vaadin-lumo-styles/color-global.js",
                 "@vaadin/vaadin-lumo-styles/typography.js",
+                "@vaadin/vaadin-lumo-styles/typography-global.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
                 "@vaadin/vaadin-lumo-styles/spacing.js",
                 "@vaadin/vaadin-lumo-styles/style.js",
                 "@vaadin/vaadin-lumo-styles/icons.js");
+    }
+
+    @Test
+    public void generate_embeddedImports_doNotContainLumoGlobalThemeFiles()
+            throws IOException {
+        updater.run();
+
+        List<String> flowImports = new ArrayList<>(
+                updater.getOutput().get(updater.generatedFlowImports));
+
+        Predicate<String> lumoGlobalsMatcher = Pattern
+                .compile("@vaadin/vaadin-lumo-styles/.*-global.js")
+                .asPredicate();
+        assertTrue(flowImports.stream().anyMatch(lumoGlobalsMatcher));
+
+        assertTrue(
+                "Import for web-components should not contain lumo global imports",
+                updater.webComponentImports.stream()
+                        .noneMatch(lumoGlobalsMatcher));
+
+        // Check that imports other than lumo globals are the same
+        flowImports.removeAll(updater.webComponentImports);
+        assertTrue(
+                "Flow and web-component imports must be the same, except for lumo globals",
+                flowImports.stream().allMatch(lumoGlobalsMatcher));
+
+    }
+
+    @Test
+    public void generate_embeddedImports_addAlsoGlobalStyles()
+            throws IOException {
+        Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
+                UI.class, AllEagerAppConf.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        Pattern injectGlobalCssPattern = Pattern
+                .compile("^\\s*injectGlobalCss\\(([^,]+),.*");
+        Predicate<String> globalCssImporter = injectGlobalCssPattern
+                .asPredicate();
+
+        List<String> globalCss = updater.getOutput()
+                .get(updater.generatedFlowImports).stream()
+                .filter(globalCssImporter).map(line -> {
+                    Matcher matcher = injectGlobalCssPattern.matcher(line);
+                    matcher.find();
+                    return matcher.group(1);
+                }).collect(Collectors.toList());
+
+        assertTrue("Import for web-components should also inject global CSS",
+                updater.webComponentImports.stream()
+                        .anyMatch(globalCssImporter));
+
+        assertTrue(
+                "Should contain function to import global CSS into embedded component",
+                updater.webComponentImports.stream().anyMatch(line -> line
+                        .contains("import { injectGlobalWebcomponentCss }")));
+        globalCss.forEach(css -> assertTrue(
+                "Should register global CSS " + css + " for webcomponent",
+                updater.webComponentImports.stream()
+                        .anyMatch(line -> line.contains(
+                                "injectGlobalWebcomponentCss(" + css + ");"))));
+
     }
 
     @Test

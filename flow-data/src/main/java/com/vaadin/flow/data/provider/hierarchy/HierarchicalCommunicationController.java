@@ -79,6 +79,8 @@ public class HierarchicalCommunicationController<T> implements Serializable {
     // Update ids that have been confirmed since the last flush
     private final HashSet<Integer> confirmedUpdates = new HashSet<>();
 
+    private boolean hasUniqueKeyProviderSupplier;
+
     /**
      * Constructs communication controller with support for hierarchical data
      * structure.
@@ -319,7 +321,8 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         if (passivated != null) {
             passivated.forEach(key -> {
                 T item = keyMapper.get(key);
-                if (item != null) {
+                if (item != null && (hasUniqueKeyProviderSupplier
+                        || !mapper.isExpanded(item))) {
                     dataGenerator.destroyData(item);
                     keyMapper.remove(item);
                 }
@@ -339,6 +342,11 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         json.put("key", keyMapper.key(item));
         dataGenerator.generateData(item, json);
         return json;
+    }
+
+    public void setHasUniqueKeyProviderSupplier(
+            boolean hasUniqueKeyProviderSupplier) {
+        this.hasUniqueKeyProviderSupplier = hasUniqueKeyProviderSupplier;
     }
 
     private static final void withMissing(Range expected, Range actual,

@@ -22,6 +22,7 @@ import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public final class BeanUtil implements Serializable {
     }
 
     /**
-     * Returns the property descriptors of a class or an interface.
+     * Returns the property descriptors of a class, a record, or an interface.
      *
      * For an interface, superinterfaces are also iterated as Introspector does
      * not take them into account (Oracle Java bug 4275879), but in that case,
@@ -66,6 +67,17 @@ public final class BeanUtil implements Serializable {
      */
     public static List<PropertyDescriptor> getBeanPropertyDescriptors(
             final Class<?> beanType) throws IntrospectionException {
+
+        if (beanType.isRecord()) {
+            List<PropertyDescriptor> propertyDescriptors = new ArrayList<>();
+
+            for (RecordComponent component : beanType.getRecordComponents()) {
+                propertyDescriptors.add(new PropertyDescriptor(
+                        component.getName(), component.getAccessor(), null));
+            }
+
+            return propertyDescriptors;
+        }
         // Oracle bug 4275879: Introspector does not consider superinterfaces of
         // an interface
         if (beanType.isInterface()) {

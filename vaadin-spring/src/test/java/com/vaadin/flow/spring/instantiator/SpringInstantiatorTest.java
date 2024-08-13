@@ -18,6 +18,7 @@ package com.vaadin.flow.spring.instantiator;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +38,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -56,7 +58,6 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
 import com.vaadin.flow.spring.SpringServlet;
-import org.springframework.context.event.EventListener;
 
 @RunWith(SpringRunner.class)
 @Import(SpringInstantiatorTest.TestConfiguration.class)
@@ -65,6 +66,7 @@ public class SpringInstantiatorTest {
     @Autowired
     private ApplicationContext context;
 
+    // NOTE: some test expect configuration to have proxyBeanMethods = true
     @Configuration
     @ComponentScan
     public static class TestConfiguration {
@@ -321,4 +323,39 @@ public class SpringInstantiatorTest {
 
         Assert.assertEquals("string", bean);
     }
+
+    @Test
+    public void getApplicationClass_regularClass_getsSameClass()
+            throws ServletException {
+        Instantiator instantiator = getInstantiator(context);
+        RouteTarget1 instance = instantiator.getOrCreate(RouteTarget1.class);
+        Assert.assertSame(RouteTarget1.class,
+                instantiator.getApplicationClass(instance));
+        Assert.assertSame(RouteTarget1.class,
+                instantiator.getApplicationClass(instance.getClass()));
+    }
+
+    @Test
+    public void getApplicationClass_scopedBean_getsApplicationClass()
+            throws ServletException {
+        Instantiator instantiator = getInstantiator(context);
+        RouteTarget2 instance = context.getBean(RouteTarget2.class);
+        Assert.assertSame(RouteTarget2.class,
+                instantiator.getApplicationClass(instance));
+        Assert.assertSame(RouteTarget2.class,
+                instantiator.getApplicationClass(instance.getClass()));
+    }
+
+    @Test
+    public void getApplicationClass_proxiedBean_getsApplicationClass()
+            throws ServletException {
+        Instantiator instantiator = getInstantiator(context);
+        TestConfiguration instance = context.getBean(TestConfiguration.class);
+        Assert.assertNotSame(TestConfiguration.class, instance.getClass());
+        Assert.assertSame(TestConfiguration.class,
+                instantiator.getApplicationClass(instance));
+        Assert.assertSame(TestConfiguration.class,
+                instantiator.getApplicationClass(instance.getClass()));
+    }
+
 }

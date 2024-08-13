@@ -6,6 +6,7 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -13,6 +14,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 @Route(value = "", layout = MainView.class)
 @PageTitle("Public View")
 @AnonymousAllowed
+@Menu(order = 1)
 public class PublicView extends FlexLayout {
 
     public static final String BACKGROUND_NAVIGATION_ID = "backgroundNavi";

@@ -147,6 +147,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@babel/preset-react");
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
+        expectedDependencies.add("@preact/signals-react-transform");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -213,7 +214,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("10.3.10", packageJson
+        Assert.assertEquals("11.0.0", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
@@ -471,12 +472,15 @@ public class NodeUpdaterTest {
             throws IOException, ClassNotFoundException {
         File coreVersionsFile = File.createTempFile("vaadin-core-versions",
                 ".json", temporaryFolder.newFolder());
+        File vaadinVersionsFile = File.createTempFile("vaadin-versions",
+                ".json", temporaryFolder.newFolder());
         JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
 
         JsonObject reactComponents = Json.createObject();
         JsonObject reactData = Json.createObject();
         reactData.put("jsVersion", "24.4.0-alpha13");
         reactData.put("npmName", "@vaadin/react-components");
+        reactData.put("mode", "react");
 
         reactComponents.put("react-components", reactData);
 
@@ -487,12 +491,26 @@ public class NodeUpdaterTest {
                 mockedVaadinCoreJson.getObject("core").hasKey("button"));
         Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
 
+        JsonObject mockedVaadinJson = getMockVaadinVersionsJson();
+
+        reactComponents = Json.createObject();
+        reactData = Json.createObject();
+        reactData.put("jsVersion", "24.4.0-alpha13");
+        reactData.put("npmName", "@vaadin/react-components-pro");
+        reactData.put("mode", "react");
+
+        reactComponents.put("react-components-pro", reactData);
+
+        mockedVaadinJson.put("react", reactComponents);
+
         FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
+                StandardCharsets.UTF_8);
+        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toJson(),
                 StandardCharsets.UTF_8);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(coreVersionsFile.toURI().toURL());
         Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
+                .thenReturn(vaadinVersionsFile.toURI().toURL());
         Class clazz = FeatureFlags.class; // actual class doesn't matter
         Mockito.doReturn(clazz).when(finder).loadClass(
                 "com.vaadin.flow.component.react.ReactAdapterComponent");
@@ -501,6 +519,8 @@ public class NodeUpdaterTest {
 
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/react-components"));
+        Assert.assertTrue(
+                pinnedVersions.hasKey("@vaadin/react-components-pro"));
     }
 
     @Test

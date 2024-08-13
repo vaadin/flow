@@ -157,7 +157,9 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
      * Lumo component theme class implementation.
      */
     @JsModule("@vaadin/vaadin-lumo-styles/color.js")
+    @JsModule("@vaadin/vaadin-lumo-styles/color-global.js")
     @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
+    @JsModule("@vaadin/vaadin-lumo-styles/typography-global.js")
     @JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
     @JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
     @JsModule("@vaadin/vaadin-lumo-styles/style.js")

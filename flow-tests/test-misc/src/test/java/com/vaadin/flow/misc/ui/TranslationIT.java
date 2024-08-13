@@ -55,5 +55,20 @@ public class TranslationIT extends ChromeBrowserTest {
                 $(SpanElement.class).id("french").getText());
         Assert.assertEquals("日本語",
                 $(SpanElement.class).id("japanese").getText());
+
+        Assert.assertEquals("Default",
+                $(SpanElement.class).id("static-method").getText());
+    }
+
+    @Test
+    public void translationFilesExist_defaultI18NInstantiated_updateFromExternalThreadWorks() {
+        open();
+
+        waitUntilNot(driver -> $(SpanElement.class).id("dynamic").getText()
+                .equals("waiting"));
+
+        Assert.assertEquals(
+                "Dynamic update from thread should have used correct bundle.",
+                "français", $(SpanElement.class).id("dynamic").getText());
     }
 }

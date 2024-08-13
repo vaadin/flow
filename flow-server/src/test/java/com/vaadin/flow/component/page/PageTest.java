@@ -32,15 +32,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonUtils;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
-
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
@@ -86,85 +83,6 @@ public class PageTest {
 
     public void addNullAsAListener_trows() {
         page.addBrowserWindowResizeListener(null);
-    }
-
-    @Test
-    public void addListener_executeInitJs() {
-        page.addBrowserWindowResizeListener(listener);
-
-        MatcherAssert.assertThat(page.expression,
-                CoreMatchers.allOf(CoreMatchers.containsString("init"),
-                        CoreMatchers.containsString("resize")));
-
-        Assert.assertTrue(page.firstParam instanceof Component);
-    }
-
-    @Test
-    public void addTwoListeners_jsIsExecutedOnce() {
-        page.addBrowserWindowResizeListener(listener);
-        page.addBrowserWindowResizeListener(event -> {
-        });
-
-        Assert.assertEquals(1, page.count);
-    }
-
-    @Test
-    public void addTwoListeners_unregisterOneListener_jsListenerIsNotRemoved() {
-        page.addBrowserWindowResizeListener(listener);
-        Registration registration = page
-                .addBrowserWindowResizeListener(event -> {
-                });
-
-        registration.remove();
-
-        Assert.assertEquals(1, page.count);
-
-        // remove the same listener one more time
-        registration.remove();
-
-        Assert.assertEquals(1, page.count);
-    }
-
-    @Test
-    public void addTwoListeners_unregisterTwoListeners_jsListenerIsRemoved() {
-        Registration registration1 = page
-                .addBrowserWindowResizeListener(listener);
-        Registration registration2 = page
-                .addBrowserWindowResizeListener(event -> {
-                });
-
-        registration1.remove();
-        registration2.remove();
-
-        Assert.assertEquals(2, page.count);
-
-        Assert.assertEquals("$0.resizeRemove()", page.expression);
-
-        Assert.assertTrue(page.firstParam instanceof Component);
-    }
-
-    @Test
-    public void addListener_unregisterListener_addListener_jsListenerIsRemovedAndInitialized() {
-        Registration registration = page
-                .addBrowserWindowResizeListener(listener);
-
-        registration.remove();
-        // remove several times
-        registration.remove();
-
-        Assert.assertEquals(2, page.count);
-
-        Assert.assertEquals("$0.resizeRemove()", page.expression);
-
-        page.addBrowserWindowResizeListener(listener);
-
-        Assert.assertEquals(3, page.count);
-
-        MatcherAssert.assertThat(page.expression,
-                CoreMatchers.allOf(CoreMatchers.containsString("init"),
-                        CoreMatchers.containsString("resize")));
-
-        Assert.assertTrue(page.firstParam instanceof Component);
     }
 
     @Test

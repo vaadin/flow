@@ -73,7 +73,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             "       </systemProperties>\n" +
             "   </configuration>\n" +
             "```\n\n" +
-            "Read more [about Vaadin development mode](https://vaadin.com/docs/next/configuration/development-mode/#pre-compiled-front-end-bundle-for-faster-start-up).";
+            "Read more [about Vaadin development mode](https://vaadin.com/docs/next/flow/configuration/development-mode#precompiled-bundle).";
     //@formatter:on
 
     private final String README_NOT_CREATED;

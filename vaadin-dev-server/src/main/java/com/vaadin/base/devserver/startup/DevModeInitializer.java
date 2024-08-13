@@ -225,7 +225,7 @@ public class DevModeInitializer implements Serializable {
         // config,
         // see https://github.com/vaadin/flow/issues/9082
         File target = new File(baseDir, config.getBuildFolder());
-        options.withWebpack(
+        options.withBuildResultFolders(
                 Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES)
                         .toFile(),
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
@@ -469,7 +469,7 @@ public class DevModeInitializer implements Serializable {
             String vfsJarPath = url.toString();
             String fileNamePrefix = vfsJarPath.substring(
                     vfsJarPath.lastIndexOf(
-                            FrontendUtils.isWindows() ? '\\' : '/') + 1,
+                            vfsJarPath.contains("\\") ? '\\' : '/') + 1,
                     vfsJarPath.lastIndexOf(".jar"));
             Path tempJar = Files.createTempFile(fileNamePrefix, ".jar");
 

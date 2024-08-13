@@ -28,7 +28,7 @@ import java.io.Serializable;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "3.0.4.slf4jvaadin1";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "3.0.5.slf4jvaadin1";
 
     /**
      * The prefix used for System property parameters.
@@ -45,6 +45,7 @@ public final class Constants implements Serializable {
     public static final String PROJECT_FRONTEND_GENERATED_DIR_TOKEN = "project.frontend.generated";
     public static final String EXTERNAL_STATS_FILE_TOKEN = "externalStatsFile";
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
+    public static final String DAU_TOKEN = "dau.enable";
 
     public static final String POLYFILLS_DEFAULT_VALUE = "";
 
@@ -255,6 +256,30 @@ public final class Constants implements Serializable {
      * UsageEntry name for UsageStatistics Hybrid.
      */
     public static final String STATISTIC_ROUTING_HYBRID = "routing/hybrid";
+
+    /**
+     * UsageEntry name for Flow routes definitions. Marked used, if
+     * RouteRegistry is not empty.
+     */
+    public static final String STATISTIC_HAS_FLOW_ROUTE = "has-flow-route";
+
+    /**
+     * UsageEntry name for exported web components. Marked used, if either
+     * WebComponentExporter or WebComponentExporterFactory is found in a project
+     */
+    public static final String STATISTIC_HAS_EXPORTED_WC = "has-exported-wc";
+
+    /**
+     * UsageEntry for rendering a Flow route. Marked as used, if a user
+     * navigates to a Flow route and navigation doesn't end up with an error.
+     */
+    public static final String STATISTICS_FLOW_ROUTER = "flow-router";
+
+    /**
+     * UsageEntry for rendering an exported web component. Marked as used, if an
+     * exported web component is instantiated on the server.
+     */
+    public static final String STATISTICS_EXPORTED_WC = "exported-wc";
 
     /**
      * The name of platform core components and tools versions file.

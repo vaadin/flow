@@ -15,26 +15,6 @@
  */
 package com.vaadin.flow.i18n;
 
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.ApplicationConstants;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -48,6 +28,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 @NotThreadSafe
 public class TranslationFileRequestHandlerTest {
@@ -234,13 +234,15 @@ public class TranslationFileRequestHandlerTest {
             String defaultLocaleLanguageTag, String requestedLanguageTag,
             String expectedResponseContent, String expectedResponseLanguageTag)
             throws IOException {
-        try (MockedStatic<Locale> locale = Mockito.mockStatic(Locale.class,
-                Mockito.CALLS_REAL_METHODS)) {
+        Locale originalDefaultLocale = Locale.getDefault();
+        try {
             Locale defaultLocale = Locale
                     .forLanguageTag(defaultLocaleLanguageTag);
-            locale.when(Locale::getDefault).thenReturn(defaultLocale);
+            Locale.setDefault(defaultLocale);
             testResponseContent(requestedLanguageTag, expectedResponseContent,
                     expectedResponseLanguageTag);
+        } finally {
+            Locale.setDefault(originalDefaultLocale);
         }
     }
 
@@ -249,12 +251,8 @@ public class TranslationFileRequestHandlerTest {
             throws IOException {
         setRequestParams(requestedLanguageTag,
                 HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier());
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            Assert.assertTrue("The request was not handled by the handler.",
-                    handler.handleRequest(session, request, response));
-        }
+        Assert.assertTrue("The request was not handled by the handler.",
+                handler.handleRequest(session, request, response));
         Assert.assertEquals(
                 "The expected response content does not match the actual response content.",
                 expectedResponseContent, getResponseContent());
@@ -313,11 +311,7 @@ public class TranslationFileRequestHandlerTest {
         createTranslationFiles(withRootBundle);
         mockI18nProvider(i18NProviderClass);
         mockService(isProductionMode);
-        try (MockedStatic<I18NUtil> util = Mockito.mockStatic(I18NUtil.class,
-                Mockito.CALLS_REAL_METHODS)) {
-            util.when(I18NUtil::getClassLoader).thenReturn(urlClassLoader);
-            handler = new TranslationFileRequestHandler(i18NProvider);
-        }
+        handler = new TranslationFileRequestHandler(i18NProvider);
         mockResponse();
     }
 
@@ -332,10 +326,15 @@ public class TranslationFileRequestHandlerTest {
 
     private void mockI18nProvider(
             Class<? extends I18NProvider> i18NProviderClass) {
-        i18NProvider = Mockito.mock(i18NProviderClass,
-                Mockito.CALLS_REAL_METHODS);
-        Mockito.when(i18NProvider.getProvidedLocales())
-                .thenReturn(providedLocales);
+        if (i18NProviderClass.equals(DefaultI18NProvider.class)) {
+            i18NProvider = Mockito.spy(
+                    new DefaultI18NProvider(providedLocales, urlClassLoader));
+        } else {
+            i18NProvider = Mockito.mock(i18NProviderClass,
+                    Mockito.CALLS_REAL_METHODS);
+            Mockito.when(i18NProvider.getProvidedLocales())
+                    .thenReturn(providedLocales);
+        }
     }
 
     private void mockResponse() throws IOException {
@@ -366,7 +365,8 @@ public class TranslationFileRequestHandlerTest {
     private static class CustomizedDefaultI18NProvider
             extends DefaultI18NProvider {
         public CustomizedDefaultI18NProvider(List<Locale> providedLocales) {
-            super(providedLocales);
+            super(providedLocales,
+                    TranslationFileRequestHandlerTest.class.getClassLoader());
         }
     }
 }

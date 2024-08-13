@@ -6,18 +6,27 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -26,6 +35,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -42,8 +52,12 @@ import com.vaadin.pro.licensechecker.Product;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+
 public class BuildFrontendUtilTest {
 
+    @Rule
+    public TemporaryFolder tmpDir = new TemporaryFolder();
     private File baseDir;
 
     private PluginAdapterBuild adapter;
@@ -51,11 +65,10 @@ public class BuildFrontendUtilTest {
     private Lookup lookup;
 
     private File statsJson;
+    private File resourceOutput;
 
     @Before
-    public void setup() throws IOException {
-        TemporaryFolder tmpDir = new TemporaryFolder();
-        tmpDir.create();
+    public void setup() throws Exception {
         baseDir = tmpDir.newFolder();
 
         adapter = Mockito.mock(PluginAdapterBuild.class);
@@ -64,7 +77,10 @@ public class BuildFrontendUtilTest {
                 .thenReturn(new File(baseDir, "src/main/frontend/generated"));
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
+        Mockito.when(adapter.applicationIdentifier()).thenReturn("TEST_APP_ID");
         ClassFinder classFinder = Mockito.mock(ClassFinder.class);
+        Mockito.when(classFinder.loadClass(ArgumentMatchers.anyString())).then(
+                i -> getClass().getClassLoader().loadClass(i.getArgument(0)));
         lookup = Mockito.spy(new LookupImpl(classFinder));
         Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
         Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
@@ -75,7 +91,7 @@ public class BuildFrontendUtilTest {
         File viteExecutableMock = new File(viteBin, "vite.js");
         Assert.assertTrue(viteExecutableMock.createNewFile());
 
-        File resourceOutput = new File(baseDir, "resOut");
+        resourceOutput = new File(baseDir, "resOut");
         Mockito.when(adapter.servletResourceOutputDirectory())
                 .thenReturn(resourceOutput);
         statsJson = new File(new File(resourceOutput, "config"), "stats.json");
@@ -195,6 +211,258 @@ public class BuildFrontendUtilTest {
         Assert.assertEquals(1, components.size());
         Assert.assertEquals("comm-comp", components.get(0).getName());
         Assert.assertEquals("4.6.5", components.get(0).getVersion());
+    }
+
+    @Test
+    public void propagateBuildInfo_tokenFileNotExisting_createTokenFile()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+    }
+
+    @Test
+    public void propagateBuildInfo_existingTokenFileWithDifferentContent_overwritesTokenFile()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+        long lastModified = tokenFile.lastModified();
+
+        Thread.sleep(100);
+        Mockito.when(adapter.nodeVersion()).thenReturn("v1.0.0");
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        Assert.assertNotEquals("Expected token file to be updated, but was not",
+                lastModified, tokenFile.lastModified());
+    }
+
+    @Test
+    public void propagateBuildInfo_existingTokenFileWithSameContent_doesNotWriteTokenFile()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+        long lastModified = tokenFile.lastModified();
+
+        Thread.sleep(100);
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+        Assert.assertEquals(
+                "Expected token file not to be updated, but it has been written",
+                lastModified, tokenFile.lastModified());
+    }
+
+    @Test
+    public void prepareFrontend_shouldCleanUnusedGeneratedFiles()
+            throws Exception {
+        fillAdapter();
+        File frontendGeneratedFolder = new File(
+                new File(tmpDir.getRoot(), "frontend"), "generated");
+        Mockito.when(adapter.generatedTsFolder())
+                .thenReturn(frontendGeneratedFolder);
+
+        // First run to create generated files
+        BuildFrontendUtil.prepareFrontend(adapter);
+
+        Set<Path> expectedGeneratedFiles = Files
+                .walk(frontendGeneratedFolder.toPath())
+                .filter(Files::isRegularFile).collect(Collectors.toSet());
+
+        // Adding additional files that should be removed
+        Set<Path> additionalFiles = new HashSet<>();
+        additionalFiles
+                .add(frontendGeneratedFolder.toPath().resolve("test.js"));
+        additionalFiles.add(frontendGeneratedFolder.toPath()
+                .resolve(Paths.get("sub", "other.js")));
+        for (Path additional : additionalFiles) {
+            Files.createDirectories(additional.getParent());
+            Files.writeString(additional, "");
+        }
+
+        // Run again to verify useless files have been removed
+        BuildFrontendUtil.prepareFrontend(adapter);
+        Set<Path> generatedFiles = Files.walk(frontendGeneratedFolder.toPath())
+                .filter(Files::isRegularFile).collect(Collectors.toSet());
+
+        Assert.assertTrue(
+                "Files not generated by prepare frontend should not be present",
+                generatedFiles.stream().noneMatch(additionalFiles::contains));
+        Assert.assertEquals("Expecting same generated files to be present",
+                expectedGeneratedFiles, generatedFiles);
+
+    }
+
+    @Test
+    public void updateBuildFile_tokenFileNotExisting_doNothing()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.updateBuildFile(adapter, false);
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertFalse("Token file should not have been created",
+                tokenFile.exists());
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_developmentEntriesRemoved()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+        JsonObject buildInfoJsonDev = Json
+                .parse(Files.readString(tokenFile.toPath()));
+
+        BuildFrontendUtil.updateBuildFile(adapter, false);
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+
+        Set<String> removedKeys = Arrays.stream(buildInfoJsonDev.keys())
+                .filter(key -> !buildInfoJsonProd.hasKey(key))
+                .collect(Collectors.toSet());
+        Assert.assertFalse(
+                "Development entries have not been removed from token file",
+                removedKeys.isEmpty());
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_applicationIdentifierAdded()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+
+        BuildFrontendUtil.updateBuildFile(adapter, false);
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+        Assert.assertEquals("Wrong application identifier in token file",
+                "TEST_APP_ID", buildInfoJsonProd
+                        .getString(InitParameters.APPLICATION_IDENTIFIER));
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_licenseRequiredAndSubscriptionKey_dauFlagAdded()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+
+        String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
+        System.setProperty("vaadin.subscriptionKey", "sub-123");
+        try {
+            BuildFrontendUtil.updateBuildFile(adapter, true);
+        } finally {
+            if (subscriptionKey != null) {
+                System.setProperty("vaadin.subscriptionKey", subscriptionKey);
+            } else {
+                System.clearProperty("vaadin.subscriptionKey");
+            }
+        }
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+        Assert.assertTrue("DAU flag should be active in token file",
+                buildInfoJsonProd.getBoolean(Constants.DAU_TOKEN));
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_licenseNotRequiredAndSubscriptionKey_dauFlagNotAdded()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+
+        String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
+        System.setProperty("vaadin.subscriptionKey", "sub-123");
+        try {
+            BuildFrontendUtil.updateBuildFile(adapter, false);
+        } finally {
+            if (subscriptionKey != null) {
+                System.setProperty("vaadin.subscriptionKey", subscriptionKey);
+            } else {
+                System.clearProperty("vaadin.subscriptionKey");
+            }
+        }
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+        Assert.assertFalse("DAU flag should not be present in token file",
+                buildInfoJsonProd.hasKey(Constants.DAU_TOKEN));
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_licenseRequiredNoSubscriptionKey_dauFlagNotAdded()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+
+        String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
+        System.clearProperty("vaadin.subscriptionKey");
+        try {
+            BuildFrontendUtil.updateBuildFile(adapter, true);
+        } finally {
+            if (subscriptionKey != null) {
+                System.setProperty("vaadin.subscriptionKey", subscriptionKey);
+            } else {
+                System.clearProperty("vaadin.subscriptionKey");
+            }
+        }
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+        Assert.assertFalse("DAU flag should not be present in token file",
+                buildInfoJsonProd.hasKey(Constants.DAU_TOKEN));
+    }
+
+    private void fillAdapter() throws URISyntaxException {
+        Mockito.when(adapter.nodeDownloadRoot())
+                .thenReturn(URI.create("http://something/node/"));
+        Mockito.when(adapter.nodeVersion()).thenReturn("v0.0.0");
+        Mockito.when(adapter.frontendDirectory())
+                .thenReturn(new File(tmpDir.getRoot(), "frontend"));
+        Mockito.when(adapter.javaSourceFolder())
+                .thenReturn(new File(tmpDir.getRoot(), "src/main/java"));
+        Mockito.when(adapter.javaResourceFolder())
+                .thenReturn(new File(tmpDir.getRoot(), "src/main/resources"));
+        Mockito.when(adapter.applicationProperties()).thenReturn(new File(
+                tmpDir.getRoot(), "src/main/resources/application.properties"));
+        Mockito.when(adapter.openApiJsonFile()).thenReturn(new File(
+                tmpDir.getRoot(), "target/generated-resources/openapi.json"));
+        Mockito.when(adapter.buildFolder()).thenReturn("target");
     }
 
     private void writePackageJson(File nodeModulesFolder, String name,

@@ -17,7 +17,10 @@ package com.vaadin.flow.misc.ui;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.i18n.I18NProvider;
@@ -29,6 +32,8 @@ public class TranslationView extends Div {
 
     public static final String TEST_VIEW_ID = "TranslationView";
     public static final String LOCALES_ID = "available-locales";
+
+    private Span dynamic;
 
     public TranslationView() {
         setId(TEST_VIEW_ID);
@@ -61,7 +66,34 @@ public class TranslationView extends Div {
             localeSpan.setId(LOCALES_ID);
             add(localeSpan, new Div());
         }
+        dynamic = new Span("waiting");
+        dynamic.setId("dynamic");
+
+        Span staticMethod = new Span(
+                I18NProvider.translate(Locale.ENGLISH, "label"));
+        staticMethod.setId("static-method");
+
         add(defaultLang, new Div(), german, new Div(), germany, new Div(),
-                finnish, new Div(), french, new Div(), japanese);
+                finnish, new Div(), french, new Div(), japanese, new Div(),
+                dynamic, new Div(), staticMethod);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent event) {
+        UI ui = event.getUI();
+        ui.setPollInterval(100);
+        CompletableFuture.runAsync(() -> {
+            try {
+                Thread.sleep(50);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                ui.access(() -> {
+                    dynamic.setText(getTranslation("label", Locale.FRANCE));
+                    ui.setPollInterval(-1);
+                });
+            }
+        });
+
     }
 }

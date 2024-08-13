@@ -23,10 +23,14 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -34,8 +38,9 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -60,8 +65,8 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -116,20 +121,28 @@ public abstract class AbstractNavigationStateRenderer
      *            the class of the route target component
      * @param event
      *            the navigation event that uses the route target
+     * @param lastElement
+     *            {@code true} when this is the last element in the chain
      * @return an instance of the route target component
      */
     @SuppressWarnings("unchecked")
     // Non-private for testing purposes
     static <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
+            NavigationEvent event, boolean lastElement) {
         UI ui = event.getUI();
-        Optional<HasElement> currentInstance = ui.getInternals()
-                .getActiveRouterTargetsChain().stream()
-                .filter(component -> component.getClass()
-                        .equals(routeTargetType))
-                .findAny();
-        return (T) currentInstance.orElseGet(() -> Instantiator.get(ui)
-                .createRouteTarget(routeTargetType, event));
+        Instantiator instantiator = Instantiator.get(ui);
+        boolean forceInstantiation = lastElement ? event.isForceInstantiation()
+                : (event.isForceInstantiation()
+                        && event.isRecreateLayoutChain());
+        Optional<HasElement> currentInstance = forceInstantiation
+                ? Optional.empty()
+                : ui.getInternals().getActiveRouterTargetsChain().stream()
+                        .filter(component -> instantiator
+                                .getApplicationClass(component)
+                                .equals(routeTargetType))
+                        .findAny();
+        return (T) currentInstance.orElseGet(
+                () -> instantiator.createRouteTarget(routeTargetType, event));
     }
 
     @Override
@@ -166,10 +179,10 @@ public abstract class AbstractNavigationStateRenderer
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
                 routeTargetType, routeLayoutTypes);
 
-        if (preserveOnRefreshTarget) {
+        if (preserveOnRefreshTarget && !event.isForceInstantiation()) {
             final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(
                     event);
-            if (!maybeChain.isPresent()) {
+            if (maybeChain.isEmpty()) {
                 // We're returning because the preserved chain is not ready to
                 // be used as is, and requires client data requested within
                 // `getPreservedChain`. Once the data is retrieved from the
@@ -220,7 +233,6 @@ public abstract class AbstractNavigationStateRenderer
         // on the UI.
         if (preserveOnRefreshTarget) {
             setPreservedChain(chain, event);
-            warnAboutPreserveOnRefreshAndLiveReloadCombo(ui);
         }
 
         @SuppressWarnings("unchecked")
@@ -258,7 +270,8 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
-        } else if (!event.isForwardTo()
+        } else if (NavigationTrigger.REFRESH != event.getTrigger()
+                && !event.isForwardTo()
                 && (!ui.getInternals().hasLastHandledLocation()
                         || !event.getLocation().getPathWithQueryParameters()
                                 .equals(ui.getInternals()
@@ -285,7 +298,8 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
+        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())
+                || NavigationTrigger.REFRESH.equals(event.getTrigger());
     }
 
     private boolean isRouterLinkNotFoundNavigationError(
@@ -481,8 +495,14 @@ public abstract class AbstractNavigationStateRenderer
         List<Class<? extends HasElement>> typesChain = getTypesChain();
 
         try {
-            for (Class<? extends HasElement> elementType : typesChain) {
-                HasElement element = getRouteTarget(elementType, event);
+            for (int i = 0; i < typesChain.size(); i++) {
+                HasElement element = getRouteTarget(typesChain.get(i), event,
+                        i == typesChain.size() - 1);
+
+                if (!beforeNavigation.isErrorEvent()) {
+                    UsageStatistics.markAsUsed(Constants.STATISTICS_FLOW_ROUTER,
+                            null);
+                }
 
                 chain.add(element);
 
@@ -525,14 +545,8 @@ public abstract class AbstractNavigationStateRenderer
                 EventUtil.collectBeforeEnterObserversFromChain(chain, event
                         .getUI().getInternals().getActiveRouterTargetsChain()));
 
-        Optional<Integer> result = sendBeforeEnterEvent(chainEnterHandlers,
-                event, beforeNavigation, chain);
-
-        if (result.isPresent()) {
-            return result;
-        }
-
-        return Optional.empty();
+        return sendBeforeEnterEvent(chainEnterHandlers, event, beforeNavigation,
+                chain);
     }
 
     /*
@@ -713,7 +727,7 @@ public abstract class AbstractNavigationStateRenderer
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
         newNavigationEvent.getUI().getPage().getHistory().replaceState(null,
-                newNavigationEvent.getLocation());
+                newNavigationEvent.getLocation(), true);
 
         return handler.handle(newNavigationEvent);
     }
@@ -985,14 +999,43 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
-    private static void warnAboutPreserveOnRefreshAndLiveReloadCombo(UI ui) {
-        // Show a warning that live-reload may work counter-intuitively
-        DeploymentConfiguration configuration = ui.getSession()
-                .getConfiguration();
-        if (configuration.getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
-                && configuration.isDevModeLiveReloadEnabled()) {
-            ui.getPage().executeJs(
-                    "Vaadin.devTools.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
+    /**
+     * Removes preserved component cache for an inactive UI.
+     *
+     * @param inactiveUI
+     *            the inactive UI
+     * @throws IllegalStateException
+     *             if the UI is not in closing state
+     */
+    public static void purgeInactiveUIPreservedChainCache(UI inactiveUI) {
+        if (!inactiveUI.isClosing()) {
+            throw new IllegalStateException(
+                    "Cannot purge preserved chain cache for an active UI");
+        }
+        final VaadinSession session = inactiveUI.getSession();
+        final PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
+        if (cache != null && !cache.isEmpty()) {
+            StateNode uiNode = inactiveUI.getElement().getNode();
+            Set<String> inactiveWindows = cache.entrySet().stream()
+                    .filter(e -> {
+                        ArrayList<HasElement> chain = e.getValue().getSecond();
+                        // chain is never empty
+                        StateNode chainNode = chain.get(0).getElement()
+                                .getNode();
+                        while (chainNode.getParent() != null) {
+                            chainNode = chainNode.getParent();
+                        }
+                        return uiNode == chainNode;
+                    }).map(Map.Entry::getKey).collect(Collectors.toSet());
+            if (!inactiveWindows.isEmpty()) {
+                LoggerFactory.getLogger(AbstractNavigationStateRenderer.class)
+                        .debug("Removing preserved chain cache for inactive UI {} on VaadinSession {} (windows: {})",
+                                inactiveUI.getUIId(),
+                                session.getSession().getId(), inactiveWindows);
+            }
+            inactiveWindows.forEach(cache::remove);
         }
     }
+
 }

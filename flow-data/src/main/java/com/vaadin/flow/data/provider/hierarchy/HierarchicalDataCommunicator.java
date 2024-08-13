@@ -196,7 +196,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                                         .startUpdate(getDataProviderSize()),
                                 (pkey, range) -> mapper.fetchChildItems(
                                         getKeyMapper().get(pkey), range)));
-
+        controller.setHasUniqueKeyProviderSupplier(
+                uniqueKeyProviderSupplier.get() != null);
         Range range = computeRequestedRange(start, length);
         controller.setRequestRange(range.getStart(), range.length());
         requestFlush(controller);
@@ -548,6 +549,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             T item = getKeyMapper().get(key);
             if (item != null) {
                 T parent = getParentItem(item);
+                /* Short-circuit root item passivation */
+                if (parent == null) {
+                    return !isExpanded(item);
+                }
                 while (parent != null) {
                     if (!isItemActive(parent) || !isExpanded(parent)) {
                         return true;
@@ -557,6 +562,24 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
             return false;
         }).collect(Collectors.toCollection(HashSet::new));
+    }
+
+    @Override
+    protected void doUnregister(Integer updateId) {
+        Set<String> passivated = passivatedByUpdate.remove(updateId);
+        if (passivated != null) {
+            passivated.forEach(key -> {
+                T item = getKeyMapper().get(key);
+                if (item != null) {
+                    // If item has an active child list, do not remove it from
+                    // keyMapper
+                    if (!mapper.hasCurrentlyActiveChild(item)) {
+                        dataGenerator.destroyData(item);
+                        getKeyMapper().remove(item);
+                    }
+                }
+            });
+        }
     }
 
     /**

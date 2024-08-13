@@ -19,11 +19,9 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,10 +78,17 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
         String webappResources, statsOutput;
         if (webappResourcesDirectory == null) {
-            webappResources = combinePath(buildDirectory, "classes",
-                    VAADIN_WEBAPP_RESOURCES);
-            statsOutput = combinePath(buildDirectory, "classes",
-                    VAADIN_WEBAPP_RESOURCES, "..", "config");
+            webappResources = FrontendUtils
+                    .getUnixPath(npmFolder.toPath()
+                            .resolve(Paths
+                                    .get(buildDirectory, "classes",
+                                            VAADIN_WEBAPP_RESOURCES)
+                                    .normalize()));
+            statsOutput = FrontendUtils
+                    .getUnixPath(npmFolder.toPath()
+                            .resolve(Paths.get(buildDirectory, "classes",
+                                    VAADIN_WEBAPP_RESOURCES, "..", "config")
+                                    .normalize()));
         } else {
             webappResources = webappResourcesDirectory.getPath();
             statsOutput = new File(webappResourcesDirectory.getParentFile(),

@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.lang.reflect.AnnotatedElement;
 import java.security.Principal;
+import java.util.Objects;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -31,8 +32,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 
 /**
@@ -283,5 +287,54 @@ public class ViewAccessChecker implements BeforeEnterListener {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass());
+    }
+
+    /**
+     * Checks access to the given navigation target.
+     *
+     * @param context
+     *            the navigation context
+     * @return the result of the access check
+     */
+    public AccessCheckResult checkAccess(NavigationContext context) {
+        if (!enabled) {
+            return context.allow();
+        }
+        if (loginView != null && context.getNavigationTarget() == loginView) {
+            getLogger().debug("Allowing access for login view {}",
+                    context.getNavigationTarget().getName());
+            return context.allow();
+        }
+        if (accessAnnotationChecker.hasAccess(context.getNavigationTarget(),
+                context.getPrincipal(), context::hasRole)) {
+            return context.allow();
+        }
+        return context.deny("");
+    }
+
+    /**
+     * Creates a new {@link NavigationContext} instance based on the given route
+     * data and Vaadin service and request.
+     *
+     * @param navigationTarget
+     *            the navigation target class. Not null.
+     * @param path
+     *            the path to the navigation target. Not null.
+     * @param vaadinService
+     *            the Vaadin service. Not null.
+     * @param vaadinRequest
+     *            the Vaadin request.
+     * @return a new navigation context instance.
+     */
+    public NavigationContext createNavigationContext(Class<?> navigationTarget,
+            String path, VaadinService vaadinService,
+            VaadinRequest vaadinRequest) {
+        Objects.requireNonNull(navigationTarget);
+        Objects.requireNonNull(path);
+        Objects.requireNonNull(vaadinService);
+        return new NavigationContext(vaadinService.getRouter(),
+                navigationTarget, new Location(path), RouteParameters.empty(),
+                vaadinRequest.getUserPrincipal(),
+                str -> getRolesChecker(vaadinRequest).apply(str), false);
     }
 }

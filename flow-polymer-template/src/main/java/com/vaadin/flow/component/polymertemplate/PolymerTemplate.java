@@ -9,6 +9,7 @@
 package com.vaadin.flow.component.polymertemplate;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -22,6 +23,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
@@ -53,11 +55,11 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> implements Template {
 
+    private static final AtomicBoolean licenseChecked = new AtomicBoolean(
+            false);
+
     static {
         UsageStatistics.markAsUsed("flow/PolymerTemplate", null);
-
-        LicenseChecker.checkLicenseFromStaticBlock("flow-polymer-template",
-                Version.getFullVersion(), null);
     }
 
     /**
@@ -90,6 +92,14 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                     + "instantiation logic should be protected by a session lock."
                     + "Call your logic inside the UI::access method.");
         }
+
+        if (!service.getDeploymentConfiguration().isProductionMode()
+                && !licenseChecked.get()) {
+            LicenseChecker.checkLicense("flow-polymer-template",
+                    Version.getFullVersion(), BuildType.DEVELOPMENT);
+            licenseChecked.compareAndSet(false, true);
+        }
+
         TemplateInitializer templateInitializer = new TemplateInitializer(this,
                 parser, service);
         templateInitializer.initChildElements();

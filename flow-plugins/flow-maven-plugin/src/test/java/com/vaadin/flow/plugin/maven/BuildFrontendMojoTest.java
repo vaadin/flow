@@ -34,6 +34,18 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -49,34 +61,23 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.plugin.TestUtils;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import static java.io.File.pathSeparator;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
-import static java.io.File.pathSeparator;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -108,19 +109,6 @@ public class BuildFrontendMojoTest {
     @Before
     public void setup() throws Exception {
         projectBase = temporaryFolder.getRoot();
-
-        MavenProject project = Mockito.mock(MavenProject.class);
-        Mockito.when(project.getRuntimeClasspathElements())
-                .thenReturn(getClassPath(projectBase.toPath()));
-
-        List<String> packages = Arrays
-                .stream(System.getProperty("java.class.path")
-                        .split(File.pathSeparatorChar + ""))
-                .collect(Collectors.toList());
-        Mockito.when(project.getRuntimeClasspathElements())
-                .thenReturn(packages);
-        Mockito.when(project.getCompileClasspathElements())
-                .thenReturn(Collections.emptyList());
 
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
@@ -161,7 +149,6 @@ public class BuildFrontendMojoTest {
                 "frontendResourcesDirectory",
                 projectFrontendResourcesDirectory);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,
@@ -196,8 +183,9 @@ public class BuildFrontendMojoTest {
                 Paths.get(projectBase.toString(), "target").toString());
         ReflectionUtils.setVariableValueInObject(mojo, "postinstallPackages",
                 Collections.emptyList());
-        Mockito.when(mojo.getJarFiles()).thenReturn(
-                Set.of(jarResourcesSource.getParentFile().getParentFile()));
+        Mockito.doReturn(
+                Set.of(jarResourcesSource.getParentFile().getParentFile()))
+                .when(mojo).getJarFiles();
 
         setProject(mojo, npmFolder);
 
@@ -235,6 +223,8 @@ public class BuildFrontendMojoTest {
         Build buildMock = mock(Build.class);
         when(buildMock.getFinalName()).thenReturn("finalName");
         MavenProject project = mock(MavenProject.class);
+        Mockito.when(project.getGroupId()).thenReturn("com.vaadin.testing");
+        Mockito.when(project.getArtifactId()).thenReturn("my-application");
         when(project.getBasedir()).thenReturn(baseFolder);
         when(project.getBuild()).thenReturn(buildMock);
         when(project.getRuntimeClasspathElements())
@@ -515,6 +505,73 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
+    public void existingTokenFile_defaultApplicationIdentifierWritten()
+            throws IOException, MojoExecutionException, MojoFailureException {
+        String expectedAppId = "com.vaadin.testing:my-application";
+
+        JsonObject initialBuildInfo = Json.createObject();
+        initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        initialBuildInfo.put(Constants.NPM_TOKEN, "npm");
+        initialBuildInfo.put(Constants.FRONTEND_TOKEN, "src/main/frontend");
+
+        initialBuildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                true);
+        initialBuildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, true);
+        initialBuildInfo.put(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, true);
+        initialBuildInfo.put(InitParameters.CI_BUILD, true);
+
+        org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
+        org.apache.commons.io.FileUtils.write(tokenFile,
+                JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
+
+        mojo.execute();
+        Assert.assertTrue("No token file could be found", tokenFile.exists());
+
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertEquals(
+                "Custom application identifier not written on token file",
+                expectedAppId, buildInfo.getString(APPLICATION_IDENTIFIER));
+    }
+
+    @Test
+    public void existingTokenFile_customApplicationIdentifierWritten()
+            throws IOException, MojoExecutionException, MojoFailureException,
+            IllegalAccessException {
+        String appId = "MY-APP-ID";
+        ReflectionUtils.setVariableValueInObject(mojo, "applicationIdentifier",
+                appId);
+
+        JsonObject initialBuildInfo = Json.createObject();
+        initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        initialBuildInfo.put(Constants.NPM_TOKEN, "npm");
+        initialBuildInfo.put(Constants.FRONTEND_TOKEN, "src/main/frontend");
+
+        initialBuildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                true);
+        initialBuildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, true);
+        initialBuildInfo.put(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, true);
+        initialBuildInfo.put(InitParameters.CI_BUILD, true);
+
+        org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
+        org.apache.commons.io.FileUtils.write(tokenFile,
+                JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
+
+        mojo.execute();
+        Assert.assertTrue("No token file could be found", tokenFile.exists());
+
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, "UTF-8");
+        JsonObject buildInfo = JsonUtil.parse(json);
+        Assert.assertEquals(
+                "Custom application identifier not written on token file",
+                appId, buildInfo.getString(APPLICATION_IDENTIFIER));
+    }
+
+    @Test
     public void noTokenFile_noTokenFileShouldBeCreated()
             throws MojoExecutionException, MojoFailureException {
         mojo.execute();
@@ -533,7 +590,8 @@ public class BuildFrontendMojoTest {
                             {
                                 element: <MainLayout />,
                                 handle: { title: 'Main' }
-                            }
+                            },
+                            ...serverSideRoutes
                         ] as RouteObject[];
 
 
@@ -557,7 +615,8 @@ public class BuildFrontendMojoTest {
                             {
                                 element: <MainLayout />,
                                 handle: { title: 'Main' }
-                            }
+                            },
+                            ...serverSideRoutes
                         ] as RouteObject[];
 
 

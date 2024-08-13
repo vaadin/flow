@@ -143,7 +143,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                             "import vitePluginFileSystemRouter from '"
                                     + FILE_SYSTEM_ROUTER_DEPENDENCY + "';")
                     .replace("//#vitePluginFileSystemRouter#",
-                            ", vitePluginFileSystemRouter()");
+                            ", vitePluginFileSystemRouter({isDevMode: devMode})");
         }
         return template.replace("//#vitePluginFileSystemRouterImport#", "")
                 .replace("//#vitePluginFileSystemRouter#", "");

@@ -24,7 +24,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -36,14 +35,11 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
@@ -72,8 +68,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private IdeIntegration ideIntegration;
-
     private List<DevToolsMessageHandler> plugins;
 
     static {
@@ -93,8 +87,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
     DebugWindowConnection(ClassLoader classLoader, VaadinContext context) {
         this.classLoader = classLoader;
         this.context = context;
-        this.ideIntegration = new IdeIntegration(
-                ApplicationConfiguration.get(context));
 
         findPlugins();
     }
@@ -276,6 +268,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     @Override
+    public void refresh(boolean refreshLayouts) {
+        JsonObject msg = Json.createObject();
+        msg.put("command", "reload");
+        msg.put("strategy", refreshLayouts ? "full-refresh" : "refresh");
+        send(msg);
+    }
+
+    @Override
     public void update(String path, String content) {
         JsonObject msg = Json.createObject();
         msg.put("command", "update");
@@ -324,25 +324,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
                         errorMessage);
                 send(resource, "license-check-failed", pm);
             }
-        } else if ("showComponentCreateLocation".equals(command)
-                || "showComponentAttachLocation".equals(command)) {
-            int nodeId = (int) data.getNumber("nodeId");
-            int uiId = (int) data.getNumber("uiId");
-            VaadinSession session = VaadinSession.getCurrent();
-            session.access(() -> {
-                Element element = session.findElement(uiId, nodeId);
-                Optional<Component> c = element.getComponent();
-                if (c.isPresent()) {
-                    if ("showComponentCreateLocation".equals(command)) {
-                        ideIntegration.showComponentCreateInIde(c.get());
-                    } else {
-                        ideIntegration.showComponentAttachInIde(c.get());
-                    }
-                } else {
-                    getLogger().error(
-                            "Only component locations are tracked. The given node id refers to an element and not a component");
-                }
-            });
         } else {
             boolean handled = false;
             for (DevToolsMessageHandler plugin : plugins) {
@@ -352,7 +333,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     break;
                 }
             }
-            if (!handled) {
+            if (!handled && command != null
+                    && !command.startsWith("copilot-")) {
                 getLogger()
                         .info("Unknown command from the browser: " + command);
             }

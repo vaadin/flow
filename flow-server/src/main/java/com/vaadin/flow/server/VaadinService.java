@@ -16,42 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.DefaultInstantiator;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.InstantiatorFactory;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.i18n.TranslationFileRequestHandler;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.flow.server.communication.HeartbeatHandler;
-import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
-import com.vaadin.flow.server.communication.IndexHtmlResponse;
-import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
-import com.vaadin.flow.server.communication.PwaHandler;
-import com.vaadin.flow.server.communication.SessionRequestHandler;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.communication.UidlRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.shared.communication.PushMode;
-import elemental.json.Json;
-import elemental.json.JsonException;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -83,6 +47,48 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.InstantiatorFactory;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.i18n.TranslationFileRequestHandler;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.HeartbeatHandler;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
+import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import com.vaadin.flow.server.communication.PwaHandler;
+import com.vaadin.flow.server.communication.SessionRequestHandler;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.communication.UidlRequestHandler;
+import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
+import com.vaadin.flow.server.communication.WebComponentProvider;
+import com.vaadin.flow.server.dau.DAUCustomizer;
+import com.vaadin.flow.server.dau.DAUUtils;
+import com.vaadin.flow.server.dau.DAUVaadinRequestInterceptor;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.communication.PushMode;
+
+import elemental.json.Json;
+import elemental.json.JsonException;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -229,6 +235,25 @@ public abstract class VaadinService implements Serializable {
 
         ServiceInitEvent event = new ServiceInitEvent(this);
 
+        VaadinRequestInterceptor dauInterceptorWrapper;
+        if (DAUUtils.isDauEnabled(this)) {
+            getLogger().info("Daily Active User tracking enabled");
+
+            DAUCustomizer dauCustomizer = Optional
+                    .ofNullable(getContext().getAttribute(Lookup.class))
+                    .map(lookup -> lookup.lookup(DAUCustomizer.class))
+                    .orElse(null);
+            getContext().setAttribute(DAUCustomizer.class, dauCustomizer);
+
+            DAUVaadinRequestInterceptor dauInterceptor = new DAUVaadinRequestInterceptor(
+                    getDeploymentConfiguration(), dauCustomizer);
+            dauInterceptor.serviceInit(event);
+            dauInterceptorWrapper = new VaadinSessionOnRequestStartInterceptorWrapper(
+                    dauInterceptor);
+        } else {
+            dauInterceptorWrapper = null;
+        }
+
         // allow service init listeners and DI to use thread local access to
         // e.g. application scoped route registry
         runWithServiceContext(() -> {
@@ -243,7 +268,10 @@ public abstract class VaadinService implements Serializable {
 
             event.getAddedVaadinRequestInterceptor()
                     .forEach(requestInterceptors::add);
-
+            // DAU interceptor should always run first
+            if (dauInterceptorWrapper != null) {
+                requestInterceptors.add(dauInterceptorWrapper);
+            }
             Collections.reverse(requestInterceptors);
 
             vaadinRequestInterceptors = Collections
@@ -292,6 +320,7 @@ public abstract class VaadinService implements Serializable {
             UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
                     Version.getFullVersion());
         }
+        UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_FLOW_ROUTE, null);
     }
 
     /**
@@ -765,7 +794,7 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * Note: Overriding this method is not recommended, for custom lock storage
      * strategy override {@link #getSessionLock(WrappedSession)} and
-     * {@link #setSessionLock(WrappedSession,Lock)} instead.
+     * {@link #setSessionLock(WrappedSession, Lock)} instead.
      *
      * @param wrappedSession
      *            The session to lock
@@ -817,7 +846,7 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * Note: Overriding this method is not recommended, for custom lock storage
      * strategy override {@link #getSessionLock(WrappedSession)} and
-     * {@link #setSessionLock(WrappedSession,Lock)} instead.
+     * {@link #setSessionLock(WrappedSession, Lock)} instead.
      *
      * @param wrappedSession
      *            The session to unlock
@@ -1345,9 +1374,12 @@ public abstract class VaadinService implements Serializable {
                     getLogger().debug("Closing inactive UI #{} in session {}",
                             ui.getUIId(), sessionId);
                     ui.close();
+                    AbstractNavigationStateRenderer
+                            .purgeInactiveUIPreservedChainCache(ui);
                 });
             }
         }
+
     }
 
     /**
@@ -2326,7 +2358,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Resolves the given {@code url} resource to be useful for
-     * {@link #getResource(String)} and {@link #getResourceAsStream(String )}.
+     * {@link #getResource(String)} and {@link #getResourceAsStream(String)}.
      *
      * @param url
      *            the resource to resolve, not <code>null</code>
@@ -2358,7 +2390,6 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     *
      * Executes a {@code runnable} with a {@link VaadinService} available in the
      * {@link CurrentInstance} context.
      *
@@ -2463,6 +2494,54 @@ public abstract class VaadinService implements Serializable {
 
         if (getClassLoader() == null) {
             setDefaultClassLoader();
+        }
+    }
+
+    // Tries to get VaadinSession to make it available during
+    // VaadinRequestInterceptor.requestStart call
+    static class VaadinSessionOnRequestStartInterceptorWrapper
+            implements VaadinRequestInterceptor {
+
+        final VaadinRequestInterceptor delegate;
+
+        public VaadinSessionOnRequestStartInterceptorWrapper(
+                VaadinRequestInterceptor delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void requestStart(VaadinRequest request,
+                VaadinResponse response) {
+            VaadinSession session = Optional
+                    .ofNullable(request.getWrappedSession(false))
+                    .map(request.getService()::loadSession).orElse(null);
+
+            if (session != null) {
+                session.getLockInstance().lock();
+                VaadinSession.setCurrent(session);
+            }
+            try {
+                delegate.requestStart(request, response);
+            } finally {
+                if (session != null) {
+                    session.getLockInstance().unlock();
+                }
+                VaadinSession.setCurrent(null);
+            }
+
+        }
+
+        @Override
+        public void handleException(VaadinRequest request,
+                VaadinResponse response, VaadinSession vaadinSession,
+                Exception t) {
+            delegate.handleException(request, response, vaadinSession, t);
+        }
+
+        @Override
+        public void requestEnd(VaadinRequest request, VaadinResponse response,
+                VaadinSession session) {
+            delegate.requestEnd(request, response, session);
         }
     }
 }

@@ -6,6 +6,7 @@ export class WebSocketConnection extends Connection {
   static HEARTBEAT_INTERVAL = 180000;
 
   socket?: any;
+  canSend = false;
 
   constructor(url: string) {
     super();
@@ -31,7 +32,23 @@ export class WebSocketConnection extends Connection {
         this.handleMessage(message);
       },
       onError: (response: any) => {
+        this.canSend = false;
         this.handleError(response);
+      },
+      onOpen: () => {
+        this.canSend = true;
+      },
+      onClose: () => {
+        this.canSend = false;
+      },
+      onClientTimeout: () => {
+        this.canSend = false;
+      },
+      onReconnect: () => {
+        this.canSend = false;
+      },
+      onReopen: () => {
+        this.canSend = true;
       }
     };
 
@@ -40,7 +57,7 @@ export class WebSocketConnection extends Connection {
     });
   }
 
-  onReload() {
+  onReload(_strategy: string) {
     // Intentionally empty
   }
 
@@ -64,7 +81,8 @@ export class WebSocketConnection extends Connection {
       this.onHandshake();
     } else if (json.command === 'reload') {
       if (this.status === ConnectionStatus.ACTIVE) {
-        this.onReload();
+        const strategy = json.strategy || 'reload'
+        this.onReload(strategy);
       }
     } else if (json.command === 'update') {
       if (this.status === ConnectionStatus.ACTIVE) {
@@ -83,9 +101,9 @@ export class WebSocketConnection extends Connection {
   }
 
   public send(command: string, data: any) {
-    if (!this.socket) {
+    if (!this.socket || !this.canSend) {
       waitFor(
-        () => this.socket,
+        () => this.socket && this.canSend,
         (_atmosphere) => this.send(command, data)
       );
       return;

@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,14 +22,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
@@ -45,6 +35,16 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -232,6 +232,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private Boolean reactEnable;
 
     /**
+     * Identifier for the application.
+     * <p>
+     * If not specified, defaults to '{@literal groupId:artifactId}'.
+     */
+    @Parameter(property = InitParameters.APPLICATION_IDENTIFIER)
+    private String applicationIdentifier;
+
+    /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
      *
@@ -242,10 +250,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public static List<String> getClasspathElements(MavenProject project) {
 
         try {
-            final Stream<String> classpathElements = Stream.concat(
-                    project.getRuntimeClasspathElements().stream(),
-                    project.getCompileClasspathElements().stream().filter(
-                            s -> s.matches(INCLUDE_FROM_COMPILE_DEPS_REGEX)));
+            final Stream<String> classpathElements = Stream
+                    .of(project.getRuntimeClasspathElements().stream(),
+                            project.getSystemClasspathElements().stream(),
+                            project.getCompileClasspathElements().stream()
+                                    .filter(s -> s.matches(
+                                            INCLUDE_FROM_COMPILE_DEPS_REGEX)))
+                    .flatMap(Function.identity());
             return classpathElements.collect(Collectors.toList());
         } catch (DependencyResolutionRequiredException e) {
             throw new IllegalStateException(String.format(
@@ -497,7 +508,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             return frontendHotdeploy;
         }
         File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
-        return FrontendUtils.isHillaUsed(frontendDirectory);
+        return isHillaUsed(project, frontendDirectory);
     }
 
     @Override
@@ -517,5 +528,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         }
         File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
         return FrontendUtils.isReactRouterRequired(frontendDirectory);
+    }
+
+    @Override
+    public String applicationIdentifier() {
+        if (applicationIdentifier != null && !applicationIdentifier.isBlank()) {
+            return applicationIdentifier;
+        }
+        return project.getGroupId() + ":" + project.getArtifactId();
     }
 }

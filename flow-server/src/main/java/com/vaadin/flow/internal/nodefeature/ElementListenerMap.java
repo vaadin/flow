@@ -29,6 +29,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
@@ -114,6 +117,7 @@ public class ElementListenerMap extends NodeMap {
         private int debounceTimeout = 0;
         private EnumSet<DebouncePhase> debouncePhases = NO_TIMEOUT_PHASES;
         private List<SerializableRunnable> unregisterHandlers;
+        private boolean allowInert;
 
         private DomEventListenerWrapper(ElementListenerMap listenerMap,
                 String type, DomEventListener origin) {
@@ -264,6 +268,12 @@ public class ElementListenerMap extends NodeMap {
             return eventDataExpressions != null && eventDataExpressions
                     .contains(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
                             + propertyName);
+        }
+
+        @Override
+        public DomListenerRegistration allowInert() {
+            allowInert = true;
+            return this;
         }
     }
 
@@ -427,7 +437,16 @@ public class ElementListenerMap extends NodeMap {
         if (listeners == null) {
             return;
         }
-        boolean isElementEnabled = event.getSource().isEnabled();
+        final boolean isElementEnabled = event.getSource().isEnabled();
+
+        final boolean isNavigationRequest = UI.BrowserNavigateEvent.EVENT_NAME
+                .equals(event.getType())
+                || UI.BrowserLeaveNavigationEvent.EVENT_NAME
+                        .equals(event.getType())
+                || UI.BrowserRefreshEvent.EVENT_NAME.equals(event.getType());
+
+        final boolean inert = event.getSource().getNode().isInert();
+
         List<DomEventListenerWrapper> typeListeners = listeners
                 .get(event.getType());
         if (typeListeners == null) {
@@ -436,6 +455,15 @@ public class ElementListenerMap extends NodeMap {
 
         List<DomEventListener> listeners = new ArrayList<>();
         for (DomEventListenerWrapper wrapper : typeListeners) {
+            if (!isNavigationRequest && inert && !wrapper.allowInert) {
+                // drop as inert
+                LoggerFactory.getLogger(ElementListenerMap.class.getName())
+                        .info("Ignored listener invocation for {} event from "
+                                + "the client side for an inert {} element",
+                                event.getType(), event.getSource().getTag());
+                continue;
+            }
+
             if ((isElementEnabled
                     || DisabledUpdateMode.ALWAYS.equals(wrapper.mode))
                     && wrapper.matchesFilter(event.getEventData())

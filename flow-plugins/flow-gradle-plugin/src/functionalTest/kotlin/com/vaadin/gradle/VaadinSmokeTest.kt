@@ -101,6 +101,19 @@ class VaadinSmokeTest : AbstractGradleTest() {
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
         expect(true, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
+        expect(testProject.dir.name, buildInfo.toJson()) { buildInfo.getString(InitParameters.APPLICATION_IDENTIFIER) }
+    }
+
+    @Test
+    fun testBuildFrontendInProductionMode_customApplicationIdentifier() {
+        val result: BuildResult = testProject.build("-Pvaadin.applicationIdentifier=MY_APP_ID", "-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+        // vaadinBuildFrontend depends on vaadinPrepareFrontend
+        // let's explicitly check that vaadinPrepareFrontend has been run
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+
+        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
+        expect("MY_APP_ID", buildInfo.toJson()) { buildInfo.getString(InitParameters.APPLICATION_IDENTIFIER) }
     }
 
     @Test
@@ -143,7 +156,6 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(true) { generatedFolder.exists() }
         expect(false) { generatedFile.exists() }
         expect(false) { generatedOldFlowFile.exists() }
-        expect(false) { generatedFlowFolder.exists() }
     }
 
     /**
@@ -368,6 +380,76 @@ class VaadinSmokeTest : AbstractGradleTest() {
         val cssFile = File(testProject.dir, FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "jar-resources/mystyle.css")
         expect(true, cssFile.toString()) { cssFile.exists() }
 
+    }
+
+    /**
+     * Tests that build works with resources from classpath, not only from
+     * frontend directory
+     *
+     * https://github.com/vaadin/flow/issues/14420
+     */
+    @Test
+    fun vaadinBuildFrontendShouldScanFilesystemDependencies() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation(files('libs/addon.jar'))
+            }
+        """
+        )
+
+        testProject.newFile(
+            "src/main/java/org/vaadin/example/MainView.java", """
+            package org.vaadin.example;
+
+            import com.vaadin.flow.component.html.Div;
+            import com.vaadin.flow.component.html.Span;
+            import com.vaadin.flow.router.Route;
+            import com.vaadin.example.Addon;
+
+            @Route("")
+            public class MainView extends Div {
+
+                public MainView() {
+                    add(new Addon());
+                }
+            }
+        """.trimIndent()
+        )
+
+        testProject.newFolder("libs")
+        val addonJar: File = testProject.newFile("libs/addon.jar")
+        Files.copy(
+            File(javaClass.classLoader.getResource("addon.jar").path).toPath(),
+            addonJar.toPath(), StandardCopyOption.REPLACE_EXISTING
+        )
+
+        val result: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val addonFile =
+            File(testProject.dir, FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "jar-resources/my-addon.js")
+        expect(true, addonFile.toString()) { addonFile.exists() }
+
+        val importsFile = File(
+            testProject.dir,
+            FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "flow/" + FrontendUtils.IMPORTS_NAME
+        )
+        expect(true, importsFile.toString()) { importsFile.exists() }
+        expect(true, "Addon javascript should be found and imported") {
+            importsFile.readText().contains("import 'Frontend/generated/jar-resources/my-addon.js'")
+        }
     }
 
     @Test

@@ -50,6 +50,8 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.dau.DAUUtils;
+import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
@@ -173,7 +175,13 @@ public class PushHandler {
                     resource.getRequest().getRemoteHost());
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
+        } catch (DauEnforcementException e) {
+            getLogger().warn(
+                    "Daily Active User limit reached. Blocking new user request");
+            String json = DAUUtils.jsonEnforcementResponse(vaadinRequest, e);
+            sendNotificationAndDisconnect(resource, json);
         }
+
     };
 
     private VaadinServletService service;
@@ -249,7 +257,17 @@ public class PushHandler {
         if (isWebsocket) {
             // For any HTTP request we have already started the request in the
             // servlet
-            service.requestStart(vaadinRequest, null);
+            if (callback == receiveCallback) {
+                // Allow DAU tracking only for received messages, as websocket
+                // connection is not considered a user interaction
+                // Executing through TrackableRequest causes no side effects
+                // when DAU is not enabled.
+                DAUUtils.TrackableOperation.INSTANCE.execute(() -> {
+                    service.requestStart(vaadinRequest, null);
+                });
+            } else {
+                service.requestStart(vaadinRequest, null);
+            }
         }
         try {
             try {
@@ -390,8 +408,14 @@ public class PushHandler {
         // In development mode we may have a live-reload push channel
         // that should be closed.
 
-        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
-                .getLiveReloadFromService(service);
+        Optional<BrowserLiveReload> liveReload = Optional.empty();
+        try {
+            liveReload = BrowserLiveReloadAccessor
+                    .getLiveReloadFromService(service);
+        } catch (IllegalStateException e) {
+            getLogger().debug(
+                    "Could not get live-reload push channel to close it.", e);
+        }
         if (isDebugWindowConnection(resource) && liveReload.isPresent()
                 && liveReload.get().isLiveReload(resource)) {
             liveReload.get().onDisconnect(resource);

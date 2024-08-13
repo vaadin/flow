@@ -66,6 +66,7 @@ import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveListener;
 import com.vaadin.flow.router.ListenerPriority;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -194,6 +195,8 @@ public class UIInternals implements Serializable {
     private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
 
     private Location lastHandledNavigation = null;
+
+    private Location locationForRefresh = null;
 
     private ContinueNavigationAction continueNavigationAction = null;
 
@@ -669,6 +672,19 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Filter pendingJsInvocations to see if an invocation expression is set
+     * with given filter string.
+     *
+     * @param containsFilter
+     *            string to filter invocation expressions with
+     * @return true if any invocation with given expression is found.
+     */
+    public boolean containsPendingJavascript(String containsFilter) {
+        return getPendingJavaScriptInvocations().anyMatch(js -> js
+                .getInvocation().getExpression().contains(containsFilter));
+    }
+
+    /**
      * Records the page title set with {@link Page#setTitle(String)}.
      * <p>
      * You should not set the page title for the browser with this method, use
@@ -679,8 +695,12 @@ public class UIInternals implements Serializable {
      */
     public void setTitle(String title) {
         assert title != null;
-        JavaScriptInvocation invocation = new JavaScriptInvocation(
-                "document.title = $0", title);
+        JavaScriptInvocation invocation = new JavaScriptInvocation("""
+                    document.title = $0;
+                    if(window?.Vaadin?.documentTitleSignal) {
+                        window.Vaadin.documentTitleSignal.value = $0;
+                    }
+                """.stripIndent(), title);
 
         pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
                 getStateTree().getRootNode(), invocation);
@@ -1025,6 +1045,28 @@ public class UIInternals implements Serializable {
      */
     public void setLastHandledNavigation(Location location) {
         lastHandledNavigation = location;
+        if (location != null) {
+            locationForRefresh = location;
+        }
+    }
+
+    /**
+     * Re-navigates to the current route. Also re-instantiates the route target
+     * component, and optionally all layouts in the route chain.
+     *
+     * @param refreshRouteChain
+     *            {@code true} to refresh all layouts in the route chain,
+     *            {@code false} to only refresh the route instance
+     */
+    public void refreshCurrentRoute(boolean refreshRouteChain) {
+        if (locationForRefresh == null) {
+            getLogger().warn("Latest navigation location is not set. "
+                    + "Unable to refresh the current route.");
+        } else {
+            getRouter().navigate(ui, locationForRefresh,
+                    NavigationTrigger.PROGRAMMATIC, null, true,
+                    refreshRouteChain);
+        }
     }
 
     /**

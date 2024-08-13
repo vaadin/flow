@@ -82,6 +82,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
@@ -273,6 +274,8 @@ public class UI extends Component
                     this::leaveNavigation);
             getEventBus().addListener(BrowserNavigateEvent.class,
                     this::browserNavigate);
+            getEventBus().addListener(BrowserRefreshEvent.class,
+                    this::browserRefresh);
 
         }
 
@@ -1245,6 +1248,22 @@ public class UI extends Component
     }
 
     /**
+     * Re-navigates to the current route. Also re-instantiates the route target
+     * component, and optionally all layouts in the route chain.
+     *
+     * @param refreshRouteChain
+     *            {@code true} to refresh all layouts in the route chain,
+     *            {@code false} to only refresh the route instance
+     */
+    public void refreshCurrentRoute(boolean refreshRouteChain) {
+        getInternals().refreshCurrentRoute(refreshRouteChain);
+    }
+
+    private void browserRefresh(BrowserRefreshEvent event) {
+        refreshCurrentRoute(event.refreshRouteChain);
+    }
+
+    /**
      * Returns true if this UI instance supports navigation.
      *
      * @return true if this UI instance supports navigation, otherwise false.
@@ -1333,7 +1352,8 @@ public class UI extends Component
                     "The 'execution' parameter may not be null");
         }
 
-        if (component.getUI().isPresent() && component.getUI().get() != this) {
+        Optional<UI> componentUi = component.getUI();
+        if (componentUi.isPresent() && componentUi.get() != this) {
             throw new IllegalArgumentException(
                     "The given component doesn't belong to the UI the task to be executed on");
         }
@@ -1670,7 +1690,11 @@ public class UI extends Component
     }
 
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
-    public static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
+    public static final String CLIENT_NAVIGATE_TO = """
+            const url = new URL($0, document.baseURI);
+            url["clientNavigation"] = true;
+            window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
+            """;
 
     public Element wrapperElement;
     private NavigationState clientViewNavigationState;
@@ -1755,6 +1779,69 @@ public class UI extends Component
     }
 
     /**
+     * Event fired by the client to request a refresh of the user interface, by
+     * re-navigating to the current route.
+     * <p>
+     * </p>
+     * The route target component is re-instantiated, as well as all layouts in
+     * the route chain if the {@code fullRefresh} event flag is active.
+     *
+     * @see #refreshCurrentRoute(boolean)
+     */
+    @DomEvent(BrowserRefreshEvent.EVENT_NAME)
+    public static class BrowserRefreshEvent extends ComponentEvent<UI> {
+        public static final String EVENT_NAME = "ui-refresh";
+
+        private final boolean refreshRouteChain;
+
+        /**
+         * Creates a new event instance.
+         *
+         * @param source
+         *            the UI for which the refresh is requested.
+         * @param fromClient
+         *            <code>true</code> if the event originated from the client
+         *            side, <code>false</code> otherwise. NOTE: for technical
+         *            reason the argument must be added to the constructor, but
+         *            this event the value is always true.
+         * @param refreshRouteChain
+         *            {@code true} to refresh all layouts in the route chain,
+         *            {@code false} to only refresh the route instance
+         */
+        public BrowserRefreshEvent(UI source, boolean fromClient,
+                @EventData("fullRefresh") boolean refreshRouteChain) {
+            super(source, true);
+            this.refreshRouteChain = refreshRouteChain;
+        }
+    }
+
+    /**
+     * Connect a client with the server side UI. This method is invoked each
+     * time client router navigates to a server route.
+     *
+     * @param flowRoutePath
+     *            flow route path that should be attached to the client element
+     * @param flowRouteQuery
+     *            flow route query string
+     * @param appShellTitle
+     *            client side title of the application shell
+     * @param historyState
+     *            client side history state value
+     * @param trigger
+     *            navigation trigger
+     *
+     * @deprecated(forRemoval=true) method is not enabled for client side
+     *                              anymore and connectClient is triggered by
+     *                              DOM event, to be removed in next major 25
+     */
+    @Deprecated
+    public void connectClient(String flowRoutePath, String flowRouteQuery,
+            String appShellTitle, JsonValue historyState, String trigger) {
+        browserNavigate(new BrowserNavigateEvent(this, false, flowRoutePath,
+                flowRouteQuery, appShellTitle, historyState, trigger));
+    }
+
+    /**
      * Connect a client with the server side UI. This method is invoked each
      * time client router navigates to a server route.
      *
@@ -1768,10 +1855,6 @@ public class UI extends Component
         }
 
         final String trimmedRoute = PathUtil.trimPath(event.route);
-        if (!trimmedRoute.equals(event.route)) {
-            // See InternalRedirectHandler invoked via Router.
-            getPage().getHistory().replaceState(null, trimmedRoute);
-        }
         final Location location = new Location(trimmedRoute,
                 QueryParameters.fromString(event.query));
         NavigationTrigger navigationTrigger;
@@ -1808,8 +1891,57 @@ public class UI extends Component
         } else if (isPostponed()) {
             serverPaused();
         } else {
-            acknowledgeClient();
+            // acknowledge client, but cancel if session not open
+            serverConnected(
+                    !getSession().getState().equals(VaadinSessionState.OPEN));
+            replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
+    }
+
+    /**
+     * Do a history replaceState if the trimmed route differs from the event
+     * route and there is no pending replaceState command.
+     *
+     * @param route
+     *            the event.route
+     * @param location
+     *            the location with the trimmed route
+     */
+    private void replaceStateIfDiffersAndNoReplacePending(String route,
+            Location location) {
+        boolean locationChanged = !location.getPath().equals(route)
+                && route.startsWith("/")
+                && !location.getPath().equals(route.substring(1));
+        boolean containsPendingReplace = !getInternals()
+                .containsPendingJavascript("window.history.replaceState")
+                && !getInternals().containsPendingJavascript(
+                        "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }");
+        if (locationChanged && containsPendingReplace) {
+            // See InternalRedirectHandler invoked via Router.
+            getPage().getHistory().replaceState(null, location);
+        }
+    }
+
+    /**
+     * Check that the view can be leave. This method is invoked when the client
+     * router tries to navigate to a client route while the current route is a
+     * server route.
+     * <p>
+     * This is only called when client route navigates from a server to a client
+     * view.
+     *
+     * @param route
+     *            the route that is navigating to.
+     * @param query
+     *            route query string
+     * @deprecated(forRemoval=true) method is not enabled for client side
+     *                              anymore and leave navigation is triggered by
+     *                              DOM event, to be removed in next major 25
+     */
+    @Deprecated
+    public void leaveNavigation(String route, String query) {
+        leaveNavigation(
+                new BrowserLeaveNavigationEvent(this, false, route, query));
     }
 
     /**

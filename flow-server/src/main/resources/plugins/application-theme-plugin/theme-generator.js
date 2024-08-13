@@ -51,6 +51,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const styles = resolve(themeFolder, stylesCssFilename);
   const documentCssFile = resolve(themeFolder, documentCssFilename);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
+  const autoInjectGlobalCssImports = themeProperties.autoInjectGlobalCssImports ?? false;
   const globalFilename = 'theme-' + themeName + '.global.generated.js';
   const componentsFilename = 'theme-' + themeName + '.components.generated.js';
   const themeFilename = 'theme-' + themeName + '.generated.js';
@@ -77,6 +78,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   }
 
   themeFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  themeFileContent += `import { webcomponentGlobalCssInjector } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
   themeFileContent += `import './${componentsFilename}';\n`;
 
   themeFileContent += `let needsReloadOnChanges = false;\n`;
@@ -112,13 +114,15 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   let variable = camelCase(filename);
 
   /* LUMO */
-  const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
+  const lumoImports = themeProperties.lumoImports || ['typography', 'color', 'spacing', 'badge', 'utility'] ;
   if (lumoImports) {
     lumoImports.forEach((lumoImport) => {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
       if (lumoImport === 'utility' || lumoImport === 'badge' || lumoImport === 'typography' || lumoImport === 'color') {
         // Inject into main document the same way as other Lumo styles are injected
-        imports.push(`import '@vaadin/vaadin-lumo-styles/${lumoImport}-global.js';\n`);
+        // Lumo imports go to the theme global imports file to prevent style leaks
+        // when the theme is applied to an embedded component
+        globalFileContent.push(`import '@vaadin/vaadin-lumo-styles/${lumoImport}-global.js';\n`);
       }
     });
 
@@ -220,6 +224,11 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     const removers = [];
     if (target !== document) {
       ${shadowOnlyCss.join('')}
+      ${autoInjectGlobalCssImports ? `
+        webcomponentGlobalCssInjector((css) => {
+          removers.push(injectGlobalCss(css, '', target));
+        });
+        ` : ''}
     }
     ${parentTheme}
     ${globalCssCode.join('')}
@@ -230,7 +239,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     }
 
   }
-  
+
 `;
   componentsFileContent += `
 ${componentCssImports.join('')}

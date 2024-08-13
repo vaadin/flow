@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-tests</artifactId>
-        <version>24.4-SNAPSHOT</version>
+        <version>24.5-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-test-spring-boot</artifactId>
     <name>Vaadin Spring Boot integration tests</name>
@@ -135,6 +135,7 @@
                                     <artifactId>vaadin-test-spring-common</artifactId>
                                     <version>${project.version}</version>
                                     <type>test-jar</type>
+                                    <classifier>tests</classifier>
                                     <outputDirectory>${project.build.directory}/test-classes</outputDirectory>
                                 </artifactItem>
                             </artifactItems>

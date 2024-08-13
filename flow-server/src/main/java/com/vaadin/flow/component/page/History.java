@@ -172,7 +172,29 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.pushState</code> in the browser with the given
-     * parameters.
+     * parameters. This is a shorthand method for
+     * {@link History#pushState(JsonValue, Location, boolean)}, creating
+     * {@link Location} from the string provided.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @param callback
+     *            {@code true} if the change should make a return call to the
+     *            server
+     */
+    public void pushState(JsonValue state, String location, boolean callback) {
+        pushState(state,
+                Optional.ofNullable(location).map(Location::new).orElse(null),
+                callback);
+    }
+
+    /**
+     * Invokes <code>history.pushState</code> in the browser with the given
+     * parameters. Does not make a callback to the server by default.
      *
      * @param state
      *            the JSON state to push to the history stack, or
@@ -182,13 +204,38 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void pushState(JsonValue state, Location location) {
+        pushState(state, location, false);
+    }
+
+    /**
+     * Invokes <code>history.pushState</code> in the browser with the given
+     * parameters.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @param callback
+     *            {@code true} if the change should make a return call to the
+     *            server
+     */
+    public void pushState(JsonValue state, Location location,
+            boolean callback) {
         final String pathWithQueryParameters = getPathWithQueryParameters(
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs(
-                "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })",
-                state, pathWithQueryParameters);
+        if (ui.getSession().getConfiguration().isReactEnabled()) {
+            ui.getPage().executeJs(
+                    "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));",
+                    state, pathWithQueryParameters, callback);
+        } else {
+            ui.getPage().executeJs(
+                    "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
+                    state, pathWithQueryParameters);
+        }
     }
 
     /**
@@ -211,7 +258,30 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.replaceState</code> in the browser with the given
-     * parameters.
+     * parameters. This is a shorthand method for
+     * {@link History#replaceState(JsonValue, Location, boolean)}, creating
+     * {@link Location} from the string provided.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @param callback
+     *            {@code true} if the change should make a return call to the
+     *            server
+     */
+    public void replaceState(JsonValue state, String location,
+            boolean callback) {
+        replaceState(state,
+                Optional.ofNullable(location).map(Location::new).orElse(null),
+                callback);
+    }
+
+    /**
+     * Invokes <code>history.replaceState</code> in the browser with the given
+     * parameters. Does not make a callback to the server by default.
      *
      * @param state
      *            the JSON state to push to the history stack, or
@@ -221,13 +291,38 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void replaceState(JsonValue state, Location location) {
+        replaceState(state, location, false);
+    }
+
+    /**
+     * Invokes <code>history.replaceState</code> in the browser with the given
+     * parameters.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     * @param callback
+     *            {@code true} if the change should make a return call to the
+     *            server
+     */
+    public void replaceState(JsonValue state, Location location,
+            boolean callback) {
         final String pathWithQueryParameters = getPathWithQueryParameters(
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs(
-                "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new PopStateEvent('popstate', {state: 'vaadin-router-ignore'})); })",
-                state, pathWithQueryParameters);
+        if (ui.getSession().getConfiguration().isReactEnabled()) {
+            ui.getPage().executeJs(
+                    "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));",
+                    state, pathWithQueryParameters, callback);
+        } else {
+            ui.getPage().executeJs(
+                    "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
+                    state, pathWithQueryParameters);
+        }
     }
 
     /**
