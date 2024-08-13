@@ -15,13 +15,21 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.MenuRegistry;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.
@@ -42,7 +50,18 @@ public class DefaultRouteResolver implements RouteResolver {
                 .getNavigationRouteTarget(path);
 
         if (!navigationResult.hasTarget()) {
-            return null;
+            String clientLayout = MenuRegistry.getClientRouteLayout(path);
+            if (clientLayout != null && registry.hasLayout(clientLayout)) {
+                RouteTarget target = new RouteTarget(
+                        (Class<? extends Component>) registry
+                                .getLayout(clientLayout),
+                        Collections.emptyList());
+                navigationResult = new NavigationRouteTarget(
+                        navigationResult.getPath(), target,
+                        Collections.emptyMap());
+            } else {
+                return null;
+            }
         }
 
         NavigationStateBuilder builder = new NavigationStateBuilder(

@@ -47,6 +47,7 @@ import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
@@ -136,7 +137,7 @@ public class MenuRegistry {
             final String url = getRouteUrl(route);
             Map<String, RouteParamType> parameters = getParameters(route);
             menuRoutes.put(url, new AvailableViewInfo(title, null, false, url,
-                    false, false, route.getMenuData(), null, parameters));
+                    false, false, route.getMenuData(), null, parameters, null));
         }
     }
 
@@ -399,6 +400,19 @@ public class MenuRegistry {
      */
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
+    }
+
+    public static String getClientRouteLayout(String route) {
+        route = route.isEmpty() ? route
+                : route.startsWith("/") ? route : "/" + route;
+        Map<String, AvailableViewInfo> clientItems = MenuRegistry
+                .collectClientMenuItems(true,
+                        VaadinSession.getCurrent().getConfiguration());
+        Set<String> clientRoutes = clientItems.keySet();
+        if (clientRoutes.contains(route)) {
+            return clientItems.get(route).layout();
+        }
+        return null;
     }
 
 }

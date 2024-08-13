@@ -69,11 +69,13 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
+import com.vaadin.flow.server.frontend.Layout;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -360,6 +362,14 @@ public class VaadinServletContextInitializer
                                     navigationTargets));
                     registry.setPwaConfigurationClass(validatePwaClass(
                             vaadinServletContext, routeClasses.stream()));
+
+                    // Collect all layouts to use with Hilla as a main layout
+                    findByAnnotation(routePackages, Layout.class).filter(
+                            clazz -> RouterLayout.class.isAssignableFrom(clazz))
+                            .forEach(clazz -> registry.setLayout(
+                                    clazz.getAnnotation(Layout.class).value(),
+                                    (Class<? extends RouterLayout>) clazz));
+
                 } catch (InvalidRouteConfigurationException e) {
                     throw new IllegalStateException(e);
                 }

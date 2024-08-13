@@ -269,4 +269,33 @@ public interface RouteRegistry extends Serializable {
      * @return {@code true} if parameters are required
      */
     boolean hasMandatoryParameter(Class<? extends Component> navigationTarget);
+
+    /**
+     * Set a layout component for given identifier.
+     *
+     * @param identifier
+     *            layout identifier
+     * @param layout
+     *            {@link RouterLayout} class for identifier
+     */
+    void setLayout(String identifier, Class<? extends RouterLayout> layout);
+
+    /**
+     * Get the layout component for the given layout identifier.
+     *
+     * @param layout
+     *            layout identifier
+     * @return {@link RouterLayout} component or null
+     */
+    Class<? extends RouterLayout> getLayout(String layout);
+
+    /**
+     * Check if a layout component has been registered for the layout
+     * identifier.
+     *
+     * @param layout
+     *            layout identifier to check
+     * @return {@code true} if layout exists
+     */
+    boolean hasLayout(String layout);
 }

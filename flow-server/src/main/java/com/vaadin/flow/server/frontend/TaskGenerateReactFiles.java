@@ -170,8 +170,9 @@ public class TaskGenerateReactFiles
                         "{{VAADIN_VERSION}}", Version.getFullVersion());
                 writeFile(reactAdapterTsx, reactAdapterContent);
             }
-            if(fileAvailable(REACT_OUTLET_TEMPLATE)) {
-                writeFile(reactOutletTsx, getFileContent(REACT_OUTLET_TEMPLATE));
+            if (fileAvailable(REACT_OUTLET_TEMPLATE)) {
+                writeFile(reactOutletTsx,
+                        getFileContent(REACT_OUTLET_TEMPLATE));
             }
 
             boolean isHillaUsed = FrontendUtils.isHillaUsed(frontendDirectory,

@@ -597,4 +597,23 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Optional.empty();
     }
 
+    private Map<String, Class<? extends RouterLayout>> layouts = new HashMap<>();
+
+    @Override
+    public void setLayout(String identifier,
+            Class<? extends RouterLayout> layout) {
+        synchronized (layouts) {
+            layouts.put(identifier, layout);
+        }
+    }
+
+    @Override
+    public Class<? extends RouterLayout> getLayout(String layout) {
+        return layouts.get(layout);
+    }
+
+    @Override
+    public boolean hasLayout(String layout) {
+        return layouts.containsKey(layout);
+    }
 }

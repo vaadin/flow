@@ -26,6 +26,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
@@ -292,5 +293,21 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     private RouteRegistry getParentRegistry() {
         return session.getService().getRouteRegistry();
+    }
+
+    @Override
+    public Class<? extends RouterLayout> getLayout(String layout) {
+        if (super.hasLayout(layout)) {
+            return super.getLayout(layout);
+        }
+        return getParentRegistry().getLayout(layout);
+    }
+
+    @Override
+    public boolean hasLayout(String layout) {
+        if (super.hasLayout(layout)) {
+            return true;
+        }
+        return getParentRegistry().hasLayout(layout);
     }
 }
