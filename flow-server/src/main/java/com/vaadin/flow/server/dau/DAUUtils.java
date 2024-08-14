@@ -83,6 +83,26 @@ public final class DAUUtils {
         Cookie[] cookies = Objects
                 .requireNonNull(request, "Request must not be null")
                 .getCookies();
+        return getTrackingCookie(cookies);
+    }
+
+    /**
+     * Looks up for a daily active user tracking cookie in a given http request
+     * from browser.
+     *
+     * @param request
+     *            HttpServletRequest request
+     * @return optional cookie object, may be missing, if users tracking is
+     *         disabled or if this request is an initial request from client.
+     */
+    public static Optional<Cookie> getTrackingCookie(HttpServletRequest request) {
+        Cookie[] cookies = Objects
+                .requireNonNull(request, "Request must not be null")
+                .getCookies();
+        return getTrackingCookie(cookies);
+    }
+
+    private static Optional<Cookie> getTrackingCookie(Cookie[] cookies) {
         if (cookies == null) {
             return Optional.empty();
         } else {
@@ -108,7 +128,7 @@ public final class DAUUtils {
      * @return a data structure representing the information stored in the
      *         cookie, or an empty Optional if the cookie value is malformed or
      *         contains invalid data.
-     * @see FlowDauIntegration#generateNewCookie(VaadinRequest)
+     * @see FlowDauIntegration#generateNewCookie()
      */
     static Optional<DauCookie> parserCookie(Cookie cookie) {
         String cookieValue = cookie.getValue();
@@ -184,6 +204,20 @@ public final class DAUUtils {
             }
         }
         return messages;
+    }
+
+    /**
+     * Gets the enforcement messages for the given request.
+     *
+     * @param request
+     *            The current request
+     * @return enforcement messages for the request.
+     * @see EnforcementNotificationMessages#DEFAULT
+     */
+    public static EnforcementNotificationMessages getEnforcementNotificationMessages(
+            HttpServletRequest request) {
+        // only default messages are available without VaadinService
+        return EnforcementNotificationMessages.DEFAULT;
     }
 
     /**
@@ -353,32 +387,38 @@ public final class DAUUtils {
             HttpServletRequest request, HttpServletResponse response) {
         assert request != null;
 
-        VaadinRequest vaadinRequest = createVaadinRequest(defaultVaadinService,
-                request);
-        VaadinService service = vaadinRequest.getService();
-        VaadinResponse vaadinResponse = (response != null)
-                ? new VaadinServletResponse(response,
-                        (VaadinServletService) service)
-                : null;
+        VaadinService service = VaadinService.getCurrent() != null
+                ? VaadinService.getCurrent()
+                : defaultVaadinService;
 
         Runnable endRequestAction = null;
         if (service != null) {
             endRequestAction = () -> {
-                // Do not provide VaadinResponse to prevent interceptor to alter
-                // the http response
-                service.requestEnd(vaadinRequest, null, null);
+                service.getVaadinRequestInterceptors().forEach(interceptor -> {
+                    if (interceptor instanceof VaadinService.VaadinSessionOnRequestStartInterceptorWrapper wrapper
+                            && wrapper
+                                    .getDelegate() instanceof DAUVaadinRequestInterceptor dauInterceptor) {
+                        dauInterceptor.requestEnd(request);
+                    }
+                });
             };
             try {
                 DAUUtils.TrackableOperation.INSTANCE.execute(() -> {
-                    service.requestStart(vaadinRequest, vaadinResponse);
+                    service.getVaadinRequestInterceptors().forEach(interceptor -> {
+                        if (interceptor instanceof VaadinService.VaadinSessionOnRequestStartInterceptorWrapper wrapper
+                                && wrapper
+                                .getDelegate() instanceof DAUVaadinRequestInterceptor dauInterceptor) {
+                            dauInterceptor.requestStart(request, response);
+                        }
+                    });
                     if (DAUUtils.isDauEnabled(service)) {
-                        FlowDauIntegration.applyEnforcement(vaadinRequest,
+                        FlowDauIntegration.applyEnforcement(request,
                                 unused -> true);
                     }
                 });
             } catch (DauEnforcementException e) {
                 EnforcementNotificationMessages messages = DAUUtils
-                        .getEnforcementNotificationMessages(vaadinRequest);
+                        .getEnforcementNotificationMessages(request);
                 return new EnforcementResult(messages, e, endRequestAction);
             }
         }

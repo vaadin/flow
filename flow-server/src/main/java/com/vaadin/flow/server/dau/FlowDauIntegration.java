@@ -1,6 +1,7 @@
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.function.Predicate;
 
@@ -42,11 +43,9 @@ public final class FlowDauIntegration {
      * subsequent requests to detect active users. By default, the cookie
      * expires after 24 hours.
      *
-     * @param request
-     *            http request from browser
      * @return http cookie to be used to count application's end-users daily
      */
-    public static Cookie generateNewCookie(VaadinRequest request) {
+    public static Cookie generateNewCookie() {
         String cookieValue = DauIntegration.newTrackingHash() + '$'
                 + Instant.now().toEpochMilli();
         Cookie cookie = new Cookie(DAU_COOKIE_NAME, cookieValue);
@@ -97,6 +96,34 @@ public final class FlowDauIntegration {
     }
 
     /**
+     * Tracks the current user with the given optional identity.
+     * <p>
+     * </p>
+     * Tracking the user may raise an enforcement exception, that is stored and
+     * applied later by calling
+     * {@link #applyEnforcement(VaadinRequest, Predicate)} method.
+     * <p>
+     * </p>
+     * Tracking for UIDL requests is postponed until the message is parsed, to
+     * prevent UI poll events to be considered as user interaction.
+     *
+     * @param request
+     *            the Vaadin request.
+     * @param trackingHash
+     *            user tracking hash, never {@literal null}.
+     */
+    static void trackUser(HttpServletRequest request, String trackingHash) {
+        try {
+            DauIntegration.trackUser(trackingHash, null);
+        } catch (EnforcementException ex) {
+            // request will be blocked in ServerRpcHandler to prevent
+            // blocking poll requests, that are not consider active
+            // interaction with the application
+            request.setAttribute(ENFORCEMENT_EXCEPTION_KEY, ex);
+        }
+    }
+
+    /**
      * Potentially applies enforcement to the current request if DAU limit is
      * exceeded.
      * <p>
@@ -113,6 +140,48 @@ public final class FlowDauIntegration {
      */
     public static void applyEnforcement(VaadinRequest request,
             Predicate<VaadinRequest> enforceableRequest) {
+        TrackingDetails trackingDetails = (TrackingDetails) request
+                .getAttribute(TrackingDetails.class.getName());
+        EnforcementException enforcementException = (EnforcementException) request
+                .getAttribute(ENFORCEMENT_EXCEPTION_KEY);
+        try {
+            if ((enforcementException != null || trackingDetails != null)
+                    && enforceableRequest.test(request)) {
+                if (trackingDetails != null) {
+                    try {
+                        DauIntegration.trackUser(trackingDetails.trackingHash(),
+                                trackingDetails.userIdentity());
+                    } catch (EnforcementException ex) {
+                        enforcementException = ex;
+                    }
+                }
+                if (enforcementException != null) {
+                    throw new DauEnforcementException(enforcementException);
+                }
+            }
+        } finally {
+            request.removeAttribute(ENFORCEMENT_EXCEPTION_KEY);
+            request.removeAttribute(TrackingDetails.class.getName());
+        }
+    }
+
+    /**
+     * Potentially applies enforcement to the current request if DAU limit is
+     * exceeded.
+     * <p>
+     * </p>
+     * If enforcement has to be applied an {@link EnforcementException} is
+     * thrown.
+     *
+     * @param request
+     *            the request
+     * @param enforceableRequest
+     *            predicate to check if the request can be blocked or not.
+     * @throws DauEnforcementException
+     *             if request must be blocked because of DAU limit exceeded.
+     */
+    public static void applyEnforcement(HttpServletRequest request,
+            Predicate<HttpServletRequest> enforceableRequest) {
         TrackingDetails trackingDetails = (TrackingDetails) request
                 .getAttribute(TrackingDetails.class.getName());
         EnforcementException enforcementException = (EnforcementException) request

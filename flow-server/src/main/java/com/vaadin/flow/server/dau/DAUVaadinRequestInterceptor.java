@@ -1,6 +1,8 @@
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -53,7 +55,7 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
                 VaadinSession vaadinSession = VaadinSession.getCurrent();
                 String userIdentity = Optional.ofNullable(userIdentitySupplier)
                         .flatMap(supplier -> supplier
-                                .apply(new UserIdentityContext(request,
+                                .apply(new UserIdentityContext(null, request,
                                         vaadinSession)))
                         .orElse(null);
                 FlowDauIntegration.trackUser(request, dauCookie.trackingHash(),
@@ -64,7 +66,7 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
             // response can be null, for example for PUSH websocket requests
 
             // DAU cookie is created if not present and re-created if invalid
-            Cookie cookie = FlowDauIntegration.generateNewCookie(request);
+            Cookie cookie = FlowDauIntegration.generateNewCookie();
             response.addCookie(cookie);
         }
     }
@@ -92,5 +94,35 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
     public void serviceDestroy(ServiceDestroyEvent event) {
         // TODO: error handling
         DauIntegration.stopTracking();
+    }
+
+    public void requestStart(HttpServletRequest request, HttpServletResponse response) {
+        // user is counted even if request handling throws an exception
+        Optional<DAUUtils.DauCookie> maybePresentCookie = DAUUtils
+                .getTrackingCookie(request).flatMap(DAUUtils::parserCookie);
+        if (maybePresentCookie.isPresent()) {
+            DAUUtils.DauCookie dauCookie = maybePresentCookie.get();
+            if (dauCookie.isActive()) {
+
+                VaadinSession vaadinSession = VaadinSession.getCurrent();
+                String userIdentity = Optional.ofNullable(userIdentitySupplier)
+                        .flatMap(supplier -> supplier
+                                .apply(new UserIdentityContext(request, null,
+                                        vaadinSession)))
+                        .orElse(null);
+                FlowDauIntegration.trackUser(request, dauCookie.trackingHash());
+            }
+
+        } else if (response != null) {
+            // response can be null, for example for PUSH websocket requests
+
+            // DAU cookie is created if not present and re-created if invalid
+            Cookie cookie = FlowDauIntegration.generateNewCookie();
+            response.addCookie(cookie);
+        }
+    }
+
+    public void requestEnd(HttpServletRequest request) {
+        request.removeAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY);
     }
 }

@@ -2499,7 +2499,7 @@ public abstract class VaadinService implements Serializable {
 
     // Tries to get VaadinSession to make it available during
     // VaadinRequestInterceptor.requestStart call
-    static class VaadinSessionOnRequestStartInterceptorWrapper
+    public static class VaadinSessionOnRequestStartInterceptorWrapper
             implements VaadinRequestInterceptor {
 
         final VaadinRequestInterceptor delegate;
@@ -2542,6 +2542,10 @@ public abstract class VaadinService implements Serializable {
         public void requestEnd(VaadinRequest request, VaadinResponse response,
                 VaadinSession session) {
             delegate.requestEnd(request, response, session);
+        }
+
+        public VaadinRequestInterceptor getDelegate() {
+            return delegate;
         }
     }
 }
