@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +34,7 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -52,6 +55,7 @@ import com.vaadin.pro.licensechecker.Product;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class BuildFrontendUtilTest {
@@ -78,9 +82,8 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
         Mockito.when(adapter.applicationIdentifier()).thenReturn("TEST_APP_ID");
-        ClassFinder classFinder = Mockito.mock(ClassFinder.class);
-        Mockito.when(classFinder.loadClass(ArgumentMatchers.anyString())).then(
-                i -> getClass().getClassLoader().loadClass(i.getArgument(0)));
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                getClass().getClassLoader());
         lookup = Mockito.spy(new LookupImpl(classFinder));
         Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
         Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
@@ -446,6 +449,47 @@ public class BuildFrontendUtilTest {
                 .parse(Files.readString(tokenFile.toPath()));
         Assert.assertFalse("DAU flag should not be present in token file",
                 buildInfoJsonProd.hasKey(Constants.DAU_TOKEN));
+    }
+
+    @Test
+    public void runNodeUpdater_generateFeatureFlagsJsFile() throws Exception {
+        setupPluginAdapterDefaults();
+
+        File targetDir = baseDir.toPath().resolve(adapter.buildFolder())
+                .toFile();
+        targetDir.mkdirs();
+        targetDir.deleteOnExit();
+        File testClassesDir = targetDir.toPath().resolve("test-classes")
+                .toFile();
+        testClassesDir.mkdirs();
+        testClassesDir.deleteOnExit();
+        File featureFlagsResourceFile = new File(testClassesDir,
+                FeatureFlags.PROPERTIES_FILENAME);
+        FileUtils.write(featureFlagsResourceFile,
+                "com.vaadin.experimental.exampleFeatureFlag = true\n");
+        featureFlagsResourceFile.deleteOnExit();
+
+        ClassLoader classLoader = new URLClassLoader(
+                new URL[] { new File(baseDir, "target/test-classes/").toURI()
+                        .toURL() },
+                BuildFrontendUtilTest.class.getClassLoader());
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                classLoader);
+        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
+        lookup = Mockito.spy(new LookupImpl(classFinder));
+        Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
+        Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
+
+        BuildFrontendUtil.runNodeUpdater(adapter);
+
+        File generatedFeatureFlagsFile = new File(adapter.generatedTsFolder(),
+                FEATURE_FLAGS_FILE_NAME);
+        String featureFlagsJs = Files
+                .readString(generatedFeatureFlagsFile.toPath());
+
+        Assert.assertTrue("Example feature flag is not set",
+                featureFlagsJs.contains(
+                        "window.Vaadin.featureFlags.exampleFeatureFlag = true;\n"));
     }
 
     private void fillAdapter() throws URISyntaxException {
