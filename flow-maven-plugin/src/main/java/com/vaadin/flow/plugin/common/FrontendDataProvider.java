@@ -261,11 +261,12 @@ public class FrontendDataProvider {
                         ThemedURLTranslator.VALUE, JavaScript.class,
                         ThemedURLTranslator.VALUE));
 
-        Collection<Set<String>> htmlImports = annotationValuesExtractor
+        Map<Class<? extends Annotation>, Set<String>> htmlImports = annotationValuesExtractor
                 .extractAnnotationValues(Collections.singletonMap(
-                        HtmlImport.class, ThemedURLTranslator.VALUE))
-                .values();
-        if (!htmlImports.isEmpty()) {
+                        HtmlImport.class, ThemedURLTranslator.VALUE));
+
+        if (htmlImports.containsKey(HtmlImport.class)
+                && !htmlImports.get(HtmlImport.class).isEmpty()) {
             throw new RuntimeException(
                     "Usage of HtmlImport is deprecated and not supported. Please remove all HtmlImport annotations and use standard JavaScript or CSS imports.");
         }
