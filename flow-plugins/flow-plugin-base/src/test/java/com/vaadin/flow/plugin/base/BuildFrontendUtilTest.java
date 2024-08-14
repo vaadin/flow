@@ -82,9 +82,8 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
         Mockito.when(adapter.applicationIdentifier()).thenReturn("TEST_APP_ID");
-        ClassFinder classFinder = Mockito.mock(ClassFinder.class);
-        Mockito.when(classFinder.loadClass(ArgumentMatchers.anyString())).then(
-                i -> getClass().getClassLoader().loadClass(i.getArgument(0)));
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                getClass().getClassLoader());
         lookup = Mockito.spy(new LookupImpl(classFinder));
         Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
         Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
