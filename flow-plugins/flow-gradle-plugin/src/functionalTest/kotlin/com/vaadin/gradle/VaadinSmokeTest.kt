@@ -35,9 +35,9 @@ import java.nio.file.StandardCopyOption
  * other test classes will possibly fail as well.
  * @author mavi
  */
-class VaadinSmokeTest : AbstractGradleTest() {
+open class VaadinSmokeTest : AbstractGradleTest() {
     @Before
-    fun setup() {
+    open fun setup() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
@@ -106,7 +106,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
     @Test
     fun testBuildFrontendInProductionMode_customApplicationIdentifier() {
-        val result: BuildResult = testProject.build("-Pvaadin.applicationIdentifier=MY_APP_ID", "-Pvaadin.productionMode", "vaadinBuildFrontend", debug = true)
+        val result: BuildResult = testProject.build("-Pvaadin.applicationIdentifier=MY_APP_ID", "-Pvaadin.productionMode", "vaadinBuildFrontend")
         // vaadinBuildFrontend depends on vaadinPrepareFrontend
         // let's explicitly check that vaadinPrepareFrontend has been run
         result.expectTaskSucceded("vaadinPrepareFrontend")

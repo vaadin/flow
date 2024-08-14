@@ -25,7 +25,11 @@ import java.nio.file.Files
 import kotlin.io.path.writeText
 import kotlin.test.expect
 
-class MiscMultiModuleTest : AbstractGradleTest() {
+open class MiscMultiModuleTest : AbstractGradleTest() {
+    internal open fun extraGradleDSL(): String {
+        return ""
+    }
+
     /**
      * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/38
      */
@@ -60,6 +64,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                     nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
                 }
             }
+            ${extraGradleDSL()}
         """.trimIndent())
         testProject.newFolder("lib")
         testProject.newFolder("web")
@@ -104,6 +109,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                     nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
                 }
             }
+            ${extraGradleDSL()}
         """.trimIndent())
         testProject.newFolder("lib")
         testProject.newFolder("web")
@@ -142,6 +148,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             project(':lib') {
                 apply plugin: 'java'
             }
+            ${extraGradleDSL()}
         """.trimIndent())
         testProject.newFolder("lib")
         val webFolder = testProject.newFolder("web")
@@ -158,6 +165,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             vaadin {
                 nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
             }
+            ${extraGradleDSL()}
         """.trimIndent())
 
         val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)
@@ -191,6 +199,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             project(':lib') {
                 apply plugin: 'java'
             }
+            ${extraGradleDSL()}
         """.trimIndent())
         testProject.newFolder("lib")
         val webFolder = testProject.newFolder("web")
@@ -208,6 +217,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
                 applicationIdentifier = 'MY_APP_ID'
             }
+            ${extraGradleDSL()}
         """.trimIndent())
 
         val b: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend", checkTasksSuccessful = false)

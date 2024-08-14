@@ -424,7 +424,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
         """
         )
-        val result = testProject.build("vaadinPrepareFrontend", debug = true)
+        val result = testProject.build("vaadinPrepareFrontend")
         expect(false) { result.output.contains("org.reflections.ReflectionsException") }
     }
 
@@ -446,11 +446,11 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         """)
-        var result = testProject.build("vaadinPrepareFrontend", debug = true)
+        var result = testProject.build("vaadinPrepareFrontend")
         expect(true) { result.output.contains(
             "Task ':vaadinPrepareFrontend' is not up-to-date") }
 
-        result = testProject.build("vaadinPrepareFrontend", debug = true, checkTasksSuccessful = false)
+        result = testProject.build("vaadinPrepareFrontend", checkTasksSuccessful = false)
         result.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.UP_TO_DATE)
         println("Caching: " + result.output)
         expect(true) { result.output.contains(
@@ -475,7 +475,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 frontendHotdeploy = true
             }
         """)
-        result = testProject.build("vaadinPrepareFrontend", debug = true)
+        result = testProject.build("vaadinPrepareFrontend")
         println("Caching: " + result.output)
         expect(true) { result.output.contains(
             "Task ':vaadinPrepareFrontend' is not up-to-date") }
@@ -505,7 +505,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """
         )
         repeat(5) {
-            val result = testProject.build("vaadinPrepareFrontend", debug = true)
+            val result = testProject.build("vaadinPrepareFrontend")
             expect(true) {
                 result.output.contains(
                     "Task ':vaadinPrepareFrontend' is not up-to-date"

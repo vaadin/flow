@@ -21,10 +21,8 @@ import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import java.io.File
-import java.io.IOException
 import java.nio.file.FileSystems
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.PathMatcher
 import java.util.zip.ZipInputStream
 import kotlin.test.expect
@@ -230,10 +228,9 @@ class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVers
     val settingsFile: File get() = File(dir, "settings.gradle")
 
 
-    private fun createGradleRunner(debug: Boolean): GradleRunner = GradleRunner.create()
+    private fun createGradleRunner(): GradleRunner = GradleRunner.create()
         .withProjectDir(dir)
         .withPluginClasspath()
-        .withDebug(debug)
         .forwardOutput()   // a must, otherwise ./gradlew check freezes on windows!
         .withGradleVersion(gradleVersion)
 
@@ -267,11 +264,11 @@ class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVers
      * The function by default checks that all tasks have succeeded; if not, throws an informative exception.
      * You can suppress this functionality by setting [checkTasksSuccessful] to false.
      */
-    fun build(vararg args: String, checkTasksSuccessful: Boolean = true, debug: Boolean = false): BuildResult {
+    fun build(vararg args: String, checkTasksSuccessful: Boolean = true): BuildResult {
         expect(true, "$buildFile doesn't exist, can't run build") { buildFile.exists() }
 
         println("$dir/./gradlew ${args.joinToString(" ")}")
-        val result: BuildResult = createGradleRunner(debug)
+        val result: BuildResult = createGradleRunner()
             .withArguments(args.toList() + "--stacktrace" + "--info")
             .build()
 
@@ -291,7 +288,7 @@ class TestProject(val gradleVersion: String = if(JavaVersion.current().majorVers
      */
     fun buildAndFail(vararg args: String): BuildResult {
         println("$dir/./gradlew ${args.joinToString(" ")}")
-        return createGradleRunner(false)
+        return createGradleRunner()
                 .withArguments(args.toList() + "--stacktrace" + "--info")
                 .buildAndFail()
     }
