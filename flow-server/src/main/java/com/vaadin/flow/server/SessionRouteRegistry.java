@@ -296,18 +296,18 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Class<? extends RouterLayout> getLayout(String layout) {
-        if (super.hasLayout(layout)) {
-            return super.getLayout(layout);
+    public Class<? extends RouterLayout> getLayout(String path) {
+        if (super.hasLayout(path)) {
+            return super.getLayout(path);
         }
-        return getParentRegistry().getLayout(layout);
+        return getParentRegistry().getLayout(path);
     }
 
     @Override
-    public boolean hasLayout(String layout) {
-        if (super.hasLayout(layout)) {
+    public boolean hasLayout(String path) {
+        if (super.hasLayout(path)) {
             return true;
         }
-        return getParentRegistry().hasLayout(layout);
+        return getParentRegistry().hasLayout(path);
     }
 }

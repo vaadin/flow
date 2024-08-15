@@ -611,9 +611,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public Class<? extends RouterLayout> getLayout(String layout) {
+    public Class<? extends RouterLayout> getLayout(String path) {
         Optional<String> first = layouts.keySet().stream()
-                .filter(key -> Pattern.compile(key).matcher(layout).matches())
+                .sorted((o1, o2) -> removeStartSlash(o2).split("/").length
+                        - removeStartSlash(o1).split("/").length)
+                .filter(key -> pathMatches(path, key))// Pattern.compile(key).matcher(path).matches())
                 .findFirst();
         if (first.isPresent()) {
             return layouts.get(first.get());
@@ -622,9 +624,30 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public boolean hasLayout(String layout) {
-        return layouts.keySet().stream().filter(
-                key -> Pattern.compile(layout).matcher(layout).matches())
+    public boolean hasLayout(String path) {
+        return layouts.keySet().stream().filter(key -> pathMatches(path, key))// Pattern.compile(path).matcher(path).matches())
                 .findFirst().isPresent();
+    }
+
+    private boolean pathMatches(String path, String layoutPath) {
+        String[] pathSplit = removeStartSlash(path).split("/");
+        String[] layoutSplit = removeStartSlash(layoutPath).split("/");
+
+        if(layoutSplit.length == 1 && layoutSplit[0].isEmpty()){ return true;}
+
+        if (layoutSplit.length > pathSplit.length) {
+            return false;
+        }
+
+        for (int i = 0; i < layoutSplit.length; i++) {
+            if (!pathSplit[i].equals(layoutSplit[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String removeStartSlash(String path) {
+        return path.startsWith("/") ? path.substring(1, path.length()) : path;
     }
 }

@@ -281,21 +281,20 @@ public interface RouteRegistry extends Serializable {
     void setLayout(String identifier, Class<? extends RouterLayout> layout);
 
     /**
-     * Get the layout component for the given layout identifier.
+     * Get the layout component for the current path.
      *
-     * @param layout
-     *            layout identifier
+     * @param path
+     *            current path
      * @return {@link RouterLayout} component or null
      */
-    Class<? extends RouterLayout> getLayout(String layout);
+    Class<? extends RouterLayout> getLayout(String path);
 
     /**
-     * Check if a layout component has been registered for the layout
-     * identifier.
+     * Check if a layout component has been registered for the current path.
      *
-     * @param layout
-     *            layout identifier to check
+     * @param path
+     *            current path
      * @return {@code true} if layout exists
      */
-    boolean hasLayout(String layout);
+    boolean hasLayout(String path);
 }
