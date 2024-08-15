@@ -66,8 +66,11 @@ public class DefaultI18NProviderFactory implements Condition, Serializable {
                         Arrays.stream(translations).map(Resource::getFilename)
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList()));
-                return new DefaultI18NProvider(locales,
-                        DefaultI18NProviderFactory.class.getClassLoader());
+                // Makes use of the RestartClassLoader to invalidate the
+                // ResourceBundle cache on SpringBoot application dev mode
+                // reload. See https://github.com/vaadin/hilla/issues/2554
+                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                return new DefaultI18NProvider(locales, classLoader);
             }
         } catch (IOException e) {
             LoggerFactory.getLogger(DefaultI18NProviderFactory.class)
