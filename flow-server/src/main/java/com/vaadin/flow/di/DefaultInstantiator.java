@@ -130,8 +130,7 @@ public class DefaultInstantiator implements Instantiator {
         try {
             // Get i18n provider class if found in application
             // properties
-            Class<?> providerClass = DefaultInstantiator.class.getClassLoader()
-                    .loadClass(property);
+            Class<?> providerClass = getClassLoader().loadClass(property);
             if (I18NProvider.class.isAssignableFrom(providerClass)) {
 
                 return ReflectTools.createInstance(
@@ -154,8 +153,7 @@ public class DefaultInstantiator implements Instantiator {
         try {
             // Get Menu Access Control class if found in application
             // properties
-            Class<?> providerClass = DefaultInstantiator.class.getClassLoader()
-                    .loadClass(property);
+            Class<?> providerClass = getClassLoader().loadClass(property);
             if (MenuAccessControl.class.isAssignableFrom(providerClass)) {
 
                 return ReflectTools.createInstance(
@@ -175,7 +173,9 @@ public class DefaultInstantiator implements Instantiator {
     }
 
     protected ClassLoader getClassLoader() {
-        return getClass().getClassLoader();
+        // Use the application thread ClassLoader to invalidate ResourceBundle
+        // cache on dev mode reload. See https://github.com/vaadin/hilla/issues/2554
+        return Thread.currentThread().getContextClassLoader();
     }
 
     /**
