@@ -18,7 +18,10 @@ package com.vaadin.flow.component;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -58,6 +61,24 @@ public class ComponentUtil {
 
     static ReflectionCache<Component, ComponentMetaData> componentMetaDataCache = new ReflectionCache<>(
             ComponentMetaData::new);
+
+    private static final Map<String, Set<Class<? extends Component>>> tagToComponentsMap = new ConcurrentHashMap<>();
+
+    public static void registerComponentClass(String tag,
+            Class<? extends Component> componentClass) {
+        tagToComponentsMap
+                .computeIfAbsent(tag, k -> ConcurrentHashMap.newKeySet())
+                .add(componentClass);
+    }
+
+    public static Set<Class<? extends Component>> getComponentsByTag(
+            String tag) {
+        return tagToComponentsMap.getOrDefault(tag, Collections.emptySet());
+    }
+
+    public static Map<String, Set<Class<? extends Component>>> getAllTagMappings() {
+        return Collections.unmodifiableMap(tagToComponentsMap);
+    }
 
     private ComponentUtil() {
         // Util methods only
