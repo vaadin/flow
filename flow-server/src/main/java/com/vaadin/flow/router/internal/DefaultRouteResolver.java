@@ -50,11 +50,14 @@ public class DefaultRouteResolver implements RouteResolver {
                 .getNavigationRouteTarget(path);
 
         if (!navigationResult.hasTarget()) {
-            String clientLayout = MenuRegistry.getClientRouteLayout(path);
-            if (clientLayout != null && registry.hasLayout(clientLayout)) {
-                RouteTarget target = new RouteTarget(
-                        (Class<? extends Component>) registry
-                                .getLayout(clientLayout),
+            if (MenuRegistry.hasClientRoute(path)) {
+                Class<? extends Component> layout = (Class<? extends Component>) registry
+                        .getLayout(path);
+                if (layout == null) {
+                    throw new NotFoundException(
+                            "No layout for client path " + path);
+                }
+                RouteTarget target = new RouteTarget(layout,
                         Collections.emptyList());
                 navigationResult = new NavigationRouteTarget(
                         navigationResult.getPath(), target,

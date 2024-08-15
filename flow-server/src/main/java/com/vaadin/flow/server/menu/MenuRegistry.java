@@ -415,4 +415,14 @@ public class MenuRegistry {
         return null;
     }
 
+    public static boolean hasClientRoute(String route) {
+        route = route.isEmpty() ? route
+                : route.startsWith("/") ? route : "/" + route;
+        Map<String, AvailableViewInfo> clientItems = MenuRegistry
+                .collectClientMenuItems(true,
+                        VaadinSession.getCurrent().getConfiguration());
+        Set<String> clientRoutes = clientItems.keySet();
+        return clientRoutes.contains(route);
+    }
+
 }

@@ -26,9 +26,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
@@ -609,11 +612,19 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     @Override
     public Class<? extends RouterLayout> getLayout(String layout) {
-        return layouts.get(layout);
+        Optional<String> first = layouts.keySet().stream()
+                .filter(key -> Pattern.compile(key).matcher(layout).matches())
+                .findFirst();
+        if (first.isPresent()) {
+            return layouts.get(first.get());
+        }
+        return null;
     }
 
     @Override
     public boolean hasLayout(String layout) {
-        return layouts.containsKey(layout);
+        return layouts.keySet().stream().filter(
+                key -> Pattern.compile(layout).matcher(layout).matches())
+                .findFirst().isPresent();
     }
 }

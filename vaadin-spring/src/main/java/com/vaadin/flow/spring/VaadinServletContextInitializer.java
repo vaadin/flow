@@ -355,6 +355,13 @@ public class VaadinServletContextInitializer
                             "There are {} navigation targets after filtering route classes: {}",
                             navigationTargets.size(), navigationTargets);
 
+                    // Collect all layouts to use with Hilla as a main layout
+                    findByAnnotation(routePackages, Layout.class).filter(
+                            clazz -> RouterLayout.class.isAssignableFrom(clazz))
+                            .forEach(clazz -> registry.setLayout(
+                                    clazz.getAnnotation(Layout.class).value(),
+                                    (Class<? extends RouterLayout>) clazz));
+
                     RouteConfiguration routeConfiguration = RouteConfiguration
                             .forRegistry(registry);
                     routeConfiguration
@@ -362,13 +369,6 @@ public class VaadinServletContextInitializer
                                     navigationTargets));
                     registry.setPwaConfigurationClass(validatePwaClass(
                             vaadinServletContext, routeClasses.stream()));
-
-                    // Collect all layouts to use with Hilla as a main layout
-                    findByAnnotation(routePackages, Layout.class).filter(
-                            clazz -> RouterLayout.class.isAssignableFrom(clazz))
-                            .forEach(clazz -> registry.setLayout(
-                                    clazz.getAnnotation(Layout.class).value(),
-                                    (Class<? extends RouterLayout>) clazz));
 
                 } catch (InvalidRouteConfigurationException e) {
                     throw new IllegalStateException(e);

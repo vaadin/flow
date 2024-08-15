@@ -63,6 +63,13 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(context);
 
+            classSet.stream()
+                    .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
+                    .filter(clazz -> RouterLayout.class.isAssignableFrom(clazz))
+                    .forEach(clazz -> routeRegistry.setLayout(
+                            clazz.getAnnotation(Layout.class).value(),
+                            (Class<? extends RouterLayout>) clazz));
+
             Set<Class<? extends Component>> routes = validateRouteClasses(
                     context, routesSet.stream());
 
@@ -75,12 +82,6 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             });
             routeRegistry.setPwaConfigurationClass(validatePwaClass(context,
                     routes.stream().map(clazz -> clazz)));
-            classSet.stream()
-                    .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
-                    .filter(clazz -> RouterLayout.class.isAssignableFrom(clazz))
-                    .forEach(clazz -> routeRegistry.setLayout(
-                            clazz.getAnnotation(Layout.class).value(),
-                            (Class<? extends RouterLayout>) clazz));
         } catch (InvalidRouteConfigurationException irce) {
             throw new VaadinInitializerException(
                     "Exception while registering Routes on servlet startup",

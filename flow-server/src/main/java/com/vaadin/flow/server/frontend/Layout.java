@@ -31,9 +31,9 @@ public @interface Layout {
 
     /**
      * Sets the layout identifier value to link client view to server layout
-     * component. Default is "".
+     * component. Default is ".*".
      *
      * @return the set layout identifier value
      */
-    String value() default "";
+    String value() default ".*";
 }

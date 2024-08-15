@@ -97,6 +97,39 @@ public class RouteUtil {
         return list;
     }
 
+    public static List<Class<? extends RouterLayout>> getParentLayouts(
+            RouteRegistry handledRegistry, Class<?> component, String path) {
+        final List<Class<? extends RouterLayout>> list = new ArrayList<>();
+
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+        List<RouteAlias> routeAliases = AnnotationReader
+                .getAnnotationsFor(component, RouteAlias.class);
+
+        if (route.isPresent()
+                && path.equals(
+                        getRoutePath(handledRegistry.getContext(), component))
+                && !route.get().layout().equals(UI.class)) {
+            list.addAll(collectRouteParentLayouts(route.get().layout()));
+        } else if (route.isPresent()
+                && path.equals(
+                        getRoutePath(handledRegistry.getContext(), component))
+                && route.get().layout().equals(UI.class)
+                && handledRegistry.hasLayout(path)) {
+            list.addAll(
+                    collectRouteParentLayouts(handledRegistry.getLayout(path)));
+        } else {
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
+                    component, path, routeAliases);
+            if (matchingRoute.isPresent()) {
+                list.addAll(collectRouteParentLayouts(
+                        matchingRoute.get().layout()));
+            }
+        }
+
+        return list;
+    }
+
     /**
      * Get the actual route path including all parent layout
      * {@link RoutePrefix}.
