@@ -64,6 +64,17 @@ public class ComponentUtil {
 
     private static final Map<String, Set<Class<? extends Component>>> tagToComponentsMap = new ConcurrentHashMap<>();
 
+    /**
+     * Registers a component class with a specific HTML tag. This mapping is
+     * maintained in a static map and is used primarily during development mode
+     * for various component operations like rendering and event handling.
+     * <p>
+     *
+     * @param tag
+     *            The HTML tag associated with the component class.
+     * @param componentClass
+     *            The component class to be registered with the given tag.
+     */
     public static void registerComponentClass(String tag,
             Class<? extends Component> componentClass) {
         tagToComponentsMap
@@ -71,11 +82,35 @@ public class ComponentUtil {
                 .add(componentClass);
     }
 
+    /**
+     * Retrieves the set of component classes associated with a specific HTML
+     * tag.
+     * <p>
+     * Note: This method retrieves data from a mapping that is only populated in
+     * development mode. In production mode, this method will always return an
+     * empty set.
+     *
+     * @param tag
+     *            The HTML tag for which component classes are to be retrieved.
+     * @return A set of component classes associated with the specified HTML
+     *         tag. Returns an empty set if no classes are associated with the
+     *         tag or if running in production mode.
+     */
     public static Set<Class<? extends Component>> getComponentsByTag(
             String tag) {
         return tagToComponentsMap.getOrDefault(tag, Collections.emptySet());
     }
 
+    /**
+     * Provides access to the entire mapping of HTML tags to component classes.
+     * <p>
+     * Note: This mapping is only populated in development mode. The map is
+     * returned as unmodifiable to prevent external modifications.
+     *
+     * @return An unmodifiable map of HTML tags to sets of component classes.
+     *         This map is only populated in development mode and will be empty
+     *         in production mode.
+     */
     public static Map<String, Set<Class<? extends Component>>> getAllTagMappings() {
         return Collections.unmodifiableMap(tagToComponentsMap);
     }

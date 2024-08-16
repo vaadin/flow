@@ -69,8 +69,7 @@ public class DevModeClassFinderTest {
                 CssImport.Container.class, Theme.class, NoTheme.class,
                 HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
                 Template.class, LoadDependenciesOnStartup.class,
-                Component.class,
-                TypeScriptBootstrapModifier.class);
+                Component.class, TypeScriptBootstrapModifier.class);
 
         for (Class<?> clz : classes) {
             assertTrue("should be a known class " + clz.getName(),
