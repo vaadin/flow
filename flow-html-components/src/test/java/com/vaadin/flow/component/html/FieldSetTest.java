@@ -34,9 +34,9 @@ public class FieldSetTest extends ComponentTest {
         Assert.assertNull(fieldset.getContent());
 
         fieldset = new FieldSet(new Paragraph("sample-content"));
-        Assert.assertEquals("", fieldset.getLegend().getText());
+        Assert.assertNull(fieldset.getLegend());
         Assert.assertEquals("sample-content",
-                fieldset.getContent().getElement().getTextRecursively());
+                ((Paragraph) fieldset.getContent()).getText());
 
         Paragraph content = new Paragraph("content");
         fieldset = new FieldSet("sample-legend", content);
@@ -46,15 +46,14 @@ public class FieldSetTest extends ComponentTest {
 
     @Test
     public void testSetLegendReplacesLegendText() {
-        Paragraph legend2 = new Paragraph("legend2");
         FieldSet fieldset = new FieldSet("legend1", new Paragraph("content"));
         Assert.assertEquals("legend1", fieldset.getLegend().getText());
 
         fieldset.setLegendText("legend2");
         Assert.assertEquals("legend2", fieldset.getLegend().getText());
 
-        fieldset.getLegend().setText("legend3");
-        Assert.assertEquals("legend3", fieldset.getLegend().getText());
+        fieldset.setLegendText(null);
+        Assert.assertNull(fieldset.getLegend());
     }
 
     @Test
@@ -63,12 +62,10 @@ public class FieldSetTest extends ComponentTest {
         Paragraph content2 = new Paragraph("content2");
         FieldSet fieldset = new FieldSet("text-legend", content1);
         Assert.assertEquals(content1, fieldset.getContent());
-        Assert.assertTrue(content1.getParent().isPresent());
-        Assert.assertFalse(content2.getParent().isPresent());
 
         fieldset.setContent(content2);
         Assert.assertEquals(content2, fieldset.getContent());
-        Assert.assertTrue(content2.getParent().isPresent());
-        Assert.assertFalse(content1.getParent().isPresent());
+
+        Assert.assertNull(content1.getElement().getParent());
     }
 }

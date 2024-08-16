@@ -20,25 +20,20 @@ import java.util.Objects;
 import com.vaadin.flow.component.*;
 
 /**
- * Represents an HTML <fieldset> element with a nested <legend>. This component
- * is used to group several UI components within a form. Useful for organizing
- * fields that share a common context. For more complex forms, consider using
- * Vaadin's built-in
- * <a href="https://vaadin.com/docs/latest/components/form-layout">Form
- * Layout</a> component.
- *
- * @see <a href="https://vaadin.com/docs/latest/components/form-layout">Vaadin
- *      Form Layout Documentation</a>
+ * Represents an HTML <fieldset> element. This component is used to group
+ * several UI components within a form, enhancing form accessibility and
+ * organization.
  */
 @Tag("fieldset")
-public class FieldSet extends HtmlComponent implements ClickNotifier<FieldSet> {
+public class FieldSet extends HtmlContainer implements HasAriaLabel {
+
+    private Legend legend;
 
     /**
      * Represents an HTML <legend> element.
      */
     @Tag("legend")
-    public static class Legend extends HtmlContainer
-            implements ClickNotifier<Legend> {
+    public static class Legend extends HtmlContainer {
 
         /**
          * Creates a new empty legend.
@@ -59,7 +54,6 @@ public class FieldSet extends HtmlComponent implements ClickNotifier<FieldSet> {
         }
     }
 
-    private final Legend legend;
     private Component content;
 
     /**
@@ -67,8 +61,6 @@ public class FieldSet extends HtmlComponent implements ClickNotifier<FieldSet> {
      */
     public FieldSet() {
         super();
-        legend = new Legend();
-        getElement().appendChild(legend.getElement());
     }
 
     /**
@@ -79,7 +71,10 @@ public class FieldSet extends HtmlComponent implements ClickNotifier<FieldSet> {
      */
     public FieldSet(String legendText) {
         this();
-        this.legend.setText(legendText);
+        if (legendText != null && !legendText.isEmpty()) {
+            this.legend = new Legend(legendText);
+            getElement().appendChild(legend.getElement());
+        }
     }
 
     /**
@@ -122,7 +117,17 @@ public class FieldSet extends HtmlComponent implements ClickNotifier<FieldSet> {
      *            the text to set.
      */
     public void setLegendText(String text) {
-        legend.setText(text);
+        if (text != null && !text.isEmpty()) {
+            if (legend == null) {
+                legend = new Legend(text);
+                getElement().appendChild(legend.getElement());
+            } else {
+                legend.setText(text);
+            }
+        } else if (legend != null) {
+            legend.getElement().removeFromParent();
+            legend = null;
+        }
     }
 
     /**
