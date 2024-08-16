@@ -633,7 +633,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         String[] pathSplit = removeStartSlash(path).split("/");
         String[] layoutSplit = removeStartSlash(layoutPath).split("/");
 
-        if(layoutSplit.length == 1 && layoutSplit[0].isEmpty()){ return true;}
+        if (layoutSplit.length == 1 && layoutSplit[0].isEmpty()) {
+            return true;
+        }
 
         if (layoutSplit.length > pathSplit.length) {
             return false;

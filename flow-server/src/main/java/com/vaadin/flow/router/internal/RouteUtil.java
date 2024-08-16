@@ -111,7 +111,7 @@ public class RouteUtil {
                         getRoutePath(handledRegistry.getContext(), component))
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
-        } else if (route.isPresent()
+        } else if (route.isPresent() && route.get().autoLayout()
                 && path.equals(
                         getRoutePath(handledRegistry.getContext(), component))
                 && route.get().layout().equals(UI.class)

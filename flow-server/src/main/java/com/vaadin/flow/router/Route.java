@@ -114,4 +114,13 @@ public @interface Route {
      */
     boolean registerAtStartup() default true;
 
+    /**
+     * Marks if Route should apply a
+     * {@link com.vaadin.flow.server.frontend.Layout} matching route value when
+     * no {@link #layout()} defined. If set to false no layout will be searched
+     * for.
+     *
+     * @return {@code false} skips automatic layout
+     */
+    boolean autoLayout() default true;
 }

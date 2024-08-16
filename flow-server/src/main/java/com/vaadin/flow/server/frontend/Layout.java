@@ -33,8 +33,9 @@ public @interface Layout {
      * Sets the layout identifier value to link client view to server layout
      * component. Default is "/".
      * <p>
-     * Layout is linked by path so that anything matching the whole start match the rest.
-     * so "" or "/" matches all paths, but "/view" matches all paths starting with view path part so "/view/**".
+     * Layout is linked by path so that anything matching the whole start match
+     * the rest. so "" or "/" matches all paths, but "/view" matches all paths
+     * starting with view path part so "/view/**".
      * <p>
      * Note! context path is not taken into account.
      *
