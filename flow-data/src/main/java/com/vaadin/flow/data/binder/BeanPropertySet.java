@@ -331,8 +331,8 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                     .map(descriptor -> new BeanPropertyDefinition<>(this,
                             instanceKey.type, descriptor))
                     .collect(Collectors.toMap(PropertyDefinition::getName,
-                            Function.identity(),
-                            this::mergePropertyDefinitions, LinkedHashMap::new));
+                            Function.identity(), this::mergePropertyDefinitions,
+                            LinkedHashMap::new));
         } catch (IntrospectionException e) {
             throw new IllegalArgumentException(
                     "Cannot find property descriptors for "
