@@ -25,6 +25,9 @@ import java.util.Set;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -65,7 +68,7 @@ import com.vaadin.flow.theme.Theme;
         JavaScript.Container.class, Theme.class, NoTheme.class,
         HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
         Template.class, LoadDependenciesOnStartup.class,
-        TypeScriptBootstrapModifier.class })
+        TypeScriptBootstrapModifier.class, Component.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,
@@ -78,6 +81,14 @@ public class DevModeStartupListener
             throws VaadinInitializerException {
         lookupDevModeHandlerManager(context).initDevModeHandler(classes,
                 context);
+        classes.stream().filter(Component.class::isAssignableFrom)
+                .forEach(clazz -> {
+                    Tag tag = clazz.getAnnotation(Tag.class);
+                    if (tag != null) {
+                        ComponentUtil.registerComponentClass(tag.value(),
+                                (Class<? extends Component>) clazz);
+                    }
+                });
     }
 
     @Override
