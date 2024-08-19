@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import jakarta.servlet.annotation.HandlesTypes;
 
 import com.vaadin.base.devserver.startup.DevModeInitializer.DevModeClassFinder;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -68,7 +69,7 @@ public class DevModeClassFinderTest {
                 CssImport.Container.class, Theme.class, NoTheme.class,
                 HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
                 Template.class, LoadDependenciesOnStartup.class,
-                TypeScriptBootstrapModifier.class);
+                Component.class, TypeScriptBootstrapModifier.class);
 
         for (Class<?> clz : classes) {
             assertTrue("should be a known class " + clz.getName(),
