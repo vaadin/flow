@@ -58,6 +58,7 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.server.frontend.Layout;
 import com.vaadin.flow.server.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -603,10 +604,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private Map<String, Class<? extends RouterLayout>> layouts = new HashMap<>();
 
     @Override
-    public void setLayout(String identifier,
-            Class<? extends RouterLayout> layout) {
+    public void setLayout(Class<? extends RouterLayout> layout) {
         synchronized (layouts) {
-            layouts.put(identifier, layout);
+            layouts.put(layout.getAnnotation(Layout.class).value(), layout);
         }
     }
 
@@ -615,8 +615,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         Optional<String> first = layouts.keySet().stream()
                 .sorted((o1, o2) -> removeStartSlash(o2).split("/").length
                         - removeStartSlash(o1).split("/").length)
-                .filter(key -> pathMatches(path, key))// Pattern.compile(key).matcher(path).matches())
-                .findFirst();
+                .filter(key -> pathMatches(path, key)).findFirst();
         if (first.isPresent()) {
             return layouts.get(first.get());
         }
@@ -625,7 +624,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     @Override
     public boolean hasLayout(String path) {
-        return layouts.keySet().stream().filter(key -> pathMatches(path, key))// Pattern.compile(path).matcher(path).matches())
+        return layouts.keySet().stream().filter(key -> pathMatches(path, key))
                 .findFirst().isPresent();
     }
 

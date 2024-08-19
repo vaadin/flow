@@ -847,6 +847,8 @@ public class UIInternals implements Serializable {
                 && !getRouter().getRegistry()
                         .getNavigationTarget(viewLocation.getPath()).isPresent()
                 && target instanceof RouterLayout) {
+            // Add ReactRouterOutlet to RouterLayout if not targeting a server
+            // route when using react.
             try {
                 Component reactOutlet = Instantiator.get(ui)
                         .createComponent((Class<? extends Component>) getClass()
@@ -854,7 +856,8 @@ public class UIInternals implements Serializable {
                                         "com.vaadin.flow.component.react.ReactRouterOutlet"));
                 ((RouterLayout) target).showRouterLayoutContent(reactOutlet);
             } catch (ClassNotFoundException e) {
-
+                throw new IllegalStateException(
+                        "No ReactRouterOutlet available on classpath", e);
             }
         }
 

@@ -359,7 +359,6 @@ public class VaadinServletContextInitializer
                     findByAnnotation(routePackages, Layout.class).filter(
                             clazz -> RouterLayout.class.isAssignableFrom(clazz))
                             .forEach(clazz -> registry.setLayout(
-                                    clazz.getAnnotation(Layout.class).value(),
                                     (Class<? extends RouterLayout>) clazz));
 
                     RouteConfiguration routeConfiguration = RouteConfiguration

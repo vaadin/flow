@@ -136,8 +136,9 @@ public class MenuRegistry {
             String title = getTitle(route.getNavigationTarget());
             final String url = getRouteUrl(route);
             Map<String, RouteParamType> parameters = getParameters(route);
-            menuRoutes.put(url, new AvailableViewInfo(title, null, false, url,
-                    false, false, route.getMenuData(), null, parameters, false));
+            menuRoutes.put(url,
+                    new AvailableViewInfo(title, null, false, url, false, false,
+                            route.getMenuData(), null, parameters, false));
         }
     }
 

@@ -16,19 +16,26 @@
 package com.vaadin.flow.router;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ResolveRequest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.frontend.Layout;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.MenuRegistry;
 
 public class DefaultRouteResolverTest extends RoutingTestBase {
 
@@ -112,6 +119,30 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
         Assert.assertEquals(null,
                 resolveNavigationState("greeting/World/something"));
         Assert.assertEquals(null, resolveNavigationState("greeting"));
+    }
+
+    @Test
+    public void clientRouteRequest_getDefinedLayout() {
+        String path = "route";
+
+        router.getRegistry().setLayout(DefaultLayout.class);
+
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
+            menuRegistry.when(() -> MenuRegistry.hasClientRoute(path))
+                    .thenReturn(true);
+
+            NavigationState greeting = resolveNavigationState(path);
+            Assert.assertEquals(
+                    "Layout should be returned for a non server route when matching @Layout exists",
+                    DefaultLayout.class, greeting.getRouteTarget().getTarget());
+        }
+    }
+
+    @Tag("div")
+    @Layout
+    private static class DefaultLayout extends Component
+            implements RouterLayout {
     }
 
     private Class<? extends Component> resolveNavigationTarget(String path) {

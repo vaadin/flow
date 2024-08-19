@@ -271,14 +271,12 @@ public interface RouteRegistry extends Serializable {
     boolean hasMandatoryParameter(Class<? extends Component> navigationTarget);
 
     /**
-     * Set a layout component for given identifier.
+     * Set a layout component for use as automatic layout.
      *
-     * @param identifier
-     *            layout identifier
      * @param layout
-     *            {@link RouterLayout} class for identifier
+     *            {@link RouterLayout} class
      */
-    void setLayout(String identifier, Class<? extends RouterLayout> layout);
+    void setLayout(Class<? extends RouterLayout> layout);
 
     /**
      * Get the layout component for the current path.

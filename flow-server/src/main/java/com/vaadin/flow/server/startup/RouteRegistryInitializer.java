@@ -66,9 +66,8 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             classSet.stream()
                     .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
                     .filter(clazz -> RouterLayout.class.isAssignableFrom(clazz))
-                    .forEach(clazz -> routeRegistry.setLayout(
-                            clazz.getAnnotation(Layout.class).value(),
-                            (Class<? extends RouterLayout>) clazz));
+                    .forEach(clazz -> routeRegistry
+                            .setLayout((Class<? extends RouterLayout>) clazz));
 
             Set<Class<? extends Component>> routes = validateRouteClasses(
                     context, routesSet.stream());
