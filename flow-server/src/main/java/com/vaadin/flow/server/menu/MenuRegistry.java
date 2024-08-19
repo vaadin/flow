@@ -137,7 +137,7 @@ public class MenuRegistry {
             final String url = getRouteUrl(route);
             Map<String, RouteParamType> parameters = getParameters(route);
             menuRoutes.put(url, new AvailableViewInfo(title, null, false, url,
-                    false, false, route.getMenuData(), null, parameters, null));
+                    false, false, route.getMenuData(), null, parameters, false));
         }
     }
 
@@ -400,19 +400,6 @@ public class MenuRegistry {
      */
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
-    }
-
-    public static String getClientRouteLayout(String route) {
-        route = route.isEmpty() ? route
-                : route.startsWith("/") ? route : "/" + route;
-        Map<String, AvailableViewInfo> clientItems = MenuRegistry
-                .collectClientMenuItems(true,
-                        VaadinSession.getCurrent().getConfiguration());
-        Set<String> clientRoutes = clientItems.keySet();
-        if (clientRoutes.contains(route)) {
-            return clientItems.get(route).layout();
-        }
-        return null;
     }
 
     public static boolean hasClientRoute(String route) {

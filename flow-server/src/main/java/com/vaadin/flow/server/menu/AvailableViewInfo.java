@@ -43,7 +43,7 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                                 boolean loginRequired, String route, boolean lazy,
                                 boolean register, MenuData menu,
                                 List<AvailableViewInfo> children, @JsonProperty(
-        "params") Map<String, RouteParamType> routeParameters, String layout) implements Serializable {
+        "params") Map<String, RouteParamType> routeParameters, boolean flowLayout) implements Serializable {
 
     @Override
     public boolean equals(final Object o) {
@@ -61,7 +61,7 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 && Objects.equals(register, that.register)
                 && Objects.equals(menu, that.menu)
                 && Objects.equals(routeParameters, that.routeParameters)
-                && Objects.equals(layout, that.layout);
+                && Objects.equals(flowLayout, that.flowLayout);
     }
 
     @Override
@@ -80,7 +80,7 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + ", lazy=" + lazy
                 + ", register=" + register
                 + ", menu=" + menu
-                + ", layout=" + layout
+                + ", flowLayout=" + flowLayout
                 + ", routeParameters=" + routeParameters + '}';
     }
 
