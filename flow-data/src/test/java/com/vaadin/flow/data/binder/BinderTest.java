@@ -2690,11 +2690,11 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         TestTextField ageField = new TestTextField();
         ageField.setValue("");
 
-        binder.forField(nameField).bind("name");
         binder.forField(ageField)
                 .withConverter(
                         new StringToIntegerConverter(0, "Failed to convert"))
                 .bind("age");
+        binder.forField(nameField).bind("name");
         binder.readBean(new TestRecord("test", 42));
 
         // Check that fields are enabled for records

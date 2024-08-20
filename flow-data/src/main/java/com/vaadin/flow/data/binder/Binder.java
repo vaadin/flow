@@ -18,6 +18,7 @@ package com.vaadin.flow.data.binder;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2542,6 +2543,8 @@ public class Binder<BEAN> implements Serializable {
      * @return a record instance with current values
      * @throws ValidationException
      *             if some of the bound field values fail to validate
+     * @throws IllegalArgumentException
+     *             if record instantiation fails for any reason
      */
     public BEAN writeRecord() throws ValidationException {
         BEAN record = null;
@@ -2564,10 +2567,12 @@ public class Binder<BEAN> implements Serializable {
             boolean validatorsDisabledStatus = isValidatorsDisabled();
             setValidatorsDisabled(true);
             // Fetch all conversion results
-            List<? extends Result<?>> values = currentBindings.stream()
-                    .map(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                            .doConversion())
-                    .toList();
+            List<Result<?>> values = new ArrayList<>();
+            for (RecordComponent rc : beanType.getRecordComponents()) {
+                Result<?> value = ((BindingImpl<BEAN, ?, ?>) boundProperties
+                        .get(rc.getName())).doConversion();
+                values.add(value);
+            }
             setValidatorsDisabled(validatorsDisabledStatus);
 
             // Gather successfully converted values
@@ -2577,10 +2582,8 @@ public class Binder<BEAN> implements Serializable {
             try {
                 record = beanType.cast(beanType.getDeclaredConstructors()[0]
                         .newInstance(convertedValues.toArray()));
-            } catch (InstantiationException | IllegalAccessException
-                    | InvocationTargetException e) {
-                // TODO replace with something better
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                throw ReflectTools.convertInstantiationException(e, beanType);
             }
 
             // Now run bean level validation against the created record
