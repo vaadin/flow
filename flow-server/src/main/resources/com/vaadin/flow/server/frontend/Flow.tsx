@@ -233,6 +233,9 @@ function Flow() {
         }
 
         navigated.current = false;
+        // When navigation is triggered by click on a link, fromAnchor is set to true
+        // in order to get a server round-trip even when navigating to the same URL again
+        fromAnchor.current = true;
         navigate(path);
     }, [navigate]);
 
