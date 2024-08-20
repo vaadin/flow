@@ -253,6 +253,12 @@ public class BeanPropertySetTest {
                 "name");
         Assert.assertEquals("Property type is unexpected", namePropertyType,
                 String.class);
+
+        // Ensure props for Record are not sorted, but are in code order
+        List<PropertyDefinition<TestRecord, ?>> propertyList = definition
+                .getPropertySet().getProperties().toList();
+        Assert.assertEquals("name", propertyList.get(0).getName());
+        Assert.assertEquals("age", propertyList.get(1).getName());
     }
 
     @Test
