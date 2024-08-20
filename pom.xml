@@ -100,7 +100,7 @@
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-        <maven.surefire.plugin.version>3.3.1</maven.surefire.plugin.version>
+        <maven.surefire.plugin.version>3.4.0</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>3.3.1</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
@@ -110,7 +110,7 @@
         <jetty.version>12.0.12</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
-        <maven.version>3.9.8</maven.version>
+        <maven.version>3.9.9</maven.version>
 
         <!-- Frontend -->
         <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
@@ -217,7 +217,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.15.0</version>
+                <version>3.16.0</version>
             </dependency>
 
             <dependency>
@@ -241,7 +241,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.14.18</version>
+                <version>1.14.19</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>

@@ -1,6 +1,8 @@
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -18,8 +20,12 @@ import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.SystemMessagesInfo;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -291,4 +297,91 @@ public final class DAUUtils {
         return false;
     }
 
+    private static VaadinRequest createVaadinRequest(
+            VaadinService defaultVaadinService, HttpServletRequest request) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null) {
+            service = defaultVaadinService;
+        }
+        if (!(service instanceof VaadinServletService)) {
+            // Should never happen, but will prevent a class cast exception on
+            // request creation
+            service = null;
+        }
+        return new VaadinServletRequest(request,
+                (VaadinServletService) service);
+    }
+
+    /**
+     * Record to hold the DAU enforcement check result with the messages and the
+     * action to be run at the end of the request.
+     *
+     * @param messages
+     *            the enforcement messages or null if enforcement should not be
+     *            applied
+     * @param origin
+     *          the exception that caused the enforcement
+     * @param endRequestAction
+     *            the action to be run at the end of the request
+     */
+    public record EnforcementResult(EnforcementNotificationMessages messages,
+            RuntimeException origin, Runnable endRequestAction) {
+
+        public boolean isEnforcementNeeded() {
+            return messages != null;
+        }
+    }
+
+    /**
+     * Track DAU and check if enforcement should apply to the given request. If
+     * enforcement is needed, the enforcement messages are returned.
+     * <p>
+     * </p>
+     * Method checks if the current request should be considered for DAU
+     * tracking by using {@link #isDauEnabled(VaadinService)}.
+     *
+     * @param defaultVaadinService
+     *            the default VaadinService to use if the current service is not
+     *            available
+     * @param request
+     *            the request. Cannot be null.
+     * @param response
+     *            the response
+     * @return the enforcement result. Never null.
+     */
+    public static EnforcementResult trackDAU(VaadinService defaultVaadinService,
+            HttpServletRequest request, HttpServletResponse response) {
+        assert request != null;
+
+        VaadinRequest vaadinRequest = createVaadinRequest(defaultVaadinService,
+                request);
+        VaadinService service = vaadinRequest.getService();
+        VaadinResponse vaadinResponse = (response != null)
+                ? new VaadinServletResponse(response,
+                        (VaadinServletService) service)
+                : null;
+
+        Runnable endRequestAction = null;
+        if (service != null) {
+            endRequestAction = () -> {
+                // Do not provide VaadinResponse to prevent interceptor to alter
+                // the http response
+                service.requestEnd(vaadinRequest, null, null);
+            };
+            try {
+                DAUUtils.TrackableOperation.INSTANCE.execute(() -> {
+                    service.requestStart(vaadinRequest, vaadinResponse);
+                    if (DAUUtils.isDauEnabled(service)) {
+                        FlowDauIntegration.applyEnforcement(vaadinRequest,
+                                unused -> true);
+                    }
+                });
+            } catch (DauEnforcementException e) {
+                EnforcementNotificationMessages messages = DAUUtils
+                        .getEnforcementNotificationMessages(vaadinRequest);
+                return new EnforcementResult(messages, e, endRequestAction);
+            }
+        }
+        return new EnforcementResult(null, null, endRequestAction);
+    }
 }
