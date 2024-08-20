@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.*;
 
 /**
- * Represents an HTML <fieldset> element. This component is used to group
+ * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is used to group
  * several UI components within a form, enhancing form accessibility and
  * organization.
  */
@@ -31,7 +31,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
     private Legend legend;
 
     /**
-     * Represents an HTML <legend> element.
+     * Represents an HTML <code>&lt;legend&gt;</code> element.
      */
     @Tag("legend")
     public static class Legend extends HtmlContainer {
