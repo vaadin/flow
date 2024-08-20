@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "async": "3.2.5",
-    "glob": "11.0.0",
+    "glob": "10.4.5",
     "typescript": "5.5.4",
     "workbox-core": "7.1.0",
     "workbox-precaching": "7.1.0",
