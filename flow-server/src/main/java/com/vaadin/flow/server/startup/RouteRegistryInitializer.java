@@ -63,7 +63,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(context);
 
-            classSet.stream()
+            routesSet.stream()
                     .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
                     .filter(clazz -> RouterLayout.class.isAssignableFrom(clazz))
                     .forEach(clazz -> routeRegistry

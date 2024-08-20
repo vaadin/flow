@@ -404,6 +404,9 @@ public class MenuRegistry {
     }
 
     public static boolean hasClientRoute(String route) {
+        if (VaadinSession.getCurrent() == null) {
+            return false;
+        }
         route = route.isEmpty() ? route
                 : route.startsWith("/") ? route : "/" + route;
         Map<String, AvailableViewInfo> clientItems = MenuRegistry
