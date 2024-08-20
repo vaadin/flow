@@ -99,6 +99,7 @@ public class HtmlComponentSmokeTest {
     static {
         ignoredStringConstructors.add(IFrame.class);
         ignoredStringConstructors.add(NativeDetails.class);
+        ignoredStringConstructors.add(FieldSet.class);
     }
 
     @Test

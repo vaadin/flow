@@ -68,4 +68,12 @@ public class FieldSetTest extends ComponentTest {
 
         Assert.assertNull(content1.getElement().getParent());
     }
+
+    @Test
+    public void testFieldSetLegendTextSetting() {
+        String expectedText = "Test Legend";
+        FieldSet fieldSet = new FieldSet(expectedText);
+        Assert.assertEquals("The legend text should be set correctly.",
+                expectedText, fieldSet.getLegend().getText());
+    }
 }

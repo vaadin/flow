@@ -131,6 +131,15 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
     }
 
     /**
+     * Gets the text of the legend.
+     *
+     * @return the text of the legend, or null if no legend is present.
+     */
+    public String getLegendText() {
+        return (legend != null) ? legend.getText() : null;
+    }
+
+    /**
      * Returns the content of the fieldset.
      *
      * @return the content component, can be null.
@@ -147,10 +156,16 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      */
     public void setContent(Component content) {
         Objects.requireNonNull(content, "Content cannot be null");
+
         if (this.content != null) {
             this.content.getElement().removeFromParent();
         }
         this.content = content;
+        if (content.getParent().isPresent()) {
+            content.getElement().removeFromParent();
+        }
+
         getElement().appendChild(content.getElement());
     }
+
 }
