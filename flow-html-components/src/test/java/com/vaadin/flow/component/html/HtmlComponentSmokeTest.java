@@ -243,6 +243,11 @@ public class HtmlComponentSmokeTest {
             return true;
         }
 
+        if (method.getDeclaringClass() == FieldSet.class
+                && method.getName().startsWith("setContent")) {
+            return true;
+        }
+
         return false;
     }
 

@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.*;
 
@@ -54,8 +55,6 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
         }
     }
 
-    private Component content;
-
     /**
      * Creates a new fieldset with an empty legend.
      */
@@ -73,7 +72,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
         this();
         if (legendText != null && !legendText.isEmpty()) {
             this.legend = new Legend(legendText);
-            getElement().appendChild(legend.getElement());
+            addComponentAsFirst(legend);
         }
     }
 
@@ -83,9 +82,8 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      * @param content
      *            the content component to set.
      */
-    public FieldSet(Component content) {
-        this();
-        setContent(content);
+    public FieldSet(Component... content) {
+        super(content);
     }
 
     /**
@@ -98,7 +96,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      */
     public FieldSet(String legendText, Component content) {
         this(legendText);
-        setContent(content);
+        add(content);
     }
 
     /**
@@ -120,12 +118,12 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
         if (text != null && !text.isEmpty()) {
             if (legend == null) {
                 legend = new Legend(text);
-                getElement().appendChild(legend.getElement());
+                addComponentAsFirst(legend);
             } else {
                 legend.setText(text);
             }
         } else if (legend != null) {
-            legend.getElement().removeFromParent();
+            remove(legend);
             legend = null;
         }
     }
@@ -142,30 +140,25 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
     /**
      * Returns the content of the fieldset.
      *
-     * @return the content component, can be null.
+     * @return Stream of content components
      */
-    public Component getContent() {
-        return content;
+    public Stream<Component> getContent() {
+        return legend == null ? getChildren() : getChildren().skip(1);
     }
 
     /**
      * Sets the content of the fieldset and removes previously set content.
      *
      * @param content
-     *            the content of the fieldset to set.
+     *            the content components of the fieldset to set.
      */
-    public void setContent(Component content) {
-        Objects.requireNonNull(content, "Content cannot be null");
-
-        if (this.content != null) {
-            this.content.getElement().removeFromParent();
+    public void setContent(Component... content) {
+        Objects.requireNonNull(content, "Content should not be null");
+        removeAll();
+        if (legend != null) {
+            addComponentAsFirst(legend);
         }
-        this.content = content;
-        if (content.getParent().isPresent()) {
-            content.getElement().removeFromParent();
-        }
-
-        getElement().appendChild(content.getElement());
+        add(content);
     }
 
 }
