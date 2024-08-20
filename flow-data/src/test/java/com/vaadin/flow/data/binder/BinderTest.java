@@ -2678,6 +2678,43 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertEquals("Name", nameField.getValue());
     }
 
+    public record TestRecord(String name, int age) {
+    }
+
+    @Test
+    public void readRecord_writeRecord() throws ValidationException {
+        Binder<TestRecord> binder = new Binder<>(TestRecord.class);
+
+        TestTextField nameField = new TestTextField();
+        nameField.setValue("");
+        TestTextField ageField = new TestTextField();
+        ageField.setValue("");
+
+        binder.forField(nameField).bind("name");
+        binder.forField(ageField)
+                .withConverter(
+                        new StringToIntegerConverter(0, "Failed to convert"))
+                .bind("age");
+        binder.readBean(new TestRecord("test", 42));
+
+        // Check that fields are enabled for records
+        Assert.assertFalse(nameField.isReadOnly());
+        Assert.assertFalse(ageField.isReadOnly());
+
+        // Check valid record writing
+        nameField.setValue("foo");
+        ageField.setValue("50");
+        TestRecord testRecord = binder.writeRecord();
+        Assert.assertEquals("foo", testRecord.name);
+        Assert.assertEquals(50, testRecord.age);
+
+        // Check that invalid record writing fails
+        ageField.setValue("invalid value");
+        assertThrows(ValidationException.class, () -> {
+            TestRecord failedRecord = binder.writeRecord();
+        });
+    }
+
     private TestTextField createNullRejectingFieldWithEmptyValue(
             String emptyValue) {
         return new TestTextField() {

@@ -1053,7 +1053,7 @@ public class Binder<BEAN> implements Serializable {
             if (getBinder().getBean() != null) {
                 binding.initFieldValue(getBinder().getBean(), true);
             }
-            if (setter == null) {
+            if (setter == null && !binder.isRecord) {
                 binding.getField().setReadOnly(true);
             }
             getBinder().fireStatusChangeEvent(false);
@@ -1792,6 +1792,10 @@ public class Binder<BEAN> implements Serializable {
 
     private BEAN bean;
 
+    private boolean isRecord;
+
+    private Class<BEAN> beanType;
+
     private final Collection<Binding<BEAN, ?>> bindings = new ArrayList<>();
 
     private Map<HasValue<?, ?>, BindingBuilder<BEAN, ?>> incompleteBindings;
@@ -1834,8 +1838,8 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Creates a new binder that uses reflection based on the provided bean type
-     * to resolve bean properties.
+     * Creates a new binder that uses reflection based on the provided bean or
+     * record type to resolve its properties.
      *
      * Nested properties are resolved lazily, when bound to a field.
      *
@@ -1844,6 +1848,10 @@ public class Binder<BEAN> implements Serializable {
      */
     public Binder(Class<BEAN> beanType) {
         this(BeanPropertySet.get(beanType));
+        isRecord = beanType.isRecord();
+        if (isRecord) {
+            this.beanType = beanType;
+        }
     }
 
     /**
@@ -1874,8 +1882,8 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Creates a new binder that uses reflection based on the provided bean type
-     * to resolve bean properties.
+     * Creates a new binder that uses reflection based on the provided bean or
+     * record type to resolve its properties.
      *
      * If {@code scanNestedDefinitions} is true, nested properties are detected
      * eagerly. Otherwise, they will be discovered lazily when the property is
@@ -1889,6 +1897,10 @@ public class Binder<BEAN> implements Serializable {
     public Binder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
         this(BeanPropertySet.get(beanType, scanNestedDefinitions,
                 PropertyFilterDefinition.getDefaultFilter()));
+        isRecord = beanType.isRecord();
+        if (isRecord) {
+            this.beanType = beanType;
+        }
     }
 
     /**
@@ -2249,6 +2261,10 @@ public class Binder<BEAN> implements Serializable {
      *            bean and clear bound fields
      */
     public void setBean(BEAN bean) {
+        if (isRecord) {
+            throw new IllegalStateException(
+                    "setBean can't be used with records, call readBean instead");
+        }
         checkBindingsCompleted("setBean");
         if (bean == null) {
             if (this.bean != null) {
@@ -2278,20 +2294,21 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Reads the bound property values from the given bean to the corresponding
-     * fields.
+     * Reads the bound property values from the given bean or record to the
+     * corresponding fields.
      * <p>
-     * The bean is not otherwise associated with this binder; in particular its
-     * property values are not bound to the field value changes. To achieve
-     * that, use {@link #setBean(Object)}.
+     * The bean or record is not otherwise associated with this binder; in
+     * particular its property values are not bound to the field value changes.
+     * To achieve that, use {@link #setBean(Object)}.
      *
      * @see #setBean(Object)
      * @see #writeBeanIfValid(Object)
      * @see #writeBean(Object)
+     * @see #writeRecord()
      *
      * @param bean
-     *            the bean whose property values to read or {@code null} to
-     *            clear bound fields
+     *            the bean or record whose property values to read or
+     *            {@code null} to clear bound fields
      */
     public void readBean(BEAN bean) {
         checkBindingsCompleted("readBean");
@@ -2509,6 +2526,84 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Writes values from the bound fields to a new record instance if all
+     * validators (binding and bean level) pass. This method can only be used if
+     * Binder was originally configured to use a record type.
+     * <p>
+     * If any field binding validator fails, no values are written and a
+     * {@code ValidationException} is thrown.
+     * <p>
+     * If all field level validators pass, a record is intanciated and bean
+     * level validators are run on the new record. If any bean level validator
+     * fails a {@code ValidationException} is thrown.
+     *
+     * @see #readBean(Object)
+     *
+     * @return a record instance with current values
+     * @throws ValidationException
+     *             if some of the bound field values fail to validate
+     */
+    public BEAN writeRecord() throws ValidationException {
+        BEAN record = null;
+        List<ValidationResult> binderResults = Collections.emptyList();
+
+        // make a copy of the incoming bindings to avoid their modifications
+        // during validation
+        Collection<Binding<BEAN, ?>> currentBindings = new ArrayList<>(
+                bindings);
+
+        // First run fields level validation, if no validation errors then
+        // create a record.
+        List<BindingValidationStatus<?>> bindingResults = currentBindings
+                .stream().map(b -> b.validate(false))
+                .collect(Collectors.toList());
+
+        if (bindingResults.stream()
+                .noneMatch(BindingValidationStatus::isError)) {
+            // Field level validation can be skipped as it was done already
+            boolean validatorsDisabledStatus = isValidatorsDisabled();
+            setValidatorsDisabled(true);
+            // Fetch all conversion results
+            List<? extends Result<?>> values = currentBindings.stream()
+                    .map(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                            .doConversion())
+                    .toList();
+            setValidatorsDisabled(validatorsDisabledStatus);
+
+            // Gather successfully converted values
+            final List<Object> convertedValues = new ArrayList<>();
+            values.forEach(value -> value.ifOk(convertedValues::add));
+
+            try {
+                record = beanType.cast(beanType.getDeclaredConstructors()[0]
+                        .newInstance(convertedValues.toArray()));
+            } catch (InstantiationException | IllegalAccessException
+                    | InvocationTargetException e) {
+                // TODO replace with something better
+                throw new RuntimeException(e);
+            }
+
+            // Now run bean level validation against the created record
+            bean = record;
+            binderResults = validateBean(bean);
+            bean = null;
+            if (binderResults.stream().noneMatch(ValidationResult::isError)) {
+                changedBindings.clear();
+            }
+        }
+
+        // Generate status object and fire events.
+        BinderValidationStatus<BEAN> status = new BinderValidationStatus<>(this,
+                bindingResults, binderResults);
+        getValidationStatusHandler().statusChange(status);
+        fireStatusChangeEvent(!status.isOk());
+        if (!status.isOk()) {
+            throw new ValidationException(bindingResults, binderResults);
+        }
+        return record;
+    }
+
+    /**
      * Writes the field values into the given bean if all field level validators
      * pass. Runs bean level validators on the bean after writing.
      * <p>
@@ -2525,6 +2620,10 @@ public class Binder<BEAN> implements Serializable {
     @SuppressWarnings("unchecked")
     private BinderValidationStatus<BEAN> doWriteIfValid(BEAN bean,
             Collection<Binding<BEAN, ?>> bindings) {
+        if (isRecord) {
+            throw new IllegalStateException(
+                    "writeBean methods can't be used with records, call writeRecord instead");
+        }
         Objects.requireNonNull(bean, "bean cannot be null");
         List<ValidationResult> binderResults = Collections.emptyList();
 
@@ -2597,7 +2696,10 @@ public class Binder<BEAN> implements Serializable {
     private void doWriteDraft(BEAN bean, Collection<Binding<BEAN, ?>> bindings,
             boolean forced) {
         Objects.requireNonNull(bean, "bean cannot be null");
-
+        if (isRecord) {
+            throw new IllegalStateException(
+                    "writeBean methods can't be used with records, call writeRecord instead");
+        }
         if (!forced) {
             bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
                     .writeFieldValue(bean));
