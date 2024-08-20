@@ -615,4 +615,57 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
     }
 
+    /**
+     * Estimates are not supported in HierarchicalDataCommunicator
+     */
+    @Override
+    public void setItemCountEstimate(int itemCountEstimate) {
+        throw new UnsupportedOperationException(
+                "Not supported in HierarchicalDataCommunicator");
+    }
+
+    /**
+     * Estimates are not supported in HierarchicalDataCommunicator
+     */
+    @Override
+    public int getItemCountEstimate() {
+        throw new UnsupportedOperationException(
+                "Not supported in HierarchicalDataCommunicator");
+    }
+
+    /**
+     * Estimates are not supported in HierarchicalDataCommunicator
+     */
+    @Override
+    public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
+        throw new UnsupportedOperationException(
+                "Not supported in HierarchicalDataCommunicator");
+    }
+
+    /**
+     * Estimates are not supported in HierarchicalDataCommunicator
+     */
+    @Override
+    public int getItemCountEstimateIncrease() {
+        throw new UnsupportedOperationException(
+                "Not supported in HierarchicalDataCommunicator");
+    }
+
+    /**
+     * Estimates are not supported in HierarchicalDataCommunicator
+     */
+    @Override
+    public void setDefinedSize(boolean definedSize) {
+        throw new UnsupportedOperationException(
+                "Not supported in HierarchicalDataCommunicator");
+    }
+
+    /**
+     * Estimates are not supported in HierarchicalDataCommunicator. Therefore
+     * this method will always return {@literal true}
+     */
+    @Override
+    public boolean isDefinedSize() {
+        return true;
+    }
 }

@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -257,13 +259,15 @@ public class BeanPropertySet<T> implements PropertySet<T> {
         private boolean checkNestedDefinitions;
         private int depth;
         private List<String> ignorePackageNames;
+        private final boolean isRecord;
 
         public InstanceKey(Class<T> type, boolean checkNestedDefinitions,
-                int depth, List<String> ignorePackageNames) {
+                int depth, List<String> ignorePackageNames, boolean isRecord) {
             this.type = type;
             this.checkNestedDefinitions = checkNestedDefinitions;
             this.depth = depth;
             this.ignorePackageNames = ignorePackageNames;
+            this.isRecord = isRecord;
         }
 
         @Override
@@ -272,6 +276,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
             int result = 1;
             result = prime * result + (checkNestedDefinitions ? 1231 : 1237);
             result = prime * result + depth;
+            result = prime * result + (isRecord ? 1249 : 1259);
             result = prime * result + ((ignorePackageNames == null) ? 0
                     : ignorePackageNames.hashCode());
             result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -303,6 +308,9 @@ public class BeanPropertySet<T> implements PropertySet<T> {
             } else if (!ignorePackageNames.equals(other.ignorePackageNames)) {
                 return false;
             }
+            if (isRecord != other.isRecord) {
+                return false;
+            }
             return Objects.equals(type, other.type);
         }
 
@@ -323,8 +331,8 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                     .map(descriptor -> new BeanPropertyDefinition<>(this,
                             instanceKey.type, descriptor))
                     .collect(Collectors.toMap(PropertyDefinition::getName,
-                            Function.identity(),
-                            this::mergePropertyDefinitions));
+                            Function.identity(), this::mergePropertyDefinitions,
+                            LinkedHashMap::new));
         } catch (IntrospectionException e) {
             throw new IllegalArgumentException(
                     "Cannot find property descriptors for "
@@ -431,7 +439,8 @@ public class BeanPropertySet<T> implements PropertySet<T> {
     @SuppressWarnings("unchecked")
     public static <T> PropertySet<T> get(Class<? extends T> beanType) {
         Objects.requireNonNull(beanType, "Bean type cannot be null");
-        InstanceKey key = new InstanceKey(beanType, false, 0, null);
+        InstanceKey key = new InstanceKey(beanType, false, 0, null,
+                beanType.isRecord());
         // Cache the reflection results
         return (PropertySet<T>) INSTANCES
                 .computeIfAbsent(key, ignored -> new BeanPropertySet<>(key))
@@ -462,7 +471,8 @@ public class BeanPropertySet<T> implements PropertySet<T> {
         Objects.requireNonNull(beanType, "Bean type cannot be null");
         InstanceKey key = new InstanceKey(beanType, false,
                 filterDefinition.getMaxNestingDepth(),
-                filterDefinition.getIgnorePackageNamesStartingWith());
+                filterDefinition.getIgnorePackageNamesStartingWith(),
+                beanType.isRecord());
         return (PropertySet<T>) INSTANCES
                 .computeIfAbsent(key, k -> new BeanPropertySet<>(key,
                         checkNestedDefinitions, filterDefinition))
@@ -471,7 +481,12 @@ public class BeanPropertySet<T> implements PropertySet<T> {
 
     @Override
     public Stream<PropertyDefinition<T, ?>> getProperties() {
-        return definitions.values().stream();
+        if (instanceKey.isRecord) {
+            return definitions.values().stream();
+        } else {
+            return definitions.values().stream()
+                    .sorted(Comparator.comparing(PropertyDefinition::getName));
+        }
     }
 
     @Override
