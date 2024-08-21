@@ -503,7 +503,7 @@ public class ReflectTools implements Serializable {
 
     /**
      * Helper to handle all exceptions which might occur during class
-     * instantiation and throws an {@link IllegalArgumentException} with a
+     * instantiation and returns an {@link IllegalArgumentException} with a
      * descriptive error message hinting of what might be wrong with the class
      * that could not be instantiated. Descriptive message is derived based on
      * the information about the {@code clazz}.
@@ -512,6 +512,7 @@ public class ReflectTools implements Serializable {
      *            original exception
      * @param clazz
      *            instantiation target class
+     * @return an IllegalArgumentException with descriptive message
      */
     public static IllegalArgumentException convertInstantiationException(
             Exception exception, Class<?> clazz) {
