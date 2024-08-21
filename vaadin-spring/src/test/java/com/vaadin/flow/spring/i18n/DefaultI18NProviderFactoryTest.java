@@ -11,32 +11,26 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.*;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
 @RunWith(SpringRunner.class)
-@Import(DefaultI18NProviderFactoryTest.TestConfiguration.class)
+@Import(VaadinApplicationConfiguration.class)
 @NotThreadSafe
 public class DefaultI18NProviderFactoryTest {
 
@@ -48,11 +42,6 @@ public class DefaultI18NProviderFactoryTest {
     static private ClassLoader testClassLoader;
 
     static private TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Configuration
-    @Import(VaadinApplicationConfiguration.class)
-    public static class TestConfiguration {
-    }
 
     @BeforeClass
     static public void setup() throws IOException {
