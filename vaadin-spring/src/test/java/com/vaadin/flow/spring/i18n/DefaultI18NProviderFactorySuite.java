@@ -6,6 +6,6 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @NotThreadSafe
-@Suite.SuiteClasses( {DefaultI18NProviderFactoryTest.class} )
+@Suite.SuiteClasses({ DefaultI18NProviderFactoryTest.class })
 public class DefaultI18NProviderFactorySuite {
 }

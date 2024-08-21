@@ -63,26 +63,30 @@ public class DefaultI18NProviderFactoryTest {
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
         testClassLoader = new URLClassLoader(
-                new URL[] { resources.toURI().toURL() }, DefaultI18NProviderFactory.class.getClassLoader());
+                new URL[] { resources.toURI().toURL() },
+                DefaultI18NProviderFactory.class.getClassLoader());
         Thread.currentThread().setContextClassLoader(testClassLoader);
 
         Resource translationResource = new DefaultResourceLoader()
                 .getResource(DefaultI18NProvider.BUNDLE_FOLDER + "/"
                         + DefaultI18NProvider.BUNDLE_FILENAME + ".properties");
 
-        pathMatchingResourcePatternResolverMockedConstruction = Mockito.mockConstruction(PathMatchingResourcePatternResolver.class,
-                (mock, context) -> {
-                    Mockito.when(mock.getPathMatcher()).thenCallRealMethod();
-                    Mockito.when(mock.getResources(Mockito.anyString()))
-                            .thenAnswer(invocationOnMock -> {
-                                String pattern = invocationOnMock
-                                        .getArgument(0);
-                                Assert.assertEquals(
-                                        "classpath*:/vaadin-i18n/*.properties",
-                                        pattern);
-                                return new Resource[] { translationResource };
-                            });
-                });
+        pathMatchingResourcePatternResolverMockedConstruction = Mockito
+                .mockConstruction(PathMatchingResourcePatternResolver.class,
+                        (mock, context) -> {
+                            Mockito.when(mock.getPathMatcher())
+                                    .thenCallRealMethod();
+                            Mockito.when(mock.getResources(Mockito.anyString()))
+                                    .thenAnswer(invocationOnMock -> {
+                                        String pattern = invocationOnMock
+                                                .getArgument(0);
+                                        Assert.assertEquals(
+                                                "classpath*:/vaadin-i18n/*.properties",
+                                                pattern);
+                                        return new Resource[] {
+                                                translationResource };
+                                    });
+                        });
     }
 
     @AfterClass
