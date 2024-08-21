@@ -2543,6 +2543,8 @@ public class Binder<BEAN> implements Serializable {
      * @return a record instance with current values
      * @throws ValidationException
      *             if some of the bound field values fail to validate
+     * @throws IllegalStateException
+     *             if a record component does not have a binding
      * @throws IllegalArgumentException
      *             if record instantiation fails for any reason
      */
@@ -2569,9 +2571,19 @@ public class Binder<BEAN> implements Serializable {
             // Fetch all conversion results
             List<Result<?>> values = new ArrayList<>();
             for (RecordComponent rc : beanType.getRecordComponents()) {
-                Result<?> value = ((BindingImpl<BEAN, ?, ?>) boundProperties
-                        .get(rc.getName())).doConversion();
-                values.add(value);
+                String name = rc.getName();
+                if (boundProperties.containsKey(name)) {
+                    Result<?> value = ((BindingImpl<BEAN, ?, ?>) boundProperties
+                            .get(name)).doConversion();
+                    values.add(value);
+                } else {
+                    throw new IllegalStateException(
+                            "Unable to create record since no "
+                                    + "binding was found for record component '"
+                                    + name
+                                    + "'. Please create bindings for all record components "
+                                    + "using their names as the propertyName.");
+                }
             }
             setValidatorsDisabled(validatorsDisabledStatus);
 
