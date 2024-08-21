@@ -10,6 +10,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -43,6 +44,8 @@ public class DefaultI18NProviderFactoryTest {
 
     static private TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    static volatile private MockedConstruction<PathMatchingResourcePatternResolver> pathMatchingResourcePatternResolverMockedConstruction;
+
     @BeforeClass
     static public void setup() throws IOException {
         originalClassLoader = Thread.currentThread().getContextClassLoader();
@@ -60,14 +63,14 @@ public class DefaultI18NProviderFactoryTest {
                 StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 
         testClassLoader = new URLClassLoader(
-                new URL[] { resources.toURI().toURL() });
+                new URL[] { resources.toURI().toURL() }, DefaultI18NProviderFactory.class.getClassLoader());
         Thread.currentThread().setContextClassLoader(testClassLoader);
 
         Resource translationResource = new DefaultResourceLoader()
                 .getResource(DefaultI18NProvider.BUNDLE_FOLDER + "/"
                         + DefaultI18NProvider.BUNDLE_FILENAME + ".properties");
 
-        Mockito.mockConstruction(PathMatchingResourcePatternResolver.class,
+        pathMatchingResourcePatternResolverMockedConstruction = Mockito.mockConstruction(PathMatchingResourcePatternResolver.class,
                 (mock, context) -> {
                     Mockito.when(mock.getPathMatcher()).thenCallRealMethod();
                     Mockito.when(mock.getResources(Mockito.anyString()))
@@ -84,6 +87,7 @@ public class DefaultI18NProviderFactoryTest {
 
     @AfterClass
     static public void teardown() throws Exception {
+        pathMatchingResourcePatternResolverMockedConstruction.close();
         Thread.currentThread().setContextClassLoader(originalClassLoader);
     }
 
