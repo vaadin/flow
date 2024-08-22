@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.*;
@@ -27,8 +28,6 @@ import com.vaadin.flow.component.*;
  */
 @Tag("fieldset")
 public class FieldSet extends HtmlContainer implements HasAriaLabel {
-
-    private Legend legend;
 
     /**
      * Represents an HTML <code>&lt;legend&gt;</code> element.
@@ -71,8 +70,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
     public FieldSet(String legendText) {
         this();
         if (legendText != null && !legendText.isEmpty()) {
-            this.legend = new Legend(legendText);
-            addComponentAsFirst(legend);
+            addComponentAsFirst(new Legend(legendText));
         }
     }
 
@@ -105,7 +103,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      * @return the legend component.
      */
     public Legend getLegend() {
-        return legend;
+        return findLegend();
     }
 
     /**
@@ -115,6 +113,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      *            the text to set.
      */
     public void setLegendText(String text) {
+        Legend legend = findLegend();
         if (text != null && !text.isEmpty()) {
             if (legend == null) {
                 legend = new Legend(text);
@@ -124,7 +123,6 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
             }
         } else if (legend != null) {
             remove(legend);
-            legend = null;
         }
     }
 
@@ -134,6 +132,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      * @return the text of the legend, or null if no legend is present.
      */
     public String getLegendText() {
+        Legend legend = findLegend();
         return (legend != null) ? legend.getText() : null;
     }
 
@@ -143,22 +142,39 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      * @return Stream of content components
      */
     public Stream<Component> getContent() {
-        return legend == null ? getChildren() : getChildren().skip(1);
+        return getChildren().filter(c -> !(c instanceof Legend));
     }
 
     /**
      * Sets the content of the fieldset and removes previously set content.
+     *
+     * Note: Do not include Legend in the content components. Use other FieldSet
+     * methods for setting Legend instead.
      *
      * @param content
      *            the content components of the fieldset to set.
      */
     public void setContent(Component... content) {
         Objects.requireNonNull(content, "Content should not be null");
+        for (Component c : content) {
+            if (c instanceof Legend) {
+                throw new IllegalArgumentException(
+                        "Legend should not be included in the content. "
+                                + "Use constructor params or setLegend.. methods instead.");
+            }
+        }
         removeAll();
+        Legend legend = findLegend();
         if (legend != null) {
             addComponentAsFirst(legend);
         }
         add(content);
+    }
+
+    private Legend findLegend() {
+        Optional<Component> legend = getChildren()
+                .filter(c -> c instanceof Legend).findFirst();
+        return (Legend) legend.orElse(null);
     }
 
 }
