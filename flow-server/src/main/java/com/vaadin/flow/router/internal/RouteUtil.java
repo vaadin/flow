@@ -47,6 +47,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * Utility class with methods for route handling.
@@ -97,6 +98,21 @@ public class RouteUtil {
         return list;
     }
 
+    /**
+     * Get parent layouts for navigation target according to the {@link Route}
+     * or {@link RouteAlias} annotation or automatically link RouterLayout
+     * annotated with the {@link com.vaadin.flow.server.frontend.Layout}
+     * annotation matching route path.
+     *
+     * @param handledRegistry
+     *            current routeRegistry
+     * @param component
+     *            navigation target to get parents for
+     * @param path
+     *            path used to get navigation target so we know which annotation
+     *            to handle
+     * @return parent layouts for target
+     */
     public static List<Class<? extends RouterLayout>> getParentLayouts(
             RouteRegistry handledRegistry, Class<?> component, String path) {
         final List<Class<? extends RouterLayout>> list = new ArrayList<>();
@@ -124,6 +140,14 @@ public class RouteUtil {
             if (matchingRoute.isPresent()) {
                 list.addAll(collectRouteParentLayouts(
                         matchingRoute.get().layout()));
+            } else {
+                matchingRoute = getMatchingRouteAliasLayout(handledRegistry,
+                        component, path, routeAliases);
+
+                if (matchingRoute.isPresent()) {
+                    list.addAll(collectRouteParentLayouts(
+                            handledRegistry.getLayout(path)));
+                }
             }
         }
 
@@ -216,6 +240,17 @@ public class RouteUtil {
         return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
                         && !alias.layout().equals(UI.class))
+                .findFirst();
+    }
+
+    static Optional<RouteAlias> getMatchingRouteAliasLayout(
+            RouteRegistry handledRegistry, Class<?> component, String path,
+            List<RouteAlias> routeAliases) {
+        return routeAliases.stream()
+                .filter(alias -> alias.autoLayout()
+                        && path.equals(getRouteAliasPath(component, alias))
+                        && alias.layout().equals(UI.class)
+                        && handledRegistry.hasLayout(path))
                 .findFirst();
     }
 

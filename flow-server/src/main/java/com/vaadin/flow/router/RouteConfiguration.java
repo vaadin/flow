@@ -228,9 +228,8 @@ public class RouteConfiguration implements Serializable {
         for (RouteAlias alias : navigationTarget
                 .getAnnotationsByType(RouteAlias.class)) {
             String path = RouteUtil.getRouteAliasPath(navigationTarget, alias);
-            handledRegistry.setRoute(path, navigationTarget,
-                    RouteUtil.getParentLayouts(handledRegistry.getContext(),
-                            navigationTarget, path));
+            handledRegistry.setRoute(path, navigationTarget, RouteUtil
+                    .getParentLayouts(handledRegistry, navigationTarget, path));
         }
     }
 
