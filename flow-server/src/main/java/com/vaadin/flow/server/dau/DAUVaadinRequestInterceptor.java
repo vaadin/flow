@@ -45,28 +45,36 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
 
         // user is counted even if request handling throws an exception
         Optional<DAUUtils.DauCookie> maybePresentCookie = DAUUtils
-                .getTrackingCookie(request).flatMap(DAUUtils::parserCookie);
+                .getTrackingCookie(request).flatMap(DAUUtils::parseCookie);
         if (maybePresentCookie.isPresent()) {
             DAUUtils.DauCookie dauCookie = maybePresentCookie.get();
-            if (dauCookie.isActive()) {
-
-                VaadinSession vaadinSession = VaadinSession.getCurrent();
-                String userIdentity = Optional.ofNullable(userIdentitySupplier)
-                        .flatMap(supplier -> supplier
-                                .apply(new UserIdentityContext(request,
-                                        vaadinSession)))
-                        .orElse(null);
-                FlowDauIntegration.trackUser(request, dauCookie.trackingHash(),
-                        userIdentity);
+            // ignore user's activity threshold if enforcement
+            if (dauCookie.isActive() || FlowDauIntegration.shouldEnforce()) {
+                trackUser(request, dauCookie.trackingHash());
             }
-
         } else if (response != null) {
             // response can be null, for example for PUSH websocket requests
 
             // DAU cookie is created if not present and re-created if invalid
             Cookie cookie = FlowDauIntegration.generateNewCookie(request);
             response.addCookie(cookie);
+
+            // Enforce new users immediately, even if they are not yet active
+            // and tracked
+            if (FlowDauIntegration.shouldEnforce()) {
+                trackUser(request, DAUUtils.parseCookie(cookie).orElseThrow().trackingHash());
+            }
         }
+    }
+
+    private void trackUser(VaadinRequest request, String trackingHash) {
+        VaadinSession vaadinSession = VaadinSession.getCurrent();
+        String userIdentity = Optional.ofNullable(userIdentitySupplier)
+                .flatMap(supplier -> supplier
+                        .apply(new UserIdentityContext(request,
+                                vaadinSession)))
+                .orElse(null);
+        FlowDauIntegration.trackUser(request, trackingHash, userIdentity);
     }
 
     @Override

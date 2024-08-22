@@ -110,7 +110,7 @@ public final class DAUUtils {
      *         contains invalid data.
      * @see FlowDauIntegration#generateNewCookie(VaadinRequest)
      */
-    static Optional<DauCookie> parserCookie(Cookie cookie) {
+    static Optional<DauCookie> parseCookie(Cookie cookie) {
         String cookieValue = cookie.getValue();
         String[] tokens = cookieValue.split("\\$");
         if (tokens.length != 2) {
