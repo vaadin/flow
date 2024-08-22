@@ -62,7 +62,8 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
             // Enforce new users immediately, even if they are not yet active
             // and tracked
             if (FlowDauIntegration.shouldEnforce()) {
-                trackUser(request, DAUUtils.parseCookie(cookie).orElseThrow().trackingHash());
+                trackUser(request, DAUUtils.parseCookie(cookie).orElseThrow()
+                        .trackingHash());
             }
         }
     }
@@ -71,8 +72,7 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
         VaadinSession vaadinSession = VaadinSession.getCurrent();
         String userIdentity = Optional.ofNullable(userIdentitySupplier)
                 .flatMap(supplier -> supplier
-                        .apply(new UserIdentityContext(request,
-                                vaadinSession)))
+                        .apply(new UserIdentityContext(request, vaadinSession)))
                 .orElse(null);
         FlowDauIntegration.trackUser(request, trackingHash, userIdentity);
     }

@@ -101,7 +101,7 @@ public final class FlowDauIntegration {
      * not yet counted, should be blocked immediately.
      *
      * @return {@literal true} if the current request/user should be blocked,
-     *     {@literal false} otherwise.
+     *         {@literal false} otherwise.
      */
     static boolean shouldEnforce() {
         return DauIntegration.shouldEnforce();
