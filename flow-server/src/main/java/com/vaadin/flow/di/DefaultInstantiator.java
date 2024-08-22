@@ -174,7 +174,8 @@ public class DefaultInstantiator implements Instantiator {
 
     protected ClassLoader getClassLoader() {
         // Use the application thread ClassLoader to invalidate ResourceBundle
-        // cache on dev mode reload. See https://github.com/vaadin/hilla/issues/2554
+        // cache on dev mode reload. See
+        // https://github.com/vaadin/hilla/issues/2554
         return Thread.currentThread().getContextClassLoader();
     }
 
