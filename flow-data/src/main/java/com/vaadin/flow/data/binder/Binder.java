@@ -2260,6 +2260,8 @@ public class Binder<BEAN> implements Serializable {
      * @param bean
      *            the bean to edit, or {@code null} to remove a currently bound
      *            bean and clear bound fields
+     * @throws IllegalStateException
+     *             if the Binder's model type is record
      */
     public void setBean(BEAN bean) {
         if (isRecord) {
@@ -2544,11 +2546,16 @@ public class Binder<BEAN> implements Serializable {
      * @throws ValidationException
      *             if some of the bound field values fail to validate
      * @throws IllegalStateException
-     *             if a record component does not have a binding
+     *             if a record component does not have a binding, or if the
+     *             Binder's model type is bean
      * @throws IllegalArgumentException
      *             if record instantiation fails for any reason
      */
     public BEAN writeRecord() throws ValidationException {
+        if (!isRecord) {
+            throw new IllegalStateException(
+                    "writeRecord methods can't be used with beans, call writeBean instead");
+        }
         BEAN record = null;
         List<ValidationResult> binderResults = Collections.emptyList();
 
@@ -2631,6 +2638,8 @@ public class Binder<BEAN> implements Serializable {
      *            the set of bindings to write to the bean
      * @return a list of field validation errors if such occur, otherwise a list
      *         of bean validation errors.
+     * @throws IllegalStateException
+     *             if the Binder's model type is record
      */
     @SuppressWarnings("unchecked")
     private BinderValidationStatus<BEAN> doWriteIfValid(BEAN bean,
@@ -2706,6 +2715,8 @@ public class Binder<BEAN> implements Serializable {
      *            the set of bindings to write to the bean
      * @param forced
      *            disable validators during write if true
+     * @throws IllegalStateException
+     *             if the Binder's model type is record
      */
     @SuppressWarnings({ "unchecked" })
     private void doWriteDraft(BEAN bean, Collection<Binding<BEAN, ?>> bindings,
