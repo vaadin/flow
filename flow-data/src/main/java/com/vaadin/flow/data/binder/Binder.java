@@ -1771,9 +1771,10 @@ public class Binder<BEAN> implements Serializable {
         }
 
         /**
-         * if {@code equalityPredicate} is set, compares the new value of the
-         * field with its initial value, and removes the current binding from
-         * the {@code changeBindings}
+         * compares the new value of the field with its initial value, and
+         * removes the current binding from the {@code changeBindings}, but only
+         * if {@code equalityPredicate} is set, or
+         * {@link #isChangeDetectionEnabled()} returns true.
          *
          * @param removeBindingAction
          *            the binding consumer that removes the binding from the
@@ -1781,9 +1782,13 @@ public class Binder<BEAN> implements Serializable {
          */
         private void removeFromChangedBindingsIfReverted(
                 SerializableConsumer<Binding<BEAN, TARGET>> removeBindingAction) {
-            if (equalityPredicate != null) {
+            if (binder.isChangeDetectionEnabled()
+                    || equalityPredicate != null) {
                 doConversion().ifOk(convertedValue -> {
-                    if (equalityPredicate.test(initialValue, convertedValue)) {
+                    SerializableBiPredicate<TARGET, TARGET> effectivePredicate = equalityPredicate == null
+                            ? Objects::equals
+                            : equalityPredicate;
+                    if (effectivePredicate.test(initialValue, convertedValue)) {
                         removeBindingAction.accept(this);
                     }
                 });
@@ -1908,6 +1913,8 @@ public class Binder<BEAN> implements Serializable {
     private boolean fieldsValidationStatusChangeListenerEnabled = true;
 
     private boolean defaultValidatorsEnabled = true;
+
+    private boolean changeDetectionEnabled = false;
 
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
@@ -4053,6 +4060,37 @@ public class Binder<BEAN> implements Serializable {
      */
     public boolean isFieldsValidationStatusChangeListenerEnabled() {
         return fieldsValidationStatusChangeListenerEnabled;
+    }
+
+    /**
+     * Sets change/revert detection enabled or disabled. When set to
+     * {@literal true}, any binding that is first changed and then reverted to
+     * its original value will be removed from the list of changed bindings.
+     *
+     * By default, {@link Objects#equals(Object, Object)} is used for value
+     * comparison, but it can be overridden on binding level using
+     * {@link BindingBuilder#withEqualityPredicate(SerializableBiPredicate)}.
+     *
+     * @param changeDetectionEnabled
+     *            Boolean value
+     */
+    public void setChangeDetectionEnabled(boolean changeDetectionEnabled) {
+        this.changeDetectionEnabled = changeDetectionEnabled;
+    }
+
+    /**
+     * Returns if change/revert detection is enabled. When set to
+     * {@literal true}, any binding that is first changed and then reverted to
+     * its original value will be removed from the list of changed bindings.
+     *
+     * By default, {@link Objects#equals(Object, Object)} is used for value
+     * comparison, but it can be overridden on binding level using
+     * {@link BindingBuilder#withEqualityPredicate(SerializableBiPredicate)}.
+     *
+     * @return Boolean value
+     */
+    public boolean isChangeDetectionEnabled() {
+        return changeDetectionEnabled;
     }
 
     /**
