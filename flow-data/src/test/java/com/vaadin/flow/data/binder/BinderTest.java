@@ -527,7 +527,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    public void update_to_initial_value_removes_binding_from_changedBindings()
+    public void update_to_initial_value_removes_binding_from_changedBindings_with_set_predicates()
             throws ValidationException {
         Person person = new Person();
         String initialName = "Foo";
@@ -561,6 +561,73 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         ageField.setValue("20");
         assertTrue(binder.getChangedBindings().isEmpty());
+    }
+
+    @Test
+    public void update_to_initial_value_removes_binding_from_changedBindings_with_default_predicates()
+            throws ValidationException {
+        Person person = new Person();
+        String initialName = "Foo";
+        person.setFirstName(initialName);
+        person.setAge(20);
+
+        Binder<Person> binder = new Binder<>();
+        binder.setChangeDetectionEnabled(true);
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .bind(Person::getFirstName, Person::setFirstName);
+        Binding<Person, Integer> ageBinding = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        binder.readBean(person);
+        nameField.setValue("Bar");
+
+        assertEquals(1, binder.getChangedBindings().size());
+        assertTrue(binder.getChangedBindings().contains(nameBinding));
+
+        ageField.setValue("21");
+        assertEquals(2, binder.getChangedBindings().size());
+
+        nameField.setValue(initialName);
+
+        assertEquals(1, binder.getChangedBindings().size());
+        assertTrue(binder.getChangedBindings().contains(ageBinding));
+
+        ageField.setValue("20");
+        assertTrue(binder.getChangedBindings().isEmpty());
+    }
+
+    @Test
+    public void update_to_initial_value_does_not_remove_binding_from_changedBindings_by_default()
+            throws ValidationException {
+        Person person = new Person();
+        String initialName = "Foo";
+        person.setFirstName(initialName);
+        person.setAge(20);
+
+        Binder<Person> binder = new Binder<>();
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .bind(Person::getFirstName, Person::setFirstName);
+        Binding<Person, Integer> ageBinding = binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(""))
+                .bind(Person::getAge, Person::setAge);
+
+        binder.readBean(person);
+        nameField.setValue("Bar");
+
+        assertEquals(1, binder.getChangedBindings().size());
+        assertTrue(binder.getChangedBindings().contains(nameBinding));
+
+        ageField.setValue("21");
+        assertEquals(2, binder.getChangedBindings().size());
+        assertTrue(binder.getChangedBindings().contains(ageBinding));
+
+        nameField.setValue(initialName);
+
+        assertEquals(2, binder.getChangedBindings().size());
+
+        ageField.setValue("20");
+        assertEquals(2, binder.getChangedBindings().size());
     }
 
     @Test
