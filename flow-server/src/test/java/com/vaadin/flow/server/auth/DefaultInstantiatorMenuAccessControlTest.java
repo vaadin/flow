@@ -36,7 +36,9 @@ import com.vaadin.flow.server.VaadinService;
 import org.mockito.invocation.InvocationOnMock;
 
 import static org.junit.Assert.assertThrows;
+import net.jcip.annotations.NotThreadSafe;
 
+@NotThreadSafe
 public class DefaultInstantiatorMenuAccessControlTest {
     private ClassLoader contextClassLoader;
     private ClassLoader classLoader;
