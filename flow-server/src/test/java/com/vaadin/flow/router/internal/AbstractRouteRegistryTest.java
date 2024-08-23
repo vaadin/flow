@@ -24,6 +24,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.shared.Registration;
 import org.junit.rules.ExpectedException;
 
@@ -769,6 +770,29 @@ public class AbstractRouteRegistryTest {
                 () -> registry.hasMandatoryParameter(Secondary.class));
     }
 
+    @Test
+    public void multipleLayouts_stricterLayoutMatches_correctLayoutsReturned() {
+        registry.setLayout(DefaultLayout.class);
+        registry.setLayout(ViewLayout.class);
+
+        Assert.assertEquals("Path match returned wrong layout",
+                ViewLayout.class, registry.getLayout("/view"));
+        Assert.assertEquals("Beginning path match returned wrong layout",
+                ViewLayout.class, registry.getLayout("/view/home"));
+
+        Assert.assertEquals("Any route match returned wrong layout",
+                DefaultLayout.class, registry.getLayout("/path"));
+    }
+
+    @Test
+    public void singleLayout_nonMatchingPathsReturnFalseOnHasLayout() {
+        registry.setLayout(ViewLayout.class);
+
+        Assert.assertTrue("Existing layout should have returned true",
+                registry.hasLayout("/view"));
+        Assert.assertFalse("Path outside layout should return false",
+                registry.hasLayout("/path"));
+    }
     /* Private stuff */
 
     private void awaitCountDown(CountDownLatch countDownLatch) {
@@ -777,6 +801,17 @@ public class AbstractRouteRegistryTest {
         } catch (InterruptedException e) {
             Assert.fail();
         }
+    }
+
+    @Tag("div")
+    @Layout
+    private static class DefaultLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag("div")
+    @Layout("/view")
+    private static class ViewLayout extends Component implements RouterLayout {
     }
 
     @Tag("div")

@@ -58,6 +58,9 @@ export const { router, routes } = new RouterConfigurationBuilder()
     //     { path: '/login', element: <Login />, handle: { title: 'Login' } }
     //   ]
     // )
+    // To use Flow RouterLayout with hilla views use withLayout and define
+    // flowLayout as true in ViewConfig for view.
+    // .withLayout(Flow)
     .withFallback(Flow)
     // Optional method that adds an authentication for routes.
     // Can take an optional path to redirect to, if not authenticated:

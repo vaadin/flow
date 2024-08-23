@@ -56,7 +56,6 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
@@ -69,11 +68,13 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -353,6 +354,12 @@ public class VaadinServletContextInitializer
                             "There are {} navigation targets after filtering route classes: {}",
                             navigationTargets.size(), navigationTargets);
 
+                    // Collect all layouts to use with Hilla as a main layout
+                    findByAnnotation(routePackages, Layout.class).filter(
+                            clazz -> RouterLayout.class.isAssignableFrom(clazz))
+                            .forEach(clazz -> registry.setLayout(
+                                    (Class<? extends RouterLayout>) clazz));
+
                     RouteConfiguration routeConfiguration = RouteConfiguration
                             .forRegistry(registry);
                     routeConfiguration
@@ -360,6 +367,7 @@ public class VaadinServletContextInitializer
                                     navigationTargets));
                     registry.setPwaConfigurationClass(validatePwaClass(
                             vaadinServletContext, routeClasses.stream()));
+
                 } catch (InvalidRouteConfigurationException e) {
                     throw new IllegalStateException(e);
                 }
