@@ -64,7 +64,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     // private final ArrayUpdater arrayUpdater;
     private final StateNode stateNode;
     private HierarchyMapper<T, ?> mapper;
-    // private DataGenerator<T> dataGenerator;
+    private DataGenerator<T> dataGenerator;
     private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
 
     private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
@@ -90,7 +90,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
             SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier) {
         super(dataGenerator, arrayUpdater, dataUpdater, stateNode);
-        // this.dataGenerator = dataGenerator;
+        this.dataGenerator = dataGenerator;
         // this.arrayUpdater = arrayUpdater;
         this.stateNode = stateNode;
         this.uniqueKeyProviderSupplier = uniqueKeyProviderSupplier;
