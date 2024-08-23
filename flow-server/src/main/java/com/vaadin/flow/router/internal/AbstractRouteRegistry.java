@@ -602,7 +602,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     @Override
     public void setLayout(Class<? extends RouterLayout> layout) {
-        if (layout == null) {
+        if (layout == null || !layout.isAnnotationPresent(Layout.class)) {
             return;
         }
         synchronized (layouts) {
