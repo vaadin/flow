@@ -33,6 +33,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mock;
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -174,6 +176,45 @@ public class DefaultInstantiatorI18NTest {
 
         Assert.assertEquals("title",
                 i18NProvider.getTranslation("title", new Locale("en", "GB")));
+    }
+
+    @Test
+    public void translationFilesOnClassPath_getI18NProvider_usesThreadContextClassLoader()
+            throws IOException {
+        createTranslationFiles(translations);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        mockLookup(service);
+        VaadinService.setCurrent(service);
+
+        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
+                service);
+        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
+
+        ClassLoader threadContextClassLoader = Thread.currentThread()
+                .getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(urlClassLoader);
+
+            try (MockedConstruction<DefaultI18NProvider> mockedConstruction = Mockito
+                    .mockConstruction(DefaultI18NProvider.class,
+                            (mock, context) -> {
+                                ClassLoader classLoaderArgument = (ClassLoader) context
+                                        .arguments().get(1);
+                                Assert.assertEquals(urlClassLoader,
+                                        classLoaderArgument);
+                            })) {
+                I18NProvider i18NProvider = defaultInstantiator
+                        .getI18NProvider();
+
+                Assert.assertNotNull(i18NProvider);
+                Assert.assertEquals(i18NProvider,
+                        mockedConstruction.constructed().get(0));
+            }
+        } finally {
+            Thread.currentThread()
+                    .setContextClassLoader(threadContextClassLoader);
+        }
     }
 
     private static void createTranslationFiles(File translationsFolder)
