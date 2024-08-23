@@ -83,7 +83,7 @@ public class DataCommunicator<T> implements Serializable {
     private final StateNode stateNode;
 
     // Keys that can be discarded once some specific update id gets confirmed
-    private final HashMap<Integer, Set<String>> passivatedByUpdate = new HashMap<>();
+    protected final HashMap<Integer, Set<String>> passivatedByUpdate = new HashMap<>();
 
     // Update ids that have been confirmed since the last flush
     private final HashSet<Integer> confirmedUpdates = new HashSet<>();
@@ -1340,7 +1340,7 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private void doUnregister(Integer updateId) {
+    protected void doUnregister(Integer updateId) {
         Set<String> passivated = passivatedByUpdate.remove(updateId);
         if (passivated != null) {
             passivated.forEach(key -> {

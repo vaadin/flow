@@ -12,12 +12,12 @@
     "@polymer/polymer": "3.5.1",
     "@vaadin/common-frontend": "0.0.19",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "3.1.4"
+    "lit": "3.2.0"
   },
   "devDependencies": {
     "async": "3.2.5",
-    "glob": "10.4.2",
-    "typescript": "5.5.3",
+    "glob": "10.4.5",
+    "typescript": "5.5.4",
     "workbox-core": "7.1.0",
     "workbox-precaching": "7.1.0",
     "strip-css-comments": "5.0.0"

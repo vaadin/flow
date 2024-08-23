@@ -45,7 +45,7 @@ public class LookupImpl implements Lookup {
     @Override
     public <T> T lookup(Class<T> serviceClass) {
         if (ResourceProvider.class.isAssignableFrom(serviceClass)) {
-            return serviceClass.cast(new ResourceProviderImpl());
+            return serviceClass.cast(new ResourceProviderImpl(classFinder));
         }
         return lookupAll(serviceClass).stream().findFirst().orElse(null);
     }
