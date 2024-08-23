@@ -24,7 +24,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
-import com.vaadin.flow.server.frontend.Layout;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.shared.Registration;
 import org.junit.rules.ExpectedException;
 

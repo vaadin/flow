@@ -403,8 +403,15 @@ public class MenuRegistry {
         return Thread.currentThread().getContextClassLoader();
     }
 
+    /**
+     * See if there is a client route available for give route path.
+     *
+     * @param route
+     *            route path to check
+     * @return true if a client route is found.
+     */
     public static boolean hasClientRoute(String route) {
-        if (VaadinSession.getCurrent() == null) {
+        if (VaadinSession.getCurrent() == null || route == null) {
             return false;
         }
         route = route.isEmpty() ? route

@@ -37,6 +37,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -47,7 +48,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * Utility class with methods for route handling.
@@ -80,13 +80,14 @@ public class RouteUtil {
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
-        List<RouteAlias> routeAliases = AnnotationReader
-                .getAnnotationsFor(component, RouteAlias.class);
 
         if (route.isPresent() && path.equals(getRoutePath(context, component))
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
+            List<RouteAlias> routeAliases = AnnotationReader
+                    .getAnnotationsFor(component, RouteAlias.class);
+
             Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
                     component, path, routeAliases);
             if (matchingRoute.isPresent()) {
@@ -101,8 +102,7 @@ public class RouteUtil {
     /**
      * Get parent layouts for navigation target according to the {@link Route}
      * or {@link RouteAlias} annotation or automatically link RouterLayout
-     * annotated with the {@link com.vaadin.flow.server.frontend.Layout}
-     * annotation matching route path.
+     * annotated with the {@link Layout} annotation matching route path.
      *
      * @param handledRegistry
      *            current routeRegistry
@@ -119,22 +119,21 @@ public class RouteUtil {
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
-        List<RouteAlias> routeAliases = AnnotationReader
-                .getAnnotationsFor(component, RouteAlias.class);
 
-        if (route.isPresent()
-                && path.equals(
-                        getRoutePath(handledRegistry.getContext(), component))
-                && !route.get().layout().equals(UI.class)) {
+        boolean hasRouteAndPathMatches = route.isPresent() && path
+                .equals(getRoutePath(handledRegistry.getContext(), component));
+
+        if (hasRouteAndPathMatches && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
-        } else if (route.isPresent() && route.get().autoLayout()
-                && path.equals(
-                        getRoutePath(handledRegistry.getContext(), component))
+        } else if (route.get().autoLayout() && hasRouteAndPathMatches
                 && route.get().layout().equals(UI.class)
                 && handledRegistry.hasLayout(path)) {
             list.addAll(
                     collectRouteParentLayouts(handledRegistry.getLayout(path)));
         } else {
+            List<RouteAlias> routeAliases = AnnotationReader
+                    .getAnnotationsFor(component, RouteAlias.class);
+
             Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
                     component, path, routeAliases);
             if (matchingRoute.isPresent()) {

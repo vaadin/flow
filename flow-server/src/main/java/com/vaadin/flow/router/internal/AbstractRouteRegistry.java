@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +27,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
@@ -43,7 +41,6 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
@@ -58,7 +55,7 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
-import com.vaadin.flow.server.frontend.Layout;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -104,6 +101,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private volatile ConfigureRoutes editing = null;
 
     private CopyOnWriteArrayList<RoutesChangedListener> routesChangedListeners = new CopyOnWriteArrayList<>();
+
+    private final Map<String, Class<? extends RouterLayout>> layouts = new HashMap<>();
 
     /**
      * Thread-safe update of the RouteConfiguration.
@@ -601,10 +600,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Optional.empty();
     }
 
-    private Map<String, Class<? extends RouterLayout>> layouts = new HashMap<>();
-
     @Override
     public void setLayout(Class<? extends RouterLayout> layout) {
+        if (layout == null) {
+            return;
+        }
         synchronized (layouts) {
             layouts.put(layout.getAnnotation(Layout.class).value(), layout);
         }
@@ -613,19 +613,20 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Class<? extends RouterLayout> getLayout(String path) {
         Optional<String> first = layouts.keySet().stream()
-                .sorted((o1, o2) -> removeStartSlash(o2).split("/").length
-                        - removeStartSlash(o1).split("/").length)
+                .sorted(pathSortComparator())
                 .filter(key -> pathMatches(path, key)).findFirst();
-        if (first.isPresent()) {
-            return layouts.get(first.get());
-        }
-        return null;
+        return first.map(layouts::get).orElse(null);
     }
 
     @Override
     public boolean hasLayout(String path) {
-        return layouts.keySet().stream().filter(key -> pathMatches(path, key))
-                .findFirst().isPresent();
+        return layouts.keySet().stream()
+                .anyMatch(key -> pathMatches(path, key));
+    }
+
+    private Comparator<String> pathSortComparator() {
+        return (o1, o2) -> removeStartSlash(o2).split("/").length
+                - removeStartSlash(o1).split("/").length;
     }
 
     private boolean pathMatches(String path, String layoutPath) {

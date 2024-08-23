@@ -48,6 +48,7 @@ import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -844,8 +845,8 @@ public class UIInternals implements Serializable {
             previous = current;
         }
         if (getSession().getConfiguration().isReactEnabled()
-                && !getRouter().getRegistry()
-                        .getNavigationTarget(viewLocation.getPath()).isPresent()
+                && getRouter().getRegistry()
+                        .getNavigationTarget(viewLocation.getPath()).isEmpty()
                 && target instanceof RouterLayout) {
             // Add ReactRouterOutlet to RouterLayout if not targeting a server
             // route when using react.

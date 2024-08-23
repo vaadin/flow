@@ -209,6 +209,7 @@ function Flow() {
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
 
+    // portalsReducer function is used as state outside the Flow component.
     const [portals, dispatchPortalAction] = useReducer(portalsReducer, []);
 
     const removePortalEventHandler = useCallback((event: CustomEvent<PortalEntry>) => {
@@ -218,6 +219,7 @@ function Flow() {
 
     const addPortalEventHandler = useCallback((event: CustomEvent<PortalEntry>) => {
         event.preventDefault();
+        // Add remove event listener to the portal node
         event.detail.domNode.addEventListener('flow-portal-remove', removePortalEventHandler as EventListener, {once: true});
         dispatchPortalAction({type: PortalActionType.Add, entry: event.detail});
     }, [dispatchPortalAction, removePortalEventHandler]);
