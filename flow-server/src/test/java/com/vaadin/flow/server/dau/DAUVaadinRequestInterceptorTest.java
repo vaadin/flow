@@ -362,6 +362,59 @@ public class DAUVaadinRequestInterceptorTest {
         }
     }
 
+    @Test
+    public void requestStart_dauCookiePresent_notActiveUser_enforcement_tracksUser() {
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        Mockito.when(request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn(HandlerHelper.RequestType.INIT.getIdentifier());
+
+        String trackingHash = "trackingHash";
+        Instant creationTime = Instant.now()
+                .minusSeconds(DAU_MIN_ACTIVITY_IN_SECONDS / 2);
+        Cookie cookie = new Cookie(DAUUtils.DAU_COOKIE_NAME,
+                trackingHash + "$" + creationTime.toEpochMilli());
+
+        Mockito.when(request.getCookies()).thenReturn(new Cookie[] { cookie });
+
+        VaadinSession.setCurrent(new MockVaadinSession(vaadinService));
+
+        try (MockedStatic<DauIntegration> dauIntegration = Mockito
+                .mockStatic(DauIntegration.class)) {
+            dauIntegration.when(DauIntegration::shouldEnforce).thenReturn(true);
+            interceptor.requestStart(request, response);
+            dauIntegration
+                    .verify(() -> DauIntegration.trackUser(trackingHash, null));
+        } finally {
+            VaadinSession.setCurrent(null);
+        }
+    }
+
+    @Test
+    public void requestStart_noDauCookie_notActiveUser_enforcement_tracksUser() {
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        Mockito.when(request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn(HandlerHelper.RequestType.INIT.getIdentifier());
+
+        String trackingHash = "trackingHash";
+        VaadinSession.setCurrent(new MockVaadinSession(vaadinService));
+
+        try (MockedStatic<DauIntegration> dauIntegration = Mockito
+                .mockStatic(DauIntegration.class)) {
+            dauIntegration.when(DauIntegration::shouldEnforce).thenReturn(true);
+            dauIntegration.when(DauIntegration::newTrackingHash)
+                    .thenReturn(trackingHash);
+            interceptor.requestStart(request, response);
+            dauIntegration
+                    .verify(() -> DauIntegration.trackUser(trackingHash, null));
+        } finally {
+            VaadinSession.setCurrent(null);
+        }
+    }
+
     private static Cookie createCookie(String trackingHash, boolean active) {
         Instant creationTime = Instant.now();
         if (active) {

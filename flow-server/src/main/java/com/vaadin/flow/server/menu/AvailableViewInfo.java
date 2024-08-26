@@ -29,21 +29,22 @@ import com.vaadin.flow.router.MenuData;
 /**
  * Represents a view configuration for use with a menu.
  *
- * @param title
- * @param rolesAllowed
- * @param loginRequired
- * @param route
- * @param lazy
- * @param register
- * @param menu
- * @param children
- * @param routeParameters
+ * @param title title of view
+ * @param rolesAllowed logged in roles allowed for view
+ * @param loginRequired requires login
+ * @param route path string
+ * @param lazy lazy loaded
+ * @param register register view
+ * @param menu menu item information
+ * @param children view children
+ * @param routeParameters view parameters
+ * @param flowLayout if server layout should be used
  */
 public record AvailableViewInfo(String title, String[] rolesAllowed,
                                 boolean loginRequired, String route, boolean lazy,
                                 boolean register, MenuData menu,
                                 List<AvailableViewInfo> children, @JsonProperty(
-        "params") Map<String, RouteParamType> routeParameters) implements Serializable {
+        "params") Map<String, RouteParamType> routeParameters, boolean flowLayout) implements Serializable {
 
     @Override
     public boolean equals(final Object o) {
@@ -60,7 +61,8 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 && Objects.equals(lazy, that.lazy)
                 && Objects.equals(register, that.register)
                 && Objects.equals(menu, that.menu)
-                && Objects.equals(routeParameters, that.routeParameters);
+                && Objects.equals(routeParameters, that.routeParameters)
+                && Objects.equals(flowLayout, that.flowLayout);
     }
 
     @Override
@@ -79,6 +81,7 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + ", lazy=" + lazy
                 + ", register=" + register
                 + ", menu=" + menu
+                + ", flowLayout=" + flowLayout
                 + ", routeParameters=" + routeParameters + '}';
     }
 

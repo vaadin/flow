@@ -99,6 +99,7 @@ public class HtmlComponentSmokeTest {
     static {
         ignoredStringConstructors.add(IFrame.class);
         ignoredStringConstructors.add(NativeDetails.class);
+        ignoredStringConstructors.add(FieldSet.class);
     }
 
     @Test
@@ -239,6 +240,11 @@ public class HtmlComponentSmokeTest {
         // NativeTable delegates caption text to the nested <caption> element
         if (method.getDeclaringClass() == NativeTable.class
                 && method.getName().startsWith("setCaptionText")) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == FieldSet.class
+                && method.getName().startsWith("setContent")) {
             return true;
         }
 
