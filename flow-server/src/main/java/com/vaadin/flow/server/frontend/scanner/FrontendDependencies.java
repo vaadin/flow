@@ -180,7 +180,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // Add ReactRouterOutlet and adapter as internal so it gets added to the
         // bundle if available.
         try {
-            if (finder.getClassLoader().getResource(
+            if (finder.getResource(
                     "com/vaadin/flow/server/frontend/ReactRouterOutletElement.template") != null
                     && !visitedClasses.containsKey(
                             "com.vaadin.flow.component.react.ReactRouterOutlet")) {
@@ -189,7 +189,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 addInternalEntryPoint(entryPointClass);
                 visitEntryPoint(entryPoints.get(entryPointClass.getName()));
             }
-            if (finder.getClassLoader().getResource(
+            if (finder.getResource(
                     "com/vaadin/flow/server/frontend/ReactAdapter.template") != null
                     && !visitedClasses.containsKey(
                             "com.vaadin.flow.component.react.ReactAdapterComponent")) {
