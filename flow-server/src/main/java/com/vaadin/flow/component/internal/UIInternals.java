@@ -47,6 +47,8 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -74,6 +76,7 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
@@ -840,6 +843,23 @@ public class UIInternals implements Serializable {
                 }
             }
             previous = current;
+        }
+        if (getSession().getConfiguration().isReactEnabled()
+                && getRouter().getRegistry()
+                        .getNavigationTarget(viewLocation.getPath()).isEmpty()
+                && target instanceof RouterLayout) {
+            // Add ReactRouterOutlet to RouterLayout if not targeting a server
+            // route when using react.
+            try {
+                Component reactOutlet = Instantiator.get(ui)
+                        .createComponent((Class<? extends Component>) getClass()
+                                .getClassLoader().loadClass(
+                                        "com.vaadin.flow.component.react.ReactRouterOutlet"));
+                ((RouterLayout) target).showRouterLayoutContent(reactOutlet);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException(
+                        "No ReactRouterOutlet available on classpath", e);
+            }
         }
 
         // Final "previous" from the chain is the root component

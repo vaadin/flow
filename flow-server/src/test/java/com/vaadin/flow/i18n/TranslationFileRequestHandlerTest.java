@@ -15,26 +15,6 @@
  */
 package com.vaadin.flow.i18n;
 
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.ApplicationConstants;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -48,6 +28,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 @NotThreadSafe
 public class TranslationFileRequestHandlerTest {
@@ -234,13 +234,15 @@ public class TranslationFileRequestHandlerTest {
             String defaultLocaleLanguageTag, String requestedLanguageTag,
             String expectedResponseContent, String expectedResponseLanguageTag)
             throws IOException {
-        try (MockedStatic<Locale> locale = Mockito.mockStatic(Locale.class,
-                Mockito.CALLS_REAL_METHODS)) {
+        Locale originalDefaultLocale = Locale.getDefault();
+        try {
             Locale defaultLocale = Locale
                     .forLanguageTag(defaultLocaleLanguageTag);
-            locale.when(Locale::getDefault).thenReturn(defaultLocale);
+            Locale.setDefault(defaultLocale);
             testResponseContent(requestedLanguageTag, expectedResponseContent,
                     expectedResponseLanguageTag);
+        } finally {
+            Locale.setDefault(originalDefaultLocale);
         }
     }
 

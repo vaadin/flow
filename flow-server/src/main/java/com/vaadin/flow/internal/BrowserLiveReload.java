@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import org.atmosphere.cpr.AtmosphereResource;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.FragmentedMessageHolder;
 
 /**
@@ -83,6 +84,18 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
      * {@link #onConnect(AtmosphereResource)} call.
      */
     void reload();
+
+    /**
+     * Requests a refresh of the current view in the browser, without reloading
+     * the whole page.
+     *
+     * @param refreshLayouts
+     *            {@code true} to refresh all layouts in the route chain,
+     *            {@code false} to only refresh the route component
+     */
+    default void refresh(boolean refreshLayouts) {
+        reload();
+    }
 
     /**
      * Request an update of the resource with the given path.

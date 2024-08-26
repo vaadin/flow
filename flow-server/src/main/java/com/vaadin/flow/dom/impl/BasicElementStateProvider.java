@@ -365,7 +365,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 visitDescendants = visitor
                         .visit(NodeVisitor.ElementType.VIRTUAL, element);
             } else if (NodeProperties.INJECT_BY_ID.equals(type)
-                    || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
+                    || NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)
+                    || NodeProperties.INJECT_BY_NAME.equals(type)) {
                 visitDescendants = visitor.visit(
                         NodeVisitor.ElementType.VIRTUAL_ATTACHED, element);
             } else {

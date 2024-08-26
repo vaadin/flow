@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
@@ -32,8 +35,11 @@ import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 /**
  * Test that {@link RouteUtil} route resolving works as intended for both simple
@@ -118,6 +124,16 @@ public class RouteUtilTest {
     @Route(value = "sub", layout = MultiTarget.class)
     @Tag(Tag.DIV)
     public static class SubLayout extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Layout
+    private static class AutoLayout extends Component implements RouterLayout {
+    }
+
+    @Route(value = "auto")
+    @Tag(Tag.DIV)
+    public static class AutoLayoutView extends Component {
     }
 
     @Test
@@ -282,6 +298,29 @@ public class RouteUtilTest {
         Assert.assertNotNull("Didn't find any parent for route", parent);
         Assert.assertEquals("Received wrong parent class.",
                 RoutePrefixParent.class, parent);
+    }
+
+    @Test
+    public void automaticLayoutShouldBeGottenForDefaultRoute() {
+
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setLayout(AutoLayout.class);
+
+        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
+                .getParentLayouts(registry, AutoLayoutView.class, "auto");
+
+        Assert.assertEquals("Route with no layout should get automatic layout",
+                1, parentLayouts.size());
+        Assert.assertEquals(
+                "Layout should be the @Layout annotated RouterLayout",
+                AutoLayout.class, parentLayouts.get(0));
     }
 
     @Test
@@ -460,6 +499,119 @@ public class RouteUtilTest {
     }
 
     @Test
+    public void newRouteAnnotatedClass_sessionRegistry_updateRouteRegistry_routeIsNotAddedToRegistry() {
+        // given
+        @Route("a")
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        SessionRouteRegistry registry = (SessionRouteRegistry) SessionRouteRegistry
+                .getSessionRegistry(new AlwaysLockedVaadinSession(service));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
+                Collections.emptySet(), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void newComponentClass_sessionRegistry_updateRouteRegistry_routeIsNotAddedToRegistry() {
+        // given
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        SessionRouteRegistry registry = (SessionRouteRegistry) SessionRouteRegistry
+                .getSessionRegistry(new AlwaysLockedVaadinSession(service));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
+                Collections.emptySet(), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void newLazyRouteAnnotatedClass_updateRouteRegistry_routeIsNotAddedToRegistry() {
+        // given
+        @Route(value = "a", registerAtStartup = false)
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
+                Collections.emptySet(), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void newLazyRouteAnnotatedClass_sessionRegistry_updateRouteRegistry_routeIsNotAddedToRegistry() {
+        // given
+        @Route(value = "a", registerAtStartup = false)
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        SessionRouteRegistry registry = (SessionRouteRegistry) SessionRouteRegistry
+                .getSessionRegistry(new AlwaysLockedVaadinSession(service));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
+                Collections.emptySet(), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void newRouteComponentWithoutRouteAnnotation_updateRouteRegistry_routeIsNotAddedToRegistry() {
+        // given
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
+                Collections.emptySet(), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
     public void deletedRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
         // given
         @Route("a")
@@ -470,6 +622,68 @@ public class RouteUtilTest {
 
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.emptySet(), Collections.singleton(A.class));
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void deletedNotAnnotatedRouteClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
+        // given
+        class A extends Component {
+        }
+
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.emptySet(), Collections.singleton(A.class));
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void deletedRouteAnnotatedClass_sessionRegistry_updateRouteRegistry_routeIsRemovedFromRegistry() {
+        // given
+        @Route("a")
+        class A extends Component {
+        }
+
+        MockVaadinServletService service = new MockVaadinServletService();
+        SessionRouteRegistry registry = (SessionRouteRegistry) SessionRouteRegistry
+                .getSessionRegistry(new AlwaysLockedVaadinSession(service));
+        registry.setRoute("a", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.emptySet(), Collections.singleton(A.class));
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void deletedNotAnnotatedRouteClass_sessionRegistry_updateRouteRegistry_routeIsRemovedFromRegistry() {
+        // given
+        class A extends Component {
+        }
+
+        MockVaadinServletService service = new MockVaadinServletService();
+        SessionRouteRegistry registry = (SessionRouteRegistry) SessionRouteRegistry
+                .getSessionRegistry(new AlwaysLockedVaadinSession(service));
         registry.setRoute("a", A.class, Collections.emptyList());
         Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
 
@@ -508,12 +722,186 @@ public class RouteUtilTest {
     }
 
     @Test
+    public void changedAliasesRouteAnnotatedClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
+        // given
+        @Route("a")
+        @RouteAlias("alias-new")
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+        registry.setRoute("alias", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("alias"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+        Assert.assertTrue(registry.getConfiguration().hasRoute("alias-new"));
+        Assert.assertFalse(registry.getConfiguration().hasRoute("alias"));
+    }
+
+    @Test
+    public void changedToLazyRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedInRegistry() {
+        // given
+        @Route(value = "a", registerAtStartup = false)
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        // simulate a automatic registration with registerAtStartup=true
+        mutableRoutesMap(registry);
+        registry.getConfiguration().getRoutesMap().computeIfPresent("a",
+                (path, routeTarget) -> new MockRouteTarget(routeTarget, true));
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void changedFromLazyRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedInRegistry() {
+        // given
+        @Route(value = "a")
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        // simulate a manual registration with registerAtStartup=false
+        mutableRoutesMap(registry);
+        registry.getConfiguration().getRoutesMap().computeIfPresent("a",
+                (path, routeTarget) -> new MockRouteTarget(routeTarget, false));
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void modifiedLazyRouteAnnotatedClass_updateRouteRegistry_existingRoutesArePreserved() {
+        // given
+        @Route(value = "a", registerAtStartup = false)
+        class A extends Component {
+        }
+
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        // simulate a manual registration with registerAtStartup=false
+        mutableRoutesMap(registry);
+        registry.getConfiguration().getRoutesMap().computeIfPresent("a",
+                (path, routeTarget) -> new MockRouteTarget(routeTarget, false));
+
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
     public void deannotatedRouteClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
         // given
         class A extends Component {
         }
 
         MockVaadinServletService service = new MockVaadinServletService();
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        // simulate an automatic registration with registerAtStartup=true
+        mutableRoutesMap(registry);
+        registry.getConfiguration().getRoutesMap().computeIfPresent("a",
+                (path, routeTarget) -> new MockRouteTarget(routeTarget, true));
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    // Hotswap agent may fire CREATE, MODIFY and REMOVE events for a class
+    // change. MODIFY wins over CREATE and REMOVE
+
+    @Test
+    public void routeAnnotatedClassAddedModifiedAndRemoved_updateRouteRegistry_routeIsAddedToRegistry() {
+        // given
+        @Route("a")
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
+                Collections.singleton(A.class), Collections.singleton(A.class));
+
+        // then
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void sessionRegistryWithManualRegisteredRouteClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
+        // given
+        @Route("aa")
+        class A extends Component {
+        }
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute("a", A.class, Collections.emptyList());
@@ -525,6 +913,40 @@ public class RouteUtilTest {
 
         // then
         Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+        Assert.assertTrue(registry.getConfiguration().hasRoute("aa"));
     }
 
+    private static void mutableRoutesMap(AbstractRouteRegistry registry) {
+        ConfiguredRoutes configuration = registry.getConfiguration();
+        try {
+            Field routeMapField = ConfiguredRoutes.class
+                    .getDeclaredField("routeMap");
+            routeMapField.setAccessible(true);
+            Map<String, RouteTarget> routeMap = (Map<String, RouteTarget>) routeMapField
+                    .get(configuration);
+            routeMapField.set(configuration, new HashMap<>(routeMap));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static class MockRouteTarget extends RouteTarget {
+        private final Boolean registerAtStartup;
+
+        // registerAtStartup = null means not annotated route target
+        private MockRouteTarget(RouteTarget target, Boolean registerAtStartup) {
+            super(target.getTarget(), target.getParentLayouts());
+            this.registerAtStartup = registerAtStartup;
+        }
+
+        @Override
+        boolean isAnnotatedRoute() {
+            return registerAtStartup != null;
+        }
+
+        @Override
+        boolean isRegisteredAtStartup() {
+            return registerAtStartup != null && registerAtStartup;
+        }
+    }
 }

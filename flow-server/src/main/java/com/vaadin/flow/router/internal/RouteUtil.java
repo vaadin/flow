@@ -17,9 +17,14 @@ package com.vaadin.flow.router.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +37,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -40,6 +46,7 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
@@ -73,18 +80,73 @@ public class RouteUtil {
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
-        List<RouteAlias> routeAliases = AnnotationReader
-                .getAnnotationsFor(component, RouteAlias.class);
 
         if (route.isPresent() && path.equals(getRoutePath(context, component))
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
+            List<RouteAlias> routeAliases = AnnotationReader
+                    .getAnnotationsFor(component, RouteAlias.class);
+
             Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
                     component, path, routeAliases);
             if (matchingRoute.isPresent()) {
                 list.addAll(collectRouteParentLayouts(
                         matchingRoute.get().layout()));
+            }
+        }
+
+        return list;
+    }
+
+    /**
+     * Get parent layouts for navigation target according to the {@link Route}
+     * or {@link RouteAlias} annotation or automatically link RouterLayout
+     * annotated with the {@link Layout} annotation matching route path.
+     *
+     * @param handledRegistry
+     *            current routeRegistry
+     * @param component
+     *            navigation target to get parents for
+     * @param path
+     *            path used to get navigation target so we know which annotation
+     *            to handle
+     * @return parent layouts for target
+     */
+    public static List<Class<? extends RouterLayout>> getParentLayouts(
+            RouteRegistry handledRegistry, Class<?> component, String path) {
+        final List<Class<? extends RouterLayout>> list = new ArrayList<>();
+
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+
+        boolean hasRouteAndPathMatches = route.isPresent() && path
+                .equals(getRoutePath(handledRegistry.getContext(), component));
+
+        if (hasRouteAndPathMatches && !route.get().layout().equals(UI.class)) {
+            list.addAll(collectRouteParentLayouts(route.get().layout()));
+        } else if (route.get().autoLayout() && hasRouteAndPathMatches
+                && route.get().layout().equals(UI.class)
+                && handledRegistry.hasLayout(path)) {
+            list.addAll(
+                    collectRouteParentLayouts(handledRegistry.getLayout(path)));
+        } else {
+            List<RouteAlias> routeAliases = AnnotationReader
+                    .getAnnotationsFor(component, RouteAlias.class);
+
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
+                    component, path, routeAliases);
+            if (matchingRoute.isPresent()) {
+                list.addAll(collectRouteParentLayouts(
+                        matchingRoute.get().layout()));
+            } else {
+                matchingRoute = getMatchingRouteAliasLayout(handledRegistry,
+                        component, path, routeAliases);
+
+                if (matchingRoute.isPresent()) {
+                    list.addAll(collectRouteParentLayouts(
+                            handledRegistry.getLayout(path)));
+                }
             }
         }
 
@@ -177,6 +239,17 @@ public class RouteUtil {
         return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
                         && !alias.layout().equals(UI.class))
+                .findFirst();
+    }
+
+    static Optional<RouteAlias> getMatchingRouteAliasLayout(
+            RouteRegistry handledRegistry, Class<?> component, String path,
+            List<RouteAlias> routeAliases) {
+        return routeAliases.stream()
+                .filter(alias -> alias.autoLayout()
+                        && path.equals(getRouteAliasPath(component, alias))
+                        && alias.layout().equals(UI.class)
+                        && handledRegistry.hasLayout(path))
                 .findFirst();
     }
 
@@ -298,6 +371,18 @@ public class RouteUtil {
     /**
      * Updates route registry as necessary when classes have been added /
      * modified / deleted.
+     * <p>
+     * </p>
+     * Registry Update rules:
+     * <ul>
+     * <li>a route is preserved if the class does not have a {@link Route}
+     * annotation and did not have it at registration time</li>
+     * <li>a route is preserved if the class is annotated with {@link Route} and
+     * {@code registerAtStartup=false} and the the flag has not changed</li>
+     * <li>new classes are not automatically added to session registries</li>
+     * <li>existing routes in session registries are not removed in case of
+     * class modification</li>
+     * </ul>
      *
      * @param registry
      *            route registry
@@ -311,35 +396,137 @@ public class RouteUtil {
     public static void updateRouteRegistry(RouteRegistry registry,
             Set<Class<?>> addedClasses, Set<Class<?>> modifiedClasses,
             Set<Class<?>> deletedClasses) {
-        RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
 
+        if ((addedClasses == null || addedClasses.isEmpty())
+                && (modifiedClasses == null || modifiedClasses.isEmpty())
+                && (deletedClasses == null || deletedClasses.isEmpty())) {
+            // No changes to apply
+            return;
+        }
         Logger logger = LoggerFactory.getLogger(RouteUtil.class);
 
+        // safe copy to prevent concurrent modification or operation failures on
+        // immutable sets
+        modifiedClasses = modifiedClasses != null
+                ? new HashSet<>(modifiedClasses)
+                : new HashSet<>();
+        addedClasses = addedClasses != null ? new HashSet<>(addedClasses)
+                : new HashSet<>();
+        deletedClasses = deletedClasses != null ? new HashSet<>(deletedClasses)
+                : new HashSet<>();
+
+        // the same class may be present on more than one input sets depending
+        // on how IDE and agent collect file change events.
+        // A modified call takes over added and deleted.
+        if (!modifiedClasses.isEmpty()) {
+            addedClasses.removeIf(modifiedClasses::contains);
+            deletedClasses.removeIf(modifiedClasses::contains);
+        }
+
+        RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
+
+        // collect classes for that are no more Flow components and should be
+        // removed from the registry
+        // NOTE: not all agents/JVMs support reload on class hierarchy change
+        Set<Class<?>> nonFlowComponentsToRemove = new HashSet<>();
+        deletedClasses.stream()
+                .filter(clazz -> !Component.class.isAssignableFrom(clazz))
+                .forEach(nonFlowComponentsToRemove::add);
+        modifiedClasses.stream()
+                .filter(clazz -> !Component.class.isAssignableFrom(clazz))
+                .forEach(nonFlowComponentsToRemove::add);
+
+        boolean isSessionRegistry = registry instanceof SessionRouteRegistry;
+        Predicate<Class<? extends Component>> modifiedClassesRouteRemovalFilter = clazz -> !isSessionRegistry;
+
+        if (registry instanceof AbstractRouteRegistry abstractRouteRegistry) {
+            Map<String, RouteTarget> routesMap = abstractRouteRegistry
+                    .getConfiguration().getRoutesMap();
+            Map<? extends Class<? extends Component>, RouteTarget> routeTargets = registry
+                    .getRegisteredRoutes().stream()
+                    .map(routeData -> routesMap.get(routeData.getTemplate()))
+                    .filter(Objects::nonNull).collect(Collectors.toMap(
+                            RouteTarget::getTarget, Function.identity()));
+            modifiedClassesRouteRemovalFilter = modifiedClassesRouteRemovalFilter
+                    .and(clazz -> {
+                        RouteTarget routeTarget = routeTargets.get(clazz);
+                        if (routeTarget == null) {
+                            return true;
+                        }
+                        boolean wasAnnotatedRoute = routeTarget
+                                .isAnnotatedRoute();
+                        boolean wasRegisteredAtStartup = routeTarget
+                                .isRegisteredAtStartup();
+                        boolean isAnnotatedRoute = clazz
+                                .isAnnotationPresent(Route.class);
+                        boolean isRegisteredAtStartup = isAnnotatedRoute
+                                && clazz.getAnnotation(Route.class)
+                                        .registerAtStartup();
+                        if (!isAnnotatedRoute && !wasAnnotatedRoute) {
+                            // route was previously registered manually, do not
+                            // remove it
+                            return false;
+                        }
+                        if (isAnnotatedRoute && wasAnnotatedRoute
+                                && !isRegisteredAtStartup
+                                && !wasRegisteredAtStartup) {
+                            // a lazy annotated route has changed, but it was
+                            // previously registered manually, do not remove it
+                            return false;
+                        }
+                        return !isAnnotatedRoute || !isRegisteredAtStartup;
+                    });
+        }
+        Stream<Class<? extends Component>> toRemove = Stream
+                .concat(filterComponentClasses(deletedClasses),
+                        filterComponentClasses(modifiedClasses)
+                                .filter(modifiedClassesRouteRemovalFilter))
+                .distinct();
+
+        Stream<Class<? extends Component>> toAdd;
+        if (isSessionRegistry) {
+            // routes on session registry are initialized programmatically so
+            // new classes should never be added automatically
+            toAdd = Stream.empty();
+        } else {
+            // New classes should be added to the registry only if they have a
+            // @Route annotation with registerAtStartup=true
+            toAdd = Stream
+                    .concat(filterComponentClasses(addedClasses),
+                            filterComponentClasses(modifiedClasses))
+                    .filter(clazz -> clazz.isAnnotationPresent(Route.class)
+                            && clazz.getAnnotation(Route.class)
+                                    .registerAtStartup())
+                    .distinct();
+        }
+
         registry.update(() -> {
+            // remove potential routes for classes that are not Flow
+            // components anymore
+            nonFlowComponentsToRemove
+                    .forEach(clazz -> routeConf.removeRoute((Class) clazz));
             // remove deleted classes and classes that lost the annotation from
             // registry
-            Stream.concat(deletedClasses.stream(),
-                    modifiedClasses.stream().filter(
-                            clazz -> !clazz.isAnnotationPresent(Route.class)))
-                    .filter(Component.class::isAssignableFrom)
-                    .forEach(clazz -> {
-                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
-                        logger.debug("Removing route to {}", componentClass);
-                        routeConf.removeRoute(componentClass);
-                    });
+            toRemove.forEach(componentClass -> {
+                logger.debug("Removing route to {}", componentClass);
+                routeConf.removeRoute(componentClass);
+            });
             // add new routes to registry
-            Stream.concat(addedClasses.stream(), modifiedClasses.stream())
-                    .distinct().filter(Component.class::isAssignableFrom)
-                    .filter(clazz -> clazz.isAnnotationPresent(Route.class))
-                    .forEach(clazz -> {
-                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
-                        logger.debug(
-                                "Updating route {} to {}", componentClass
-                                        .getAnnotation(Route.class).value(),
-                                clazz);
-                        routeConf.removeRoute(componentClass);
-                        routeConf.setAnnotatedRoute(componentClass);
-                    });
+            toAdd.forEach(componentClass -> {
+                logger.debug("Updating route {} to {}",
+                        componentClass.getAnnotation(Route.class).value(),
+                        componentClass);
+                routeConf.removeRoute(componentClass);
+                routeConf.setAnnotatedRoute(componentClass);
+            });
         });
     }
+
+    @SuppressWarnings("unchecked")
+    private static Stream<Class<? extends Component>> filterComponentClasses(
+            Set<Class<?>> classes) {
+        return classes.stream().filter(Component.class::isAssignableFrom)
+                .map(clazz -> (Class<? extends Component>) clazz);
+    }
+
 }

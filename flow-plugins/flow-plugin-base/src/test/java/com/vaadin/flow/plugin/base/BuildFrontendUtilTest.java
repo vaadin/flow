@@ -5,11 +5,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,9 +34,11 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -50,6 +55,7 @@ import com.vaadin.pro.licensechecker.Product;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class BuildFrontendUtilTest {
@@ -75,9 +81,9 @@ public class BuildFrontendUtilTest {
                 .thenReturn(new File(baseDir, "src/main/frontend/generated"));
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
-        ClassFinder classFinder = Mockito.mock(ClassFinder.class);
-        Mockito.when(classFinder.loadClass(ArgumentMatchers.anyString())).then(
-                i -> getClass().getClassLoader().loadClass(i.getArgument(0)));
+        Mockito.when(adapter.applicationIdentifier()).thenReturn("TEST_APP_ID");
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                getClass().getClassLoader());
         lookup = Mockito.spy(new LookupImpl(classFinder));
         Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
         Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
@@ -299,6 +305,191 @@ public class BuildFrontendUtilTest {
         Assert.assertEquals("Expecting same generated files to be present",
                 expectedGeneratedFiles, generatedFiles);
 
+    }
+
+    @Test
+    public void updateBuildFile_tokenFileNotExisting_doNothing()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.updateBuildFile(adapter, false);
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertFalse("Token file should not have been created",
+                tokenFile.exists());
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_developmentEntriesRemoved()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+        JsonObject buildInfoJsonDev = Json
+                .parse(Files.readString(tokenFile.toPath()));
+
+        BuildFrontendUtil.updateBuildFile(adapter, false);
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+
+        Set<String> removedKeys = Arrays.stream(buildInfoJsonDev.keys())
+                .filter(key -> !buildInfoJsonProd.hasKey(key))
+                .collect(Collectors.toSet());
+        Assert.assertFalse(
+                "Development entries have not been removed from token file",
+                removedKeys.isEmpty());
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_applicationIdentifierAdded()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+
+        BuildFrontendUtil.updateBuildFile(adapter, false);
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+        Assert.assertEquals("Wrong application identifier in token file",
+                "TEST_APP_ID", buildInfoJsonProd
+                        .getString(InitParameters.APPLICATION_IDENTIFIER));
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_licenseRequiredAndSubscriptionKey_dauFlagAdded()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+
+        String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
+        System.setProperty("vaadin.subscriptionKey", "sub-123");
+        try {
+            BuildFrontendUtil.updateBuildFile(adapter, true);
+        } finally {
+            if (subscriptionKey != null) {
+                System.setProperty("vaadin.subscriptionKey", subscriptionKey);
+            } else {
+                System.clearProperty("vaadin.subscriptionKey");
+            }
+        }
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+        Assert.assertTrue("DAU flag should be active in token file",
+                buildInfoJsonProd.getBoolean(Constants.DAU_TOKEN));
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_licenseNotRequiredAndSubscriptionKey_dauFlagNotAdded()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+
+        String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
+        System.setProperty("vaadin.subscriptionKey", "sub-123");
+        try {
+            BuildFrontendUtil.updateBuildFile(adapter, false);
+        } finally {
+            if (subscriptionKey != null) {
+                System.setProperty("vaadin.subscriptionKey", subscriptionKey);
+            } else {
+                System.clearProperty("vaadin.subscriptionKey");
+            }
+        }
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+        Assert.assertFalse("DAU flag should not be present in token file",
+                buildInfoJsonProd.hasKey(Constants.DAU_TOKEN));
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_licenseRequiredNoSubscriptionKey_dauFlagNotAdded()
+            throws Exception {
+        fillAdapter();
+
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        Assert.assertTrue("Token file should have been created",
+                tokenFile.exists());
+
+        String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
+        System.clearProperty("vaadin.subscriptionKey");
+        try {
+            BuildFrontendUtil.updateBuildFile(adapter, true);
+        } finally {
+            if (subscriptionKey != null) {
+                System.setProperty("vaadin.subscriptionKey", subscriptionKey);
+            } else {
+                System.clearProperty("vaadin.subscriptionKey");
+            }
+        }
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonObject buildInfoJsonProd = Json
+                .parse(Files.readString(tokenFile.toPath()));
+        Assert.assertFalse("DAU flag should not be present in token file",
+                buildInfoJsonProd.hasKey(Constants.DAU_TOKEN));
+    }
+
+    @Test
+    public void runNodeUpdater_generateFeatureFlagsJsFile() throws Exception {
+        setupPluginAdapterDefaults();
+
+        File targetDir = baseDir.toPath().resolve(adapter.buildFolder())
+                .toFile();
+        targetDir.mkdirs();
+        targetDir.deleteOnExit();
+        File testClassesDir = targetDir.toPath().resolve("test-classes")
+                .toFile();
+        testClassesDir.mkdirs();
+        testClassesDir.deleteOnExit();
+        File featureFlagsResourceFile = new File(testClassesDir,
+                FeatureFlags.PROPERTIES_FILENAME);
+        FileUtils.write(featureFlagsResourceFile,
+                "com.vaadin.experimental.exampleFeatureFlag = true\n");
+        featureFlagsResourceFile.deleteOnExit();
+
+        ClassLoader classLoader = new URLClassLoader(
+                new URL[] { new File(baseDir, "target/test-classes/").toURI()
+                        .toURL() },
+                BuildFrontendUtilTest.class.getClassLoader());
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                classLoader);
+        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
+        lookup = Mockito.spy(new LookupImpl(classFinder));
+        Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
+        Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
+
+        BuildFrontendUtil.runNodeUpdater(adapter);
+
+        File generatedFeatureFlagsFile = new File(adapter.generatedTsFolder(),
+                FEATURE_FLAGS_FILE_NAME);
+        String featureFlagsJs = Files
+                .readString(generatedFeatureFlagsFile.toPath());
+
+        Assert.assertTrue("Example feature flag is not set",
+                featureFlagsJs.contains(
+                        "window.Vaadin.featureFlags.exampleFeatureFlag = true;\n"));
     }
 
     private void fillAdapter() throws URISyntaxException {
