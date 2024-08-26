@@ -162,6 +162,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     visitEntryPoint(entryPoints.get(themeClass.getName()));
                 }
             }
+            computeReactClasses(finder);
             computePackages();
             computePwaConfiguration();
             aggregateEntryPointInformation();
@@ -172,6 +173,33 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
                     "Unable to compute frontend dependencies", e);
+        }
+    }
+
+    private void computeReactClasses(ClassFinder finder) throws IOException {
+        // Add ReactRouterOutlet and adapter as internal so it gets added to the
+        // bundle if available.
+        try {
+            if (finder.getResource(
+                    "com/vaadin/flow/server/frontend/ReactRouterOutletElement.template") != null
+                    && !visitedClasses.containsKey(
+                            "com.vaadin.flow.component.react.ReactRouterOutlet")) {
+                Class<Object> entryPointClass = finder.loadClass(
+                        "com.vaadin.flow.component.react.ReactRouterOutlet");
+                addInternalEntryPoint(entryPointClass);
+                visitEntryPoint(entryPoints.get(entryPointClass.getName()));
+            }
+            if (finder.getResource(
+                    "com/vaadin/flow/server/frontend/ReactAdapter.template") != null
+                    && !visitedClasses.containsKey(
+                            "com.vaadin.flow.component.react.ReactAdapterComponent")) {
+                Class<Object> entryPointClass = finder.loadClass(
+                        "com.vaadin.flow.component.react.ReactAdapterComponent");
+                addInternalEntryPoint(entryPointClass);
+                visitEntryPoint(entryPoints.get(entryPointClass.getName()));
+            }
+        } catch (ClassNotFoundException cnfe) {
+            // NO-OP
         }
     }
 
