@@ -459,6 +459,22 @@ public class HierarchyMapperWithDataTest {
             return Arrays.stream(thirdLevelNodes)
                     .filter(node -> node.getParent() == query.getParent());
         }
+
+        @Override
+        public int getDepth(TreeNode item) {
+            if (item == root) {
+                return 0;
+            }
+            if (Arrays.stream(secondLevelNodes)
+                    .anyMatch(node -> node == item)) {
+                return 1;
+            }
+            if (Arrays.stream(thirdLevelNodes)
+                    .anyMatch(node -> node == item)) {
+                return 2;
+            }
+            return -1;
+        }
     }
 
 }

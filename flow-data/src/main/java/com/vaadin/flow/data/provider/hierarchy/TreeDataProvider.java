@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.data.provider.InMemoryDataProvider;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.internal.Range;
 
 /**
  * An in-memory data provider for listing components that display hierarchical
@@ -51,8 +52,8 @@ public class TreeDataProvider<T>
      * underlying {@link TreeData} instance.
      *
      * @param treeData
-     *            the backing {@link TreeData} for this provider, not
-     *            {@code null}
+     *                 the backing {@link TreeData} for this provider, not
+     *                 {@code null}
      */
     public TreeDataProvider(TreeData<T> treeData) {
         Objects.requireNonNull(treeData, "treeData cannot be null");
@@ -116,6 +117,16 @@ public class TreeDataProvider<T>
         }
 
         return childStream.skip(query.getOffset()).limit(query.getLimit());
+    }
+
+    @Override
+    public int getDepth(T item) {
+        int depth = 0;
+        while (item != null) {
+            item = treeData.getParent(item);
+            depth++;
+        }
+        return depth;
     }
 
     @Override

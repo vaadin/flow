@@ -48,14 +48,31 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
+        public int getFlatChildCount(HierarchicalQuery<T, Q> query) {
+            return getDataProvider()
+                    .getFlatChildCount(adapt(query, getFilter(query)));
+        }
+
+        @Override
         public Stream<T> fetchChildren(HierarchicalQuery<T, Q> query) {
             return getDataProvider()
                     .fetchChildren(adapt(query, getFilter(query)));
         }
 
         @Override
+        public Stream<T> fetchFlatChildren(HierarchicalQuery<T, Q> query) {
+            return getDataProvider()
+                    .fetchFlatChildren(adapt(query, getFilter(query)));
+        }
+
+        @Override
         public boolean hasChildren(T item) {
             return getDataProvider().hasChildren(item);
+        }
+
+        @Override
+        public int getDepth(T item) {
+            return getDataProvider().getDepth(item);
         }
 
         @Override
@@ -111,14 +128,31 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
+        public int getFlatChildCount(HierarchicalQuery<T, F> query) {
+            return getDataProvider()
+                    .getFlatChildCount(adapt(query, getFilter(query)));
+        }
+
+        @Override
         public Stream<T> fetchChildren(HierarchicalQuery<T, F> query) {
             return getDataProvider()
                     .fetchChildren(adapt(query, getFilter(query)));
         }
 
         @Override
+        public Stream<T> fetchFlatChildren(HierarchicalQuery<T, F> query) {
+            return getDataProvider()
+                    .fetchFlatChildren(adapt(query, getFilter(query)));
+        }
+
+        @Override
         public boolean hasChildren(T item) {
             return getDataProvider().hasChildren(item);
+        }
+
+        @Override
+        public int getDepth(T item) {
+            return getDataProvider().getDepth(item);
         }
 
         @Override

@@ -24,6 +24,7 @@ import com.vaadin.flow.data.provider.hierarchy.HierarchicalFilterUtils.Hierarchi
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalFilterUtils.HierarchicalFilterDataProviderWrapper;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializablePredicate;
 
 /**
  * A common interface for fetching hierarchical data from a data source, such as
@@ -53,8 +54,12 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      */
     @Override
     public default int size(Query<T, F> query) {
-        if (query instanceof HierarchicalQuery<?, ?>) {
-            return getChildCount((HierarchicalQuery<T, F>) query);
+        if (query instanceof HierarchicalQuery<T, F> hierarchicalQuery) {
+            if (hierarchicalQuery.getExpandedItems() != null) {
+                return getFlatChildCount(hierarchicalQuery);
+            } else {
+                return getChildCount(hierarchicalQuery);
+            }
         }
         throw new IllegalArgumentException(
                 "Hierarchical data provider doesn't support non-hierarchical queries");
@@ -74,8 +79,12 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      */
     @Override
     public default Stream<T> fetch(Query<T, F> query) {
-        if (query instanceof HierarchicalQuery<?, ?>) {
-            return fetchChildren((HierarchicalQuery<T, F>) query);
+        if (query instanceof HierarchicalQuery<T, F> hierarchicalQuery) {
+            if (hierarchicalQuery.getExpandedItems() != null) {
+                return fetchFlatChildren(hierarchicalQuery);
+            } else {
+                return fetchChildren(hierarchicalQuery);
+            }
         }
         throw new IllegalArgumentException(
                 "Hierarchical data provider doesn't support non-hierarchical queries");
@@ -92,6 +101,10 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      */
     public int getChildCount(HierarchicalQuery<T, F> query);
 
+    public default int getFlatChildCount(HierarchicalQuery<T, F> query) {
+        return (int) fetchFlatChildren(query).count();
+    }
+
     /**
      * Fetches data from this HierarchicalDataProvider using given
      * {@code query}. Only the immediate children of
@@ -103,6 +116,31 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      */
     public Stream<T> fetchChildren(HierarchicalQuery<T, F> query);
 
+    public default Stream<T> fetchFlatChildren(HierarchicalQuery<T, F> query) {
+        return fetchChildren(new HierarchicalQuery<T, F>(
+                0,
+                Integer.MAX_VALUE,
+                query.getSortOrders(),
+                query.getInMemorySorting(),
+                query.getFilter().orElse(null),
+                query.getParent(),
+                query.getExpandedItems())).flatMap((item) -> {
+                    if (query.getExpandedItems().contains(item)) {
+                        return Stream.concat(Stream.of(item),
+                                fetchFlatChildren(new HierarchicalQuery<T, F>(
+                                        0,
+                                        Integer.MAX_VALUE,
+                                        query.getSortOrders(),
+                                        query.getInMemorySorting(),
+                                        query.getFilter().orElse(null),
+                                        item,
+                                        query.getExpandedItems())));
+                    }
+
+                    return Stream.of(item);
+                }).skip(query.getOffset()).limit(query.getLimit());
+    };
+
     /**
      * Check whether a given item has any children associated with it.
      *
@@ -111,6 +149,8 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      * @return whether the given item has children
      */
     public boolean hasChildren(T item);
+
+    public int getDepth(T item);
 
     @SuppressWarnings("serial")
     @Override

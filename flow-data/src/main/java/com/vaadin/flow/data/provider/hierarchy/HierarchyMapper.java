@@ -82,7 +82,8 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the amount of available data
      */
     public int getTreeSize() {
-        return (int) getHierarchy(null).count();
+        return getDataProvider()
+            .getFlatChildCount(new HierarchicalQuery<>(filter, null, getExpandedItems()));
     }
 
     /**
@@ -103,9 +104,12 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the parent index or a negative value if the parent is not found
      *
      */
+    // TODO:
     public Integer getParentIndex(T item) {
-        List<T> flatHierarchy = getHierarchy(null).collect(Collectors.toList());
-        return flatHierarchy.indexOf(getParentOfItem(item));
+        // return getDataProvider().getParentItem(item);
+        // List<T> flatHierarchy = getHierarchy(null).collect(Collectors.toList());
+        // return flatHierarchy.indexOf(getParentOfItem(item));
+        return 0;
     }
 
     /**
@@ -317,7 +321,8 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the stream of items
      */
     public Stream<T> fetchHierarchyItems(Range range) {
-        return getHierarchy(null).skip(range.getStart()).limit(range.length());
+        return doFetchFlatChildren(null, range);
+        // return getHierarchy(null).skip(range.getStart()).limit(range.length());
     }
 
     /**
@@ -331,8 +336,9 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the stream of items
      */
     public Stream<T> fetchHierarchyItems(T parent, Range range) {
-        return getHierarchy(parent, false).skip(range.getStart())
-                .limit(range.length());
+        return doFetchFlatChildren(parent, range);
+        // return getHierarchy(parent, false).skip(range.getStart())
+        //         .limit(range.length());
     }
 
     /**
@@ -379,6 +385,17 @@ public class HierarchyMapper<T, F> implements Serializable {
                         getInMemorySorting(), getFilter(), parent));
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private Stream<T> doFetchFlatChildren(T parent, Range range) {
+        Range actualRange = (range == null)
+                ? Range.withLength(0, Integer.MAX_VALUE)
+                : range;
+        return getDataProvider()
+            .fetchFlatChildren(new HierarchicalQuery(actualRange.getStart(),
+            actualRange.length(), getBackEndSorting(),
+            getInMemorySorting(), getFilter(), parent, getExpandedItems()));
+    }
+
     /**
      * Generic method for finding full range of direct children of a given
      * parent.
@@ -399,12 +416,13 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return depth of item in the tree or -1 if item is null
      */
     public int getDepth(T item) {
-        int depth = -1;
-        while (item != null) {
-            item = getParentOfItem(item);
-            ++depth;
-        }
-        return depth;
+        return getDataProvider().getDepth(item);
+        // int depth = -1;
+        // while (item != null) {
+        //     item = getParentOfItem(item);
+        //     ++depth;
+        // }
+        // return depth;
     }
 
     /**
@@ -532,21 +550,24 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the stream of all children under the parent
      */
     private Stream<T> getFlatChildrenStream(T parent, boolean includeParent) {
-        List<T> childList = Collections.emptyList();
-        if (isExpanded(parent)) {
-            try (Stream<T> stream = doFetchDirectChildren(parent)) {
-                childList = stream.collect(Collectors.toList());
-            }
-            if (childList.isEmpty()) {
-                removeChildren(parent == null ? null
-                        : getDataProvider().getId(parent));
-            } else {
-                registerChildren(parent, childList);
-            }
-        }
         return combineParentAndChildStreams(parent,
-                childList.stream().flatMap(this::getFlatChildrenStream),
+                doFetchFlatChildren(parent, null),
                 includeParent);
+        // List<T> childList = Collections.emptyList();
+        // if (isExpanded(parent)) {
+        //     try (Stream<T> stream = doFetchDirectChildren(parent)) {
+        //         childList = stream.collect(Collectors.toList());
+        //     }
+        //     if (childList.isEmpty()) {
+        //         removeChildren(parent == null ? null
+        //                 : getDataProvider().getId(parent));
+        //     } else {
+        //         registerChildren(parent, childList);
+        //     }
+        // }
+        // return combineParentAndChildStreams(parent,
+        //         childList.stream().flatMap(this::getFlatChildrenStream),
+        //         includeParent);
     }
 
     /**

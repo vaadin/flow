@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -35,20 +36,26 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 public class HierarchicalQuery<T, F> extends Query<T, F> {
 
     private final T parent;
+    private final Collection<T> expandedItems;
 
     /**
      * Constructs a new hierarchical query object with given filter and parent
      * node.
      *
      * @param filter
-     *            filtering for fetching; can be <code>null</code>
+     *               filtering for fetching; can be <code>null</code>
      * @param parent
-     *            the hierarchical parent object, <code>null</code>
-     *            corresponding to the root node
+     *               the hierarchical parent object, <code>null</code>
+     *               corresponding to the root node
      */
     public HierarchicalQuery(F filter, T parent) {
+        this(filter, parent, null);
+    }
+
+    public HierarchicalQuery(F filter, T parent, Collection<T> expandedItems) {
         super(filter);
         this.parent = parent;
+        this.expandedItems = expandedItems;
     }
 
     /**
@@ -56,24 +63,30 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      * sorting and filtering.
      *
      * @param offset
-     *            first index to fetch
+     *                        first index to fetch
      * @param limit
-     *            fetched item count
+     *                        fetched item count
      * @param sortOrders
-     *            sorting order for fetching; used for sorting backends
+     *                        sorting order for fetching; used for sorting backends
      * @param inMemorySorting
-     *            comparator for sorting in-memory data
+     *                        comparator for sorting in-memory data
      * @param filter
-     *            filtering for fetching; can be <code>null</code>
+     *                        filtering for fetching; can be <code>null</code>
      * @param parent
-     *            the hierarchical parent object, <code>null</code>
-     *            corresponding to the root node
+     *                        the hierarchical parent object, <code>null</code>
+     *                        corresponding to the root node
      */
     public HierarchicalQuery(int offset, int limit,
             List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
             F filter, T parent) {
+        this(offset, limit, sortOrders, inMemorySorting, filter, parent, null);
+    }
+
+    public HierarchicalQuery(int offset, int limit, List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
+            F filter, T parent, Collection<T> expandedItems) {
         super(offset, limit, sortOrders, inMemorySorting, filter);
         this.parent = parent;
+        this.expandedItems = expandedItems;
     }
 
     /**
@@ -94,5 +107,9 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      */
     public Optional<T> getParentOptional() {
         return Optional.ofNullable(parent);
+    }
+
+    public Collection<T> getExpandedItems() {
+        return expandedItems;
     }
 }
