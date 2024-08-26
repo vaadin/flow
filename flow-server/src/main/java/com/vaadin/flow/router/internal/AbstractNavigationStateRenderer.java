@@ -724,10 +724,25 @@ public abstract class AbstractNavigationStateRenderer
     private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getForwardTarget();
 
+        Router router = event.getUI().getRouter();
+        Class<? extends Component> forwardTargetType = beforeNavigation
+                .getForwardTargetType();
+
+        NavigationRouteTarget target = router.getRegistry()
+                .getNavigationRouteTarget(navigationState.getResolvedPath());
+
+        List<Class<? extends RouterLayout>> routerLayoutTypes = new ArrayList<>();
+        if (target.hasTarget()) {
+            routerLayoutTypes = target.getRouteTarget().getParentLayouts();
+        }
+
+        boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
+                forwardTargetType, routerLayoutTypes);
+
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
         newNavigationEvent.getUI().getPage().getHistory().replaceState(null,
-                newNavigationEvent.getLocation(), false);
+                newNavigationEvent.getLocation(), !preserveOnRefreshTarget);
 
         return handler.handle(newNavigationEvent);
     }
