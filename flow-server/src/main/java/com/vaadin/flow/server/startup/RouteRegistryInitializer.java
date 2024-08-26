@@ -27,9 +27,11 @@ import com.vaadin.flow.di.OneTimeInitializerPredicate;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.router.Layout;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
@@ -38,7 +40,7 @@ import com.vaadin.flow.server.VaadinContext;
  *
  * @since 1.0
  */
-@HandlesTypes({ Route.class, RouteAlias.class })
+@HandlesTypes({ Route.class, RouteAlias.class, Layout.class })
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         implements VaadinServletContextStartupInitializer {
 
@@ -61,6 +63,12 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(context);
 
+            routesSet.stream()
+                    .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
+                    .filter(clazz -> RouterLayout.class.isAssignableFrom(clazz))
+                    .forEach(clazz -> routeRegistry
+                            .setLayout((Class<? extends RouterLayout>) clazz));
+
             Set<Class<? extends Component>> routes = validateRouteClasses(
                     context, routesSet.stream());
 
@@ -72,7 +80,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
                 configureRoutes(routes, routeRegistry);
             });
             routeRegistry.setPwaConfigurationClass(validatePwaClass(context,
-                    routes.stream().map(clazz -> (Class<?>) clazz)));
+                    routes.stream().map(clazz -> clazz)));
         } catch (InvalidRouteConfigurationException irce) {
             throw new VaadinInitializerException(
                     "Exception while registering Routes on servlet startup",
