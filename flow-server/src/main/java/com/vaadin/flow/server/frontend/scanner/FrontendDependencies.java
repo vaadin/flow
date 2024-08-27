@@ -181,7 +181,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // bundle if available.
         try {
             if (finder.getResource(
-                    "com/vaadin/flow/server/frontend/ReactRouterOutletElement.template") != null
+                    "META-INF/resources/frontend/ReactRouterOutletElement.tsx") != null
                     && !visitedClasses.containsKey(
                             "com.vaadin.flow.component.react.ReactRouterOutlet")) {
                 Class<Object> entryPointClass = finder.loadClass(
