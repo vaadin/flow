@@ -47,6 +47,7 @@ import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
@@ -135,8 +136,9 @@ public class MenuRegistry {
             String title = getTitle(route.getNavigationTarget());
             final String url = getRouteUrl(route);
             Map<String, RouteParamType> parameters = getParameters(route);
-            menuRoutes.put(url, new AvailableViewInfo(title, null, false, url,
-                    false, false, route.getMenuData(), null, parameters));
+            menuRoutes.put(url,
+                    new AvailableViewInfo(title, null, false, url, false, false,
+                            route.getMenuData(), null, parameters, false));
         }
     }
 
@@ -399,6 +401,26 @@ public class MenuRegistry {
      */
     public static ClassLoader getClassLoader() {
         return Thread.currentThread().getContextClassLoader();
+    }
+
+    /**
+     * See if there is a client route available for give route path.
+     *
+     * @param route
+     *            route path to check
+     * @return true if a client route is found.
+     */
+    public static boolean hasClientRoute(String route) {
+        if (VaadinSession.getCurrent() == null || route == null) {
+            return false;
+        }
+        route = route.isEmpty() ? route
+                : route.startsWith("/") ? route : "/" + route;
+        Map<String, AvailableViewInfo> clientItems = MenuRegistry
+                .collectClientMenuItems(true,
+                        VaadinSession.getCurrent().getConfiguration());
+        Set<String> clientRoutes = clientItems.keySet();
+        return clientRoutes.contains(route);
     }
 
 }
