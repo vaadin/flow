@@ -26,6 +26,6 @@ import com.vaadin.flow.router.Route;
  * React view inside a Flow view.
  */
 @Tag("react-router-outlet")
-@JsModule("Frontend/generated/flow/ReactRouterOutletElement.tsx")
+@JsModule("./ReactRouterOutletElement.tsx")
 public class ReactRouterOutlet extends ReactAdapterComponent {
 }
