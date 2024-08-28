@@ -69,6 +69,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.Mode;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -730,7 +731,8 @@ public abstract class AbstractNavigationStateRenderer
                 .getForwardTargetType();
 
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                .getParentLayouts(event.getUI().getRouter().getRegistry(),
+                .getParentLayouts(
+                        event.getUI().getRouter().getRegistry().getContext(),
                         forwardTargetType, beforeNavigation.getForwardUrl());
 
         boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
