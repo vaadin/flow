@@ -707,7 +707,12 @@ public class Options implements Serializable {
         return this;
     }
 
-    protected FeatureFlags getFeatureFlags() {
+    /**
+     * Get the available feature flags.
+     *
+     * @return FeatureFlags object
+     */
+    public FeatureFlags getFeatureFlags() {
         if (featureFlags == null) {
             featureFlags = new FeatureFlags(lookup);
             if (javaResourceFolder != null) {

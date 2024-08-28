@@ -579,7 +579,8 @@ public class BuildFrontendUtil {
         }
 
         FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, adapter.getClassFinder(), true, null);
+                .createScanner(false, adapter.getClassFinder(), true, null,
+                        adapter.isReactEnabled());
         List<Product> commercialComponents = findCommercialFrontendComponents(
                 scanner, statsJsonContent);
         commercialComponents.addAll(findCommercialJavaComponents(adapter));
