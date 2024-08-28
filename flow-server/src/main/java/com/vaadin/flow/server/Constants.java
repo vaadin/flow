@@ -46,6 +46,7 @@ public final class Constants implements Serializable {
     public static final String EXTERNAL_STATS_FILE_TOKEN = "externalStatsFile";
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
     public static final String DAU_TOKEN = "dau.enable";
+    public static final String PREMIUM_FEATURES_TOKEN = "premiumFeatures.enable";
 
     public static final String POLYFILLS_DEFAULT_VALUE = "";
 

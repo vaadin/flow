@@ -754,9 +754,17 @@ public class BuildFrontendUtil {
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
             buildInfo.put(APPLICATION_IDENTIFIER,
                     adapter.applicationIdentifier());
-            if (licenseRequired && LocalSubscriptionKey.get() != null) {
-                adapter.logInfo("Daily Active User tracking enabled");
-                buildInfo.put(DAU_TOKEN, true);
+            if (licenseRequired) {
+                if (LocalSubscriptionKey.get() != null) {
+                    adapter.logInfo("Daily Active User tracking enabled");
+                    buildInfo.put(DAU_TOKEN, true);
+                }
+                if (LicenseChecker.isValidLicense("vaadin-commercial-cc-client",
+                        null, BuildType.PRODUCTION)) {
+                    adapter.logInfo(
+                            Constants.PREMIUM_FEATURES_TOKEN + " enabled");
+                    buildInfo.put(Constants.PREMIUM_FEATURES_TOKEN, true);
+                }
             }
 
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
