@@ -426,8 +426,7 @@ public class BuildFrontendUtilTest {
             Assert.assertTrue(
                     Constants.PREMIUM_FEATURES
                             + " flag should be active in token file",
-                    buildInfoJsonProd
-                            .getBoolean(Constants.PREMIUM_FEATURES));
+                    buildInfoJsonProd.getBoolean(Constants.PREMIUM_FEATURES));
         });
     }
 

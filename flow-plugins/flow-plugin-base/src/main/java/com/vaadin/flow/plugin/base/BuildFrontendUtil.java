@@ -761,8 +761,7 @@ public class BuildFrontendUtil {
                 }
                 if (LicenseChecker.isValidLicense("vaadin-commercial-cc-client",
                         null, BuildType.PRODUCTION)) {
-                    adapter.logInfo(
-                            Constants.PREMIUM_FEATURES + " enabled");
+                    adapter.logInfo(Constants.PREMIUM_FEATURES + " enabled");
                     buildInfo.put(Constants.PREMIUM_FEATURES, true);
                 }
             }
