@@ -49,6 +49,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
@@ -872,6 +873,24 @@ public class RouteRegistryInitializerTest {
     @RouteAlias(value = "alias", layout = InlineParent.class)
     @Tag(Tag.DIV)
     public static class InlineAliasView extends Component {
+    }
+
+    @Layout
+    @Tag(Tag.DIV)
+    public static class FaultyParentLayout extends Component {
+    }
+
+    @Test
+    public void layout_annotation_on_non_routelayout_throws()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "Found @Layout on classes not extending RouterLayout.%nCheck the following classes: %s",
+                FaultyParentLayout.class.getName()));
+
+        routeRegistryInitializer.process(
+                Stream.of(FaultyParentLayout.class).collect(Collectors.toSet()),
+                servletContext);
     }
 
     @Test

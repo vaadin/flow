@@ -17,7 +17,9 @@ package com.vaadin.flow.server.startup;
 
 import jakarta.servlet.annotation.HandlesTypes;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 
@@ -30,6 +32,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.router.Layout;
 
@@ -63,6 +66,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(context);
 
+            validateLayoutAnnotations(routesSet);
             routesSet.stream()
                     .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
                     .filter(clazz -> RouterLayout.class.isAssignableFrom(clazz))
@@ -85,6 +89,33 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             throw new VaadinInitializerException(
                     "Exception while registering Routes on servlet startup",
                     irce);
+        }
+    }
+
+    /**
+     * Validate {@link Layout} annotations that they are not added on classes
+     * that do not extend {@link RouterLayout} as they can not work without the
+     * implementation.
+     *
+     * @param routesSet
+     *            Routes to check
+     * @throws InvalidRouteLayoutConfigurationException
+     *             Thrown if any {@link Layout} annotations are found on non
+     *             {@link RouterLayout} classes
+     */
+    public static void validateLayoutAnnotations(Set<Class<?>> routesSet)
+            throws InvalidRouteLayoutConfigurationException {
+        List<Class<?>> faultyLayouts = routesSet.stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
+                .filter(clazz -> !RouterLayout.class.isAssignableFrom(clazz))
+                .collect(Collectors.toList());
+        if (!faultyLayouts.isEmpty()) {
+            String message = "Found @Layout on classes not extending RouterLayout.%nCheck the following classes: %s";
+            String faultyLayoutsString = faultyLayouts.stream()
+                    .map(clazz -> clazz.getName())
+                    .collect(Collectors.joining(","));
+            throw new InvalidRouteLayoutConfigurationException(
+                    String.format(message, faultyLayoutsString));
         }
     }
 
