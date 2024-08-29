@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -108,10 +109,12 @@ public interface FrontendDependenciesScanner extends Serializable {
         }
 
         public FrontendDependenciesScanner createScanner(Options options) {
+            boolean reactEnabled = options.isReactEnabled() && FrontendUtils
+                    .isReactRouterRequired(options.getFrontendDirectory());
             return createScanner(!options.isUseByteCodeScanner(),
                     options.getClassFinder(),
                     options.isGenerateEmbeddableWebComponents(),
-                    options.getFeatureFlags(), options.isReactEnabled());
+                    options.getFeatureFlags(), reactEnabled);
         }
     }
 
