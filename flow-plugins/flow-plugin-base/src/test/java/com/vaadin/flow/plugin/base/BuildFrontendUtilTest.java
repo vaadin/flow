@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -425,10 +424,10 @@ public class BuildFrontendUtilTest {
             JsonObject buildInfoJsonProd = Json
                     .parse(Files.readString(tokenFile.toPath()));
             Assert.assertTrue(
-                    Constants.PREMIUM_FEATURES_TOKEN
+                    Constants.PREMIUM_FEATURES
                             + " flag should be active in token file",
                     buildInfoJsonProd
-                            .getBoolean(Constants.PREMIUM_FEATURES_TOKEN));
+                            .getBoolean(Constants.PREMIUM_FEATURES));
         });
     }
 
@@ -444,9 +443,9 @@ public class BuildFrontendUtilTest {
             JsonObject buildInfoJsonProd = Json
                     .parse(Files.readString(tokenFile.toPath()));
             Assert.assertFalse(
-                    Constants.PREMIUM_FEATURES_TOKEN
+                    Constants.PREMIUM_FEATURES
                             + " flag should not be active in token file",
-                    buildInfoJsonProd.hasKey(Constants.PREMIUM_FEATURES_TOKEN));
+                    buildInfoJsonProd.hasKey(Constants.PREMIUM_FEATURES));
         });
     }
 
