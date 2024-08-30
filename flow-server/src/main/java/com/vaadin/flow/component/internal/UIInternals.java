@@ -41,6 +41,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HeartbeatEvent;
 import com.vaadin.flow.component.HeartbeatListener;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -855,7 +856,13 @@ public class UIInternals implements Serializable {
                         .createComponent((Class<? extends Component>) getClass()
                                 .getClassLoader().loadClass(
                                         "com.vaadin.flow.component.react.ReactRouterOutlet"));
-                ((RouterLayout) target).showRouterLayoutContent(reactOutlet);
+                RouterLayout layout = (RouterLayout) target;
+                layout.getElement().getChildren()
+                        .filter(element -> element.getTag()
+                                .equals(reactOutlet.getClass()
+                                        .getAnnotation(Tag.class).value()))
+                        .forEach(Element::removeFromParent);
+                layout.showRouterLayoutContent(reactOutlet);
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(
                         "No ReactRouterOutlet available on classpath", e);
