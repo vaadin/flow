@@ -568,6 +568,9 @@ public class NodeUpdaterTest {
                 .mockStatic(FrontendUtils.class)) {
             mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
                     Mockito.any(ClassFinder.class))).thenReturn(true);
+            mock.when(() -> FrontendUtils
+                    .isReactRouterRequired(Mockito.any(File.class)))
+                    .thenReturn(true);
             options.withReact(true);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
