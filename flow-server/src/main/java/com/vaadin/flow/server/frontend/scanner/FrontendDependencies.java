@@ -143,6 +143,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents,
             FeatureFlags featureFlags) {
+        this(finder, generateEmbeddableWebComponents, null, true);
+    }
+
+    public FrontendDependencies(ClassFinder finder,
+            boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
+            boolean reactEnabled) {
         super(finder, featureFlags);
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
@@ -162,7 +168,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     visitEntryPoint(entryPoints.get(themeClass.getName()));
                 }
             }
-            computeReactClasses(finder);
+            if (reactEnabled) {
+                computeReactClasses(finder);
+            }
             computePackages();
             computePwaConfiguration();
             aggregateEntryPointInformation();
