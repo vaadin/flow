@@ -14,18 +14,22 @@
  * the License.
  */
 
-package com.vaadin.flow.component.react;
+package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.react.ReactAdapterComponent;
-import com.vaadin.flow.router.Route;
+import org.junit.Test;
 
-/**
- * Component used to create a React {@code Outlet} element for binding a Hilla
- * React view inside a Flow view.
- */
-@Tag("react-router-outlet")
-@JsModule("./ReactRouterOutletElement.tsx")
-public class ReactRouterOutlet extends ReactAdapterComponent {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+public class PreserveOnRefreshForwardingIT extends ChromeBrowserTest {
+
+    @Test
+    public void forwadingToPreserveOnRefreshRoute_allowsUpdatingQueryParameters() {
+        open("initial");
+
+        waitUntil(driver -> {
+            String url = driver.getCurrentUrl();
+            return url.endsWith(
+                    "PreserveOnRefreshForwardToView?afterforward=true");
+        });
+    }
 }

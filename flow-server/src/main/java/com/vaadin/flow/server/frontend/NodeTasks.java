@@ -113,8 +113,6 @@ public class NodeTasks implements FallibleCommand {
 
         Set<String> webComponentTags = new HashSet<>();
 
-        final FeatureFlags featureFlags = options.getFeatureFlags();
-
         if (options.isFrontendHotdeploy()) {
             UsageStatistics.markAsUsed("flow/hotdeploy", null);
         }
@@ -122,9 +120,7 @@ public class NodeTasks implements FallibleCommand {
         if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
                 || options.isEnableConfigUpdate()) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(!options.isUseByteCodeScanner(), classFinder,
-                            options.isGenerateEmbeddableWebComponents(),
-                            featureFlags);
+                    .createScanner(options);
 
             if (options.isProductionMode()) {
                 boolean needBuild = BundleValidationUtil.needsBuild(options,

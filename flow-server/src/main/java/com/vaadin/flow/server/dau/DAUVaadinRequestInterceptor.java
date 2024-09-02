@@ -92,13 +92,11 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
     @Override
     public void serviceInit(ServiceInitEvent event) {
         event.getSource().addServiceDestroyListener(this);
-        // TODO: error handling
         DauIntegration.startTracking(applicationName);
     }
 
     @Override
     public void serviceDestroy(ServiceDestroyEvent event) {
-        // TODO: error handling
         DauIntegration.stopTracking();
     }
 }

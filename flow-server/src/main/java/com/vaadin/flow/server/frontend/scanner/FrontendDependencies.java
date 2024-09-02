@@ -143,6 +143,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents,
             FeatureFlags featureFlags) {
+        this(finder, generateEmbeddableWebComponents, null, true);
+    }
+
+    public FrontendDependencies(ClassFinder finder,
+            boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
+            boolean reactEnabled) {
         super(finder, featureFlags);
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
@@ -162,7 +168,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     visitEntryPoint(entryPoints.get(themeClass.getName()));
                 }
             }
-            computeReactClasses(finder);
+            if (reactEnabled) {
+                computeReactClasses(finder);
+            }
             computePackages();
             computePwaConfiguration();
             aggregateEntryPointInformation();
@@ -181,7 +189,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // bundle if available.
         try {
             if (finder.getResource(
-                    "com/vaadin/flow/server/frontend/ReactRouterOutletElement.template") != null
+                    "META-INF/resources/frontend/ReactRouterOutletElement.tsx") != null
                     && !visitedClasses.containsKey(
                             "com.vaadin.flow.component.react.ReactRouterOutlet")) {
                 Class<Object> entryPointClass = finder.loadClass(

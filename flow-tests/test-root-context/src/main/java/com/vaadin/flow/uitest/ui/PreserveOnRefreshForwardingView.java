@@ -13,19 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.uitest.ui;
 
-package com.vaadin.flow.component.react;
-
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.react.ReactAdapterComponent;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
-/**
- * Component used to create a React {@code Outlet} element for binding a Hilla
- * React view inside a Flow view.
- */
-@Tag("react-router-outlet")
-@JsModule("./ReactRouterOutletElement.tsx")
-public class ReactRouterOutlet extends ReactAdapterComponent {
+@Route("com.vaadin.flow.uitest.ui.PreserveOnRefreshForwardingView")
+public class PreserveOnRefreshForwardingView extends Div
+        implements BeforeEnterObserver {
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        event.forwardTo(PreserveOnRefreshForwardToView.class);
+    }
 }
