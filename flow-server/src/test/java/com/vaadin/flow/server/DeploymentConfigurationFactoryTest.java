@@ -215,6 +215,29 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
+    public void servletConfigParameters_nullValues_ignored() throws Exception {
+        Class<NoSettings> servlet = NoSettings.class;
+
+        Map<String, String> servletConfigParams = new HashMap<>(
+                defaultServletParams);
+        servletConfigParams.put("someKey", null);
+        servletConfigParams.put("someNotNullKey", "NOT_NULL");
+
+        Map<String, String> servletContextParams = new HashMap<>();
+
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
+                        servletConfigParams, servletContextParams));
+
+        Assert.assertFalse(
+                "Expecting null parameter to be ignored, but was in configuration",
+                config.getInitParameters().containsKey("someKey"));
+        Assert.assertTrue(
+                "Expecting not null parameter to be in configuration, but was not",
+                config.getInitParameters().containsKey("someNotNullKey"));
+    }
+
+    @Test
     public void should_readConfigurationFromTokenFile() throws Exception {
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": true", "}"));
