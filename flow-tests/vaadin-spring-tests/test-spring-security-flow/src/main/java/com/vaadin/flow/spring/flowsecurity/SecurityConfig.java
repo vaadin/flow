@@ -9,7 +9,6 @@
 package com.vaadin.flow.spring.flowsecurity;
 
 import javax.servlet.ServletContext;
-
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,6 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.spring.RootMappedCondition;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
@@ -67,7 +65,8 @@ public class SecurityConfig extends VaadinWebSecurity {
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests().antMatchers("/admin-only/**")
                 .hasAnyRole(ROLE_ADMIN);
-        http.authorizeRequests().antMatchers("/public/**").permitAll();
+        http.authorizeRequests().antMatchers("/favicon.ico", "/public/**")
+                .permitAll();
         super.configure(http);
         setLoginView(http, LoginView.class, getLogoutSuccessUrl());
         http.logout().addLogoutHandler((request, response, authentication) -> {
