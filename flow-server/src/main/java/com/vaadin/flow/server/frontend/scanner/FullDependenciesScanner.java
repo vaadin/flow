@@ -91,7 +91,24 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            available feature flags and their status
      */
     FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags) {
-        this(finder, AnnotationReader::getAnnotationsFor, featureFlags);
+        this(finder, AnnotationReader::getAnnotationsFor, featureFlags, true);
+    }
+
+    /**
+     * Creates a new scanner instance which discovers all dependencies in the
+     * classpath.
+     *
+     * @param finder
+     *            a class finder
+     * @param featureFlags
+     *            available feature flags and their status
+     * @param reactEnabled
+     *            true if react classes are enabled
+     */
+    FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags,
+            boolean reactEnabled) {
+        this(finder, AnnotationReader::getAnnotationsFor, featureFlags,
+                reactEnabled);
     }
 
     /**
@@ -104,10 +121,12 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a strategy to discover class annotations
      * @param featureFlags
      *            available feature flags and their status
+     * @param reactEnabled
+     *            true if react classes are enabled
      */
     FullDependenciesScanner(ClassFinder finder,
             SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder,
-            FeatureFlags featureFlags) {
+            FeatureFlags featureFlags, boolean reactEnabled) {
         super(finder, featureFlags);
 
         long start = System.currentTimeMillis();
@@ -143,6 +162,12 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         collectScripts(modulesSet, modulesSetDevelopment, JsModule.class);
         collectScripts(scriptsSet, scriptsSetDevelopment, JavaScript.class);
         cssData = discoverCss();
+
+        if (!reactEnabled) {
+            modulesSet.stream().filter(
+                    module -> module.contains("ReactRouterOutletElement.tsx"))
+                    .findFirst().ifPresent(outlet -> modulesSet.remove(outlet));
+        }
 
         modules = new ArrayList<>(modulesSet);
         modulesDevelopment = new ArrayList<>(modulesSetDevelopment);
