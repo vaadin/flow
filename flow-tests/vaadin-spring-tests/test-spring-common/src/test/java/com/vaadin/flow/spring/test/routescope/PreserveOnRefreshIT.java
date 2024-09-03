@@ -29,6 +29,7 @@ public class PreserveOnRefreshIT extends AbstractSpringTest {
 
         // refresh
         getDriver().navigate().refresh();
+        waitForElementPresent(By.id("preserve-on-refresh"));
 
         Assert.assertEquals("Bean is not preserved after refresh", beanCall,
                 findElement(By.id("preserve-on-refresh")).getText());
