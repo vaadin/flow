@@ -318,10 +318,12 @@ public class MenuRegistry {
             return getClassLoader().getResource(FILE_ROUTES_JSON_PROD_PATH);
         }
         try {
-            Path fileRoutes = configuration.getFrontendFolder().toPath()
-                    .resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
-            if (fileRoutes.toFile().exists()) {
-                return fileRoutes.toUri().toURL();
+            if (configuration.getFrontendFolder() != null) {
+                Path fileRoutes = configuration.getFrontendFolder().toPath()
+                        .resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
+                if (fileRoutes.toFile().exists()) {
+                    return fileRoutes.toUri().toURL();
+                }
             }
             return null;
         } catch (MalformedURLException e) {
@@ -411,6 +413,10 @@ public class MenuRegistry {
      * @return true if a client route is found.
      */
     public static boolean hasClientRoute(String route) {
+        return hasClientRoute(route, false);
+    }
+
+    public static boolean hasClientRoute(String route, boolean excludeLayouts) {
         if (VaadinSession.getCurrent() == null || route == null) {
             return false;
         }
@@ -419,8 +425,16 @@ public class MenuRegistry {
         Map<String, AvailableViewInfo> clientItems = MenuRegistry
                 .collectClientMenuItems(true,
                         VaadinSession.getCurrent().getConfiguration());
-        Set<String> clientRoutes = clientItems.keySet();
+        final Set<String> clientRoutes = new HashSet<>();
+        clientItems.forEach((path, info) -> {
+            if (excludeLayouts) {
+                if (info.children() == null || info.children().isEmpty()) {
+                    clientRoutes.add(path);
+                }
+            } else {
+                clientRoutes.add(path);
+            }
+        });
         return clientRoutes.contains(route);
     }
-
 }
