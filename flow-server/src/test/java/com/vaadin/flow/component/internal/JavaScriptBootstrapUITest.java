@@ -15,6 +15,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -46,6 +47,7 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
+import com.vaadin.flow.server.menu.MenuRegistry;
 
 public class JavaScriptBootstrapUITest {
 
@@ -434,6 +436,11 @@ public class JavaScriptBootstrapUITest {
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
                 .forClass(Serializable[].class);
+
+        MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class);
+        menuRegistry.when(() -> MenuRegistry.hasClientRoute("clean/1", true))
+                .thenReturn(false);
 
         ui.navigate("clean/1");
         Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());

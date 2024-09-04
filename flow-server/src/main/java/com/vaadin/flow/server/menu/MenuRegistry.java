@@ -318,12 +318,10 @@ public class MenuRegistry {
             return getClassLoader().getResource(FILE_ROUTES_JSON_PROD_PATH);
         }
         try {
-            if (configuration.getFrontendFolder() != null) {
-                Path fileRoutes = configuration.getFrontendFolder().toPath()
-                        .resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
-                if (fileRoutes.toFile().exists()) {
-                    return fileRoutes.toUri().toURL();
-                }
+            Path fileRoutes = configuration.getFrontendFolder().toPath()
+                    .resolve(GENERATED).resolve(FILE_ROUTES_JSON_NAME);
+            if (fileRoutes.toFile().exists()) {
+                return fileRoutes.toUri().toURL();
             }
             return null;
         } catch (MalformedURLException e) {
