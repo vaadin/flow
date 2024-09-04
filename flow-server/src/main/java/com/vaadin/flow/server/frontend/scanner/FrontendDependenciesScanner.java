@@ -100,7 +100,8 @@ public interface FrontendDependenciesScanner extends Serializable {
             if (allDependenciesScan) {
                 // this dep scanner can't distinguish embeddable web component
                 // frontend related annotations
-                return new FullDependenciesScanner(finder, featureFlags);
+                return new FullDependenciesScanner(finder, featureFlags,
+                        reactEnabled);
             } else {
                 return new FrontendDependencies(finder,
                         generateEmbeddableWebComponents, featureFlags,
