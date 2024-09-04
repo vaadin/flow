@@ -132,6 +132,18 @@ public class MenuRegistryTest {
     }
 
     @Test
+    public void getMenuItemsWithNestedFiltering_doesNotThrow() throws IOException {
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), nestedLoginRequiredRouteFile);
+
+        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+                .getMenuItems(true);
+
+        Assert.assertEquals(0, menuItems.size());
+    }
+
+    @Test
     public void getMenuItemsNoFilteringContainsAllClientPaths()
             throws IOException {
         File generated = tmpDir.newFolder(GENERATED);
@@ -457,6 +469,46 @@ public class MenuRegistryTest {
                     },
                     "params": {},
                     "title": "Login"
+                  }
+                ]
+              }
+            ]
+            """;
+
+    String nestedLoginRequiredRouteFile = """
+            [
+              {
+                "route": "",
+                "params": {},
+                "title": "current Title",
+                "children": [
+                  {
+                    "route": "",
+                    "loginRequired": true,
+                    "params": {},
+                    "title": "navigate"
+                  },
+                  {
+                    "route": "admin",
+                    "loginRequired": true,
+                    "title": "Admin",
+                    "params": {},
+                    "children": [
+                      {
+                        "route": "planets",
+                        "loginRequired": true,
+                        "title": "Planets",
+                        "params": {},
+                        "children": [
+                          {
+                            "route": "",
+                            "loginRequired": true,
+                            "title": "Planets",
+                            "params": {}
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
               }

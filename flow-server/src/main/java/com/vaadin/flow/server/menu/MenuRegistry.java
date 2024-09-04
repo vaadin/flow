@@ -340,9 +340,13 @@ public class MenuRegistry {
 
         Set<String> clientEntries = new HashSet<>(configurations.keySet());
         for (String key : clientEntries) {
+            if (!configurations.containsKey(key)) {
+                // view may have been removed together with parent
+                continue;
+            }
             AvailableViewInfo viewInfo = configurations.get(key);
             boolean routeValid = validateViewAccessible(viewInfo,
-                    isUserAuthenticated, vaadinRequest::isUserInRole);
+                                isUserAuthenticated, vaadinRequest::isUserInRole);
 
             if (!routeValid) {
                 configurations.remove(key);
