@@ -132,7 +132,8 @@ public class MenuRegistryTest {
     }
 
     @Test
-    public void getMenuItemsWithNestedFiltering_doesNotThrow() throws IOException {
+    public void getMenuItemsWithNestedFiltering_doesNotThrow()
+            throws IOException {
         File generated = tmpDir.newFolder(GENERATED);
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), nestedLoginRequiredRouteFile);
