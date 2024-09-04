@@ -125,11 +125,8 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             if (routeClass.isAnnotationPresent(Layout.class)) {
                 String layoutValue = routeClass.getAnnotation(Layout.class)
                         .value();
-                layoutsMap.computeIfAbsent(layoutValue, k -> new ArrayList<>());
-                layoutsMap.computeIfPresent(layoutValue, (value, classList) -> {
-                    classList.add(routeClass);
-                    return classList;
-                });
+                layoutsMap.computeIfAbsent(layoutValue, k -> new ArrayList<>())
+                        .add(routeClass);
             }
         }
         Set<List<Class<?>>> collect = layoutsMap.values().stream()

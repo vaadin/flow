@@ -918,10 +918,11 @@ public class RouteRegistryInitializerTest {
         expectedEx.expectMessage(
                 StringContains.containsString(messageBuilder.toString()));
 
-        routeRegistryInitializer.validateLayoutAnnotations(Stream
-                .of(AnnotatedParentLayout.class,
-                        AnotherAnnotatedParentLayout.class)
-                .collect(Collectors.toSet()));
+        Set<Class<?>> classes = new LinkedHashSet<>(2);
+        classes.add(AnnotatedParentLayout.class);
+        classes.add(AnotherAnnotatedParentLayout.class);
+
+        routeRegistryInitializer.validateLayoutAnnotations(classes);
     }
 
     @Test
