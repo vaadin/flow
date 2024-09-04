@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -129,6 +130,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         } catch (DauEnforcementException e) {
             getLogger().warn(
                     "Daily Active User limit reached. Blocking new user request");
+            response.setHeader(DAUUtils.STATUS_CODE_KEY, String
+                    .valueOf(HttpStatusCode.SERVICE_UNAVAILABLE.getCode()));
             String json = DAUUtils.jsonEnforcementResponse(request, e);
             commitJsonResponse(response, json);
             return true;

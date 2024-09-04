@@ -50,6 +50,8 @@ public final class DAUUtils {
     public static final String ENFORCEMENT_EXCEPTION_KEY = DAUUtils.class
             .getName() + ".EnforcementException";
 
+    public static final String STATUS_CODE_KEY = "Vaadin-DAU-Status-Code";
+
     private DAUUtils() {
     }
 
