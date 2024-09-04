@@ -437,27 +437,30 @@ public class JavaScriptBootstrapUITest {
         ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
                 .forClass(Serializable[].class);
 
-        MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class);
-        menuRegistry.when(() -> MenuRegistry.hasClientRoute("clean/1", true))
-                .thenReturn(false);
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
 
-        ui.navigate("clean/1");
-        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
+            menuRegistry
+                    .when(() -> MenuRegistry.hasClientRoute("clean/1", true))
+                    .thenReturn(false);
 
-        boolean reactEnabled = ui.getSession().getConfiguration()
-                .isReactEnabled();
+            ui.navigate("clean/1");
+            Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
-        final Serializable[] execValues = execArg.getValue();
-        if (reactEnabled) {
-            assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
-            assertEquals(1, execValues.length);
-            assertEquals("clean/1", execValues[0]);
-        } else {
-            assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-            assertEquals(2, execValues.length);
-            assertNull(execValues[0]);
-            assertEquals("clean/1", execValues[1]);
+            boolean reactEnabled = ui.getSession().getConfiguration()
+                    .isReactEnabled();
+
+            final Serializable[] execValues = execArg.getValue();
+            if (reactEnabled) {
+                assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
+                assertEquals(1, execValues.length);
+                assertEquals("clean/1", execValues[0]);
+            } else {
+                assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+                assertEquals(2, execValues.length);
+                assertNull(execValues[0]);
+                assertEquals("clean/1", execValues[1]);
+            }
         }
     }
 

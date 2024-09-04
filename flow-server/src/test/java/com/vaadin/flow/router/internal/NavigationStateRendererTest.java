@@ -796,19 +796,20 @@ public class NavigationStateRendererTest {
 
         ui.getInternals().clearLastHandledNavigation();
 
-        MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class);
-        menuRegistry
-                .when(() -> MenuRegistry.hasClientRoute("client-route", true))
-                .thenReturn(true);
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
+            menuRegistry.when(
+                    () -> MenuRegistry.hasClientRoute("client-route", true))
+                    .thenReturn(true);
 
-        // This should not call attach or beforeEnter on root route
-        renderer.handle(
-                new NavigationEvent(router, new Location("client-route"), ui,
-                        NavigationTrigger.CLIENT_SIDE));
+            // This should not call attach or beforeEnter on root route
+            renderer.handle(
+                    new NavigationEvent(router, new Location("client-route"),
+                            ui, NavigationTrigger.CLIENT_SIDE));
 
-        Assert.assertEquals(1, beforeEnterCount.get());
-        Assert.assertEquals(1, viewAttachCount.get());
+            Assert.assertEquals(1, beforeEnterCount.get());
+            Assert.assertEquals(1, viewAttachCount.get());
+        }
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {
