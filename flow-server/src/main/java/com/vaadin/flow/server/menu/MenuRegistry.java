@@ -346,7 +346,7 @@ public class MenuRegistry {
             }
             AvailableViewInfo viewInfo = configurations.get(key);
             boolean routeValid = validateViewAccessible(viewInfo,
-                                isUserAuthenticated, vaadinRequest::isUserInRole);
+                    isUserAuthenticated, vaadinRequest::isUserInRole);
 
             if (!routeValid) {
                 configurations.remove(key);
