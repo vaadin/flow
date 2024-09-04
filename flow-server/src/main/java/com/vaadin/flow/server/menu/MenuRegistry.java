@@ -408,13 +408,28 @@ public class MenuRegistry {
     }
 
     /**
-     * See if there is a client route available for give route path.
+     * See if there is a client route available for given route path.
      *
      * @param route
      *            route path to check
      * @return true if a client route is found.
      */
     public static boolean hasClientRoute(String route) {
+        return hasClientRoute(route, false);
+    }
+
+    /**
+     * See if there is a client route available for given route path, optionally
+     * excluding layouts (routes with children) from the check.
+     *
+     * @param route
+     *            route path to check
+     * @param excludeLayouts
+     *            {@literal true} to exclude layouts from the check,
+     *            {@literal false} to include them
+     * @return true if a client route is found.
+     */
+    public static boolean hasClientRoute(String route, boolean excludeLayouts) {
         if (VaadinSession.getCurrent() == null || route == null) {
             return false;
         }
@@ -423,8 +438,16 @@ public class MenuRegistry {
         Map<String, AvailableViewInfo> clientItems = MenuRegistry
                 .collectClientMenuItems(true,
                         VaadinSession.getCurrent().getConfiguration());
-        Set<String> clientRoutes = clientItems.keySet();
+        final Set<String> clientRoutes = new HashSet<>();
+        clientItems.forEach((path, info) -> {
+            if (excludeLayouts) {
+                if (info.children() == null || info.children().isEmpty()) {
+                    clientRoutes.add(path);
+                }
+            } else {
+                clientRoutes.add(path);
+            }
+        });
         return clientRoutes.contains(route);
     }
-
 }

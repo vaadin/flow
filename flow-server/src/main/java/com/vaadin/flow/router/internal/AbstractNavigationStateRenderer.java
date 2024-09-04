@@ -68,6 +68,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.menu.MenuRegistry;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -172,6 +173,12 @@ public abstract class AbstractNavigationStateRenderer
 
         if (result.isPresent()) {
             return result.get();
+        }
+
+        // If navigation target is Hilla route, terminate Flow navigation logic
+        // here.
+        if (MenuRegistry.hasClientRoute(event.getLocation().getPath(), true)) {
+            return HttpStatusCode.OK.getCode();
         }
 
         final ArrayList<HasElement> chain;
