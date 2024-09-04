@@ -898,7 +898,7 @@ public class RouteRegistryInitializerTest {
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
-                "Found @Layout on classes not extending RouterLayout.%nCheck the following classes: %s",
+                "Found @Layout on classes { %s } not extending RouterLayout.",
                 FaultyParentLayout.class.getName()));
 
         routeRegistryInitializer.process(
