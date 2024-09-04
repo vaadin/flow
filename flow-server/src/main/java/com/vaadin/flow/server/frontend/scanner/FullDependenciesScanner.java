@@ -164,9 +164,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         cssData = discoverCss();
 
         if (!reactEnabled) {
-            modulesSet.stream().filter(
-                    module -> module.contains("ReactRouterOutletElement.tsx"))
-                    .findFirst().ifPresent(outlet -> modulesSet.remove(outlet));
+            modulesSet.removeIf(
+                    module -> module.contains("ReactRouterOutletElement.tsx"));
         }
 
         modules = new ArrayList<>(modulesSet);
