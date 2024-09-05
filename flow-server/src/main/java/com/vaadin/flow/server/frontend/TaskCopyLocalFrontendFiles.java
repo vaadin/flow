@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 public class TaskCopyLocalFrontendFiles
         extends AbstractFileGeneratorFallibleCommand {
 
-    public static boolean PREVENT_READONLY_FILES = false;
+    public static boolean PREVENT_READONLY_FILES = true;
 
     private final Options options;
 
