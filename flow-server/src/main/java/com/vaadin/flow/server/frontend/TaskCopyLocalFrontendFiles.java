@@ -43,6 +43,8 @@ import org.slf4j.LoggerFactory;
 public class TaskCopyLocalFrontendFiles
         extends AbstractFileGeneratorFallibleCommand {
 
+    public static boolean PREVENT_READONLY_FILES = false;
+
     private final Options options;
 
     /**
@@ -96,16 +98,22 @@ public class TaskCopyLocalFrontendFiles
             return Collections.emptySet();
         }
         try {
+            long start = System.nanoTime();
             Set<String> handledFiles = new HashSet<>(TaskCopyFrontendFiles
                     .getFilesInDirectory(source, relativePathExclusions));
             FileUtils.copyDirectory(source, target,
                     withoutExclusions(source, relativePathExclusions));
-            try (Stream<Path> fileStream = Files
-                    .walk(Paths.get(target.getPath()))) {
-                // used with try-with-resources as defined in walk API note
-                fileStream.filter(file -> !Files.isWritable(file)).forEach(
-                        filePath -> filePath.toFile().setWritable(true));
+            if (PREVENT_READONLY_FILES) {
+                try (Stream<Path> fileStream = Files
+                        .walk(Paths.get(target.getPath()))) {
+                    // used with try-with-resources as defined in walk API note
+                    fileStream.filter(file -> !Files.isWritable(file)).forEach(
+                            filePath -> filePath.toFile().setWritable(true));
+                }
             }
+            long ms = (System.nanoTime() - start) / 1000000;
+            log().info("Copied {} local frontend files. Took {} ms.",
+                    handledFiles.size(), ms);
             return handledFiles;
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
