@@ -43,9 +43,9 @@ import org.slf4j.LoggerFactory;
 public class TaskCopyLocalFrontendFiles
         extends AbstractFileGeneratorFallibleCommand {
 
-    public static boolean PREVENT_READONLY_FILES = true;
-
     private final Options options;
+
+    private static boolean performReadonlyCheck = true;
 
     /**
      * Copy project local frontend files from defined frontendResourcesDirectory
@@ -55,6 +55,8 @@ public class TaskCopyLocalFrontendFiles
      */
     TaskCopyLocalFrontendFiles(Options options) {
         this.options = options;
+        performReadonlyCheck = !Boolean.valueOf(System.getProperty(
+                "vaadin.frontend.disableReadonlyCheckOnCopy", "false"));
     }
 
     @Override
@@ -103,7 +105,7 @@ public class TaskCopyLocalFrontendFiles
                     .getFilesInDirectory(source, relativePathExclusions));
             FileUtils.copyDirectory(source, target,
                     withoutExclusions(source, relativePathExclusions));
-            if (PREVENT_READONLY_FILES) {
+            if (performReadonlyCheck) {
                 try (Stream<Path> fileStream = Files
                         .walk(Paths.get(target.getPath()))) {
                     // used with try-with-resources as defined in walk API note
