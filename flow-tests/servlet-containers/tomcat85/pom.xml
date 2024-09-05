@@ -20,13 +20,13 @@
         <!-- UI classes and tests from dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-root-context</artifactId>
+            <artifactId>flow-test-root-context-npm</artifactId>
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-root-context</artifactId>
+            <artifactId>flow-test-root-context-npm</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
@@ -36,7 +36,7 @@
             may construct the URL for the test -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-root-context</artifactId>
+            <artifactId>flow-test-root-context-npm</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <classifier>ui</classifier>
