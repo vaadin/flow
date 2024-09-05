@@ -31,10 +31,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -59,6 +61,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  * that require path parameters.
  */
 public class MenuRegistry {
+
+    private static final Logger log = LoggerFactory
+            .getLogger(MenuRegistry.class);
 
     /**
      * Collect views with menu annotation for automatic menu population. All
@@ -430,24 +435,36 @@ public class MenuRegistry {
      * @return true if a client route is found.
      */
     public static boolean hasClientRoute(String route, boolean excludeLayouts) {
-        if (VaadinSession.getCurrent() == null || route == null) {
+        if (route == null) {
             return false;
         }
         route = route.isEmpty() ? route
                 : route.startsWith("/") ? route : "/" + route;
+        return getClientRoutes(excludeLayouts).containsKey(route);
+    }
+
+    /**
+     * Get available client routes, optionally excluding any layout targets.
+     *
+     * @param excludeLayouts
+     *            {@literal true} to exclude layouts from the check,
+     *            {@literal false} to include them
+     * @return Map of client routes available
+     */
+    public static Map<String, AvailableViewInfo> getClientRoutes(
+            boolean excludeLayouts) {
+        if (VaadinSession.getCurrent() == null) {
+            return Collections.emptyMap();
+        }
         Map<String, AvailableViewInfo> clientItems = MenuRegistry
                 .collectClientMenuItems(true,
                         VaadinSession.getCurrent().getConfiguration());
-        final Set<String> clientRoutes = new HashSet<>();
-        clientItems.forEach((path, info) -> {
-            if (excludeLayouts) {
-                if (info.children() == null || info.children().isEmpty()) {
-                    clientRoutes.add(path);
-                }
-            } else {
-                clientRoutes.add(path);
-            }
-        });
-        return clientRoutes.contains(route);
+        if (excludeLayouts) {
+            clientItems = clientItems.entrySet().stream()
+                    .filter(entry -> entry.getValue().children() == null)
+                    .collect(Collectors.toMap(Map.Entry::getKey,
+                            Map.Entry::getValue));
+        }
+        return clientItems;
     }
 }

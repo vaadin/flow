@@ -21,7 +21,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -35,6 +37,9 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.menu.MenuRegistry;
 
 public class DefaultRouteResolverTest extends RoutingTestBase {
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     private RouteResolver resolver;
 
@@ -133,6 +138,22 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
             Assert.assertEquals(
                     "Layout should be returned for a non server route when matching @Layout exists",
                     DefaultLayout.class, greeting.getRouteTarget().getTarget());
+        }
+    }
+
+    @Test
+    public void clientRouteRequest_noLayoutForPath_Throws() {
+        expectedEx.expect(NotFoundException.class);
+        expectedEx.expectMessage("No layout for client path 'route'");
+
+        String path = "route";
+
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class)) {
+            menuRegistry.when(() -> MenuRegistry.hasClientRoute(path))
+                    .thenReturn(true);
+
+            NavigationState greeting = resolveNavigationState(path);
         }
     }
 
