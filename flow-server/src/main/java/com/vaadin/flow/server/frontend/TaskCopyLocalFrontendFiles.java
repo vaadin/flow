@@ -45,8 +45,6 @@ public class TaskCopyLocalFrontendFiles
 
     private final Options options;
 
-    private static boolean performReadonlyCheck = true;
-
     /**
      * Copy project local frontend files from defined frontendResourcesDirectory
      * (by default 'src/main/resources/META-INF/resources/frontend'). This
@@ -55,7 +53,10 @@ public class TaskCopyLocalFrontendFiles
      */
     TaskCopyLocalFrontendFiles(Options options) {
         this.options = options;
-        performReadonlyCheck = !Boolean.valueOf(System.getProperty(
+    }
+
+    private static boolean isperformReadonly() {
+        return !Boolean.valueOf(System.getProperty(
                 "vaadin.frontend.disableReadonlyCheckOnCopy", "false"));
     }
 
@@ -105,7 +106,7 @@ public class TaskCopyLocalFrontendFiles
                     .getFilesInDirectory(source, relativePathExclusions));
             FileUtils.copyDirectory(source, target,
                     withoutExclusions(source, relativePathExclusions));
-            if (performReadonlyCheck) {
+            if (isperformReadonly()) {
                 try (Stream<Path> fileStream = Files
                         .walk(Paths.get(target.getPath()))) {
                     // used with try-with-resources as defined in walk API note
