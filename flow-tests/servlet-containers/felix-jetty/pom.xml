@@ -25,7 +25,7 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-root-context</artifactId>
+            <artifactId>flow-test-root-context-npm</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
             <classifier>ui</classifier>
@@ -51,7 +51,7 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-root-context</artifactId>
+            <artifactId>flow-test-root-context-npm</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
