@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +54,9 @@ public class TaskCopyLocalFrontendFiles
         this.options = options;
     }
 
-    private static boolean isperformReadonly() {
-        return !Boolean.valueOf(System.getProperty(
-                "vaadin.frontend.disableReadonlyCheckOnCopy", "false"));
+    private static boolean shouldApplyWriteableFlag() {
+        return !Boolean.parseBoolean(System.getProperty(
+                "vaadin.frontend.disableWritableFlagCheckOnCopy", "false"));
     }
 
     @Override
@@ -106,7 +105,7 @@ public class TaskCopyLocalFrontendFiles
                     .getFilesInDirectory(source, relativePathExclusions));
             FileUtils.copyDirectory(source, target,
                     withoutExclusions(source, relativePathExclusions));
-            if (isperformReadonly()) {
+            if (shouldApplyWriteableFlag()) {
                 try (Stream<Path> fileStream = Files
                         .walk(Paths.get(target.getPath()))) {
                     // used with try-with-resources as defined in walk API note
