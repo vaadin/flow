@@ -108,10 +108,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     // private void requestFlush(HierarchicalUpdate update) {
-    //     SerializableConsumer<ExecutionContext> flushRequest = context -> update
-    //             .commit();
-    //     stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-    //             .beforeClientResponse(stateNode, flushRequest));
+    // SerializableConsumer<ExecutionContext> flushRequest = context -> update
+    // .commit();
+    // stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
+    // .beforeClientResponse(stateNode, flushRequest));
     // }
 
     private void requestFlush(HierarchicalCommunicationController<T> update) {
@@ -131,28 +131,28 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         super.reset();
 
         // if (!dataControllers.isEmpty()) {
-        //     dataControllers.values().forEach(
-        //             HierarchicalCommunicationController::unregisterPassivatedKeys);
-        //     dataControllers.clear();
+        // dataControllers.values().forEach(
+        // HierarchicalCommunicationController::unregisterPassivatedKeys);
+        // dataControllers.clear();
         // }
 
         // if (getHierarchyMapper() != null) {
-        //     HierarchicalUpdate update = arrayUpdater
-        //             .startUpdate(getHierarchyMapper().getRootSize());
-        //     update.enqueue("$connector.ensureHierarchy");
+        // HierarchicalUpdate update = arrayUpdater
+        // .startUpdate(getHierarchyMapper().getRootSize());
+        // update.enqueue("$connector.ensureHierarchy");
 
-        //     Collection<T> expandedItems = getHierarchyMapper()
-        //             .getExpandedItems();
-        //     if (!expandedItems.isEmpty()) {
-        //         update.enqueue("$connector.expandItems", expandedItems.stream()
-        //                 .map(getKeyMapper()::key).map(key -> {
-        //                     JsonObject json = Json.createObject();
-        //                     json.put("key", key);
-        //                     return json;
-        //                 }).collect(JsonUtils.asArray()));
-        //     }
+        // Collection<T> expandedItems = getHierarchyMapper()
+        // .getExpandedItems();
+        // if (!expandedItems.isEmpty()) {
+        // update.enqueue("$connector.expandItems", expandedItems.stream()
+        // .map(getKeyMapper()::key).map(key -> {
+        // JsonObject json = Json.createObject();
+        // json.put("key", key);
+        // return json;
+        // }).collect(JsonUtils.asArray()));
+        // }
 
-        //     requestFlush(update);
+        // requestFlush(update);
         // }
     }
 
@@ -160,21 +160,22 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     protected void handleDataRefreshEvent(
             DataChangeEvent.DataRefreshEvent<T> event) {
         // if (event.isRefreshChildren()) {
-        //     T item = event.getItem();
-        //     if (isExpanded(item)) {
-        //         String parentKey = getKeyMapper().key(item);
+        // T item = event.getItem();
+        // if (isExpanded(item)) {
+        // String parentKey = getKeyMapper().key(item);
 
-        //         if (!dataControllers.containsKey(parentKey)) {
-        //             setParentRequestedRange(0, mapper.countChildItems(item),
-        //                     item);
-        //         }
-        //         HierarchicalCommunicationController<T> dataController = dataControllers
-        //                 .get(parentKey);
-        //         if (dataController != null) {
-        //             dataController.setResendEntireRange(true);
-        //             requestFlush(dataController);
-        //         }
-        //     }
+        // if (!dataControllers.containsKey(parentKey)) {
+        // setParentRequestedRange(0, mapper.countChildItems(item),
+        // item);
+        // }
+        // HierarchicalCommunicationController<T> dataController =
+        // dataControllers
+        // .get(parentKey);
+        // if (dataController != null) {
+        // dataController.setResendEntireRange(true);
+        // requestFlush(dataController);
+        // }
+        // }
         // }
         super.handleDataRefreshEvent(event);
     }
@@ -189,16 +190,16 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     public void setParentRequestedRange(int start, int length, T parentItem) {
         // String parentKey = getKeyMapper().key(parentItem);
         // HierarchicalCommunicationController<T> controller = dataControllers
-        //         .computeIfAbsent(parentKey,
-        //                 key -> new HierarchicalCommunicationController<>(
-        //                         parentKey, getKeyMapper(), mapper,
-        //                         dataGenerator,
-        //                         size -> arrayUpdater
-        //                                 .startUpdate(getDataProviderSize()),
-        //                         (pkey, range) -> mapper.fetchChildItems(
-        //                                 getKeyMapper().get(pkey), range)));
+        // .computeIfAbsent(parentKey,
+        // key -> new HierarchicalCommunicationController<>(
+        // parentKey, getKeyMapper(), mapper,
+        // dataGenerator,
+        // size -> arrayUpdater
+        // .startUpdate(getDataProviderSize()),
+        // (pkey, range) -> mapper.fetchChildItems(
+        // getKeyMapper().get(pkey), range)));
         // controller.setHasUniqueKeyProviderSupplier(
-        //         uniqueKeyProviderSupplier.get() != null);
+        // uniqueKeyProviderSupplier.get() != null);
         // Range range = computeRequestedRange(start, length);
         // controller.setRequestRange(range.getStart(), range.length());
         // requestFlush(controller);
@@ -346,21 +347,22 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         items.forEach(item -> {
             if (mapper.collapse(item)) {
                 collapsedItems.add(item);
-                // HierarchicalCommunicationController<T> controller = dataControllers
-                //         .remove(getKeyMapper().key(item));
+                // HierarchicalCommunicationController<T> controller =
+                // dataControllers
+                // .remove(getKeyMapper().key(item));
                 // if (controller != null) {
-                //     controller.unregisterPassivatedKeys();
+                // controller.unregisterPassivatedKeys();
                 // }
             }
         });
         if (syncClient && !collapsedItems.isEmpty()) {
-        //     HierarchicalUpdate update = arrayUpdater
-        //             .startUpdate(getHierarchyMapper().getRootSize());
-        //     update.enqueue("$connector.collapseItems",
-        //             collapsedItems.stream()
-        //                     .map(this::generateJsonForExpandedOrCollapsedItem)
-        //                     .collect(JsonUtils.asArray()));
-        //     requestFlush(update);
+            // HierarchicalUpdate update = arrayUpdater
+            // .startUpdate(getHierarchyMapper().getRootSize());
+            // update.enqueue("$connector.collapseItems",
+            // collapsedItems.stream()
+            // .map(this::generateJsonForExpandedOrCollapsedItem)
+            // .collect(JsonUtils.asArray()));
+            // requestFlush(update);
             resendEntireRange = true;
             requestFlush();
         }
@@ -418,11 +420,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         });
         if (syncClient && !expandedItems.isEmpty()) {
             // HierarchicalUpdate update = arrayUpdater
-            //         .startUpdate(getHierarchyMapper().getRootSize());
+            // .startUpdate(getHierarchyMapper().getRootSize());
             // update.enqueue("$connector.expandItems",
-            //         expandedItems.stream()
-            //                 .map(this::generateJsonForExpandedOrCollapsedItem)
-            //                 .collect(JsonUtils.asArray()));
+            // expandedItems.stream()
+            // .map(this::generateJsonForExpandedOrCollapsedItem)
+            // .collect(JsonUtils.asArray()));
             resendEntireRange = true;
             requestFlush();
         }

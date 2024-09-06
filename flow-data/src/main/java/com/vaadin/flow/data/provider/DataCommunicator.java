@@ -1238,38 +1238,36 @@ public class DataCommunicator<T> implements Serializable {
     private void performUpdate(Set<String> oldActive, Range effectiveRequested,
             final Range previousActive, Activation activation) {
         // In case received less items than what was expected, adjust size
-        if (activation.isSizeRecheckNeeded()) {
-            if (definedSize) {
-                assumedSize = getDataProviderSize();
-            } else {
-                // the end has been reached
-                assumedSize = requestedRange.getStart()
-                        + activation.getActiveKeys().size();
-                skipCountIncreaseUntilReset = true;
-                /*
-                 * If the fetch query returned 0 items, it means that the user
-                 * has scrolled past the end of the exact item count or the
-                 * items have been changed in the backend (for example, applying
-                 * the filter). Instead of returning 0 items to the client and
-                 * letting it incrementally request for the previous pages,
-                 * we'll cancel this flush and tweak the requested range and
-                 * flush again.
-                 */
-                if (assumedSize != 0 && activation.getActiveKeys().isEmpty()) {
-                    int delta = requestedRange.length();
-                    // Request the items from a bit behind the current range
-                    // at the next call to backend, and check that the
-                    // requested
-                    // range doesn't intersect the 0 point.
-                    requestedRange = requestedRange.offsetBy(-delta)
-                            .restrictTo(Range.withLength(0, assumedSize));
-                    requestFlush(true); // to avoid recursiveness
-                    return;
-                }
+        if (definedSize) {
+            assumedSize = getDataProviderSize();
+        } else {
+            // the end has been reached
+            assumedSize = requestedRange.getStart()
+                    + activation.getActiveKeys().size();
+            skipCountIncreaseUntilReset = true;
+            /*
+                * If the fetch query returned 0 items, it means that the user
+                * has scrolled past the end of the exact item count or the
+                * items have been changed in the backend (for example, applying
+                * the filter). Instead of returning 0 items to the client and
+                * letting it incrementally request for the previous pages,
+                * we'll cancel this flush and tweak the requested range and
+                * flush again.
+                */
+            if (assumedSize != 0 && activation.getActiveKeys().isEmpty()) {
+                int delta = requestedRange.length();
+                // Request the items from a bit behind the current range
+                // at the next call to backend, and check that the
+                // requested
+                // range doesn't intersect the 0 point.
+                requestedRange = requestedRange.offsetBy(-delta)
+                        .restrictTo(Range.withLength(0, assumedSize));
+                requestFlush(true); // to avoid recursiveness
+                return;
             }
-            effectiveRequested = requestedRange
-                    .restrictTo(Range.withLength(0, assumedSize));
         }
+        effectiveRequested = requestedRange
+                .restrictTo(Range.withLength(0, assumedSize));
 
         activeKeyOrder = activation.getActiveKeys();
         activeStart = effectiveRequested.getStart();

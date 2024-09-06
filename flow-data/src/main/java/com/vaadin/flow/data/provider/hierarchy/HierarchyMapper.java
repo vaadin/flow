@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -66,6 +67,32 @@ public class HierarchyMapper<T, F> implements Serializable {
 
     private Map<Object, T> expandedItems = new HashMap<>();
 
+    private HierarchyLevel<T> rootLevel;
+
+    public class FlatIndexContext {
+        private final HierarchyLevel<T> level;
+        private final int depth;
+        private final int index;
+
+        public FlatIndexContext(HierarchyLevel<T> level, int depth, int index) {
+            this.level = level;
+            this.depth = depth;
+            this.index = index;
+        }
+
+        public HierarchyLevel<T> getLevel() {
+            return level;
+        }
+
+        public int getDepth() {
+            return depth;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+    }
+
     /**
      * Constructs a new HierarchyMapper.
      *
@@ -74,6 +101,34 @@ public class HierarchyMapper<T, F> implements Serializable {
      */
     public HierarchyMapper(HierarchicalDataProvider<T, F> provider) {
         this.provider = provider;
+        this.rootLevel = new HierarchyLevel<>(null, countChildItems(null),
+                this::isExpanded);
+    }
+
+    private FlatIndexContext getFlatIndexContext(int flatIndex) {
+        return getFlatIndexContext(flatIndex, rootLevel, 0);
+    }
+
+    private FlatIndexContext getFlatIndexContext(int flatIndex,
+            HierarchyLevel<T> level, int depth) {
+        int levelIndex = flatIndex;
+
+        for (Map.Entry<Integer, HierarchyLevel<T>> entry : level.getSubLevels()
+                .entrySet()) {
+            HierarchyLevel<T> subLevel = entry.getValue();
+            int index = entry.getKey();
+
+            if (levelIndex <= index) {
+                break;
+            } else if (levelIndex <= index + subLevel.getFlatSize()) {
+                return getFlatIndexContext(levelIndex - index - 1, subLevel,
+                        depth + 1);
+            }
+
+            levelIndex -= subLevel.getFlatSize();
+        }
+
+        return new FlatIndexContext(level, depth, levelIndex);
     }
 
     /**
@@ -82,7 +137,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the amount of available data
      */
     public int getTreeSize() {
-        return (int) getHierarchy(null).count();
+        return rootLevel.getFlatSize();
     }
 
     /**
@@ -91,8 +146,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the amount of available root data
      */
     public int getRootSize() {
-        return getDataProvider()
-                .getChildCount(new HierarchicalQuery<>(filter, null));
+        return rootLevel.getSize();
     }
 
     /**
@@ -317,7 +371,37 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the stream of items
      */
     public Stream<T> fetchHierarchyItems(Range range) {
-        return getHierarchy(null).skip(range.getStart()).limit(range.length());
+        List<T> result = new ArrayList<>();
+
+        for (int flatIndex = range.getStart(); flatIndex < range.getEnd(); flatIndex++) {
+            FlatIndexContext context = getFlatIndexContext(flatIndex);
+            HierarchyLevel<T> level = context.getLevel();
+            int index = context.getIndex();
+
+            System.out.println("Level: " + level.getParent() + " index " + index);
+
+            if (!level.hasItem(index)) {
+                List<T> itemsRange = doFetchDirectChildren(level.getParent(),
+                        Range.withLength(index, range.getEnd() - flatIndex))
+                        .toList();
+                level.setItemsRange(index, itemsRange);
+            }
+
+            T item = level.getItem(index);
+
+            if (level.getSubLevel(index) == null && isExpanded(item)
+                    && hasChildren(item)) {
+                level.setSubLevel(index, new HierarchyLevel<>(item,
+                        countChildItems(item), this::isExpanded));
+            }
+
+            result.add(item);
+        }
+
+        // System.out.println("Range: " + range.getStart() + " - " + range.getEnd());
+        // System.out.println("Result: " + result.stream().count());
+
+        return result.stream();
     }
 
     /**
