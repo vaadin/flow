@@ -27,7 +27,7 @@ import java.net.URI;
  *
  * @since
  */
-interface FileDownloader {
+public interface FileDownloader {
 
     public interface ProgressListener {
 
