@@ -177,7 +177,13 @@ public abstract class AbstractNavigationStateRenderer
 
         // If navigation target is Hilla route, terminate Flow navigation logic
         // here.
-        if (MenuRegistry.hasClientRoute(event.getLocation().getPath(), true)) {
+        String route = event.getLocation().getPath().isEmpty()
+                ? event.getLocation().getPath()
+                : event.getLocation().getPath().startsWith("/")
+                        ? event.getLocation().getPath()
+                        : "/" + event.getLocation().getPath();
+        if (MenuRegistry.hasClientRoute(route, true) && !MenuRegistry
+                .getClientRoutes(true).get(route).flowLayout()) {
             return HttpStatusCode.OK.getCode();
         }
 

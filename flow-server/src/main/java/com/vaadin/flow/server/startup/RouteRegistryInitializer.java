@@ -113,7 +113,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
                 .filter(clazz -> !RouterLayout.class.isAssignableFrom(clazz))
                 .collect(Collectors.toList());
         if (!faultyLayouts.isEmpty()) {
-            String message = "Found @Layout on classes not extending RouterLayout.%nCheck the following classes: %s";
+            String message = "Found @Layout on classes { %s } not implementing RouterLayout.";
             String faultyLayoutsString = faultyLayouts.stream()
                     .map(clazz -> clazz.getName())
                     .collect(Collectors.joining(","));

@@ -55,7 +55,7 @@ public class DefaultRouteResolver implements RouteResolver {
                         .getLayout(path);
                 if (layout == null) {
                     throw new NotFoundException(
-                            "No layout for client path " + path);
+                            "No layout for client path '%s'".formatted(path));
                 }
                 RouteTarget target = new RouteTarget(layout,
                         Collections.emptyList());
