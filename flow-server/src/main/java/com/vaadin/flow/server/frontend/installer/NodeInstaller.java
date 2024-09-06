@@ -515,7 +515,7 @@ public class NodeInstaller {
             for (int i = 0; i < MAX_DOWNLOAD_ATTEMPS; i++) {
                 try {
                     fileDownloader.download(downloadUrl, destination, userName,
-                            password);
+                            password, null);
                     return;
                 } catch (DownloadException e) {
                     if (i == MAX_DOWNLOAD_ATTEMPS - 1) {

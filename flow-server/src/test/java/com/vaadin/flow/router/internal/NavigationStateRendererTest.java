@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
@@ -79,7 +80,9 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.MenuRegistry;
+import com.vaadin.flow.server.menu.RouteParamType;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -797,10 +800,13 @@ public class NavigationStateRendererTest {
         ui.getInternals().clearLastHandledNavigation();
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
-            menuRegistry.when(
-                    () -> MenuRegistry.hasClientRoute("client-route", true))
-                    .thenReturn(true);
+                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(true))
+                    .thenReturn(Collections.singletonMap("/client-route",
+                            new AvailableViewInfo("", null, false,
+                                    "/client-route", false, false, null, null,
+                                    null, false)));
 
             // This should not call attach or beforeEnter on root route
             renderer.handle(
