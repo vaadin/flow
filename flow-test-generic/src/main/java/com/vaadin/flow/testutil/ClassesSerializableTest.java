@@ -256,6 +256,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.Platform",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig\\$Proxy",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.ProxyFactory",
 
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",
