@@ -24,7 +24,7 @@ package com.vaadin.flow.server.frontend.installer;
  *
  * @since
  */
-final class DownloadException extends Exception {
+public final class DownloadException extends Exception {
 
     /**
      * Exceptioon with message.
