@@ -26,6 +26,7 @@ import org.gradle.api.tasks.bundling.War
 import java.io.File
 import java.net.URI
 import java.nio.file.Path
+import java.util.function.Consumer
 
 private val servletApiJarRegex = Regex(".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$")
 
@@ -216,4 +217,26 @@ internal class GradlePluginAdapter(
     override fun isReactEnabled(): Boolean = config.reactEnable.get()
 
     override fun applicationIdentifier(): String = config.applicationIdentifier.get()
+
+    override fun checkRuntimeDependency(
+        groupId: String,
+        artifactId: String,
+        missingDependencyMessageConsumer: Consumer<String>?
+    ): Boolean {
+        val dependencyAbsent = project.configurations.getByName(config.dependencyScope.get())
+            .resolvedConfiguration?.resolvedArtifacts?.filter {
+                groupId == it.moduleVersion.id.group && artifactId == it.moduleVersion.id.name
+            }?.isEmpty() ?: true
+        if (dependencyAbsent && missingDependencyMessageConsumer != null) {
+            missingDependencyMessageConsumer.accept("""
+                The dependency ${groupId}:${artifactId} has been not been found in the project configuration.
+                Please add the following dependency to your project configuration:
+                
+                dependencies {
+                    runtimeOnly("${groupId}:${artifactId}")
+                }                
+            """.trimIndent())
+        }
+        return dependencyAbsent
+    }
 }
