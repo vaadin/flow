@@ -15,6 +15,8 @@
  */
 package com.vaadin.base.devserver.stats;
 
+import java.util.function.UnaryOperator;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -164,6 +166,23 @@ public class StatisticsContainer {
             return json.get(name).asDouble(0);
         }
         return 0.0;
+    }
+
+    /**
+     * Stores or updates a JSON object using the given field name.
+     * <p>
+     * </p>
+     * The mapping function is given the existing JSON object, or
+     * {@literal null} if field is not yet present in the storage.
+     *
+     * @param name
+     *            name of the field to set or update
+     * @param mappingFunction
+     *            the mapping function to compute a value
+     */
+    public void computeValue(String name,
+            UnaryOperator<JsonNode> mappingFunction) {
+        json.set(name, mappingFunction.apply(json.get(name)));
     }
 
 }

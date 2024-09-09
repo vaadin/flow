@@ -145,11 +145,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         VaadinContext context = session.getService().getContext();
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
-        if (!config.isProductionMode()) {
-            UsageStatisticsExporter
-                    .exportUsageStatisticsToDocument(indexDocument);
-        }
-
         // modify the page based on the @PWA annotation
         setupPwa(indexDocument, session.getService());
 

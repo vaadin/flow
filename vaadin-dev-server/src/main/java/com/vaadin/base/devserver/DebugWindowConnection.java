@@ -186,6 +186,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         if (DevToolsToken.getToken()
                 .equals(resource.getRequest().getParameter("token"))) {
             handleConnect(resource);
+            DevModeUsageStatistics.handleServerData();
         } else {
             getLogger().debug(
                     "Connection denied because of a missing or invalid token. Either the host is not on the 'vaadin.devmode.hosts-allowed' list or it is using an outdated token");
@@ -243,6 +244,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     "Push connection {} is not a live-reload connection or already closed",
                     uuid);
         }
+        DevModeUsageStatistics.handleServerData();
     }
 
     @Override

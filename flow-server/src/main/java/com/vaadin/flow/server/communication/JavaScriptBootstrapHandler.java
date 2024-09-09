@@ -217,22 +217,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return BootstrapHandlerHelper.getServiceUrl(vaadinRequest);
     }
 
-    private JsonObject getStats() {
-        JsonObject stats = Json.createObject();
-        UsageStatistics.getEntries().forEach(entry -> {
-            String name = entry.getName();
-            String version = entry.getVersion();
-
-            JsonObject json = Json.createObject();
-            json.put("is", name);
-            json.put("version", version);
-
-            String escapedName = Json.create(name).toJson();
-            stats.put(escapedName, json);
-        });
-        return stats;
-    }
-
     private JsonValue getErrors(VaadinService service) {
         JsonObject errors = Json.createObject();
         Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
@@ -286,9 +270,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         if (context.getPushMode().isEnabled()) {
             initial.put("pushScript", getPushScript(context));
-        }
-        if (!session.getConfiguration().isProductionMode()) {
-            initial.put("stats", getStats());
         }
         initial.put("errors", getErrors(request.getService()));
 

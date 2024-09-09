@@ -681,60 +681,12 @@ public class IndexHtmlRequestHandlerTest {
         Elements bodyInlineElements = document.body()
                 .getElementsByTag("script");
         // <script>window.Vaadin = window.Vaadin || {};window.Vaadin
-        // .registrations = window.Vaadin.registrations ||
-        // [];window.Vaadin.registrations.push({"is":"java","version":"17.0.2"});
+        // .registrations = window.Vaadin.registrations || [];
         // </script>"
         // <script type="text/javascript">window.messages = window.messages
         // || [];window.messages.push("inline.js");
         // </script>"
-        assertEquals(2, bodyInlineElements.size());
-    }
-
-    @Test
-    public void should_export_usage_statistics_in_development_mode()
-            throws IOException {
-        File projectRootFolder = temporaryFolder.newFolder();
-        TestUtil.createIndexHtmlStub(projectRootFolder);
-        TestUtil.createStatsJsonStub(projectRootFolder);
-        deploymentConfiguration.setProductionMode(false);
-        deploymentConfiguration.setProjectFolder(projectRootFolder);
-        VaadinServletRequest request = createVaadinRequest("/");
-        Mockito.when(request.getHttpServletRequest().getRemoteAddr())
-                .thenReturn("127.0.0.1");
-        indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
-                response);
-
-        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
-        Document document = Jsoup.parse(indexHtml);
-
-        Elements bodyInlineElements = document.body()
-                .getElementsByTag("script");
-        // <script>window.Vaadin = window.Vaadin || {};
-        // window.Vaadin.registrations = window.Vaadin.registrations || [];
-        // window.Vaadin.registrations.push({"is":"java","version":"17.0.2"});
-        // </script>
         assertEquals(1, bodyInlineElements.size());
-
-        String entries = UsageStatistics.getEntries().map(entry -> {
-            JsonObject json = Json.createObject();
-
-            json.put("is", entry.getName());
-            json.put("version", entry.getVersion());
-
-            return json.toString();
-        }).collect(Collectors.joining(","));
-
-        String expected = StringUtil
-                .normaliseWhitespace("window.Vaadin = window.Vaadin || {}; "
-                        + "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
-                        + "window.Vaadin.registrations.push(" + entries + ");");
-
-        assertTrue(isTokenPresent(indexHtml));
-
-        String htmlContent = bodyInlineElements.get(0).childNode(0).outerHtml();
-        htmlContent = htmlContent.replace("\r", "");
-        htmlContent = htmlContent.replace("\n", " ");
-        assertEquals(StringUtil.normaliseWhitespace(expected), htmlContent);
     }
 
     // Regular expression to match a UUID in the format 8-4-4-4-12

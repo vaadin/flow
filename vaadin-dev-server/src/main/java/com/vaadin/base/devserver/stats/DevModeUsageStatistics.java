@@ -17,12 +17,15 @@
 package com.vaadin.base.devserver.stats;
 
 import java.io.File;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.ServerInfo;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Version;
 import com.vaadin.pro.licensechecker.MachineId;
 
@@ -156,13 +159,71 @@ public class DevModeUsageStatistics {
                         .readTree(json);
                 if (clientData != null && clientData.isObject()) {
                     clientData.fields().forEachRemaining(
-                            e -> project.setValue(e.getKey(), e.getValue()));
+                            e -> project.computeValue(e.getKey(), jsonNode -> {
+                                ObjectNode container;
+                                if (jsonNode == null || !jsonNode.isObject()) {
+                                    container = JsonHelpers.getJsonMapper()
+                                            .createObjectNode();
+                                } else {
+                                    container = (ObjectNode) jsonNode;
+                                }
+                                // Replace exising entries with data coming from
+                                // the browser, preserving server side entries
+                                if (e.getValue() instanceof ObjectNode newData) {
+                                    container.setAll(newData);
+                                }
+                                return container;
+                            }));
                 }
             } catch (Exception e) {
                 getLogger().debug("Failed to update client telemetry data", e);
             }
         });
 
+    }
+
+    /**
+     * Stores telemetry data collected on the server.
+     */
+    public static void handleServerData() {
+        if (!isStatisticsEnabled()) {
+            return;
+        }
+        getLogger().debug("Persisting server side usage statistics");
+        List<UsageStatistics.UsageEntry> entries = UsageStatistics.getEntries()
+                .toList();
+        get().storage.update((global, project) -> {
+            try {
+                project.computeValue("elements", jsonNode -> {
+                    ObjectNode elements;
+                    if (jsonNode == null || !jsonNode.isObject()) {
+                        elements = JsonHelpers.getJsonMapper()
+                                .createObjectNode();
+                    } else {
+                        elements = (ObjectNode) jsonNode;
+                    }
+                    for (UsageStatistics.UsageEntry entry : entries) {
+                        if (elements.get(entry
+                                .getName()) instanceof ObjectNode jsonEntry) {
+                            jsonEntry.put("lastUsed",
+                                    System.currentTimeMillis());
+                        } else {
+                            ObjectNode jsonEntry = JsonHelpers.getJsonMapper()
+                                    .createObjectNode();
+                            jsonEntry.put("version", entry.getVersion());
+                            jsonEntry.put("firstUsed",
+                                    System.currentTimeMillis());
+                            elements.set(entry.getName(), jsonEntry);
+                        }
+                    }
+                    return elements;
+                });
+            } catch (Exception e) {
+                getLogger().debug(
+                        "Failed to update server side usage statistics data",
+                        e);
+            }
+        });
     }
 
     /**

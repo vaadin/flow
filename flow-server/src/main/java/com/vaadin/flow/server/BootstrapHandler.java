@@ -749,8 +749,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             document.body(), targets));
 
             if (!config.isProductionMode()) {
-                UsageStatisticsExporter
-                        .exportUsageStatisticsToDocument(document);
                 IndexHtmlRequestHandler.addLicenseChecker(document);
             }
 

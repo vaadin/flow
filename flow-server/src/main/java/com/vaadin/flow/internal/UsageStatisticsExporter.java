@@ -17,12 +17,8 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
-import java.util.stream.Collectors;
 
 import org.jsoup.nodes.Document;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * A class for exporting {@link UsageStatistics} entries.
@@ -31,7 +27,10 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  * @since 3.0
+ * @deprecated server side statistics should not be sent to the client. Will be
+ *             removed without replacement.
  */
+@Deprecated(since = "24.5", forRemoval = true)
 public class UsageStatisticsExporter implements Serializable {
 
     /**
@@ -40,29 +39,14 @@ public class UsageStatisticsExporter implements Serializable {
      *
      * @param document
      *            the document where the statistic entries to be exported to.
+     * @deprecated server side statistics should not be sent to the client. The
+     *             method throws an exception if called. Will be removed without
+     *             replacement.
      */
+    @Deprecated
     public static void exportUsageStatisticsToDocument(Document document) {
-        String entries = UsageStatistics.getEntries()
-                .map(UsageStatisticsExporter::createUsageStatisticsJson)
-                .collect(Collectors.joining(","));
-
-        if (!entries.isEmpty()) {
-            // Registers the entries in a way that is picked up as a Vaadin
-            // WebComponent by the usage stats gatherer
-            String builder = "window.Vaadin = window.Vaadin || {};\n"
-                    + "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
-                    + "window.Vaadin.registrations.push(" + entries + ");";
-            document.body().appendElement("script").text(builder);
-        }
+        throw new UnsupportedOperationException(
+                "Server side usage statistics must not be exported to the client");
     }
 
-    private static String createUsageStatisticsJson(
-            UsageStatistics.UsageEntry entry) {
-        JsonObject json = Json.createObject();
-
-        json.put("is", entry.getName());
-        json.put("version", entry.getVersion());
-
-        return json.toJson();
-    }
 }

@@ -102,7 +102,6 @@ public class JavaScriptBootstrapHandlerTest {
 
         JsonObject json = Json.parse(response.getPayload());
 
-        Assert.assertTrue(json.hasKey("stats"));
         Assert.assertTrue(json.hasKey("errors"));
         Assert.assertTrue(json.hasKey("appConfig"));
         Assert.assertTrue(json.getObject("appConfig").hasKey("appId"));
