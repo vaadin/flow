@@ -167,8 +167,9 @@ public class DevModeUsageStatistics {
                                 } else {
                                     container = (ObjectNode) jsonNode;
                                 }
-                                // Replace exising entries with data coming from
-                                // the browser, preserving server side entries
+                                // Replace existing entries with data coming
+                                // from the browser, preserving server side
+                                // entries
                                 if (e.getValue() instanceof ObjectNode newData) {
                                     container.setAll(newData);
                                 }

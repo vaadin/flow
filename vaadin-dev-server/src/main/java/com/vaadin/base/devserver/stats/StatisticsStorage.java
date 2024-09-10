@@ -18,7 +18,6 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
