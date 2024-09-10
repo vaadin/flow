@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -562,8 +564,8 @@ public class NodeInstaller {
             }
             String version;
             try {
-                version = streamConsumer.get().getFirst();
-            } catch (ExecutionException e) {
+                version = streamConsumer.get(1, TimeUnit.SECONDS).getFirst();
+            } catch (ExecutionException | TimeoutException e) {
                 getLogger().debug("Cannot read {} version", tool, e);
                 version = "";
             }
