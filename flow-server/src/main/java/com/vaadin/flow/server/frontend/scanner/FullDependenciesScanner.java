@@ -496,7 +496,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             if (annotatedClasses.isEmpty()) {
                 return new PwaConfiguration();
             } else if (annotatedClasses.size() != 1) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                        + " Found " + annotatedClasses.size()
+                        + " implementations: " + annotatedClasses);
             }
 
             Class<?> hopefullyAppShellClass = annotatedClasses.iterator()
@@ -504,7 +506,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             if (!Arrays.stream(hopefullyAppShellClass.getInterfaces())
                     .map(Class::getName).collect(Collectors.toList())
                     .contains(AppShellConfigurator.class.getName())) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                        + " " + hopefullyAppShellClass.getName()
+                        + " does not implement "
+                        + AppShellConfigurator.class.getSimpleName());
             }
 
             Annotation pwa = annotationFinder
