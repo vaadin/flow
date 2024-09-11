@@ -19,6 +19,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 /**
  * Utility class for common {@link MessageDigest} operations.
@@ -73,6 +74,32 @@ public class MessageDigestUtil {
      */
     public static byte[] sha256(String string, byte[] salt, Charset charset) {
         return getSha256(salt).digest(string.getBytes(charset));
+    }
+
+    /**
+     * Calculates the SHA-256 hash of the given string representation using the
+     * supplied charset. The result is encoded to a hex string.
+     *
+     * @param string
+     *            the string to hash
+     *
+     * @return the hash as a hex string
+     */
+    public static String sha256ToHex(String string, Charset charset) {
+        byte[] bytes = MessageDigestUtil.sha256(string, charset);
+        return bytesToHex(Base64.getEncoder().encode(bytes));
+    }
+
+    private static String bytesToHex(byte[] hash) {
+        StringBuilder result = new StringBuilder();
+        for (byte hashByte : hash) {
+            String hex = Integer.toHexString(0xff & hashByte);
+            if (hex.length() == 1) {
+                result.append('0');
+            }
+            result.append(hex);
+        }
+        return result.toString();
     }
 
     private static MessageDigest getSha256(byte[] salt) {
