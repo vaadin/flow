@@ -156,6 +156,28 @@ public class DefaultApplicationConfigurationFactoryTest {
                 configuration.getStringProperty("foo", null));
     }
 
+    @Test
+    public void create_tokenFileWithPremiumFlag_premiumFlagIsPropagatedToDeploymentConfiguration()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        String content = "{ '" + Constants.PREMIUM_FEATURES + "':true }";
+        mockClassPathTokenFile(resourceProvider, content);
+
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        List<String> propertyNames = Collections
+                .list(configuration.getPropertyNames());
+        Assert.assertTrue(propertyNames.contains(Constants.PREMIUM_FEATURES));
+        Assert.assertTrue(configuration
+                .getBooleanProperty(Constants.PREMIUM_FEATURES, false));
+    }
+
     private void mockClassPathTokenFile(ResourceProvider resourceProvider,
             String content) throws IOException, MalformedURLException {
         String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
