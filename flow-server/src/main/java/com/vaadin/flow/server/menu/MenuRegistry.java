@@ -31,10 +31,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -47,6 +49,7 @@ import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
@@ -58,6 +61,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  * that require path parameters.
  */
 public class MenuRegistry {
+
+    private static final Logger log = LoggerFactory
+            .getLogger(MenuRegistry.class);
 
     /**
      * Collect views with menu annotation for automatic menu population. All
@@ -135,8 +141,9 @@ public class MenuRegistry {
             String title = getTitle(route.getNavigationTarget());
             final String url = getRouteUrl(route);
             Map<String, RouteParamType> parameters = getParameters(route);
-            menuRoutes.put(url, new AvailableViewInfo(title, null, false, url,
-                    false, false, route.getMenuData(), null, parameters));
+            menuRoutes.put(url,
+                    new AvailableViewInfo(title, null, false, url, false, false,
+                            route.getMenuData(), null, parameters, false));
         }
     }
 
@@ -338,6 +345,10 @@ public class MenuRegistry {
 
         Set<String> clientEntries = new HashSet<>(configurations.keySet());
         for (String key : clientEntries) {
+            if (!configurations.containsKey(key)) {
+                // view may have been removed together with parent
+                continue;
+            }
             AvailableViewInfo viewInfo = configurations.get(key);
             boolean routeValid = validateViewAccessible(viewInfo,
                     isUserAuthenticated, vaadinRequest::isUserInRole);
@@ -401,4 +412,59 @@ public class MenuRegistry {
         return Thread.currentThread().getContextClassLoader();
     }
 
+    /**
+     * See if there is a client route available for given route path.
+     *
+     * @param route
+     *            route path to check
+     * @return true if a client route is found.
+     */
+    public static boolean hasClientRoute(String route) {
+        return hasClientRoute(route, false);
+    }
+
+    /**
+     * See if there is a client route available for given route path, optionally
+     * excluding layouts (routes with children) from the check.
+     *
+     * @param route
+     *            route path to check
+     * @param excludeLayouts
+     *            {@literal true} to exclude layouts from the check,
+     *            {@literal false} to include them
+     * @return true if a client route is found.
+     */
+    public static boolean hasClientRoute(String route, boolean excludeLayouts) {
+        if (route == null) {
+            return false;
+        }
+        route = route.isEmpty() ? route
+                : route.startsWith("/") ? route : "/" + route;
+        return getClientRoutes(excludeLayouts).containsKey(route);
+    }
+
+    /**
+     * Get available client routes, optionally excluding any layout targets.
+     *
+     * @param excludeLayouts
+     *            {@literal true} to exclude layouts from the check,
+     *            {@literal false} to include them
+     * @return Map of client routes available
+     */
+    public static Map<String, AvailableViewInfo> getClientRoutes(
+            boolean excludeLayouts) {
+        if (VaadinSession.getCurrent() == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, AvailableViewInfo> clientItems = MenuRegistry
+                .collectClientMenuItems(true,
+                        VaadinSession.getCurrent().getConfiguration());
+        if (excludeLayouts) {
+            clientItems = clientItems.entrySet().stream()
+                    .filter(entry -> entry.getValue().children() == null)
+                    .collect(Collectors.toMap(Map.Entry::getKey,
+                            Map.Entry::getValue));
+        }
+        return clientItems;
+    }
 }

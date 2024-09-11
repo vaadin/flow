@@ -66,11 +66,11 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v20.16.0";
+    public static final String DEFAULT_NODE_VERSION = "v20.17.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "10.7.0";
+    public static final String DEFAULT_NPM_VERSION = "10.8.2";
 
     public static final String DEFAULT_PNPM_VERSION = "8.6.11";
 
@@ -127,16 +127,6 @@ public class FrontendTools {
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
-
-    static final String NPMRC_NOPROXY_PROPERTY_KEY = "noproxy";
-    static final String NPMRC_HTTPS_PROXY_PROPERTY_KEY = "https-proxy";
-    static final String NPMRC_PROXY_PROPERTY_KEY = "proxy";
-
-    // Proxy config properties keys (for both system properties and environment
-    // variables) can be either fully upper case or fully lower case
-    static final String SYSTEM_NOPROXY_PROPERTY_KEY = "NOPROXY";
-    static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
-    static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
     private static final int SUPPORTED_PNPM_MAJOR_VERSION = 7;
     private static final int SUPPORTED_PNPM_MINOR_VERSION = 0;
@@ -712,18 +702,7 @@ public class FrontendTools {
      */
     // Not private because of test
     protected List<ProxyConfig.Proxy> getProxies() {
-        File projectNpmrc = new File(baseDir, ".npmrc");
-        File userNpmrc = new File(FileUtils.getUserDirectory(), ".npmrc");
-        List<ProxyConfig.Proxy> proxyList = new ArrayList<>();
-
-        proxyList.addAll(readProxySettingsFromSystemProperties());
-        proxyList.addAll(
-                readProxySettingsFromNpmrcFile("user .npmrc", userNpmrc));
-        proxyList.addAll(
-                readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc));
-        proxyList.addAll(readProxySettingsFromEnvironmentVariables());
-
-        return proxyList;
+        return ProxyFactory.getProxies(new File(baseDir));
     }
 
     void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
@@ -867,112 +846,6 @@ public class FrontendTools {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(FrontendTools.class);
-    }
-
-    private List<ProxyConfig.Proxy> readProxySettingsFromNpmrcFile(
-            String fileDescription, File npmrc) {
-        if (!npmrc.exists()) {
-            return Collections.emptyList();
-        }
-
-        try (FileReader fileReader = new FileReader(npmrc)) { // NOSONAR
-            List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
-            Properties properties = new Properties();
-            properties.load(fileReader);
-            String noproxy = properties.getProperty(NPMRC_NOPROXY_PROPERTY_KEY);
-            if (noproxy != null)
-                noproxy = noproxy.replaceAll(",", "|");
-            String httpsProxyUrl = properties
-                    .getProperty(NPMRC_HTTPS_PROXY_PROPERTY_KEY);
-            if (httpsProxyUrl != null) {
-                proxyList.add(new ProxyConfig.Proxy(
-                        "https-proxy - " + fileDescription, httpsProxyUrl,
-                        noproxy));
-            }
-            String proxyUrl = properties.getProperty(NPMRC_PROXY_PROPERTY_KEY);
-            if (proxyUrl != null) {
-                proxyList.add(new ProxyConfig.Proxy(
-                        "proxy - " + fileDescription, proxyUrl, noproxy));
-            }
-            return proxyList;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private List<ProxyConfig.Proxy> readProxySettingsFromSystemProperties() {
-        List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
-
-        String noproxy = getNonNull(
-                System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY),
-                System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
-        if (noproxy != null) {
-            noproxy = noproxy.replaceAll(",", "|");
-        }
-
-        String httpsProxyUrl = getNonNull(
-                System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
-                System.getProperty(
-                        SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
-        if (httpsProxyUrl != null) {
-            proxyList.add(new ProxyConfig.Proxy("https-proxy - system",
-                    httpsProxyUrl, noproxy));
-        }
-
-        String proxyUrl = getNonNull(
-                System.getProperty(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
-                System.getProperty(
-                        SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
-        if (proxyUrl != null) {
-            proxyList.add(
-                    new ProxyConfig.Proxy("proxy - system", proxyUrl, noproxy));
-        }
-
-        return proxyList;
-    }
-
-    private List<ProxyConfig.Proxy> readProxySettingsFromEnvironmentVariables() {
-        List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
-
-        String noproxy = getNonNull(System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY),
-                System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
-        if (noproxy != null) {
-            noproxy = noproxy.replaceAll(",", "|");
-        }
-
-        String httpsProxyUrl = getNonNull(
-                System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
-                System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
-        if (httpsProxyUrl != null) {
-            proxyList.add(new ProxyConfig.Proxy("https-proxy - env",
-                    httpsProxyUrl, noproxy));
-        }
-
-        String proxyUrl = getNonNull(
-                System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
-                System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
-        if (proxyUrl != null) {
-            proxyList.add(
-                    new ProxyConfig.Proxy("proxy - env", proxyUrl, noproxy));
-        }
-
-        return proxyList;
-    }
-
-    /**
-     * Get the first non null value from the given array.
-     *
-     * @param valueArray
-     *            array of values to get non null from
-     * @return first non null value or null if no values found
-     */
-    private String getNonNull(String... valueArray) {
-        for (String value : valueArray) {
-            if (value != null) {
-                return value;
-            }
-        }
-        return null;
     }
 
     private List<String> getNpmExecutable(boolean removePnpmLock) {

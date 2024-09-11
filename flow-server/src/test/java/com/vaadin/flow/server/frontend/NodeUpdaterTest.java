@@ -214,7 +214,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("11.0.0", packageJson
+        Assert.assertEquals("10.4.5", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
@@ -568,6 +568,9 @@ public class NodeUpdaterTest {
                 .mockStatic(FrontendUtils.class)) {
             mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
                     Mockito.any(ClassFinder.class))).thenReturn(true);
+            mock.when(() -> FrontendUtils
+                    .isReactRouterRequired(Mockito.any(File.class)))
+                    .thenReturn(true);
             options.withReact(true);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();

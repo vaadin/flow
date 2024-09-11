@@ -50,6 +50,8 @@ public final class DAUUtils {
     public static final String ENFORCEMENT_EXCEPTION_KEY = DAUUtils.class
             .getName() + ".EnforcementException";
 
+    public static final String STATUS_CODE_KEY = "Vaadin-DAU-Status-Code";
+
     private DAUUtils() {
     }
 
@@ -110,7 +112,7 @@ public final class DAUUtils {
      *         contains invalid data.
      * @see FlowDauIntegration#generateNewCookie(VaadinRequest)
      */
-    static Optional<DauCookie> parserCookie(Cookie cookie) {
+    static Optional<DauCookie> parseCookie(Cookie cookie) {
         String cookieValue = cookie.getValue();
         String[] tokens = cookieValue.split("\\$");
         if (tokens.length != 2) {

@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -50,6 +49,7 @@ import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.utils.LookupImpl;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
@@ -219,24 +219,13 @@ public class BuildFrontendUtilTest {
     @Test
     public void propagateBuildInfo_tokenFileNotExisting_createTokenFile()
             throws Exception {
-        fillAdapter();
-
-        BuildFrontendUtil.propagateBuildInfo(adapter);
-        File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have been created",
-                tokenFile.exists());
+        prepareAndAssertTokenFile();
     }
 
     @Test
     public void propagateBuildInfo_existingTokenFileWithDifferentContent_overwritesTokenFile()
             throws Exception {
-        fillAdapter();
-
-        BuildFrontendUtil.propagateBuildInfo(adapter);
-
-        File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have been created",
-                tokenFile.exists());
+        File tokenFile = prepareAndAssertTokenFile();
         long lastModified = tokenFile.lastModified();
 
         Thread.sleep(100);
@@ -250,13 +239,7 @@ public class BuildFrontendUtilTest {
     @Test
     public void propagateBuildInfo_existingTokenFileWithSameContent_doesNotWriteTokenFile()
             throws Exception {
-        fillAdapter();
-
-        BuildFrontendUtil.propagateBuildInfo(adapter);
-
-        File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have been created",
-                tokenFile.exists());
+        File tokenFile = prepareAndAssertTokenFile();
         long lastModified = tokenFile.lastModified();
 
         Thread.sleep(100);
@@ -321,13 +304,7 @@ public class BuildFrontendUtilTest {
     @Test
     public void updateBuildFile_tokenExisting_developmentEntriesRemoved()
             throws Exception {
-        fillAdapter();
-
-        BuildFrontendUtil.propagateBuildInfo(adapter);
-
-        File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have been created",
-                tokenFile.exists());
+        File tokenFile = prepareAndAssertTokenFile();
         JsonObject buildInfoJsonDev = Json
                 .parse(Files.readString(tokenFile.toPath()));
 
@@ -347,13 +324,7 @@ public class BuildFrontendUtilTest {
     @Test
     public void updateBuildFile_tokenExisting_applicationIdentifierAdded()
             throws Exception {
-        fillAdapter();
-
-        BuildFrontendUtil.propagateBuildInfo(adapter);
-
-        File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have been created",
-                tokenFile.exists());
+        File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, false);
         Assert.assertTrue("Token file should still exist", tokenFile.exists());
@@ -367,42 +338,34 @@ public class BuildFrontendUtilTest {
     @Test
     public void updateBuildFile_tokenExisting_licenseRequiredAndSubscriptionKey_dauFlagAdded()
             throws Exception {
-        fillAdapter();
-
-        BuildFrontendUtil.propagateBuildInfo(adapter);
-
-        File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have been created",
-                tokenFile.exists());
-
-        String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
-        System.setProperty("vaadin.subscriptionKey", "sub-123");
-        try {
-            BuildFrontendUtil.updateBuildFile(adapter, true);
-        } finally {
-            if (subscriptionKey != null) {
-                System.setProperty("vaadin.subscriptionKey", subscriptionKey);
-            } else {
-                System.clearProperty("vaadin.subscriptionKey");
+        File tokenFile = prepareAndAssertTokenFile();
+        withMockedLicenseChecker(false, () -> {
+            String subscriptionKey = System
+                    .getProperty("vaadin.subscriptionKey");
+            System.setProperty("vaadin.subscriptionKey", "sub-123");
+            try {
+                BuildFrontendUtil.updateBuildFile(adapter, true);
+            } finally {
+                if (subscriptionKey != null) {
+                    System.setProperty("vaadin.subscriptionKey",
+                            subscriptionKey);
+                } else {
+                    System.clearProperty("vaadin.subscriptionKey");
+                }
             }
-        }
-        Assert.assertTrue("Token file should still exist", tokenFile.exists());
-        JsonObject buildInfoJsonProd = Json
-                .parse(Files.readString(tokenFile.toPath()));
-        Assert.assertTrue("DAU flag should be active in token file",
-                buildInfoJsonProd.getBoolean(Constants.DAU_TOKEN));
+            Assert.assertTrue("Token file should still exist",
+                    tokenFile.exists());
+            JsonObject buildInfoJsonProd = Json
+                    .parse(Files.readString(tokenFile.toPath()));
+            Assert.assertTrue("DAU flag should be active in token file",
+                    buildInfoJsonProd.getBoolean(Constants.DAU_TOKEN));
+        });
     }
 
     @Test
     public void updateBuildFile_tokenExisting_licenseNotRequiredAndSubscriptionKey_dauFlagNotAdded()
             throws Exception {
-        fillAdapter();
-
-        BuildFrontendUtil.propagateBuildInfo(adapter);
-
-        File tokenFile = new File(resourceOutput, TOKEN_FILE);
-        Assert.assertTrue("Token file should have been created",
-                tokenFile.exists());
+        File tokenFile = prepareAndAssertTokenFile();
 
         String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-123");
@@ -425,6 +388,86 @@ public class BuildFrontendUtilTest {
     @Test
     public void updateBuildFile_tokenExisting_licenseRequiredNoSubscriptionKey_dauFlagNotAdded()
             throws Exception {
+        File tokenFile = prepareAndAssertTokenFile();
+        withMockedLicenseChecker(false, () -> {
+            String subscriptionKey = System
+                    .getProperty("vaadin.subscriptionKey");
+            System.clearProperty("vaadin.subscriptionKey");
+            try {
+                BuildFrontendUtil.updateBuildFile(adapter, true);
+            } finally {
+                if (subscriptionKey != null) {
+                    System.setProperty("vaadin.subscriptionKey",
+                            subscriptionKey);
+                } else {
+                    System.clearProperty("vaadin.subscriptionKey");
+                }
+            }
+            Assert.assertTrue("Token file should still exist",
+                    tokenFile.exists());
+            JsonObject buildInfoJsonProd = Json
+                    .parse(Files.readString(tokenFile.toPath()));
+            Assert.assertFalse("DAU flag should not be present in token file",
+                    buildInfoJsonProd.hasKey(Constants.DAU_TOKEN));
+        });
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_licenseRequiredAndIsPremiumLike_premiumFeaturesFlagAdded()
+            throws Exception {
+        File tokenFile = prepareAndAssertTokenFile();
+
+        withMockedLicenseChecker(true, () -> {
+            BuildFrontendUtil.updateBuildFile(adapter, true);
+            Assert.assertTrue("Token file should still exist",
+                    tokenFile.exists());
+            JsonObject buildInfoJsonProd = Json
+                    .parse(Files.readString(tokenFile.toPath()));
+            Assert.assertTrue(
+                    Constants.PREMIUM_FEATURES
+                            + " flag should be active in token file",
+                    buildInfoJsonProd.getBoolean(Constants.PREMIUM_FEATURES));
+        });
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_licenseRequiredAndIsNotPremiumLike_premiumFeaturesFlagNotAdded()
+            throws Exception {
+        File tokenFile = prepareAndAssertTokenFile();
+
+        withMockedLicenseChecker(false, () -> {
+            BuildFrontendUtil.updateBuildFile(adapter, true);
+            Assert.assertTrue("Token file should still exist",
+                    tokenFile.exists());
+            JsonObject buildInfoJsonProd = Json
+                    .parse(Files.readString(tokenFile.toPath()));
+            Assert.assertFalse(
+                    Constants.PREMIUM_FEATURES
+                            + " flag should not be active in token file",
+                    buildInfoJsonProd.hasKey(Constants.PREMIUM_FEATURES));
+        });
+    }
+
+    private void withMockedLicenseChecker(boolean isValidLicense,
+            ThrowingRunnable test) throws IOException {
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            licenseChecker
+                    .when(() -> LicenseChecker.isValidLicense(Mockito.any(),
+                            Mockito.any(), Mockito.any()))
+                    .thenReturn(isValidLicense);
+            licenseChecker.when(LicenseChecker::getLogger)
+                    .thenReturn(Mockito.mock(org.slf4j.Logger.class));
+            test.run();
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingRunnable {
+        void run() throws IOException;
+    }
+
+    private File prepareAndAssertTokenFile() throws URISyntaxException {
         fillAdapter();
 
         BuildFrontendUtil.propagateBuildInfo(adapter);
@@ -432,23 +475,7 @@ public class BuildFrontendUtilTest {
         File tokenFile = new File(resourceOutput, TOKEN_FILE);
         Assert.assertTrue("Token file should have been created",
                 tokenFile.exists());
-
-        String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
-        System.clearProperty("vaadin.subscriptionKey");
-        try {
-            BuildFrontendUtil.updateBuildFile(adapter, true);
-        } finally {
-            if (subscriptionKey != null) {
-                System.setProperty("vaadin.subscriptionKey", subscriptionKey);
-            } else {
-                System.clearProperty("vaadin.subscriptionKey");
-            }
-        }
-        Assert.assertTrue("Token file should still exist", tokenFile.exists());
-        JsonObject buildInfoJsonProd = Json
-                .parse(Files.readString(tokenFile.toPath()));
-        Assert.assertFalse("DAU flag should not be present in token file",
-                buildInfoJsonProd.hasKey(Constants.DAU_TOKEN));
+        return tokenFile;
     }
 
     @Test

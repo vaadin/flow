@@ -89,6 +89,9 @@ public class DevModeBrowserLauncher
 
     static String getUrl(GenericWebApplicationContext app) {
         String port = app.getEnvironment().getProperty("server.port");
+        if (port == null) {
+            port = "8080";
+        }
         String sslEnabled = app.getEnvironment()
                 .getProperty("server.ssl.enabled");
         String proto;

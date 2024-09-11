@@ -151,7 +151,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.contenttype</artifactId>
-            <version>3.9.400</version>
+            <version>3.9.500</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -321,7 +321,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.1</version>
                 <executions>
                     <execution>
                         <id>npm-install</id>
