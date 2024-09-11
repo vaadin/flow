@@ -26,6 +26,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -559,8 +562,14 @@ public class NodeInstaller {
                 throw new IOException("Process exited with non 0 exit code. ("
                         + exitCode + ")");
             }
-            return FrontendUtils.parseFrontendVersion(
-                    streamConsumer.getNow(new Pair<>("", "")).getFirst());
+            String version;
+            try {
+                version = streamConsumer.get(1, TimeUnit.SECONDS).getFirst();
+            } catch (ExecutionException | TimeoutException e) {
+                getLogger().debug("Cannot read {} version", tool, e);
+                version = "";
+            }
+            return FrontendUtils.parseFrontendVersion(version);
         } catch (InterruptedException | IOException e) {
             throw new InstallationException(String.format(
                     "Unable to detect version of %s. %s", tool,
