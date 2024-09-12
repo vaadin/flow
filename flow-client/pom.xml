@@ -100,6 +100,10 @@
                     <groupId>org.eclipse.platform</groupId>
                     <artifactId>org.eclipse.equinox.preferences</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>net.java.dev.jna</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- Force Java8 compatible package -->
