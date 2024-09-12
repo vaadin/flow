@@ -19,8 +19,8 @@
         <gwt.module.style>OBF</gwt.module.style>
         <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
         <skipTsTests>${skipTests}</skipTsTests>
-        <org.eclipse.equinox.common.version>3.18.200</org.eclipse.equinox.common.version>
-        <org.eclipse.core.runtime.version>3.30.0</org.eclipse.core.runtime.version>
+        <org.eclipse.equinox.common.version>3.19.100</org.eclipse.equinox.common.version>
+        <org.eclipse.core.runtime.version>3.31.100</org.eclipse.core.runtime.version>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -132,7 +132,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.resources</artifactId>
-            <version>3.17.0</version>
+            <version>3.21.0</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -145,7 +145,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.jobs</artifactId>
-            <version>3.11.0</version>
+            <version>3.15.400</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -381,6 +381,13 @@
             </plugin>
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <id>maven_central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2/</url>
+        </repository>
+    </repositories>
     <profiles>
         <profile>
             <id>sdm</id>
