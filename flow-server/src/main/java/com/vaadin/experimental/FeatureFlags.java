@@ -82,14 +82,6 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/hilla/tree/main/packages/ts/react-i18n",
             true, null);
 
-    public static final Feature COPILOT_FLOW = new Feature(
-            "Support for editing Flow views with Copilot", "copilotFlow",
-            "https://github.com/vaadin/copilot/issues/17", false, null);
-
-    public static final Feature COPILOT_I18N = new Feature(
-            "Internationalization plugin for Copilot", "copilotI18n",
-            "https://vaadin.com/docs/latest/tools", false, null);
-
     public static final Feature COPILOT_EXPERIMENTAL = new Feature(
             "Copilot experimental features", "copilotExperimentalFeatures",
             "https://vaadin.com/docs/latest/tools", false, null);
@@ -124,8 +116,6 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(FORM_FILLER_ADDON));
         features.add(new Feature(HILLA_I18N));
         features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
-        features.add(new Feature(COPILOT_FLOW));
-        features.add(new Feature(COPILOT_I18N));
         features.add(new Feature(COPILOT_EXPERIMENTAL));
         loadProperties();
     }

@@ -494,11 +494,11 @@ public class FrontendToolsTest {
         FrontendTools tools = new FrontendTools(settings);
 
         Properties properties = new Properties();
-        properties.put(FrontendTools.NPMRC_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_PROXY_PROPERTY_KEY,
                 "http://httpuser:httppassword@httphost:8080");
-        properties.put(FrontendTools.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
                 "http://httpsuser:httpspassword@httpshost:8081");
-        properties.put(FrontendTools.NPMRC_NOPROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_NOPROXY_PROPERTY_KEY,
                 "192.168.1.1,vaadin.com,mycompany.com");
         try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
             properties.store(fileOutputStream, null);
@@ -572,9 +572,9 @@ public class FrontendToolsTest {
             throws IOException {
         File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
         Properties properties = new Properties();
-        properties.put(FrontendTools.NPMRC_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_PROXY_PROPERTY_KEY,
                 "http://httpuser:httppassword@httphost:8080");
-        properties.put(FrontendTools.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
                 "http://httpsuser:httpspassword@httpshost:8081");
         try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
             properties.store(fileOutputStream, null);
@@ -612,11 +612,11 @@ public class FrontendToolsTest {
             throws IOException {
         File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
         Properties properties = new Properties();
-        properties.put(FrontendTools.NPMRC_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_PROXY_PROPERTY_KEY,
                 "http://httpuser:httppassword@httphost:8080");
-        properties.put(FrontendTools.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
                 "http://httpsuser:httpspassword@httpshost:8081");
-        properties.put(FrontendTools.NPMRC_NOPROXY_PROPERTY_KEY,
+        properties.put(ProxyFactory.NPMRC_NOPROXY_PROPERTY_KEY,
                 "192.168.1.1,vaadin.com,mycompany.com");
         try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
             properties.store(fileOutputStream, null);

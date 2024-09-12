@@ -17,7 +17,12 @@ package com.vaadin.flow.server.startup;
 
 import jakarta.servlet.annotation.HandlesTypes;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 
@@ -30,6 +35,7 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.router.Layout;
 
@@ -63,6 +69,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(context);
 
+            validateLayoutAnnotations(routesSet);
             routesSet.stream()
                     .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
                     .filter(clazz -> RouterLayout.class.isAssignableFrom(clazz))
@@ -85,6 +92,55 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             throw new VaadinInitializerException(
                     "Exception while registering Routes on servlet startup",
                     irce);
+        }
+    }
+
+    /**
+     * Validate {@link Layout} annotations that they are not added on classes
+     * that do not extend {@link RouterLayout} as they can not work without the
+     * implementation.
+     *
+     * @param routesSet
+     *            Routes to check
+     * @throws InvalidRouteLayoutConfigurationException
+     *             Thrown if any {@link Layout} annotations are found on non
+     *             {@link RouterLayout} classes
+     */
+    public static void validateLayoutAnnotations(Set<Class<?>> routesSet)
+            throws InvalidRouteLayoutConfigurationException {
+        List<Class<?>> faultyLayouts = routesSet.stream()
+                .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
+                .filter(clazz -> !RouterLayout.class.isAssignableFrom(clazz))
+                .collect(Collectors.toList());
+        if (!faultyLayouts.isEmpty()) {
+            String message = "Found @Layout on classes { %s } not implementing RouterLayout.";
+            String faultyLayoutsString = faultyLayouts.stream()
+                    .map(clazz -> clazz.getName())
+                    .collect(Collectors.joining(","));
+            throw new InvalidRouteLayoutConfigurationException(
+                    String.format(message, faultyLayoutsString));
+        }
+        Map<String, List<Class<?>>> layoutsMap = new HashMap<>();
+        for (Class<?> routeClass : routesSet) {
+            if (routeClass.isAnnotationPresent(Layout.class)) {
+                String layoutValue = routeClass.getAnnotation(Layout.class)
+                        .value();
+                layoutsMap.computeIfAbsent(layoutValue, k -> new ArrayList<>())
+                        .add(routeClass);
+            }
+        }
+        Set<List<Class<?>>> collect = layoutsMap.values().stream()
+                .filter(entry -> entry.size() > 1).collect(Collectors.toSet());
+        if (!collect.isEmpty()) {
+            StringBuilder messageBuilder = new StringBuilder(
+                    "Found duplicate @Layout values in classes:");
+            for (List<Class<?>> classes : collect) {
+                messageBuilder.append("\n").append(" - ")
+                        .append(classes.stream().map(clazz -> clazz.getName())
+                                .collect(Collectors.joining(" - ")));
+            }
+            throw new InvalidRouteLayoutConfigurationException(
+                    messageBuilder.toString());
         }
     }
 

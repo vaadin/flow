@@ -91,7 +91,24 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            available feature flags and their status
      */
     FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags) {
-        this(finder, AnnotationReader::getAnnotationsFor, featureFlags);
+        this(finder, AnnotationReader::getAnnotationsFor, featureFlags, true);
+    }
+
+    /**
+     * Creates a new scanner instance which discovers all dependencies in the
+     * classpath.
+     *
+     * @param finder
+     *            a class finder
+     * @param featureFlags
+     *            available feature flags and their status
+     * @param reactEnabled
+     *            true if react classes are enabled
+     */
+    FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags,
+            boolean reactEnabled) {
+        this(finder, AnnotationReader::getAnnotationsFor, featureFlags,
+                reactEnabled);
     }
 
     /**
@@ -104,10 +121,12 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a strategy to discover class annotations
      * @param featureFlags
      *            available feature flags and their status
+     * @param reactEnabled
+     *            true if react classes are enabled
      */
     FullDependenciesScanner(ClassFinder finder,
             SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder,
-            FeatureFlags featureFlags) {
+            FeatureFlags featureFlags, boolean reactEnabled) {
         super(finder, featureFlags);
 
         long start = System.currentTimeMillis();
@@ -143,6 +162,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         collectScripts(modulesSet, modulesSetDevelopment, JsModule.class);
         collectScripts(scriptsSet, scriptsSetDevelopment, JavaScript.class);
         cssData = discoverCss();
+
+        if (!reactEnabled) {
+            modulesSet.removeIf(
+                    module -> module.contains("ReactRouterOutletElement.tsx"));
+        }
 
         modules = new ArrayList<>(modulesSet);
         modulesDevelopment = new ArrayList<>(modulesSetDevelopment);
@@ -496,7 +520,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             if (annotatedClasses.isEmpty()) {
                 return new PwaConfiguration();
             } else if (annotatedClasses.size() != 1) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                        + " Found " + annotatedClasses.size()
+                        + " implementations: " + annotatedClasses);
             }
 
             Class<?> hopefullyAppShellClass = annotatedClasses.iterator()
@@ -504,7 +530,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             if (!Arrays.stream(hopefullyAppShellClass.getInterfaces())
                     .map(Class::getName).collect(Collectors.toList())
                     .contains(AppShellConfigurator.class.getName())) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                        + " " + hopefullyAppShellClass.getName()
+                        + " does not implement "
+                        + AppShellConfigurator.class.getSimpleName());
             }
 
             Annotation pwa = annotationFinder

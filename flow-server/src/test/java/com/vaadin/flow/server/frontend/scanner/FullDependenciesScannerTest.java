@@ -336,7 +336,7 @@ public class FullDependenciesScannerTest {
                     }
                     Assert.fail();
                     return null;
-                }, null);
+                }, null, true);
 
         DepsTests.assertImportCount(28, scanner.getModules());
         List<String> modules = DepsTests.merge(scanner.getModules());
@@ -405,7 +405,7 @@ public class FullDependenciesScannerTest {
 
         return new FullDependenciesScanner(finder,
                 (type, annotation) -> findAnnotations(type, annotationType),
-                null);
+                null, true);
     }
 
     private FullDependenciesScanner setUpThemeScanner(
@@ -425,7 +425,8 @@ public class FullDependenciesScannerTest {
         Mockito.when(finder.getAnnotatedClasses(fakeNoThemeClass))
                 .thenReturn(noThemeClasses);
 
-        return new FullDependenciesScanner(finder, annotationFinder, null) {
+        return new FullDependenciesScanner(finder, annotationFinder, null,
+                true) {
             @Override
             protected Class<? extends AbstractTheme> getLumoTheme() {
                 return FakeLumoTheme.class;

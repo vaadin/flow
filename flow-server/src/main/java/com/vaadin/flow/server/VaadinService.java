@@ -239,11 +239,18 @@ public abstract class VaadinService implements Serializable {
         if (DAUUtils.isDauEnabled(this)) {
             getLogger().info("Daily Active User tracking enabled");
 
-            DAUCustomizer dauCustomizer = Optional
-                    .ofNullable(getContext().getAttribute(Lookup.class))
-                    .map(lookup -> lookup.lookup(DAUCustomizer.class))
-                    .orElse(null);
-            getContext().setAttribute(DAUCustomizer.class, dauCustomizer);
+            DAUCustomizer dauCustomizer;
+            try {
+                dauCustomizer = instantiator.getOrCreate(DAUCustomizer.class);
+                getContext().setAttribute(DAUCustomizer.class, dauCustomizer);
+            } catch (Exception e) {
+                getLogger().debug("DAUCustomizer not available");
+                if (getLogger().isTraceEnabled()) {
+                    getLogger().trace("Cannot get an instance of DAUCustomizer",
+                            e);
+                }
+                dauCustomizer = null;
+            }
 
             DAUVaadinRequestInterceptor dauInterceptor = new DAUVaadinRequestInterceptor(
                     getDeploymentConfiguration(), dauCustomizer);

@@ -68,6 +68,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.menu.MenuRegistry;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -172,6 +173,18 @@ public abstract class AbstractNavigationStateRenderer
 
         if (result.isPresent()) {
             return result.get();
+        }
+
+        // If navigation target is Hilla route, terminate Flow navigation logic
+        // here.
+        String route = event.getLocation().getPath().isEmpty()
+                ? event.getLocation().getPath()
+                : event.getLocation().getPath().startsWith("/")
+                        ? event.getLocation().getPath()
+                        : "/" + event.getLocation().getPath();
+        if (MenuRegistry.hasClientRoute(route, true) && !MenuRegistry
+                .getClientRoutes(true).get(route).flowLayout()) {
+            return HttpStatusCode.OK.getCode();
         }
 
         final ArrayList<HasElement> chain;
@@ -724,10 +737,20 @@ public abstract class AbstractNavigationStateRenderer
     private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getForwardTarget();
 
+        Class<? extends Component> forwardTargetType = beforeNavigation
+                .getForwardTargetType();
+
+        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
+                .getParentLayouts(event.getUI().getRouter().getRegistry(),
+                        forwardTargetType, beforeNavigation.getForwardUrl());
+
+        boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
+                forwardTargetType, parentLayouts);
+
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
         newNavigationEvent.getUI().getPage().getHistory().replaceState(null,
-                newNavigationEvent.getLocation(), true);
+                newNavigationEvent.getLocation(), !preserveOnRefreshTarget);
 
         return handler.handle(newNavigationEvent);
     }

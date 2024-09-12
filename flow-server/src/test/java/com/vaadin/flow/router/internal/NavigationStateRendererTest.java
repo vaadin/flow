@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
@@ -37,6 +38,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -65,6 +67,7 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -77,6 +80,9 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.WrappedSession;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.MenuRegistry;
+import com.vaadin.flow.server.menu.RouteParamType;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -320,6 +326,21 @@ public class NavigationStateRendererTest {
         SingleView() {
             addAttachListener(e -> viewAttachCount.getAndIncrement());
             viewUUID = UUID.randomUUID().toString();
+        }
+    }
+
+    @Route(value = "/:samplePersonID?/:action?(edit)")
+    @RouteAlias(value = "")
+    @Tag("div")
+    private static class RootRouteWithParam extends Component
+            implements BeforeEnterObserver {
+        RootRouteWithParam() {
+            addAttachListener(e -> viewAttachCount.getAndIncrement());
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            beforeEnterCount.getAndIncrement();
         }
     }
 
@@ -636,6 +657,7 @@ public class NavigationStateRendererTest {
 
     private static AtomicInteger layoutAttachCount;
     private static AtomicInteger viewAttachCount;
+    private static AtomicInteger beforeEnterCount;
     private static String layoutUUID;
     private static String viewUUID;
 
@@ -745,6 +767,55 @@ public class NavigationStateRendererTest {
         Assert.assertNotEquals(currentLayoutUUID, layoutUUID);
         Assert.assertNotEquals(currentViewUUID, viewUUID);
 
+    }
+
+    @Test
+    public void handle_clientNavigation_withMatchingFlowRoute() {
+        viewAttachCount = new AtomicInteger();
+        beforeEnterCount = new AtomicInteger();
+
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a NavigationStateRenderer mapping to PreservedNestedView
+        Router router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router)
+                        .withTarget(RootRouteWithParam.class).withPath("")
+                        .build());
+        router.getRegistry().setRoute("", RootRouteWithParam.class, null);
+
+        MockUI ui = new MockUI(session);
+
+        renderer.handle(new NavigationEvent(router, new Location(""), ui,
+                NavigationTrigger.PAGE_LOAD));
+
+        Assert.assertEquals(1, beforeEnterCount.get());
+        Assert.assertEquals(1, viewAttachCount.get());
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
+                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(true))
+                    .thenReturn(Collections.singletonMap("/client-route",
+                            new AvailableViewInfo("", null, false,
+                                    "/client-route", false, false, null, null,
+                                    null, false)));
+
+            // This should not call attach or beforeEnter on root route
+            renderer.handle(
+                    new NavigationEvent(router, new Location("client-route"),
+                            ui, NavigationTrigger.CLIENT_SIDE));
+
+            Assert.assertEquals(1, beforeEnterCount.get());
+            Assert.assertEquals(1, viewAttachCount.get());
+        }
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {

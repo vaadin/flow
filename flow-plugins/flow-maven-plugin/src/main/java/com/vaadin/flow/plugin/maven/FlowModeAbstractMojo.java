@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
@@ -535,6 +537,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (applicationIdentifier != null && !applicationIdentifier.isBlank()) {
             return applicationIdentifier;
         }
-        return project.getGroupId() + ":" + project.getArtifactId();
+        return "app-" + StringUtil.getHash(
+                project.getGroupId() + ":" + project.getArtifactId(),
+                StandardCharsets.UTF_8);
     }
 }
