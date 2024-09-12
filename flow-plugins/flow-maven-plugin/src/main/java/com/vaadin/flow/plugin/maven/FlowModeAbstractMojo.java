@@ -27,7 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
@@ -537,7 +537,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (applicationIdentifier != null && !applicationIdentifier.isBlank()) {
             return applicationIdentifier;
         }
-        return "app-name-" + MessageDigestUtil.sha256ToHex(
+        return "app-" + StringUtil.getHash(
                 project.getGroupId() + ":" + project.getArtifactId(),
                 StandardCharsets.UTF_8);
     }

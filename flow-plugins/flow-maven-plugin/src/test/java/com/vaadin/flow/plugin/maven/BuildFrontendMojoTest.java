@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.MessageDigestUtil;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
@@ -508,7 +508,7 @@ public class BuildFrontendMojoTest {
     @Test
     public void existingTokenFile_defaultApplicationIdentifierWritten()
             throws IOException, MojoExecutionException, MojoFailureException {
-        String expectedAppId = "app-name-" + MessageDigestUtil.sha256ToHex(
+        String expectedAppId = "app-" + StringUtil.getHash(
                 "com.vaadin.testing:my-application", StandardCharsets.UTF_8);
 
         JsonObject initialBuildInfo = Json.createObject();

@@ -16,7 +16,7 @@
 package com.vaadin.gradle
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
-import com.vaadin.flow.internal.MessageDigestUtil
+import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
@@ -434,7 +434,7 @@ public class PluginEffectiveConfiguration(
 
     public val applicationIdentifier: Provider<String> = extension.applicationIdentifier
         .convention(
-            "app-name-" + MessageDigestUtil.sha256ToHex(project.name,
+            "app-" + StringUtil.getHash(project.name,
                 java.nio.charset.StandardCharsets.UTF_8
             ))
         .overrideWithSystemProperty("vaadin.${InitParameters.APPLICATION_IDENTIFIER}")

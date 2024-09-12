@@ -16,7 +16,7 @@
 
 package com.vaadin.gradle
 
-import com.vaadin.flow.internal.MessageDigestUtil
+import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
 import elemental.json.Json
 import org.gradle.testkit.runner.BuildResult
@@ -71,7 +71,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         doTestWarProjectProductionMode()
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val tokenFileContent = Json.parse(tokenFile.readText())
-        expect("app-name-" + MessageDigestUtil.sha256ToHex(testProject.dir.name,
+        expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
     }
@@ -82,7 +82,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         doTestWarProjectProductionMode()
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val tokenFileContent = Json.parse(tokenFile.readText())
-        expect("app-name-" + MessageDigestUtil.sha256ToHex("my-test-project",
+        expect("app-" + StringUtil.getHash("my-test-project",
             java.nio.charset.StandardCharsets.UTF_8
         )) { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
     }
