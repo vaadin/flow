@@ -225,7 +225,9 @@ public class TaskGenerateReactFiles
                     FLOW_REACT_ADAPTER_TSX);
             File frontendGeneratedFolderRoutesTsx = new File(
                     frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
+            File layoutsJson = new File(frontendGeneratedFolder, LAYOUTS_JSON);
             FileUtils.deleteQuietly(flowTsx);
+            FileUtils.deleteQuietly(layoutsJson);
             FileUtils.deleteQuietly(vaadinReactTsx);
             FileUtils.deleteQuietly(reactAdapterTsx);
             FileUtils.deleteQuietly(frontendGeneratedFolderRoutesTsx);
