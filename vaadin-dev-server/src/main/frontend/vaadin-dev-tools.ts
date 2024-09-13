@@ -606,8 +606,6 @@ export class VaadinDevTools extends LitElement {
 
   private nextMessageId: number = 1;
 
-  private disableEventListener?: EventListener;
-
   private transitionDuration: number = 0;
 
   elementTelemetry() {
@@ -755,8 +753,6 @@ export class VaadinDevTools extends LitElement {
     super.connectedCallback();
 
     this.conf = (window.Vaadin as any).devToolsConf || this.conf;
-    document.body.addEventListener('focus', this.disableEventListener);
-    document.body.addEventListener('click', this.disableEventListener);
 
     const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
@@ -798,15 +794,6 @@ export class VaadinDevTools extends LitElement {
   format(o: any): string {
     return o.toString();
   }
-
-  disconnectedCallback() {
-    if (this.disableEventListener) {
-      document.body.removeEventListener('focus', this.disableEventListener!);
-      document.body.removeEventListener('click', this.disableEventListener!);
-    }
-    super.disconnectedCallback();
-  }
-
 
   checkLicense(productInfo: Product) {
     if (this.frontendConnection) {
