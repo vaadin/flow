@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -28,10 +29,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Version;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -102,6 +107,7 @@ public class TaskGenerateReactFiles
     private static final String VAADIN_REACT_TSX = "vaadin-react.tsx";
     private static final String REACT_ADAPTER_TEMPLATE = "ReactAdapter.template";
     private static final String REACT_ADAPTER_TSX = "ReactAdapter.tsx";
+    private static final String LAYOUTS_JSON = "layouts.json";
     static final String FLOW_FLOW_TSX = "flow/" + FLOW_TSX;
     static final String FLOW_REACT_ADAPTER_TSX = "flow/" + REACT_ADAPTER_TSX;
     private static final String ROUTES_JS_IMPORT_PATH_TOKEN = "%routesJsImportPath%";
@@ -158,6 +164,8 @@ public class TaskGenerateReactFiles
             writeFile(flowTsx, getFileContent(FLOW_TSX));
             writeFile(vaadinReactTsx,
                     getVaadinReactTsContent(routesTsx.exists()));
+            writeFile(new File(frontendGeneratedFolder, LAYOUTS_JSON),
+                    layoutsContent());
             if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
                 String reactAdapterContent = getFileContent(
                         REACT_ADAPTER_TEMPLATE);
@@ -193,6 +201,19 @@ public class TaskGenerateReactFiles
         }
     }
 
+    private String layoutsContent() {
+        JsonArray availableLayouts = Json.createArray();
+        Set<Class<?>> layoutClasses = options.getClassFinder()
+                .getAnnotatedClasses(Layout.class);
+        for (Class<?> layout : layoutClasses) {
+            JsonObject layoutObject = Json.createObject();
+            layoutObject.put("path",
+                    layout.getAnnotation(Layout.class).value());
+            availableLayouts.set(availableLayouts.length(), layoutObject);
+        }
+        return availableLayouts.toJson();
+    }
+
     private void cleanup() throws ExecutionFailedException {
         try {
             File frontendDirectory = options.getFrontendDirectory();
@@ -204,7 +225,9 @@ public class TaskGenerateReactFiles
                     FLOW_REACT_ADAPTER_TSX);
             File frontendGeneratedFolderRoutesTsx = new File(
                     frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
+            File layoutsJson = new File(frontendGeneratedFolder, LAYOUTS_JSON);
             FileUtils.deleteQuietly(flowTsx);
+            FileUtils.deleteQuietly(layoutsJson);
             FileUtils.deleteQuietly(vaadinReactTsx);
             FileUtils.deleteQuietly(reactAdapterTsx);
             FileUtils.deleteQuietly(frontendGeneratedFolderRoutesTsx);
