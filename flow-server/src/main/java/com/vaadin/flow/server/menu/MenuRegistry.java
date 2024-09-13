@@ -93,6 +93,21 @@ public class MenuRegistry {
      * @return ordered routes with view information
      */
     public static List<AvailableViewInfo> collectMenuItemsList() {
+        // en-US is used by default here to match with Hilla's
+        // createMenuItems.ts sorting algorithm.
+        return collectMenuItemsList(Locale.forLanguageTag("en-US"));
+    }
+
+    /**
+     * Collect ordered list of views with menu annotation for automatic menu
+     * population. All client views are collected and any accessible server
+     * views.
+     *
+     * @param locale
+     *            locale to use for ordering. null for default locale.
+     * @return ordered routes with view information
+     */
+    public static List<AvailableViewInfo> collectMenuItemsList(Locale locale) {
         return collectMenuItems().entrySet().stream().map(entry -> {
             AvailableViewInfo value = entry.getValue();
             return new AvailableViewInfo(value.title(), value.rolesAllowed(),
@@ -100,7 +115,9 @@ public class MenuRegistry {
                     value.register(), value.menu(), value.children(),
                     value.routeParameters(), value.flowLayout());
         }).sorted(getMenuOrderComparator(
-                Collator.getInstance(Locale.forLanguageTag("en-US")))).toList();
+                (locale != null ? Collator.getInstance(locale)
+                        : Collator.getInstance())))
+                .toList();
     }
 
     /**
