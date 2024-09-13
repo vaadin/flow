@@ -369,6 +369,8 @@ public class BuildFrontendUtilTest {
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
+        addPremiumFeatureAndDAUFlagTrue(tokenFile);
+
         String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-123");
         try {
@@ -419,7 +421,7 @@ public class BuildFrontendUtilTest {
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
-        addPremiumFeatureFlagTrue(tokenFile);
+        addPremiumFeatureAndDAUFlagTrue(tokenFile);
 
         withMockedLicenseChecker(true, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true);
@@ -439,7 +441,7 @@ public class BuildFrontendUtilTest {
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
-        addPremiumFeatureFlagTrue(tokenFile);
+        addPremiumFeatureAndDAUFlagTrue(tokenFile);
 
         withMockedLicenseChecker(false, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true);
@@ -585,13 +587,15 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.runNpmInstall()).thenReturn(true);
     }
 
-    private void addPremiumFeatureFlagTrue(File tokenFile) throws IOException {
+    private void addPremiumFeatureAndDAUFlagTrue(File tokenFile)
+            throws IOException {
         // simulates true value placed into pre-compiled bundle
         // when bundle is compiled on Vaadin CI server
         String tokenJson = FileUtils.readFileToString(tokenFile,
                 StandardCharsets.UTF_8);
         JsonObject buildInfo = JsonUtil.parse(tokenJson);
         buildInfo.put(Constants.PREMIUM_FEATURES, true);
+        buildInfo.put(Constants.DAU_TOKEN, true);
 
         FileIOUtils.writeIfChanged(tokenFile,
                 JsonUtil.stringify(buildInfo, 2) + "\n");

@@ -754,9 +754,10 @@ public class BuildFrontendUtil {
             buildInfo.remove(InitParameters.BUILD_FOLDER);
             // Premium features flag is always true, because Vaadin CI server
             // uses Enterprise sub, thus it's always true.
-            // Thus, resets the premium feature flag before asking
+            // Thus, resets the premium feature flag and DAU flag before asking
             // license-server
             buildInfo.remove(Constants.PREMIUM_FEATURES);
+            buildInfo.remove(Constants.DAU_TOKEN);
 
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
             buildInfo.put(APPLICATION_IDENTIFIER,
@@ -764,7 +765,7 @@ public class BuildFrontendUtil {
             if (licenseRequired) {
                 if (LocalSubscriptionKey.get() != null) {
                     adapter.logInfo("Daily Active User tracking enabled");
-                    buildInfo.put(DAU_TOKEN, true);
+                    buildInfo.put(Constants.DAU_TOKEN, true);
                 }
                 if (LicenseChecker.isValidLicense("vaadin-commercial-cc-client",
                         null, BuildType.PRODUCTION)) {
