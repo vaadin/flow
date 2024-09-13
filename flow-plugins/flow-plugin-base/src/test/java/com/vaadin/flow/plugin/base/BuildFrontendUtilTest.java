@@ -39,6 +39,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
@@ -54,6 +55,7 @@ import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -417,6 +419,8 @@ public class BuildFrontendUtilTest {
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
+        addPremiumFeatureFlagTrue(tokenFile);
+
         withMockedLicenseChecker(true, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true);
             Assert.assertTrue("Token file should still exist",
@@ -434,6 +438,8 @@ public class BuildFrontendUtilTest {
     public void updateBuildFile_tokenExisting_licenseRequiredAndIsNotPremiumLike_premiumFeaturesFlagNotAdded()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
+
+        addPremiumFeatureFlagTrue(tokenFile);
 
         withMockedLicenseChecker(false, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true);
@@ -577,5 +583,17 @@ public class BuildFrontendUtilTest {
                 .thenReturn(new ClassFinder.DefaultClassFinder(
                         this.getClass().getClassLoader()));
         Mockito.when(adapter.runNpmInstall()).thenReturn(true);
+    }
+
+    private void addPremiumFeatureFlagTrue(File tokenFile) throws IOException {
+        // simulates true value placed into pre-compiled bundle
+        // when bundle is compiled on Vaadin CI server
+        String tokenJson = FileUtils.readFileToString(tokenFile,
+                StandardCharsets.UTF_8);
+        JsonObject buildInfo = JsonUtil.parse(tokenJson);
+        buildInfo.put(Constants.PREMIUM_FEATURES, true);
+
+        FileIOUtils.writeIfChanged(tokenFile,
+                JsonUtil.stringify(buildInfo, 2) + "\n");
     }
 }

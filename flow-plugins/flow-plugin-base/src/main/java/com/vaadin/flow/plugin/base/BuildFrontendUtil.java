@@ -752,6 +752,12 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
+            // Premium features flag is always true, because Vaadin CI server
+            // uses Enterprise sub, thus it's always true.
+            // Thus, resets the premium feature flag before asking
+            // license-server
+            buildInfo.remove(Constants.PREMIUM_FEATURES);
+
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
             buildInfo.put(APPLICATION_IDENTIFIER,
                     adapter.applicationIdentifier());
