@@ -68,7 +68,6 @@ import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.DAU_TOKEN;
 import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
@@ -752,13 +751,20 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
+            // Premium features flag is always true, because Vaadin CI server
+            // uses Enterprise sub, thus it's always true.
+            // Thus, resets the premium feature flag and DAU flag before asking
+            // license-server
+            buildInfo.remove(Constants.PREMIUM_FEATURES);
+            buildInfo.remove(Constants.DAU_TOKEN);
+
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
             buildInfo.put(APPLICATION_IDENTIFIER,
                     adapter.applicationIdentifier());
             if (licenseRequired) {
                 if (LocalSubscriptionKey.get() != null) {
                     adapter.logInfo("Daily Active User tracking enabled");
-                    buildInfo.put(DAU_TOKEN, true);
+                    buildInfo.put(Constants.DAU_TOKEN, true);
                 }
                 if (LicenseChecker.isValidLicense("vaadin-commercial-cc-client",
                         null, BuildType.PRODUCTION)) {
