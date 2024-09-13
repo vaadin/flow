@@ -21,7 +21,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.ServletContext;
 import net.jcip.annotations.NotThreadSafe;
@@ -221,7 +223,7 @@ public class MenuRegistryTest {
     }
 
     @Test
-    public void collectMenuItems_returnsCorrecPaths() throws IOException {
+    public void collectMenuItems_returnsCorrectPaths() throws IOException {
         File generated = tmpDir.newFolder(GENERATED);
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
@@ -258,6 +260,13 @@ public class MenuRegistryTest {
 
         Assert.assertEquals(5, menuItems.size());
         assertClientRoutes(menuItems, true, true);
+
+        // Verify that getMenuItemsList returns the same data
+        List<AvailableViewInfo> menuItemsList = MenuRegistry
+                .collectMenuItemsList();
+        Assert.assertEquals(5, menuItemsList.size());
+        assertOrder(menuItemsList, new String[] { "", "/about", "/hilla",
+                "/hilla/sub", "/login" });
     }
 
     @Test
@@ -276,6 +285,54 @@ public class MenuRegistryTest {
 
         Assert.assertEquals(3, menuItems.size());
         assertClientRoutes(menuItems, true, false);
+    }
+
+    @Test
+    public void getMenuItemsList_returnsCorrectPaths() throws IOException {
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(), testClientRouteFile);
+
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(MyRoute.class, MyInfo.class, MyRequiredParamRoute.class,
+                MyRequiredAndOptionalParamRoute.class,
+                MyOptionalParamRoute.class, MyVarargsParamRoute.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> menuItems = MenuRegistry.collectMenuItemsList();
+        Assert.assertEquals(8, menuItems.size());
+        assertOrder(menuItems,
+                new String[] { "", "/home", "/info", "/login", "/param",
+                        "/param/:param", "/param/:param1", "/param/varargs" });
+        // verifying that data is same as with collectMenuItems
+        Map<String, AvailableViewInfo> mapMenuItems = menuItems.stream()
+                .collect(Collectors.toMap(AvailableViewInfo::route,
+                        item -> item));
+        assertClientRoutes(mapMenuItems);
+        assertServerRoutes(mapMenuItems);
+        assertServerRoutesWithParameters(mapMenuItems);
+    }
+
+    @Test
+    public void getMenuItemsList_assertOrder() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TestRouteA.class, TestRouteB.class, TestRouteC.class,
+                TestRouteD.class, TestRouteDA.class, TestRouteDB.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> menuItems = MenuRegistry.collectMenuItemsList();
+        Assert.assertEquals(4, menuItems.size());
+        assertOrder(menuItems,
+                new String[] { "/d", "/c", "/a", "/b", "/d/a", "/d/b" });
+    }
+
+    private void assertOrder(List<AvailableViewInfo> menuItems,
+            String[] expectedOrder) {
+        for (int i = 0; i < menuItems.size(); i++) {
+            Assert.assertEquals(expectedOrder[i], menuItems.get(i).route());
+        }
     }
 
     private void assertClientRoutes(Map<String, AvailableViewInfo> menuItems) {
@@ -411,6 +468,41 @@ public class MenuRegistryTest {
     @Route("param/varargs/:param*")
     @Menu
     private static class MyVarargsParamRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("a")
+    @Menu(order = 1.1)
+    private static class TestRouteA extends Component {
+    }
+
+    @Tag("div")
+    @Route("b")
+    @Menu(order = 1.2)
+    private static class TestRouteB extends Component {
+    }
+
+    @Tag("div")
+    @Route("c")
+    @Menu(order = 0.1)
+    private static class TestRouteC extends Component {
+    }
+
+    @Tag("div")
+    @Route("d")
+    @Menu(order = 0)
+    private static class TestRouteD extends Component {
+    }
+
+    @Tag("div")
+    @Route("d/b")
+    private static class TestRouteDB extends Component {
+
+    }
+
+    @Tag("div")
+    @Route("d/a")
+    private static class TestRouteDA extends Component {
     }
 
     /**
