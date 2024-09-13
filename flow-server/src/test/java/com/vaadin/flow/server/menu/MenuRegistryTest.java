@@ -158,7 +158,7 @@ public class MenuRegistryTest {
 
         Assert.assertEquals(5, menuItems.size());
         // Validate as if logged in as all routes should be available
-        assertClientRoutes(menuItems, true, true);
+        assertClientRoutes(menuItems, true, true, false);
     }
 
     @Test
@@ -238,10 +238,10 @@ public class MenuRegistryTest {
         Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .collectMenuItems();
 
-        Assert.assertEquals(8, menuItems.size());
-        assertClientRoutes(menuItems);
+        Assert.assertEquals(5, menuItems.size());
+        assertClientRoutes(menuItems, false, false, true);
         assertServerRoutes(menuItems);
-        assertServerRoutesWithParameters(menuItems);
+        assertServerRoutesWithParameters(menuItems, true);
     }
 
     @Test
@@ -259,14 +259,14 @@ public class MenuRegistryTest {
                 .getMenuItems(true);
 
         Assert.assertEquals(5, menuItems.size());
-        assertClientRoutes(menuItems, true, true);
+        assertClientRoutes(menuItems, true, true, false);
 
         // Verify that getMenuItemsList returns the same data
         List<AvailableViewInfo> menuItemsList = MenuRegistry
                 .collectMenuItemsList();
-        Assert.assertEquals(5, menuItemsList.size());
-        assertOrder(menuItemsList, new String[] { "", "/about", "/hilla",
-                "/hilla/sub", "/login" });
+        Assert.assertEquals(4, menuItemsList.size());
+        assertOrder(menuItemsList,
+                new String[] { "", "/about", "/hilla", "/hilla/sub" });
     }
 
     @Test
@@ -284,7 +284,7 @@ public class MenuRegistryTest {
                 .getMenuItems(true);
 
         Assert.assertEquals(3, menuItems.size());
-        assertClientRoutes(menuItems, true, false);
+        assertClientRoutes(menuItems, true, false, false);
     }
 
     @Test
@@ -301,17 +301,16 @@ public class MenuRegistryTest {
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         List<AvailableViewInfo> menuItems = MenuRegistry.collectMenuItemsList();
-        Assert.assertEquals(8, menuItems.size());
-        assertOrder(menuItems,
-                new String[] { "", "/home", "/info", "/login", "/param",
-                        "/param/:param", "/param/:param1", "/param/varargs" });
+        Assert.assertEquals(5, menuItems.size());
+        assertOrder(menuItems, new String[] { "", "/home", "/info", "/param",
+                "/param/varargs" });
         // verifying that data is same as with collectMenuItems
         Map<String, AvailableViewInfo> mapMenuItems = menuItems.stream()
                 .collect(Collectors.toMap(AvailableViewInfo::route,
                         item -> item));
-        assertClientRoutes(mapMenuItems);
+        assertClientRoutes(mapMenuItems, false, false, true);
         assertServerRoutes(mapMenuItems);
-        assertServerRoutesWithParameters(mapMenuItems);
+        assertServerRoutesWithParameters(mapMenuItems, true);
     }
 
     @Test
@@ -336,11 +335,11 @@ public class MenuRegistryTest {
     }
 
     private void assertClientRoutes(Map<String, AvailableViewInfo> menuItems) {
-        assertClientRoutes(menuItems, false, false);
+        assertClientRoutes(menuItems, false, false, false);
     }
 
     private void assertClientRoutes(Map<String, AvailableViewInfo> menuItems,
-            boolean authenticated, boolean hasRole) {
+            boolean authenticated, boolean hasRole, boolean excludeExpected) {
         Assert.assertTrue("Client route '' missing", menuItems.containsKey(""));
         Assert.assertEquals("Public", menuItems.get("").title());
         Assert.assertNull("Public doesn't contain specific menu data",
@@ -385,12 +384,17 @@ public class MenuRegistryTest {
                     menuItems.containsKey("/hilla"));
         }
 
-        Assert.assertTrue("Client route 'login' missing",
-                menuItems.containsKey("/login"));
-        Assert.assertEquals("Login", menuItems.get("/login").title());
-        Assert.assertNull(menuItems.get("/login").menu().title());
-        Assert.assertTrue("Login view should be excluded",
-                menuItems.get("/login").menu().exclude());
+        if (excludeExpected) {
+            Assert.assertFalse("Client route 'login' should be excluded",
+                    menuItems.containsKey("/login"));
+        } else {
+            Assert.assertTrue("Client route 'login' missing",
+                    menuItems.containsKey("/login"));
+            Assert.assertEquals("Login", menuItems.get("/login").title());
+            Assert.assertNull(menuItems.get("/login").menu().title());
+            Assert.assertTrue("Login view should be excluded",
+                    menuItems.get("/login").menu().exclude());
+        }
     }
 
     private void assertServerRoutes(Map<String, AvailableViewInfo> menuItems) {
@@ -407,17 +411,31 @@ public class MenuRegistryTest {
 
     private void assertServerRoutesWithParameters(
             Map<String, AvailableViewInfo> menuItems) {
-        Assert.assertTrue("Server route '/param/:param' missing",
-                menuItems.containsKey("/param/:param"));
-        Assert.assertTrue(
-                "Server route '/param/:param' should be excluded from menu",
-                menuItems.get("/param/:param").menu().exclude());
+        assertServerRoutesWithParameters(menuItems, false);
+    }
 
-        Assert.assertTrue("Server route '/param/:param1' missing",
-                menuItems.containsKey("/param/:param1"));
-        Assert.assertTrue(
-                "Server route '/param/:param1' should be excluded from menu",
-                menuItems.get("/param/:param1").menu().exclude());
+    private void assertServerRoutesWithParameters(
+            Map<String, AvailableViewInfo> menuItems, boolean excludeExpected) {
+        if (excludeExpected) {
+            Assert.assertFalse(
+                    "Server route '/param/:param' should be excluded",
+                    menuItems.containsKey("/param/:param"));
+            Assert.assertFalse(
+                    "Server route '/param/:param1' should be excluded",
+                    menuItems.containsKey("/param/:param1"));
+        } else {
+            Assert.assertTrue("Server route '/param/:param' missing",
+                    menuItems.containsKey("/param/:param"));
+            Assert.assertTrue(
+                    "Server route '/param/:param' should be excluded from menu",
+                    menuItems.get("/param/:param").menu().exclude());
+
+            Assert.assertTrue("Server route '/param/:param1' missing",
+                    menuItems.containsKey("/param/:param1"));
+            Assert.assertTrue(
+                    "Server route '/param/:param1' should be excluded from menu",
+                    menuItems.get("/param/:param1").menu().exclude());
+        }
 
         Assert.assertTrue(
                 "Server route with optional parameters '/param' missing",

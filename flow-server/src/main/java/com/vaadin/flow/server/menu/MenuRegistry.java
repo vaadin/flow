@@ -76,7 +76,13 @@ public class MenuRegistry {
      * @return routes with view information
      */
     public static Map<String, AvailableViewInfo> collectMenuItems() {
-        return new MenuRegistry().getMenuItems(true);
+        Map<String, AvailableViewInfo> menuRoutes = new MenuRegistry()
+                .getMenuItems(true);
+        menuRoutes.entrySet()
+                .removeIf(entry -> Optional.ofNullable(entry.getValue())
+                        .map(AvailableViewInfo::menu).map(MenuData::isExclude)
+                        .orElse(false));
+        return menuRoutes;
     }
 
     /**
