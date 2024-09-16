@@ -264,7 +264,9 @@ public class MenuRegistryTest {
         // Verify that getMenuItemsList returns the same data
         List<AvailableViewInfo> menuItemsList = MenuRegistry
                 .collectMenuItemsList();
-        Assert.assertEquals(4, menuItemsList.size());
+        Assert.assertEquals(
+                "List of menu items has incorrect size. Excluded menu item like /login is not expected.",
+                4, menuItemsList.size());
         assertOrder(menuItemsList,
                 new String[] { "", "/about", "/hilla", "/hilla/sub" });
     }
