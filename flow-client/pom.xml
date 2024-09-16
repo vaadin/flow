@@ -134,12 +134,6 @@
             <artifactId>org.eclipse.core.resources</artifactId>
             <version>3.21.0</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.platform</groupId>
-                    <artifactId>org.eclipse.equinox.preferences</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- Force Java8 compatible package -->
         <dependency>
@@ -381,13 +375,6 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>maven_central</id>
-            <name>Maven Central</name>
-            <url>https://repo.maven.apache.org/maven2/</url>
-        </repository>
-    </repositories>
     <profiles>
         <profile>
             <id>sdm</id>
