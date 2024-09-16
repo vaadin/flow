@@ -16,6 +16,7 @@
 
 package com.vaadin.gradle
 
+import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
 import elemental.json.Json
 import org.gradle.testkit.runner.BuildResult
@@ -124,7 +125,9 @@ open class MiscMultiModuleTest : AbstractGradleTest() {
 
         val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val tokenFileContent = Json.parse(tokenFile.readText())
-        expect("web") { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        expect("app-" + StringUtil.getHash("web",
+            java.nio.charset.StandardCharsets.UTF_8
+        )) { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
     }
 
     @Test
@@ -178,7 +181,9 @@ open class MiscMultiModuleTest : AbstractGradleTest() {
 
         val tokenFile = File(testProject.dir, "web/build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val tokenFileContent = Json.parse(tokenFile.readText())
-        expect("MY_APP_ID") { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
+        expect("app-" + StringUtil.getHash("MY_APP_ID",
+            java.nio.charset.StandardCharsets.UTF_8
+        )) { tokenFileContent.getString(InitParameters.APPLICATION_IDENTIFIER) }
     }
 
     @Test

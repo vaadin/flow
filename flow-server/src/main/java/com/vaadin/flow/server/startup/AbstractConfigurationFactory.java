@@ -44,6 +44,7 @@ import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PREMIUM_FEATURES;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
@@ -180,6 +181,10 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.hasKey(DAU_TOKEN)) {
             params.put(DAU_TOKEN,
                     String.valueOf(buildInfo.getBoolean(DAU_TOKEN)));
+        }
+        if (buildInfo.hasKey(PREMIUM_FEATURES)) {
+            params.put(PREMIUM_FEATURES,
+                    String.valueOf(buildInfo.getBoolean(PREMIUM_FEATURES)));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);

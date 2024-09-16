@@ -330,8 +330,8 @@ public interface PluginAdapterBase {
      * Gets the application identifier.
      * <p>
      * The application identifier is usually computed against project unique
-     * information, such as {@literal groupId} and {@literal artifactId}, but it
-     * can be any kind of not blank string.
+     * information, such as hashed {@literal groupId} and {@literal artifactId},
+     * but it can be any kind of not blank string.
      *
      * @return application identifier, never {@literal null} nor
      *         {@literal blank}.
