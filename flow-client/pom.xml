@@ -147,12 +147,6 @@
             <artifactId>org.eclipse.core.contenttype</artifactId>
             <version>3.9.500</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.platform</groupId>
-                    <artifactId>org.eclipse.equinox.preferences</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
