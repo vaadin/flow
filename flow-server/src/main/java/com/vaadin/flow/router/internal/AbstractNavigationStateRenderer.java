@@ -744,13 +744,10 @@ public abstract class AbstractNavigationStateRenderer
                 .getParentLayouts(event.getUI().getRouter().getRegistry(),
                         forwardTargetType, beforeNavigation.getForwardUrl());
 
-        boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
-                forwardTargetType, parentLayouts);
-
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
         newNavigationEvent.getUI().getPage().getHistory().replaceState(null,
-                newNavigationEvent.getLocation(), !preserveOnRefreshTarget);
+                newNavigationEvent.getLocation(), false);
 
         return handler.handle(newNavigationEvent);
     }
