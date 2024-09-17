@@ -86,6 +86,10 @@ public class FeatureFlags implements Serializable {
             "Copilot experimental features", "copilotExperimentalFeatures",
             "https://vaadin.com/docs/latest/tools", false, null);
 
+    public static final Feature UI_TEST_GENERATOR = new Feature(
+            "Ui Tests Generator", "uiTestsGenerator",
+            "https://vaadin.com/docs/latest/tools/copilot", false, null);
+
     public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
             "Hilla Full-stack Signals", "fullstackSignals",
             "https://github.com/vaadin/hilla/discussions/1902", true, null);
@@ -117,6 +121,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(HILLA_I18N));
         features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
         features.add(new Feature(COPILOT_EXPERIMENTAL));
+        features.add(new Feature(UI_TEST_GENERATOR));
         loadProperties();
     }
 
