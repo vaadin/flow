@@ -111,7 +111,8 @@ public interface FrontendDependenciesScanner extends Serializable {
 
         public FrontendDependenciesScanner createScanner(Options options) {
             boolean reactEnabled = options.isReactEnabled() && FrontendUtils
-                    .isReactRouterRequired(options.getFrontendDirectory());
+                    .isReactRouterRequired(options.getFrontendDirectory(),
+                            options.getBuildDirectory());
             return createScanner(!options.isUseByteCodeScanner(),
                     options.getClassFinder(),
                     options.isGenerateEmbeddableWebComponents(),

@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
@@ -1266,7 +1267,8 @@ public class FrontendUtils {
      *            path to the frontend folder in a project.
      * @return {@code false} if vaadin-router is used, {@code true} otherwise.
      */
-    public static boolean isReactRouterRequired(File frontendDirectory) {
+    public static boolean isReactRouterRequired(File frontendDirectory,
+            File buildDirectory) {
         Objects.requireNonNull(frontendDirectory);
         boolean result = true;
         File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
@@ -1282,11 +1284,36 @@ public class FrontendUtils {
                         e);
             }
         }
+        if (result) {
+            // If we are enabling react we should for spring projects check the
+            // application.properties file flag also.
+            File resource = new File(buildDirectory,
+                    "classes/application.properties");
+            if (resource.exists()) {
+                try (InputStream resourceStream = resource.toURL()
+                        .openStream()) {
+                    Properties prop = new Properties();
+                    prop.load(resourceStream);
+                    if (prop.containsKey("vaadin.react.enable")) {
+                        result = Boolean.getBoolean(
+                                prop.get("vaadin.react.enable").toString());
+                    }
+                } catch (IOException e) {
+                    getLogger().error(
+                            "Couldn't read application.properties for react flag, react-router will be used",
+                            e);
+                }
+            }
+        }
         if (getLogger().isDebugEnabled()) {
             getLogger().debug("Auto-detected client-side router to use: {}",
                     result ? "react-router" : "vaadin-router");
         }
         return result;
+    }
+
+    protected static ClassLoader getClassLoader() {
+        return FrontendUtils.class.getClassLoader();
     }
 
     /**

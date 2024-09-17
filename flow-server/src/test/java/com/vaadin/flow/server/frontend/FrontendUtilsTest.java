@@ -33,6 +33,7 @@ import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -505,7 +506,7 @@ public class FrontendUtilsTest {
                             router.setRoutes(routes);
                         """);
         Assert.assertFalse("vaadin-router expected when it imported",
-                FrontendUtils.isReactRouterRequired(frontend));
+                FrontendUtils.isReactRouterRequired(frontend, frontend));
     }
 
     @Test
@@ -521,14 +522,52 @@ public class FrontendUtilsTest {
                         """);
         Assert.assertTrue(
                 "react-router expected when no vaadin-router imported",
-                FrontendUtils.isReactRouterRequired(frontend));
+                FrontendUtils.isReactRouterRequired(frontend, frontend));
     }
 
     @Test
     public void isReactRouterRequired_noIndexTsFile_true() throws IOException {
         File frontend = tmpDir.newFolder(FrontendUtils.DEFAULT_FRONTEND_DIR);
         Assert.assertTrue("react-router expected when index.ts isn't there",
-                FrontendUtils.isReactRouterRequired(frontend));
+                FrontendUtils.isReactRouterRequired(frontend, frontend));
+    }
+
+    @Test
+    public void isReactRouterRequired_applicationPropertiesHasFalse_false()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.INDEX_TS,
+                """
+                            import { createElement } from "react";
+                            import { createRoot } from "react-dom/client";
+                            import App from "./App.js";
+
+                            createRoot(document.getElementById("outlet")!).render(createElement(App));
+                        """);
+        File applicationProperties = new File(frontend,
+                "classes/application.properties");
+        FileUtils.write(applicationProperties, "vaadin.react.enable=false");
+        Assert.assertFalse(
+                "react-router expected when no vaadin-router imported",
+                FrontendUtils.isReactRouterRequired(frontend, frontend));
+    }
+
+    @Test
+    public void isReactRouterRequired_applicationPropertiesTrueDoesNotOverride_false()
+            throws IOException {
+        File frontend = prepareFrontendForRoutesFile(FrontendUtils.INDEX_TS,
+                """
+                            import { Router } from '@vaadin/router';
+                            import { routes } from './routes';
+
+                            export const router = new Router(document.querySelector('#outlet'));
+                            router.setRoutes(routes);
+                        """);
+        File applicationProperties = new File(frontend,
+                "classes/application.properties");
+        FileUtils.write(applicationProperties, "vaadin.react.enable=true");
+        Assert.assertFalse(
+                "react-router expected when no vaadin-router imported",
+                FrontendUtils.isReactRouterRequired(frontend, frontend));
     }
 
     @Test

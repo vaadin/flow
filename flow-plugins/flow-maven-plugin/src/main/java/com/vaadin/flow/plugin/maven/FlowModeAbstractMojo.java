@@ -529,7 +529,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             return reactEnable;
         }
         File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
-        return FrontendUtils.isReactRouterRequired(frontendDirectory);
+        return FrontendUtils.isReactRouterRequired(frontendDirectory,
+                new File(projectBaseDirectory().toFile(), buildFolder()));
     }
 
     @Override

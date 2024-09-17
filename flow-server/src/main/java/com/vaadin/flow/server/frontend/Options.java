@@ -930,8 +930,9 @@ public class Options implements Serializable {
 
     public Options withReact(boolean reactEnable) {
         this.reactEnable = reactEnable;
-        if (reactEnable && !FrontendUtils
-                .isReactRouterRequired(getFrontendDirectory())) {
+        if (reactEnable
+                && !FrontendUtils.isReactRouterRequired(getFrontendDirectory(),
+                        getBuildDirectory())) {
             LoggerFactory.getLogger(Options.class).debug(
                     "Setting reactEnable to false as Vaadin Router is used!");
             this.reactEnable = false;
