@@ -342,6 +342,30 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
+     * Forward the navigation to show the given component instead of the
+     * component that is currently about to be displayed.
+     * <p>
+     * This function changes the browser URL as opposed to
+     * <code>rerouteTo()</code>.
+     * <p>
+     * Note that query parameters of the event are preserved in the forwarded
+     * URL.
+     *
+     * @param forwardTargetComponent
+     *            the component type to display, not {@code null}
+     * @param useForwardCallback
+     *            {@literal true} to request navigation callback from client
+     */
+    public void forwardTo(Class<? extends Component> forwardTargetComponent,
+            boolean useForwardCallback) {
+        Objects.requireNonNull(forwardTargetComponent,
+                "forwardTargetComponent cannot be null");
+        this.useForwardCallback = useForwardCallback;
+        forwardTo(getNavigationState(forwardTargetComponent,
+                RouteParameters.empty(), null));
+    }
+
+    /**
      * Forward the navigation to show the given component with given route
      * parameter instead of the component that is currently about to be
      * displayed.
@@ -1141,6 +1165,17 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
+     * Determines is client side callback should be requested when executing
+     * pending forward operation.
+     *
+     * @return {@literal true} if callback should be used,
+     *         {@literal false otherwise}
+     */
+    public boolean isUseForwardCallback() {
+        return useForwardCallback;
+    }
+
+    /**
      * Gets the UI this navigation takes place inside.
      *
      * @return the related UI instance
@@ -1149,35 +1184,4 @@ public abstract class BeforeEvent extends EventObject {
         return ui;
     }
 
-    /**
-     * Forward the navigation to show the given component instead of the
-     * component that is currently about to be displayed.
-     * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
-     * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
-     *
-     * @param forwardTargetComponent
-     *            the component type to display, not {@code null}
-     * @param useForwardCallback
-     *            {@literal true} to request navigation callback from client
-     */
-    public void forwardTo(Class<? extends Component> forwardTargetComponent,
-            boolean useForwardCallback) {
-        Objects.requireNonNull(forwardTargetComponent,
-                "forwardTargetComponent cannot be null");
-        this.useForwardCallback = useForwardCallback;
-        forwardTo(getNavigationState(forwardTargetComponent,
-                RouteParameters.empty(), null));
-    }
-
-    public boolean isUseForwardCallback() {
-        return useForwardCallback;
-    }
-
-    public void setUseForwardCallback(boolean useForwardCallback) {
-        this.useForwardCallback = useForwardCallback;
-    }
 }
