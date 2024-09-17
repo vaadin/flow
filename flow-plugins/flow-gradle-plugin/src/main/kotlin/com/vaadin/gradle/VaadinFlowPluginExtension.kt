@@ -426,7 +426,7 @@ public class PluginEffectiveConfiguration(
         .convention(false)
 
     public val reactEnable: Provider<Boolean> = extension.reactEnable
-        .convention(FrontendUtils.isReactRouterRequired(BuildFrontendUtil.getFrontendDirectory(GradlePluginAdapter(project, this, true))))
+        .convention(FrontendUtils.isReactRouterRequired(BuildFrontendUtil.getFrontendDirectory(GradlePluginAdapter(project, this, true)), File(projectBuildDir.get())))
         .overrideWithSystemPropertyFlag(InitParameters.REACT_ENABLE)
 
     public val cleanFrontendFiles: Property<Boolean> = extension.cleanFrontendFiles
