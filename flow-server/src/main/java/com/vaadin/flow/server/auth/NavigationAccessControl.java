@@ -246,7 +246,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
             if (context.getPrincipal() == null) {
                 storeRedirectURL(event, request);
                 if (loginView != null) {
-                    event.forwardTo(loginView);
+                    event.forwardTo(loginView, true);
                 } else {
                     if (loginUrl != null) {
                         event.forwardToUrl(loginUrl);
