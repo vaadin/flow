@@ -46,6 +46,8 @@ import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionDestroyListener;
 import com.vaadin.flow.server.SessionInitEvent;
 import com.vaadin.flow.server.SessionInitListener;
+import com.vaadin.flow.server.UIInitEvent;
+import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -83,7 +85,7 @@ import com.vaadin.flow.server.VaadinSession;
  * @since 24.5
  */
 public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
-        SessionDestroyListener {
+        SessionDestroyListener, UIInitListener {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Hotswapper.class);
     private final Set<VaadinSession> sessions = ConcurrentHashMap.newKeySet();
@@ -413,6 +415,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         sessions.clear();
     }
 
+    @Override
+    public void uiInit(UIInitEvent event) {
+        sessions.add(event.getUI().getSession());
+    }
+
     /**
      * Register the hotwsapper entry point for the given {@link VaadinService}.
      * <p>
@@ -428,6 +435,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     public static Optional<Hotswapper> register(VaadinService vaadinService) {
         if (!vaadinService.getDeploymentConfiguration().isProductionMode()) {
             Hotswapper hotswapper = new Hotswapper(vaadinService);
+            vaadinService.addUIInitListener(hotswapper);
             vaadinService.addSessionInitListener(hotswapper);
             vaadinService.addSessionDestroyListener(hotswapper);
             vaadinService.addServiceDestroyListener(hotswapper);
