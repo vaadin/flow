@@ -100,9 +100,9 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
         }
 
-        Route routeAnnotation = route.getAnnotation(Route.class);
         RouteAlias[] aliases = route.getAnnotationsByType(RouteAlias.class);
-        if (routeAnnotation != null && aliases.length > 0) {
+        if (aliases.length > 0) {
+            Route routeAnnotation = route.getAnnotation(Route.class);
             Map<String, Long> stats = Arrays.stream(aliases)
                     .map(RouteAlias::value).collect(Collectors.groupingBy(
                             Function.identity(), Collectors.counting()));
