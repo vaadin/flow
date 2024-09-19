@@ -239,6 +239,8 @@ function Flow() {
         // in order to get a server round-trip even when navigating to the same URL again
         fromAnchor.current = true;
         navigate(path);
+        // Dispatch close event for overlay drawer on click navigation.
+        window.dispatchEvent(new CustomEvent('close-overlay-drawer'));
     }, [navigate]);
 
     const vaadinRouterGoEventHandler = useCallback((event: CustomEvent<URL>) => {
