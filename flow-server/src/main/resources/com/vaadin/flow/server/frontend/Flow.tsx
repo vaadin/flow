@@ -257,6 +257,7 @@ function Flow() {
     const vaadinNavigateEventHandler = useCallback((event: CustomEvent<{state: unknown, url: string, replace?: boolean, callback: boolean}>) => {
         const path = '/' + event.detail.url;
         navigated.current = !event.detail.callback;
+        fromAnchor.current = false;
         navigate(path, { state: event.detail.state, replace: event.detail.replace});
     }, [navigate]);
 
