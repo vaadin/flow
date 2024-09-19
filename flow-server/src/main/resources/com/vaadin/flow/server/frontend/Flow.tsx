@@ -20,13 +20,15 @@ import React, {
     useEffect,
     useReducer,
     useRef,
+    useState,
     type ReactNode
 } from "react";
 import {
     matchRoutes,
     useBlocker,
     useLocation,
-    useNavigate
+    useNavigate,
+    type NavigateOptions,
 } from "react-router-dom";
 import type { AgnosticRouteObject } from '@remix-run/router';
 import { createPortal } from "react-dom";
@@ -197,6 +199,54 @@ function portalsReducer(portals: readonly PortalEntry[], action: PortalAction) {
     }
 }
 
+type NavigateFn = (to: string, opts?: NavigateOptions) => void;
+type NavigateArgs = Parameters<NavigateFn>
+
+/**
+ * A hook providing the `navigate(path: string, opts?: NavigateOptions)` function
+ * with React Router API that has more consistent history updates. Uses internal
+ * queue for processing navigate calls.
+ */
+function useQueuedNavigate(): NavigateFn {
+    const navigate = useNavigate();
+    const navigateQueue = useRef<NavigateArgs[]>([]).current;
+    const [navigateQueueLength, setNavigateQueueLength] = useState(0);
+
+    const dequeueNavigation = useCallback(() => {
+        const navigateArgs = navigateQueue.shift();
+        if (navigateArgs === undefined) {
+            // Empty queue, do nothing.
+            return;
+        }
+
+        navigate(...navigateArgs);
+        setNavigateQueueLength(navigateQueue.length);
+    }, [navigate, setNavigateQueueLength]);
+
+    const dequeueNavigationAfterCurrentTask = useCallback(() => {
+        queueMicrotask(dequeueNavigation);
+    }, [dequeueNavigation]);
+
+    const enqueueNavigation = useCallback((...navigateArgs: NavigateArgs) => {
+        navigateQueue.push(navigateArgs);
+        setNavigateQueueLength(navigateQueue.length);
+        if (navigateQueue.length === 1) {
+            // The first navigation can be started right after any pending sync
+            // jobs, which could add more navigations to the queue.
+            dequeueNavigationAfterCurrentTask();
+        }
+    }, [setNavigateQueueLength, dequeueNavigationAfterCurrentTask]);
+
+    useEffect(() => () => {
+        // The Flow component has rendered, but history might not be
+        // updated yet, as React Router does it asynchronously.
+        // Use microtask callback for history consistency.
+        dequeueNavigationAfterCurrentTask();
+    }, [navigateQueueLength, dequeueNavigationAfterCurrentTask]);
+
+    return enqueueNavigation;
+}
+
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const navigate = useNavigate();
@@ -208,6 +258,7 @@ function Flow() {
     const navigated = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
+    const queuedNavigate = useQueuedNavigate();
 
     // portalsReducer function is used as state outside the Flow component.
     const [portals, dispatchPortalAction] = useReducer(portalsReducer, []);
@@ -255,7 +306,7 @@ function Flow() {
     const vaadinNavigateEventHandler = useCallback((event: CustomEvent<{state: unknown, url: string, replace?: boolean, callback: boolean}>) => {
         const path = '/' + event.detail.url;
         navigated.current = !event.detail.callback;
-        navigate(path, { state: event.detail.state, replace: event.detail.replace});
+        queuedNavigate(path, { state: event.detail.state, replace: event.detail.replace});
     }, [navigate]);
 
     const redirect = useCallback((path: string) => {
