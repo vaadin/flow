@@ -206,7 +206,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
                 }
             }
             if (loginView != null) {
-                beforeEnterEvent.forwardTo(loginView);
+                beforeEnterEvent.forwardTo(loginView, true);
             } else {
                 if (loginUrl != null) {
                     beforeEnterEvent.forwardToUrl(loginUrl);
