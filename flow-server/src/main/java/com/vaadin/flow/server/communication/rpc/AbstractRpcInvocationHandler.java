@@ -75,11 +75,11 @@ public abstract class AbstractRpcInvocationHandler
     }
 
     private void logHandlingIgnoredMessage(StateNode node, String reason) {
+        StringBuilder targetInfo = new StringBuilder();
         if (node != null && node.hasFeature(ElementData.class)) {
             Element element = Element.get(node);
             Optional<Component> component = element.getComponent();
-            StringBuilder targetInfo = new StringBuilder();
-            targetInfo.append("element with tag").append("'")
+            targetInfo.append(" element with tag").append("'")
                     .append(element.getTag()).append("'");
             if (component.isPresent()) {
                 targetInfo.append(" Component: ").append("'")
@@ -94,16 +94,11 @@ public abstract class AbstractRpcInvocationHandler
                             .append("'");
                 }
             }
-            getLogger().info(
-                    "Ignored RPC for invocation handler '{}' from "
-                            + "the client side for an {} node id='{}' {}",
-                    getClass().getName(), reason, node.getId(), targetInfo);
-        } else {
-            getLogger().info(
-                    "Ignored RPC for invocation handler '{}' from "
-                            + "the client side for an {} node id='{}'",
-                    getClass().getName(), reason, node.getId());
         }
+        getLogger().info(
+                "Ignored RPC for invocation handler '{}' from "
+                        + "the client side for an {} node id='{}'{}",
+                getClass().getName(), reason, node.getId(), targetInfo);
     }
 
     /**

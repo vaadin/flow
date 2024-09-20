@@ -724,6 +724,14 @@ public class ComponentUtil {
         return router;
     }
 
+    /**
+     * Walk up from given component until a Component with a Route annotation is
+     * found or empty if no Route is present in parents.
+     *
+     * @param component
+     *            Component to find current route component for
+     * @return Optional containing Route component if found
+     */
     public static Optional<Component> getRouteComponent(Component component) {
         if (component.getClass().isAnnotationPresent(Route.class)) {
             return Optional.of(component);
