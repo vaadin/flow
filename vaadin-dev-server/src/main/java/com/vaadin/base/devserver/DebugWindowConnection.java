@@ -252,8 +252,9 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     /**
      * Broadcasts the given message to all connected clients.
-     * 
-     * @param msg the message to broadcast
+     *
+     * @param msg
+     *            the message to broadcast
      */
     public void broadcast(JsonObject msg) {
         resources.keySet().forEach(resourceRef -> {
