@@ -250,7 +250,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
         return getRef(resource) != null;
     }
 
-    private void send(JsonObject msg) {
+    /**
+     * Broadcasts the given message to all connected clients.
+     * 
+     * @param msg the message to broadcast
+     */
+    public void broadcast(JsonObject msg) {
         resources.keySet().forEach(resourceRef -> {
             AtmosphereResource resource = resourceRef.get();
             if (resource != null) {
@@ -264,7 +269,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     public void reload() {
         JsonObject msg = Json.createObject();
         msg.put("command", "reload");
-        send(msg);
+        broadcast(msg);
     }
 
     @Override
@@ -272,7 +277,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         JsonObject msg = Json.createObject();
         msg.put("command", "reload");
         msg.put("strategy", refreshLayouts ? "full-refresh" : "refresh");
-        send(msg);
+        broadcast(msg);
     }
 
     @Override
@@ -281,7 +286,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         msg.put("command", "update");
         msg.put("path", path);
         msg.put("content", content);
-        send(msg);
+        broadcast(msg);
     }
 
     @SuppressWarnings("FutureReturnValueIgnored")
