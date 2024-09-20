@@ -22,9 +22,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementData;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
 import elemental.json.JsonObject;
 
@@ -59,18 +64,45 @@ public abstract class AbstractRpcInvocationHandler
         // ignore RPC requests from the client side for the nodes that are
         // invisible, disabled or inert
         if (node.isInactive()) {
-            getLogger().info("Ignored RPC for invocation handler '{}' from "
-                    + "the client side for an inactive (disabled or invisible) node id='{}'",
-                    getClass().getName(), node.getId());
+            logHandlingIgnoredMessage(node, "inactive (disabled or invisible)");
             return Optional.empty();
         } else if (!allowInert(ui, invocationJson) && node.isInert()) {
-            getLogger().info(
-                    "Ignored RPC for invocation handler '{}' from "
-                            + "the client side for an inert node id='{}'",
-                    getClass().getName(), node.getId());
+            logHandlingIgnoredMessage(node, "inert");
             return Optional.empty();
         } else {
             return handleNode(node, invocationJson);
+        }
+    }
+
+    private void logHandlingIgnoredMessage(StateNode node, String reason) {
+        if (node != null && node.hasFeature(ElementData.class)) {
+            Element element = Element.get(node);
+            Optional<Component> component = element.getComponent();
+            StringBuilder targetInfo = new StringBuilder();
+            targetInfo.append("element with tag").append("'")
+                    .append(element.getTag()).append("'");
+            if (component.isPresent()) {
+                targetInfo.append(" Component: ").append("'")
+                        .append(component.get().getClass().getName())
+                        .append("'");
+                Optional<Component> routeComponent = ComponentUtil
+                        .getRouteComponent(component.get());
+                if (routeComponent.isPresent()) {
+                    targetInfo.append(" Route: ").append("'")
+                            .append(routeComponent.get().getClass()
+                                    .getAnnotation(Route.class).value())
+                            .append("'");
+                }
+            }
+            getLogger().info(
+                    "Ignored RPC for invocation handler '{}' from "
+                            + "the client side for an {} node id='{}' {}",
+                    getClass().getName(), reason, node.getId(), targetInfo);
+        } else {
+            getLogger().info(
+                    "Ignored RPC for invocation handler '{}' from "
+                            + "the client side for an {} node id='{}'",
+                    getClass().getName(), reason, node.getId());
         }
     }
 

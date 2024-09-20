@@ -45,6 +45,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
@@ -721,6 +722,16 @@ public class ComponentUtil {
                     "Implicit router instance is not available.");
         }
         return router;
+    }
+
+    public static Optional<Component> getRouteComponent(Component component) {
+        if (component.getClass().isAnnotationPresent(Route.class)) {
+            return Optional.of(component);
+        }
+        if (component.getParent().isPresent()) {
+            return getRouteComponent(component.getParent().get());
+        }
+        return Optional.empty();
     }
 
 }
