@@ -211,7 +211,6 @@ function useQueuedNavigate(waitReference: React.MutableRefObject<Promise<void> |
     const navigate = useNavigate();
     const navigateQueue = useRef<NavigateArgs[]>([]).current;
     const [navigateQueueLength, setNavigateQueueLength] = useState(0);
-    const wait = waitReference;
 
     const dequeueNavigation = useCallback(() => {
         const navigateArgs = navigateQueue.shift();
@@ -221,8 +220,8 @@ function useQueuedNavigate(waitReference: React.MutableRefObject<Promise<void> |
         }
 
         const blockingNavigate = async () => {
-            if (wait.current) {
-                await wait.current;
+            if (waitReference.current) {
+                await waitReference.current;
             }
             navigate(...navigateArgs);
             setNavigateQueueLength(navigateQueue.length);
