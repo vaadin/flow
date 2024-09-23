@@ -423,6 +423,14 @@ public class BuildFrontendUtilTest {
 
         addPremiumFeatureAndDAUFlagTrue(tokenFile);
 
+        ClassLoader classLoader = new URLClassLoader(
+                new URL[] { new File(baseDir, "target/test-classes/").toURI()
+                        .toURL() },
+                BuildFrontendUtilTest.class.getClassLoader());
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                classLoader);
+        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
+
         withMockedLicenseChecker(true, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true);
             Assert.assertTrue("Token file should still exist",
@@ -520,7 +528,8 @@ public class BuildFrontendUtilTest {
         File generatedFeatureFlagsFile = new File(adapter.generatedTsFolder(),
                 FEATURE_FLAGS_FILE_NAME);
         String featureFlagsJs = Files
-                .readString(generatedFeatureFlagsFile.toPath());
+                .readString(generatedFeatureFlagsFile.toPath())
+                .replace("\r\n", "\n");
 
         Assert.assertTrue("Example feature flag is not set",
                 featureFlagsJs.contains(
