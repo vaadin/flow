@@ -251,7 +251,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.13.0.beta2</version>
+                <version>1.13.0.beta3</version>
             </dependency>
 
             <!-- Test dependencies -->
