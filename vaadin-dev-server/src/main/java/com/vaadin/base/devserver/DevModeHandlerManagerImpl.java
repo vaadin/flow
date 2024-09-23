@@ -68,6 +68,9 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     private BrowserLauncher browserLauncher;
     final private Set<Closeable> watchers = new HashSet<>();
 
+    private String applicationUrl;
+    private boolean fullyStarted = false;
+
     @Override
     public Class<?>[] getHandlesTypes() {
         return DevModeStartupListener.class.getAnnotation(HandlesTypes.class)
@@ -107,6 +110,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
             startWatchingThemeFolder(context, config);
             watchExternalDependencies(context, config);
+            setFullyStarted(true);
         });
         setDevModeStarted(context);
         this.browserLauncher = new BrowserLauncher(context);
@@ -168,6 +172,23 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     @Override
     public void launchBrowserInDevelopmentMode(String url) {
         browserLauncher.launchBrowserInDevelopmentMode(url);
+        setApplicationUrl(url);
+    }
+
+    private void setApplicationUrl(String applicationUrl) {
+        this.applicationUrl = applicationUrl;
+        reportApplicationUrl();
+    }
+
+    private void setFullyStarted(boolean fullyStarted) {
+        this.fullyStarted = fullyStarted;
+        reportApplicationUrl();
+    }
+
+    private void reportApplicationUrl() {
+        if (fullyStarted && applicationUrl != null) {
+            getLogger().info("Application running at {}", applicationUrl);
+        }
     }
 
     private void setDevModeStarted(VaadinContext context) {
