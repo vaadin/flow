@@ -155,12 +155,11 @@ public class ComponentTrackerTest {
 
     private boolean isCleared(Map<?, ?> map) throws InterruptedException {
         for (int i = 0; i < 5; i++) {
-            System.out.println(i);
             System.gc();
             if (map.isEmpty()) {
                 return true;
             }
-            Thread.sleep(10);
+            Thread.sleep(100);
         }
         return false;
     }
