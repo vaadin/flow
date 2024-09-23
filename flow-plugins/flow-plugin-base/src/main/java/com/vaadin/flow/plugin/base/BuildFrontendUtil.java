@@ -766,17 +766,32 @@ public class BuildFrontendUtil {
                     adapter.logInfo("Daily Active User tracking enabled");
                     buildInfo.put(Constants.DAU_TOKEN, true);
                 }
-                if (LicenseChecker.isValidLicense("vaadin-commercial-cc-client",
-                        null, BuildType.PRODUCTION)) {
-                    adapter.logInfo("Premium Features are enabled");
-                    buildInfo.put(Constants.PREMIUM_FEATURES, true);
-                }
+            }
+            if (isControlCenterAvailable(adapter.getClassFinder())
+                    && LicenseChecker.isValidLicense(
+                            "vaadin-commercial-cc-client", null,
+                            BuildType.PRODUCTION)) {
+                adapter.logInfo("Premium Features are enabled");
+                buildInfo.put(Constants.PREMIUM_FEATURES, true);
             }
 
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             adapter.logWarn("Unable to read token file", e);
+        }
+    }
+
+    private static boolean isControlCenterAvailable(ClassFinder classFinder) {
+        if (classFinder == null) {
+            return false;
+        }
+        try {
+            classFinder.loadClass(
+                    "com.vaadin.controlcenter.starter.actuate.endpoint.VaadinActuatorEndpoint");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
         }
     }
 
