@@ -783,7 +783,7 @@ public class BuildFrontendUtil {
     }
 
     private static boolean isControlCenterAvailable(ClassFinder classFinder) {
-        if(classFinder == null) {
+        if (classFinder == null) {
             return false;
         }
         try {
