@@ -207,10 +207,11 @@ type NavigateArgs = Parameters<NavigateFn>
  * with React Router API that has more consistent history updates. Uses internal
  * queue for processing navigate calls.
  */
-function useQueuedNavigate(): NavigateFn {
+function useQueuedNavigate(waitReference: React.MutableRefObject<Promise<void> | undefined>): NavigateFn {
     const navigate = useNavigate();
     const navigateQueue = useRef<NavigateArgs[]>([]).current;
     const [navigateQueueLength, setNavigateQueueLength] = useState(0);
+    const wait = waitReference;
 
     const dequeueNavigation = useCallback(() => {
         const navigateArgs = navigateQueue.shift();
@@ -219,8 +220,14 @@ function useQueuedNavigate(): NavigateFn {
             return;
         }
 
-        navigate(...navigateArgs);
-        setNavigateQueueLength(navigateQueue.length);
+        const blockingNavigate = async () => {
+            if (wait.current) {
+                await wait.current;
+            }
+            navigate(...navigateArgs);
+            setNavigateQueueLength(navigateQueue.length);
+        }
+        blockingNavigate();
     }, [navigate, setNavigateQueueLength]);
 
     const dequeueNavigationAfterCurrentTask = useCallback(() => {
@@ -258,7 +265,8 @@ function Flow() {
     const navigated = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
-    const queuedNavigate = useQueuedNavigate();
+    const roundTrip = useRef<Promise<void> | undefined>(undefined);
+    const queuedNavigate = useQueuedNavigate(roundTrip);
 
     // portalsReducer function is used as state outside the Flow component.
     const [portals, dispatchPortalAction] = useReducer(portalsReducer, []);
@@ -339,9 +347,13 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            let blockingPromise: any;
+            roundTrip.current = new Promise<void>((resolve,reject) => blockingPromise = {resolve:resolve,reject:reject});
+
             // Do not skip server round-trip if navigation originates from a click on a link
             if (navigated.current && !fromAnchor.current) {
                 blocker.proceed();
+                blockingPromise.resolve();
                 return;
             }
             fromAnchor.current = false;
@@ -353,14 +365,16 @@ function Flow() {
             // @ts-ignore
             if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length != 0) {
                 containerRef.current?.onBeforeEnter?.call(containerRef?.current,
-                    {pathname,search}, {
+                    {pathname, search}, {
                         prevent() {
                             blocker.reset();
+                            blockingPromise.resolve();
                             navigated.current = false;
                         },
                         redirect,
                         continue() {
                             blocker.proceed();
+                            blockingPromise.resolve();
                         }
                     }, router);
                 navigated.current = true;
@@ -376,13 +390,16 @@ function Flow() {
                             containerRef.current.serverConnected = (cancel) => {
                                 if (cancel) {
                                     blocker.reset();
+                                    blockingPromise.resolve();
                                 } else {
                                     blocker.proceed();
+                                    blockingPromise.resolve();
                                 }
                             }
                         } else {
                             // permitted navigation: proceed with the blocker
                             blocker.proceed();
+                            blockingPromise.resolve();
                         }
                     });
             }
