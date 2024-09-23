@@ -50,9 +50,8 @@ public class DevModeBrowserLauncher
             VaadinConfigurationProperties properties = context
                     .getBean(VaadinConfigurationProperties.class);
 
-            if (properties.isLaunchBrowser()) {
-                launchBrowserInDevelopmentMode(context);
-            }
+            maybeLaunchBrowserInDevelopmentMode(context,
+                    properties.isLaunchBrowser());
         } catch (Exception e) {
             getLogger().debug("Failed to launch browser", e);
         }
@@ -66,8 +65,11 @@ public class DevModeBrowserLauncher
      *
      * @param appContext
      *            the application context
+     * @param launch
+     *            true to launch the browser, false to only report the url
      */
-    private void launchBrowserInDevelopmentMode(ApplicationContext appContext) {
+    private void maybeLaunchBrowserInDevelopmentMode(
+            ApplicationContext appContext, boolean launch) {
         if (!(appContext instanceof GenericWebApplicationContext)) {
             getLogger().warn(
                     "Unable to determine production mode for an Spring Boot application context of type "
@@ -82,8 +84,9 @@ public class DevModeBrowserLauncher
         DevModeHandlerManager devModeHandlerManager = lookup
                 .lookup(DevModeHandlerManager.class);
         if (devModeHandlerManager != null) {
-            devModeHandlerManager
-                    .launchBrowserInDevelopmentMode(getUrl(webAppContext));
+            String url = getUrl(webAppContext);
+            devModeHandlerManager.setApplicationUrl(url);
+            devModeHandlerManager.launchBrowserInDevelopmentMode(url);
         }
     }
 

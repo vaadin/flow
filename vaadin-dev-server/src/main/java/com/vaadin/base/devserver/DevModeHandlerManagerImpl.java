@@ -172,10 +172,10 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     @Override
     public void launchBrowserInDevelopmentMode(String url) {
         browserLauncher.launchBrowserInDevelopmentMode(url);
-        setApplicationUrl(url);
     }
 
-    private void setApplicationUrl(String applicationUrl) {
+    @Override
+    public void setApplicationUrl(String applicationUrl) {
         this.applicationUrl = applicationUrl;
         reportApplicationUrl();
     }
