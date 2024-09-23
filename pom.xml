@@ -6,7 +6,7 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>24.5-SNAPSHOT</version>
+    <version>24.6-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
@@ -85,7 +85,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>3.3.3</spring.boot.version>
+        <spring.boot.version>3.3.4</spring.boot.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.16</slf4j.version>
@@ -251,7 +251,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.13.0.beta1</version>
+                <version>1.13.0.beta2</version>
             </dependency>
 
             <!-- Test dependencies -->

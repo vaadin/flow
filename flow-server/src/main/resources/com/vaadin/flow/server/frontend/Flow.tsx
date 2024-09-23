@@ -298,6 +298,8 @@ function Flow() {
         // in order to get a server round-trip even when navigating to the same URL again
         fromAnchor.current = true;
         navigate(path);
+        // Dispatch close event for overlay drawer on click navigation.
+        window.dispatchEvent(new CustomEvent('close-overlay-drawer'));
     }, [navigate]);
 
     const vaadinRouterGoEventHandler = useCallback((event: CustomEvent<URL>) => {
@@ -314,6 +316,7 @@ function Flow() {
     const vaadinNavigateEventHandler = useCallback((event: CustomEvent<{state: unknown, url: string, replace?: boolean, callback: boolean}>) => {
         const path = '/' + event.detail.url;
         navigated.current = !event.detail.callback;
+        fromAnchor.current = false;
         queuedNavigate(path, { state: event.detail.state, replace: event.detail.replace});
     }, [navigate]);
 
