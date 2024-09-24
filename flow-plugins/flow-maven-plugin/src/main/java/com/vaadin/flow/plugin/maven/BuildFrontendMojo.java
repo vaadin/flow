@@ -254,7 +254,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         if (deps.isEmpty()) {
             missingDependencyMessage.accept(String.format(
                     """
-                            The dependency %1$s:%2$s has been not been found in the project configuration.
+                            The dependency %1$s:%2$s has not been found in the project configuration.
                             Please add the following dependency to your POM file:
 
                             <dependency>

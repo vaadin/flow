@@ -229,7 +229,7 @@ internal class GradlePluginAdapter(
             }?.isEmpty() ?: true
         if (dependencyAbsent && missingDependencyMessageConsumer != null) {
             missingDependencyMessageConsumer.accept("""
-                The dependency ${groupId}:${artifactId} has been not been found in the project configuration.
+                The dependency ${groupId}:${artifactId} has not been found in the project configuration.
                 Please add the following dependency to your project configuration:
                 
                 dependencies {
