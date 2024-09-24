@@ -88,6 +88,16 @@ public interface DevModeHandlerManager {
     void launchBrowserInDevelopmentMode(String url);
 
     /**
+     * Sets the application URL for the given application.
+     * <p>
+     * This is only called if the URL is known.
+     *
+     * @param applicationUrl
+     *            the application url
+     */
+    void setApplicationUrl(String applicationUrl);
+
+    /**
      * Gets the {@link DevModeHandler}.
      *
      * @param service
