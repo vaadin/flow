@@ -765,6 +765,7 @@ public class BuildFrontendUtil {
                 if (LocalSubscriptionKey.get() != null) {
                     adapter.logInfo("Daily Active User tracking enabled");
                     buildInfo.put(Constants.DAU_TOKEN, true);
+                    checkLicenseCheckerAtRuntime(adapter);
                 }
             }
             if (isControlCenterAvailable(adapter.getClassFinder())
@@ -793,6 +794,18 @@ public class BuildFrontendUtil {
         } catch (ClassNotFoundException e) {
             return false;
         }
+    }
+
+    private static void checkLicenseCheckerAtRuntime(
+            PluginAdapterBuild adapter) {
+        adapter.checkRuntimeDependency("com.vaadin", "license-checker",
+                logMessage -> adapter.logWarn(
+                        """
+                                Vaadin Subscription used to build the application requires
+                                the artifact com.vaadin:license-checker to be present at runtime.
+
+                                """
+                                + logMessage));
     }
 
     /**
