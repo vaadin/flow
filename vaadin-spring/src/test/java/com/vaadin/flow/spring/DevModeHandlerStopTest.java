@@ -113,6 +113,10 @@ public class DevModeHandlerStopTest {
         public void launchBrowserInDevelopmentMode(String url) {
 
         }
+
+        @Override
+        public void setApplicationUrl(String applicationUrl) {
+        }
     }
 
     @TestConfiguration
