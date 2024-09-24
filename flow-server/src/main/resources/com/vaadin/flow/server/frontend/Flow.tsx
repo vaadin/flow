@@ -222,6 +222,7 @@ function useQueuedNavigate(waitReference: React.MutableRefObject<Promise<void> |
         const blockingNavigate = async () => {
             if (waitReference.current) {
                 await waitReference.current;
+                waitReference.current = undefined;
             }
             navigate(...navigateArgs);
             setNavigateQueueLength(navigateQueue.length);
