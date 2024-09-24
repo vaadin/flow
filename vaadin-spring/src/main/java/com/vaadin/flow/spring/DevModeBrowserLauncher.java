@@ -86,7 +86,9 @@ public class DevModeBrowserLauncher
         if (devModeHandlerManager != null) {
             String url = getUrl(webAppContext);
             devModeHandlerManager.setApplicationUrl(url);
-            devModeHandlerManager.launchBrowserInDevelopmentMode(url);
+            if (launch) {
+                devModeHandlerManager.launchBrowserInDevelopmentMode(url);
+            }
         }
     }
 
