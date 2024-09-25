@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Closeable;
 import java.util.Optional;
 import java.util.Set;
 
@@ -96,6 +97,23 @@ public interface DevModeHandlerManager {
      *            the application url
      */
     void setApplicationUrl(String applicationUrl);
+
+    /**
+     * Adds watcher to watcher list.
+     *
+     * @param watcher
+     *            Closable interface that will be closed on shut down
+     */
+    void addWatcher(Closeable watcher);
+
+    /**
+     * Removes watcher from the list.
+     *
+     * @param watcher
+     *            watcher
+     * @return true if removed, false otherwise.
+     */
+    boolean removeWatcher(Closeable watcher);
 
     /**
      * Gets the {@link DevModeHandler}.

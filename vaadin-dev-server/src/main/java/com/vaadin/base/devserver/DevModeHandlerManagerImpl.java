@@ -196,6 +196,16 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
                 new DevModeHandlerAlreadyStartedAttribute());
     }
 
+    @Override
+    public void addWatcher(Closeable closeable) {
+        this.watchers.add(closeable);
+    }
+
+    @Override
+    public boolean removeWatcher(Closeable closeable) {
+        return this.watchers.remove(closeable);
+    }
+
     /**
      * Shows whether {@link DevModeHandler} has been already started or not.
      *
