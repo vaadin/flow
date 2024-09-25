@@ -19,6 +19,9 @@ package com.vaadin.flow.spring;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -78,11 +81,45 @@ public class DevModeHandlerStopTest {
                 "Expecting DevModeHandler to be stopped by DevModeHandlerManager, but it was not");
     }
 
+    @Test
+    void watchersShouldBeClosedWhenSpringContextIsClosed() {
+        DevModeStartupListener startupListenerAsContainerInitializer = new DevModeStartupListener();
+        DevModeStartupListener startupListenerAsContextListener = new DevModeStartupListener();
+        AtomicReference<ServletContext> contextRef = new AtomicReference<>();
+        AtomicReference<MockDevModeHandlerManager> handlerManagerRef = new AtomicReference<>();
+        this.contextRunner.run((context) -> {
+            handlerManagerRef
+                    .set(context.getBean(MockDevModeHandlerManager.class));
+            ServletContext servletContext = context.getServletContext();
+            contextRef.set(servletContext);
+            new LookupServletContainerInitializer()
+                    .onStartup(
+                            Set.of(LookupInitializer.class,
+                                    SpringLookupInitializer.class),
+                            servletContext);
+            startupListenerAsContainerInitializer.onStartup(Set.of(),
+                    servletContext);
+            startupListenerAsContextListener.contextInitialized(
+                    new ServletContextEvent(servletContext));
+        });
+
+        AtomicReference<Boolean> watcherClosed = new AtomicReference<>(false);
+        Closeable mockWatcher = () -> watcherClosed.set(true);
+        MockDevModeHandlerManager mockDevModeHandlerManager = handlerManagerRef
+                .get();
+        mockDevModeHandlerManager.addWatcher(mockWatcher);
+        startupListenerAsContextListener
+                .contextDestroyed(new ServletContextEvent(contextRef.get()));
+        Assertions.assertTrue(handlerManagerRef.get().stopped);
+        Assertions.assertTrue(watcherClosed.get());
+    }
+
     private static class MockDevModeHandlerManager
             implements DevModeHandlerManager {
 
         private boolean initialized;
         private boolean stopped;
+        private final Set<Closeable> watchers = new HashSet<>();
 
         @Override
         public Class<?>[] getHandlesTypes() {
@@ -98,6 +135,14 @@ public class DevModeHandlerStopTest {
         @Override
         public void stopDevModeHandler() {
             stopped = true;
+            for (Closeable watcher : watchers) {
+                try {
+                    watcher.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            watchers.clear();
         }
 
         @Override
@@ -116,6 +161,16 @@ public class DevModeHandlerStopTest {
 
         @Override
         public void setApplicationUrl(String applicationUrl) {
+        }
+
+        @Override
+        public void addWatcher(Closeable watcher) {
+            watchers.add(watcher);
+        }
+
+        @Override
+        public boolean removeWatcher(Closeable watcher) {
+            return watchers.remove(watcher);
         }
     }
 
