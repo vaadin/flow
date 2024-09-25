@@ -414,7 +414,7 @@ function Flow() {
             });
     }, [location]);
 
-    return <output ref={ref} />;
+    return <output ref={ref} style={{display: "none"}}/>;
 }
 Flow.type = 'FlowContainer'; // This is for copilot to recognize this
 
