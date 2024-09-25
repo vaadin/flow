@@ -129,8 +129,10 @@ public class AuthenticationContext {
     public void logout() {
         HttpServletRequest request = VaadinServletRequest.getCurrent()
                 .getHttpServletRequest();
-        HttpServletResponse response = VaadinServletResponse.getCurrent()
-                .getHttpServletResponse();
+        HttpServletResponse response = Optional
+                .ofNullable(VaadinServletResponse.getCurrent())
+                .map(VaadinServletResponse::getHttpServletResponse)
+                .orElse(null);
         Authentication auth = SecurityContextHolder.getContext()
                 .getAuthentication();
 
