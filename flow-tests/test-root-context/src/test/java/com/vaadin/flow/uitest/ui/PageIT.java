@@ -56,7 +56,7 @@ public class PageIT extends ChromeBrowserTest {
         try {
             waitUntil(driver -> driver.getTitle().equals(title));
         } catch (TimeoutException te) {
-            Assert.fail("Page title does not match");
+            Assert.fail("Page title does not match. Expected: " + title + ", Actual: " + driver.getTitle());
         }
     }
 
