@@ -10,13 +10,18 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.dau.DAUCustomizer;
 import com.vaadin.flow.server.dau.DAUVaadinRequestInterceptor;
 import com.vaadin.flow.server.dau.UserIdentitySupplier;
 import com.vaadin.pro.licensechecker.LicenseException;
+import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static org.mockito.ArgumentMatchers.anyString;
 
 public class VaadinServiceDauTest {
 
@@ -25,11 +30,13 @@ public class VaadinServiceDauTest {
                     && wrapper.delegate instanceof DAUVaadinRequestInterceptor);
 
     private String subscriptionKey;
+    private MockedStatic<DauIntegration> dauIntegrationMock;
 
     @Before
     public void setUp() throws Exception {
         subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-1234");
+        dauIntegrationMock = Mockito.mockStatic(DauIntegration.class);
     }
 
     @After
@@ -39,6 +46,7 @@ public class VaadinServiceDauTest {
         } else {
             System.clearProperty("vaadin.subscriptionKey");
         }
+        dauIntegrationMock.close();
     }
 
     @Test
@@ -50,6 +58,7 @@ public class VaadinServiceDauTest {
         MockVaadinServletService service = new MockVaadinServletService(config);
         Assert.assertTrue("Expecting DAU interceptor not to be installed",
                 vaadinInterceptors(service).noneMatch(IS_DAU_INTERCEPTOR));
+        dauIntegrationMock.verifyNoInteractions();
     }
 
     @Test
@@ -61,6 +70,7 @@ public class VaadinServiceDauTest {
         MockVaadinServletService service = new MockVaadinServletService(config);
         Assert.assertTrue("Expecting DAU interceptor not to be installed",
                 vaadinInterceptors(service).noneMatch(IS_DAU_INTERCEPTOR));
+        dauIntegrationMock.verifyNoInteractions();
     }
 
     @Test
@@ -72,10 +82,15 @@ public class VaadinServiceDauTest {
         MockVaadinServletService service = new MockVaadinServletService(config);
         Assert.assertTrue("Expecting DAU interceptor to be installed",
                 vaadinInterceptors(service).anyMatch(IS_DAU_INTERCEPTOR));
+        dauIntegrationMock
+                .verify(() -> DauIntegration.startTracking(anyString()));
     }
 
     @Test
     public void init_productionMode_dauBuild_subscriptionKeyNotAvailable_throws() {
+        dauIntegrationMock.reset();
+        dauIntegrationMock.when(() -> DauIntegration.startTracking(anyString()))
+                .thenCallRealMethod();
         System.clearProperty("vaadin.subscriptionKey");
         MockDeploymentConfiguration config = new MockDeploymentConfiguration();
         config.setProductionMode(true);
