@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.spring;
 
+import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
+import com.vaadin.flow.server.Command;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 
@@ -82,35 +84,19 @@ public class DevModeHandlerStopTest {
     }
 
     @Test
-    void watchersShouldBeClosedWhenSpringContextIsClosed() {
-        DevModeStartupListener startupListenerAsContainerInitializer = new DevModeStartupListener();
-        DevModeStartupListener startupListenerAsContextListener = new DevModeStartupListener();
-        AtomicReference<ServletContext> contextRef = new AtomicReference<>();
-        AtomicReference<MockDevModeHandlerManager> handlerManagerRef = new AtomicReference<>();
-        this.contextRunner.run((context) -> {
-            handlerManagerRef
-                    .set(context.getBean(MockDevModeHandlerManager.class));
-            ServletContext servletContext = context.getServletContext();
-            contextRef.set(servletContext);
-            new LookupServletContainerInitializer()
-                    .onStartup(
-                            Set.of(LookupInitializer.class,
-                                    SpringLookupInitializer.class),
-                            servletContext);
-            startupListenerAsContainerInitializer.onStartup(Set.of(),
-                    servletContext);
-            startupListenerAsContextListener.contextInitialized(
-                    new ServletContextEvent(servletContext));
-        });
-
+    void shutdownCommandsShouldBeExecutedOnStoppingDevModeHandlerManager() {
         AtomicReference<Boolean> watcherClosed = new AtomicReference<>(false);
+        DevModeHandlerManager devModeHandlerManager = new DevModeHandlerManagerImpl();
+
         Closeable mockWatcher = () -> watcherClosed.set(true);
-        MockDevModeHandlerManager mockDevModeHandlerManager = handlerManagerRef
-                .get();
-        mockDevModeHandlerManager.addWatcher(mockWatcher);
-        startupListenerAsContextListener
-                .contextDestroyed(new ServletContextEvent(contextRef.get()));
-        Assertions.assertTrue(handlerManagerRef.get().stopped);
+        devModeHandlerManager.registerShutdownCommand(() -> {
+            try {
+                mockWatcher.close();
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        });
+        devModeHandlerManager.stopDevModeHandler();
         Assertions.assertTrue(watcherClosed.get());
     }
 
@@ -119,7 +105,6 @@ public class DevModeHandlerStopTest {
 
         private boolean initialized;
         private boolean stopped;
-        private final Set<Closeable> watchers = new HashSet<>();
 
         @Override
         public Class<?>[] getHandlesTypes() {
@@ -135,14 +120,6 @@ public class DevModeHandlerStopTest {
         @Override
         public void stopDevModeHandler() {
             stopped = true;
-            for (Closeable watcher : watchers) {
-                try {
-                    watcher.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            watchers.clear();
         }
 
         @Override
@@ -164,13 +141,8 @@ public class DevModeHandlerStopTest {
         }
 
         @Override
-        public void addWatcher(Closeable watcher) {
-            watchers.add(watcher);
-        }
+        public void registerShutdownCommand(Command command) {
 
-        @Override
-        public boolean removeWatcher(Closeable watcher) {
-            return watchers.remove(watcher);
         }
     }
 

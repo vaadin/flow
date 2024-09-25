@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
@@ -99,21 +100,13 @@ public interface DevModeHandlerManager {
     void setApplicationUrl(String applicationUrl);
 
     /**
-     * Adds watcher to watcher list.
+     * Registers a command that will be run then the servlet context is shut
+     * down.
      *
-     * @param watcher
-     *            Closable interface that will be closed on shut down
+     * @param command
+     *            the command to run
      */
-    void addWatcher(Closeable watcher);
-
-    /**
-     * Removes watcher from the list.
-     *
-     * @param watcher
-     *            watcher
-     * @return true if removed, false otherwise.
-     */
-    boolean removeWatcher(Closeable watcher);
+    void registerShutdownCommand(Command command);
 
     /**
      * Gets the {@link DevModeHandler}.
