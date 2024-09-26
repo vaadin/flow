@@ -21,5 +21,19 @@
     "vite-plugin-checker": "0.8.0",
     "workbox-build": "7.1.1",
     "transform-ast": "2.4.4"
+  },
+  "overrides": {
+    "workbox-build": {
+      "rollup": ">=3.29.5"
+    },
+    "@rollup/plugin-replace": {
+      "rollup": ">=3.29.5"
+    },
+    "@rollup/pluginutils": {
+      "rollup": ">=3.29.5"
+    },
+    "@rollup/plugin-babel": {
+      "rollup": ">=3.29.5"
+    }
   }
 }
