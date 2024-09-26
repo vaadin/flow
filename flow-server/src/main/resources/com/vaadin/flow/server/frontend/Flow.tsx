@@ -151,13 +151,16 @@ function extractPath(event: MouseEvent): void | string {
  * @param search search of navigation
  */
 function fireNavigated(pathname:string, search: string) {
-    setTimeout(() =>
-        window.dispatchEvent(new CustomEvent('vaadin-navigated', {
-            detail: {
-                pathname,
-                search
-            }
-        }))
+    setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('vaadin-navigated', {
+                detail: {
+                    pathname,
+                    search
+                }
+            }));
+            // @ts-ignore
+            delete window.Vaadin.Flow.navigation;
+        }
     )
 }
 
@@ -255,6 +258,8 @@ function Flow() {
     }, [navigate]);
 
     const vaadinNavigateEventHandler = useCallback((event: CustomEvent<{state: unknown, url: string, replace?: boolean, callback: boolean}>) => {
+        // @ts-ignore
+        window.Vaadin.Flow.navigation = true;
         const path = '/' + event.detail.url;
         navigated.current = !event.detail.callback;
         fromAnchor.current = false;
