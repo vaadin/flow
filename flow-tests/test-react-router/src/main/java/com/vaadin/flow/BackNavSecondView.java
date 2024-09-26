@@ -16,20 +16,22 @@
 
 package com.vaadin.flow;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
 
-@Route("com.vaadin.flow.ForwardTargetWithParametersView")
-public class ForwardTargetWithParametersView extends Div
-        implements HasUrlParameter<String> {
+@Route("com.vaadin.flow.BackNavSecondView")
+public class BackNavSecondView extends Div implements AfterNavigationObserver {
+
+    public BackNavSecondView() {
+        add("Second view");
+    }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
-        add(new Span("setParameter"));
+    public void afterNavigation(AfterNavigationEvent event) {
+        UI.getCurrent().getPage().getHistory().replaceState(null,
+                "com.vaadin.flow.BackNavSecondView?param");
     }
 }
