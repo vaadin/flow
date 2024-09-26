@@ -47,4 +47,30 @@ public class BackNavIT extends ChromeBrowserTest {
         }
     }
 
+    @Test
+    public void validateNoAfterNavigationForReplaceState() {
+        getDriver().get(getTestURL(getRootURL(), BACK_NAV_FIRST_VIEW, null));
+
+        try {
+            waitUntil(arg -> driver.getCurrentUrl()
+                    .endsWith(BACK_NAV_FIRST_VIEW));
+        } catch (TimeoutException e) {
+            Assert.fail("URL wasn't updated to expected one: "
+                    + BACK_NAV_FIRST_VIEW);
+        }
+
+        $(NativeButtonElement.class).first().click();
+
+        try {
+            waitUntil(arg -> driver.getCurrentUrl()
+                    .endsWith(BACK_NAV_SECOND_VIEW));
+        } catch (TimeoutException e) {
+            Assert.fail("URL wasn't updated to expected one: "
+                    + BACK_NAV_SECOND_VIEW);
+        }
+
+        Assert.assertEquals("Second view: 1",
+                $(SpanElement.class).id(BackNavSecondView.CALLS).getText());
+    }
+
 }
