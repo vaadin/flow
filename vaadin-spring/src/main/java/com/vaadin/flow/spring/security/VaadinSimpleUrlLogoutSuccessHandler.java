@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
@@ -30,8 +31,8 @@ import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuc
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-class VaadinSimpleUrlLogoutSuccessHandler
-        extends SimpleUrlLogoutSuccessHandler {
+class VaadinSimpleUrlLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler
+        implements Serializable {
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request,

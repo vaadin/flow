@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
@@ -439,7 +440,7 @@ public class AuthenticationContext {
     }
 
     // package protected for testing purposes
-    static class CompositeLogoutHandler implements LogoutHandler {
+    static class CompositeLogoutHandler implements LogoutHandler, Serializable {
 
         private final List<LogoutHandler> logoutHandlers;
 
