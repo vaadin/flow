@@ -31,7 +31,9 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
@@ -82,6 +84,27 @@ public class TaskGenerateReactFilesTest {
                         "routes.tsx").exists());
         Assert.assertFalse("Missing ./frontend/routes.tsx",
                 new File(frontend, "routes.tsx").exists());
+        Assert.assertTrue(
+                "Missing ./frontend/" + FrontendUtils.GENERATED
+                        + "layouts.json",
+                new File(new File(frontend, FrontendUtils.GENERATED),
+                        "layouts.json").exists());
+    }
+
+    @Test
+    public void layoutsJson_containsExpectedPaths()
+            throws ExecutionFailedException, IOException {
+        Mockito.when(options.getClassFinder().getAnnotatedClasses(Layout.class))
+                .thenReturn(Collections.singleton(TestLayout.class));
+
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+        task.execute();
+
+        String layoutsContent = FileUtils.readFileToString(
+                new File(options.getFrontendGeneratedFolder(), "layouts.json"));
+
+        Assert.assertEquals("[{\"path\":\"/test\"}]", layoutsContent);
+
     }
 
     @Test
@@ -554,5 +577,10 @@ public class TaskGenerateReactFilesTest {
     @Tag("div")
     @Route("test")
     private class TestRoute extends Component {
+    }
+
+    @Tag("div")
+    @Layout("/test")
+    private class TestLayout extends Component implements RouterLayout {
     }
 }

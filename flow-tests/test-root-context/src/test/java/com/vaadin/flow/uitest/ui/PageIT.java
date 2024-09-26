@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
@@ -52,8 +53,12 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     private void verifyTitle(String title) {
-        Assert.assertEquals("Page title does not match", title,
-                getDriver().getTitle());
+        try {
+            waitUntil(driver -> driver.getTitle().equals(title));
+        } catch (TimeoutException te) {
+            Assert.fail("Page title does not match. Expected: " + title
+                    + ", Actual: " + driver.getTitle());
+        }
     }
 
     private void updateTitle(String title) {

@@ -62,9 +62,9 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
 
 /**
  * Represents the class dependency tree of the application.
@@ -143,6 +143,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents,
             FeatureFlags featureFlags) {
+        this(finder, generateEmbeddableWebComponents, null, true);
+    }
+
+    public FrontendDependencies(ClassFinder finder,
+            boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
+            boolean reactEnabled) {
         super(finder, featureFlags);
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
@@ -162,6 +168,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     visitEntryPoint(entryPoints.get(themeClass.getName()));
                 }
             }
+            if (reactEnabled) {
+                computeReactClasses(finder);
+            }
             computePackages();
             computePwaConfiguration();
             aggregateEntryPointInformation();
@@ -172,6 +181,33 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 | IllegalAccessException | IOException e) {
             throw new IllegalStateException(
                     "Unable to compute frontend dependencies", e);
+        }
+    }
+
+    private void computeReactClasses(ClassFinder finder) throws IOException {
+        // Add ReactRouterOutlet and adapter as internal so it gets added to the
+        // bundle if available.
+        try {
+            if (finder.getResource(
+                    "META-INF/resources/frontend/ReactRouterOutletElement.tsx") != null
+                    && !visitedClasses.containsKey(
+                            "com.vaadin.flow.component.react.ReactRouterOutlet")) {
+                Class<Object> entryPointClass = finder.loadClass(
+                        "com.vaadin.flow.component.react.ReactRouterOutlet");
+                addInternalEntryPoint(entryPointClass);
+                visitEntryPoint(entryPoints.get(entryPointClass.getName()));
+            }
+            if (finder.getResource(
+                    "com/vaadin/flow/server/frontend/ReactAdapter.template") != null
+                    && !visitedClasses.containsKey(
+                            "com.vaadin.flow.component.react.ReactAdapterComponent")) {
+                Class<Object> entryPointClass = finder.loadClass(
+                        "com.vaadin.flow.component.react.ReactAdapterComponent");
+                addInternalEntryPoint(entryPointClass);
+                visitEntryPoint(entryPoints.get(entryPointClass.getName()));
+            }
+        } catch (ClassNotFoundException cnfe) {
+            // NO-OP
         }
     }
 
@@ -706,14 +742,19 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 .getAnnotatedClasses(PWA.class.getName())) {
             if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
                     .contains(appShellConfiguratorClass)) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                        + " " + hopefullyAppShellClass.getName()
+                        + " does not implement "
+                        + AppShellConfigurator.class.getSimpleName());
             }
             pwaVisitor.visitClass(hopefullyAppShellClass.getName());
         }
 
         Set<String> dependencies = pwaVisitor.getValues("name");
         if (dependencies.size() > 1) {
-            throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+            throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION
+                    + " Found " + dependencies.size() + " implementations: "
+                    + dependencies);
         }
         if (dependencies.isEmpty()) {
             this.pwaConfiguration = new PwaConfiguration();

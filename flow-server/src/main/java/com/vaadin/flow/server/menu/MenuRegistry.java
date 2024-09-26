@@ -21,24 +21,30 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
@@ -47,6 +53,7 @@ import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
@@ -59,6 +66,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  */
 public class MenuRegistry {
 
+    private static final Logger log = LoggerFactory
+            .getLogger(MenuRegistry.class);
+
     /**
      * Collect views with menu annotation for automatic menu population. All
      * client views are collected and any accessible server views.
@@ -66,7 +76,48 @@ public class MenuRegistry {
      * @return routes with view information
      */
     public static Map<String, AvailableViewInfo> collectMenuItems() {
-        return new MenuRegistry().getMenuItems(true);
+        Map<String, AvailableViewInfo> menuRoutes = new MenuRegistry()
+                .getMenuItems(true);
+        menuRoutes.entrySet()
+                .removeIf(entry -> Optional.ofNullable(entry.getValue())
+                        .map(AvailableViewInfo::menu).map(MenuData::isExclude)
+                        .orElse(false));
+        return menuRoutes;
+    }
+
+    /**
+     * Collect ordered list of views with menu annotation for automatic menu
+     * population. All client views are collected and any accessible server
+     * views.
+     *
+     * @return ordered routes with view information
+     */
+    public static List<AvailableViewInfo> collectMenuItemsList() {
+        // en-US is used by default here to match with Hilla's
+        // createMenuItems.ts sorting algorithm.
+        return collectMenuItemsList(Locale.forLanguageTag("en-US"));
+    }
+
+    /**
+     * Collect ordered list of views with menu annotation for automatic menu
+     * population. All client views are collected and any accessible server
+     * views.
+     *
+     * @param locale
+     *            locale to use for ordering. null for default locale.
+     * @return ordered routes with view information
+     */
+    public static List<AvailableViewInfo> collectMenuItemsList(Locale locale) {
+        return collectMenuItems().entrySet().stream().map(entry -> {
+            AvailableViewInfo value = entry.getValue();
+            return new AvailableViewInfo(value.title(), value.rolesAllowed(),
+                    value.loginRequired(), entry.getKey(), value.lazy(),
+                    value.register(), value.menu(), value.children(),
+                    value.routeParameters(), value.flowLayout());
+        }).sorted(getMenuOrderComparator(
+                (locale != null ? Collator.getInstance(locale)
+                        : Collator.getInstance())))
+                .toList();
     }
 
     /**
@@ -135,8 +186,9 @@ public class MenuRegistry {
             String title = getTitle(route.getNavigationTarget());
             final String url = getRouteUrl(route);
             Map<String, RouteParamType> parameters = getParameters(route);
-            menuRoutes.put(url, new AvailableViewInfo(title, null, false, url,
-                    false, false, route.getMenuData(), null, parameters));
+            menuRoutes.put(url,
+                    new AvailableViewInfo(title, null, false, url, false, false,
+                            route.getMenuData(), null, parameters, false));
         }
     }
 
@@ -338,6 +390,10 @@ public class MenuRegistry {
 
         Set<String> clientEntries = new HashSet<>(configurations.keySet());
         for (String key : clientEntries) {
+            if (!configurations.containsKey(key)) {
+                // view may have been removed together with parent
+                continue;
+            }
             AvailableViewInfo viewInfo = configurations.get(key);
             boolean routeValid = validateViewAccessible(viewInfo,
                     isUserAuthenticated, vaadinRequest::isUserInRole);
@@ -401,4 +457,71 @@ public class MenuRegistry {
         return Thread.currentThread().getContextClassLoader();
     }
 
+    /**
+     * See if there is a client route available for given route path.
+     *
+     * @param route
+     *            route path to check
+     * @return true if a client route is found.
+     */
+    public static boolean hasClientRoute(String route) {
+        return hasClientRoute(route, false);
+    }
+
+    /**
+     * See if there is a client route available for given route path, optionally
+     * excluding layouts (routes with children) from the check.
+     *
+     * @param route
+     *            route path to check
+     * @param excludeLayouts
+     *            {@literal true} to exclude layouts from the check,
+     *            {@literal false} to include them
+     * @return true if a client route is found.
+     */
+    public static boolean hasClientRoute(String route, boolean excludeLayouts) {
+        if (route == null) {
+            return false;
+        }
+        route = route.isEmpty() ? route
+                : route.startsWith("/") ? route : "/" + route;
+        return getClientRoutes(excludeLayouts).containsKey(route);
+    }
+
+    /**
+     * Get available client routes, optionally excluding any layout targets.
+     *
+     * @param excludeLayouts
+     *            {@literal true} to exclude layouts from the check,
+     *            {@literal false} to include them
+     * @return Map of client routes available
+     */
+    public static Map<String, AvailableViewInfo> getClientRoutes(
+            boolean excludeLayouts) {
+        if (VaadinSession.getCurrent() == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, AvailableViewInfo> clientItems = MenuRegistry
+                .collectClientMenuItems(true,
+                        VaadinSession.getCurrent().getConfiguration());
+        if (excludeLayouts) {
+            clientItems = clientItems.entrySet().stream()
+                    .filter(entry -> entry.getValue().children() == null)
+                    .collect(Collectors.toMap(Map.Entry::getKey,
+                            Map.Entry::getValue));
+        }
+        return clientItems;
+    }
+
+    private static Comparator<AvailableViewInfo> getMenuOrderComparator(
+            Collator collator) {
+        return (o1, o2) -> {
+            int ordersCompareTo = Optional.ofNullable(o1.menu())
+                    .map(MenuData::getOrder).orElse(Double.MAX_VALUE)
+                    .compareTo(Optional.ofNullable(o2.menu())
+                            .map(MenuData::getOrder).orElse(Double.MAX_VALUE));
+            return ordersCompareTo != 0 ? ordersCompareTo
+                    : collator.compare(o1.route(), o2.route());
+        };
+    }
 }

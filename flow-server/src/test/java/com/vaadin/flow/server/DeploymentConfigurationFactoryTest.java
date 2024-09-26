@@ -2,6 +2,7 @@ package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -20,12 +21,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -38,13 +33,19 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import static java.util.Collections.emptyMap;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.startup.AbstractConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
+import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -184,6 +185,29 @@ public class DeploymentConfigurationFactoryTest {
                 "Unexpected value for heartbeat interval, should be the same as in servlet context parameters",
                 servletConfigHeartbeatIntervalValue,
                 config.getHeartbeatInterval());
+    }
+
+    @Test
+    public void servletConfigParameters_nullValues_ignored() throws Exception {
+        Class<NoSettings> servlet = NoSettings.class;
+
+        Map<String, String> servletConfigParams = new HashMap<>(
+                defaultServletParams);
+        servletConfigParams.put("someKey", null);
+        servletConfigParams.put("someNotNullKey", "NOT_NULL");
+
+        Map<String, String> servletContextParams = new HashMap<>();
+
+        DeploymentConfiguration config = new DeploymentConfigurationFactory()
+                .createDeploymentConfiguration(servlet, createVaadinConfigMock(
+                        servletConfigParams, servletContextParams));
+
+        Assert.assertFalse(
+                "Expecting null parameter to be ignored, but was in configuration",
+                config.getInitParameters().containsKey("someKey"));
+        Assert.assertTrue(
+                "Expecting not null parameter to be in configuration, but was not",
+                config.getInitParameters().containsKey("someNotNullKey"));
     }
 
     @Test

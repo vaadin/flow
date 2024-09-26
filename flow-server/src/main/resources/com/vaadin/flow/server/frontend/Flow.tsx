@@ -15,7 +15,13 @@
  */
 /// <reference lib="es2018" />
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, {
+    useCallback,
+    useEffect,
+    useReducer,
+    useRef,
+    type ReactNode
+} from "react";
 import {
     matchRoutes,
     useBlocker,
@@ -23,6 +29,7 @@ import {
     useNavigate
 } from "react-router-dom";
 import type { AgnosticRouteObject } from '@remix-run/router';
+import { createPortal } from "react-dom";
 
 const flow = new _Flow({
     imports: () => import("Frontend/generated/flow/generated-flow-imports.js")
@@ -144,13 +151,16 @@ function extractPath(event: MouseEvent): void | string {
  * @param search search of navigation
  */
 function fireNavigated(pathname:string, search: string) {
-    setTimeout(() =>
-        window.dispatchEvent(new CustomEvent('vaadin-navigated', {
-            detail: {
-                pathname,
-                search
-            }
-        }))
+    setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('vaadin-navigated', {
+                detail: {
+                    pathname,
+                    search
+                }
+            }));
+            // @ts-ignore
+            delete window.Vaadin.Flow.navigation;
+        }
     )
 }
 
@@ -160,6 +170,35 @@ function postpone() {
 const prevent = () => postpone;
 
 type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>>;
+
+type PortalEntry = {
+    readonly children: ReactNode,
+    readonly domNode: Element | DocumentFragment,
+};
+
+const enum PortalActionType {
+    Add = 'add',
+    Remove = 'remove',
+}
+
+type PortalAction = {
+    readonly type: PortalActionType,
+    readonly entry: PortalEntry,
+};
+
+function portalsReducer(portals: readonly PortalEntry[], action: PortalAction) {
+    switch (action.type) {
+        case PortalActionType.Add:
+            return [
+                ...portals,
+                action.entry
+            ];
+        case PortalActionType.Remove:
+            return portals.filter(({domNode}) => domNode !== action.entry.domNode);
+        default:
+            return portals;
+    }
+}
 
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
@@ -172,6 +211,21 @@ function Flow() {
     const navigated = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
+
+    // portalsReducer function is used as state outside the Flow component.
+    const [portals, dispatchPortalAction] = useReducer(portalsReducer, []);
+
+    const removePortalEventHandler = useCallback((event: CustomEvent<PortalEntry>) => {
+        event.preventDefault();
+        dispatchPortalAction({type: PortalActionType.Remove, entry: event.detail});
+    }, [dispatchPortalAction])
+
+    const addPortalEventHandler = useCallback((event: CustomEvent<PortalEntry>) => {
+        event.preventDefault();
+        // Add remove event listener to the portal node
+        event.detail.domNode.addEventListener('flow-portal-remove', removePortalEventHandler as EventListener, {once: true});
+        dispatchPortalAction({type: PortalActionType.Add, entry: event.detail});
+    }, [dispatchPortalAction, removePortalEventHandler]);
 
     const navigateEventHandler = useCallback((event: MouseEvent) => {
         const path = extractPath(event);
@@ -188,6 +242,8 @@ function Flow() {
         // in order to get a server round-trip even when navigating to the same URL again
         fromAnchor.current = true;
         navigate(path);
+        // Dispatch close event for overlay drawer on click navigation.
+        window.dispatchEvent(new CustomEvent('close-overlay-drawer'));
     }, [navigate]);
 
     const vaadinRouterGoEventHandler = useCallback((event: CustomEvent<URL>) => {
@@ -202,8 +258,11 @@ function Flow() {
     }, [navigate]);
 
     const vaadinNavigateEventHandler = useCallback((event: CustomEvent<{state: unknown, url: string, replace?: boolean, callback: boolean}>) => {
+        // @ts-ignore
+        window.Vaadin.Flow.navigation = true;
         const path = '/' + event.detail.url;
         navigated.current = !event.detail.callback;
+        fromAnchor.current = false;
         navigate(path, { state: event.detail.state, replace: event.detail.replace});
     }, [navigate]);
 
@@ -230,6 +289,7 @@ function Flow() {
     useEffect(() => {
         return () => {
             containerRef.current?.parentNode?.removeChild(containerRef.current);
+            containerRef.current?.removeEventListener('flow-portal-add', addPortalEventHandler as EventListener);
             containerRef.current = undefined;
         };
     }, []);
@@ -244,7 +304,7 @@ function Flow() {
             fromAnchor.current = false;
             const {pathname, search} = blocker.location;
             const routes = ((window as any)?.Vaadin?.routesConfig || []) as AgnosticRouteObject[];
-            let matched = matchRoutes(Array.from(routes), window.location.pathname);
+            let matched = matchRoutes(Array.from(routes), pathname);
 
             // Navigation between server routes
             // @ts-ignore
@@ -275,13 +335,11 @@ function Flow() {
                                     blocker.reset();
                                 } else {
                                     blocker.proceed();
-                                    window.removeEventListener('click',  navigateEventHandler);
                                 }
                             }
                         } else {
                             // permitted navigation: proceed with the blocker
                             blocker.proceed();
-                            window.removeEventListener('click',  navigateEventHandler);
                         }
                     });
             }
@@ -299,6 +357,7 @@ function Flow() {
                 const outlet = ref.current?.parentNode;
                 if (outlet && outlet !== container.parentNode) {
                     outlet.append(container);
+                    container.addEventListener('flow-portal-add', addPortalEventHandler as EventListener);
                     window.addEventListener('click',  navigateEventHandler);
                     containerRef.current = container
                 }
@@ -312,7 +371,10 @@ function Flow() {
             });
     }, [pathname, search, hash]);
 
-    return <output ref={ref} />;
+    return <>
+        <output ref={ref} style={{display: "none"}}/>
+        {portals.map(({children, domNode}) => createPortal(children, domNode))}
+    </>;
 }
 Flow.type = 'FlowContainer'; // This is for copilot to recognize this
 

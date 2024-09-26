@@ -97,6 +97,17 @@ public final class FlowDauIntegration {
     }
 
     /**
+     * Tells whether new user, i.e. who just opens the browser, not yet tracked,
+     * not yet counted, should be blocked immediately.
+     *
+     * @return {@literal true} if the current request/user should be blocked,
+     *         {@literal false} otherwise.
+     */
+    static boolean shouldEnforce() {
+        return DauIntegration.shouldEnforce();
+    }
+
+    /**
      * Potentially applies enforcement to the current request if DAU limit is
      * exceeded.
      * <p>

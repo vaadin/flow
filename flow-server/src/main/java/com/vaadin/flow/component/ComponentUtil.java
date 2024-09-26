@@ -18,7 +18,10 @@ package com.vaadin.flow.component;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -42,6 +45,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
@@ -58,6 +62,59 @@ public class ComponentUtil {
 
     static ReflectionCache<Component, ComponentMetaData> componentMetaDataCache = new ReflectionCache<>(
             ComponentMetaData::new);
+
+    private static final Map<String, Set<Class<? extends Component>>> tagToComponentsMap = new ConcurrentHashMap<>();
+
+    /**
+     * Registers a component class with a specific HTML tag. This mapping is
+     * maintained in a static map and is used primarily during development mode
+     * for various component operations like rendering and event handling.
+     * <p>
+     *
+     * @param tag
+     *            The HTML tag associated with the component class.
+     * @param componentClass
+     *            The component class to be registered with the given tag.
+     */
+    public static void registerComponentClass(String tag,
+            Class<? extends Component> componentClass) {
+        tagToComponentsMap
+                .computeIfAbsent(tag, k -> ConcurrentHashMap.newKeySet())
+                .add(componentClass);
+    }
+
+    /**
+     * Retrieves the set of component classes associated with a specific HTML
+     * tag.
+     * <p>
+     * Note: This method retrieves data from a mapping that is only populated in
+     * development mode. In production mode, this method will always return an
+     * empty set.
+     *
+     * @param tag
+     *            The HTML tag for which component classes are to be retrieved.
+     * @return A set of component classes associated with the specified HTML
+     *         tag. Returns an empty set if no classes are associated with the
+     *         tag or if running in production mode.
+     */
+    public static Set<Class<? extends Component>> getComponentsByTag(
+            String tag) {
+        return tagToComponentsMap.getOrDefault(tag, Collections.emptySet());
+    }
+
+    /**
+     * Provides access to the entire mapping of HTML tags to component classes.
+     * <p>
+     * Note: This mapping is only populated in development mode. The map is
+     * returned as unmodifiable to prevent external modifications.
+     *
+     * @return An unmodifiable map of HTML tags to sets of component classes.
+     *         This map is only populated in development mode and will be empty
+     *         in production mode.
+     */
+    public static Map<String, Set<Class<? extends Component>>> getAllTagMappings() {
+        return Collections.unmodifiableMap(tagToComponentsMap);
+    }
 
     private ComponentUtil() {
         // Util methods only
@@ -665,6 +722,24 @@ public class ComponentUtil {
                     "Implicit router instance is not available.");
         }
         return router;
+    }
+
+    /**
+     * Walk up from given component until a Component with a Route annotation is
+     * found or empty if no Route is present in parents.
+     *
+     * @param component
+     *            Component to find current route component for
+     * @return Optional containing Route component if found
+     */
+    public static Optional<Component> getRouteComponent(Component component) {
+        if (component.getClass().isAnnotationPresent(Route.class)) {
+            return Optional.of(component);
+        }
+        if (component.getParent().isPresent()) {
+            return getRouteComponent(component.getParent().get());
+        }
+        return Optional.empty();
     }
 
 }
