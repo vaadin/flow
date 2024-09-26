@@ -405,6 +405,25 @@ public class AuthenticationContextTest {
 
     @Test
     @WithMockUser()
+    public void logout_allowNullResponse() {
+        authContext.setLogoutHandlers(Mockito.mock(LogoutSuccessHandler.class),
+                List.of(Mockito.mock(LogoutHandler.class)));
+        try {
+            CurrentInstance.set(VaadinRequest.class,
+                    Mockito.mock(VaadinServletRequest.class));
+            UI.setCurrent(Mockito.mock(UI.class));
+            try {
+                authContext.logout();
+            } catch (NullPointerException e) {
+                Assert.fail("Should not throw NPE");
+            }
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
+    @WithMockUser()
     public void logout_handlersEngaged() throws Exception {
         Authentication authentication = SecurityContextHolder.getContext()
                 .getAuthentication();
