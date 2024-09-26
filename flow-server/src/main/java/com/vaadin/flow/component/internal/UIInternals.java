@@ -695,18 +695,31 @@ public class UIInternals implements Serializable {
      */
     public void setTitle(String title) {
         assert title != null;
-        JavaScriptInvocation invocation = new JavaScriptInvocation("""
-                    document.title = $0;
-                    if(window?.Vaadin?.documentTitleSignal) {
-                        window.Vaadin.documentTitleSignal.value = $0;
-                    }
-                """.stripIndent(), title);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(
+                generateTitleScript().stripIndent(), title);
 
         pendingTitleUpdateCanceler = new PendingJavaScriptInvocation(
                 getStateTree().getRootNode(), invocation);
         addJavaScriptInvocation(pendingTitleUpdateCanceler);
 
         this.title = title;
+    }
+
+    private String generateTitleScript() {
+        String setTitleScript = """
+                    document.title = $0;
+                    if(window?.Vaadin?.documentTitleSignal) {
+                        window.Vaadin.documentTitleSignal.value = $0;
+                    }
+                """;
+        if (getSession().getConfiguration().isReactEnabled()) {
+            // For react-router we should wait for navigation to finish
+            // before updating the title.
+            setTitleScript = String.format(
+                    "if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {%s}, {once:true}); }  else { %1$s }",
+                    setTitleScript);
+        }
+        return setTitleScript;
     }
 
     /**
