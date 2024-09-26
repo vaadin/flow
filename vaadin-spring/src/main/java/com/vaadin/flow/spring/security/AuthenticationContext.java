@@ -38,9 +38,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.util.Assert;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -435,6 +436,41 @@ public class AuthenticationContext {
                 .getConfigurer(LogoutConfigurer.class);
         authCtx.setLogoutHandlers(logoutConfigurer.getLogoutSuccessHandler(),
                 logoutConfigurer.getLogoutHandlers());
+    }
+
+    // package protected for testing purposes
+    static class CompositeLogoutHandler implements LogoutHandler {
+
+        private final List<LogoutHandler> logoutHandlers;
+
+        public CompositeLogoutHandler(List<LogoutHandler> logoutHandlers) {
+            Assert.notEmpty(logoutHandlers, "LogoutHandlers are required");
+            this.logoutHandlers = logoutHandlers;
+        }
+
+        @Override
+        public void logout(HttpServletRequest request,
+                HttpServletResponse response, Authentication authentication) {
+            for (LogoutHandler handler : this.logoutHandlers) {
+                try {
+                    handler.logout(request, response, authentication);
+                } catch (IllegalStateException e) {
+                    // Tolerate null response when Session is already
+                    // invalidated
+                    if (response != null
+                            || !isContinueToNextHandler(request, handler)) {
+                        throw e;
+                    }
+                }
+            }
+        }
+
+        private boolean isContinueToNextHandler(HttpServletRequest request,
+                LogoutHandler handler) {
+            return handler instanceof SecurityContextLogoutHandler
+                    && (request.getSession() == null
+                            || !request.isRequestedSessionIdValid());
+        }
     }
 
 }
