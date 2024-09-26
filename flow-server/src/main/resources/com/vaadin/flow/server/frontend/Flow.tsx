@@ -435,7 +435,7 @@ function Flow() {
     }, [pathname, search, hash]);
 
     return <>
-        <output ref={ref} />
+        <output ref={ref} style={{display: "none"}}/>
         {portals.map(({children, domNode}) => createPortal(children, domNode))}
     </>;
 }
