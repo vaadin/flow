@@ -121,4 +121,23 @@ public class ComponentTrackerLocationTest {
         Assert.assertEquals(expectedFile, javaFile);
     }
 
+    @Test
+    public void findKotlinFile_simpleClass() {
+        File defaultJavaSrcDir = new File("src/main/java");
+        File kotlinExpectedSrcDir = new File("src/main/kotlin");
+        AbstractConfiguration configuration = Mockito
+                .mock(AbstractConfiguration.class);
+        Mockito.when(configuration.getJavaSourceFolder())
+                .thenReturn(defaultJavaSrcDir);
+
+        ComponentTracker.Location location = new ComponentTracker.Location(
+                "com.example.app.MyClass", "MyClass.kt", "whoCares", 99);
+        File expectedFile = kotlinExpectedSrcDir.toPath()
+                .resolve(Path.of("com", "example", "app", "MyClass.kt"))
+                .toFile();
+
+        File javaFile = location.findJavaFile(configuration);
+        Assert.assertEquals(expectedFile, javaFile);
+    }
+
 }
