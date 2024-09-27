@@ -168,6 +168,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
         settings.isForceAlternativeNode = config.requireHomeNodeExec.get()
         settings.isUseGlobalPnpm = config.useGlobalPnpm.get()
         settings.isAutoUpdate = config.nodeAutoUpdate.get()
+        settings.nodeVersion = config.nodeVersion.get()
         FrontendTools(settings)
     }
 }
