@@ -271,7 +271,7 @@ function Flow() {
         navigated.current = navigated.current || (nextLocation.pathname === currentLocation.pathname && nextLocation.search === currentLocation.search && nextLocation.hash === currentLocation.hash);
         return true;
     });
-    const {pathname, search, hash} = useLocation();
+    const location = useLocation();
     const navigated = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
@@ -423,10 +423,10 @@ function Flow() {
     useEffect(() => {
         if (navigated.current) {
             navigated.current = false;
-            fireNavigated(pathname,search);
+            fireNavigated(location.pathname,location.search);
             return;
         }
-        flow.serverSideRoutes[0].action({pathname, search})
+        flow.serverSideRoutes[0].action({pathname: location.pathname, search: location.search})
             .then((container) => {
                 const outlet = ref.current?.parentNode;
                 if (outlet && outlet !== container.parentNode) {
@@ -435,15 +435,15 @@ function Flow() {
                     window.addEventListener('click',  navigateEventHandler);
                     containerRef.current = container
                 }
-                return container.onBeforeEnter?.call(container, {pathname, search}, {prevent, redirect, continue() {
-                        fireNavigated(pathname,search);}}, router);
+                return container.onBeforeEnter?.call(container, {pathname: location.pathname, search: location.search}, {prevent, redirect, continue() {
+                        fireNavigated(location.pathname,location.search);}}, router);
             })
             .then((result: unknown) => {
                 if (typeof result === "function") {
                     result();
                 }
             });
-    }, [pathname, search, hash]);
+    }, [location]);
 
     return <>
         <output ref={ref} style={{display: "none"}}/>
