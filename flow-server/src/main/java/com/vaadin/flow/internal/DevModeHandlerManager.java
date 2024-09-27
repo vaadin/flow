@@ -51,7 +51,7 @@ public interface DevModeHandlerManager {
      * @param classes
      *            classes to check for npm- and js modules
      * @param context
-     *            servlet context we are running in
+     *            Vaadin Context we are running in
      *
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
@@ -100,8 +100,7 @@ public interface DevModeHandlerManager {
     void setApplicationUrl(String applicationUrl);
 
     /**
-     * Registers a command that will be run then the servlet context is shut
-     * down.
+     * Registers a command that will run when DevModeHandler is shut down
      *
      * @param command
      *            the command to run
