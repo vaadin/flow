@@ -202,17 +202,23 @@ function portalsReducer(portals: readonly PortalEntry[], action: PortalAction) {
     }
 }
 
-type NavigateFn = (to: string, opts?: NavigateOptions) => void;
-type NavigateArgs = Parameters<NavigateFn>
+
+type NavigateOpts =  {
+    to: string,
+    callback: boolean,
+    opts?: NavigateOptions
+};
+
+type NavigateFn = (to: string, callback: boolean, opts?: NavigateOptions) => void;
 
 /**
  * A hook providing the `navigate(path: string, opts?: NavigateOptions)` function
  * with React Router API that has more consistent history updates. Uses internal
  * queue for processing navigate calls.
  */
-function useQueuedNavigate(waitReference: React.MutableRefObject<Promise<void> | undefined>): NavigateFn {
+function useQueuedNavigate(waitReference: React.MutableRefObject<Promise<void> | undefined>, navigated: React.MutableRefObject<boolean>): NavigateFn {
     const navigate = useNavigate();
-    const navigateQueue = useRef<NavigateArgs[]>([]).current;
+    const navigateQueue = useRef<NavigateOpts[]>([]).current;
     const [navigateQueueLength, setNavigateQueueLength] = useState(0);
 
     const dequeueNavigation = useCallback(() => {
@@ -227,7 +233,8 @@ function useQueuedNavigate(waitReference: React.MutableRefObject<Promise<void> |
                 await waitReference.current;
                 waitReference.current = undefined;
             }
-            navigate(...navigateArgs);
+            navigated.current = !navigateArgs.callback;
+            navigate(navigateArgs.to, navigateArgs.opts);
             setNavigateQueueLength(navigateQueue.length);
         }
         blockingNavigate();
@@ -237,8 +244,8 @@ function useQueuedNavigate(waitReference: React.MutableRefObject<Promise<void> |
         queueMicrotask(dequeueNavigation);
     }, [dequeueNavigation]);
 
-    const enqueueNavigation = useCallback((...navigateArgs: NavigateArgs) => {
-        navigateQueue.push(navigateArgs);
+    const enqueueNavigation = useCallback((to: string, callback: boolean, opts?: NavigateOptions) => {
+        navigateQueue.push({to: to, callback: callback, opts: opts});
         setNavigateQueueLength(navigateQueue.length);
         if (navigateQueue.length === 1) {
             // The first navigation can be started right after any pending sync
@@ -269,7 +276,7 @@ function Flow() {
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
     const roundTrip = useRef<Promise<void> | undefined>(undefined);
-    const queuedNavigate = useQueuedNavigate(roundTrip);
+    const queuedNavigate = useQueuedNavigate(roundTrip, navigated);
 
     // portalsReducer function is used as state outside the Flow component.
     const [portals, dispatchPortalAction] = useReducer(portalsReducer, []);
@@ -320,9 +327,8 @@ function Flow() {
         // @ts-ignore
         window.Vaadin.Flow.navigation = true;
         const path = '/' + event.detail.url;
-        navigated.current = !event.detail.callback;
         fromAnchor.current = false;
-        queuedNavigate(path, { state: event.detail.state, replace: event.detail.replace});
+        queuedNavigate(path, event.detail.callback, { state: event.detail.state, replace: event.detail.replace });
     }, [navigate]);
 
     const redirect = useCallback((path: string) => {
