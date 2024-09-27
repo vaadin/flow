@@ -119,13 +119,13 @@ public class ComponentTracker {
         }
 
         /**
-         * Finds the Java file this location refers to.
+         * Finds the source file this location refers to.
          *
          * @param configuration
          *            the application configuration
-         * @return the Java file the location refers to, or {@code null}
+         * @return the source file the location refers to, or {@code null}
          */
-        public File findJavaFile(AbstractConfiguration configuration) {
+        public File findSourceFile(AbstractConfiguration configuration) {
             String cls = className();
             int indexOfExt = filename().lastIndexOf(".");
             String ext = filename().substring(indexOfExt);
@@ -154,6 +154,19 @@ public class ComponentTracker {
             File javaFile = new File(src,
                     cls.replace(".", File.separator) + ext);
             return javaFile;
+        }
+
+        /**
+         * Finds the Java file this location refers to.
+         *
+         * @param configuration
+         *            the application configuration
+         * @return the Java file the location refers to, or {@code null}
+         * @deprecated use findSourceFile
+         */
+        @Deprecated
+        public File findJavaFile(AbstractConfiguration configuration) {
+            return findSourceFile(configuration);
         }
 
         @Override

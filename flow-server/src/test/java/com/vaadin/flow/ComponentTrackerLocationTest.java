@@ -42,7 +42,7 @@ public class ComponentTrackerLocationTest {
                 .resolve(Path.of("com", "example", "app", "MyClass.java"))
                 .toFile();
 
-        File javaFile = location.findJavaFile(configuration);
+        File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
     }
 
@@ -60,7 +60,7 @@ public class ComponentTrackerLocationTest {
                 .resolve(Path.of("com", "exa$mple", "app", "MyClass.java"))
                 .toFile();
 
-        File javaFile = location.findJavaFile(configuration);
+        File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
     }
 
@@ -79,7 +79,7 @@ public class ComponentTrackerLocationTest {
                 Path.of("com", "example", "app", "MyClass$NotInner.java"))
                 .toFile();
 
-        File javaFile = location.findJavaFile(configuration);
+        File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
     }
 
@@ -98,7 +98,7 @@ public class ComponentTrackerLocationTest {
                 .resolve(Path.of("com", "example", "app", "MyClass.java"))
                 .toFile();
 
-        File javaFile = location.findJavaFile(configuration);
+        File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
     }
 
@@ -117,7 +117,7 @@ public class ComponentTrackerLocationTest {
                 .resolve(Path.of("com", "example", "app", "MyClass.java"))
                 .toFile();
 
-        File javaFile = location.findJavaFile(configuration);
+        File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
     }
 
@@ -136,7 +136,7 @@ public class ComponentTrackerLocationTest {
                 .resolve(Path.of("com", "example", "app", "MyClass.kt"))
                 .toFile();
 
-        File javaFile = location.findJavaFile(configuration);
+        File javaFile = location.findSourceFile(configuration);
         Assert.assertEquals(expectedFile, javaFile);
     }
 
