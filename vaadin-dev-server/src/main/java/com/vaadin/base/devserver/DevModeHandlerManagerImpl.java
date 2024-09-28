@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
+import com.vaadin.flow.server.Command;
 import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.Closeable;
@@ -66,7 +67,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private DevModeHandler devModeHandler;
     private BrowserLauncher browserLauncher;
-    final private Set<Closeable> watchers = new HashSet<>();
+    private final Set<Command> shutdownCommands = new HashSet<>();
 
     private String applicationUrl;
     private boolean fullyStarted = false;
@@ -107,7 +108,6 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
-
             startWatchingThemeFolder(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
@@ -121,7 +121,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         File frontendFolder = FrontendUtils.getProjectFrontendDir(config);
         File jarFrontendResourcesFolder = FrontendUtils
                 .getJarResourcesFolder(frontendFolder);
-        watchers.add(new ExternalDependencyWatcher(context,
+        registerWatcherShutdownCommand(new ExternalDependencyWatcher(context,
                 jarFrontendResourcesFolder));
 
     }
@@ -146,7 +146,8 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             for (String themeName : activeThemes) {
                 File themeFolder = ThemeUtils.getThemeFolder(
                         FrontendUtils.getProjectFrontendDir(config), themeName);
-                watchers.add(new ThemeLiveUpdater(themeFolder, context));
+                registerWatcherShutdownCommand(
+                        new ThemeLiveUpdater(themeFolder, context));
             }
         } catch (Exception e) {
             getLogger().error("Failed to start live-reload for theme files", e);
@@ -158,15 +159,16 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             devModeHandler.stop();
             devModeHandler = null;
         }
-        for (Closeable watcher : watchers) {
+        for (Command shutdownCommand : shutdownCommands) {
             try {
-                watcher.close();
-            } catch (IOException e) {
-                getLogger().error("Failed to stop watcher "
-                        + watcher.getClass().getName(), e);
+                shutdownCommand.execute();
+            } catch (Exception e) {
+                getLogger().error("Failed to execute shut down command {}",
+                        shutdownCommand.getClass().getName(), e);
             }
         }
-        watchers.clear();
+        shutdownCommands.clear();
+
     }
 
     @Override
@@ -194,6 +196,22 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     private void setDevModeStarted(VaadinContext context) {
         context.setAttribute(DevModeHandlerAlreadyStartedAttribute.class,
                 new DevModeHandlerAlreadyStartedAttribute());
+    }
+
+    private void registerWatcherShutdownCommand(Closeable watcher) {
+        registerShutdownCommand(() -> {
+            try {
+                watcher.close();
+            } catch (Exception e) {
+                getLogger().error("Failed to stop watcher {}",
+                        watcher.getClass().getName(), e);
+            }
+        });
+    }
+
+    @Override
+    public void registerShutdownCommand(Command command) {
+        shutdownCommands.add(command);
     }
 
     /**
