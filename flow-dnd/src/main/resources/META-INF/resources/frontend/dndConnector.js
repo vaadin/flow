@@ -92,6 +92,12 @@ window.Vaadin.Flow.dndConnector = {
       }
       event.currentTarget.classList.add('v-dragged');
     }
+    if(event.currentTarget.__dragImage) {
+      event.dataTransfer.setDragImage(
+        event.currentTarget.__dragImage,
+        event.currentTarget.__dragImageOffsetX,
+        event.currentTarget.__dragImageOffsetY);
+    }
   },
 
   __dragendListener: function (event) {
@@ -106,5 +112,11 @@ window.Vaadin.Flow.dndConnector = {
       element.removeEventListener('dragstart', this.__dragstartListener, false);
       element.removeEventListener('dragend', this.__dragendListener, false);
     }
+  },
+
+  setDragImage: function (dragImage, offsetX, offsetY, dragSource) {
+    dragSource.__dragImage = dragImage;
+    dragSource.__dragImageOffsetX = offsetX;
+    dragSource.__dragImageOffsetY = offsetY;
   }
 };
