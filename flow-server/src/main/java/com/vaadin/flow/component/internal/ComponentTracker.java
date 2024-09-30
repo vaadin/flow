@@ -119,15 +119,21 @@ public class ComponentTracker {
         }
 
         /**
-         * Finds the Java file this location refers to.
+         * Finds the source file this location refers to.
          *
          * @param configuration
          *            the application configuration
-         * @return the Java file the location refers to, or {@code null}
+         * @return the source file the location refers to, or {@code null}
          */
-        public File findJavaFile(AbstractConfiguration configuration) {
+        public File findSourceFile(AbstractConfiguration configuration) {
             String cls = className();
-            String filenameNoExt = filename().replace(".java", "");
+            int indexOfExt = filename().lastIndexOf(".");
+            String ext = filename().substring(indexOfExt);
+            if (!ext.equals(".java") && !ext.equals(".kt")) {
+                return null;
+            }
+
+            String filenameNoExt = filename().substring(0, indexOfExt);
 
             if (!cls.endsWith(filenameNoExt)) {
                 // Check for inner class
@@ -141,9 +147,26 @@ public class ComponentTracker {
             }
 
             File src = configuration.getJavaSourceFolder();
+            if (ext.equals(".kt") && src.getPath().endsWith("/java")) {
+                src = new File(src.getPath().substring(0,
+                        src.getPath().lastIndexOf("/java")) + "/kotlin");
+            }
             File javaFile = new File(src,
-                    cls.replace(".", File.separator) + ".java");
+                    cls.replace(".", File.separator) + ext);
             return javaFile;
+        }
+
+        /**
+         * Finds the Java file this location refers to.
+         *
+         * @param configuration
+         *            the application configuration
+         * @return the Java file the location refers to, or {@code null}
+         * @deprecated use findSourceFile
+         */
+        @Deprecated
+        public File findJavaFile(AbstractConfiguration configuration) {
+            return findSourceFile(configuration);
         }
 
         @Override
