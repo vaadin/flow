@@ -9,9 +9,9 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "react": "19.0.0-rc-3563387fe3-20240621",
-    "react-dom": "19.0.0-rc-3563387fe3-20240621",
-    "react-router-dom": "6.23.1"
+    "react": "19.0.0-rc-3edc000d-20240926",
+    "react-dom": "19.0.0-rc-3edc000d-20240926",
+    "react-router-dom": "6.26.2"
   },
   "devDependencies": {
     "@types/react": "18.3.3",
