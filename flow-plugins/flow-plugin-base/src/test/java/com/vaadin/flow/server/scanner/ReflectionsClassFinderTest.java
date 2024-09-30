@@ -53,11 +53,16 @@ public class ReflectionsClassFinderTest {
             + "import com.vaadin.flow.component.Component;\n" + "\n"
             + "@NpmPackage(value = \"@vaadin/something\", version = \"%s\")\n"
             + "public class %s extends Component {\n" + "}\n";
+
+    // Class used to test the class finder
+    public static final Class<NpmPackage> NPM_PACKAGE_CLASS = NpmPackage.class;
+
     @Rule
     public TemporaryFolder externalModules = new TemporaryFolder();
 
     URL[] urls;
     private ClassFinder.DefaultClassFinder defaultClassFinder;
+    private List<String> componentClassNames;
 
     @Before
     public void setUp() throws Exception {
@@ -67,27 +72,41 @@ public class ReflectionsClassFinderTest {
                 createTestModule("module-2", "com.vaadin.flow.test.first",
                         "ComponentX", "1.0.0"),
                 createTestModule("module-3", "com.vaadin.flow.test.middle",
-                        "ComponentA", "2.0.0") };
+                        "ComponentA", "2.0.0"),
+                NPM_PACKAGE_CLASS.getProtectionDomain().getCodeSource()
+                        .getLocation(),
+                Component.class.getProtectionDomain().getCodeSource()
+                        .getLocation() };
 
-        ClassLoader classLoader = new URLClassLoader(urls,
-                Thread.currentThread().getContextClassLoader());
-        defaultClassFinder = new ClassFinder.DefaultClassFinder(Set.of(
-                classLoader.loadClass("com.vaadin.flow.test.last.ComponentN"),
-                classLoader.loadClass("com.vaadin.flow.test.first.ComponentX"),
-                classLoader
-                        .loadClass("com.vaadin.flow.test.middle.ComponentA")));
+        try (URLClassLoader classLoader = new URLClassLoader(urls,
+                Thread.currentThread().getContextClassLoader())) {
+            List<Class<?>> componentClasses = List.of(
+                    classLoader
+                            .loadClass("com.vaadin.flow.test.first.ComponentX"),
+                    classLoader
+                            .loadClass("com.vaadin.flow.test.last.ComponentN"),
+                    classLoader.loadClass(
+                            "com.vaadin.flow.test.middle.ComponentA"));
+            componentClassNames = componentClasses.stream().map(Class::getName)
+                    .collect(Collectors.toList());
+            defaultClassFinder = new ClassFinder.DefaultClassFinder(
+                    Set.copyOf(componentClasses));
+        }
     }
 
     @Test
     public void getSubTypesOf_orderIsDeterministic() {
-        List<String> a1 = toList(new ReflectionsClassFinder(urls)
-                .getSubTypesOf(Component.class));
-        List<String> a2 = toList(
-                new ReflectionsClassFinder(urls[2], urls[0], urls[1])
-                        .getSubTypesOf(Component.class));
-        List<String> a3 = toList(
-                new ReflectionsClassFinder(urls[1], urls[2], urls[0])
-                        .getSubTypesOf(Component.class));
+        List<String> a1 = componentClassNames;
+        List<String> a2 = new ReflectionsClassFinder(urls[2], urls[0], urls[1],
+                urls[4]).getSubTypesOf(Component.class).stream()
+                .map(Class::getName)
+                .filter(name -> name.startsWith("com.vaadin.flow.test."))
+                .collect(Collectors.toList());
+        List<String> a3 = new ReflectionsClassFinder(urls[1], urls[4], urls[2],
+                urls[0]).getSubTypesOf(Component.class).stream()
+                .map(Class::getName)
+                .filter(name -> name.startsWith("com.vaadin.flow.test."))
+                .collect(Collectors.toList());
 
         Assert.assertEquals(a1, a2);
         Assert.assertEquals(a2, a3);
@@ -96,13 +115,13 @@ public class ReflectionsClassFinderTest {
     @Test
     public void getAnnotatedClasses_orderIsDeterministic() {
         List<String> a1 = toList(new ReflectionsClassFinder(urls)
-                .getAnnotatedClasses(NpmPackage.class));
+                .getAnnotatedClasses(NPM_PACKAGE_CLASS));
         List<String> a2 = toList(
-                new ReflectionsClassFinder(urls[2], urls[0], urls[1])
-                        .getAnnotatedClasses(NpmPackage.class));
+                new ReflectionsClassFinder(urls[3], urls[2], urls[0], urls[1])
+                        .getAnnotatedClasses(NPM_PACKAGE_CLASS));
         List<String> a3 = toList(
-                new ReflectionsClassFinder(urls[1], urls[2], urls[0])
-                        .getAnnotatedClasses(NpmPackage.class));
+                new ReflectionsClassFinder(urls[1], urls[2], urls[3], urls[0])
+                        .getAnnotatedClasses(NPM_PACKAGE_CLASS));
 
         Assert.assertEquals(a1, a2);
         Assert.assertEquals(a2, a3);
@@ -112,17 +131,16 @@ public class ReflectionsClassFinderTest {
     public void getSubTypesOf_order_sameAsDefaultClassFinder() {
         Assert.assertEquals(
                 toList(defaultClassFinder.getSubTypesOf(Component.class)),
-                toList(new ReflectionsClassFinder(urls)
-                        .getSubTypesOf(Component.class)));
+                componentClassNames);
     }
 
     @Test
     public void getAnnotatedClasses_order_sameAsDefaultClassFinder() {
         Assert.assertEquals(
                 toList(defaultClassFinder
-                        .getAnnotatedClasses(NpmPackage.class)),
+                        .getAnnotatedClasses(NPM_PACKAGE_CLASS)),
                 toList(new ReflectionsClassFinder(urls)
-                        .getAnnotatedClasses(NpmPackage.class)));
+                        .getAnnotatedClasses(NPM_PACKAGE_CLASS)));
     }
 
     @Test
