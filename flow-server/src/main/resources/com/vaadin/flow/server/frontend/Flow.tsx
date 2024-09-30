@@ -15,12 +15,18 @@
  */
 /// <reference lib="es2018" />
 import { Flow as _Flow } from "Frontend/generated/jar-resources/Flow.js";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, {
+    useCallback,
+    useEffect,
+    useRef,
+    useState
+} from "react";
 import {
     matchRoutes,
     useBlocker,
     useLocation,
-    useNavigate
+    useNavigate,
+    type NavigateOptions,
 } from "react-router-dom";
 import type { AgnosticRouteObject } from '@remix-run/router';
 
@@ -164,6 +170,68 @@ const prevent = () => postpone;
 
 type RouterContainer = Awaited<ReturnType<typeof flow.serverSideRoutes[0]["action"]>>;
 
+
+type NavigateOpts =  {
+    to: string,
+    callback: boolean,
+    opts?: NavigateOptions
+};
+
+type NavigateFn = (to: string, callback: boolean, opts?: NavigateOptions) => void;
+
+/**
+ * A hook providing the `navigate(path: string, opts?: NavigateOptions)` function
+ * with React Router API that has more consistent history updates. Uses internal
+ * queue for processing navigate calls.
+ */
+function useQueuedNavigate(waitReference: React.MutableRefObject<Promise<void> | undefined>, navigated: React.MutableRefObject<boolean>): NavigateFn {
+    const navigate = useNavigate();
+    const navigateQueue = useRef<NavigateOpts[]>([]).current;
+    const [navigateQueueLength, setNavigateQueueLength] = useState(0);
+
+    const dequeueNavigation = useCallback(() => {
+        const navigateArgs = navigateQueue.shift();
+        if (navigateArgs === undefined) {
+            // Empty queue, do nothing.
+            return;
+        }
+
+        const blockingNavigate = async () => {
+            if (waitReference.current) {
+                await waitReference.current;
+                waitReference.current = undefined;
+            }
+            navigated.current = !navigateArgs.callback;
+            navigate(navigateArgs.to, navigateArgs.opts);
+            setNavigateQueueLength(navigateQueue.length);
+        }
+        blockingNavigate();
+    }, [navigate, setNavigateQueueLength]);
+
+    const dequeueNavigationAfterCurrentTask = useCallback(() => {
+        queueMicrotask(dequeueNavigation);
+    }, [dequeueNavigation]);
+
+    const enqueueNavigation = useCallback((to: string, callback: boolean, opts?: NavigateOptions) => {
+        navigateQueue.push({to: to, callback: callback, opts: opts});
+        setNavigateQueueLength(navigateQueue.length);
+        if (navigateQueue.length === 1) {
+            // The first navigation can be started right after any pending sync
+            // jobs, which could add more navigations to the queue.
+            dequeueNavigationAfterCurrentTask();
+        }
+    }, [setNavigateQueueLength, dequeueNavigationAfterCurrentTask]);
+
+    useEffect(() => () => {
+        // The Flow component has rendered, but history might not be
+        // updated yet, as React Router does it asynchronously.
+        // Use microtask callback for history consistency.
+        dequeueNavigationAfterCurrentTask();
+    }, [navigateQueueLength, dequeueNavigationAfterCurrentTask]);
+
+    return enqueueNavigation;
+}
+
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const navigate = useNavigate();
@@ -171,10 +239,12 @@ function Flow() {
         navigated.current = navigated.current || (nextLocation.pathname === currentLocation.pathname && nextLocation.search === currentLocation.search && nextLocation.hash === currentLocation.hash);
         return true;
     });
-    const {pathname, search, hash} = useLocation();
+    const location = useLocation();
     const navigated = useRef<boolean>(false);
     const fromAnchor = useRef<boolean>(false);
     const containerRef = useRef<RouterContainer | undefined>(undefined);
+    const roundTrip = useRef<Promise<void> | undefined>(undefined);
+    const queuedNavigate = useQueuedNavigate(roundTrip, navigated);
 
     const navigateEventHandler = useCallback((event: MouseEvent) => {
         const path = extractPath(event);
@@ -210,9 +280,8 @@ function Flow() {
         // @ts-ignore
         window.Vaadin.Flow.navigation = true;
         const path = '/' + event.detail.url;
-        navigated.current = !event.detail.callback;
         fromAnchor.current = false;
-        navigate(path, { state: event.detail.state, replace: event.detail.replace});
+        queuedNavigate(path, event.detail.callback, { state: event.detail.state, replace: event.detail.replace });
     }, [navigate]);
 
     const redirect = useCallback((path: string) => {
@@ -244,9 +313,13 @@ function Flow() {
 
     useEffect(() => {
         if (blocker.state === 'blocked') {
+            let blockingPromise: any;
+            roundTrip.current = new Promise<void>((resolve,reject) => blockingPromise = {resolve:resolve,reject:reject});
+
             // Do not skip server round-trip if navigation originates from a click on a link
             if (navigated.current && !fromAnchor.current) {
                 blocker.proceed();
+                blockingPromise.resolve();
                 return;
             }
             fromAnchor.current = false;
@@ -258,14 +331,16 @@ function Flow() {
             // @ts-ignore
             if (matched && matched.filter(path => path.route?.element?.type?.name === Flow.name).length != 0) {
                 containerRef.current?.onBeforeEnter?.call(containerRef?.current,
-                    {pathname,search}, {
+                    {pathname, search}, {
                         prevent() {
                             blocker.reset();
+                            blockingPromise.resolve();
                             navigated.current = false;
                         },
                         redirect,
                         continue() {
                             blocker.proceed();
+                            blockingPromise.resolve();
                         }
                     }, router);
                 navigated.current = true;
@@ -281,15 +356,18 @@ function Flow() {
                             containerRef.current.serverConnected = (cancel) => {
                                 if (cancel) {
                                     blocker.reset();
+                                    blockingPromise.resolve();
                                 } else {
                                     blocker.proceed();
                                     window.removeEventListener('click',  navigateEventHandler);
+                                    blockingPromise.resolve();
                                 }
                             }
                         } else {
                             // permitted navigation: proceed with the blocker
                             blocker.proceed();
                             window.removeEventListener('click',  navigateEventHandler);
+                            blockingPromise.resolve();
                         }
                     });
             }
@@ -299,10 +377,10 @@ function Flow() {
     useEffect(() => {
         if (navigated.current) {
             navigated.current = false;
-            fireNavigated(pathname,search);
+            fireNavigated(location.pathname,location.search);
             return;
         }
-        flow.serverSideRoutes[0].action({pathname, search})
+        flow.serverSideRoutes[0].action({pathname: location.pathname, search: location.search})
             .then((container) => {
                 const outlet = ref.current?.parentNode;
                 if (outlet && outlet !== container.parentNode) {
@@ -310,15 +388,15 @@ function Flow() {
                     window.addEventListener('click',  navigateEventHandler);
                     containerRef.current = container
                 }
-                return container.onBeforeEnter?.call(container, {pathname, search}, {prevent, redirect, continue() {
-                        fireNavigated(pathname,search);}}, router);
+                return container.onBeforeEnter?.call(container, {pathname: location.pathname, search: location.search}, {prevent, redirect, continue() {
+                        fireNavigated(location.pathname,location.search);}}, router);
             })
             .then((result: unknown) => {
                 if (typeof result === "function") {
                     result();
                 }
             });
-    }, [pathname, search, hash]);
+    }, [location]);
 
     return <output ref={ref} />;
 }
