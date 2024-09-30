@@ -279,4 +279,10 @@ public class InitParameters implements Serializable {
      * Time is given in minutes.
      */
     public static final String LAUNCH_BROWSER_DELAY = "launch-browser-delay";
+
+    /**
+     * Configuration name for setting the application identifier.
+     */
+    public static final String APPLICATION_IDENTIFIER = "applicationIdentifier";
+
 }

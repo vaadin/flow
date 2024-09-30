@@ -94,6 +94,15 @@ public @interface RouteAlias {
     boolean absolute() default false;
 
     /**
+     * Marks if Route should apply a {@link Layout} matching route value when no
+     * {@link #layout()} defined. If set to false no layout will be searched
+     * for.
+     *
+     * @return {@code false} skips automatic layout
+     */
+    boolean autoLayout() default true;
+
+    /**
      * Internal annotation to enable use of multiple {@link RouteAlias}
      * annotations.
      */

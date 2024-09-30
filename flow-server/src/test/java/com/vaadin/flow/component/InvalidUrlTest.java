@@ -36,6 +36,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import static org.junit.Assert.assertEquals;
@@ -93,6 +94,7 @@ public class InvalidUrlTest {
 
         session.lock();
         session.setConfiguration(config);
+        CurrentInstance.set(VaadinSession.class, session);
 
         ui.getInternals().setSession(session);
 

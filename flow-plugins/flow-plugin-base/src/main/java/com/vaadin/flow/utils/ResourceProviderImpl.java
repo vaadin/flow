@@ -18,10 +18,12 @@ package com.vaadin.flow.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * {@link ResourceProvider} for use with plugin execution.
@@ -31,15 +33,24 @@ import com.vaadin.flow.di.ResourceProvider;
  */
 class ResourceProviderImpl implements ResourceProvider {
 
+    private ClassLoader classLoader = null;
+
+    ResourceProviderImpl() {
+        this.classLoader = ResourceProviderImpl.class.getClassLoader();
+    }
+
+    ResourceProviderImpl(ClassFinder classFinder) {
+        this.classLoader = classFinder.getClassLoader();
+    }
+
     @Override
     public URL getApplicationResource(String path) {
-        return ResourceProviderImpl.class.getClassLoader().getResource(path);
+        return classLoader.getResource(path);
     }
 
     @Override
     public List<URL> getApplicationResources(String path) throws IOException {
-        return Collections.list(
-                ResourceProviderImpl.class.getClassLoader().getResources(path));
+        return Collections.list(classLoader.getResources(path));
     }
 
     @Override

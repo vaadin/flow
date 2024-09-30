@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -441,7 +442,8 @@ public class ElementListenerMap extends NodeMap {
         final boolean isNavigationRequest = UI.BrowserNavigateEvent.EVENT_NAME
                 .equals(event.getType())
                 || UI.BrowserLeaveNavigationEvent.EVENT_NAME
-                        .equals(event.getType());
+                        .equals(event.getType())
+                || UI.BrowserRefreshEvent.EVENT_NAME.equals(event.getType());
 
         final boolean inert = event.getSource().getNode().isInert();
 

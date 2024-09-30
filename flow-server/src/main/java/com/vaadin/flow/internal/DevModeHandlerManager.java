@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Closeable;
 import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
@@ -49,7 +51,7 @@ public interface DevModeHandlerManager {
      * @param classes
      *            classes to check for npm- and js modules
      * @param context
-     *            servlet context we are running in
+     *            Vaadin Context we are running in
      *
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
@@ -86,6 +88,24 @@ public interface DevModeHandlerManager {
      *            the url to open
      */
     void launchBrowserInDevelopmentMode(String url);
+
+    /**
+     * Sets the application URL for the given application.
+     * <p>
+     * This is only called if the URL is known.
+     *
+     * @param applicationUrl
+     *            the application url
+     */
+    void setApplicationUrl(String applicationUrl);
+
+    /**
+     * Registers a command that will run when DevModeHandler is shut down
+     *
+     * @param command
+     *            the command to run
+     */
+    void registerShutdownCommand(Command command);
 
     /**
      * Gets the {@link DevModeHandler}.

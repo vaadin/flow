@@ -48,6 +48,7 @@ import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionDestroyListener;
 import com.vaadin.flow.server.SessionInitEvent;
 import com.vaadin.flow.server.SessionInitListener;
+import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -263,7 +264,7 @@ public class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -277,7 +278,7 @@ public class HotswapperTest {
         hotswapper.onHotswap(new String[] { MyLayout.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -292,7 +293,7 @@ public class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -307,7 +308,7 @@ public class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -322,7 +323,7 @@ public class HotswapperTest {
                 MyLayout.class.getName() }, true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -337,7 +338,7 @@ public class HotswapperTest {
                 true);
 
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -352,6 +353,7 @@ public class HotswapperTest {
 
         ui.assertNotRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -367,6 +369,7 @@ public class HotswapperTest {
 
         ui.assertRouteRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -383,6 +386,7 @@ public class HotswapperTest {
 
         ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -400,6 +404,7 @@ public class HotswapperTest {
 
         ui.assertRouteRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -417,6 +422,7 @@ public class HotswapperTest {
 
         ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -434,6 +440,7 @@ public class HotswapperTest {
 
         ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -451,6 +458,7 @@ public class HotswapperTest {
 
         ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -467,6 +475,7 @@ public class HotswapperTest {
 
         ui.assertNotRefreshed();
         Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
@@ -488,7 +497,7 @@ public class HotswapperTest {
 
         pushUI.assertNotRefreshed();
         notPushUI.assertNotRefreshed();
-        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload).refresh(anyBoolean());
     }
 
     @Test
@@ -496,6 +505,7 @@ public class HotswapperTest {
         AtomicBoolean sessionInitInstalled = new AtomicBoolean();
         AtomicBoolean sessionDestroyInstalled = new AtomicBoolean();
         AtomicBoolean serviceDestroyInstalled = new AtomicBoolean();
+        AtomicBoolean uiInitInstalled = new AtomicBoolean();
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(false);
         VaadinService service = new MockVaadinServletService(configuration) {
@@ -519,6 +529,12 @@ public class HotswapperTest {
                 serviceDestroyInstalled.set(true);
                 return super.addServiceDestroyListener(listener);
             }
+
+            @Override
+            public Registration addUIInitListener(UIInitListener listener) {
+                uiInitInstalled.set(true);
+                return super.addUIInitListener(listener);
+            }
         };
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
@@ -538,6 +554,9 @@ public class HotswapperTest {
         Assert.assertTrue(
                 "Expected hotswapper ServiceDestroyListener to be registered in development mode, but was not",
                 serviceDestroyInstalled.get());
+        Assert.assertTrue(
+                "Expected hotswapper UIInitListener to be registered in development mode, but was not",
+                uiInitInstalled.get());
     }
 
     @Test
@@ -545,6 +564,7 @@ public class HotswapperTest {
         AtomicBoolean sessionInitInstalled = new AtomicBoolean();
         AtomicBoolean sessionDestroyInstalled = new AtomicBoolean();
         AtomicBoolean serviceDestroyInstalled = new AtomicBoolean();
+        AtomicBoolean uiInitInstalled = new AtomicBoolean();
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(true);
         VaadinService service = new MockVaadinServletService(configuration) {
@@ -580,6 +600,9 @@ public class HotswapperTest {
         Assert.assertFalse(
                 "Expected hotswapper  ServiceDestroyListener not to be registered in production mode, but it was",
                 serviceDestroyInstalled.get());
+        Assert.assertFalse(
+                "Expected hotswapper  UIInitListener not to be registered in production mode, but it was",
+                uiInitInstalled.get());
     }
 
     @Tag("my-route")

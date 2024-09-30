@@ -25,7 +25,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 
 public class AbstractRouteRegistryInitializerTest {
@@ -55,11 +57,59 @@ public class AbstractRouteRegistryInitializerTest {
 
     }
 
+    @Tag(Tag.DIV)
+    @Route("foo")
+    @RouteAlias("foo")
+    public static class RouteAndAliasWithSamePath extends Component {
+
+    }
+
+    @Tag(Tag.DIV)
+    @Route("foo")
+    @RouteAlias("bar")
+    @RouteAlias("baz")
+    @RouteAlias("bar")
+    @RouteAlias("baz")
+    @RouteAlias("hey")
+    public static class AliasesWithSamePath extends Component {
+
+    }
+
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void routeAndParentLayout_notRouterLayout_throws() {
         initializer.validateRouteClasses(null,
                 Stream.of(RouteAndParentLayout.class));
+    }
 
+    @Test
+    public void validateRouteClasses_samePathForRouteAndAlias_throws() {
+        InvalidRouteConfigurationException exception = Assert.assertThrows(
+                InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(null,
+                        Stream.of(RouteAndAliasWithSamePath.class)));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                Route.class));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                RouteAlias.class));
+        Assert.assertTrue(exception.getMessage().contains("same path"));
+        Assert.assertTrue(exception.getMessage().contains("foo"));
+    }
+
+    @Test
+    public void validateRouteClasses_samePathForRepeatableAlias_throws() {
+        InvalidRouteConfigurationException exception = Assert.assertThrows(
+                InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(null,
+                        Stream.of(AliasesWithSamePath.class)));
+        Assert.assertFalse(containsQuotedAnnotationName(exception.getMessage(),
+                Route.class));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                RouteAlias.class));
+        Assert.assertTrue(exception.getMessage().contains("same paths"));
+        Assert.assertTrue(exception.getMessage().contains("bar"));
+        Assert.assertTrue(exception.getMessage().contains("baz"));
+        Assert.assertFalse(exception.getMessage().contains("foo"));
+        Assert.assertFalse(exception.getMessage().contains("hey"));
     }
 
     @Test
@@ -72,4 +122,8 @@ public class AbstractRouteRegistryInitializerTest {
                 classes.iterator().next());
     }
 
+    private static boolean containsQuotedAnnotationName(String message,
+            Class<?> clazz) {
+        return message.contains("'@" + clazz.getSimpleName() + "'");
+    }
 }

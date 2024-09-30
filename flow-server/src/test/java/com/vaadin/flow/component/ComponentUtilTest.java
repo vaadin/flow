@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.vaadin.flow.shared.Registration;
 import org.junit.Assert;
@@ -107,4 +108,34 @@ public class ComponentUtilTest {
         Assert.assertTrue(ComponentUtil.getListeners(component, PollEvent.class)
                 .isEmpty());
     }
+
+    @Test
+    public void registerComponentClass_and_getComponentsByTag_shouldReturnCorrectComponent() {
+        Class<? extends Component> testComponentClass = TestDiv.class;
+        String testTag = "test-div";
+
+        ComponentUtil.registerComponentClass(testTag, testComponentClass);
+
+        Set<Class<? extends Component>> retrievedClasses = ComponentUtil
+                .getComponentsByTag(testTag);
+
+        Assert.assertTrue(
+                "The retrieved classes should contain the registered component class",
+                retrievedClasses.contains(testComponentClass));
+
+        ComponentUtil.getComponentsByTag(testTag).clear();
+    }
+
+    @Test
+    public void getComponentsByTag_withUnregisteredTag_shouldReturnEmptySet() {
+        String unregisteredTag = "unregistered-tag";
+
+        Set<Class<? extends Component>> retrievedClasses = ComponentUtil
+                .getComponentsByTag(unregisteredTag);
+
+        Assert.assertTrue(
+                "The retrieved classes should be empty for an unregistered tag",
+                retrievedClasses.isEmpty());
+    }
+
 }

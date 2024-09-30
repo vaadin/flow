@@ -73,8 +73,8 @@ public class HistoryTest {
     private static final String PUSH_STATE_JS = "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
     private static final String REPLACE_STATE_JS = "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })";
 
-    private static final String PUSH_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false } }));";
-    private static final String REPLACE_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }));";
+    private static final String PUSH_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));";
+    private static final String REPLACE_STATE_REACT = "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));";
 
     @Before
     public void setup() {

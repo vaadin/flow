@@ -19,6 +19,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Properties;
@@ -38,8 +39,11 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.dau.DAUUtils;
+import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.pro.licensechecker.dau.EnforcementException;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -223,6 +227,36 @@ public class UidlRequestHandlerTest {
 
         String out = writer.toString();
         Assert.assertFalse(out.contains("history.pushState"));
+    }
+
+    @Test
+    public void synchronizedHandleRequest_DauEnforcementException_setsStatusCode503()
+            throws IOException {
+        VaadinService service = mock(VaadinService.class);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
+        UI ui = Mockito.mock(UI.class);
+
+        when(service.findUI(request)).thenReturn(ui);
+
+        ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
+            @Override
+            public void handleRpc(UI ui, Reader reader, VaadinRequest request) {
+                throw new DauEnforcementException(
+                        new EnforcementException("test"));
+            }
+        };
+
+        UidlRequestHandler handler = new UidlRequestHandler() {
+            @Override
+            protected ServerRpcHandler createRpcHandler() {
+                return serverRpcHandler;
+            }
+        };
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        Mockito.verify(response).setHeader(DAUUtils.STATUS_CODE_KEY, "503");
     }
 
     private JsonObject generateUidl(boolean withLocation, boolean withHash) {

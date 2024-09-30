@@ -339,4 +339,18 @@ public interface DeploymentConfiguration
     default boolean isReactEnabled() {
         return getBooleanProperty(InitParameters.REACT_ENABLE, true);
     }
+
+    /**
+     * Gets the application name that is by default generated based on the
+     * project build settings, e.g. maven's groupId and artifactId, and can be
+     * configured with the 'vaadin.applicationIdentifier' configuration
+     * parameter. This parameter is used for tracking daily active users per
+     * application.
+     *
+     * @return this application's name
+     */
+    default String getApplicationName() {
+        return getStringProperty(InitParameters.APPLICATION_IDENTIFIER,
+                "default-project-id");
+    }
 }

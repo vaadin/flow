@@ -187,6 +187,10 @@ public class NavigationAccessControl implements BeforeEnterListener {
      *            the Flow view to use as login view
      */
     public final void setLoginView(Class<? extends Component> loginView) {
+        if (loginView == this.loginView) {
+            // Probably hot reload
+            return;
+        }
         throwIfLoginViewSet();
         this.loginView = loginView;
     }
@@ -210,6 +214,11 @@ public class NavigationAccessControl implements BeforeEnterListener {
      *            the frontend view to use as login view
      */
     public void setLoginView(String loginUrl) {
+        if (loginUrl == this.loginUrl) {
+            // Probably hot reload
+            return;
+        }
+
         throwIfLoginViewSet();
         this.loginUrl = loginUrl;
     }
@@ -246,7 +255,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
             if (context.getPrincipal() == null) {
                 storeRedirectURL(event, request);
                 if (loginView != null) {
-                    event.forwardTo(loginView);
+                    event.forwardTo(loginView, true);
                 } else {
                     if (loginUrl != null) {
                         event.forwardToUrl(loginUrl);

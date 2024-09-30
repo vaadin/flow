@@ -746,6 +746,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             }
         });
 
+        if (requestFilename
+                .startsWith("/VAADIN/generated/jar-resources/copilot/")) {
+            // Cache copilot files as they have a generated hash at the end
+            response.setHeader("Cache-Control", "max-age=31536001,immutable");
+        }
         if (responseCode == HttpURLConnection.HTTP_OK) {
             // Copies response payload
             writeStream(response.getOutputStream(),

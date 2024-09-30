@@ -27,11 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.StateNode;
@@ -46,6 +48,8 @@ import com.vaadin.flow.server.communication.rpc.MapSyncRpcHandler;
 import com.vaadin.flow.server.communication.rpc.NavigationRpcHandler;
 import com.vaadin.flow.server.communication.rpc.PublishedServerEventHandlerRpcHandler;
 import com.vaadin.flow.server.communication.rpc.RpcInvocationHandler;
+import com.vaadin.flow.server.dau.DAUUtils;
+import com.vaadin.flow.server.dau.FlowDauIntegration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -184,7 +188,6 @@ public class ServerRpcHandler implements Serializable {
          * will be shared.
          *
          * @return the raw JSON object that was received from the client
-         *
          */
         public JsonObject getRawJson() {
             return json;
@@ -321,6 +324,7 @@ public class ServerRpcHandler implements Serializable {
             // Message id ok, process RPCs
             ui.getInternals().setLastProcessedClientToServerId(expectedId,
                     messageHash);
+            enforceIfNeeded(request, rpcRequest);
             handleInvocations(ui, rpcRequest.getRpcInvocationsData());
         }
 
@@ -363,6 +367,48 @@ public class ServerRpcHandler implements Serializable {
             }
         }
 
+    }
+
+    private void enforceIfNeeded(VaadinRequest request, RpcRequest rpcRequest) {
+        if (DAUUtils.isDauEnabled(request.getService())) {
+            FlowDauIntegration.applyEnforcement(request,
+                    shouldApplyEnforcement(rpcRequest));
+        }
+    }
+
+    private Predicate<VaadinRequest> shouldApplyEnforcement(
+            RpcRequest rpcRequest) {
+        return request -> {
+            // do not apply enforcement when the browser is closing, allow
+            // potential resources be released.
+            if (rpcRequest.isUnloadBeaconRequest()) {
+                return false;
+            }
+            // do not apply enforcement during a resync, user will be blocked
+            // anyway on next request.
+            if (rpcRequest.isResynchronize()) {
+                return false;
+            }
+            JsonArray invocations = rpcRequest.getRpcInvocationsData();
+            if (invocations == null) {
+                // not a user interaction
+                return false;
+            }
+            // Do not enforce if RPC requests contains only poll or return
+            // channel events
+            for (int i = 0; i < invocations.length(); i++) {
+                JsonObject json = invocations.get(i);
+                String type = json.hasKey("type") ? json.getString("type") : "";
+                String event = json.hasKey("event") ? json.getString("event")
+                        : "";
+                if (!JsonConstants.RPC_TYPE_CHANNEL.equals(type)
+                        && (!JsonConstants.RPC_TYPE_EVENT.equals(type)
+                                || !PollEvent.DOM_EVENT_NAME.equals(event))) {
+                    return true;
+                }
+            }
+            return false;
+        };
     }
 
     // Kind of same as in AbstractNavigationStateRenderer, but gets

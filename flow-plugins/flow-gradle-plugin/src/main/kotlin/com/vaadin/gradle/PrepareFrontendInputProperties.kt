@@ -140,6 +140,9 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
     public fun getReactEnable(): Provider<Boolean> = config.reactEnable
 
     @Input
+    public fun getApplicationIdentifier(): Provider<String> = config.applicationIdentifier
+
+    @Input
     @Optional
     public fun getNodeExecutablePath(): Provider<String> = tools
         .mapOrNull { it.nodeBinary }
@@ -171,6 +174,7 @@ internal class PrepareFrontendInputProperties(private val config: PluginEffectiv
         settings.isForceAlternativeNode = config.requireHomeNodeExec.get()
         settings.isUseGlobalPnpm = config.useGlobalPnpm.get()
         settings.isAutoUpdate = config.nodeAutoUpdate.get()
+        settings.nodeVersion = config.nodeVersion.get()
         FrontendTools(settings)
     }
 }

@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hamcrest.core.StringContains;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,6 +50,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
@@ -872,6 +874,55 @@ public class RouteRegistryInitializerTest {
     @RouteAlias(value = "alias", layout = InlineParent.class)
     @Tag(Tag.DIV)
     public static class InlineAliasView extends Component {
+    }
+
+    @Layout
+    @Tag(Tag.DIV)
+    public static class FaultyParentLayout extends Component {
+    }
+
+    @Layout
+    @Tag(Tag.DIV)
+    public static class AnnotatedParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Layout
+    @Tag(Tag.DIV)
+    public static class AnotherAnnotatedParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Test
+    public void layout_annotation_on_non_routelayout_throws()
+            throws ServletException {
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(
+                "Found @Layout on classes { %s } not implementing RouterLayout.",
+                FaultyParentLayout.class.getName()));
+
+        routeRegistryInitializer.process(
+                Stream.of(FaultyParentLayout.class).collect(Collectors.toSet()),
+                servletContext);
+    }
+
+    @Test
+    public void same_layout_annotation_values_throws() {
+        StringBuilder messageBuilder = new StringBuilder(
+                "Found duplicate @Layout values in classes:");
+        messageBuilder.append("\n").append(" - ")
+                .append(AnnotatedParentLayout.class.getName()).append(" - ")
+                .append(AnotherAnnotatedParentLayout.class.getName());
+
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(
+                StringContains.containsString(messageBuilder.toString()));
+
+        Set<Class<?>> classes = new LinkedHashSet<>(2);
+        classes.add(AnnotatedParentLayout.class);
+        classes.add(AnotherAnnotatedParentLayout.class);
+
+        routeRegistryInitializer.validateLayoutAnnotations(classes);
     }
 
     @Test

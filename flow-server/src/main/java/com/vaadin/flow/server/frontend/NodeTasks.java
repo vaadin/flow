@@ -105,15 +105,13 @@ public class NodeTasks implements FallibleCommand {
     public NodeTasks(Options options) {
         // Lock file is created in the project root folder and not in target/ so
         // that Maven does not remove it
-        lockFile = new File(options.getNpmFolder(), ".flow-node-tasks.lock")
+        lockFile = new File(options.getNpmFolder(), ".vaadin-node-tasks.lock")
                 .toPath();
 
         ClassFinder classFinder = options.getClassFinder();
         FrontendDependenciesScanner frontendDependencies = null;
 
         Set<String> webComponentTags = new HashSet<>();
-
-        final FeatureFlags featureFlags = options.getFeatureFlags();
 
         if (options.isFrontendHotdeploy()) {
             UsageStatistics.markAsUsed("flow/hotdeploy", null);
@@ -122,9 +120,7 @@ public class NodeTasks implements FallibleCommand {
         if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
                 || options.isEnableConfigUpdate()) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(!options.isUseByteCodeScanner(), classFinder,
-                            options.isGenerateEmbeddableWebComponents(),
-                            featureFlags);
+                    .createScanner(options);
 
             if (options.isProductionMode()) {
                 boolean needBuild = BundleValidationUtil.needsBuild(options,

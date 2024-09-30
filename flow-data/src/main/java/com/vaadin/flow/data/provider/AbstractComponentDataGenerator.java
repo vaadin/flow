@@ -17,6 +17,7 @@ package com.vaadin.flow.data.provider;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -134,8 +135,9 @@ public abstract class AbstractComponentDataGenerator<T>
         if (owner instanceof StateTree) {
             containerUi = ((StateTree) owner).getUI();
         }
-        if (containerUi != null && component.getUI().isPresent()
-                && containerUi != component.getUI().get()) {
+        Optional<UI> componentUi = component.getUI();
+        if (containerUi != null && componentUi.isPresent()
+                && containerUi != componentUi.get()) {
             throw new IllegalStateException("The component '"
                     + component.getClass()
                     + "' is already attached to a UI instance which differs "

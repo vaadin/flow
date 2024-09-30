@@ -222,16 +222,14 @@ public class RouteConfiguration implements Serializable {
         }
         String route = RouteUtil.getRoutePath(handledRegistry.getContext(),
                 navigationTarget);
-        handledRegistry.setRoute(route, navigationTarget,
-                RouteUtil.getParentLayouts(handledRegistry.getContext(),
-                        navigationTarget, route));
+        handledRegistry.setRoute(route, navigationTarget, RouteUtil
+                .getParentLayouts(handledRegistry, navigationTarget, route));
 
         for (RouteAlias alias : navigationTarget
                 .getAnnotationsByType(RouteAlias.class)) {
             String path = RouteUtil.getRouteAliasPath(navigationTarget, alias);
-            handledRegistry.setRoute(path, navigationTarget,
-                    RouteUtil.getParentLayouts(handledRegistry.getContext(),
-                            navigationTarget, path));
+            handledRegistry.setRoute(path, navigationTarget, RouteUtil
+                    .getParentLayouts(handledRegistry, navigationTarget, path));
         }
     }
 

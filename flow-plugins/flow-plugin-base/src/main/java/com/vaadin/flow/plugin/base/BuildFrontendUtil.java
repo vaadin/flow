@@ -58,6 +58,7 @@ import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LocalSubscriptionKey;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
@@ -72,6 +73,7 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
@@ -543,8 +545,10 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            the PluginAdapterBase
+     * @return {@literal true} if license validation is required because of the
+     *         presence of commercial components, otherwise {@literal false}.
      */
-    public static void validateLicenses(PluginAdapterBase adapter) {
+    public static boolean validateLicenses(PluginAdapterBase adapter) {
         File outputFolder = adapter.webpackOutputDirectory();
 
         String statsJsonContent = null;
@@ -574,7 +578,8 @@ public class BuildFrontendUtil {
         }
 
         FrontendDependenciesScanner scanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, adapter.getClassFinder(), true, null);
+                .createScanner(false, adapter.getClassFinder(), true, null,
+                        adapter.isReactEnabled());
         List<Product> commercialComponents = findCommercialFrontendComponents(
                 scanner, statsJsonContent);
         commercialComponents.addAll(findCommercialJavaComponents(adapter));
@@ -596,7 +601,7 @@ public class BuildFrontendUtil {
                 throw e;
             }
         }
-
+        return !commercialComponents.isEmpty();
     }
 
     private static Logger getLogger() {
@@ -697,10 +702,27 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
-     *
+     * @deprecated use {@link #updateBuildFile(PluginAdapterBuild, boolean)}
      */
+    @Deprecated
     public static void updateBuildFile(PluginAdapterBuild adapter) {
+        updateBuildFile(adapter, false);
+    }
 
+    /**
+     * Updates the build info after the bundle has been built by build-frontend.
+     * <p>
+     * Removes the abstract folder paths as they should not be used for prebuilt
+     * bundles and ensures production mode is set to true.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @param licenseRequired
+     *            {@literal true} if a license was required for the production
+     *            build.
+     */
+    public static void updateBuildFile(PluginAdapterBuild adapter,
+            boolean licenseRequired) {
         File tokenFile = getTokenFile(adapter);
         if (!tokenFile.exists()) {
             adapter.logWarn(
@@ -729,13 +751,61 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
+            // Premium features flag is always true, because Vaadin CI server
+            // uses Enterprise sub, thus it's always true.
+            // Thus, resets the premium feature flag and DAU flag before asking
+            // license-server
+            buildInfo.remove(Constants.PREMIUM_FEATURES);
+            buildInfo.remove(Constants.DAU_TOKEN);
+
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
+            buildInfo.put(APPLICATION_IDENTIFIER,
+                    adapter.applicationIdentifier());
+            if (licenseRequired) {
+                if (LocalSubscriptionKey.get() != null) {
+                    adapter.logInfo("Daily Active User tracking enabled");
+                    buildInfo.put(Constants.DAU_TOKEN, true);
+                    checkLicenseCheckerAtRuntime(adapter);
+                }
+            }
+            if (isControlCenterAvailable(adapter.getClassFinder())
+                    && LicenseChecker.isValidLicense(
+                            "vaadin-commercial-cc-client", null,
+                            BuildType.PRODUCTION)) {
+                adapter.logInfo("Premium Features are enabled");
+                buildInfo.put(Constants.PREMIUM_FEATURES, true);
+            }
 
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             adapter.logWarn("Unable to read token file", e);
         }
+    }
+
+    private static boolean isControlCenterAvailable(ClassFinder classFinder) {
+        if (classFinder == null) {
+            return false;
+        }
+        try {
+            classFinder.loadClass(
+                    "com.vaadin.controlcenter.starter.actuate.endpoint.VaadinActuatorEndpoint");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    private static void checkLicenseCheckerAtRuntime(
+            PluginAdapterBuild adapter) {
+        adapter.checkRuntimeDependency("com.vaadin", "license-checker",
+                logMessage -> adapter.logWarn(
+                        """
+                                Vaadin Subscription used to build the application requires
+                                the artifact com.vaadin:license-checker to be present at runtime.
+
+                                """
+                                + logMessage));
     }
 
     /**

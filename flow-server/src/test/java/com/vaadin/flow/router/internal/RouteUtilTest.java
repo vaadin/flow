@@ -37,6 +37,7 @@ import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
@@ -123,6 +124,16 @@ public class RouteUtilTest {
     @Route(value = "sub", layout = MultiTarget.class)
     @Tag(Tag.DIV)
     public static class SubLayout extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Layout
+    private static class AutoLayout extends Component implements RouterLayout {
+    }
+
+    @Route(value = "auto")
+    @Tag(Tag.DIV)
+    public static class AutoLayoutView extends Component {
     }
 
     @Test
@@ -287,6 +298,29 @@ public class RouteUtilTest {
         Assert.assertNotNull("Didn't find any parent for route", parent);
         Assert.assertEquals("Received wrong parent class.",
                 RoutePrefixParent.class, parent);
+    }
+
+    @Test
+    public void automaticLayoutShouldBeGottenForDefaultRoute() {
+
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setLayout(AutoLayout.class);
+
+        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
+                .getParentLayouts(registry, AutoLayoutView.class, "auto");
+
+        Assert.assertEquals("Route with no layout should get automatic layout",
+                1, parentLayouts.size());
+        Assert.assertEquals(
+                "Layout should be the @Layout annotated RouterLayout",
+                AutoLayout.class, parentLayouts.get(0));
     }
 
     @Test

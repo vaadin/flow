@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -38,6 +39,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.flow.server.communication.ServerRpcHandler.ResynchronizationRequiredException;
+import com.vaadin.flow.server.dau.DAUUtils;
+import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
@@ -123,6 +126,14 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                     request.getRemoteHost());
             // Refresh on client side
             writeRefresh(response);
+            return true;
+        } catch (DauEnforcementException e) {
+            getLogger().warn(
+                    "Daily Active User limit reached. Blocking new user request");
+            response.setHeader(DAUUtils.STATUS_CODE_KEY, String
+                    .valueOf(HttpStatusCode.SERVICE_UNAVAILABLE.getCode()));
+            String json = DAUUtils.jsonEnforcementResponse(request, e);
+            commitJsonResponse(response, json);
             return true;
         } catch (ResynchronizationRequiredException e) { // NOSONAR
             // Resync on the client side

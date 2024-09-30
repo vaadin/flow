@@ -38,7 +38,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -68,8 +67,8 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.menu.MenuRegistry;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -176,6 +175,18 @@ public abstract class AbstractNavigationStateRenderer
             return result.get();
         }
 
+        // If navigation target is Hilla route, terminate Flow navigation logic
+        // here.
+        String route = event.getLocation().getPath().isEmpty()
+                ? event.getLocation().getPath()
+                : event.getLocation().getPath().startsWith("/")
+                        ? event.getLocation().getPath()
+                        : "/" + event.getLocation().getPath();
+        if (MenuRegistry.hasClientRoute(route, true) && !MenuRegistry
+                .getClientRoutes(true).get(route).flowLayout()) {
+            return HttpStatusCode.OK.getCode();
+        }
+
         final ArrayList<HasElement> chain;
 
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
@@ -235,7 +246,6 @@ public abstract class AbstractNavigationStateRenderer
         // on the UI.
         if (preserveOnRefreshTarget) {
             setPreservedChain(chain, event);
-            warnAboutPreserveOnRefreshAndLiveReloadCombo(ui);
         }
 
         @SuppressWarnings("unchecked")
@@ -301,7 +311,8 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
+        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())
+                || NavigationTrigger.REFRESH.equals(event.getTrigger());
     }
 
     private boolean isRouterLinkNotFoundNavigationError(
@@ -729,7 +740,8 @@ public abstract class AbstractNavigationStateRenderer
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
         newNavigationEvent.getUI().getPage().getHistory().replaceState(null,
-                newNavigationEvent.getLocation());
+                newNavigationEvent.getLocation(),
+                beforeNavigation.isUseForwardCallback());
 
         return handler.handle(newNavigationEvent);
     }
@@ -1040,14 +1052,4 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
-    private static void warnAboutPreserveOnRefreshAndLiveReloadCombo(UI ui) {
-        // Show a warning that live-reload may work counter-intuitively
-        DeploymentConfiguration configuration = ui.getSession()
-                .getConfiguration();
-        if (configuration.getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
-                && configuration.isDevModeLiveReloadEnabled()) {
-            ui.getPage().executeJs(
-                    "Vaadin.devTools.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
-        }
-    }
 }

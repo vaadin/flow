@@ -36,6 +36,7 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.DAU_TOKEN;
 import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE_TOKEN;
@@ -43,8 +44,10 @@ import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.PREMIUM_FEATURES;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
@@ -170,6 +173,18 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.hasKey(REACT_ENABLE)) {
             params.put(REACT_ENABLE,
                     String.valueOf(buildInfo.getBoolean(REACT_ENABLE)));
+        }
+        if (buildInfo.hasKey(APPLICATION_IDENTIFIER)) {
+            params.put(APPLICATION_IDENTIFIER,
+                    buildInfo.getString(APPLICATION_IDENTIFIER));
+        }
+        if (buildInfo.hasKey(DAU_TOKEN)) {
+            params.put(DAU_TOKEN,
+                    String.valueOf(buildInfo.getBoolean(DAU_TOKEN)));
+        }
+        if (buildInfo.hasKey(PREMIUM_FEATURES)) {
+            params.put(PREMIUM_FEATURES,
+                    String.valueOf(buildInfo.getBoolean(PREMIUM_FEATURES)));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);

@@ -21,6 +21,8 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.AbstractConfigurationFactory;
@@ -94,8 +96,13 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
         for (final Enumeration<String> e = vaadinConfig
                 .getConfigParameterNames(); e.hasMoreElements();) {
             final String name = e.nextElement();
-            initParameters.setProperty(name,
-                    vaadinConfig.getConfigParameter(name));
+            String value = vaadinConfig.getConfigParameter(name);
+            if (value != null) {
+                initParameters.setProperty(name, value);
+            } else {
+                LoggerFactory.getLogger(DeploymentConfigurationFactory.class)
+                        .debug("Ignoring NULL init parameter {}", name);
+            }
         }
 
         readBuildInfo(initParameters, vaadinConfig.getVaadinContext());

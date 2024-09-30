@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
@@ -707,7 +709,12 @@ public class Options implements Serializable {
         return this;
     }
 
-    protected FeatureFlags getFeatureFlags() {
+    /**
+     * Get the available feature flags.
+     *
+     * @return FeatureFlags object
+     */
+    public FeatureFlags getFeatureFlags() {
         if (featureFlags == null) {
             featureFlags = new FeatureFlags(lookup);
             if (javaResourceFolder != null) {
@@ -923,6 +930,12 @@ public class Options implements Serializable {
 
     public Options withReact(boolean reactEnable) {
         this.reactEnable = reactEnable;
+        if (reactEnable && !FrontendUtils
+                .isReactRouterRequired(getFrontendDirectory())) {
+            LoggerFactory.getLogger(Options.class).debug(
+                    "Setting reactEnable to false as Vaadin Router is used!");
+            this.reactEnable = false;
+        }
         return this;
     }
 

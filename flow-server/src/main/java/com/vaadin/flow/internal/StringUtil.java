@@ -195,11 +195,28 @@ public final class StringUtil {
      *         returns empty String.
      */
     public static String getHash(String content, Charset charset) {
+        return getHash(content, null, charset);
+    }
+
+    /**
+     * Generate hash for content using a given salt bytes and a given charset
+     * for string byte encoding.
+     *
+     * @param content
+     *            content to hash
+     * @param salt
+     *            salt to be added into hash calculation
+     * @param charset
+     *            charset for encoding
+     * @return hash String for given content. In case content is null or empty *
+     *         returns empty String.
+     */
+    public static String getHash(String content, byte[] salt, Charset charset) {
         if (content == null || content.isEmpty()) {
             return "";
         }
 
-        return bytesToHex(MessageDigestUtil.sha256(content, charset));
+        return bytesToHex(MessageDigestUtil.sha256(content, salt, charset));
     }
 
     private static String bytesToHex(byte[] hash) {

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,6 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
@@ -55,6 +55,7 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -100,6 +101,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private volatile ConfigureRoutes editing = null;
 
     private CopyOnWriteArrayList<RoutesChangedListener> routesChangedListeners = new CopyOnWriteArrayList<>();
+
+    private final Map<String, Class<? extends RouterLayout>> layouts = new HashMap<>();
 
     /**
      * Thread-safe update of the RouteConfiguration.
@@ -597,4 +600,56 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Optional.empty();
     }
 
+    @Override
+    public void setLayout(Class<? extends RouterLayout> layout) {
+        if (layout == null || !layout.isAnnotationPresent(Layout.class)) {
+            return;
+        }
+        synchronized (layouts) {
+            layouts.put(layout.getAnnotation(Layout.class).value(), layout);
+        }
+    }
+
+    @Override
+    public Class<? extends RouterLayout> getLayout(String path) {
+        Optional<String> first = layouts.keySet().stream()
+                .sorted(pathSortComparator())
+                .filter(key -> pathMatches(path, key)).findFirst();
+        return first.map(layouts::get).orElse(null);
+    }
+
+    @Override
+    public boolean hasLayout(String path) {
+        return layouts.keySet().stream()
+                .anyMatch(key -> pathMatches(path, key));
+    }
+
+    private Comparator<String> pathSortComparator() {
+        return (o1, o2) -> removeStartSlash(o2).split("/").length
+                - removeStartSlash(o1).split("/").length;
+    }
+
+    private boolean pathMatches(String path, String layoutPath) {
+        String[] pathSplit = removeStartSlash(path).split("/");
+        String[] layoutSplit = removeStartSlash(layoutPath).split("/");
+
+        if (layoutSplit.length == 1 && layoutSplit[0].isEmpty()) {
+            return true;
+        }
+
+        if (layoutSplit.length > pathSplit.length) {
+            return false;
+        }
+
+        for (int i = 0; i < layoutSplit.length; i++) {
+            if (!pathSplit[i].equals(layoutSplit[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String removeStartSlash(String path) {
+        return path.startsWith("/") ? path.substring(1, path.length()) : path;
+    }
 }
