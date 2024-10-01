@@ -17,8 +17,12 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -233,4 +237,50 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         return true;
     }
 
+    @Override
+    public boolean checkRuntimeDependency(String groupId, String artifactId,
+            Consumer<String> missingDependencyMessage) {
+        Objects.requireNonNull(groupId, "groupId cannot be null");
+        Objects.requireNonNull(artifactId, "artifactId cannot be null");
+        if (missingDependencyMessage == null) {
+            missingDependencyMessage = text -> {
+            };
+        }
+
+        List<Artifact> deps = project.getArtifacts().stream()
+                .filter(artifact -> groupId.equals(artifact.getGroupId())
+                        && artifactId.equals(artifact.getArtifactId()))
+                .toList();
+        if (deps.isEmpty()) {
+            missingDependencyMessage.accept(String.format(
+                    """
+                            The dependency %1$s:%2$s has not been found in the project configuration.
+                            Please add the following dependency to your POM file:
+
+                            <dependency>
+                                <groupId>%1$s</groupId>
+                                <artifactId>%2$s</artifactId>
+                                <scope>runtime</scope>
+                            </dependency>
+                            """,
+                    groupId, artifactId));
+            return false;
+        } else if (deps.stream().noneMatch(artifact -> !artifact.isOptional()
+                && artifact.getArtifactHandler().isAddedToClasspath()
+                && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
+                        || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+                        || Artifact.SCOPE_RUNTIME
+                                .equals(artifact.getScope())))) {
+            missingDependencyMessage.accept(String.format(
+                    """
+                            The dependency %1$s:%2$s has been found in the project configuration,
+                            but with a scope that does not guarantee its presence at runtime.
+                            Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
+                            To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
+                            """,
+                    groupId, artifactId));
+            return false;
+        }
+        return true;
+    }
 }

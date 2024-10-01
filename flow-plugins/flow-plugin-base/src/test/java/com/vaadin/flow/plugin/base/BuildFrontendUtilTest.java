@@ -39,6 +39,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
@@ -54,6 +55,7 @@ import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -367,6 +369,8 @@ public class BuildFrontendUtilTest {
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
+        addPremiumFeatureAndDAUFlagTrue(tokenFile);
+
         String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-123");
         try {
@@ -417,6 +421,16 @@ public class BuildFrontendUtilTest {
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
+        addPremiumFeatureAndDAUFlagTrue(tokenFile);
+
+        ClassLoader classLoader = new URLClassLoader(
+                new URL[] { new File(baseDir, "target/test-classes/").toURI()
+                        .toURL() },
+                BuildFrontendUtilTest.class.getClassLoader());
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                classLoader);
+        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
+
         withMockedLicenseChecker(true, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true);
             Assert.assertTrue("Token file should still exist",
@@ -434,6 +448,8 @@ public class BuildFrontendUtilTest {
     public void updateBuildFile_tokenExisting_licenseRequiredAndIsNotPremiumLike_premiumFeaturesFlagNotAdded()
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
+
+        addPremiumFeatureAndDAUFlagTrue(tokenFile);
 
         withMockedLicenseChecker(false, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true);
@@ -512,7 +528,8 @@ public class BuildFrontendUtilTest {
         File generatedFeatureFlagsFile = new File(adapter.generatedTsFolder(),
                 FEATURE_FLAGS_FILE_NAME);
         String featureFlagsJs = Files
-                .readString(generatedFeatureFlagsFile.toPath());
+                .readString(generatedFeatureFlagsFile.toPath())
+                .replace("\r\n", "\n");
 
         Assert.assertTrue("Example feature flag is not set",
                 featureFlagsJs.contains(
@@ -577,5 +594,19 @@ public class BuildFrontendUtilTest {
                 .thenReturn(new ClassFinder.DefaultClassFinder(
                         this.getClass().getClassLoader()));
         Mockito.when(adapter.runNpmInstall()).thenReturn(true);
+    }
+
+    private void addPremiumFeatureAndDAUFlagTrue(File tokenFile)
+            throws IOException {
+        // simulates true value placed into pre-compiled bundle
+        // when bundle is compiled on Vaadin CI server
+        String tokenJson = FileUtils.readFileToString(tokenFile,
+                StandardCharsets.UTF_8);
+        JsonObject buildInfo = JsonUtil.parse(tokenJson);
+        buildInfo.put(Constants.PREMIUM_FEATURES, true);
+        buildInfo.put(Constants.DAU_TOKEN, true);
+
+        FileIOUtils.writeIfChanged(tokenFile,
+                JsonUtil.stringify(buildInfo, 2) + "\n");
     }
 }

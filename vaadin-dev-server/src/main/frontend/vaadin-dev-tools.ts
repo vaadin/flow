@@ -590,9 +590,6 @@ export class VaadinDevTools extends LitElement {
   }
 
   @property({ type: String, attribute: false })
-  splashMessage?: string;
-
-  @property({ type: String, attribute: false })
   frontendStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
   @property({ type: String, attribute: false })
@@ -608,8 +605,6 @@ export class VaadinDevTools extends LitElement {
   private frontendConnection?: WebSocketConnection;
 
   private nextMessageId: number = 1;
-
-  private disableEventListener?: EventListener;
 
   private transitionDuration: number = 0;
 
@@ -662,7 +657,6 @@ export class VaadinDevTools extends LitElement {
               })
             });
       } else {
-        this.showSplashMessage('Reloading…');
         const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
         const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
         window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
@@ -759,10 +753,6 @@ export class VaadinDevTools extends LitElement {
     super.connectedCallback();
 
     this.conf = (window.Vaadin as any).devToolsConf || this.conf;
-    // when focus or clicking anywhere, move the splash message to the message tray
-    this.disableEventListener = (_: any) => this.demoteSplashMessage();
-    document.body.addEventListener('focus', this.disableEventListener);
-    document.body.addEventListener('click', this.disableEventListener);
 
     const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
@@ -770,7 +760,6 @@ export class VaadinDevTools extends LitElement {
       const reloaded = `${`0${now.getHours()}`.slice(-2)}:${`0${now.getMinutes()}`.slice(
         -2
       )}:${`0${now.getSeconds()}`.slice(-2)}`;
-      this.showSplashMessage(`Page reloaded at ${reloaded}`);
       window.sessionStorage.removeItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
@@ -806,29 +795,6 @@ export class VaadinDevTools extends LitElement {
     return o.toString();
   }
 
-  disconnectedCallback() {
-    if (this.disableEventListener) {
-      document.body.removeEventListener('focus', this.disableEventListener!);
-      document.body.removeEventListener('click', this.disableEventListener!);
-    }
-    super.disconnectedCallback();
-  }
-
-
-  showSplashMessage(msg: string | undefined) {
-    this.splashMessage = msg;
-    if (this.splashMessage) {
-        // automatically move notification to message tray after a certain amount of time
-        setTimeout(() => {
-          this.demoteSplashMessage();
-        }, VaadinDevTools.AUTO_DEMOTE_NOTIFICATION_DELAY);
-    }
-  }
-
-  demoteSplashMessage() {
-    this.showSplashMessage(undefined);
-  }
-
   checkLicense(productInfo: Product) {
     if (this.frontendConnection) {
       this.frontendConnection.send('checkLicense', productInfo);
@@ -848,9 +814,8 @@ export class VaadinDevTools extends LitElement {
     return html` 
       <div
         style="display: none"
-        class="dev-tools ${this.splashMessage ? 'active' : ''}"
+        class="dev-tools"
       >
-        ${this.splashMessage ? html`<span class="status-description">${this.splashMessage}</span></div>` : nothing}
       </div>`;
   }
 

@@ -21,12 +21,15 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -41,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
@@ -72,7 +76,48 @@ public class MenuRegistry {
      * @return routes with view information
      */
     public static Map<String, AvailableViewInfo> collectMenuItems() {
-        return new MenuRegistry().getMenuItems(true);
+        Map<String, AvailableViewInfo> menuRoutes = new MenuRegistry()
+                .getMenuItems(true);
+        menuRoutes.entrySet()
+                .removeIf(entry -> Optional.ofNullable(entry.getValue())
+                        .map(AvailableViewInfo::menu).map(MenuData::isExclude)
+                        .orElse(false));
+        return menuRoutes;
+    }
+
+    /**
+     * Collect ordered list of views with menu annotation for automatic menu
+     * population. All client views are collected and any accessible server
+     * views.
+     *
+     * @return ordered routes with view information
+     */
+    public static List<AvailableViewInfo> collectMenuItemsList() {
+        // en-US is used by default here to match with Hilla's
+        // createMenuItems.ts sorting algorithm.
+        return collectMenuItemsList(Locale.forLanguageTag("en-US"));
+    }
+
+    /**
+     * Collect ordered list of views with menu annotation for automatic menu
+     * population. All client views are collected and any accessible server
+     * views.
+     *
+     * @param locale
+     *            locale to use for ordering. null for default locale.
+     * @return ordered routes with view information
+     */
+    public static List<AvailableViewInfo> collectMenuItemsList(Locale locale) {
+        return collectMenuItems().entrySet().stream().map(entry -> {
+            AvailableViewInfo value = entry.getValue();
+            return new AvailableViewInfo(value.title(), value.rolesAllowed(),
+                    value.loginRequired(), entry.getKey(), value.lazy(),
+                    value.register(), value.menu(), value.children(),
+                    value.routeParameters(), value.flowLayout());
+        }).sorted(getMenuOrderComparator(
+                (locale != null ? Collator.getInstance(locale)
+                        : Collator.getInstance())))
+                .toList();
     }
 
     /**
@@ -466,5 +511,17 @@ public class MenuRegistry {
                             Map.Entry::getValue));
         }
         return clientItems;
+    }
+
+    private static Comparator<AvailableViewInfo> getMenuOrderComparator(
+            Collator collator) {
+        return (o1, o2) -> {
+            int ordersCompareTo = Optional.ofNullable(o1.menu())
+                    .map(MenuData::getOrder).orElse(Double.MAX_VALUE)
+                    .compareTo(Optional.ofNullable(o2.menu())
+                            .map(MenuData::getOrder).orElse(Double.MAX_VALUE));
+            return ordersCompareTo != 0 ? ordersCompareTo
+                    : collator.compare(o1.route(), o2.route());
+        };
     }
 }

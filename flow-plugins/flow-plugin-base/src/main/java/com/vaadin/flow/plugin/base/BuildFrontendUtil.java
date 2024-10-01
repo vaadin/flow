@@ -68,7 +68,6 @@ import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.DAU_TOKEN;
 import static com.vaadin.flow.server.Constants.DISABLE_PREPARE_FRONTEND_CACHE;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.JAVA_RESOURCE_FOLDER_TOKEN;
@@ -752,19 +751,29 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
+            // Premium features flag is always true, because Vaadin CI server
+            // uses Enterprise sub, thus it's always true.
+            // Thus, resets the premium feature flag and DAU flag before asking
+            // license-server
+            buildInfo.remove(Constants.PREMIUM_FEATURES);
+            buildInfo.remove(Constants.DAU_TOKEN);
+
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
             buildInfo.put(APPLICATION_IDENTIFIER,
                     adapter.applicationIdentifier());
             if (licenseRequired) {
                 if (LocalSubscriptionKey.get() != null) {
                     adapter.logInfo("Daily Active User tracking enabled");
-                    buildInfo.put(DAU_TOKEN, true);
+                    buildInfo.put(Constants.DAU_TOKEN, true);
+                    checkLicenseCheckerAtRuntime(adapter);
                 }
-                if (LicenseChecker.isValidLicense("vaadin-commercial-cc-client",
-                        null, BuildType.PRODUCTION)) {
-                    adapter.logInfo("Premium Features are enabled");
-                    buildInfo.put(Constants.PREMIUM_FEATURES, true);
-                }
+            }
+            if (isControlCenterAvailable(adapter.getClassFinder())
+                    && LicenseChecker.isValidLicense(
+                            "vaadin-commercial-cc-client", null,
+                            BuildType.PRODUCTION)) {
+                adapter.logInfo("Premium Features are enabled");
+                buildInfo.put(Constants.PREMIUM_FEATURES, true);
             }
 
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
@@ -772,6 +781,31 @@ public class BuildFrontendUtil {
         } catch (IOException e) {
             adapter.logWarn("Unable to read token file", e);
         }
+    }
+
+    private static boolean isControlCenterAvailable(ClassFinder classFinder) {
+        if (classFinder == null) {
+            return false;
+        }
+        try {
+            classFinder.loadClass(
+                    "com.vaadin.controlcenter.starter.actuate.endpoint.VaadinActuatorEndpoint");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    private static void checkLicenseCheckerAtRuntime(
+            PluginAdapterBuild adapter) {
+        adapter.checkRuntimeDependency("com.vaadin", "license-checker",
+                logMessage -> adapter.logWarn(
+                        """
+                                Vaadin Subscription used to build the application requires
+                                the artifact com.vaadin:license-checker to be present at runtime.
+
+                                """
+                                + logMessage));
     }
 
     /**
