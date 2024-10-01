@@ -97,12 +97,11 @@ public class DnDIT extends ChromeBrowserTest {
 
         // effect could be anything, just testing the drag image.
         TestBenchElement boxElement = getBoxElement("COPY");
-        TestBenchElement laneElement = getLaneElement("COPY");
         clearEvents();
 
-        dragAndDrop(boxElement, laneElement);
+        drag(boxElement);
 
-        waitForElementPresent(By.id("event-4"));
+        waitForElementPresent(By.id("event-2"));
 
         TestBenchElement eventlog = getEventlog(2);
         String expected = "2: DragImage: <img alt=\"Gift\" src=\"/images/gift.png\">";
@@ -139,13 +138,12 @@ public class DnDIT extends ChromeBrowserTest {
         clickElementWithJs("button-toggle-image");
 
         TestBenchElement boxElement = getBoxElement("COPY");
-        TestBenchElement laneElement = getLaneElement("COPY");
         clearEvents();
-        dragAndDrop(boxElement, laneElement);
+        drag(boxElement);
 
         // need to wait for roundtrip, there should always be 3 events after dnd
         // with drag image
-        waitForElementPresent(By.id("event-3"));
+        waitForElementPresent(By.id("event-2"));
 
         TestBenchElement eventlog = getEventlog(2);
         String expected = "2: DragImage: <button id=\"button-toggle-image\">Toggle image</button>";
