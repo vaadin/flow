@@ -130,8 +130,6 @@ public class AuthenticationContext {
      * {@link org.springframework.security.web.authentication.logout.LogoutHandler}.
      */
     public void logout() {
-        LogoutData logoutData = createLogoutData();
-
         final UI ui = UI.getCurrent();
         if (ui.getPushConfiguration().getTransport() == Transport.WEBSOCKET
                 && ui.getInternals().getPushConnection().isConnected()) {
@@ -149,10 +147,10 @@ public class AuthenticationContext {
                         "Failed to switch to WEBSOCKET_XHR transport mode for logout operation. Received exception: {}",
                         exception);
                 ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
-                doLogout(logoutData, ui);
+                doLogout(createLogoutData(), ui);
             });
         } else {
-            doLogout(logoutData, ui);
+            doLogout(createLogoutData(), ui);
         }
     }
 
