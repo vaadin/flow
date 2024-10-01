@@ -141,26 +141,33 @@ public class AuthenticationContext {
                 LOGGER.debug(
                         "Switched to WEBSOCKET_XHR transport mode successfully for logout operation.");
                 ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
-                doLogout(createLogoutData(), ui);
+                doLogout(ui);
             }, exception -> {
                 LOGGER.warn(
                         "Failed to switch to WEBSOCKET_XHR transport mode for logout operation. Received exception: {}",
                         exception);
                 ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
-                doLogout(createLogoutData(), ui);
+                doLogout(ui);
             });
         } else {
-            doLogout(createLogoutData(), ui);
+            doLogout(ui);
         }
     }
 
-    private void doLogout(LogoutData logoutData, UI ui) {
-        logoutHandler.logout(logoutData.request, logoutData.response,
-                logoutData.auth);
+    private void doLogout(UI ui) {
+        HttpServletRequest request = VaadinServletRequest.getCurrent()
+                .getHttpServletRequest();
+        HttpServletResponse response = Optional
+                .ofNullable(VaadinServletResponse.getCurrent())
+                .map(VaadinServletResponse::getHttpServletResponse)
+                .orElse(null);
+        Authentication auth = SecurityContextHolder.getContext()
+                .getAuthentication();
+
+        logoutHandler.logout(request, response, auth);
         ui.accessSynchronously(() -> {
             try {
-                logoutSuccessHandler.onLogoutSuccess(logoutData.request,
-                        logoutData.response, logoutData.auth);
+                logoutSuccessHandler.onLogoutSuccess(request, response, auth);
             } catch (IOException | ServletException e) {
                 // Raise a warning log message about the failure.
                 LOGGER.warn(
@@ -168,20 +175,6 @@ public class AuthenticationContext {
                         e);
             }
         });
-    }
-
-    private LogoutData createLogoutData() {
-        return new LogoutData(
-                VaadinServletRequest.getCurrent().getHttpServletRequest(),
-                Optional.ofNullable(VaadinServletResponse.getCurrent())
-                        .map(VaadinServletResponse::getHttpServletResponse)
-                        .orElse(null),
-                SecurityContextHolder.getContext().getAuthentication());
-    }
-
-    private record LogoutData(HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication auth) implements Serializable {
     }
 
     /**
