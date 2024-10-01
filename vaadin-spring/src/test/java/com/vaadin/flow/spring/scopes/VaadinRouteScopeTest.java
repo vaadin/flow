@@ -37,7 +37,6 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
@@ -89,13 +88,17 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         mockServletContext(ui);
 
-        SpringVaadinSession springSession = (SpringVaadinSession) VaadinSession
-                .getCurrent();
+        VaadinSession session = VaadinSession.getCurrent();
+        VaadinService service = session.getService();
 
-        doCallRealMethod().when(springSession)
-                .addDestroyListener(Mockito.any());
-
-        doCallRealMethod().when(springSession).fireSessionDestroy();
+        doCallRealMethod().when(session)
+                .addSessionDestroyListener(Mockito.any());
+        doCallRealMethod().when(session)
+                .getLockInstance();
+        doCallRealMethod().when(session)
+                .getPendingAccessQueue();
+        doCallRealMethod().when(session)
+                .access(Mockito.any());
 
         VaadinRouteScope scope = initScope(ui);
 
@@ -108,12 +111,13 @@ public class VaadinRouteScopeTest extends AbstractUIScopedTest {
                 + "$RouteStoreWrapper";
 
         // self control - the attribute name is used by the implementation
-        Assert.assertNotNull(springSession.getAttribute(attribute));
+        Assert.assertNotNull(session.getAttribute(attribute));
 
-        springSession.fireSessionDestroy();
+        service.fireSessionDestroy(session);
+        service.runPendingAccessTasks(session);
 
         Assert.assertEquals(1, count.get());
-        Assert.assertNull(springSession.getAttribute(attribute));
+        Assert.assertNull(session.getAttribute(attribute));
 
         // Destruction callbacks are not called anymore (they are removed)
         scope.getBeanStore().destroy();

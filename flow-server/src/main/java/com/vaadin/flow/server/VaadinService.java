@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
@@ -621,14 +622,20 @@ public abstract class VaadinService implements Serializable {
     /**
      * Adds a listener that gets notified when a Vaadin service session that has
      * been initialized for this service is destroyed.
+     *
      * <p>
      * The session being destroyed is locked and its UIs have been removed when
      * the listeners are called.
+     *
+     * <p>
+     * This method delivers notifications for all associated sessions. To be notified
+     * for only one specific session, use {@link VaadinSession#addSessionDestroyListener}.
      *
      * @param listener
      *            the vaadin service session destroy listener
      * @return a handle that can be used for removing the listener
      * @see #addSessionInitListener(SessionInitListener)
+     * @see VaadinSession#addSessionDestroyListener
      */
     public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
@@ -684,7 +691,8 @@ public abstract class VaadinService implements Serializable {
             }
             SessionDestroyEvent event = new SessionDestroyEvent(
                     VaadinService.this, session);
-            for (SessionDestroyListener listener : sessionDestroyListeners) {
+            Stream.concat(session.destroyListeners.stream(),
+                    sessionDestroyListeners.stream()).forEach(listener -> {
                 try {
                     listener.sessionDestroy(event);
                 } catch (Exception e) {
@@ -695,7 +703,7 @@ public abstract class VaadinService implements Serializable {
                      */
                     session.getErrorHandler().error(new ErrorEvent(e));
                 }
-            }
+            });
 
             session.setState(VaadinSessionState.CLOSED);
         });
