@@ -307,7 +307,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * image is shown by default with zero offset which means that pointer
      * location is in the top left corner of the image.
      * <p>
-     * {@link com.vaadin.flow.component.html.Image} is fully supported as a drag
+     * {@code com.vaadin.flow.component.html.Image} is fully supported as a drag
      * image component. Other components can be used as well, but the support
      * may vary between browsers. If given component is visible element in the
      * viewport, browser can show it as a drag image.
@@ -328,7 +328,7 @@ public interface DragSource<T extends Component> extends HasElement {
      * Coordinates define the offset of the pointer location from the top left
      * corner of the image.
      * <p>
-     * {@link com.vaadin.flow.component.html.Image} is fully supported as a drag
+     * {@code com.vaadin.flow.component.html.Image} is fully supported as a drag
      * image component. Other components can be used as well, but the support
      * may vary between browsers. If given component is visible element in the
      * viewport, browser can show it as a drag image.
