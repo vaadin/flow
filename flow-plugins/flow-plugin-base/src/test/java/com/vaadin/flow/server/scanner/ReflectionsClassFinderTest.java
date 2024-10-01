@@ -56,6 +56,7 @@ public class ReflectionsClassFinderTest {
 
     // Class used to test the class finder
     public static final Class<NpmPackage> NPM_PACKAGE_CLASS = NpmPackage.class;
+    public static final Class<Component> COMPONENT_CLASS = Component.class;
 
     @Rule
     public TemporaryFolder externalModules = new TemporaryFolder();
@@ -75,7 +76,7 @@ public class ReflectionsClassFinderTest {
                         "ComponentA", "2.0.0"),
                 NPM_PACKAGE_CLASS.getProtectionDomain().getCodeSource()
                         .getLocation(),
-                Component.class.getProtectionDomain().getCodeSource()
+                COMPONENT_CLASS.getProtectionDomain().getCodeSource()
                         .getLocation() };
 
         try (URLClassLoader classLoader = new URLClassLoader(urls,
@@ -97,13 +98,15 @@ public class ReflectionsClassFinderTest {
     @Test
     public void getSubTypesOf_orderIsDeterministic() {
         List<String> a1 = componentClassNames;
+        // Results of `getSubTypesOf` must be filtered because they also include
+        // all the subclasses from the JAR which contains `Component`.
         List<String> a2 = new ReflectionsClassFinder(urls[2], urls[0], urls[1],
-                urls[4]).getSubTypesOf(Component.class).stream()
+                urls[4]).getSubTypesOf(COMPONENT_CLASS).stream()
                 .map(Class::getName)
                 .filter(name -> name.startsWith("com.vaadin.flow.test."))
                 .collect(Collectors.toList());
         List<String> a3 = new ReflectionsClassFinder(urls[1], urls[4], urls[2],
-                urls[0]).getSubTypesOf(Component.class).stream()
+                urls[0]).getSubTypesOf(COMPONENT_CLASS).stream()
                 .map(Class::getName)
                 .filter(name -> name.startsWith("com.vaadin.flow.test."))
                 .collect(Collectors.toList());
@@ -130,7 +133,7 @@ public class ReflectionsClassFinderTest {
     @Test
     public void getSubTypesOf_order_sameAsDefaultClassFinder() {
         Assert.assertEquals(
-                toList(defaultClassFinder.getSubTypesOf(Component.class)),
+                toList(defaultClassFinder.getSubTypesOf(COMPONENT_CLASS)),
                 componentClassNames);
     }
 
