@@ -21,11 +21,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-html-components</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>osgi.core</artifactId>
             <version>${osgi.core.version}</version>
