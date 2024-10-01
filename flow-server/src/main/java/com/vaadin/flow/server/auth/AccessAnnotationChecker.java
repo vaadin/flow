@@ -28,6 +28,7 @@ import java.security.Principal;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.VaadinServletRequest;
 
 /**
@@ -243,8 +244,8 @@ public class AccessAnnotationChecker implements Serializable {
         if (annotatedClassOrMethod.isAnnotationPresent(DenyAll.class)) {
             return false;
         }
-        if (annotatedClassOrMethod
-                .isAnnotationPresent(AnonymousAllowed.class)) {
+        if (annotatedClassOrMethod.isAnnotationPresent(AnonymousAllowed.class)
+                || annotatedClassOrMethod.isAnnotationPresent(Layout.class)) {
             return true;
         }
         if (principal == null) {

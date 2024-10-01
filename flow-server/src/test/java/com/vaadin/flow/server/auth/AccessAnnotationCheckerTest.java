@@ -35,9 +35,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI.ClientViewPlaceholder;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.InternalServerError;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -158,6 +161,13 @@ public class AccessAnnotationCheckerTest {
                 accessAnnotationChecker.hasAccess(InternalServerError.class));
         Assert.assertTrue(
                 accessAnnotationChecker.hasAccess(RouteNotFoundError.class));
+    }
+
+    @Test
+    public void layoutViewsMustBeAccessible() {
+        CurrentInstance.set(VaadinRequest.class,
+                new VaadinServletRequest(createRequest(null), null));
+        Assert.assertTrue(accessAnnotationChecker.hasAccess(ViewLayout.class));
     }
 
     @Test
@@ -412,4 +422,8 @@ public class AccessAnnotationCheckerTest {
                 accessAnnotationChecker.hasAccess(cls, request));
     }
 
+    @Tag(Tag.DIV)
+    @Layout
+    public static class ViewLayout extends Component {
+    }
 }
