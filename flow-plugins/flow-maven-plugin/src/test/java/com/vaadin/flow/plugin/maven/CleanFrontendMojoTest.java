@@ -19,7 +19,9 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
 import org.apache.maven.plugin.MojoFailureException;
@@ -39,6 +41,7 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -300,8 +303,16 @@ public class CleanFrontendMojoTest {
         // detected as Hilla project with endpoints.
         Files.createDirectories(Paths.get(projectBase.toString(), "target")
                 .resolve("test-classes/com/vaadin/hilla"));
-        Files.createFile(Paths.get(projectBase.toString(), "target").resolve(
-                "test-classes/com/vaadin/hilla/EndpointController.class"));
+        Path tempHillaClass = Files
+                .createFile(Paths.get(projectBase.toString(), "target").resolve(
+                        "test-classes/com/vaadin/hilla/EndpointController.class"));
+        Path testModuleHillaClass = new File(
+                System.getProperty("user.dir", ".")).toPath()
+                .resolve(Path.of("target", "test-classes", "com", "vaadin",
+                        "hilla", "EndpointController.class"));
+        Files.copy(testModuleHillaClass, tempHillaClass,
+                StandardCopyOption.REPLACE_EXISTING);
+
         Files.createDirectories(
                 Paths.get(projectBase.toString(), "src/main/frontend"));
         Files.createFile(Paths.get(projectBase.toString(), "src/main/frontend")
