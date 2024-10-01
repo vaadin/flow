@@ -143,8 +143,10 @@ public class AuthenticationContext {
                 ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
                 doLogout(ui);
             }, exception -> {
-                LOGGER.warn(
-                        "Failed to switch to WEBSOCKET_XHR transport mode for logout operation. Received exception: {}",
+                LOGGER.debug(
+                        "Failed to switch to WEBSOCKET_XHR transport mode for logout operation. "
+                                + "Logout is performed anyway even if browser shows 'disconnected' message and browser console has WebSocket errors. "
+                                + "Received exception: {}",
                         exception);
                 ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
                 doLogout(ui);
