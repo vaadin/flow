@@ -28,7 +28,7 @@ import org.gradle.util.GradleVersion
  */
 public class VaadinPlugin : Plugin<Project> {
     public companion object {
-        public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.4"
+        public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.7"
     }
 
     override fun apply(project: Project) {
