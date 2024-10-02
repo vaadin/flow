@@ -125,11 +125,6 @@ public class RouteUtil {
 
         if (hasRouteAndPathMatches && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
-        } else if (route.get().autoLayout() && hasRouteAndPathMatches
-                && route.get().layout().equals(UI.class)
-                && handledRegistry.hasLayout(path)) {
-            list.addAll(
-                    collectRouteParentLayouts(handledRegistry.getLayout(path)));
         } else {
             List<RouteAlias> routeAliases = AnnotationReader
                     .getAnnotationsFor(component, RouteAlias.class);
@@ -139,14 +134,6 @@ public class RouteUtil {
             if (matchingRoute.isPresent()) {
                 list.addAll(collectRouteParentLayouts(
                         matchingRoute.get().layout()));
-            } else {
-                matchingRoute = getMatchingRouteAliasLayout(handledRegistry,
-                        component, path, routeAliases);
-
-                if (matchingRoute.isPresent()) {
-                    list.addAll(collectRouteParentLayouts(
-                            handledRegistry.getLayout(path)));
-                }
             }
         }
 
@@ -529,4 +516,10 @@ public class RouteUtil {
                 .map(clazz -> (Class<? extends Component>) clazz);
     }
 
+    public static boolean isAutolayoutEnabled(Class<?> target) {
+        return target.isAnnotationPresent(Route.class)
+                && target.getAnnotation(Route.class).autoLayout()
+                && target.getAnnotation(Route.class).layout().equals(UI.class);
+
+    }
 }
