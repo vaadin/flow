@@ -23,7 +23,10 @@ import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
@@ -74,6 +77,16 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
             denyReason = "Consider adding one of the following annotations "
                     + "to make the view accessible: @AnonymousAllowed, "
                     + "@PermitAll, @RolesAllowed.";
+            if (targetView.isAnnotationPresent(Layout.class)
+                    && context.getRouter().getRegistry()
+                            .getTargetUrl(
+                                    (Class<? extends Component>) targetView)
+                            .isEmpty()) {
+                denyReason = "Consider adding one of the following annotations "
+                        + "to make the layout '" + targetView.getSimpleName()
+                        + "' accessible: @AnonymousAllowed, "
+                        + "@PermitAll, @RolesAllowed.";
+            }
         } else {
             denyReason = "Access is denied by annotations on the view.";
         }
