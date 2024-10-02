@@ -97,7 +97,7 @@ public abstract class Component
 
     private final boolean templateMapped;
 
-    private WeakReference<UI> uiRef;
+    private transient WeakReference<UI> uiRef;
 
     /**
      * Creates a component instance with an element created based on the
