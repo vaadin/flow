@@ -29,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
@@ -237,6 +238,9 @@ public class TaskGenerateReactFiles
     }
 
     private String layoutsContent(Collection<Class<?>> layoutClasses) {
+        if (!options.getFeatureFlags().isEnabled(FeatureFlags.AUTO_LAYOUT)) {
+            return "[]";
+        }
         JsonArray availableLayouts = Json.createArray();
         for (Class<?> layout : layoutClasses) {
             if (layout.isAnnotationPresent(Layout.class)) {

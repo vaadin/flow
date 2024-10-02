@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.flow.router.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,8 +33,14 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.router.internal.DefaultRouteResolver;
-import com.vaadin.flow.router.internal.ResolveRequest;
+import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationState;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteResolver;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RoutingTestBase;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -135,7 +141,13 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
         router.getRegistry().setLayout(DefaultLayout.class);
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+                .mockStatic(MenuRegistry.class);
+                MockedStatic<DefaultRouteResolver> util = Mockito.mockStatic(
+                        DefaultRouteResolver.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+
+            util.when(() -> DefaultRouteResolver.isLayoutEnabled())
+                    .thenReturn(true);
             menuRegistry.when(() -> MenuRegistry.hasClientRoute(path))
                     .thenReturn(true);
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
@@ -157,7 +169,13 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
         String path = "route";
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+                .mockStatic(MenuRegistry.class);
+                MockedStatic<DefaultRouteResolver> util = Mockito.mockStatic(
+                        DefaultRouteResolver.class,
+                        Mockito.CALLS_REAL_METHODS)) {
+
+            util.when(() -> DefaultRouteResolver.isLayoutEnabled())
+                    .thenReturn(true);
             menuRegistry.when(() -> MenuRegistry.hasClientRoute(path))
                     .thenReturn(true);
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))

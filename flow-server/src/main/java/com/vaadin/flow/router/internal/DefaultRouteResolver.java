@@ -19,6 +19,7 @@ import java.util.Collections;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
@@ -26,6 +27,7 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
@@ -47,7 +49,7 @@ public class DefaultRouteResolver implements RouteResolver {
                 .getNavigationRouteTarget(path);
 
         if (!navigationResult.hasTarget()) {
-            if (MenuRegistry.hasClientRoute(path)) {
+            if (MenuRegistry.hasClientRoute(path) && isLayoutEnabled()) {
                 AvailableViewInfo viewInfo = MenuRegistry.getClientRoutes(false)
                         .get(path.isEmpty() ? path
                                 : path.startsWith("/") ? path : "/" + path);
@@ -89,4 +91,8 @@ public class DefaultRouteResolver implements RouteResolver {
         return builder.build();
     }
 
+    protected static boolean isLayoutEnabled() {
+        return FeatureFlags.get(VaadinService.getCurrent().getContext())
+                .isEnabled(FeatureFlags.AUTO_LAYOUT);
+    }
 }
