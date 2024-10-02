@@ -16,10 +16,12 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
@@ -35,6 +37,9 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
+import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -91,6 +96,8 @@ public abstract class Component
     private ComponentEventBus eventBus = null;
 
     private final boolean templateMapped;
+
+    private WeakReference<UI> uiRef;
 
     /**
      * Creates a component instance with an element created based on the
@@ -467,7 +474,7 @@ public abstract class Component
      *            the attach event
      */
     protected void onAttach(AttachEvent attachEvent) {
-        // NOOP by default
+        uiRef = new WeakReference<>(attachEvent.getUI());
     }
 
     /**
@@ -483,7 +490,64 @@ public abstract class Component
      *            the detach event
      */
     protected void onDetach(DetachEvent detachEvent) {
-        // NOOP by default
+        if (uiRef != null) {
+            uiRef.clear();
+            uiRef = null;
+        }
+    }
+
+    /**
+     * Provides exclusive access to UI where this component is attached from
+     * outside a request handling thread.
+     * <p>
+     * The given command is executed while holding the session lock to ensure
+     * exclusive access to the UI. If the session is not locked, the lock will
+     * be acquired and the command is run right away. If the session is
+     * currently locked, the command will be run before that lock is released.
+     * </p>
+     * <p>
+     * RPC handlers for components inside the UI do not need to use this method
+     * as the session is automatically locked by the framework during RPC
+     * handling.
+     * </p>
+     * <p>
+     * Please note that the command might be invoked on a different thread or
+     * later on the current thread, which means that custom thread locals might
+     * not have the expected values when the command is executed.
+     * {@link UI#getCurrent()}, {@link VaadinSession#getCurrent()} and
+     * {@link VaadinService#getCurrent()} are set according to this UI before
+     * executing the command. Other standard CurrentInstance values such as
+     * {@link VaadinService#getCurrentRequest()} and
+     * {@link VaadinService#getCurrentResponse()} will not be defined.
+     * </p>
+     * <p>
+     * The returned future can be used to check for task completion and to
+     * cancel the task.
+     * </p>
+     *
+     * @see UI#access(Command)
+     * @see UI#accessSynchronously(Command)
+     * @see VaadinSession#access(Command)
+     * @see VaadinSession#lock()
+     *
+     *
+     * @param command
+     *            the command which accesses the UI
+     * @throws UIDetachedException
+     *             if the UI is not attached to a session (and locking can
+     *             therefore not be done)
+     * @throws IllegalStateException
+     *             if the Component is not attached to the UI.
+     *
+     * @return a future that can be used to check for task completion and to
+     *         cancel the task
+     */
+    protected void access(Command command) {
+        if (uiRef == null || uiRef.get() == null) {
+            throw new IllegalStateException(
+                    "Cannot perform access in detached component");
+        }
+        uiRef.get().access(command);
     }
 
     /**
