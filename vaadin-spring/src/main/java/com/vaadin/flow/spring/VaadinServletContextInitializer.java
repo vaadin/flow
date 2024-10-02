@@ -21,7 +21,6 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.HandlesTypes;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -65,6 +64,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -75,7 +75,6 @@ import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
-import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -327,7 +326,7 @@ public class VaadinServletContextInitializer
                 getLogger().debug("There are no discovered routes yet. "
                         + "Start to collect all routes from the classpath...");
                 try {
-                    Collection<String> routePackages = null;
+                    Collection<String> routePackages;
                     if (devModeCachingEnabled
                             && ReloadCache.routePackages != null) {
                         routePackages = ReloadCache.routePackages;
@@ -356,11 +355,27 @@ public class VaadinServletContextInitializer
                             "There are {} navigation targets after filtering route classes: {}",
                             navigationTargets.size(), navigationTargets);
 
+                    Collection<String> layoutPackages;
+                    if (devModeCachingEnabled
+                            && ReloadCache.layoutPackages != null) {
+                        layoutPackages = ReloadCache.layoutPackages;
+                    } else {
+                        layoutPackages = getDefaultPackages();
+                    }
+
                     Set<Class<?>> layoutClasses = findByAnnotation(
-                            routePackages, Layout.class)
+                            layoutPackages, Layout.class)
                             .collect(Collectors.toSet());
+
+                    if (devModeCachingEnabled) {
+                        ReloadCache.layoutPackages = layoutClasses.stream()
+                                .map(Class::getPackageName)
+                                .collect(Collectors.toSet());
+                    }
+
                     RouteRegistryInitializer
                             .validateLayoutAnnotations(layoutClasses);
+
                     // Collect all layouts to use with Hilla as a main layout
                     layoutClasses.stream().filter(
                             clazz -> RouterLayout.class.isAssignableFrom(clazz))
@@ -1070,7 +1085,7 @@ public class VaadinServletContextInitializer
                             AtomicBoolean parentIsAllowedByPackageProperties = new AtomicBoolean(
                                     true);
                             if (parents.stream()
-                                    .anyMatch(parent -> shouldPathBeScanned(
+                                    .allMatch(parent -> shouldPathBeScanned(
                                             path.substring(parent.length()),
                                             parent,
                                             parentIsAllowedByPackageProperties))) {
