@@ -77,6 +77,11 @@ public class FeatureFlags implements Serializable {
             "https://vaadin.com/docs/latest/flow/routing/layout#automatic-layout-using-layout",
             true, "com.vaadin.flow.router.Layout");
 
+    public static final Feature MENU_API = new Feature(
+            "Available menu routes API for menu generation", "menuApi",
+            "https://vaadin.com/docs/latest/flow/advanced/menu-registry", false,
+            "com.vaadin.flow.server.menu.MenuRegistry");
+
     public static final Feature FORM_FILLER_ADDON = new Feature(
             "Form Filler Add-on", "formFillerAddon",
             "https://github.com/vaadin/form-filler-addon", true,
@@ -119,6 +124,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(WEB_PUSH));
         features.add(new Feature(AUTO_LAYOUT));
+        features.add(new Feature(MENU_API));
         features.add(new Feature(FORM_FILLER_ADDON));
         features.add(new Feature(HILLA_I18N));
         features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
