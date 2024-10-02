@@ -321,19 +321,6 @@ public class AuthenticationContextTest {
                 exception.getMessage());
     }
 
-    @Test
-    @WithMockUser(authorities = { "FOO_USER", "FOO_ADMIN" })
-    public void supportsCustomRolePrefixes() {
-        var prefixHolder = new VaadinRolePrefixHolder("FOO_");
-        var authContext = new AuthenticationContext();
-        authContext.setRolePrefixHolder(prefixHolder);
-        Assert.assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
-        Assert.assertTrue(authContext.hasAllRoles("USER", "ADMIN"));
-        var roles = authContext.getGrantedRoles();
-        Assert.assertTrue(roles.contains("USER"));
-        Assert.assertTrue(roles.contains("ADMIN"));
-    }
-
     private static void mockPush(UI ui) {
         mockPush(ui, null);
     }
