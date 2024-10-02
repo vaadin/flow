@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.Layout;
@@ -96,6 +97,10 @@ public class TaskGenerateReactFilesTest {
             throws ExecutionFailedException, IOException {
         Mockito.when(options.getClassFinder().getAnnotatedClasses(Layout.class))
                 .thenReturn(Collections.singleton(TestLayout.class));
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        ((MockOptions) options).setFlags(featureFlags);
+        Mockito.when(featureFlags.isEnabled(FeatureFlags.AUTO_LAYOUT))
+                .thenReturn(true);
 
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
         task.execute();

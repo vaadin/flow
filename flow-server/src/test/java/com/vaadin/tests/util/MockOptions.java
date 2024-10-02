@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -37,5 +38,19 @@ public class MockOptions extends Options {
      */
     public MockOptions(File projectFolder) {
         this(Mockito.mock(ClassFinder.class), projectFolder);
+    }
+
+    protected FeatureFlags flags;
+
+    public void setFlags(FeatureFlags flags) {
+        this.flags = flags;
+    }
+
+    @Override
+    public FeatureFlags getFeatureFlags() {
+        if (flags != null) {
+            return flags;
+        }
+        return super.getFeatureFlags();
     }
 }
