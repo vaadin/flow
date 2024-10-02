@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -32,13 +33,15 @@ import org.springframework.security.config.annotation.web.configurers.LogoutConf
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.util.Assert;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.shared.ui.Transport;
 
 /**
  * The authentication context of the application.
@@ -119,14 +122,42 @@ public class AuthenticationContext {
      * {@link org.springframework.security.web.authentication.logout.LogoutHandler}.
      */
     public void logout() {
+        final UI ui = UI.getCurrent();
+        if (ui.getPushConfiguration().getTransport() == Transport.WEBSOCKET
+                && ui.getInternals().getPushConnection().isConnected()) {
+            // WEBSOCKET transport mode would not log out properly after session
+            // invalidation. Switching to WEBSOCKET_XHR for a single request
+            // to do the logout.
+            ui.getPushConfiguration().setTransport(Transport.WEBSOCKET_XHR);
+            ui.getPage().executeJs("return true").then(ignored -> {
+                LOGGER.debug(
+                        "Switched to WEBSOCKET_XHR transport mode successfully for logout operation.");
+                ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
+                doLogout(ui);
+            }, exception -> {
+                LOGGER.debug(
+                        "Failed to switch to WEBSOCKET_XHR transport mode for logout operation. "
+                                + "Logout is performed anyway even if browser shows 'disconnected' message and browser console has WebSocket errors. "
+                                + "Received exception: {}",
+                        exception);
+                ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
+                doLogout(ui);
+            });
+        } else {
+            doLogout(ui);
+        }
+    }
+
+    private void doLogout(UI ui) {
         HttpServletRequest request = VaadinServletRequest.getCurrent()
                 .getHttpServletRequest();
-        HttpServletResponse response = VaadinServletResponse.getCurrent()
-                .getHttpServletResponse();
+        HttpServletResponse response = Optional
+                .ofNullable(VaadinServletResponse.getCurrent())
+                .map(VaadinServletResponse::getHttpServletResponse)
+                .orElse(null);
         Authentication auth = SecurityContextHolder.getContext()
                 .getAuthentication();
 
-        final UI ui = UI.getCurrent();
         logoutHandler.logout(request, response, auth);
         ui.accessSynchronously(() -> {
             try {
@@ -189,6 +220,41 @@ public class AuthenticationContext {
         authCtx.setLogoutHandlers(logoutConfigurer.getLogoutSuccessHandler(),
                 logoutConfigurer.getLogoutHandlers());
 
+    }
+
+    // package protected for testing purposes
+    static class CompositeLogoutHandler implements LogoutHandler, Serializable {
+
+        private final List<LogoutHandler> logoutHandlers;
+
+        public CompositeLogoutHandler(List<LogoutHandler> logoutHandlers) {
+            Assert.notEmpty(logoutHandlers, "LogoutHandlers are required");
+            this.logoutHandlers = logoutHandlers;
+        }
+
+        @Override
+        public void logout(HttpServletRequest request,
+                HttpServletResponse response, Authentication authentication) {
+            for (LogoutHandler handler : this.logoutHandlers) {
+                try {
+                    handler.logout(request, response, authentication);
+                } catch (IllegalStateException e) {
+                    // Tolerate null response when Session is already
+                    // invalidated
+                    if (response != null
+                            || !isContinueToNextHandler(request, handler)) {
+                        throw e;
+                    }
+                }
+            }
+        }
+
+        private boolean isContinueToNextHandler(HttpServletRequest request,
+                LogoutHandler handler) {
+            return handler instanceof SecurityContextLogoutHandler
+                    && (request.getSession() == null
+                            || !request.isRequestedSessionIdValid());
+        }
     }
 
 }
