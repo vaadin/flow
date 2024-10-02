@@ -542,7 +542,7 @@ public abstract class Component
      * @return a future that can be used to check for task completion and to
      *         cancel the task
      */
-    protected Future<Void> access(Command command) {
+    protected Future<Void> uiAccess(Command command) {
         if (uiRef == null || uiRef.get() == null) {
             throw new IllegalStateException(
                     "Cannot perform access in detached component");
