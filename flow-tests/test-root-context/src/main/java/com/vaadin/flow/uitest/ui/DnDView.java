@@ -41,6 +41,7 @@ public class DnDView extends Div {
     private boolean data;
     private boolean dragImage;
     private Component image = new Image("/images/gift.png", "Gift");
+    private DragSource<Div> dragSource;
 
     public DnDView() {
         setWidth("1000px");
@@ -48,6 +49,7 @@ public class DnDView extends Div {
         getStyle().set("display", "flex");
 
         Div startLane = createLane("start");
+        Component noEffectsDraggableBox = createDraggableBox(null);
 
         eventLog = new Div();
         eventLog.add(new Text("Events:"));
@@ -60,33 +62,47 @@ public class DnDView extends Div {
             data = !data;
             event.getSource().setText("Data: " + data);
         }));
-        NativeButton toggleImage = new NativeButton("Toggle image", event -> {
-            if (image instanceof Image) {
-                image = event.getSource();
-            } else {
-                image = new Image("/images/gift.png", "Gift");
-            }
-            setDragImage(startLane, image);
-        });
-        toggleImage.setEnabled(false);
-        toggleImage.setId("button-toggle-image");
+        NativeButton toggleThreeImages = new NativeButton("Toggle image",
+                event -> {
+                    if (image instanceof Image) {
+                        image = event.getSource();
+                    } else if (image == event.getSource()) {
+                        image = noEffectsDraggableBox;
+                    } else {
+                        image = new Image("/images/gift.png", "Gift");
+                    }
+                    setDragImage(startLane, image);
+                });
+        toggleThreeImages.setEnabled(false);
+        toggleThreeImages.setId("button-toggle-image");
+        NativeButton addDragSourceWithImage = new NativeButton(
+                "DragImage: add DragSource", event -> {
+                    dragSource.getDragSourceComponent()
+                            .setId("drag-source-with-image");
+                    dragSource.setDragImage(
+                            new Image("/images/gift.png", "Gift"));
+                    add(dragSource.getDragSourceComponent());
+                    eventLog.remove(event.getSource());
+                });
+        addDragSourceWithImage.setId("button-add-drag-source-with-drag-image");
         NativeButton toggleDragImageEnabled = new NativeButton(
                 "DragImage: " + dragImage, event -> {
                     dragImage = !dragImage;
-                    toggleImage.setEnabled(dragImage);
+                    toggleThreeImages.setEnabled(dragImage);
                     event.getSource().setText("DragImage: " + dragImage);
                     setDragImage(startLane, image);
                 });
         toggleDragImageEnabled.setId("button-toggle-drag-image-enabled");
         eventLog.add(toggleDragImageEnabled);
-        eventLog.add(toggleImage);
+        eventLog.add(toggleThreeImages);
+        eventLog.add(addDragSourceWithImage);
         eventLog.setHeightFull();
         eventLog.setWidth("400px");
         eventLog.getStyle().set("display", "inline-block").set("border",
                 "2px " + "solid");
         add(eventLog);
 
-        startLane.add(createDraggableBox(null));
+        startLane.add(noEffectsDraggableBox);
         Stream.of(EffectAllowed.values()).map(this::createDraggableBox)
                 .forEach(startLane::add);
 
@@ -108,6 +124,12 @@ public class DnDView extends Div {
 
         add(startLane, noEffectLane, copyDropLane, moveDropLane, linkDropLane,
                 noneDropLane, deactivatedLane);
+
+        dragSource = DragSource.create(new Div("DragSource"));
+        dragSource.addDragStartListener(event -> {
+            addLogEntry("Start: " + event.getComponent().getText());
+            addLogEntry("DragImage: " + dragSource.getDragImage().getElement());
+        });
     }
 
     private void setDragImage(Div startLane, Component image) {

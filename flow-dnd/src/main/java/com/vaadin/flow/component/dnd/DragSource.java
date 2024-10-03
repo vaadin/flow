@@ -358,7 +358,19 @@ public interface DragSource<T extends Component> extends HasElement {
             }
         }
         if (dragImage != null && !dragImage.isAttached()) {
-            getDraggableElement().appendVirtualChild(dragImage.getElement());
+            if (!getDragSourceComponent().isAttached()) {
+                getDragSourceComponent().addAttachListener(event -> {
+                    if (!dragImage.isAttached()
+                            && dragImage.getParent().isEmpty()) {
+                        getDraggableElement()
+                                .appendVirtualChild(dragImage.getElement());
+                    }
+                    event.unregisterListener();
+                });
+            } else {
+                getDraggableElement()
+                        .appendVirtualChild(dragImage.getElement());
+            }
         }
         ComponentUtil.setData(getDragSourceComponent(),
                 DndUtil.DRAG_SOURCE_IMAGE, dragImage);

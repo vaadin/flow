@@ -175,6 +175,44 @@ public class DnDIT extends ChromeBrowserTest {
                 getEventlog(2).getText());
     }
 
+    @Test
+    public void testSetDragImage_withDragSourceAsDragImage() {
+        open();
+
+        clickElementWithJs("button-toggle-drag-image-enabled");
+        clickElementWithJs("button-toggle-image");
+        clickElementWithJs("button-toggle-image");
+
+        TestBenchElement boxElement = getBoxElement("no-effect");
+        clearEvents();
+        drag(boxElement);
+
+        // need to wait for roundtrip, there should always be 3 events after dnd
+        // with drag image
+        waitForElementPresent(By.id("event-2"));
+
+        TestBenchElement eventlog = getEventlog(2);
+        String expected = "2: DragImage: <div id=\"box-no-effect\" style=\"width:100px;border:1px solid;margin:10px;height:60px\"> no-effect </div>";
+        Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
+    }
+
+    @Test
+    public void testSetDragImage_withNotYetAttachedDragSource() {
+        open();
+
+        clickElementWithJs("button-add-drag-source-with-drag-image");
+
+        TestBenchElement boxElement = $(TestBenchElement.class)
+                .id("drag-source-with-image");
+        clearEvents();
+        drag(boxElement);
+
+        waitForElementPresent(By.id("event-2"));
+        TestBenchElement eventlog = getEventlog(2);
+        String expected = "2: DragImage: <img alt=\"Gift\" src=\"/images/gift.png\">";
+        Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
+    }
+
     private void dragBoxToLanes(TestBenchElement boxElement,
             TestBenchElement laneElement, boolean dropShouldOccur) {
         clearEvents();
