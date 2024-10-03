@@ -19,12 +19,14 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.vaadin.flow.component.Component;
+
 /**
  * Data class for menu item information.
  * <p>
  * Only for read as data is immutable.
  */
-public record MenuData(String title, Double order, boolean exclude, String icon) implements Serializable {
+public record MenuData(String title, Double order, boolean exclude, String icon, Class<? extends Component> menuClass) implements Serializable {
 
     /**
      * Gets the title of the menu item.
@@ -65,20 +67,7 @@ public record MenuData(String title, Double order, boolean exclude, String icon)
     @Override
     public String toString() {
         return "MenuData{" + "title='" + title + '\'' + ", order=" + order
-                + ", exclude=" + exclude + ", icon='" + icon + '\'' + '}';
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof MenuData other
-                && Objects.equals(title, other.title)
-                && Objects.equals(order, other.order)
-                && Objects.equals(exclude, other.exclude)
-                && Objects.equals(icon, other.icon);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(title, order, exclude, icon);
+                + ", exclude=" + exclude + ", icon='" + icon + "', menuClass='"
+                + menuClass + "'" + '}';
     }
 }
