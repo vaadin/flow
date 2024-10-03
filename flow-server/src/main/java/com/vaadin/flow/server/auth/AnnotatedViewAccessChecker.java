@@ -66,13 +66,13 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
         Class<?> targetView = context.getNavigationTarget();
         if (RouteUtil.isAutolayoutEnabled(targetView)) {
             RouteRegistry registry = context.getRouter().getRegistry();
-            boolean noParents = registry
-                    .getRegisteredRoutes().stream()
+            boolean noParents = registry.getRegisteredRoutes().stream()
                     .filter(routeData -> routeData.getNavigationTarget()
                             .equals(targetView))
                     .map(data -> data.getParentLayouts().isEmpty()).findFirst()
                     .orElse(true);
-            if (noParents && registry.hasLayout(context.getLocation().getPath())) {
+            if (noParents
+                    && registry.hasLayout(context.getLocation().getPath())) {
                 Class<?> layout = registry
                         .getLayout(context.getLocation().getPath());
 

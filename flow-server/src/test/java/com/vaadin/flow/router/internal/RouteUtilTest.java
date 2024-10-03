@@ -316,8 +316,9 @@ public class RouteUtilTest {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(registry, AutoLayoutView.class, "auto");
 
-        Assert.assertEquals("Route with no layout should not get automatic layout",
-                0, parentLayouts.size());
+        Assert.assertEquals(
+                "Route with no layout should not get automatic layout", 0,
+                parentLayouts.size());
         Assert.assertTrue(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class));
     }
 

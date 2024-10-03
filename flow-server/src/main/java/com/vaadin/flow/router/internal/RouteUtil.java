@@ -506,11 +506,12 @@ public class RouteUtil {
     }
 
     /**
-     * Check if given route can get the automatic layout.
-     * Automatic layout can be used if it is a {@link Route} with no {@link Route#layout()}
-     * set and {@link Route#autoLayout()} as true.
+     * Check if given route can get the automatic layout. Automatic layout can
+     * be used if it is a {@link Route} with no {@link Route#layout()} set and
+     * {@link Route#autoLayout()} as true.
      *
-     * @param target target to check for accessibility
+     * @param target
+     *            target to check for accessibility
      * @return {@code true} if auto layout can be used
      */
     public static boolean isAutolayoutEnabled(Class<?> target) {
