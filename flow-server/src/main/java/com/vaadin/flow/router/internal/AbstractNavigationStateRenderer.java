@@ -295,7 +295,7 @@ public abstract class AbstractNavigationStateRenderer
     protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
         if (routeTarget.getParentLayouts().isEmpty()
-                && RouteUtil.isAutolayoutEnabled(routeTarget.getTarget())
+                && RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(), path)
                 && registry.hasLayout(path)) {
             return RouteUtil
                     .collectRouteParentLayouts(registry.getLayout(path));

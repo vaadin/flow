@@ -512,9 +512,31 @@ public class RouteUtil {
      *
      * @param target
      *            target to check for accessibility
+     * @param path
+     *            path to determine if we are targeting a {@link RouteAlias}
+     *            instead of {@link Route}
      * @return {@code true} if auto layout can be used
      */
-    public static boolean isAutolayoutEnabled(Class<?> target) {
+    public static boolean isAutolayoutEnabled(Class<?> target, String path) {
+        if (target.isAnnotationPresent(RouteAlias.class)) {
+            for (RouteAlias alias : target
+                    .getAnnotationsByType(RouteAlias.class)) {
+                String aliasPath = RouteUtil.getRouteAliasPath(target, alias);
+                String trimmedTemplate = PathUtil
+                        .trimPath(HasUrlParameterFormat.getTemplate(aliasPath,
+                                (Class<? extends Component>) target));
+                RouteModel routeModel = RouteModel.create(true);
+                routeModel.addRoute(trimmedTemplate,
+                        new RouteTarget((Class<? extends Component>) target));
+                NavigationRouteTarget navigationRouteTarget = routeModel
+                        .getNavigationRouteTarget(path);
+                if (navigationRouteTarget.hasTarget()) {
+                    return alias.autoLayout()
+                            && alias.layout().equals(UI.class);
+                }
+            }
+
+        }
         return target.isAnnotationPresent(Route.class)
                 && target.getAnnotation(Route.class).autoLayout()
                 && target.getAnnotation(Route.class).layout().equals(UI.class);
