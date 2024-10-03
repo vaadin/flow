@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Objects;
@@ -85,8 +86,10 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
             return true;
         }
         Locale locale = getLocale(request);
+
+        boolean productionMode = session.getConfiguration().isProductionMode();
         ResourceBundle translationPropertyFile = getTranslationPropertyFile(
-                locale);
+                locale, productionMode);
         if (translationPropertyFile == null) {
             handleNotFound(response);
         } else {
@@ -147,7 +150,8 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         return Locale.forLanguageTag(languageTag);
     }
 
-    private ResourceBundle getTranslationPropertyFile(Locale locale) {
+    private ResourceBundle getTranslationPropertyFile(Locale locale,
+            boolean productionMode) {
         Locale bestMatchLocale = getBestMatchLocale(locale);
         if (bestMatchLocale == null) {
             if (FALLBACK_LOCALE.equals(locale)) {
@@ -176,9 +180,30 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
                         bestMatchLocale.getDisplayName());
             }
         }
-        return i18NProvider.getBundle(bestMatchLocale,
-                ResourceBundle.Control.getNoFallbackControl(
-                        ResourceBundle.Control.FORMAT_PROPERTIES));
+        ResourceBundle.Control noFallbackControl = ResourceBundle.Control
+                .getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES);
+
+        ResourceBundle.Control noCacheNoFallbackControl = new ResourceBundle.Control() {
+            @Override
+            public long getTimeToLive(String baseName, Locale locale) {
+                return TTL_DONT_CACHE;
+            }
+
+            @Override
+            public Locale getFallbackLocale(String baseName, Locale locale) {
+                return noFallbackControl.getFallbackLocale(baseName, locale);
+            }
+
+            @Override
+            public List<String> getFormats(String baseName) {
+                return noFallbackControl.getFormats(baseName);
+            }
+
+        };
+
+        ResourceBundle.Control control = productionMode ? noFallbackControl
+                : noCacheNoFallbackControl;
+        return i18NProvider.getBundle(bestMatchLocale, control);
     }
 
     private Locale getBestMatchLocale(Locale locale) {
