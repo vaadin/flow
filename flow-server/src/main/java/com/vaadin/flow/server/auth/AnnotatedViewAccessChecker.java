@@ -27,6 +27,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
@@ -64,14 +65,15 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
     public AccessCheckResult check(NavigationContext context) {
         Class<?> targetView = context.getNavigationTarget();
         if (RouteUtil.isAutolayoutEnabled(targetView)) {
-            boolean noParents = context.getRouter().getRegistry()
+            RouteRegistry registry = context.getRouter().getRegistry();
+            boolean noParents = registry
                     .getRegisteredRoutes().stream()
                     .filter(routeData -> routeData.getNavigationTarget()
                             .equals(targetView))
                     .map(data -> data.getParentLayouts().isEmpty()).findFirst()
                     .orElse(true);
-            if (noParents) {
-                Class<?> layout = context.getRouter().getRegistry()
+            if (noParents && registry.hasLayout(context.getLocation().getPath())) {
+                Class<?> layout = registry
                         .getLayout(context.getLocation().getPath());
 
                 boolean hasAccess = accessAnnotationChecker.hasAccess(layout,

@@ -301,7 +301,7 @@ public class RouteUtilTest {
     }
 
     @Test
-    public void automaticLayoutShouldBeGottenForDefaultRoute() {
+    public void automaticLayoutShouldBeAvailableForDefaultRoute() {
 
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -316,11 +316,9 @@ public class RouteUtilTest {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(registry, AutoLayoutView.class, "auto");
 
-        Assert.assertEquals("Route with no layout should get automatic layout",
-                1, parentLayouts.size());
-        Assert.assertEquals(
-                "Layout should be the @Layout annotated RouterLayout",
-                AutoLayout.class, parentLayouts.get(0));
+        Assert.assertEquals("Route with no layout should not get automatic layout",
+                0, parentLayouts.size());
+        Assert.assertTrue(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class));
     }
 
     @Test

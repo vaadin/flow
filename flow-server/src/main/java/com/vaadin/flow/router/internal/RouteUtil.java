@@ -229,17 +229,6 @@ public class RouteUtil {
                 .findFirst();
     }
 
-    static Optional<RouteAlias> getMatchingRouteAliasLayout(
-            RouteRegistry handledRegistry, Class<?> component, String path,
-            List<RouteAlias> routeAliases) {
-        return routeAliases.stream()
-                .filter(alias -> alias.autoLayout()
-                        && path.equals(getRouteAliasPath(component, alias))
-                        && alias.layout().equals(UI.class)
-                        && handledRegistry.hasLayout(path))
-                .findFirst();
-    }
-
     static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
             Class<? extends RouterLayout> layout) {
         List<Class<? extends RouterLayout>> layouts = new ArrayList<>();
@@ -516,6 +505,14 @@ public class RouteUtil {
                 .map(clazz -> (Class<? extends Component>) clazz);
     }
 
+    /**
+     * Check if given route can get the automatic layout.
+     * Automatic layout can be used if it is a {@link Route} with no {@link Route#layout()}
+     * set and {@link Route#autoLayout()} as true.
+     *
+     * @param target target to check for accessibility
+     * @return {@code true} if auto layout can be used
+     */
     public static boolean isAutolayoutEnabled(Class<?> target) {
         return target.isAnnotationPresent(Route.class)
                 && target.getAnnotation(Route.class).autoLayout()
