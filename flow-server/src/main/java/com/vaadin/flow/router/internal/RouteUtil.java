@@ -41,6 +41,7 @@ import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
@@ -125,7 +126,7 @@ public class RouteUtil {
 
         if (hasRouteAndPathMatches && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
-        } else if (route.get().autoLayout() && hasRouteAndPathMatches
+        } else if (hasRouteAndPathMatches && route.get().autoLayout()
                 && route.get().layout().equals(UI.class)
                 && handledRegistry.hasLayout(path)) {
             list.addAll(
@@ -435,11 +436,31 @@ public class RouteUtil {
         modifiedClasses.stream()
                 .filter(clazz -> !Component.class.isAssignableFrom(clazz))
                 .forEach(nonFlowComponentsToRemove::add);
+        Set<Class<? extends RouterLayout>> layouts = new HashSet<>();
 
         boolean isSessionRegistry = registry instanceof SessionRouteRegistry;
         Predicate<Class<? extends Component>> modifiedClassesRouteRemovalFilter = clazz -> !isSessionRegistry;
 
         if (registry instanceof AbstractRouteRegistry abstractRouteRegistry) {
+
+            // update layouts
+            filterLayoutClasses(deletedClasses).forEach(layouts::add);
+            filterLayoutClasses(modifiedClasses).forEach(layouts::add);
+            filterLayoutClasses(addedClasses).forEach(layouts::add);
+            layouts.forEach(abstractRouteRegistry::updateLayout);
+            if (!layouts.isEmpty()) {
+                // Gather routes that don't have a layout or reference a layout
+                // that has been changed.
+                // Mark these routes as modified so they can be re-registered
+                // with the correct layouts applied.
+                registry.getRegisteredRoutes().stream()
+                        .filter(rd -> rd.getParentLayouts().isEmpty()
+                                || rd.getParentLayouts().stream()
+                                        .anyMatch(layouts::contains))
+                        .map(RouteBaseData::getNavigationTarget)
+                        .forEach(modifiedClasses::add);
+            }
+
             Map<String, RouteTarget> routesMap = abstractRouteRegistry
                     .getConfiguration().getRoutesMap();
             Map<? extends Class<? extends Component>, RouteTarget> routeTargets = registry
@@ -447,6 +468,7 @@ public class RouteUtil {
                     .map(routeData -> routesMap.get(routeData.getTemplate()))
                     .filter(Objects::nonNull).collect(Collectors.toMap(
                             RouteTarget::getTarget, Function.identity()));
+
             modifiedClassesRouteRemovalFilter = modifiedClassesRouteRemovalFilter
                     .and(clazz -> {
                         RouteTarget routeTarget = routeTargets.get(clazz);
@@ -520,6 +542,14 @@ public class RouteUtil {
                 routeConf.setAnnotatedRoute(componentClass);
             });
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Stream<Class<? extends RouterLayout>> filterLayoutClasses(
+            Set<Class<?>> classes) {
+        return filterComponentClasses(classes)
+                .filter(RouterLayout.class::isAssignableFrom)
+                .map(clazz -> (Class<? extends RouterLayout>) clazz);
     }
 
     @SuppressWarnings("unchecked")

@@ -35,6 +35,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.NotFoundException;
@@ -55,7 +56,6 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
-import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -608,6 +608,19 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         }
         synchronized (layouts) {
             layouts.put(layout.getAnnotation(Layout.class).value(), layout);
+        }
+    }
+
+    void updateLayout(Class<? extends RouterLayout> layout) {
+        if (layout == null) {
+            return;
+        }
+        synchronized (layouts) {
+            layouts.entrySet()
+                    .removeIf(entry -> layout.equals(entry.getValue()));
+            if (layout.isAnnotationPresent(Layout.class)) {
+                layouts.put(layout.getAnnotation(Layout.class).value(), layout);
+            }
         }
     }
 

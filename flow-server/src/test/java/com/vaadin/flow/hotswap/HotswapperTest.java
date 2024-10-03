@@ -38,9 +38,11 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.ServiceDestroyListener;
 import com.vaadin.flow.server.ServiceException;
@@ -282,6 +284,32 @@ public class HotswapperTest {
     }
 
     @Test
+    public void onHotswap_pushDisabled_routeTargetChainChanged_UINotRefreshedButLiveReloadTriggered()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        class NewLayout extends Component implements RouterLayout {
+        }
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class,
+                MyLayout.class);
+        RouteRegistry registry = ui.getInternals().getRouter().getRegistry();
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        routeConfiguration.update(() -> {
+            String path = ui.getActiveViewLocation().getPath();
+            routeConfiguration.removeRoute(path);
+            routeConfiguration.setRoute(path, MyRoute.class,
+                    List.of(NewLayout.class));
+        });
+
+        hotswapper.onHotswap(new String[] { NewLayout.class.getName() }, true);
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload).refresh(anyBoolean());
+    }
+
+    @Test
     public void onHotswap_pushDisabled_routeChildClassChanged_UINotRefreshedButLiveReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
@@ -383,6 +411,34 @@ public class HotswapperTest {
         ui.enablePush();
 
         hotswapper.onHotswap(new String[] { MyLayout.class.getName() }, true);
+
+        ui.assertChainRefreshed();
+        Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+    }
+
+    @Test
+    public void onHotswap_pushEnabled_routeTargetChainChanged_activeChainRefreshed()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        class NewLayout extends Component implements RouterLayout {
+        }
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class,
+                MyLayout.class);
+        ui.enablePush();
+        RouteRegistry registry = ui.getInternals().getRouter().getRegistry();
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        routeConfiguration.update(() -> {
+            String path = ui.getActiveViewLocation().getPath();
+            routeConfiguration.removeRoute(path);
+            routeConfiguration.setRoute(path, MyRoute.class,
+                    List.of(NewLayout.class));
+        });
+
+        hotswapper.onHotswap(new String[] { NewLayout.class.getName() }, true);
 
         ui.assertChainRefreshed();
         Mockito.verify(liveReload, never()).reload();
