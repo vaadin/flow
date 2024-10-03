@@ -2012,7 +2012,8 @@ public class UI extends Component
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
-            if (getInternals().getSession().getConfiguration().isReactEnabled()
+            if (getInternals().getSession().getService()
+                    .getDeploymentConfiguration().isReactEnabled()
                     && getInternals().getContinueNavigationAction() != null) {
                 getInternals().clearLastHandledNavigation();
             } else {

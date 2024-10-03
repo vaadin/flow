@@ -800,7 +800,8 @@ public class NavigationStateRendererTest {
     public void handle_variousInputs_checkPushStateShouldBeCalledOrNot() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
-
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setReactEnabled(false);
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
