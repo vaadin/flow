@@ -518,7 +518,8 @@ public class RouteUtil {
      * @return {@code true} if auto layout can be used
      */
     public static boolean isAutolayoutEnabled(Class<?> target, String path) {
-        if (target.isAnnotationPresent(RouteAlias.class)) {
+        if (target.isAnnotationPresent(RouteAlias.class)
+                || target.isAnnotationPresent(RouteAlias.Container.class)) {
             for (RouteAlias alias : target
                     .getAnnotationsByType(RouteAlias.class)) {
                 String aliasPath = RouteUtil.getRouteAliasPath(target, alias);
