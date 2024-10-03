@@ -1,10 +1,5 @@
 package com.vaadin.flow.component.internal;
 
-import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Optional;
@@ -45,7 +40,12 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.VaadinSessionState;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class JavaScriptBootstrapUITest {
 
@@ -417,7 +417,8 @@ public class JavaScriptBootstrapUITest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(internals.getSession()).thenReturn(session);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(configuration.isReactEnabled()).thenReturn(false);
+        ((MockDeploymentConfiguration) session.getService()
+                .getDeploymentConfiguration()).setReactEnabled(false);
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");

@@ -285,8 +285,8 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
-        } else if (ui.getInternals().getSession().getConfiguration()
-                .isReactEnabled()) {
+        } else if (ui.getInternals().getSession().getService()
+                .getDeploymentConfiguration().isReactEnabled()) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
