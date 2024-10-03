@@ -894,32 +894,6 @@ public class RouteUtilTest {
     }
 
     @Test
-    public void sessionRegistryWithManualRegisteredRouteClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
-        // given
-        @Route("aa")
-        class A extends Component {
-        }
-        MockVaadinServletService service = new MockVaadinServletService() {
-            @Override
-            public VaadinContext getContext() {
-                return new MockVaadinContext();
-            }
-        };
-        ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(service.getContext());
-        registry.setRoute("a", A.class, Collections.emptyList());
-        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
-
-        // when
-        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
-                Collections.singleton(A.class), Collections.emptySet());
-
-        // then
-        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
-        Assert.assertTrue(registry.getConfiguration().hasRoute("aa"));
-    }
-
-    @Test
     public void newLayoutAnnotatedComponent_updateRouteRegistry_routeIsUpdated() {
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override

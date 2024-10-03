@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
@@ -564,7 +563,8 @@ public class HotswapperTest {
         AtomicBoolean uiInitInstalled = new AtomicBoolean();
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(false);
-        VaadinService service = new MockVaadinServletService(configuration) {
+        VaadinService vaadinService = new MockVaadinServletService(
+                configuration) {
             @Override
             public Registration addSessionInitListener(
                     SessionInitListener listener) {
@@ -594,12 +594,12 @@ public class HotswapperTest {
         };
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).then(
-                i -> service.getDeploymentConfiguration().isProductionMode());
+        Mockito.when(appConfig.isProductionMode()).then(i -> vaadinService
+                .getDeploymentConfiguration().isProductionMode());
         Mockito.when(lookup.lookup(ApplicationConfigurationFactory.class))
                 .thenReturn(context -> appConfig);
-        service.getContext().setAttribute(Lookup.class, lookup);
-        Hotswapper.register(service);
+        vaadinService.getContext().setAttribute(Lookup.class, lookup);
+        Hotswapper.register(vaadinService);
 
         Assert.assertTrue(
                 "Expected hotswapper SessionInitListener to be registered in development mode, but was not",
@@ -623,7 +623,8 @@ public class HotswapperTest {
         AtomicBoolean uiInitInstalled = new AtomicBoolean();
         MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         configuration.setProductionMode(true);
-        VaadinService service = new MockVaadinServletService(configuration) {
+        VaadinService vaadinService = new MockVaadinServletService(
+                configuration) {
             @Override
             public Registration addSessionInitListener(
                     SessionInitListener listener) {
@@ -645,7 +646,7 @@ public class HotswapperTest {
                 return super.addServiceDestroyListener(listener);
             }
         };
-        Hotswapper.register(service);
+        Hotswapper.register(vaadinService);
 
         Assert.assertFalse(
                 "Expected hotswapper SessionInitListener not to be registered in production mode, but it was",
@@ -782,18 +783,6 @@ public class HotswapperTest {
         session.getLockInstance().lock();
         session.setConfiguration(service.getDeploymentConfiguration());
         session.getLockInstance().unlock();
-        return session;
-    }
-
-    private VaadinSession createMockVaadinSessionOld() {
-        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
-        when(wrappedSession.getId()).thenReturn(UUID.randomUUID().toString());
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        when(session.getSession()).thenReturn(wrappedSession);
-        when(session.getLockInstance()).thenReturn(new ReentrantLock());
-        when(session.getService()).thenReturn(service);
-        when(session.getConfiguration())
-                .thenReturn(service.getDeploymentConfiguration());
         return session;
     }
 
