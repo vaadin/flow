@@ -12,14 +12,18 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -33,6 +37,13 @@ public class AbstractRouteRegistryInitializerTest {
     };
 
     VaadinContext context = Mockito.mock(VaadinContext.class);
+
+    @Before
+    public void setUp() throws Exception {
+        Lookup lookup = Lookup.of(new DefaultRoutePathProvider(),
+                RoutePathProvider.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+    }
 
     @Tag(Tag.DIV)
     public static class TestParentLayout extends Component
