@@ -323,7 +323,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                                 : menu.title(),
                         (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null
                                 : menu.order(),
-                        excludeFromMenu, menu.icon()))
+                        excludeFromMenu,
+                        (menu.icon().isBlank() ? null : menu.icon())))
                 .orElse(null);
 
         RouteData route = new RouteData(parentLayouts, template, parameters,
