@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.menu;
+package com.vaadin.flow.internal.menu;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +54,8 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.RouteParamType;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
@@ -63,6 +65,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  *
  * Only returns views that are accessible at the moment and leaves out routes
  * that require path parameters.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class MenuRegistry {
 
@@ -346,7 +350,7 @@ public class MenuRegistry {
         if (viewConfig.menu() == null) {
             // create MenuData anyway to avoid need for null checking
             viewConfig = copyAvailableViewInfo(viewConfig,
-                    new MenuData(viewConfig.title(), null, false, null));
+                    new MenuData(viewConfig.title(), null, false, null, null));
         }
         configurations.put(path, viewConfig);
         if (viewConfig.children() != null) {
