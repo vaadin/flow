@@ -39,7 +39,8 @@ import com.vaadin.flow.component.Component;
  *            path to the icon. E.g. 'line-awesome/svg/lock-open-solid.svg'.
  * @param menuClass
  *            the source class with {@link com.vaadin.flow.router.Menu}
- *            annotation or null if not available
+ *            annotation or null if not available. Always null for
+ *            Hilla/TypeScript client views.
  */
 public record MenuEntry(String path, String title, Double order,
                         boolean exclude, String icon, Class<? extends Component> menuClass) implements Serializable  {

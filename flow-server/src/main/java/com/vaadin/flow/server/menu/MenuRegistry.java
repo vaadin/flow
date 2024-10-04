@@ -63,6 +63,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  *
  * Only returns views that are accessible at the moment and leaves out routes
  * that require path parameters.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class MenuRegistry {
 
