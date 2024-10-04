@@ -25,6 +25,8 @@ import com.vaadin.flow.internal.menu.MenuRegistry;
 /**
  * Menu configuration helper class to retrieve available menu entries for
  * application main menu.
+ *
+ * @since 24.5
  */
 public class MenuConfiguration {
 
