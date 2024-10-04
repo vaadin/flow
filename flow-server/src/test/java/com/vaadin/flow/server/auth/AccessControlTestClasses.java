@@ -454,15 +454,4 @@ public class AccessControlTestClasses {
             implements RouterLayout {
     }
 
-    @Tag(Tag.DIV)
-    @Route("testRoute")
-    @AnonymousAllowed
-    public static class AllowedRoute extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    @Route("testRoute")
-    public static class DeniedRoute extends Component {
-
-    }
 }

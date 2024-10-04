@@ -451,22 +451,22 @@ public class AnnotatedViewAccessCheckerTest {
     @Test
     public void routeWithNoAnnotationLayout_deny() {
         NavigationContext context = setupNavigationContext(
-                AccessControlTestClasses.AllowedRoute.class, null);
+                AccessControlTestClasses.AnonymousAllowedView.class, null);
         RouteRegistry registry = context.getRouter().getRegistry();
-        Mockito.when(registry.hasLayout("testRoute")).thenReturn(true);
-        Mockito.when(registry.getLayout("testRoute")).thenAnswer(
+        Mockito.when(registry.hasLayout("anon")).thenReturn(true);
+        Mockito.when(registry.getLayout("anon")).thenAnswer(
                 invocation -> AccessControlTestClasses.NoAuthLayout.class);
         AccessCheckResult result = this.viewAccessChecker.check(context);
         Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
     }
 
     @Test
-    public void routeWithNoAnnotationsAllowedLayout__allowed() {
+    public void routeWithNoAnnotationsAllowedLayout_allowed() {
         NavigationContext context = setupNavigationContext(
-                AccessControlTestClasses.AllowedRoute.class, null);
+                AccessControlTestClasses.AnonymousAllowedView.class, null);
         RouteRegistry registry = context.getRouter().getRegistry();
-        Mockito.when(registry.hasLayout("testRoute")).thenReturn(true);
-        Mockito.when(registry.getLayout("testRoute")).thenAnswer(
+        Mockito.when(registry.hasLayout("anon")).thenReturn(true);
+        Mockito.when(registry.getLayout("anon")).thenAnswer(
                 invocation -> AccessControlTestClasses.AnonymousAllowedLayout.class);
         AccessCheckResult result = this.viewAccessChecker.check(context);
         Assert.assertEquals(AccessCheckDecision.ALLOW, result.decision());
@@ -475,10 +475,10 @@ public class AnnotatedViewAccessCheckerTest {
     @Test
     public void routeWithNoAnnotationsAllowed_LayoutWithAllowed_denied() {
         NavigationContext context = setupNavigationContext(
-                AccessControlTestClasses.DeniedRoute.class, null);
+                AccessControlTestClasses.NoAnnotationView.class, null);
         RouteRegistry registry = context.getRouter().getRegistry();
-        Mockito.when(registry.hasLayout("testRoute")).thenReturn(true);
-        Mockito.when(registry.getLayout("testRoute")).thenAnswer(
+        Mockito.when(registry.hasLayout("noannotation")).thenReturn(true);
+        Mockito.when(registry.getLayout("noannotation")).thenAnswer(
                 invocation -> AccessControlTestClasses.AnonymousAllowedLayout.class);
         AccessCheckResult result = this.viewAccessChecker.check(context);
         Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
