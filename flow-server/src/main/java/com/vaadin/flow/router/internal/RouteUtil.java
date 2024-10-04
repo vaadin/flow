@@ -126,7 +126,7 @@ public class RouteUtil {
 
         if (hasRouteAndPathMatches && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
-        } else if (hasRouteAndPathMatches && route.get().autoLayout()
+        } else if (route.get().autoLayout() && hasRouteAndPathMatches
                 && route.get().layout().equals(UI.class)
                 && handledRegistry.hasLayout(path)) {
             list.addAll(
