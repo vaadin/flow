@@ -53,7 +53,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Entry point for application classes hot reloads.
@@ -180,6 +179,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             // Clear resource bundle cache so that translations (and other
             // resources) are reloaded
             ResourceBundle.clearCache();
+            // Trigger UI refresh
+            EnumMap<UIRefreshStrategy, List<UI>> refreshStrategy = new EnumMap<>(
+                    UIRefreshStrategy.class);
+            refreshStrategy.put(UIRefreshStrategy.REFRESH, List.of());
+            triggerClientUpdate(refreshStrategy, false);
             // Trigger any potential Hilla translation updates
             liveReload.sendHmrEvent("translations-update", Json.createObject());
         }
