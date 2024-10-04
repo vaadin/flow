@@ -347,10 +347,10 @@ public class RouteUtilTest {
                 parentLayouts.size());
         Assert.assertTrue(
                 RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "auto"));
-        Assert.assertFalse(
+        Assert.assertFalse("'alias' route has autolayout false",
                 RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "alias"));
-        Assert.assertFalse(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class,
-                "mainLayout"));
+        Assert.assertFalse("'mainLayout' has a defined layout", RouteUtil
+                .isAutolayoutEnabled(AutoLayoutView.class, "mainLayout"));
         Assert.assertTrue(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class,
                 "autoAlias"));
     }
