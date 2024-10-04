@@ -27,6 +27,7 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -441,4 +442,27 @@ public class AccessControlTestClasses {
         }
     }
 
+    @Tag(Tag.DIV)
+    @Layout
+    public static class NoAuthLayout extends Component implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @Layout
+    @AnonymousAllowed
+    public static class AnonymousAllowedLayout extends Component
+            implements RouterLayout {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("testRoute")
+    @AnonymousAllowed
+    public static class AllowedRoute extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("testRoute")
+    public static class DeniedRoute extends Component {
+
+    }
 }

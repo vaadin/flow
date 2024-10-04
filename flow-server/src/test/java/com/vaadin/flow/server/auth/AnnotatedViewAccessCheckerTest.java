@@ -448,6 +448,42 @@ public class AnnotatedViewAccessCheckerTest {
         Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
     }
 
+    @Test
+    public void routeWithNoAnnotationLayout_deny() {
+        NavigationContext context = setupNavigationContext(
+                AccessControlTestClasses.AllowedRoute.class, null);
+        RouteRegistry registry = context.getRouter().getRegistry();
+        Mockito.when(registry.hasLayout("testRoute")).thenReturn(true);
+        Mockito.when(registry.getLayout("testRoute")).thenAnswer(
+                invocation -> AccessControlTestClasses.NoAuthLayout.class);
+        AccessCheckResult result = this.viewAccessChecker.check(context);
+        Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
+    }
+
+    @Test
+    public void routeWithNoAnnotationsAllowedLayout__allowed() {
+        NavigationContext context = setupNavigationContext(
+                AccessControlTestClasses.AllowedRoute.class, null);
+        RouteRegistry registry = context.getRouter().getRegistry();
+        Mockito.when(registry.hasLayout("testRoute")).thenReturn(true);
+        Mockito.when(registry.getLayout("testRoute")).thenAnswer(
+                invocation -> AccessControlTestClasses.AnonymousAllowedLayout.class);
+        AccessCheckResult result = this.viewAccessChecker.check(context);
+        Assert.assertEquals(AccessCheckDecision.ALLOW, result.decision());
+    }
+
+    @Test
+    public void routeWithNoAnnotationsAllowed_LayoutWithAllowed_denied() {
+        NavigationContext context = setupNavigationContext(
+                AccessControlTestClasses.DeniedRoute.class, null);
+        RouteRegistry registry = context.getRouter().getRegistry();
+        Mockito.when(registry.hasLayout("testRoute")).thenReturn(true);
+        Mockito.when(registry.getLayout("testRoute")).thenAnswer(
+                invocation -> AccessControlTestClasses.AnonymousAllowedLayout.class);
+        AccessCheckResult result = this.viewAccessChecker.check(context);
+        Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
+    }
+
     private AccessCheckResult checkAccess(Class<?> viewClass, User user) {
         NavigationContext context = setupNavigationContext(viewClass, user);
         return this.viewAccessChecker.check(context);
