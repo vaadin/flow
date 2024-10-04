@@ -20,11 +20,13 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 
+import com.vaadin.flow.internal.menu.MenuRegistry;
+
 /**
  * Menu configuration helper class to retrieve available menu entries for
  * application main menu.
  */
-public class MenuConfiguration implements Serializable {
+public class MenuConfiguration {
 
     /**
      * Collect ordered list of menu entries for menu population. All client

@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.menu;
+package com.vaadin.flow.internal.menu;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +54,8 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.RouteParamType;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
