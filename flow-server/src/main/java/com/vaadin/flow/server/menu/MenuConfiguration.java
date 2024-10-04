@@ -28,7 +28,7 @@ import com.vaadin.flow.internal.menu.MenuRegistry;
  *
  * @since 24.5
  */
-public class MenuConfiguration {
+public final class MenuConfiguration {
 
     /**
      * Collect ordered list of menu entries for menu population. All client
