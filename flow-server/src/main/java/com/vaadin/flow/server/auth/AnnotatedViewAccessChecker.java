@@ -80,6 +80,9 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                 boolean hasAccess = accessAnnotationChecker.hasAccess(layout,
                         context.getPrincipal(), context::hasRole);
                 if (!hasAccess) {
+                    LOGGER.info(
+                            "Denied access to view due to layout '{}' access rules",
+                            layout.getSimpleName());
                     return context.deny(
                             "Consider adding one of the following annotations "
                                     + "to make the layout '"
@@ -109,9 +112,11 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                             .getTargetUrl(
                                     (Class<? extends Component>) targetView)
                             .isEmpty()) {
+                LOGGER.info(
+                        "Denied access to view due to layout '{}' access rules",
+                        targetView.getSimpleName());
                 denyReason = "Consider adding one of the following annotations "
-                        + "to make the layout '" + targetView.getSimpleName()
-                        + "' accessible: @AnonymousAllowed, "
+                        + "to make the layout accessible: @AnonymousAllowed, "
                         + "@PermitAll, @RolesAllowed.";
             }
         } else {
