@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -179,13 +180,17 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             // Clear resource bundle cache so that translations (and other
             // resources) are reloaded
             ResourceBundle.clearCache();
-            // Trigger UI refresh
-            EnumMap<UIRefreshStrategy, List<UI>> refreshStrategy = new EnumMap<>(
-                    UIRefreshStrategy.class);
-            refreshStrategy.put(UIRefreshStrategy.REFRESH, List.of());
-            triggerClientUpdate(refreshStrategy, false);
+
             // Trigger any potential Hilla translation updates
             liveReload.sendHmrEvent("translations-update", Json.createObject());
+
+            // Trigger any potential Flow translation updates
+            List<UI> uis = new ArrayList<>();
+            EnumMap<UIRefreshStrategy, List<UI>> refreshActions = new EnumMap<>(
+                    UIRefreshStrategy.class);
+            forEachActiveUI(ui -> uis.add(ui));
+            refreshActions.put(UIRefreshStrategy.REFRESH, uis);
+            triggerClientUpdate(refreshActions, false);
         }
 
     }
@@ -285,23 +290,25 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             Set<VaadinSession> vaadinSessions, Set<Class<?>> changedClasses) {
         EnumMap<UIRefreshStrategy, List<UI>> uisToRefresh = new EnumMap<>(
                 UIRefreshStrategy.class);
-        for (VaadinSession session : vaadinSessions) {
+        forEachActiveUI(ui -> uisToRefresh
+                .computeIfAbsent(computeRefreshStrategy(ui, changedClasses),
+                        k -> new ArrayList<>())
+                .add(ui));
+
+        uisToRefresh.remove(UIRefreshStrategy.SKIP);
+        return uisToRefresh;
+    }
+
+    private void forEachActiveUI(Consumer<UI> consumer) {
+        for (VaadinSession session : Set.copyOf(sessions)) {
             session.getLockInstance().lock();
             try {
                 session.getUIs().stream().filter(ui -> !ui.isClosing())
-                        .forEach(
-                                ui -> uisToRefresh
-                                        .computeIfAbsent(
-                                                computeRefreshStrategy(ui,
-                                                        changedClasses),
-                                                k -> new ArrayList<>())
-                                        .add(ui));
+                        .forEach(consumer);
             } finally {
                 session.getLockInstance().unlock();
             }
         }
-        uisToRefresh.remove(UIRefreshStrategy.SKIP);
-        return uisToRefresh;
     }
 
     private UIRefreshStrategy computeRefreshStrategy(UI ui,
