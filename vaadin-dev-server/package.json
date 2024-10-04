@@ -15,7 +15,7 @@
     "@web/dev-server-esbuild": "^0.3.3",
     "prettier": "^2.8.4",
     "tslib": "^2.5.3",
-    "vite": "^4.1.4"
+    "vite": "^5.4.8"
   },
   "dependencies": {
     "construct-style-sheets-polyfill": "^3.1.0",
