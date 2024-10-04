@@ -120,7 +120,7 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
 
     /**
      * Send a client side HMR event.
-     * 
+     *
      * @param event
      *            the event name
      * @param eventData
