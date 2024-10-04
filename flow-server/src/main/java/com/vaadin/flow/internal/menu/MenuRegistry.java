@@ -350,7 +350,7 @@ public class MenuRegistry {
         if (viewConfig.menu() == null) {
             // create MenuData anyway to avoid need for null checking
             viewConfig = copyAvailableViewInfo(viewConfig,
-                    new MenuData(viewConfig.title(), null, false, null));
+                    new MenuData(viewConfig.title(), null, false, null, null));
         }
         configurations.put(path, viewConfig);
         if (viewConfig.children() != null) {
