@@ -185,11 +185,16 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             liveReload.sendHmrEvent("translations-update", Json.createObject());
 
             // Trigger any potential Flow translation updates
-            List<UI> uis = new ArrayList<>();
             EnumMap<UIRefreshStrategy, List<UI>> refreshActions = new EnumMap<>(
                     UIRefreshStrategy.class);
-            forEachActiveUI(ui -> uis.add(ui));
-            refreshActions.put(UIRefreshStrategy.REFRESH, uis);
+            forEachActiveUI(ui -> {
+                UIRefreshStrategy strategy = ui.getPushConfiguration()
+                        .getPushMode().isEnabled()
+                                ? UIRefreshStrategy.PUSH_REFRESH_CHAIN
+                                : UIRefreshStrategy.REFRESH;
+                refreshActions.computeIfAbsent(strategy, k -> new ArrayList<>())
+                        .add(ui);
+            });
             triggerClientUpdate(refreshActions, false);
         }
 
