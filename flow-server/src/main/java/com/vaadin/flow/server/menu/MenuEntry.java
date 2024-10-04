@@ -21,7 +21,7 @@ import java.io.Serializable;
 import com.vaadin.flow.component.Component;
 
 /**
- * Menu option for the main menu.
+ * Menu entry for the main menu.
  *
  * @param path
  *            the path to navigate to
@@ -30,7 +30,7 @@ import com.vaadin.flow.component.Component;
  * @param order
  *            the order in the menu or null for default order
  * @param exclude
- *            whether to exclude the menu option
+ *            whether to exclude the menu entry
  * @param icon
  *            Icon to use in the menu or null for no icon. Value can go inside a
  *            {@code <vaadin-icon>} element's {@code icon} attribute which
@@ -41,6 +41,6 @@ import com.vaadin.flow.component.Component;
  *            the source class with {@link com.vaadin.flow.router.Menu}
  *            annotation or null if not available
  */
-public record MenuOption(String path, String title, Double order,
-        boolean exclude, String icon, Class<? extends Component> menuClass) implements Serializable  {
+public record MenuEntry(String path, String title, Double order,
+                        boolean exclude, String icon, Class<? extends Component> menuClass) implements Serializable  {
 }

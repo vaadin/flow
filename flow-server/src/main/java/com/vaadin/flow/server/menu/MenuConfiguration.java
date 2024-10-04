@@ -17,20 +17,51 @@
 package com.vaadin.flow.server.menu;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Locale;
 
 /**
- * Menu configuration helper class to retrieve available menu options for
+ * Menu configuration helper class to retrieve available menu entries for
  * application main menu.
  */
 public class MenuConfiguration implements Serializable {
 
     /**
-     * Get the {@link MenuOptions} instance containing all menu options for the
-     * application.
+     * Collect ordered list of menu entries for menu population. All client
+     * views are collected and any accessible server views.
      *
-     * @return the {@link MenuOptions} instance
+     * @return ordered list of {@link MenuEntry} instances
      */
-    public static MenuOptions getMenuOptions() {
-        return MenuOptions.getInstance();
+    public static List<MenuEntry> getMenuEntries() {
+        return MenuRegistry.collectMenuItemsList().stream()
+                .map(MenuConfiguration::createMenuEntry).toList();
+    }
+
+    /**
+     * Collect ordered list of menu entries for menu population. All client
+     * views are collected and any accessible server views.
+     *
+     * @param locale
+     *            locale to use for ordering. null for default locale.
+     *
+     * @return ordered list of {@link MenuEntry} instances
+     */
+    public static List<MenuEntry> getMenuEntries(Locale locale) {
+        return MenuRegistry.collectMenuItemsList(locale).stream()
+                .map(MenuConfiguration::createMenuEntry).toList();
+    }
+
+    private static MenuEntry createMenuEntry(AvailableViewInfo viewInfo) {
+        if (viewInfo.menu() == null) {
+            return new MenuEntry(viewInfo.route(), viewInfo.title(), null,
+                    false, null, null);
+        }
+        return new MenuEntry(viewInfo.route(),
+                (viewInfo.menu().title() != null
+                        && !viewInfo.menu().title().isBlank()
+                                ? viewInfo.menu().title()
+                                : viewInfo.title()),
+                viewInfo.menu().order(), viewInfo.menu().exclude(),
+                viewInfo.menu().icon(), viewInfo.menu().menuClass());
     }
 }

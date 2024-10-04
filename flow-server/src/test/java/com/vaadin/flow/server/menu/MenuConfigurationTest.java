@@ -124,11 +124,11 @@ public class MenuConfigurationTest {
         Files.writeString(clientFiles.toPath(),
                 MenuRegistryTest.testClientRouteFile);
 
-        List<MenuOption> menuOptions = MenuConfiguration.getMenuOptions().get();
+        List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
         Assert.assertEquals(
                 "List of menu items has incorrect size. Excluded menu item like /login is not expected.",
-                4, menuOptions.size());
-        assertOrder(menuOptions,
+                4, menuEntries.size());
+        assertOrder(menuEntries,
                 new String[] { "", "/about", "/hilla", "/hilla/sub" });
     }
 
@@ -149,13 +149,13 @@ public class MenuConfigurationTest {
                 MenuRegistryTest.MyVarargsParamRoute.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        List<MenuOption> menuOptions = MenuConfiguration.getMenuOptions().get();
-        Assert.assertEquals(5, menuOptions.size());
-        assertOrder(menuOptions, new String[] { "", "/home", "/info", "/param",
+        List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
+        Assert.assertEquals(5, menuEntries.size());
+        assertOrder(menuEntries, new String[] { "", "/home", "/info", "/param",
                 "/param/varargs" });
 
-        Map<String, MenuOption> mapMenuItems = menuOptions.stream()
-                .collect(Collectors.toMap(MenuOption::path, item -> item));
+        Map<String, MenuEntry> mapMenuItems = menuEntries.stream()
+                .collect(Collectors.toMap(MenuEntry::path, item -> item));
         assertClientRoutes(mapMenuItems, false, false, true);
         assertServerRoutes(mapMenuItems);
         assertServerRoutesWithParameters(mapMenuItems, true);
@@ -173,21 +173,21 @@ public class MenuConfigurationTest {
                 MenuRegistryTest.TestRouteDB.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        List<MenuOption> menuOptions = MenuConfiguration.getMenuOptions().get();
+        List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
         ;
-        Assert.assertEquals(4, menuOptions.size());
-        assertOrder(menuOptions,
+        Assert.assertEquals(4, menuEntries.size());
+        assertOrder(menuEntries,
                 new String[] { "/d", "/c", "/a", "/b", "/d/a", "/d/b" });
     }
 
-    private void assertOrder(List<MenuOption> menuOptions,
+    private void assertOrder(List<MenuEntry> menuEntries,
             String[] expectedOrder) {
-        for (int i = 0; i < menuOptions.size(); i++) {
-            Assert.assertEquals(expectedOrder[i], menuOptions.get(i).path());
+        for (int i = 0; i < menuEntries.size(); i++) {
+            Assert.assertEquals(expectedOrder[i], menuEntries.get(i).path());
         }
     }
 
-    private void assertClientRoutes(Map<String, MenuOption> menuOptions,
+    private void assertClientRoutes(Map<String, MenuEntry> menuOptions,
             boolean authenticated, boolean hasRole, boolean excludeExpected) {
         Assert.assertTrue("Client route '' missing",
                 menuOptions.containsKey(""));
@@ -234,7 +234,7 @@ public class MenuConfigurationTest {
         }
     }
 
-    private void assertServerRoutes(Map<String, MenuOption> menuItems) {
+    private void assertServerRoutes(Map<String, MenuEntry> menuItems) {
         Assert.assertTrue("Server route 'home' missing",
                 menuItems.containsKey("/home"));
         Assert.assertEquals("Home", menuItems.get("/home").title());
@@ -249,7 +249,7 @@ public class MenuConfigurationTest {
     }
 
     private void assertServerRoutesWithParameters(
-            Map<String, MenuOption> menuItems, boolean excludeExpected) {
+            Map<String, MenuEntry> menuItems, boolean excludeExpected) {
         if (excludeExpected) {
             Assert.assertFalse(
                     "Server route '/param/:param' should be excluded",
