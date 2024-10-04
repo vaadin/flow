@@ -343,11 +343,24 @@ public class MenuRegistry {
                 : viewConfig.route().startsWith("/")
                         ? basePath + viewConfig.route()
                         : basePath + '/' + viewConfig.route();
+        if (viewConfig.menu() == null) {
+            // create MenuData anyway to avoid need for null checking
+            viewConfig = copyAvailableViewInfo(viewConfig,
+                    new MenuData(viewConfig.title(), null, false, null));
+        }
         configurations.put(path, viewConfig);
         if (viewConfig.children() != null) {
             viewConfig.children().forEach(
                     child -> collectClientViews(path, child, configurations));
         }
+    }
+
+    private static AvailableViewInfo copyAvailableViewInfo(
+            AvailableViewInfo source, MenuData newMenuData) {
+        return new AvailableViewInfo(source.title(), source.rolesAllowed(),
+                source.loginRequired(), source.route(), source.lazy(),
+                source.register(), newMenuData, source.children(),
+                source.routeParameters(), source.flowLayout());
     }
 
     public static final String FILE_ROUTES_JSON_NAME = "file-routes.json";

@@ -344,7 +344,7 @@ public class MenuRegistryTest {
             boolean authenticated, boolean hasRole, boolean excludeExpected) {
         Assert.assertTrue("Client route '' missing", menuItems.containsKey(""));
         Assert.assertEquals("Public", menuItems.get("").title());
-        Assert.assertNull("Public doesn't contain specific menu data",
+        Assert.assertNotNull("Public should contain default menu data",
                 menuItems.get("").menu());
 
         if (authenticated) {
@@ -353,7 +353,7 @@ public class MenuRegistryTest {
             Assert.assertEquals("About", menuItems.get("/about").title());
             Assert.assertTrue("Login should be required",
                     menuItems.get("/about").loginRequired());
-            Assert.assertNull("About doesn't contain specific menu data",
+            Assert.assertNotNull("About should contain default menu data",
                     menuItems.get("/about").menu());
 
             if (hasRole) {
@@ -365,7 +365,7 @@ public class MenuRegistryTest {
                 Assert.assertArrayEquals("Faulty roles fo hilla",
                         new String[] { "ROLE_USER" },
                         menuItems.get("/hilla").rolesAllowed());
-                Assert.assertNull("Hilla doesn't contain specific menu data",
+                Assert.assertNotNull("Hilla should contain default menu data",
                         menuItems.get("/hilla").menu());
 
                 Assert.assertTrue("Client child route 'hilla/sub' missing",
