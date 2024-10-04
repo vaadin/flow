@@ -27,6 +27,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
@@ -37,11 +43,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -241,6 +242,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter(property = InitParameters.APPLICATION_IDENTIFIER)
     private String applicationIdentifier;
 
+    private ClassFinder classFinder;
+
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
@@ -274,10 +277,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      *            Target Maven project
      * @return true if Hilla is available, false otherwise
      */
-    public static boolean isHillaAvailable(MavenProject mavenProject) {
-        List<String> classpathElements = FlowModeAbstractMojo
-                .getClasspathElements(mavenProject);
-        return BuildFrontendUtil.getClassFinder(classpathElements).getResource(
+    public boolean isHillaAvailable(MavenProject mavenProject) {
+        return getOrCreateClassFinder(mavenProject).getResource(
                 "com/vaadin/hilla/EndpointController.class") != null;
     }
 
@@ -292,7 +293,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
      */
-    public static boolean isHillaUsed(MavenProject mavenProject,
+    public boolean isHillaUsed(MavenProject mavenProject,
             File frontendDirectory) {
         return isHillaAvailable(mavenProject)
                 && FrontendUtils.isHillaViewsUsed(frontendDirectory);
@@ -325,11 +326,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public ClassFinder getClassFinder() {
+        return getOrCreateClassFinder(project);
+    }
 
-        List<String> classpathElements = getClasspathElements(project);
-
-        return BuildFrontendUtil.getClassFinder(classpathElements);
-
+    private ClassFinder getOrCreateClassFinder(MavenProject project) {
+        if (classFinder == null) {
+            List<String> classpathElements = getClasspathElements(project);
+            classFinder = BuildFrontendUtil.getClassFinder(classpathElements);
+        }
+        return classFinder;
     }
 
     @Override
