@@ -105,7 +105,7 @@ public class RouteRegistryHotswapperTest {
 
         Assert.assertEquals(
                 "Expected only changed route to be removed from the registry",
-                appRouteRegistryTracker.removed.size(), 1);
+                1, appRouteRegistryTracker.removed.size());
 
         Assert.assertEquals(Set.of(MyRouteB.class),
                 appRouteRegistryTracker.removed.stream()
