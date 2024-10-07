@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.menu;
+package com.vaadin.flow.internal.menu;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +54,8 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.RouteParamType;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
@@ -63,6 +65,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  *
  * Only returns views that are accessible at the moment and leaves out routes
  * that require path parameters.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class MenuRegistry {
 
@@ -343,11 +347,24 @@ public class MenuRegistry {
                 : viewConfig.route().startsWith("/")
                         ? basePath + viewConfig.route()
                         : basePath + '/' + viewConfig.route();
+        if (viewConfig.menu() == null) {
+            // create MenuData anyway to avoid need for null checking
+            viewConfig = copyAvailableViewInfo(viewConfig,
+                    new MenuData(viewConfig.title(), null, false, null, null));
+        }
         configurations.put(path, viewConfig);
         if (viewConfig.children() != null) {
             viewConfig.children().forEach(
                     child -> collectClientViews(path, child, configurations));
         }
+    }
+
+    private static AvailableViewInfo copyAvailableViewInfo(
+            AvailableViewInfo source, MenuData newMenuData) {
+        return new AvailableViewInfo(source.title(), source.rolesAllowed(),
+                source.loginRequired(), source.route(), source.lazy(),
+                source.register(), newMenuData, source.children(),
+                source.routeParameters(), source.flowLayout());
     }
 
     public static final String FILE_ROUTES_JSON_NAME = "file-routes.json";

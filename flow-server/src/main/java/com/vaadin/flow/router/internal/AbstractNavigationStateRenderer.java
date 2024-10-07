@@ -62,13 +62,15 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.menu.MenuRegistry;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -155,7 +157,10 @@ public abstract class AbstractNavigationStateRenderer
         final RouteParameters parameters = navigationState.getRouteParameters();
         final RouteTarget routeTarget = navigationState.getRouteTarget();
 
-        routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
+        routeLayoutTypes = routeTarget != null
+                ? getTargetParentLayouts(routeTarget,
+                        event.getSource().getRegistry(),
+                        event.getLocation().getPath())
                 : getRouterLayoutTypes(routeTargetType,
                         ui.getInternals().getRouter());
 
@@ -274,6 +279,30 @@ public abstract class AbstractNavigationStateRenderer
         return statusCode;
     }
 
+    /**
+     * Get the parentLayouts for given routeTarget or use an applicable
+     * {@code @Layout} when no parentLayouts defined and target is a Route
+     * annotated target with autoLayout enabled and no layout set.
+     *
+     * @param routeTarget
+     *            RouteTarget to get parents for
+     * @param registry
+     *            Registry in use
+     * @param path
+     *            request path
+     * @return List of parent layouts
+     */
+    protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
+            RouteTarget routeTarget, RouteRegistry registry, String path) {
+        if (routeTarget.getParentLayouts().isEmpty()
+                && RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(), path)
+                && registry.hasLayout(path)) {
+            return RouteUtil
+                    .collectRouteParentLayouts(registry.getLayout(path));
+        }
+        return routeTarget.getParentLayouts();
+    }
+
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
         if (event instanceof ErrorNavigationEvent) {
             ErrorNavigationEvent errorEvent = (ErrorNavigationEvent) event;
@@ -296,8 +325,8 @@ public abstract class AbstractNavigationStateRenderer
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
-        } else if (ui.getInternals().getSession().getConfiguration()
-                .isReactEnabled()) {
+        } else if (ui.getInternals().getSession().getService()
+                .getDeploymentConfiguration().isReactEnabled()) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
