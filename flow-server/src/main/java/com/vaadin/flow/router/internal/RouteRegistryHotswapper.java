@@ -18,7 +18,6 @@ package com.vaadin.flow.router.internal;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -73,17 +72,13 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
                     .getInstance(vaadinService.getContext());
             // Collect layouts before and after changes to trigger layouts.json
             // regeneration if something changed
-            Set<Class<?>> layouts = new HashSet<>();
-            appRegistry.getRegisteredRoutes().stream()
-                    .flatMap(rd -> rd.getParentLayouts().stream())
-                    .collect(Collectors.toCollection(() -> layouts));
+            Set<Class<?>> layouts = new HashSet<>(
+                    ((AbstractRouteRegistry) appRegistry).getLayouts());
 
             RouteUtil.updateRouteRegistry(appRegistry, addedClasses,
                     modifiedClasses, removedClasses);
 
-            appRegistry.getRegisteredRoutes().stream()
-                    .flatMap(rd -> rd.getParentLayouts().stream())
-                    .collect(Collectors.toCollection(() -> layouts));
+            layouts.addAll(((AbstractRouteRegistry) appRegistry).getLayouts());
 
             DeploymentConfiguration configuration = vaadinService
                     .getDeploymentConfiguration();
