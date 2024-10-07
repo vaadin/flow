@@ -166,8 +166,6 @@ public class TaskGenerateReactFiles
             writeFile(flowTsx, getFileContent(FLOW_TSX));
             writeFile(vaadinReactTsx,
                     getVaadinReactTsContent(routesTsx.exists()));
-            // writeFile(new File(frontendGeneratedFolder, LAYOUTS_JSON),
-            // layoutsContent());
             writeLayoutsJson(
                     options.getClassFinder().getAnnotatedClasses(Layout.class));
             if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
