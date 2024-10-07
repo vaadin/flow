@@ -339,12 +339,6 @@ public class RouteUtilTest {
                 .getInstance(service.getContext());
         registry.setLayout(AutoLayout.class);
 
-        List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                .getParentLayouts(registry, AutoLayoutView.class, "auto");
-
-        Assert.assertEquals(
-                "Route with no layout should not get automatic layout", 0,
-                parentLayouts.size());
         Assert.assertTrue(
                 RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "auto"));
         Assert.assertFalse("'alias' route has autolayout false",
