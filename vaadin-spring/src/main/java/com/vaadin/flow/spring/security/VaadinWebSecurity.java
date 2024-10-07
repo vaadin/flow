@@ -630,7 +630,7 @@ public abstract class VaadinWebSecurity {
 
     private void configureLogout(HttpSecurity http, String logoutSuccessUrl)
             throws Exception {
-        SimpleUrlLogoutSuccessHandler logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
+        VaadinSimpleUrlLogoutSuccessHandler logoutSuccessHandler = new VaadinSimpleUrlLogoutSuccessHandler();
         logoutSuccessHandler.setDefaultTargetUrl(logoutSuccessUrl);
         logoutSuccessHandler.setRedirectStrategy(new UidlRedirectStrategy());
         http.logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler));

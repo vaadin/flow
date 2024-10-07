@@ -44,6 +44,7 @@ import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -59,8 +60,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
-import static com.vaadin.flow.server.menu.MenuRegistry.FILE_ROUTES_JSON_PROD_PATH;
+import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
+import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_PROD_PATH;
 
 @NotThreadSafe
 public class MenuRegistryTest {
@@ -344,7 +345,7 @@ public class MenuRegistryTest {
             boolean authenticated, boolean hasRole, boolean excludeExpected) {
         Assert.assertTrue("Client route '' missing", menuItems.containsKey(""));
         Assert.assertEquals("Public", menuItems.get("").title());
-        Assert.assertNull("Public doesn't contain specific menu data",
+        Assert.assertNotNull("Public should contain default menu data",
                 menuItems.get("").menu());
 
         if (authenticated) {
@@ -353,7 +354,7 @@ public class MenuRegistryTest {
             Assert.assertEquals("About", menuItems.get("/about").title());
             Assert.assertTrue("Login should be required",
                     menuItems.get("/about").loginRequired());
-            Assert.assertNull("About doesn't contain specific menu data",
+            Assert.assertNotNull("About should contain default menu data",
                     menuItems.get("/about").menu());
 
             if (hasRole) {
@@ -365,7 +366,7 @@ public class MenuRegistryTest {
                 Assert.assertArrayEquals("Faulty roles fo hilla",
                         new String[] { "ROLE_USER" },
                         menuItems.get("/hilla").rolesAllowed());
-                Assert.assertNull("Hilla doesn't contain specific menu data",
+                Assert.assertNotNull("Hilla should contain default menu data",
                         menuItems.get("/hilla").menu());
 
                 Assert.assertTrue("Client child route 'hilla/sub' missing",
@@ -457,78 +458,78 @@ public class MenuRegistryTest {
     @Tag("div")
     @Route("home")
     @Menu(title = "Home")
-    private static class MyRoute extends Component {
+    public static class MyRoute extends Component {
     }
 
     @Tag("div")
     @Route("info")
     @Menu
-    private static class MyInfo extends Component {
+    public static class MyInfo extends Component {
     }
 
     @Tag("div")
     @Route("param/:param")
     @Menu
-    private static class MyRequiredParamRoute extends Component {
+    public static class MyRequiredParamRoute extends Component {
     }
 
     @Tag("div")
     @Route("param/:param1/:param2?")
     @Menu
-    private static class MyRequiredAndOptionalParamRoute extends Component {
+    public static class MyRequiredAndOptionalParamRoute extends Component {
     }
 
     @Tag("div")
     @Route("param/:param1?/:param2?(edit)")
     @Menu
-    private static class MyOptionalParamRoute extends Component {
+    public static class MyOptionalParamRoute extends Component {
     }
 
     @Tag("div")
     @Route("param/varargs/:param*")
     @Menu
-    private static class MyVarargsParamRoute extends Component {
+    public static class MyVarargsParamRoute extends Component {
     }
 
     @Tag("div")
     @Route("a")
     @Menu(order = 1.1)
-    private static class TestRouteA extends Component {
+    public static class TestRouteA extends Component {
     }
 
     @Tag("div")
     @Route("b")
     @Menu(order = 1.2)
-    private static class TestRouteB extends Component {
+    public static class TestRouteB extends Component {
     }
 
     @Tag("div")
     @Route("c")
     @Menu(order = 0.1)
-    private static class TestRouteC extends Component {
+    public static class TestRouteC extends Component {
     }
 
     @Tag("div")
     @Route("d")
     @Menu(order = 0)
-    private static class TestRouteD extends Component {
+    public static class TestRouteD extends Component {
     }
 
     @Tag("div")
     @Route("d/b")
-    private static class TestRouteDB extends Component {
+    public static class TestRouteDB extends Component {
 
     }
 
     @Tag("div")
     @Route("d/a")
-    private static class TestRouteDA extends Component {
+    public static class TestRouteDA extends Component {
     }
 
     /**
      * Extending class to let us mock the getRouteRegistry method for testing.
      */
-    private static class MockService extends VaadinServletService {
+    public static class MockService extends VaadinServletService {
 
         @Override
         public RouteRegistry getRouteRegistry() {
@@ -541,7 +542,7 @@ public class MenuRegistryTest {
         }
     }
 
-    String testClientRouteFile = """
+    public static String testClientRouteFile = """
             [
               {
                 "route": "",

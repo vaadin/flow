@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.Json;
@@ -67,6 +68,7 @@ public class HistoryTest {
     private TestPage page = new TestPage(ui);
     private History history;
 
+    private VaadinService service = Mockito.mock(VaadinService.class);
     private VaadinSession session = Mockito.mock(VaadinSession.class);
     private DeploymentConfiguration configuration;
 
@@ -80,6 +82,10 @@ public class HistoryTest {
     public void setup() {
         history = new History(ui);
         configuration = Mockito.mock(DeploymentConfiguration.class);
+
+        Mockito.when(session.getService()).thenReturn(service);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
         Mockito.when(configuration.isReactEnabled()).thenReturn(false);
     }

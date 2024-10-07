@@ -52,6 +52,12 @@ public class DndUtil {
     public static final String DRAG_SOURCE_DATA_KEY = "drag-source-data";
 
     /**
+     * Key for storing server side drag image for a
+     * {@link com.vaadin.flow.component.dnd.DragSource}.
+     */
+    public static final String DRAG_SOURCE_IMAGE = "drag-source-image";
+
+    /**
      * Key for storing an internal drag start listener registration for a
      * {@link com.vaadin.flow.component.dnd.DragSource}.
      */

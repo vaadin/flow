@@ -88,7 +88,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
                 // If the server updates the url also we will get 2 history
                 // changes instead of 1.
                 if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                        && !event.getUI().getSession().getConfiguration()
+                        && !event.getUI().getSession().getService()
+                                .getDeploymentConfiguration()
                                 .isReactEnabled()) {
                     event = new NavigationEvent(event.getSource(),
                             event.getLocation(), event.getUI(),

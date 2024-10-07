@@ -34,7 +34,7 @@ import org.springframework.security.config.annotation.configuration.ObjectPostPr
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.logout.CompositeLogoutHandler;
+import com.vaadin.flow.spring.security.AuthenticationContext.CompositeLogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;

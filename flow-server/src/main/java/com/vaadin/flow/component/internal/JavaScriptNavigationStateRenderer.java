@@ -101,8 +101,8 @@ public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
     @Override
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        if (event.getUI().getInternals().getSession().getConfiguration()
-                .isReactEnabled()) {
+        if (event.getUI().getInternals().getSession().getService()
+                .getDeploymentConfiguration().isReactEnabled()) {
             return super.shouldPushHistoryState(event);
         }
         if (NavigationTrigger.CLIENT_SIDE.equals(event.getTrigger())

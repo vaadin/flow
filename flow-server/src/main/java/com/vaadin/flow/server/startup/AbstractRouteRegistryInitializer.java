@@ -102,23 +102,27 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
         RouteAlias[] aliases = route.getAnnotationsByType(RouteAlias.class);
         if (aliases.length > 0) {
-            Route routeAnnotation = route.getAnnotation(Route.class);
+            String routePath = RouteUtil.getRoutePath(context, route);
             Map<String, Long> stats = Arrays.stream(aliases)
-                    .map(RouteAlias::value).collect(Collectors.groupingBy(
-                            Function.identity(), Collectors.counting()));
-            if (stats.containsKey(routeAnnotation.value())) {
+                    .map(ann -> RouteUtil.getRouteAliasPath(route, ann))
+                    .collect(Collectors.groupingBy(Function.identity(),
+                            Collectors.counting()));
+            if (stats.containsKey(routePath)) {
                 throw new InvalidRouteConfigurationException(String.format(
-                        "'%s' declares '@%s' and '@%s' with the same path '%s'",
+                        "'%s' declares '@%s' and '@%s' with the same path '%s'. "
+                                + "Make sure paths are different by checking annotation values "
+                                + "and prefixes defined by layouts",
                         route.getCanonicalName(), Route.class.getSimpleName(),
-                        RouteAlias.class.getSimpleName(),
-                        routeAnnotation.value()));
+                        RouteAlias.class.getSimpleName(), routePath));
             }
             String repeatedAliases = stats.entrySet().stream()
                     .filter(e -> e.getValue() > 1).map(Map.Entry::getKey)
                     .collect(Collectors.joining(", "));
             if (!repeatedAliases.isEmpty()) {
                 throw new InvalidRouteConfigurationException(String.format(
-                        "'%s' declares multiple '@%s' with same paths: %s.",
+                        "'%s' declares multiple '@%s' with same paths: %s."
+                                + "Make sure paths are different by checking annotation values "
+                                + "and prefixes defined by layouts.",
                         route.getCanonicalName(),
                         RouteAlias.class.getSimpleName(), repeatedAliases));
             }

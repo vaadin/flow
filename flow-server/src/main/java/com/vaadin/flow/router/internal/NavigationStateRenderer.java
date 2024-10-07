@@ -65,7 +65,8 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
                 .getNavigationRouteTarget(navigationState.getResolvedPath());
 
         if (target.hasTarget()) {
-            return target.getRouteTarget().getParentLayouts();
+            return getTargetParentLayouts(target.getRouteTarget(),
+                    router.getRegistry(), target.getPath());
         } else {
             return Collections.emptyList();
         }

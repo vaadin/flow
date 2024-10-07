@@ -56,7 +56,7 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.router.Layout;
-import com.vaadin.flow.server.menu.MenuRegistry;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
 import static java.util.stream.Collectors.toList;
@@ -323,7 +323,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                                 : menu.title(),
                         (Objects.equals(menu.order(), Double.MIN_VALUE)) ? null
                                 : menu.order(),
-                        excludeFromMenu, menu.icon()))
+                        excludeFromMenu,
+                        (menu.icon().isBlank() ? null : menu.icon()), target))
                 .orElse(null);
 
         RouteData route = new RouteData(parentLayouts, template, parameters,

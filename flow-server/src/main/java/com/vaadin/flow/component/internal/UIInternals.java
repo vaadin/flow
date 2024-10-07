@@ -858,7 +858,8 @@ public class UIInternals implements Serializable {
             }
             previous = current;
         }
-        if (getSession().getConfiguration().isReactEnabled()
+        if (getSession().getService().getDeploymentConfiguration()
+                .isReactEnabled()
                 && getRouter().getRegistry()
                         .getNavigationTarget(viewLocation.getPath()).isEmpty()
                 && target instanceof RouterLayout) {

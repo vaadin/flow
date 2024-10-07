@@ -32,6 +32,12 @@ public class UidlRedirectStrategy extends DefaultRedirectStrategy {
                                 + "but it was not possible to get the UI instance to perform the action.",
                         url);
             }
+        } else if (response == null) {
+            LoggerFactory.getLogger(UidlRedirectStrategy.class)
+                    .warn("A redirect to {} was request, "
+                            + "but it has null HttpServletResponse and can't perform the action. "
+                            + "Performing logout during a Vaadin request with @Push(transport = Transport.WEBSOCKET) would cause this.",
+                            url);
         } else {
             super.sendRedirect(request, response, url);
         }

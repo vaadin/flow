@@ -64,6 +64,7 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -2934,6 +2935,9 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void ui_navigate_should_only_have_one_history_marking_on_loop()
             throws InvalidRouteConfigurationException {
+        ((MockDeploymentConfiguration) ui.getSession().getService()
+                .getDeploymentConfiguration()).setReactEnabled(false);
+
         setNavigationTargets(LoopByUINavigate.class);
 
         ui.navigate("loop");
