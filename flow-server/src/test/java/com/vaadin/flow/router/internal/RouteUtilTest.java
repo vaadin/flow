@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
@@ -28,16 +29,18 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
@@ -917,11 +920,7 @@ public class RouteUtilTest {
     }
 
     @Test
-    public void sessionRegistryWithManualRegisteredRouteClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
-        // given
-        @Route("aa")
-        class A extends Component {
-        }
+    public void newLayoutAnnotatedComponent_updateRouteRegistry_routeIsUpdated() {
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
             public VaadinContext getContext() {
@@ -930,16 +929,147 @@ public class RouteUtilTest {
         };
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
-        registry.setRoute("a", A.class, Collections.emptyList());
-        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+        registry.update(() -> {
+            RouteConfiguration routeConfiguration = RouteConfiguration
+                    .forRegistry(registry);
+            routeConfiguration.setAnnotatedRoute(AutoLayoutView.class);
+        });
 
-        // when
-        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
-                Collections.singleton(A.class), Collections.emptySet());
+        List<Class<? extends RouterLayout>> parentLayouts = registry
+                .getNavigationRouteTarget("auto").getRouteTarget()
+                .getParentLayouts();
 
-        // then
-        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
-        Assert.assertTrue(registry.getConfiguration().hasRoute("aa"));
+        Assert.assertEquals(
+                "AutoLayoutView should not have layout because no auto layout is registered",
+                0, parentLayouts.size());
+
+        RouteUtil.updateRouteRegistry(registry,
+                Collections.singleton(AutoLayout.class), Collections.emptySet(),
+                Collections.emptySet());
+
+        parentLayouts = registry.getNavigationRouteTarget("auto")
+                .getRouteTarget().getParentLayouts();
+        Assert.assertEquals("AutoLayoutView should now get automatic layout", 1,
+                parentLayouts.size());
+        Assert.assertEquals(
+                "AutoLayoutView layout should be the @Layout annotated RouterLayout",
+                AutoLayout.class, parentLayouts.get(0));
+    }
+
+    @Test
+    public void removeAnnotationsFromLayoutAnnotatedComponent_updateRouteRegistry_routeIsUpdated() {
+
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        class A extends Component implements RouterLayout {
+        }
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        tamperLayouts(registry, layouts -> {
+            layouts.put("/", A.class);
+        });
+        registry.update(() -> {
+            RouteConfiguration.forRegistry(registry)
+                    .setAnnotatedRoute(AutoLayoutView.class);
+        });
+        List<Class<? extends RouterLayout>> parentLayouts = registry
+                .getNavigationRouteTarget("auto").getRouteTarget()
+                .getParentLayouts();
+        Assert.assertEquals(
+                "Route should have layout because auto layout is registered", 1,
+                parentLayouts.size());
+        Assert.assertEquals(
+                "Layout should be the @Layout annotated RouterLayout", A.class,
+                parentLayouts.get(0));
+
+        RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
+                Collections.emptySet(), Collections.emptySet());
+
+        parentLayouts = registry.getNavigationRouteTarget("auto")
+                .getRouteTarget().getParentLayouts();
+        Assert.assertEquals(
+                "Route with no layout should not get automatic layout now", 0,
+                parentLayouts.size());
+    }
+
+    @Test
+    public void layoutAnnotatedComponent_modifiedValue_updateRouteRegistry_routeIsUpdated() {
+
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+
+        @Route("hey/view")
+        class View extends Component {
+
+        }
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        tamperLayouts(registry, layouts -> {
+            layouts.put("/hey", AutoLayout.class);
+        });
+        registry.update(() -> {
+            RouteConfiguration routeConfiguration = RouteConfiguration
+                    .forRegistry(registry);
+            routeConfiguration.setAnnotatedRoute(AutoLayoutView.class);
+            routeConfiguration.setAnnotatedRoute(View.class);
+        });
+
+        List<Class<? extends RouterLayout>> parentLayouts = registry
+                .getNavigationRouteTarget("auto").getRouteTarget()
+                .getParentLayouts();
+        Assert.assertEquals(
+                "AutoLayoutView should not have layout because path does not match",
+                0, parentLayouts.size());
+        parentLayouts = registry.getNavigationRouteTarget("hey/view")
+                .getRouteTarget().getParentLayouts();
+        Assert.assertEquals("View should have layout because path matches", 1,
+                parentLayouts.size());
+        Assert.assertEquals(
+                "View layout should be the @Layout annotated RouterLayout",
+                AutoLayout.class, parentLayouts.get(0));
+
+        RouteUtil.updateRouteRegistry(registry,
+                Collections.singleton(AutoLayout.class), Collections.emptySet(),
+                Collections.emptySet());
+
+        parentLayouts = registry.getNavigationRouteTarget("auto")
+                .getRouteTarget().getParentLayouts();
+        Assert.assertEquals("AutoLayoutView should now get automatic layout", 1,
+                parentLayouts.size());
+        Assert.assertEquals(
+                "AutoLayoutView layout should be the @Layout annotated RouterLayout",
+                AutoLayout.class, parentLayouts.get(0));
+
+        parentLayouts = registry.getNavigationRouteTarget("hey/view")
+                .getRouteTarget().getParentLayouts();
+        Assert.assertEquals(
+                "View should still have layout because path matches", 1,
+                parentLayouts.size());
+        Assert.assertEquals(
+                "View layout should be the @Layout annotated RouterLayout",
+                AutoLayout.class, parentLayouts.get(0));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void tamperLayouts(ApplicationRouteRegistry registry,
+            Consumer<Map<String, Class<? extends RouterLayout>>> consumer) {
+        try {
+            Field layoutsField = AbstractRouteRegistry.class
+                    .getDeclaredField("layouts");
+            Map<String, Class<? extends RouterLayout>> layouts = (Map<String, Class<? extends RouterLayout>>) ReflectTools
+                    .getJavaFieldValue(registry, layoutsField);
+            consumer.accept(layouts);
+        } catch (Exception ex) {
+            Assert.fail(ex.getMessage());
+        }
     }
 
     private static void mutableRoutesMap(AbstractRouteRegistry registry) {

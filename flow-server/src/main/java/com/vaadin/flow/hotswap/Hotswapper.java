@@ -26,8 +26,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -39,6 +41,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.ServiceDestroyListener;
 import com.vaadin.flow.server.ServiceException;
@@ -50,6 +54,8 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+
+import elemental.json.Json;
 
 /**
  * Entry point for application classes hot reloads.
@@ -165,13 +171,46 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                     "Hotswap resources change event ignored because VaadinService has been destroyed.");
             return;
         }
-        // no-op for the moment, just logging for debugging purpose
-        // entry point for future implementations, like reloading I18n provider
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(
                     "Created resources: {}, modified resources: {}, deletedResources: {}.",
                     createdResources, modifiedResources, deletedResources);
         }
+
+        if (anyMatches(".*/vaadin-i18n/.*\\.properties", createdResources,
+                modifiedResources, deletedResources)) {
+            // Clear resource bundle cache so that translations (and other
+            // resources) are reloaded
+            ResourceBundle.clearCache();
+
+            // Trigger any potential Hilla translation updates
+            liveReload.sendHmrEvent("translations-update", Json.createObject());
+
+            // Trigger any potential Flow translation updates
+            EnumMap<UIRefreshStrategy, List<UI>> refreshActions = new EnumMap<>(
+                    UIRefreshStrategy.class);
+            forEachActiveUI(ui -> {
+                UIRefreshStrategy strategy = ui.getPushConfiguration()
+                        .getPushMode().isEnabled()
+                                ? UIRefreshStrategy.PUSH_REFRESH_CHAIN
+                                : UIRefreshStrategy.REFRESH;
+                refreshActions.computeIfAbsent(strategy, k -> new ArrayList<>())
+                        .add(ui);
+            });
+            triggerClientUpdate(refreshActions, false);
+        }
+
+    }
+
+    private boolean anyMatches(String regexp, URI[]... resources) {
+        for (URI[] uris : resources) {
+            for (URI uri : uris) {
+                if (uri.toString().matches(regexp)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void onHotswapInternal(HashSet<Class<?>> classes,
@@ -258,23 +297,25 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             Set<VaadinSession> vaadinSessions, Set<Class<?>> changedClasses) {
         EnumMap<UIRefreshStrategy, List<UI>> uisToRefresh = new EnumMap<>(
                 UIRefreshStrategy.class);
-        for (VaadinSession session : vaadinSessions) {
+        forEachActiveUI(ui -> uisToRefresh
+                .computeIfAbsent(computeRefreshStrategy(ui, changedClasses),
+                        k -> new ArrayList<>())
+                .add(ui));
+
+        uisToRefresh.remove(UIRefreshStrategy.SKIP);
+        return uisToRefresh;
+    }
+
+    private void forEachActiveUI(Consumer<UI> consumer) {
+        for (VaadinSession session : Set.copyOf(sessions)) {
             session.getLockInstance().lock();
             try {
                 session.getUIs().stream().filter(ui -> !ui.isClosing())
-                        .forEach(
-                                ui -> uisToRefresh
-                                        .computeIfAbsent(
-                                                computeRefreshStrategy(ui,
-                                                        changedClasses),
-                                                k -> new ArrayList<>())
-                                        .add(ui));
+                        .forEach(consumer);
             } finally {
                 session.getLockInstance().unlock();
             }
         }
-        uisToRefresh.remove(UIRefreshStrategy.SKIP);
-        return uisToRefresh;
     }
 
     private UIRefreshStrategy computeRefreshStrategy(UI ui,
@@ -308,6 +349,19 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             // determine the refresh strategy.
             refreshStrategy = computeRefreshStrategyForUITree(ui,
                     changedClasses, targetsChain, route);
+        }
+        // A different layout might have been applied after hotswap
+        if (refreshStrategy == UIRefreshStrategy.SKIP) {
+            RouteRegistry registry = ui.getInternals().getRouter()
+                    .getRegistry();
+            RouteTarget routeTarget = registry
+                    .getNavigationRouteTarget(
+                            ui.getActiveViewLocation().getPath())
+                    .getRouteTarget();
+            if (routeTarget != null && routeTarget.getParentLayouts().stream()
+                    .anyMatch(changedClasses::contains)) {
+                refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+            }
         }
 
         // If push is not enabled we can only request a full page refresh
