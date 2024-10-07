@@ -41,6 +41,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.ServiceDestroyListener;
 import com.vaadin.flow.server.ServiceException;
@@ -347,6 +349,19 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             // determine the refresh strategy.
             refreshStrategy = computeRefreshStrategyForUITree(ui,
                     changedClasses, targetsChain, route);
+        }
+        // A different layout might have been applied after hotswap
+        if (refreshStrategy == UIRefreshStrategy.SKIP) {
+            RouteRegistry registry = ui.getInternals().getRouter()
+                    .getRegistry();
+            RouteTarget routeTarget = registry
+                    .getNavigationRouteTarget(
+                            ui.getActiveViewLocation().getPath())
+                    .getRouteTarget();
+            if (routeTarget != null && routeTarget.getParentLayouts().stream()
+                    .anyMatch(changedClasses::contains)) {
+                refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+            }
         }
 
         // If push is not enabled we can only request a full page refresh
