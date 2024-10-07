@@ -131,6 +131,16 @@ task functionalTest(type: Test) {
         exceptionFormat = 'full'
         showStandardStreams = true
     }
+
+    // Gradlew CLI option -Dorg.gradle.testkit.debug=true allows to debug test projects running by testkit.
+    // However, during debug, the Gradle testkit limits the ability to use process isolation in Worker API and does not initialize underlying native services.
+    // The next condition excludes the tests that require Worker API and native services during debugging
+    // This limitation seem to be fixed in Gradle 8.8, see https://github.com/gradle/gradle/blob/98f0db0546f9d9c31268e079389d7fda8d8143dc/platforms/extensibility/unit-test-fixtures/src/main/java/org/gradle/testfixtures/internal/ProjectBuilderImpl.java#L134-L141    
+    if(Boolean.getBoolean('org.gradle.testkit.debug')) {
+        useJUnit {
+            excludeCategories ' com.vaadin.gradle.GradleWorkerApiTestCategory'
+        }
+    }
 }
 check.dependsOn functionalTest
 /***********************************************************************************************************************
