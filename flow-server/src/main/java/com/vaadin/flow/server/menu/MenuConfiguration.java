@@ -57,15 +57,15 @@ public final class MenuConfiguration {
 
     private static MenuEntry createMenuEntry(AvailableViewInfo viewInfo) {
         if (viewInfo.menu() == null) {
-            return new MenuEntry(viewInfo.route(), viewInfo.title(), null,
-                    false, null, null);
+            return new MenuEntry(viewInfo.route(), viewInfo.title(), null, null,
+                    null);
         }
         return new MenuEntry(viewInfo.route(),
                 (viewInfo.menu().title() != null
                         && !viewInfo.menu().title().isBlank()
                                 ? viewInfo.menu().title()
                                 : viewInfo.title()),
-                viewInfo.menu().order(), viewInfo.menu().exclude(),
-                viewInfo.menu().icon(), viewInfo.menu().menuClass());
+                viewInfo.menu().order(), viewInfo.menu().icon(),
+                viewInfo.menu().menuClass());
     }
 }
