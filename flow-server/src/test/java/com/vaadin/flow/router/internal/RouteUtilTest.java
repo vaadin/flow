@@ -132,6 +132,9 @@ public class RouteUtilTest {
     }
 
     @Route(value = "auto")
+    @RouteAlias(value = "alias", autoLayout = false)
+    @RouteAlias(value = "mainLayout", layout = AutoLayout.class)
+    @RouteAlias(value = "autoAlias")
     @Tag(Tag.DIV)
     public static class AutoLayoutView extends Component {
     }
@@ -301,7 +304,7 @@ public class RouteUtilTest {
     }
 
     @Test
-    public void automaticLayoutShouldBeGottenForDefaultRoute() {
+    public void automaticLayoutShouldBeAvailableForDefaultRoute() {
 
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -316,11 +319,34 @@ public class RouteUtilTest {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(registry, AutoLayoutView.class, "auto");
 
-        Assert.assertEquals("Route with no layout should get automatic layout",
-                1, parentLayouts.size());
         Assert.assertEquals(
-                "Layout should be the @Layout annotated RouterLayout",
-                AutoLayout.class, parentLayouts.get(0));
+                "Route with no layout should not get automatic layout", 0,
+                parentLayouts.size());
+        Assert.assertTrue(
+                RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "auto"));
+    }
+
+    @Test
+    public void routeAliasForAutoLayoutRoute_correctAliasIsSelectedForRoute() {
+
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(service.getContext());
+        registry.setLayout(AutoLayout.class);
+
+        Assert.assertTrue(
+                RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "auto"));
+        Assert.assertFalse("'alias' route has autolayout false",
+                RouteUtil.isAutolayoutEnabled(AutoLayoutView.class, "alias"));
+        Assert.assertFalse("'mainLayout' has a defined layout", RouteUtil
+                .isAutolayoutEnabled(AutoLayoutView.class, "mainLayout"));
+        Assert.assertTrue(RouteUtil.isAutolayoutEnabled(AutoLayoutView.class,
+                "autoAlias"));
     }
 
     @Test
