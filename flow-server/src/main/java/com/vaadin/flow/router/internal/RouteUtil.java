@@ -125,11 +125,6 @@ public class RouteUtil {
 
         if (hasRouteAndPathMatches && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
-        } else if (route.get().autoLayout() && hasRouteAndPathMatches
-                && route.get().layout().equals(UI.class)
-                && handledRegistry.hasLayout(path)) {
-            list.addAll(
-                    collectRouteParentLayouts(handledRegistry.getLayout(path)));
         } else {
             List<RouteAlias> routeAliases = AnnotationReader
                     .getAnnotationsFor(component, RouteAlias.class);
@@ -139,14 +134,6 @@ public class RouteUtil {
             if (matchingRoute.isPresent()) {
                 list.addAll(collectRouteParentLayouts(
                         matchingRoute.get().layout()));
-            } else {
-                matchingRoute = getMatchingRouteAliasLayout(handledRegistry,
-                        component, path, routeAliases);
-
-                if (matchingRoute.isPresent()) {
-                    list.addAll(collectRouteParentLayouts(
-                            handledRegistry.getLayout(path)));
-                }
             }
         }
 
@@ -239,17 +226,6 @@ public class RouteUtil {
         return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
                         && !alias.layout().equals(UI.class))
-                .findFirst();
-    }
-
-    static Optional<RouteAlias> getMatchingRouteAliasLayout(
-            RouteRegistry handledRegistry, Class<?> component, String path,
-            List<RouteAlias> routeAliases) {
-        return routeAliases.stream()
-                .filter(alias -> alias.autoLayout()
-                        && path.equals(getRouteAliasPath(component, alias))
-                        && alias.layout().equals(UI.class)
-                        && handledRegistry.hasLayout(path))
                 .findFirst();
     }
 
@@ -529,4 +505,42 @@ public class RouteUtil {
                 .map(clazz -> (Class<? extends Component>) clazz);
     }
 
+    /**
+     * Check if given route can get the automatic layout. Automatic layout can
+     * be used if it is a {@link Route} with no {@link Route#layout()} set and
+     * {@link Route#autoLayout()} as true.
+     *
+     * @param target
+     *            target to check for accessibility
+     * @param path
+     *            path to determine if we are targeting a {@link RouteAlias}
+     *            instead of {@link Route}
+     * @return {@code true} if auto layout can be used
+     */
+    public static boolean isAutolayoutEnabled(Class<?> target, String path) {
+        if (target.isAnnotationPresent(RouteAlias.class)
+                || target.isAnnotationPresent(RouteAlias.Container.class)) {
+            for (RouteAlias alias : target
+                    .getAnnotationsByType(RouteAlias.class)) {
+                String aliasPath = RouteUtil.getRouteAliasPath(target, alias);
+                String trimmedTemplate = PathUtil
+                        .trimPath(HasUrlParameterFormat.getTemplate(aliasPath,
+                                (Class<? extends Component>) target));
+                RouteModel routeModel = RouteModel.create(true);
+                routeModel.addRoute(trimmedTemplate,
+                        new RouteTarget((Class<? extends Component>) target));
+                NavigationRouteTarget navigationRouteTarget = routeModel
+                        .getNavigationRouteTarget(path);
+                if (navigationRouteTarget.hasTarget()) {
+                    return alias.autoLayout()
+                            && alias.layout().equals(UI.class);
+                }
+            }
+
+        }
+        return target.isAnnotationPresent(Route.class)
+                && target.getAnnotation(Route.class).autoLayout()
+                && target.getAnnotation(Route.class).layout().equals(UI.class);
+
+    }
 }
