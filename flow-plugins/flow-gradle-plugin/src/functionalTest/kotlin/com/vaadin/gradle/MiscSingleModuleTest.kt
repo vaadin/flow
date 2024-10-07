@@ -238,7 +238,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
     private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
 
-        val springBootVersion = "3.0.0"
+        val springBootVersion = "3.3.4"
 
         testProject.settingsFile.writeText(
             """
@@ -569,7 +569,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
             plugins {
                 id 'java'
-                id 'org.springframework.boot' version '3.0.0'
+                id 'org.springframework.boot' version '3.3.4'
                 id 'io.spring.dependency-management' version '1.0.11.RELEASE'
                 id("com.vaadin")
             }
