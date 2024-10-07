@@ -19,7 +19,9 @@ package com.vaadin.flow.server.menu;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 
 /**
@@ -53,6 +55,34 @@ public final class MenuConfiguration {
     public static List<MenuEntry> getMenuEntries(Locale locale) {
         return MenuRegistry.collectMenuItemsList(locale).stream()
                 .map(MenuConfiguration::createMenuEntry).toList();
+    }
+
+    /**
+     * Get the optional page title of the currently shown view that is rendered
+     * in the main layout and menu is used for navigation. Returns an empty page
+     * title, when navigating in other way rather than menu.
+     *
+     * @return page title, if navigation with menu, empty optional if navigating
+     *         in other way.
+     */
+    public static Optional<String> getPageTitle() {
+        UI ui = UI.getCurrent();
+        if (ui != null) {
+            String path = ui.getInternals().getActiveViewLocation().getPath();
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            String finalPath = path;
+            return MenuRegistry.collectMenuItemsList().stream()
+                    .filter(menuItem -> {
+                        String route = menuItem.route();
+                        if (route.startsWith("/")) {
+                            route = route.substring(1);
+                        }
+                        return route.equals(finalPath);
+                    }).map(AvailableViewInfo::title).findFirst();
+        }
+        return Optional.empty();
     }
 
     private static MenuEntry createMenuEntry(AvailableViewInfo viewInfo) {
