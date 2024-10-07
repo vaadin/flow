@@ -1,0 +1,2 @@
+This folder exists so `${maven.multiModuleProjectDirectory` can find the
+root project folder
