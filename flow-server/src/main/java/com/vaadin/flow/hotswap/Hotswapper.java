@@ -42,6 +42,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.ServiceDestroyEvent;
 import com.vaadin.flow.server.ServiceDestroyListener;
@@ -354,12 +355,18 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         if (refreshStrategy == UIRefreshStrategy.SKIP) {
             RouteRegistry registry = ui.getInternals().getRouter()
                     .getRegistry();
+            String currentPath = ui.getActiveViewLocation().getPath();
             RouteTarget routeTarget = registry
-                    .getNavigationRouteTarget(
-                            ui.getActiveViewLocation().getPath())
-                    .getRouteTarget();
-            if (routeTarget != null && routeTarget.getParentLayouts().stream()
-                    .anyMatch(changedClasses::contains)) {
+                    .getNavigationRouteTarget(currentPath).getRouteTarget();
+            if (routeTarget != null && (
+            // parent layout changed
+            routeTarget.getParentLayouts().stream()
+                    .anyMatch(changedClasses::contains) ||
+            // applied auto layout changed
+                    RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(),
+                            currentPath)
+                            && changedClasses.contains(
+                                    registry.getLayout(currentPath)))) {
                 refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
             }
         }
