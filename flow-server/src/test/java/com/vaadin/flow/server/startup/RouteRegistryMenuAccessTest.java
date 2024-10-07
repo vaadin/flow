@@ -291,7 +291,9 @@ public class RouteRegistryMenuAccessTest {
         when(vaadinRequest.getService()).thenReturn(vaadinService);
         var instantiator = mock(Instantiator.class);
         when(vaadinService.getInstantiator()).thenReturn(instantiator);
-        when(vaadinService.getRouter()).thenReturn(mock(Router.class));
+        Router router = mock(Router.class);
+        when(vaadinService.getRouter()).thenReturn(router);
+        when(router.getRegistry()).thenReturn(registry);
         when(instantiator.getMenuAccessControl())
                 .thenReturn(new MenuAccessControl() {
                     @Override
