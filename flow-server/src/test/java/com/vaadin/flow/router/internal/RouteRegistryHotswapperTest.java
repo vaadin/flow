@@ -226,6 +226,38 @@ public class RouteRegistryHotswapperTest {
     }
 
     @Test
+    public void onClassLoadEvent_reactEnabled_layoutNotChanged_layoutJsonNotUpdated()
+            throws IOException {
+        MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration();
+        configuration.setReactEnabled(true);
+        configuration.setProjectFolder(
+                Files.createTempDirectory("temp-project").toFile());
+        Path layoutFile = configuration.getFrontendFolder().toPath()
+                .resolve(Path.of("generated", "layouts.json"));
+        Assert.assertFalse(
+                "Expected layouts.json file not to be present before hotswap",
+                Files.exists(layoutFile));
+
+        @Layout
+        class MyLayout extends Component implements RouterLayout {
+        }
+
+        updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
+        Assert.assertTrue("Expected layouts.json file to be written",
+                Files.exists(layoutFile));
+        long lastModified = layoutFile.toFile().lastModified();
+
+        updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
+        Assert.assertTrue("Expected layouts.json file to be written",
+                Files.exists(layoutFile));
+        Assert.assertEquals(
+                "Layout not changed, json file should not be written",
+                lastModified, layoutFile.toFile().lastModified());
+
+    }
+
+    @Test
     public void onClassLoadEvent_reactEnabled_notLayoutChanges_layoutJsonNotUpdated()
             throws IOException {
         MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
