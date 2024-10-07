@@ -365,8 +365,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             // applied auto layout changed
                     RouteUtil.isAutolayoutEnabled(routeTarget.getTarget(),
                             currentPath)
-                            && changedClasses.contains(
-                                    registry.getLayout(currentPath)))) {
+                            && RouteUtil
+                                    .collectRouteParentLayouts(
+                                            registry.getLayout(currentPath))
+                                    .stream()
+                                    .anyMatch(changedClasses::contains))) {
                 refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
             }
         }
