@@ -16,15 +16,21 @@
 
 package com.vaadin.flow.router.internal;
 
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.hotswap.VaadinHotswapper;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.TaskGenerateReactFiles;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
@@ -65,8 +71,34 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
                 removedClasses)) {
             ApplicationRouteRegistry appRegistry = ApplicationRouteRegistry
                     .getInstance(vaadinService.getContext());
+            // Collect layouts before and after changes to trigger layouts.json
+            // regeneration if something changed
+            Set<Class<?>> layouts = new HashSet<>();
+            appRegistry.getRegisteredRoutes().stream()
+                    .flatMap(rd -> rd.getParentLayouts().stream())
+                    .collect(Collectors.toCollection(() -> layouts));
+
             RouteUtil.updateRouteRegistry(appRegistry, addedClasses,
                     modifiedClasses, removedClasses);
+
+            appRegistry.getRegisteredRoutes().stream()
+                    .flatMap(rd -> rd.getParentLayouts().stream())
+                    .collect(Collectors.toCollection(() -> layouts));
+
+            DeploymentConfiguration configuration = vaadinService
+                    .getDeploymentConfiguration();
+            if (configuration.isReactEnabled()
+                    && Stream.of(addedClasses, modifiedClasses, removedClasses)
+                            .flatMap(Set::stream).anyMatch(layouts::contains)) {
+
+                Options options = new Options(
+                        vaadinService.getContext().getAttribute(Lookup.class),
+                        null, configuration.getProjectFolder())
+                        .withFrontendDirectory(
+                                configuration.getFrontendFolder());
+                TaskGenerateReactFiles.writeLayouts(options,
+                        ((AbstractRouteRegistry) appRegistry).getLayouts());
+            }
         }
         return false;
     }
