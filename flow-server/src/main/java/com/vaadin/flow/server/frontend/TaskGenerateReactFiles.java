@@ -18,9 +18,10 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Set;
+import java.util.Collection;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -37,6 +38,7 @@ import com.vaadin.flow.server.Version;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -164,8 +166,8 @@ public class TaskGenerateReactFiles
             writeFile(flowTsx, getFileContent(FLOW_TSX));
             writeFile(vaadinReactTsx,
                     getVaadinReactTsContent(routesTsx.exists()));
-            writeFile(new File(frontendGeneratedFolder, LAYOUTS_JSON),
-                    layoutsContent());
+            writeLayoutsJson(
+                    options.getClassFinder().getAnnotatedClasses(Layout.class));
             if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
                 String reactAdapterContent = getFileContent(
                         REACT_ADAPTER_TEMPLATE);
@@ -201,15 +203,48 @@ public class TaskGenerateReactFiles
         }
     }
 
-    private String layoutsContent() {
+    /**
+     * Writes the `layout.json` file in the frontend generated folder.
+     * <p>
+     * </p>
+     *
+     * @param options
+     *            the task options
+     * @param layoutsClasses
+     *            {@link Layout} annotated classes.
+     */
+    public static void writeLayouts(Options options,
+            Collection<Class<?>> layoutsClasses) {
+        TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
+        try {
+            task.writeLayoutsJson(layoutsClasses);
+        } catch (ExecutionFailedException e) {
+            if (e.getCause() instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            }
+            if (e.getCause() instanceof IOException ioEx) {
+                throw new UncheckedIOException(ioEx);
+            }
+            throw new RuntimeException(e.getCause());
+        }
+    }
+
+    private void writeLayoutsJson(Collection<Class<?>> layoutClasses)
+            throws ExecutionFailedException {
+        writeFile(new File(options.getFrontendGeneratedFolder(), LAYOUTS_JSON),
+                layoutsContent(layoutClasses));
+
+    }
+
+    private String layoutsContent(Collection<Class<?>> layoutClasses) {
         JsonArray availableLayouts = Json.createArray();
-        Set<Class<?>> layoutClasses = options.getClassFinder()
-                .getAnnotatedClasses(Layout.class);
         for (Class<?> layout : layoutClasses) {
-            JsonObject layoutObject = Json.createObject();
-            layoutObject.put("path",
-                    layout.getAnnotation(Layout.class).value());
-            availableLayouts.set(availableLayouts.length(), layoutObject);
+            if (layout.isAnnotationPresent(Layout.class)) {
+                JsonObject layoutObject = Json.createObject();
+                layoutObject.put("path",
+                        layout.getAnnotation(Layout.class).value());
+                availableLayouts.set(availableLayouts.length(), layoutObject);
+            }
         }
         return availableLayouts.toJson();
     }
