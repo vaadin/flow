@@ -464,26 +464,36 @@ class VaadinSmokeTest : AbstractGradleTest() {
             setup()
         }
 
-        for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.5", "8.6") ) {
+        for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.8", "8.10") ) {
                 setupProjectForGradleVersion(supportedVersion)
                 val result = testProject.build("vaadinClean")
                 result.expectTaskSucceded("vaadinClean")
         }
 
-        for (unsupportedVersion in arrayOf("8.3")) {
+        for (unsupportedVersion in arrayOf("8.3", "8.4", "8.5", "8.6")) {
             setupProjectForGradleVersion(unsupportedVersion)
             val result = testProject.buildAndFail("vaadinClean")
-            assertContains(
-                result.output,
-                "requires Gradle ${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION} or later",
-                true,
-                "Expecting plugin execution to fail for version ${unsupportedVersion} " +
-                        "as it is lower than the supported one (${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION})"
-            )
-            assertContains(
-                result.output,
-                "current version is ${unsupportedVersion}"
-            )
+            if (result.output.contains("Unsupported class file major version")) {
+                assertContains(
+                    result.output,
+                    Regex("Failed to process the entry 'META-INF/versions/(\\d+)/com/fasterxml/jackson/"),
+                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
+                            "as it is lower than the supported one (${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION}) " +
+                            "and it is incompatible with Jackson library used by Flow"
+                )
+            } else {
+                assertContains(
+                    result.output,
+                    "requires Gradle ${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION} or later",
+                    true,
+                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
+                            "as it is lower than the supported one (${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION})"
+                )
+                assertContains(
+                    result.output,
+                    "current version is ${unsupportedVersion}"
+                )
+            }
         }
     }
 

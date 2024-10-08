@@ -107,7 +107,7 @@
         <maven.clean.plugin.version>3.4.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>9.3.5</testbench.version>
-        <jetty.version>12.0.13</jetty.version>
+        <jetty.version>12.0.14</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.0</build-helper-maven-plugin.version>
         <maven.version>3.9.9</maven.version>
@@ -333,9 +333,9 @@
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>2.24.1</version>
                 <configuration>
-                    <configFile>https://raw.githubusercontent.com/vaadin/flow/main/eclipse/VaadinJavaConventions.xml</configFile>
+                    <configFile>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</configFile>
                     <!-- Provide a dummy JS config file to avoid errors -->
-                    <configJsFile>https://raw.githubusercontent.com/vaadin/flow/main/eclipse/VaadinJavaConventions.xml</configJsFile>
+                    <configJsFile>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</configJsFile>
                     <lineEnding>LF</lineEnding>
                 </configuration>
             </plugin>

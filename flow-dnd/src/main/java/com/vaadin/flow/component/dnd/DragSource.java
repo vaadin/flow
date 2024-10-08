@@ -25,6 +25,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -298,6 +299,96 @@ public interface DragSource<T extends Component> extends HasElement {
                 DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY,
                 EffectAllowed.UNINITIALIZED.getClientPropertyValue()
                         .toUpperCase(Locale.ENGLISH)));
+    }
+
+    /**
+     * Sets the drag image for the current drag source element. The image is
+     * applied automatically in the next drag start event in the browser. Drag
+     * image is shown by default with zero offset which means that pointer
+     * location is in the top left corner of the image.
+     * <p>
+     * {@code com.vaadin.flow.component.html.Image} is fully supported as a drag
+     * image component. Other components can be used as well, but the support
+     * may vary between browsers. If given component is visible element in the
+     * viewport, browser can show it as a drag image.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setDragImage">
+     *      MDN web docs</a> for more information.
+     * @param dragImage
+     *            the image to be used as drag image or null to remove it
+     */
+    default void setDragImage(Component dragImage) {
+        setDragImage(dragImage, 0, 0);
+    }
+
+    /**
+     * Sets the drag image for the current drag source element. The image is
+     * applied automatically in the next drag start event in the browser.
+     * Coordinates define the offset of the pointer location from the top left
+     * corner of the image.
+     * <p>
+     * {@code com.vaadin.flow.component.html.Image} is fully supported as a drag
+     * image component. Other components can be used as well, but the support
+     * may vary between browsers. If given component is visible element in the
+     * viewport, browser can show it as a drag image.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setDragImage">
+     *      MDN web docs</a> for more information.
+     * @param dragImage
+     *            the image to be used as drag image or null to remove it
+     * @param offsetX
+     *            the x-offset of the drag image
+     * @param offsetY
+     *            the y-offset of the drag image
+     */
+    default void setDragImage(Component dragImage, int offsetX, int offsetY) {
+        if (getDragImage() != null && getDragImage() != dragImage) {
+            // Remove drag image from the virtual children list if it's there.
+            if (getDraggableElement().getNode()
+                    .hasFeature(VirtualChildrenList.class)) {
+                VirtualChildrenList childrenList = getDraggableElement()
+                        .getNode().getFeature(VirtualChildrenList.class);
+                // dodging exception with empty list
+                if (childrenList.size() > 0) {
+                    getDraggableElement()
+                            .removeVirtualChild(getDragImage().getElement());
+                }
+            }
+        }
+        if (dragImage != null && !dragImage.isAttached()) {
+            if (!getDragSourceComponent().isAttached()) {
+                getDragSourceComponent().addAttachListener(event -> {
+                    if (!dragImage.isAttached()
+                            && dragImage.getParent().isEmpty()) {
+                        getDraggableElement()
+                                .appendVirtualChild(dragImage.getElement());
+                    }
+                    event.unregisterListener();
+                });
+            } else {
+                getDraggableElement()
+                        .appendVirtualChild(dragImage.getElement());
+            }
+        }
+        ComponentUtil.setData(getDragSourceComponent(),
+                DndUtil.DRAG_SOURCE_IMAGE, dragImage);
+        getDraggableElement().executeJs(
+                "window.Vaadin.Flow.dndConnector.setDragImage($0, $1, $2, $3)",
+                dragImage, (dragImage == null ? 0 : offsetX),
+                (dragImage == null ? 0 : offsetY), getDraggableElement());
+    }
+
+    /**
+     * Get server side drag image. This image is applied automatically in the
+     * next drag start event in the browser.
+     *
+     * @return Server side drag image if set, otherwise {@literal null}.
+     */
+    default Component getDragImage() {
+        return (Component) ComponentUtil.getData(getDragSourceComponent(),
+                DndUtil.DRAG_SOURCE_IMAGE);
     }
 
     /**
