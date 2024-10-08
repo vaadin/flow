@@ -75,8 +75,8 @@ public final class MenuConfiguration {
      * <p>
      * For server-side routes it falls back to route's Java class name, if a
      * non-null {@code content} is given. For client-side views it falls back to
-     * the element's function name, if a page header couldn't be retrieved from
-     * the view configurations.
+     * the React element's function name, if a page header couldn't be retrieved
+     * from the {@code ViewConfig}.
      * <p>
      * Use {@link #getPageHeader()} method, if a content object is not
      * available.
@@ -105,8 +105,8 @@ public final class MenuConfiguration {
      * </ul>
      * <p>
      * For server-side routes it falls back to route's Java class name. For
-     * client-side views it falls back to the element's function name, if a page
-     * header couldn't be retrieved from the view configurations.
+     * client-side views it falls back to the React element's function name, if
+     * a page header couldn't be retrieved from the {@code ViewConfig}.
      * <p>
      * Note that the possible sources of page header are limited to only
      * available views in automatic menu configuration. If a route has a
