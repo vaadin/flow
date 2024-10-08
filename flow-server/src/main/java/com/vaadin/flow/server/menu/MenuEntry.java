@@ -29,8 +29,6 @@ import com.vaadin.flow.component.Component;
  *            the title to display
  * @param order
  *            the order in the menu or null for default order
- * @param exclude
- *            whether to exclude the menu entry
  * @param icon
  *            Icon to use in the menu or null for no icon. Value can go inside a
  *            {@code <vaadin-icon>} element's {@code icon} attribute which
@@ -43,5 +41,5 @@ import com.vaadin.flow.component.Component;
  *            Hilla/TypeScript client views.
  */
 public record MenuEntry(String path, String title, Double order,
-                        boolean exclude, String icon, Class<? extends Component> menuClass) implements Serializable  {
+                        String icon, Class<? extends Component> menuClass) implements Serializable  {
 }
