@@ -32,14 +32,12 @@ import com.vaadin.flow.server.RouteRegistry;
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
  * <p>
- * An instance of this class should be provided to a
- * {@link NavigationAccessControl} added as a {@link BeforeEnterListener} to the
- * {@link com.vaadin.flow.component.UI} of interest.
+ * An instance of this class should be provided to a {@link NavigationAccessControl} added as a
+ * {@link BeforeEnterListener} to the {@link com.vaadin.flow.component.UI} of interest.
  */
 public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(AnnotatedViewAccessChecker.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnnotatedViewAccessChecker.class);
 
     private final AccessAnnotationChecker accessAnnotationChecker;
 
@@ -56,66 +54,45 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
      * @param accessAnnotationChecker
      *            the checker to use
      */
-    public AnnotatedViewAccessChecker(
-            AccessAnnotationChecker accessAnnotationChecker) {
+    public AnnotatedViewAccessChecker(AccessAnnotationChecker accessAnnotationChecker) {
         this.accessAnnotationChecker = accessAnnotationChecker;
     }
 
     @Override
     public AccessCheckResult check(NavigationContext context) {
         Class<?> targetView = context.getNavigationTarget();
-        if (RouteUtil.isAutolayoutEnabled(targetView,
-                context.getLocation().getPath())) {
+        if (RouteUtil.isAutolayoutEnabled(targetView, context.getLocation().getPath())) {
             RouteRegistry registry = context.getRouter().getRegistry();
             boolean noParents = registry.getRegisteredRoutes().stream()
-                    .filter(routeData -> routeData.getNavigationTarget()
-                            .equals(targetView))
-                    .map(data -> data.getParentLayouts().isEmpty()).findFirst()
-                    .orElse(true);
-            if (noParents
-                    && registry.hasLayout(context.getLocation().getPath())) {
-                Class<?> layout = registry
-                        .getLayout(context.getLocation().getPath());
+                    .filter(routeData -> routeData.getNavigationTarget().equals(targetView))
+                    .map(data -> data.getParentLayouts().isEmpty()).findFirst().orElse(true);
+            if (noParents && registry.hasLayout(context.getLocation().getPath())) {
+                Class<?> layout = registry.getLayout(context.getLocation().getPath());
 
-                boolean hasAccess = accessAnnotationChecker.hasAccess(layout,
-                        context.getPrincipal(), context::hasRole);
+                boolean hasAccess = accessAnnotationChecker.hasAccess(layout, context.getPrincipal(), context::hasRole);
                 if (!hasAccess) {
-                    LOGGER.debug(
-                            "Denied access to view due to layout '{}' access rules",
-                            layout.getSimpleName());
-                    return context.deny(
-                            "Consider adding one of the following annotations "
-                                    + "to make the layout accessible: @AnonymousAllowed, "
-                                    + "@PermitAll, @RolesAllowed.");
+                    LOGGER.debug("Denied access to view due to layout '{}' access rules", layout.getSimpleName());
+                    return context.deny("Consider adding one of the following annotations "
+                            + "to make the layout accessible: @AnonymousAllowed, " + "@PermitAll, @RolesAllowed.");
                 }
             }
         }
 
-        boolean hasAccess = accessAnnotationChecker.hasAccess(targetView,
-                context.getPrincipal(), context::hasRole);
-        LOGGER.debug("Access to view '{}' with path '{}' is {}",
-                context.getNavigationTarget().getName(),
-                context.getLocation().getPath(),
-                ((hasAccess) ? "allowed" : "denied"));
+        boolean hasAccess = accessAnnotationChecker.hasAccess(targetView, context.getPrincipal(), context::hasRole);
+        LOGGER.debug("Access to view '{}' with path '{}' is {}", context.getNavigationTarget().getName(),
+                context.getLocation().getPath(), ((hasAccess) ? "allowed" : "denied"));
         if (hasAccess) {
             return context.allow();
         }
         String denyReason;
         if (isImplicitlyDenyAllAnnotated(targetView)) {
             denyReason = "Consider adding one of the following annotations "
-                    + "to make the view accessible: @AnonymousAllowed, "
-                    + "@PermitAll, @RolesAllowed.";
-            if (targetView.isAnnotationPresent(Layout.class)
-                    && context.getRouter().getRegistry()
-                            .getTargetUrl(
-                                    (Class<? extends Component>) targetView)
-                            .isEmpty()) {
-                LOGGER.debug(
-                        "Denied access to view due to layout '{}' access rules",
-                        targetView.getSimpleName());
+                    + "to make the view accessible: @AnonymousAllowed, " + "@PermitAll, @RolesAllowed.";
+            if (targetView.isAnnotationPresent(Layout.class) && context.getRouter().getRegistry()
+                    .getTargetUrl((Class<? extends Component>) targetView).isEmpty()) {
+                LOGGER.debug("Denied access to view due to layout '{}' access rules", targetView.getSimpleName());
                 denyReason = "Consider adding one of the following annotations "
-                        + "to make the layout accessible: @AnonymousAllowed, "
-                        + "@PermitAll, @RolesAllowed.";
+                        + "to make the layout accessible: @AnonymousAllowed, " + "@PermitAll, @RolesAllowed.";
             }
         } else {
             denyReason = "Access is denied by annotations on the view.";
@@ -124,8 +101,7 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
     }
 
     private boolean isImplicitlyDenyAllAnnotated(Class<?> targetView) {
-        return !(targetView.isAnnotationPresent(DenyAll.class)
-                || targetView.isAnnotationPresent(PermitAll.class)
+        return !(targetView.isAnnotationPresent(DenyAll.class) || targetView.isAnnotationPresent(PermitAll.class)
                 || targetView.isAnnotationPresent(RolesAllowed.class));
     }
 

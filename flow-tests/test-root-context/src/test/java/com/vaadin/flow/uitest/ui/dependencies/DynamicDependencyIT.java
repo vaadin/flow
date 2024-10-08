@@ -43,14 +43,12 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void dependecyLoaderThrows_errorLogged()
-            throws InterruptedException {
+    public void dependecyLoaderThrows_errorLogged() throws InterruptedException {
         testErrorCase("throw", "Throw on purpose");
     }
 
     @Test
-    public void dependecyLoaderRejects_errorLogged()
-            throws InterruptedException {
+    public void dependecyLoaderRejects_errorLogged() throws InterruptedException {
         testErrorCase("reject", "Reject on purpose");
     }
 
@@ -65,9 +63,7 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
         List<LogEntry> entries = getLogEntries(java.util.logging.Level.SEVERE);
         Assert.assertEquals(2, entries.size());
 
-        Assert.assertThat(entries.get(0).getMessage(),
-                Matchers.containsString(errorMessageSnippet));
-        Assert.assertThat(entries.get(1).getMessage(),
-                Matchers.containsString("could not be loaded"));
+        Assert.assertThat(entries.get(0).getMessage(), Matchers.containsString(errorMessageSnippet));
+        Assert.assertThat(entries.get(1).getMessage(), Matchers.containsString("could not be loaded"));
     }
 }

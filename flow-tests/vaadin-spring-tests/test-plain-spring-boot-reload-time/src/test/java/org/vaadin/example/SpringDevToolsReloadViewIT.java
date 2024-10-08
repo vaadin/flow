@@ -25,25 +25,21 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /**
- * Class for testing reload time of tiny Spring app triggered by spring-boot Dev
- * Tool.
+ * Class for testing reload time of tiny Spring app triggered by spring-boot Dev Tool.
  */
 public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     @Test
     public void testPlainSpringBootReloadTime_withHelloWorld() {
-        String result = SpringDevToolsReloadUtils
-                .runAndCalculateAverageResult(5, () -> {
-                    open("/");
+        String result = SpringDevToolsReloadUtils.runAndCalculateAverageResult(5, () -> {
+            open("/");
 
-                    waitUntil(ExpectedConditions.presenceOfElementLocated(
-                            By.id("start-button")), 10);
-                    triggerReload();
-                    waitUntil(ExpectedConditions
-                            .visibilityOfElementLocated(By.id("result")), 10);
+            waitUntil(ExpectedConditions.presenceOfElementLocated(By.id("start-button")), 10);
+            triggerReload();
+            waitUntil(ExpectedConditions.visibilityOfElementLocated(By.id("result")), 10);
 
-                    return assertAndGetReloadTimeResult();
-                });
+            return assertAndGetReloadTimeResult();
+        });
 
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,plain-spring-hello-world,spring-boot-devtools-reload-time' value='%s']%n",
@@ -62,8 +58,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
         String reloadTimeInMsText = findElement(By.id("result")).getText();
         Assert.assertNotNull(reloadTimeInMsText);
 
-        return reloadTimeInMsText.substring(reloadTimeInMsText.indexOf("[") + 1,
-                reloadTimeInMsText.indexOf("]"));
+        return reloadTimeInMsText.substring(reloadTimeInMsText.indexOf("[") + 1, reloadTimeInMsText.indexOf("]"));
     }
 
     private String getVaadinMajorMinorVersion() {

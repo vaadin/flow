@@ -36,11 +36,10 @@ public class PreserveOnRefreshReAddView extends Div {
             container.removeAll();
             container.add(text1);
         });
-        NativeButton setAnotherText = new NativeButton("Set another text",
-                e -> {
-                    container.removeAll();
-                    container.add(text2);
-                });
+        NativeButton setAnotherText = new NativeButton("Set another text", e -> {
+            container.removeAll();
+            container.add(text2);
+        });
 
         setText.setId("set-text");
         setAnotherText.setId("set-another-text");

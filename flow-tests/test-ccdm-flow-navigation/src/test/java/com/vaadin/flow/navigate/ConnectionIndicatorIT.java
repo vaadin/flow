@@ -41,8 +41,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
         getDevTools().setOfflineEnabled(true);
         try {
             expectConnectionState("connection-lost");
-            Assert.assertEquals("Custom offline",
-                    getConnectionIndicatorStatusText());
+            Assert.assertEquals("Custom offline", getConnectionIndicatorStatusText());
         } finally {
             getDevTools().setOfflineEnabled(false);
         }
@@ -55,16 +54,14 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
             expectConnectionState("connection-lost");
             getDevTools().setOfflineEnabled(false);
             expectConnectionState("connected");
-            Assert.assertEquals("Custom online",
-                    getConnectionIndicatorStatusText());
+            Assert.assertEquals("Custom online", getConnectionIndicatorStatusText());
         } finally {
             getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offline_serverConnectionAttempted_customisedMessageShown()
-            throws Exception {
+    public void offline_serverConnectionAttempted_customisedMessageShown() throws Exception {
         getDevTools().setOfflineEnabled(true);
         try {
             expectConnectionState("connection-lost");
@@ -72,29 +69,25 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
             testBench().disableWaitForVaadin(); // offline - do not run the
                                                 // WAIT_FOR_VAADIN script
             expectConnectionState("reconnecting");
-            Assert.assertEquals("Custom reconnecting",
-                    getConnectionIndicatorStatusText());
+            Assert.assertEquals("Custom reconnecting", getConnectionIndicatorStatusText());
         } finally {
             getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offline_serverConnectionAttempted_javaCustomisedMessagesShown()
-            throws Exception {
+    public void offline_serverConnectionAttempted_javaCustomisedMessagesShown() throws Exception {
         findElement(By.id(ConnectionIndicatorView.SET_CUSTOM_MESSAGES)).click();
         ((TestBenchCommandExecutor) testBench()).waitForVaadin();
         getDevTools().setOfflineEnabled(true);
         try {
             expectConnectionState("connection-lost");
-            Assert.assertEquals(ConnectionIndicatorView.CUSTOM_OFFLINE_MESSAGE,
-                    getConnectionIndicatorStatusText());
+            Assert.assertEquals(ConnectionIndicatorView.CUSTOM_OFFLINE_MESSAGE, getConnectionIndicatorStatusText());
             findElement(By.id(ConnectionIndicatorView.CONNECT_SERVER)).click();
             testBench().disableWaitForVaadin(); // offline - do not run the
                                                 // WAIT_FOR_VAADIN script
             expectConnectionState("reconnecting");
-            Assert.assertEquals(
-                    ConnectionIndicatorView.CUSTOM_RECONNECTING_MESSAGE,
+            Assert.assertEquals(ConnectionIndicatorView.CUSTOM_RECONNECTING_MESSAGE,
                     getConnectionIndicatorStatusText());
         } finally {
             getDevTools().setOfflineEnabled(false);
@@ -103,24 +96,20 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
     }
 
     private String getConnectionIndicatorStatusText() {
-        By statusMessageLocator = By.xpath(
-                "//vaadin-connection-indicator/div[contains(@class,'v-status-message')]/span");
+        By statusMessageLocator = By
+                .xpath("//vaadin-connection-indicator/div[contains(@class,'v-status-message')]/span");
         waitUntil(driver -> {
             WebElement statusTextElement = findElement(statusMessageLocator);
-            return statusTextElement != null
-                    && !statusTextElement.getText().isEmpty();
+            return statusTextElement != null && !statusTextElement.getText().isEmpty();
         });
         WebElement statusTextElement = findElement(statusMessageLocator);
-        Assert.assertNotNull("Unable to find connection indicator status text",
-                statusTextElement);
+        Assert.assertNotNull("Unable to find connection indicator status text", statusTextElement);
         return statusTextElement.getText();
     }
 
     private void expectConnectionState(String state) {
-        waitUntil(driver -> ((JavascriptExecutor) driver).executeScript(
-                "return window.Vaadin.connectionState.state === '" + state
-                        + "'"),
-                2);
+        waitUntil(driver -> ((JavascriptExecutor) driver)
+                .executeScript("return window.Vaadin.connectionState.state === '" + state + "'"), 2);
     }
 
     @Override

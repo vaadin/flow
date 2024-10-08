@@ -45,8 +45,7 @@ public class ServiceException extends Exception {
     }
 
     /**
-     * Creates an exception which wraps the given throwable and contains the
-     * given message.
+     * Creates an exception which wraps the given throwable and contains the given message.
      *
      * @param message
      *            the message

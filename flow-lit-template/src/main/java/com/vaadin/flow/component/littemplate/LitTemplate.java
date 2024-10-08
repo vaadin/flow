@@ -33,21 +33,17 @@ import com.vaadin.flow.server.VaadinService;
 /**
  * Component which renders a LitElement template.
  * <p>
- * A LitElement template is defined in a JavaScript module which should be
- * placed inside the {@literal frontend} folder and loaded using
- * {@link JsModule @JsModule}. The tag name defined for the Lit template must be
- * defined using {@link Tag @Tag} on this class.
+ * A LitElement template is defined in a JavaScript module which should be placed inside the {@literal frontend} folder
+ * and loaded using {@link JsModule @JsModule}. The tag name defined for the Lit template must be defined using
+ * {@link Tag @Tag} on this class.
  * <p>
- * By annotating a field using {@link Id @Id} you can map a
- * {@link Component @Component} instance to an element in the template, marked
- * with an {@code id} attribute which matches the field name or the optionally
- * given value to the annotation.
+ * By annotating a field using {@link Id @Id} you can map a {@link Component @Component} instance to an element in the
+ * template, marked with an {@code id} attribute which matches the field name or the optionally given value to the
+ * annotation.
  * <p>
- * Note that injected components will have the same limitations as with
- * {@code PolymerTemplate}.
+ * Note that injected components will have the same limitations as with {@code PolymerTemplate}.
  * <p>
- * For more information about the LitElement project, see
- * https://lit-element.polymer-project.org/
+ * For more information about the LitElement project, see https://lit-element.polymer-project.org/
  *
  * @see JsModule
  * @see Tag
@@ -56,8 +52,7 @@ import com.vaadin.flow.server.VaadinService;
  * @author Vaadin Ltd
  * @since
  */
-public abstract class LitTemplate extends Component
-        implements HasStyle, Template {
+public abstract class LitTemplate extends Component implements HasStyle, Template {
 
     static {
         UsageStatistics.markAsUsed("flow/LitTemplate", null);
@@ -66,10 +61,9 @@ public abstract class LitTemplate extends Component
     /**
      * Creates the component mapped to a LitElement.
      * <p>
-     * The call is delegated to
-     * {@link #LitTemplate(LitTemplateParser, VaadinService)} via
-     * {@code VaadinService.getCurrent()} as a service and parser created via
-     * {@link LitTemplateParserFactory} retrieved from {@link Instantiator}.
+     * The call is delegated to {@link #LitTemplate(LitTemplateParser, VaadinService)} via
+     * {@code VaadinService.getCurrent()} as a service and parser created via {@link LitTemplateParserFactory} retrieved
+     * from {@link Instantiator}.
      *
      * @see #LitTemplate(LitTemplateParser, VaadinService)
      * @see VaadinService
@@ -82,8 +76,7 @@ public abstract class LitTemplate extends Component
     }
 
     /**
-     * Creates the component component mapped to a LitElement using the provided
-     * {@code parser} and {@code service}.
+     * Creates the component component mapped to a LitElement using the provided {@code parser} and {@code service}.
      *
      * @param parser
      *            a template parser
@@ -91,18 +84,16 @@ public abstract class LitTemplate extends Component
      *            the related service instance
      */
     protected LitTemplate(LitTemplateParser parser, VaadinService service) {
-        LitTemplateInitializer templateInitializer = new LitTemplateInitializer(
-                this, parser, service);
+        LitTemplateInitializer templateInitializer = new LitTemplateInitializer(this, parser, service);
         templateInitializer.initChildElements();
     }
 
     /**
      * {@inheritDoc}
      * <p>
-     * Please note that components defined using {@link Id @Id} are not child
-     * components. Only components explicitly added through methods such as
-     * {@link HasComponents#add} or {@link Element#appendChild(Element...)} are
-     * returned by this method.
+     * Please note that components defined using {@link Id @Id} are not child components. Only components explicitly
+     * added through methods such as {@link HasComponents#add} or {@link Element#appendChild(Element...)} are returned
+     * by this method.
      */
     @Override
     public Stream<Component> getChildren() {
@@ -110,8 +101,7 @@ public abstract class LitTemplate extends Component
     }
 
     static LitTemplateParser getParser(VaadinService service) {
-        LitTemplateParserFactory factory = service.getInstantiator()
-                .getOrCreate(LitTemplateParserFactory.class);
+        LitTemplateParserFactory factory = service.getInstantiator().getOrCreate(LitTemplateParserFactory.class);
         return factory.createParser();
     }
 

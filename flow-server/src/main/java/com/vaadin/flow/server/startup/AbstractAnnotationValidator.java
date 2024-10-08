@@ -39,8 +39,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 
 /**
- * Validation class that contains common logic to checks that specific
- * annotations are not configured wrong.
+ * Validation class that contains common logic to checks that specific annotations are not configured wrong.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -57,8 +56,8 @@ public abstract class AbstractAnnotationValidator implements Serializable {
     public static final String MIDDLE_ROUTER_LAYOUT = "Middle layout: %s contains: %s";
 
     /**
-     * Validate the correctness of the annotations returned by the
-     * {@link #getAnnotations()} method applied to the {@code classSet}.
+     * Validate the correctness of the annotations returned by the {@link #getAnnotations()} method applied to the
+     * {@code classSet}.
      *
      * @param classSet
      *            the classes to validate
@@ -71,8 +70,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
         List<String> offendingAnnotations = validateAnnotatedClasses(classSet);
 
         if (!offendingAnnotations.isEmpty()) {
-            String message = getErrorHint()
-                    + String.join("\n", offendingAnnotations);
+            String message = getErrorHint() + String.join("\n", offendingAnnotations);
             throw new InvalidApplicationConfigurationException(message);
         }
     }
@@ -85,17 +83,15 @@ public abstract class AbstractAnnotationValidator implements Serializable {
     protected abstract List<Class<?>> getAnnotations();
 
     /**
-     * Handles the {@code clazz} which is not a top level route and not a router
-     * layout. Returns an optional message which describes the error having an
-     * annotation for the class.
+     * Handles the {@code clazz} which is not a top level route and not a router layout. Returns an optional message
+     * which describes the error having an annotation for the class.
      *
      * @param clazz
      *            class to validate annotations
      * @return an optional error message or empty if there is no error
      */
     protected Optional<String> handleNonRouterLayout(Class<?> clazz) {
-        return Optional.of(String.format(NON_ROUTER_LAYOUT, clazz.getName(),
-                getClassAnnotations(clazz)));
+        return Optional.of(String.format(NON_ROUTER_LAYOUT, clazz.getName(), getClassAnnotations(clazz)));
     }
 
     /**
@@ -112,8 +108,7 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      *
      * @param clazz
      *            the type to get validation annotations
-     * @return comma separated list of validation annotation declared for the
-     *         {@code clazz}
+     * @return comma separated list of validation annotation declared for the {@code clazz}
      */
     protected String getClassAnnotations(Class<?> clazz) {
         return getClassAnnotations(clazz, getAnnotations());
@@ -129,11 +124,8 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      * @return a comma separated string with the annotation names
      */
     @SuppressWarnings("unchecked")
-    public static String getClassAnnotations(Class<?> clazz,
-            List<Class<?>> annotations) {
-        return annotations.stream()
-                .filter(ann -> clazz
-                        .isAnnotationPresent((Class<? extends Annotation>) ann))
+    public static String getClassAnnotations(Class<?> clazz, List<Class<?>> annotations) {
+        return annotations.stream().filter(ann -> clazz.isAnnotationPresent((Class<? extends Annotation>) ann))
                 .map(ann ->
                 // Prepend annotation name with '@'
                 "@" + ann.getName()
@@ -142,43 +134,38 @@ public abstract class AbstractAnnotationValidator implements Serializable {
                 .collect(Collectors.joining(", "));
     }
 
-    private List<String> validateAnnotatedClasses(
-            Collection<Class<?>> classSet) {
+    private List<String> validateAnnotatedClasses(Collection<Class<?>> classSet) {
         List<String> offendingAnnotations = new ArrayList<>();
 
         for (Class<?> clazz : classSet) {
             Route route = clazz.getAnnotation(Route.class);
             if (route != null) {
                 if (!UI.class.equals(route.layout())) {
-                    offendingAnnotations.add(String.format(NON_PARENT,
-                            clazz.getName(), getClassAnnotations(clazz)));
+                    offendingAnnotations.add(String.format(NON_PARENT, clazz.getName(), getClassAnnotations(clazz)));
                 }
                 RouteAlias routeAlias = clazz.getAnnotation(RouteAlias.class);
-                if (routeAlias != null
-                        && !UI.class.equals(routeAlias.layout())) {
-                    offendingAnnotations.add(String.format(NON_PARENT_ALIAS,
-                            clazz.getName(), getClassAnnotations(clazz)));
+                if (routeAlias != null && !UI.class.equals(routeAlias.layout())) {
+                    offendingAnnotations
+                            .add(String.format(NON_PARENT_ALIAS, clazz.getName(), getClassAnnotations(clazz)));
                 }
             } else if (AppShellConfigurator.class.isAssignableFrom(clazz)) {
                 // Annotations on the app shell classes are validated in
                 // VaadinAppShellInitializer
             } else if (!RouterLayout.class.isAssignableFrom(clazz)) {
                 if (!Modifier.isAbstract(clazz.getModifiers())) {
-                    handleNonRouterLayout(clazz)
-                            .ifPresent(offendingAnnotations::add);
+                    handleNonRouterLayout(clazz).ifPresent(offendingAnnotations::add);
                 }
-            } else if (RouterLayout.class.isAssignableFrom(clazz)
-                    && clazz.getAnnotation(ParentLayout.class) != null) {
-                offendingAnnotations.add(String.format(MIDDLE_ROUTER_LAYOUT,
-                        clazz.getName(), getClassAnnotations(clazz)));
+            } else if (RouterLayout.class.isAssignableFrom(clazz) && clazz.getAnnotation(ParentLayout.class) != null) {
+                offendingAnnotations
+                        .add(String.format(MIDDLE_ROUTER_LAYOUT, clazz.getName(), getClassAnnotations(clazz)));
             }
         }
         return offendingAnnotations;
     }
 
     /**
-     * Filters the given set and removes classes (interfaces) which are
-     * mentioned in a {@code @HandlesTypes} annotation on the given object.
+     * Filters the given set and removes classes (interfaces) which are mentioned in a {@code @HandlesTypes} annotation
+     * on the given object.
      *
      * @param classSet
      *            the classes to filter
@@ -187,29 +174,22 @@ public abstract class AbstractAnnotationValidator implements Serializable {
      *
      * @return a filtered set of classes
      */
-    public static Set<Class<?>> removeHandleTypesSelfReferences(
-            Set<Class<?>> classSet, Object handlesTypesAnnotated) {
+    public static Set<Class<?>> removeHandleTypesSelfReferences(Set<Class<?>> classSet, Object handlesTypesAnnotated) {
         if (classSet == null) {
             return new HashSet<>();
         }
 
         Optional<HandlesTypes> handlesTypesAnnotation = AnnotationReader
-                .getAnnotationFor(handlesTypesAnnotated.getClass(),
-                        HandlesTypes.class);
+                .getAnnotationFor(handlesTypesAnnotated.getClass(), HandlesTypes.class);
         if (!handlesTypesAnnotation.isPresent()) {
-            throw new IllegalArgumentException("Neither class "
-                    + handlesTypesAnnotated.getClass()
-                    + " nor its parents have a @"
-                    + HandlesTypes.class.getSimpleName() + " annotation");
+            throw new IllegalArgumentException("Neither class " + handlesTypesAnnotated.getClass()
+                    + " nor its parents have a @" + HandlesTypes.class.getSimpleName() + " annotation");
         }
 
         Set<Class<?>> handlesTypesInterfaces = new HashSet<>();
-        Collections.addAll(handlesTypesInterfaces,
-                handlesTypesAnnotation.get().value());
+        Collections.addAll(handlesTypesInterfaces, handlesTypesAnnotation.get().value());
 
-        return classSet.stream()
-                .filter(cls -> !handlesTypesInterfaces.contains(cls))
-                .collect(Collectors.toSet());
+        return classSet.stream().filter(cls -> !handlesTypesInterfaces.contains(cls)).collect(Collectors.toSet());
     }
 
 }

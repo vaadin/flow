@@ -26,12 +26,10 @@ import com.vaadin.flow.data.binder.ValueContext;
  *
  * @since 24.5
  */
-public class DoubleToBigDecimalConverter
-        implements Converter<Double, BigDecimal> {
+public class DoubleToBigDecimalConverter implements Converter<Double, BigDecimal> {
 
     @Override
-    public Result<BigDecimal> convertToModel(Double value,
-            ValueContext context) {
+    public Result<BigDecimal> convertToModel(Double value, ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }
@@ -40,8 +38,7 @@ public class DoubleToBigDecimalConverter
     }
 
     @Override
-    public Double convertToPresentation(BigDecimal value,
-            ValueContext context) {
+    public Double convertToPresentation(BigDecimal value, ValueContext context) {
         if (value == null) {
             return null;
         }

@@ -25,9 +25,8 @@ import com.vaadin.flow.server.VaadinSessionState;
 /**
  * Abstract Vaadin scope implementation.
  * <p>
- * Contains common methods for every Vaadin scope: most important methods are
- * delegates to a custom bean store which is responsibe for all bean store
- * operations.
+ * Contains common methods for every Vaadin scope: most important methods are delegates to a custom bean store which is
+ * responsibe for all bean store operations.
  *
  * @author Vaadin Ltd
  *
@@ -64,20 +63,17 @@ abstract class AbstractScope implements Scope, BeanFactoryPostProcessor {
     /**
      * Gets current Vaadin session.
      * <p>
-     * Throws {@link IllegalStateException} if there is no current Vaadin
-     * session scope or it's not opened.
+     * Throws {@link IllegalStateException} if there is no current Vaadin session scope or it's not opened.
      *
      * @return the current Vaadin session
      */
     protected VaadinSession getVaadinSession() {
         VaadinSession session = VaadinSession.getCurrent();
         if (session == null) {
-            throw new IllegalStateException(
-                    "No VaadinSession bound to current thread");
+            throw new IllegalStateException("No VaadinSession bound to current thread");
         }
         if (session.getState() != VaadinSessionState.OPEN) {
-            throw new IllegalStateException(
-                    "Current VaadinSession is not open");
+            throw new IllegalStateException("Current VaadinSession is not open");
         }
         return session;
     }

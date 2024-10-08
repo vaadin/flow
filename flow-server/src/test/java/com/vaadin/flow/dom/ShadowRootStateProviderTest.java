@@ -43,8 +43,7 @@ public class ShadowRootStateProviderTest {
         ShadowRootStateProvider provider = ShadowRootStateProvider.get();
         StateNode node = new StateNode(ShadowRootData.class);
         StateNode shadowRoot = provider.createShadowRootNode(node);
-        Assert.assertEquals(shadowRoot,
-                node.getFeature(ShadowRootData.class).getShadowRoot());
+        Assert.assertEquals(shadowRoot, node.getFeature(ShadowRootData.class).getShadowRoot());
     }
 
     @Test

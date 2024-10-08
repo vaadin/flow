@@ -31,8 +31,7 @@ public class ComponentTestIT extends AbstractSpringTest {
 
         $(ButtonElement.class).first().click();
 
-        Assert.assertTrue(
-                "Clicking button should have opened a notification successfully.",
+        Assert.assertTrue("Clicking button should have opened a notification successfully.",
                 $(NotificationElement.class).exists());
     }
 

@@ -53,8 +53,7 @@ public class PreserveOnRefreshShortcutIT extends ChromeBrowserTest {
     }
 
     private void waitPageLoad() {
-        waitUntil(driver -> !findElement(By.className("v-loading-indicator"))
-                .isDisplayed());
+        waitUntil(driver -> !findElement(By.className("v-loading-indicator")).isDisplayed());
 
         waitForElementVisible(By.id("trigger"));
     }

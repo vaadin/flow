@@ -28,21 +28,13 @@ public class ValidationResultTest {
         assertEquals("ValidationResult{ok}", toString);
 
         toString = ValidationResult.error("My Error Message").toString();
-        assertEquals(
-                "ValidationResult{error='My Error Message', errorLevel=ERROR}",
-                toString);
+        assertEquals("ValidationResult{error='My Error Message', errorLevel=ERROR}", toString);
 
-        toString = ValidationResult
-                .create("My Critical Message", ErrorLevel.CRITICAL).toString();
-        assertEquals(
-                "ValidationResult{error='My Critical Message', errorLevel=CRITICAL}",
-                toString);
+        toString = ValidationResult.create("My Critical Message", ErrorLevel.CRITICAL).toString();
+        assertEquals("ValidationResult{error='My Critical Message', errorLevel=CRITICAL}", toString);
 
-        toString = ValidationResult.create("My Info Message", ErrorLevel.INFO)
-                .toString();
-        assertEquals(
-                "ValidationResult{error='My Info Message', errorLevel=INFO}",
-                toString);
+        toString = ValidationResult.create("My Info Message", ErrorLevel.INFO).toString();
+        assertEquals("ValidationResult{error='My Info Message', errorLevel=INFO}", toString);
     }
 
     @Test
@@ -51,12 +43,9 @@ public class ValidationResultTest {
         ValidationResult ok2 = ValidationResult.ok();
         ValidationResult error1 = ValidationResult.error("Msg1");
         ValidationResult error2 = ValidationResult.error("Msg2");
-        ValidationResult info1 = ValidationResult.create("Info",
-                ErrorLevel.INFO);
-        ValidationResult info2 = ValidationResult.create("Info",
-                ErrorLevel.ERROR);
-        ValidationResult info3 = ValidationResult.create("Info",
-                ErrorLevel.INFO);
+        ValidationResult info1 = ValidationResult.create("Info", ErrorLevel.INFO);
+        ValidationResult info2 = ValidationResult.create("Info", ErrorLevel.ERROR);
+        ValidationResult info3 = ValidationResult.create("Info", ErrorLevel.INFO);
 
         assertEquals(ok1, ok2);
         assertNotEquals(ok1, error1);

@@ -58,45 +58,37 @@ public class StreamResourceHandlerTest {
     }
 
     @Test
-    public void inputStreamFactoryThrowsException_responseStatusIs500()
-            throws IOException {
-        StreamResource res = new StreamResource("readme.md",
-                (InputStreamFactory) () -> {
-                    throw new RuntimeException("Simulated-1");
-                });
+    public void inputStreamFactoryThrowsException_responseStatusIs500() throws IOException {
+        StreamResource res = new StreamResource("readme.md", (InputStreamFactory) () -> {
+            throw new RuntimeException("Simulated-1");
+        });
         try {
             handler.handleRequest(session, request, response, res);
         } catch (RuntimeException exception) {
             // Exception is expected; verify it's the same one we threw.
             Assert.assertEquals("Simulated-1", exception.getMessage());
         }
-        Mockito.verify(response)
-                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+        Mockito.verify(response).setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
-    public void inputStreamResourceWriterThrows_responseStatusIs500()
-            throws IOException {
-        StreamResource res = new StreamResource("readme.md",
-                (StreamResourceWriter) (stream, session) -> {
-                    throw new RuntimeException("Simulated-2");
-                });
+    public void inputStreamResourceWriterThrows_responseStatusIs500() throws IOException {
+        StreamResource res = new StreamResource("readme.md", (StreamResourceWriter) (stream, session) -> {
+            throw new RuntimeException("Simulated-2");
+        });
         try {
             handler.handleRequest(session, request, response, res);
         } catch (RuntimeException exception) {
             // Exception is expected; verify it's the same one we threw.
             Assert.assertEquals("Simulated-2", exception.getMessage());
         }
-        Mockito.verify(response)
-                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+        Mockito.verify(response).setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
-    public void inputStreamResourceWriterIsNull_responseStatusIs500()
-            throws IOException {
+    public void inputStreamResourceWriterIsNull_responseStatusIs500() throws IOException {
         @SuppressWarnings("serial")
-        StreamResource res = new StreamResource("readme.md",
-                () -> new ByteArrayInputStream(new byte[0])) {
+        StreamResource res = new StreamResource("readme.md", () -> new ByteArrayInputStream(new byte[0])) {
             @Override
             public StreamResourceWriter getWriter() {
                 return null;
@@ -107,37 +99,29 @@ public class StreamResourceHandlerTest {
         } catch (IOException ignore) {
             // Exception is expected
         }
-        Mockito.verify(response)
-                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+        Mockito.verify(response).setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
     public void inputStreamResourceWriterAndResponseThrows_streamResourceWriterExceptionIsPropagated()
             throws IOException {
-        ServletOutputStream servletOutputStream = Mockito
-                .mock(ServletOutputStream.class);
-        Mockito.when(response.getOutputStream())
-                .thenReturn(servletOutputStream);
-        Mockito.doThrow(new RuntimeException("Error on close"))
-                .when(servletOutputStream).close();
-        StreamResource res = new StreamResource("readme.md",
-                (StreamResourceWriter) (stream, session) -> {
-                    throw new RuntimeException("Simulated-3");
-                });
+        ServletOutputStream servletOutputStream = Mockito.mock(ServletOutputStream.class);
+        Mockito.when(response.getOutputStream()).thenReturn(servletOutputStream);
+        Mockito.doThrow(new RuntimeException("Error on close")).when(servletOutputStream).close();
+        StreamResource res = new StreamResource("readme.md", (StreamResourceWriter) (stream, session) -> {
+            throw new RuntimeException("Simulated-3");
+        });
         try {
             handler.handleRequest(session, request, response, res);
         } catch (RuntimeException exception) {
             Assert.assertEquals("Simulated-3", exception.getMessage());
         }
-        Mockito.verify(response)
-                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+        Mockito.verify(response).setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
-    public void inputStreamResourceHasHeader_headerIsWritten()
-            throws IOException {
-        StreamResource res = new StreamResource("readme.md",
-                () -> new ByteArrayInputStream(new byte[0]));
+    public void inputStreamResourceHasHeader_headerIsWritten() throws IOException {
+        StreamResource res = new StreamResource("readme.md", () -> new ByteArrayInputStream(new byte[0]));
 
         res.setHeader("foo", "bar");
 

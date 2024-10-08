@@ -28,8 +28,7 @@ public class ServerRequestScrollIT extends ChromeBrowserTest {
     public void scrollPositionIsTheSameAfterServerRequest() {
         open();
 
-        WebElement button = $("server-request").id("template")
-                .$(NativeButtonElement.class).first();
+        WebElement button = $("server-request").id("template").$(NativeButtonElement.class).first();
 
         int y = button.getLocation().getY();
 
@@ -41,8 +40,6 @@ public class ServerRequestScrollIT extends ChromeBrowserTest {
 
         button.click();
 
-        Assert.assertEquals(
-                "Scroll position after the server request is changed", scrollY,
-                getScrollY());
+        Assert.assertEquals("Scroll position after the server request is changed", scrollY, getScrollY());
     }
 }

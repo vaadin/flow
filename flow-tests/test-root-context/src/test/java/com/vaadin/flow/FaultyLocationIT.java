@@ -26,8 +26,8 @@ public class FaultyLocationIT extends ChromeBrowserTest {
     public void changeOnClient() {
         open();
 
-        Assert.assertTrue("Faulty URL didn't return an error page.", getDriver()
-                .getPageSource().contains("Could not navigate to '?faulty'"));
+        Assert.assertTrue("Faulty URL didn't return an error page.",
+                getDriver().getPageSource().contains("Could not navigate to '?faulty'"));
 
     }
 

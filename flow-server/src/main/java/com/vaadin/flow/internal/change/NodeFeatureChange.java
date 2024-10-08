@@ -59,7 +59,6 @@ public abstract class NodeFeatureChange extends NodeChange {
 
     @Override
     protected void populateJson(JsonObject json, ConstantPool constantPool) {
-        json.put(JsonConstants.CHANGE_FEATURE,
-                Json.create(NodeFeatureRegistry.getId(feature)));
+        json.put(JsonConstants.CHANGE_FEATURE, Json.create(NodeFeatureRegistry.getId(feature)));
     }
 }

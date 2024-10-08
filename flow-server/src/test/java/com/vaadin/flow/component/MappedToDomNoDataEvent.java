@@ -23,8 +23,7 @@ public class MappedToDomNoDataEvent extends ComponentEvent<Component> {
         super(source, fromClient);
     }
 
-    public MappedToDomNoDataEvent(Component source, boolean fromClient,
-            int strangeServerSideParam) {
+    public MappedToDomNoDataEvent(Component source, boolean fromClient, int strangeServerSideParam) {
         super(source, fromClient);
     }
 

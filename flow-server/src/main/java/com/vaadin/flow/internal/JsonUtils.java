@@ -69,8 +69,7 @@ public final class JsonUtils {
      * @author Vaadin Ltd
      * @since 1.0
      */
-    private static final class JsonArrayCollector
-            implements Collector<JsonValue, JsonArray, JsonArray> {
+    private static final class JsonArrayCollector implements Collector<JsonValue, JsonArray, JsonArray> {
         @Override
         public Supplier<JsonArray> supplier() {
             return Json::createArray;
@@ -103,8 +102,7 @@ public final class JsonUtils {
     }
 
     private static final Set<Collector.Characteristics> arrayCollectorCharacteristics = Collections
-            .unmodifiableSet(
-                    EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
+            .unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
 
     private JsonUtils() {
         // Static-only class
@@ -113,17 +111,15 @@ public final class JsonUtils {
     /**
      * Compares two json values for deep equality.
      * <p>
-     * This is a helper for overcoming the fact that {@link JsonValue} doesn't
-     * override {@link Object#equals(Object)} and
-     * {@link JsonValue#jsEquals(JsonValue)} is defined to use JavaScript
-     * semantics where arrays and objects are equals only based on identity.
+     * This is a helper for overcoming the fact that {@link JsonValue} doesn't override {@link Object#equals(Object)}
+     * and {@link JsonValue#jsEquals(JsonValue)} is defined to use JavaScript semantics where arrays and objects are
+     * equals only based on identity.
      *
      * @param a
      *            the first json value to check, may not be null
      * @param b
      *            the second json value to check, may not be null
-     * @return <code>true</code> if both json values are the same;
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if both json values are the same; <code>false</code> otherwise
      */
     public static boolean jsonEquals(JsonValue a, JsonValue b) {
         assert a != null;
@@ -171,8 +167,7 @@ public final class JsonUtils {
     public static boolean numbersEqual(JsonValue a, JsonValue b) {
         assert a.getType() == JsonType.NUMBER;
         assert b.getType() == JsonType.NUMBER;
-        return Double.doubleToRawLongBits(a.asNumber()) == Double
-                .doubleToRawLongBits(b.asNumber());
+        return Double.doubleToRawLongBits(a.asNumber()) == Double.doubleToRawLongBits(b.asNumber());
     }
 
     private static boolean jsonObjectEquals(JsonObject a, JsonObject b) {
@@ -246,9 +241,8 @@ public final class JsonUtils {
     }
 
     /**
-     * Creates a stream from a JSON array of objects. This method does not
-     * verify that all items in the array are actually JSON objects instead of
-     * some other JSON type.
+     * Creates a stream from a JSON array of objects. This method does not verify that all items in the array are
+     * actually JSON objects instead of some other JSON type.
      *
      * @param array
      *            the JSON array to create a stream from
@@ -259,17 +253,15 @@ public final class JsonUtils {
     }
 
     /**
-     * Creates a double stream from a JSON array of numbers. This method does
-     * not verify that all items in the array are actually JSON numbers instead
-     * of some other JSON type.
+     * Creates a double stream from a JSON array of numbers. This method does not verify that all items in the array are
+     * actually JSON numbers instead of some other JSON type.
      *
      * @param array
      *            the JSON array to create a stream from
      * @return a double stream of the values in the array
      */
     public static DoubleStream numberStream(JsonArray array) {
-        return JsonUtils.<JsonNumber> stream(array)
-                .mapToDouble(JsonNumber::getNumber);
+        return JsonUtils.<JsonNumber> stream(array).mapToDouble(JsonNumber::getNumber);
     }
 
     /**
@@ -293,8 +285,7 @@ public final class JsonUtils {
     }
 
     /**
-     * Converts the given map into a JSON object by converting each map value to
-     * a JSON value.
+     * Converts the given map into a JSON object by converting each map value to a JSON value.
      *
      * @param <T>
      *            the type of the map values
@@ -304,8 +295,7 @@ public final class JsonUtils {
      *            callback for converting map values to JSON
      * @return the created object
      */
-    public static <T> JsonObject createObject(Map<String, T> map,
-            Function<T, JsonValue> itemToJson) {
+    public static <T> JsonObject createObject(Map<String, T> map, Function<T, JsonValue> itemToJson) {
         JsonObject object = Json.createObject();
 
         map.forEach((key, value) -> object.put(key, itemToJson.apply(value)));
@@ -378,8 +368,7 @@ public final class JsonUtils {
         try {
             return objectMapper.readValue(jsonObject.toJson(), tClass);
         } catch (JsonProcessingException e) {
-            throw new JsonDecodingException(
-                    "Error converting JsonObject to " + tClass.getName(), e);
+            throw new JsonDecodingException("Error converting JsonObject to " + tClass.getName(), e);
         }
     }
 
@@ -399,8 +388,7 @@ public final class JsonUtils {
         try {
             return objectMapper.readValue(jsonValue.toJson(), tClass);
         } catch (JsonProcessingException e) {
-            throw new JsonDecodingException(
-                    "Error converting JsonValue to " + tClass.getName(), e);
+            throw new JsonDecodingException("Error converting JsonValue to " + tClass.getName(), e);
         }
     }
 
@@ -415,14 +403,13 @@ public final class JsonUtils {
      * @param <T>
      *            type of result instance
      */
-    public static <T> T readValue(JsonValue jsonValue,
-            TypeReference<T> typeReference) {
+    public static <T> T readValue(JsonValue jsonValue, TypeReference<T> typeReference) {
         Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
             return objectMapper.readValue(jsonValue.toJson(), typeReference);
         } catch (JsonProcessingException e) {
-            throw new JsonDecodingException("Error converting JsonValue to "
-                    + typeReference.getType().getTypeName(), e);
+            throw new JsonDecodingException("Error converting JsonValue to " + typeReference.getType().getTypeName(),
+                    e);
         }
     }
 
@@ -435,8 +422,7 @@ public final class JsonUtils {
      */
     public static JsonValue writeValue(Object object) {
         try {
-            return Json.instance()
-                    .parse(objectMapper.writeValueAsString(object));
+            return Json.instance().parse(objectMapper.writeValueAsString(object));
         } catch (JsonProcessingException e) {
             throw new JsonEncodingException("Error converting to JSON", e);
         }

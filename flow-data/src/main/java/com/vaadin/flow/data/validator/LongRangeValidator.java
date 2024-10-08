@@ -29,9 +29,8 @@ public class LongRangeValidator extends RangeValidator<Long> {
     /**
      * Creates a validator for checking that an Long is within a given range.
      *
-     * By default the range is inclusive i.e. both minValue and maxValue are
-     * valid values. Use {@link #setMinValueIncluded(boolean)} or
-     * {@link #setMaxValueIncluded(boolean)} to change it.
+     * By default the range is inclusive i.e. both minValue and maxValue are valid values. Use
+     * {@link #setMinValueIncluded(boolean)} or {@link #setMaxValueIncluded(boolean)} to change it.
      *
      *
      * @param errorMessage
@@ -41,8 +40,7 @@ public class LongRangeValidator extends RangeValidator<Long> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public LongRangeValidator(String errorMessage, Long minValue,
-            Long maxValue) {
+    public LongRangeValidator(String errorMessage, Long minValue, Long maxValue) {
         super(errorMessage, Comparator.naturalOrder(), minValue, maxValue);
     }
 

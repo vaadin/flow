@@ -38,12 +38,10 @@ import com.vaadin.flow.internal.StringUtil;
  */
 public final class BundleLitParser {
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(BundleLitParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BundleLitParser.class);
 
     /**
-     * Lit template pattern matches from the <code>render() {</code> until the
-     * last <code>}</code> character.
+     * Lit template pattern matches from the <code>render() {</code> until the last <code>}</code> character.
      *
      * <pre>
      * render() {
@@ -52,16 +50,14 @@ public final class BundleLitParser {
      * </pre>
      *
      * <p>
-     * <code>render\(\)[\s]*\{</code> finds the template getter method and
-     * <code>[\s\S]*\}</code> ensures everything is captured until the last
-     * <code>}</code> character.
+     * <code>render\(\)[\s]*\{</code> finds the template getter method and <code>[\s\S]*\}</code> ensures everything is
+     * captured until the last <code>}</code> character.
      */
-    private static final Pattern LIT_TEMPLATE_PATTERN = Pattern
-            .compile("render\\(\\)[\\s]*\\{[\\s\\S]*\\}");
+    private static final Pattern LIT_TEMPLATE_PATTERN = Pattern.compile("render\\(\\)[\\s]*\\{[\\s\\S]*\\}");
 
     /**
-     * Lit template pattern for html matches the return statement with html
-     * template. Used for the first match from <code>render() {</code>.
+     * Lit template pattern for html matches the return statement with html template. Used for the first match from
+     * <code>render() {</code>.
      *
      * <pre>
      *       return html`
@@ -79,8 +75,8 @@ public final class BundleLitParser {
      * <code>return[\s]*html[\s]*(\`)</code> finds the return statement
      * <p>
      * </p>
-     * <code>([\s\S]*?)</code> captures all text until we encounter the end
-     * character with <code>\1;}</code> e.g. <code>';}</code>
+     * <code>([\s\S]*?)</code> captures all text until we encounter the end character with <code>\1;}</code> e.g.
+     * <code>';}</code>
      */
     private static final Pattern LIT_TEMPLATE_PATTERN_HTML = Pattern
             .compile("return[\\s]*html[\\s]*(\\`)([\\s\\S]*?)\\1;[\\s]*\\}");
@@ -99,32 +95,26 @@ public final class BundleLitParser {
      *            source js to get template element from
      * @return template element or {code null} if not found
      */
-    public static Element parseLitTemplateElement(String fileName,
-            String source) {
+    public static Element parseLitTemplateElement(String fileName, String source) {
         Document templateDocument = null;
         String content = StringUtil.removeComments(source);
         Matcher renderMatcher = LIT_TEMPLATE_PATTERN.matcher(content);
 
         if (renderMatcher.find()) {
             String renderGroup = renderMatcher.group(0);
-            Matcher templateMatcher = LIT_TEMPLATE_PATTERN_HTML
-                    .matcher(renderGroup);
+            Matcher templateMatcher = LIT_TEMPLATE_PATTERN_HTML.matcher(renderGroup);
             // GroupCount should be at least 2 as the first group contains
             // `|'|". Second group contains
             // first "return html'" template contents.
             if (templateMatcher.find() && templateMatcher.groupCount() >= 2) {
                 String group = templateMatcher.group(2);
-                LOGGER.trace("Found regular Lit template content was {}",
-                        group);
+                LOGGER.trace("Found regular Lit template content was {}", group);
 
                 templateDocument = Jsoup.parse(group);
-                LOGGER.trace("The parsed template document was {}",
-                        templateDocument);
-                Element template = templateDocument
-                        .createElement(TEMPLATE_TAG_NAME);
+                LOGGER.trace("The parsed template document was {}", templateDocument);
+                Element template = templateDocument.createElement(TEMPLATE_TAG_NAME);
                 Element body = templateDocument.body();
-                templateDocument.body().children().stream()
-                        .filter(node -> !node.equals(body))
+                templateDocument.body().children().stream().filter(node -> !node.equals(body))
                         .forEach(template::appendChild);
 
                 return template;

@@ -28,18 +28,16 @@ import elemental.json.JsonString;
 public class JavaScriptInvocationTest {
     @Test
     public void testSerializable() {
-        JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(
-                "expression", "string", Json.create("jsonString"));
+        JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation("expression", "string",
+                Json.create("jsonString"));
 
-        JavaScriptInvocation deserialized = SerializationUtils
-                .deserialize(SerializationUtils.serialize(invocation));
+        JavaScriptInvocation deserialized = SerializationUtils.deserialize(SerializationUtils.serialize(invocation));
 
         Assert.assertNotSame(invocation, deserialized);
 
         Assert.assertEquals("expression", deserialized.getExpression());
         Assert.assertEquals(2, deserialized.getParameters().size());
         Assert.assertEquals("string", deserialized.getParameters().get(0));
-        Assert.assertEquals("jsonString",
-                ((JsonString) deserialized.getParameters().get(1)).getString());
+        Assert.assertEquals("jsonString", ((JsonString) deserialized.getParameters().get(1)).getString());
     }
 }

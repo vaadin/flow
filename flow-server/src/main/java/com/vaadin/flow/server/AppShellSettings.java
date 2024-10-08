@@ -55,8 +55,7 @@ public class AppShellSettings {
         private String content;
         private String file;
 
-        private InlineElement(TargetElement target, Position position,
-                Wrapping type, String file, String content) {
+        private InlineElement(TargetElement target, Position position, Wrapping type, String file, String content) {
             this.target = target;
             this.position = position;
             this.content = content;
@@ -65,8 +64,7 @@ public class AppShellSettings {
         }
 
         private InlineElement(Inline ann) {
-            this(ann.target(), ann.position(), ann.wrapping(), ann.value(),
-                    null);
+            this(ann.target(), ann.position(), ann.wrapping(), ann.value(), null);
         }
 
         private Element element(VaadinService service) {
@@ -85,8 +83,7 @@ public class AppShellSettings {
                 return createElement("style", content, "type", "text/css");
             }
             if (type == Wrapping.JAVASCRIPT) {
-                return createElement("script", content, "type",
-                        "text/javascript");
+                return createElement("script", content, "type", "text/javascript");
             }
             return Jsoup.parse(content, "", Parser.xmlParser());
         }
@@ -94,8 +91,7 @@ public class AppShellSettings {
 
     private final List<InlineElement> inlines = new ArrayList<>();
 
-    private final Map<Position, List<Element>> elements = new EnumMap<>(
-            Position.class);
+    private final Map<Position, List<Element>> elements = new EnumMap<>(Position.class);
 
     /**
      * Get the current request.
@@ -125,10 +121,8 @@ public class AppShellSettings {
     }
 
     /**
-     * Set the viewport value. Since viewport can be set only once per page,
-     * call to this method will have preference over the {@link Viewport}
-     * annotation. If the method is called multiple times, the last one will be
-     * used.
+     * Set the viewport value. Since viewport can be set only once per page, call to this method will have preference
+     * over the {@link Viewport} annotation. If the method is called multiple times, the last one will be used.
      *
      * @param viewport
      *            viewport value to set
@@ -138,8 +132,7 @@ public class AppShellSettings {
     }
 
     /**
-     * Set the body size. If the method is called multiple times, the last one
-     * will be used.
+     * Set the body size. If the method is called multiple times, the last one will be used.
      *
      * @param width
      *            body with
@@ -147,21 +140,18 @@ public class AppShellSettings {
      *            body height
      */
     public void setBodySize(String width, String height) {
-        addInline(TargetElement.HEAD, Position.APPEND, Wrapping.STYLESHEET,
-                null, "body,#outlet{" + "width:" + width + ";" + "height:"
-                        + height + ";}");
+        addInline(TargetElement.HEAD, Position.APPEND, Wrapping.STYLESHEET, null,
+                "body,#outlet{" + "width:" + width + ";" + "height:" + height + ";}");
     }
 
     /**
-     * Set the page title. If the method is called multiple times, the last one
-     * will be used.
+     * Set the page title. If the method is called multiple times, the last one will be used.
      *
      * @param title
      *            title
      */
     public void setPageTitle(String title) {
-        ListIterator<Element> iter = getHeadElements(Position.APPEND)
-                .listIterator();
+        ListIterator<Element> iter = getHeadElements(Position.APPEND).listIterator();
         while (iter.hasNext()) {
             if ("title".equals(iter.next().normalName())) {
                 iter.remove();
@@ -192,8 +182,7 @@ public class AppShellSettings {
      * @param type
      *            dependency type
      */
-    public void addInlineFromFile(Position position, String file,
-            Wrapping type) {
+    public void addInlineFromFile(Position position, String file, Wrapping type) {
         addInlineFromFile(TargetElement.HEAD, position, file, type);
     }
 
@@ -209,8 +198,7 @@ public class AppShellSettings {
      * @param type
      *            dependency type
      */
-    public void addInlineFromFile(TargetElement target, Position position,
-            String file, Wrapping type) {
+    public void addInlineFromFile(TargetElement target, Position position, String file, Wrapping type) {
         addInline(target, position, type, file, null);
     }
 
@@ -236,8 +224,7 @@ public class AppShellSettings {
      * @param type
      *            type of content which can be JavaScript or Stylesheet (CSS)
      */
-    public void addInlineWithContents(Position position, String contents,
-            Wrapping type) {
+    public void addInlineWithContents(Position position, String contents, Wrapping type) {
         addInlineWithContents(TargetElement.HEAD, position, contents, type);
     }
 
@@ -253,8 +240,7 @@ public class AppShellSettings {
      * @param type
      *            type of content which can be JavaScript or Stylesheet (CSS)
      */
-    public void addInlineWithContents(TargetElement target, Position position,
-            String contents, Wrapping type) {
+    public void addInlineWithContents(TargetElement target, Position position, String contents, Wrapping type) {
         addInline(target, position, type, null, contents);
     }
 
@@ -262,8 +248,7 @@ public class AppShellSettings {
         inlines.add(new InlineElement(inline));
     }
 
-    private void addInline(TargetElement target, Position position,
-            Wrapping type, String file, String content) {
+    private void addInline(TargetElement target, Position position, Wrapping type, String file, String content) {
         inlines.add(new InlineElement(target, position, type, file, content));
     }
 
@@ -311,8 +296,7 @@ public class AppShellSettings {
      * @param attributes
      *            map of attributes for link element
      */
-    public void addLink(Position position, String href,
-            Map<String, String> attributes) {
+    public void addLink(Position position, String href, Map<String, String> attributes) {
         Element link = createElement("link", null, "href", href);
         attributes.forEach(link::attr);
         getHeadElements(position).add(link);
@@ -341,8 +325,7 @@ public class AppShellSettings {
      *            location of the linked document
      */
     public void addLink(Position position, String rel, String href) {
-        getHeadElements(position)
-                .add(createElement("link", null, "href", href, "rel", rel));
+        getHeadElements(position).add(createElement("link", null, "href", href, "rel", rel));
     }
 
     /**
@@ -371,10 +354,8 @@ public class AppShellSettings {
      * @param sizes
      *            size of the linked fav icon
      */
-    public void addFavIcon(Position position, String rel, String href,
-            String sizes) {
-        getHeadElements(position).add(createElement("link", null, "href", href,
-                "rel", rel, "sizes", sizes));
+    public void addFavIcon(Position position, String rel, String href, String sizes) {
+        getHeadElements(position).add(createElement("link", null, "href", href, "rel", rel, "sizes", sizes));
     }
 
     /**
@@ -400,14 +381,12 @@ public class AppShellSettings {
      *            meta tag content
      */
     public void addMetaTag(Position position, String name, String content) {
-        Element meta = createElement("meta", null, "name", name, "content",
-                content);
+        Element meta = createElement("meta", null, "name", name, "content", content);
         getHeadElements(position).add(meta);
     }
 
     /**
-     * Get the list of elements excluding inline ones to add to the head in the
-     * given position.
+     * Get the list of elements excluding inline ones to add to the head in the given position.
      *
      * @param position
      *            prepend or append
@@ -426,17 +405,12 @@ public class AppShellSettings {
      *            position in the target
      * @return the list of dom elements to add.
      */
-    List<Element> getInlineElements(VaadinService service, TargetElement target,
-            Position position) {
-        return inlines.stream()
-                .filter(inline -> inline.target == target
-                        && inline.position == position)
-                .map(inline -> inline.element(service))
-                .collect(Collectors.toList());
+    List<Element> getInlineElements(VaadinService service, TargetElement target, Position position) {
+        return inlines.stream().filter(inline -> inline.target == target && inline.position == position)
+                .map(inline -> inline.element(service)).collect(Collectors.toList());
     }
 
-    private static Element createElement(String tag, String content,
-            String... attrs) {
+    private static Element createElement(String tag, String content, String... attrs) {
         Element elm = new Element(Tag.valueOf(tag), "");
         if (content != null && !content.isEmpty()) {
             elm.appendChild(new DataNode(content));

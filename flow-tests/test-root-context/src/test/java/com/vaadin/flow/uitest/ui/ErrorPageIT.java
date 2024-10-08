@@ -16,12 +16,10 @@ public class ErrorPageIT extends ChromeBrowserTest {
     public void testErrorViewOpened() {
         open();
 
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("Could not navigate to 'abcd'"));
+        Assert.assertTrue(getDriver().getPageSource().contains("Could not navigate to 'abcd'"));
 
         getDriver().get(getTestURL() + "/foobar");
 
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("Could not navigate to 'abcd/foobar'"));
+        Assert.assertTrue(getDriver().getPageSource().contains("Could not navigate to 'abcd/foobar'"));
     }
 }

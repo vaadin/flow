@@ -40,8 +40,7 @@ public class ClientSelectComponent extends Div {
 
     public ClientSelectComponent() {
         select = new Select();
-        Backend.getAllClients().forEach(
-                client -> select.addItem(client, client.getFirsName()));
+        Backend.getAllClients().forEach(client -> select.addItem(client, client.getFirsName()));
         select.addValueChangeListener(this::setValue);
 
         add(select, message);
@@ -65,8 +64,7 @@ public class ClientSelectComponent extends Div {
         return streamResource;
     }
 
-    private void setValue(
-            AbstractField.ComponentValueChangeEvent<Select, String> event) {
+    private void setValue(AbstractField.ComponentValueChangeEvent<Select, String> event) {
         String messageText = "No selection";
         Optional<Object> item = select.getItem();
 

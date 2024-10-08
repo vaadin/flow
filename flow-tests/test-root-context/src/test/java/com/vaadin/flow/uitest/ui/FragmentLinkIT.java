@@ -18,15 +18,13 @@ public class FragmentLinkIT extends ChromeBrowserTest {
 
         clickScrollerLink2();
 
-        verifyInsideServletLocation(
-                "com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target2");
+        verifyInsideServletLocation("com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target2");
         verifyHashChangeEvents(1);
         verifyScrollTarget2Visible();
 
         clickScrollerLink();
 
-        verifyInsideServletLocation(
-                "com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target");
+        verifyInsideServletLocation("com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target");
         verifyHashChangeEvents(2);
         verifyScrollTargetVisible();
     }
@@ -38,8 +36,7 @@ public class FragmentLinkIT extends ChromeBrowserTest {
 
         clickAnotherViewLink();
 
-        verifyInsideServletLocation(
-                "com.vaadin.flow.uitest.ui.FragmentLinkView2#Scroll_Target");
+        verifyInsideServletLocation("com.vaadin.flow.uitest.ui.FragmentLinkView2#Scroll_Target");
         verifyHashChangeEvents(1);
         verifyScrollTargetVisible();
         verifyView2Open();
@@ -80,15 +77,13 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     }
 
     private void verifyScrollTargetVisible() {
-        int scrollPos = findElement(By.id("Scroll_Target")).getLocation()
-                .getY();
+        int scrollPos = findElement(By.id("Scroll_Target")).getLocation().getY();
         int expected = getScrollLocatorPosition();
         assertScrollPosition(expected, scrollPos);
     }
 
     private void verifyScrollTarget2Visible() {
-        int scrollPos = findElement(By.id("Scroll_Target2")).getLocation()
-                .getY();
+        int scrollPos = findElement(By.id("Scroll_Target2")).getLocation().getY();
         int expected = getScrollLocatorPosition();
         assertScrollPosition(expected, scrollPos);
     }
@@ -102,29 +97,23 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     }
 
     private void verifyView2Open() {
-        Assert.assertNotNull("FragmentView2 not opened",
-                findElement(By.id("view2")));
+        Assert.assertNotNull("FragmentView2 not opened", findElement(By.id("view2")));
     }
 
     private void assertScrollPosition(int expected, int actual) {
         int lowerBound = expected - 2 > 0 ? expected - 2 : 0;
         int higherBound = expected + 2;
-        Assert.assertTrue(
-                "Invalid scroll position, expected " + expected
-                        + " +-2px. actual " + actual,
+        Assert.assertTrue("Invalid scroll position, expected " + expected + " +-2px. actual " + actual,
                 lowerBound <= expected && expected <= higherBound);
     }
 
     private void verifyHashChangeEvents(int numberOfEvents) {
-        List<WebElement> spans = findElement(By.id("placeholder"))
-                .findElements(By.tagName("span"));
-        Assert.assertEquals("Invalid amount of hash change events",
-                numberOfEvents, spans.size());
+        List<WebElement> spans = findElement(By.id("placeholder")).findElements(By.tagName("span"));
+        Assert.assertEquals("Invalid amount of hash change events", numberOfEvents, spans.size());
     }
 
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
-        Assert.assertEquals("Invalid URL",
-                getRootURL() + "/view/" + pathAfterServletMapping,
+        Assert.assertEquals("Invalid URL", getRootURL() + "/view/" + pathAfterServletMapping,
                 getDriver().getCurrentUrl());
     }
 

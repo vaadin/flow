@@ -40,8 +40,7 @@ public class ExtendedClientDetailsIT extends ChromeBrowserTest {
         } catch (NumberFormatException nfe) {
             Assert.fail("Could not parse reported device pixel ratio");
         }
-        Assert.assertTrue("false".equalsIgnoreCase(
-                $(TestBenchElement.class).id("td").getText()));
+        Assert.assertTrue("false".equalsIgnoreCase($(TestBenchElement.class).id("td").getText()));
 
     }
 
@@ -53,25 +52,19 @@ public class ExtendedClientDetailsIT extends ChromeBrowserTest {
         $(TestBenchElement.class).id("fetch-values").click();
 
         try {
-            double pixelRatio = Double
-                    .parseDouble($(TestBenchElement.class).id("pr").getText());
-            Assert.assertEquals("Invalid Pixel ratio reported", 2.0D,
-                    pixelRatio, 0.1D);
+            double pixelRatio = Double.parseDouble($(TestBenchElement.class).id("pr").getText());
+            Assert.assertEquals("Invalid Pixel ratio reported", 2.0D, pixelRatio, 0.1D);
         } catch (NumberFormatException nfe) {
             Assert.fail("Could not parse reported device pixel ratio");
         }
-        Assert.assertTrue("true".equalsIgnoreCase(
-                $(TestBenchElement.class).id("td").getText()));
+        Assert.assertTrue("true".equalsIgnoreCase($(TestBenchElement.class).id("td").getText()));
 
     }
 
-    private void verifyTextMatchesJSExecution(String elementId,
-            String jsExecution) {
+    private void verifyTextMatchesJSExecution(String elementId, String jsExecution) {
         String elementText = $(TestBenchElement.class).id(elementId).getText();
-        Object executionResult = getCommandExecutor()
-                .executeScript(("return " + jsExecution + ";"));
-        Assert.assertEquals(
-                "reported value did not match js execution for " + elementId,
-                executionResult.toString(), elementText);
+        Object executionResult = getCommandExecutor().executeScript(("return " + jsExecution + ";"));
+        Assert.assertEquals("reported value did not match js execution for " + elementId, executionResult.toString(),
+                elementText);
     }
 }

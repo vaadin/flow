@@ -26,16 +26,13 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.server.HttpStatusCode;
 
 /**
- * Custom view for the NofFoundException to be used with the
- * CustomRouteRegistry.
+ * Custom view for the NofFoundException to be used with the CustomRouteRegistry.
  */
 @Tag("div")
-public class CustomNotFoundView extends Component
-        implements HasErrorParameter<NotFoundException> {
+public class CustomNotFoundView extends Component implements HasErrorParameter<NotFoundException> {
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<NotFoundException> parameter) {
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NotFoundException> parameter) {
         Span notFound = new Span("Requested route was simply not found!");
         notFound.setId("error");
         getElement().appendChild(notFound.getElement());

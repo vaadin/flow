@@ -26,16 +26,12 @@ public class LocationParserTest {
         Assert.assertEquals(null, LocationParser.getParameter("?bar", "foo"));
         Assert.assertEquals("", LocationParser.getParameter("?foo", "foo"));
         Assert.assertEquals("", LocationParser.getParameter("?foo=", "foo"));
-        Assert.assertEquals("bar",
-                LocationParser.getParameter("?foo=bar", "foo"));
-        Assert.assertEquals("bar",
-                LocationParser.getParameter("?foo=bar&", "foo"));
+        Assert.assertEquals("bar", LocationParser.getParameter("?foo=bar", "foo"));
+        Assert.assertEquals("bar", LocationParser.getParameter("?foo=bar&", "foo"));
 
         Assert.assertEquals("", LocationParser.getParameter("?foo&bar", "foo"));
         Assert.assertEquals("", LocationParser.getParameter("?bar&foo", "foo"));
-        Assert.assertEquals("",
-                LocationParser.getParameter("?bar&foo=", "foo"));
-        Assert.assertEquals("a",
-                LocationParser.getParameter("?bar&foo=a", "foo"));
+        Assert.assertEquals("", LocationParser.getParameter("?bar&foo=", "foo"));
+        Assert.assertEquals("a", LocationParser.getParameter("?bar&foo=a", "foo"));
     }
 }

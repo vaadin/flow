@@ -42,8 +42,7 @@ public class AbstractRouteRegistryInitializerTest {
     VaadinContext context = Mockito.mock(VaadinContext.class);
 
     @Tag(Tag.DIV)
-    public static class TestParentLayout extends Component
-            implements RouterLayout {
+    public static class TestParentLayout extends Component implements RouterLayout {
 
     }
 
@@ -57,8 +56,7 @@ public class AbstractRouteRegistryInitializerTest {
     @Tag(Tag.DIV)
     @Route("foo")
     @ParentLayout(TestParentLayout.class)
-    public static class RouteAndParentRouterLayout extends Component
-            implements RouterLayout {
+    public static class RouteAndParentRouterLayout extends Component implements RouterLayout {
 
     }
 
@@ -71,38 +69,33 @@ public class AbstractRouteRegistryInitializerTest {
 
     @Tag(Tag.DIV)
     @RoutePrefix("parent")
-    public static class PrefixedParentLayout extends Component
-            implements RouterLayout {
+    public static class PrefixedParentLayout extends Component implements RouterLayout {
     }
 
     @Tag(Tag.DIV)
     @RoutePrefix("nested")
     @ParentLayout(PrefixedParentLayout.class)
-    public static class NestedPrefixedParentLayout extends Component
-            implements RouterLayout {
+    public static class NestedPrefixedParentLayout extends Component implements RouterLayout {
     }
 
     @Tag(Tag.DIV)
     @Route("foo")
     @RouteAlias(value = "foo", layout = PrefixedParentLayout.class)
-    public static class RouteAndAliasWithSamePathDifferentLayoutPrefix
-            extends Component {
+    public static class RouteAndAliasWithSamePathDifferentLayoutPrefix extends Component {
 
     }
 
     @Tag(Tag.DIV)
     @Route(value = "foo", layout = PrefixedParentLayout.class)
     @RouteAlias(value = "foo", layout = PrefixedParentLayout.class)
-    public static class RouteAndAliasWithSamePathSameLayoutPrefix
-            extends Component {
+    public static class RouteAndAliasWithSamePathSameLayoutPrefix extends Component {
 
     }
 
     @Tag(Tag.DIV)
     @Route(value = "foo", layout = NestedPrefixedParentLayout.class)
     @RouteAlias(value = "foo", layout = NestedPrefixedParentLayout.class)
-    public static class RouteAndAliasWithSamePathSameNestedLayoutPrefix
-            extends Component {
+    public static class RouteAndAliasWithSamePathSameNestedLayoutPrefix extends Component {
 
     }
 
@@ -119,34 +112,25 @@ public class AbstractRouteRegistryInitializerTest {
 
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void routeAndParentLayout_notRouterLayout_throws() {
-        initializer.validateRouteClasses(context,
-                Stream.of(RouteAndParentLayout.class));
+        initializer.validateRouteClasses(context, Stream.of(RouteAndParentLayout.class));
     }
 
     @Test
     public void validateRouteClasses_samePathForRouteAndAlias_throws() {
-        InvalidRouteConfigurationException exception = Assert.assertThrows(
-                InvalidRouteConfigurationException.class,
-                () -> initializer.validateRouteClasses(context,
-                        Stream.of(RouteAndAliasWithSamePath.class)));
-        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
-                Route.class));
-        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
-                RouteAlias.class));
+        InvalidRouteConfigurationException exception = Assert.assertThrows(InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(context, Stream.of(RouteAndAliasWithSamePath.class)));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(), Route.class));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(), RouteAlias.class));
         Assert.assertTrue(exception.getMessage().contains("same path"));
         Assert.assertTrue(exception.getMessage().contains("foo"));
     }
 
     @Test
     public void validateRouteClasses_samePathForRepeatableAlias_throws() {
-        InvalidRouteConfigurationException exception = Assert.assertThrows(
-                InvalidRouteConfigurationException.class,
-                () -> initializer.validateRouteClasses(context,
-                        Stream.of(AliasesWithSamePath.class)));
-        Assert.assertFalse(containsQuotedAnnotationName(exception.getMessage(),
-                Route.class));
-        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
-                RouteAlias.class));
+        InvalidRouteConfigurationException exception = Assert.assertThrows(InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(context, Stream.of(AliasesWithSamePath.class)));
+        Assert.assertFalse(containsQuotedAnnotationName(exception.getMessage(), Route.class));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(), RouteAlias.class));
         Assert.assertTrue(exception.getMessage().contains("same paths"));
         Assert.assertTrue(exception.getMessage().contains("bar"));
         Assert.assertTrue(exception.getMessage().contains("baz"));
@@ -156,55 +140,43 @@ public class AbstractRouteRegistryInitializerTest {
 
     @Test
     public void validateRouteClasses_samePathForRouteAndAlias_sameLayoutPrefix_throws() {
-        InvalidRouteConfigurationException exception = Assert.assertThrows(
-                InvalidRouteConfigurationException.class,
-                () -> initializer.validateRouteClasses(context, Stream
-                        .of(RouteAndAliasWithSamePathSameLayoutPrefix.class)));
-        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
-                Route.class));
-        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
-                RouteAlias.class));
+        InvalidRouteConfigurationException exception = Assert.assertThrows(InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(context,
+                        Stream.of(RouteAndAliasWithSamePathSameLayoutPrefix.class)));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(), Route.class));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(), RouteAlias.class));
         Assert.assertTrue(exception.getMessage().contains("same path"));
         Assert.assertTrue(exception.getMessage().contains("foo"));
     }
 
     @Test
     public void validateRouteClasses_samePathForRouteAndAlias_sameNestedLayoutPrefix_throws() {
-        InvalidRouteConfigurationException exception = Assert.assertThrows(
-                InvalidRouteConfigurationException.class,
-                () -> initializer.validateRouteClasses(context, Stream.of(
-                        RouteAndAliasWithSamePathSameNestedLayoutPrefix.class)));
-        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
-                Route.class));
-        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
-                RouteAlias.class));
+        InvalidRouteConfigurationException exception = Assert.assertThrows(InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(context,
+                        Stream.of(RouteAndAliasWithSamePathSameNestedLayoutPrefix.class)));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(), Route.class));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(), RouteAlias.class));
         Assert.assertTrue(exception.getMessage().contains("same path"));
         Assert.assertTrue(exception.getMessage().contains("foo"));
     }
 
     @Test
     public void validateRouteClasses_samePathForRouteAndAlias_differentLayoutPrefix_doNotThrow() {
-        Set<Class<? extends Component>> classes = initializer
-                .validateRouteClasses(context, Stream.of(
-                        RouteAndAliasWithSamePathDifferentLayoutPrefix.class));
+        Set<Class<? extends Component>> classes = initializer.validateRouteClasses(context,
+                Stream.of(RouteAndAliasWithSamePathDifferentLayoutPrefix.class));
         Assert.assertEquals(1, classes.size());
-        Assert.assertEquals(
-                RouteAndAliasWithSamePathDifferentLayoutPrefix.class,
-                classes.iterator().next());
+        Assert.assertEquals(RouteAndAliasWithSamePathDifferentLayoutPrefix.class, classes.iterator().next());
     }
 
     @Test
     public void routeAndParentLayout_routerLayout_returnsValidatedClass() {
-        Set<Class<? extends Component>> classes = initializer
-                .validateRouteClasses(context,
-                        Stream.of(RouteAndParentRouterLayout.class));
+        Set<Class<? extends Component>> classes = initializer.validateRouteClasses(context,
+                Stream.of(RouteAndParentRouterLayout.class));
         Assert.assertEquals(1, classes.size());
-        Assert.assertEquals(RouteAndParentRouterLayout.class,
-                classes.iterator().next());
+        Assert.assertEquals(RouteAndParentRouterLayout.class, classes.iterator().next());
     }
 
-    private static boolean containsQuotedAnnotationName(String message,
-            Class<?> clazz) {
+    private static boolean containsQuotedAnnotationName(String message, Class<?> clazz) {
         return message.contains("'@" + clazz.getSimpleName() + "'");
     }
 }

@@ -24,10 +24,9 @@ public class PushErrorHandlingView extends Div {
             add(div);
         });
 
-        final NativeButton button = new NativeButton("Click for NPE!",
-                event -> {
-                    ((String) null).length(); // Null-pointer exception
-                });
+        final NativeButton button = new NativeButton("Click for NPE!", event -> {
+            ((String) null).length(); // Null-pointer exception
+        });
         button.setId("npeButton");
         add(button);
 

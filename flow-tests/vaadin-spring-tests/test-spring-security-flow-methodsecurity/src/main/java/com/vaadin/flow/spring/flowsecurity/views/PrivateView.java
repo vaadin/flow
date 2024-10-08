@@ -38,8 +38,7 @@ public class PrivateView extends VerticalLayout {
     private DelegatingSecurityContextExecutor executor;
     private Registration registration;
 
-    public PrivateView(BankService bankService, SecurityUtils utils,
-            Executor executor) {
+    public PrivateView(BankService bankService, SecurityUtils utils, Executor executor) {
         this.bankService = bankService;
         this.utils = utils;
         this.executor = new DelegatingSecurityContextExecutor(executor);
@@ -48,18 +47,15 @@ public class PrivateView extends VerticalLayout {
         balanceSpan.setId("balanceText");
         add(balanceSpan);
 
-        Button applyForLoan = new Button("Apply for a loan",
-                this::applyForLoan);
+        Button applyForLoan = new Button("Apply for a loan", this::applyForLoan);
         applyForLoan.setId("applyForLoan");
         add(applyForLoan);
 
-        Button applyForHugeLoan = new Button("Apply for a huge loan",
-                this::applyForHugeLoanUsingExecutor);
+        Button applyForHugeLoan = new Button("Apply for a huge loan", this::applyForHugeLoanUsingExecutor);
         applyForHugeLoan.setId("applyForHugeLoan");
         add(applyForHugeLoan);
 
-        Button globalRefresh = new Button("Send global refresh event",
-                e -> Broadcaster.sendMessage());
+        Button globalRefresh = new Button("Send global refresh event", e -> Broadcaster.sendMessage());
         globalRefresh.setId("sendRefresh");
         add(globalRefresh);
 
@@ -69,12 +65,12 @@ public class PrivateView extends VerticalLayout {
             return imageStream;
         });
         upload.addSucceededListener(e -> {
-            Paragraph p = new Paragraph("Loan application uploaded by "
-                    + utils.getAuthenticatedUserInfo().getFullName());
+            Paragraph p = new Paragraph(
+                    "Loan application uploaded by " + utils.getAuthenticatedUserInfo().getFullName());
             p.setId("uploadText");
             add(p);
-            Image image = new Image(new StreamResource("image.png",
-                    () -> new ByteArrayInputStream(imageStream.toByteArray())),
+            Image image = new Image(
+                    new StreamResource("image.png", () -> new ByteArrayInputStream(imageStream.toByteArray())),
                     "image");
             image.setId("uploadImage");
             add(image);
@@ -102,8 +98,7 @@ public class PrivateView extends VerticalLayout {
     private void updateBalanceText() {
         String name = utils.getAuthenticatedUserInfo().getFullName();
         BigDecimal balance = bankService.getBalance();
-        this.balanceSpan.setText(String.format(
-                "Hello %s, your bank account balance is $%s.", name, balance));
+        this.balanceSpan.setText(String.format("Hello %s, your bank account balance is $%s.", name, balance));
     }
 
     private void applyForLoan(ClickEvent<Button> e) {

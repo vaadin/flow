@@ -24,14 +24,13 @@ import com.vaadin.flow.component.ComponentTest.TestDiv;
 
 public class AbstractCompositeFieldTest {
 
-    private static class ReverseCaseField extends
-            AbstractCompositeField<AbstractSinglePropertyFieldTest.StringField, ReverseCaseField, String> {
+    private static class ReverseCaseField
+            extends AbstractCompositeField<AbstractSinglePropertyFieldTest.StringField, ReverseCaseField, String> {
         public ReverseCaseField() {
             super("");
 
             getContent().addValueChangeListener(event -> {
-                setModelValue(reverseCase(event.getValue()),
-                        event.isFromClient());
+                setModelValue(reverseCase(event.getValue()), event.isFromClient());
             });
         }
 
@@ -89,21 +88,17 @@ public class AbstractCompositeFieldTest {
         Assert.assertTrue(field.isEmpty());
     }
 
-    private static class MultipleFieldsField extends
-            AbstractCompositeField<TestDiv, MultipleFieldsField, String> {
+    private static class MultipleFieldsField extends AbstractCompositeField<TestDiv, MultipleFieldsField, String> {
         private StringField start = new StringField();
         private StringField rest = new StringField();
 
         public MultipleFieldsField() {
             super(null);
 
-            getContent().getElement().appendChild(start.getElement(),
-                    rest.getElement());
+            getContent().getElement().appendChild(start.getElement(), rest.getElement());
 
-            start.addValueChangeListener(
-                    event -> updateValue(event.isFromClient()));
-            rest.addValueChangeListener(
-                    event -> updateValue(event.isFromClient()));
+            start.addValueChangeListener(event -> updateValue(event.isFromClient()));
+            rest.addValueChangeListener(event -> updateValue(event.isFromClient()));
         }
 
         private void updateValue(boolean fromClient) {

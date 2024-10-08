@@ -23,8 +23,8 @@ import jsinterop.annotations.JsType;
 import com.vaadin.client.flow.collection.JsCollections.ForEachCallback;
 
 /**
- * Native JS Set interface with an alternative implementation for JRE usage. Use
- * {@link JsCollections#set()} to create an appropriate instance.
+ * Native JS Set interface with an alternative implementation for JRE usage. Use {@link JsCollections#set()} to create
+ * an appropriate instance.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -64,8 +64,7 @@ public class JsSet<V> {
      *
      * @param value
      *            the value to remove
-     * @return {@code true} if the map contained the value prior to calling this
-     *         method; {@code false} otherwise
+     * @return {@code true} if the map contained the value prior to calling this method; {@code false} otherwise
      */
     public native boolean delete(V value);
 

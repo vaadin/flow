@@ -24,8 +24,7 @@ import com.vaadin.flow.router.Route;
 public class ViewWithHomeButton extends Div {
     public ViewWithHomeButton() {
         setId("viewWithHomeButton");
-        NativeButton homeButton = new NativeButton("Go home",
-                e -> UI.getCurrent().navigate(""));
+        NativeButton homeButton = new NativeButton("Go home", e -> UI.getCurrent().navigate(""));
         homeButton.setId("homeButton");
         add(homeButton);
     }

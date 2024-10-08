@@ -31,20 +31,17 @@ public class PushRouteNotFoundIT extends ChromeBrowserTest {
     public void renderRouteNotFoundErrorPage_pushIsSpecifiedViaParentLayout() {
         open();
 
-        TestBenchElement push = $(TestBenchElement.class).id("push-layout")
-                .$(TestBenchElement.class).id("push-mode");
+        TestBenchElement push = $(TestBenchElement.class).id("push-layout").$(TestBenchElement.class).id("push-mode");
         Assert.assertEquals("Push mode: AUTOMATIC", push.getText());
     }
 
     @Test
     public void renderRouteNotFoundErrorPage_parentLayoutReroute_reroutingIsDone() {
-        String url = getTestURL(getRootURL(),
-                doGetTestPath(PushLayout.FORWARD_PATH), new String[0]);
+        String url = getTestURL(getRootURL(), doGetTestPath(PushLayout.FORWARD_PATH), new String[0]);
 
         getDriver().get(url);
         waitForDevServer();
-        waitUntil(driver -> driver.getCurrentUrl()
-                .endsWith(ForwardPage.class.getName()));
+        waitUntil(driver -> driver.getCurrentUrl().endsWith(ForwardPage.class.getName()));
 
         Assert.assertTrue(isElementPresent(By.id("forwarded")));
     }

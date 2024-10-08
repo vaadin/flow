@@ -32,8 +32,7 @@ import elemental.client.Browser;
 import elemental.json.JsonObject;
 
 /**
- * Provides a connection to the UIDL request handler on the server and knows how
- * to send messages to that end point.
+ * Provides a connection to the UIDL request handler on the server and knows how to send messages to that end point.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -41,11 +40,9 @@ import elemental.json.JsonObject;
 public class XhrConnection {
 
     /**
-     * Webkit will ignore outgoing requests while waiting for a response to a
-     * navigation event (indicated by a beforeunload event). When this happens,
-     * we should keep trying to send the request every now and then until there
-     * is a response or until it throws an exception saying that it is already
-     * being sent.
+     * Webkit will ignore outgoing requests while waiting for a response to a navigation event (indicated by a
+     * beforeunload event). When this happens, we should keep trying to send the request every now and then until there
+     * is a response or until it throws an exception saying that it is already being sent.
      */
     private boolean webkitMaybeIgnoringRequests = false;
 
@@ -59,13 +56,11 @@ public class XhrConnection {
      */
     public XhrConnection(Registry registry) {
         this.registry = registry;
-        Browser.getWindow().addEventListener("beforeunload",
-                event -> webkitMaybeIgnoringRequests = true, false);
+        Browser.getWindow().addEventListener("beforeunload", event -> webkitMaybeIgnoringRequests = true, false);
 
-        registry.getRequestResponseTracker()
-                .addResponseHandlingEndedHandler(event -> {
-                    webkitMaybeIgnoringRequests = false;
-                });
+        registry.getRequestResponseTracker().addResponseHandlingEndedHandler(event -> {
+            webkitMaybeIgnoringRequests = false;
+        });
     }
 
     protected XhrResponseHandler createResponseHandler() {
@@ -73,9 +68,8 @@ public class XhrConnection {
     }
 
     /**
-     * Handles the response from the server by forwarding the received message
-     * to {@link MessageHandler} or failures to the appropriate method in
-     * {@link ConnectionStateHandler}.
+     * Handles the response from the server by forwarding the received message to {@link MessageHandler} or failures to
+     * the appropriate method in {@link ConnectionStateHandler}.
      *
      */
     public class XhrResponseHandler implements Xhr.Callback {
@@ -98,13 +92,11 @@ public class XhrConnection {
 
         @Override
         public void onFail(XMLHttpRequest xhr, Exception e) {
-            XhrConnectionError errorEvent = new XhrConnectionError(xhr, payload,
-                    e);
+            XhrConnectionError errorEvent = new XhrConnectionError(xhr, payload, e);
             if (e == null) {
                 // Response other than 200
 
-                registry.getConnectionStateHandler()
-                        .xhrInvalidStatusCode(errorEvent);
+                registry.getConnectionStateHandler().xhrInvalidStatusCode(errorEvent);
                 return;
             } else {
                 registry.getConnectionStateHandler().xhrException(errorEvent);
@@ -114,8 +106,7 @@ public class XhrConnection {
 
         @Override
         public void onSuccess(XMLHttpRequest xhr) {
-            Console.log("Server visit took "
-                    + Profiler.getRelativeTimeString(requestStartTime) + "ms");
+            Console.log("Server visit took " + Profiler.getRelativeTimeString(requestStartTime) + "ms");
 
             // for(;;);["+ realJson +"]"
             String responseText = xhr.getResponseText();
@@ -123,8 +114,7 @@ public class XhrConnection {
             ValueMap json = MessageHandler.parseWrappedJson(responseText);
             if (json == null) {
                 // Invalid string (not wrapped as expected or can't parse)
-                registry.getConnectionStateHandler().xhrInvalidContent(
-                        new XhrConnectionError(xhr, payload, null));
+                registry.getConnectionStateHandler().xhrInvalidContent(new XhrConnectionError(xhr, payload, null));
                 return;
             }
 
@@ -134,8 +124,7 @@ public class XhrConnection {
         }
 
         /**
-         * Sets the relative time (see {@link Profiler#getRelativeTimeMillis()})
-         * when the request was sent.
+         * Sets the relative time (see {@link Profiler#getRelativeTimeMillis()}) when the request was sent.
          *
          * @param requestStartTime
          *            the relative time when the request was sent
@@ -158,8 +147,7 @@ public class XhrConnection {
         responseHandler.setRequestStartTime(Profiler.getRelativeTimeMillis());
 
         String payloadJson = WidgetUtil.stringify(payload);
-        XMLHttpRequest xhr = Xhr.post(getUri(), payloadJson,
-                JsonConstants.JSON_CONTENT_TYPE, responseHandler);
+        XMLHttpRequest xhr = Xhr.post(getUri(), payloadJson, JsonConstants.JSON_CONTENT_TYPE, responseHandler);
 
         Console.log("Sending xhr message to server: " + payloadJson);
 
@@ -189,15 +177,10 @@ public class XhrConnection {
         // the variable in JS scope, breaking strict mode which is
         // needed for ES6 imports.
         // See https://github.com/vaadin/flow/pull/6227
-        return SharedUtil
-                .addGetParameter(
-                        SharedUtil.addGetParameter(
-                                registry.getApplicationConfiguration()
-                                        .getServiceUrl(),
-                                ApplicationConstants.REQUEST_TYPE_PARAMETER,
-                                ApplicationConstants.REQUEST_TYPE_UIDL),
-                        ApplicationConstants.UI_ID_PARAMETER,
-                        registry.getApplicationConfiguration().getUIId());
+        return SharedUtil.addGetParameter(
+                SharedUtil.addGetParameter(registry.getApplicationConfiguration().getServiceUrl(),
+                        ApplicationConstants.REQUEST_TYPE_PARAMETER, ApplicationConstants.REQUEST_TYPE_UIDL),
+                ApplicationConstants.UI_ID_PARAMETER, registry.getApplicationConfiguration().getUIId());
     }
 
     private static native boolean resendRequest(XMLHttpRequest xhr)

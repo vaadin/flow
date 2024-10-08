@@ -27,20 +27,16 @@ import java.util.regex.Pattern;
  *
  * @since
  */
-public class FrontendVersion
-        implements Serializable, Comparable<FrontendVersion> {
+public class FrontendVersion implements Serializable, Comparable<FrontendVersion> {
 
     /**
-     * Parses the buildIdentifier to String + Integer. For instance beta1
-     * returns 'beta' and '1'
+     * Parses the buildIdentifier to String + Integer. For instance beta1 returns 'beta' and '1'
      */
-    private final Pattern buildIdentifierParser = Pattern
-            .compile("(\\D*)(\\d*)");
+    private final Pattern buildIdentifierParser = Pattern.compile("(\\D*)(\\d*)");
 
     /**
-     * The version number of this release. For example "6.2.0". Always in the
-     * format "major.minor.revision[.build]". The build part is optional. All of
-     * major, minor, revision must be integers.
+     * The version number of this release. For example "6.2.0". Always in the format "major.minor.revision[.build]". The
+     * build part is optional. All of major, minor, revision must be integers.
      */
     private final String version;
 
@@ -60,8 +56,7 @@ public class FrontendVersion
     private final int revision;
 
     /**
-     * Build identifier. For example "nightly-20091123-c9963" in
-     * 6.2.0.nightly-20091123-c9963.
+     * Build identifier. For example "nightly-20091123-c9963" in 6.2.0.nightly-20091123-c9963.
      */
     private final String buildIdentifier;
 
@@ -116,8 +111,8 @@ public class FrontendVersion
     }
 
     /**
-     * Parse version numbers from version string with the format
-     * "major.minor.revision[.build]". The build part is optional.
+     * Parse version numbers from version string with the format "major.minor.revision[.build]". The build part is
+     * optional.
      * <p>
      * Versions are normalized and any caret or tildes will not be considered.
      *
@@ -129,22 +124,21 @@ public class FrontendVersion
     }
 
     /**
-     * Parse version numbers from version string with the format
-     * "major.minor.revision[.build]". The build part is optional.
+     * Parse version numbers from version string with the format "major.minor.revision[.build]". The build part is
+     * optional.
      * <p>
      * Versions are normalized and any caret or tildes will not be considered.
      *
      * @param name
-     *            the name of the artifact which version is to be parsed, used
-     *            in error message to help discover the issue
+     *            the name of the artifact which version is to be parsed, used in error message to help discover the
+     *            issue
      * @param version
      *            version string as "major.minor.revision[.build]"
      */
     public FrontendVersion(String name, String version) {
         Objects.requireNonNull(version);
         if (version.isEmpty()) {
-            throw new NumberFormatException(
-                    getInvalidVersionMessage(name, version));
+            throw new NumberFormatException(getInvalidVersionMessage(name, version));
         }
         if (!Character.isDigit(version.charAt(0))) {
             this.version = version.substring(1).trim();
@@ -156,15 +150,13 @@ public class FrontendVersion
         try {
             majorVersion = Integer.parseInt(digits[0]);
         } catch (NumberFormatException nfe) {
-            throw new NumberFormatException(
-                    getInvalidVersionMessage(name, version));
+            throw new NumberFormatException(getInvalidVersionMessage(name, version));
         }
         if (digits.length >= 2) {
             try {
                 minorVersion = Integer.parseInt(digits[1]);
             } catch (NumberFormatException nfe) {
-                throw new NumberFormatException(
-                        getInvalidVersionMessage(name, version));
+                throw new NumberFormatException(getInvalidVersionMessage(name, version));
             }
         } else {
             minorVersion = 0;
@@ -172,8 +164,7 @@ public class FrontendVersion
         int revisionNumber;
         String build = "";
         try {
-            revisionNumber = digits.length >= 3 ? Integer.parseInt(digits[2])
-                    : 0;
+            revisionNumber = digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
             if (digits.length == 4) {
                 build = digits[3];
             }
@@ -189,8 +180,7 @@ public class FrontendVersion
     }
 
     /**
-     * Gets the full version, in format {@literal x.y.z} or
-     * {@literal x.y.z.qualifier}.
+     * Gets the full version, in format {@literal x.y.z} or {@literal x.y.z.qualifier}.
      *
      * @return the full version number
      */
@@ -226,8 +216,7 @@ public class FrontendVersion
     }
 
     /**
-     * Gets the version qualifier, {@literal qualifier} in
-     * {@literal x.y.z.qualifier}.
+     * Gets the version qualifier, {@literal qualifier} in {@literal x.y.z.qualifier}.
      *
      * @return the version qualifier
      */
@@ -236,8 +225,7 @@ public class FrontendVersion
     }
 
     /**
-     * Check if this version is older than given version. Will return false if
-     * equals or is newer.
+     * Check if this version is older than given version. Will return false if equals or is newer.
      *
      * @param otherVersion
      *            version to check against
@@ -248,8 +236,7 @@ public class FrontendVersion
     }
 
     /**
-     * Check if this version is newer than given version. Will return false if
-     * equals or is older.
+     * Check if this version is newer than given version. Will return false if equals or is older.
      *
      * @param otherVersion
      *            version to check against
@@ -260,8 +247,7 @@ public class FrontendVersion
     }
 
     /**
-     * Check if this version is equal or newer than given version. Will return
-     * false if is older.
+     * Check if this version is equal or newer than given version. Will return false if is older.
      *
      * @param otherVersion
      *            version to check against
@@ -286,10 +272,8 @@ public class FrontendVersion
     public boolean equals(Object obj) {
         if (obj instanceof FrontendVersion) {
             FrontendVersion other = (FrontendVersion) obj;
-            return majorVersion == other.getMajorVersion()
-                    && minorVersion == other.getMinorVersion()
-                    && revision == other.getRevision()
-                    && buildIdentifier.equals(other.getBuildIdentifier());
+            return majorVersion == other.getMajorVersion() && minorVersion == other.getMinorVersion()
+                    && revision == other.getRevision() && buildIdentifier.equals(other.getBuildIdentifier());
 
         }
         return false;
@@ -297,20 +281,18 @@ public class FrontendVersion
 
     @Override
     public String toString() {
-        return "FrontendVersion [" + "majorVersion=" + majorVersion
-                + ", minorVersion=" + minorVersion + ", revision=" + revision
-                + ", buildIdentifier=" + buildIdentifier + "]";
+        return "FrontendVersion [" + "majorVersion=" + majorVersion + ", minorVersion=" + minorVersion + ", revision="
+                + revision + ", buildIdentifier=" + buildIdentifier + "]";
     }
 
     @Override
     public int hashCode() {
-        return (majorVersion + "." + minorVersion + "." + revision + "."
-                + buildIdentifier).hashCode();
+        return (majorVersion + "." + minorVersion + "." + revision + "." + buildIdentifier).hashCode();
     }
 
     /**
-     * Compare version numbers and return order as -1, 0 and 1. Where this
-     * version is older, equals, newer than given version.
+     * Compare version numbers and return order as -1, 0 and 1. Where this version is older, equals, newer than given
+     * version.
      *
      * @param other
      *            version to compare against this version
@@ -330,8 +312,7 @@ public class FrontendVersion
         if (this.buildIdentifier != other.buildIdentifier) {
             if (buildIdentifier.isEmpty() && !other.buildIdentifier.isEmpty()) {
                 return 1;
-            } else if (!buildIdentifier.isEmpty()
-                    && other.buildIdentifier.isEmpty()) {
+            } else if (!buildIdentifier.isEmpty() && other.buildIdentifier.isEmpty()) {
                 return -1;
             }
             return compareBuildIdentifier(other);
@@ -340,13 +321,10 @@ public class FrontendVersion
     }
 
     private int compareBuildIdentifier(FrontendVersion other) {
-        final Matcher thisMatcher = buildIdentifierParser
-                .matcher(buildIdentifier);
-        final Matcher otherMatcher = buildIdentifierParser
-                .matcher(other.buildIdentifier);
+        final Matcher thisMatcher = buildIdentifierParser.matcher(buildIdentifier);
+        final Matcher otherMatcher = buildIdentifierParser.matcher(other.buildIdentifier);
         if (thisMatcher.find() && otherMatcher.find()) {
-            if (thisMatcher.group(1)
-                    .compareToIgnoreCase(otherMatcher.group(1)) != 0) {
+            if (thisMatcher.group(1).compareToIgnoreCase(otherMatcher.group(1)) != 0) {
                 // If we do not have a text identifier assume newer
                 // If other doesn't have text identifier assume older
                 if (thisMatcher.group(1).isEmpty()) {
@@ -354,25 +332,20 @@ public class FrontendVersion
                 } else if (otherMatcher.group(1).isEmpty()) {
                     return -1;
                 }
-                return thisMatcher.group(1)
-                        .compareToIgnoreCase(otherMatcher.group(1));
+                return thisMatcher.group(1).compareToIgnoreCase(otherMatcher.group(1));
             }
             // if one or both are missing numeric value do not parse int
-            if (thisMatcher.group(2).isEmpty()
-                    || otherMatcher.group(2).isEmpty()) {
-                return buildIdentifier
-                        .compareToIgnoreCase(other.buildIdentifier);
+            if (thisMatcher.group(2).isEmpty() || otherMatcher.group(2).isEmpty()) {
+                return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
             }
-            return Integer.parseInt(thisMatcher.group(2))
-                    - Integer.parseInt(otherMatcher.group(2));
+            return Integer.parseInt(thisMatcher.group(2)) - Integer.parseInt(otherMatcher.group(2));
         }
         return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
     }
 
     private String getInvalidVersionMessage(String name, String version) {
         if (name != null) {
-            return String.format("'%s' is not a valid version for '%s'!",
-                    version, name);
+            return String.format("'%s' is not a valid version for '%s'!", version, name);
         } else {
             return String.format("'%s' is not a valid version!", version);
         }

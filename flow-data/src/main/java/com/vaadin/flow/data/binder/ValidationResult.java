@@ -20,12 +20,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Represents the result of a validation. A result may be either successful or
- * contain an error message in case of a failure.
+ * Represents the result of a validation. A result may be either successful or contain an error message in case of a
+ * failure.
  * <p>
- * ValidationResult instances are created using the factory methods
- * {@link #ok()} and {@link #error(String)}, denoting success and failure
- * respectively.
+ * ValidationResult instances are created using the factory methods {@link #ok()} and {@link #error(String)}, denoting
+ * success and failure respectively.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -46,8 +45,8 @@ public interface ValidationResult extends Serializable {
 
         SimpleValidationResult(String error, ErrorLevel errorLevel) {
             if (error != null && errorLevel == null) {
-                throw new IllegalStateException("ValidationResult has an "
-                        + "error message, but no ErrorLevel is provided.");
+                throw new IllegalStateException(
+                        "ValidationResult has an " + "error message, but no ErrorLevel is provided.");
             }
             this.error = error;
             this.errorLevel = errorLevel;
@@ -56,8 +55,7 @@ public interface ValidationResult extends Serializable {
         @Override
         public String getErrorMessage() {
             if (!getErrorLevel().isPresent()) {
-                throw new IllegalStateException("The result is not an error. "
-                        + "It cannot contain error message");
+                throw new IllegalStateException("The result is not an error. " + "It cannot contain error message");
             } else {
                 return error != null ? error : "";
             }
@@ -79,8 +77,7 @@ public interface ValidationResult extends Serializable {
                 return false;
             }
             SimpleValidationResult that = (SimpleValidationResult) obj;
-            return Objects.equals(that.error, error)
-                    && Objects.equals(that.errorLevel, errorLevel);
+            return Objects.equals(that.error, error) && Objects.equals(that.errorLevel, errorLevel);
         }
 
         @Override
@@ -93,8 +90,7 @@ public interface ValidationResult extends Serializable {
             if (error == null && errorLevel == null) {
                 return "ValidationResult{ok}";
             }
-            return "ValidationResult{" + "error='" + error + '\''
-                    + ", errorLevel=" + errorLevel + '}';
+            return "ValidationResult{" + "error='" + error + '\'' + ", errorLevel=" + errorLevel + '}';
         }
     }
 
@@ -110,17 +106,15 @@ public interface ValidationResult extends Serializable {
     String getErrorMessage();
 
     /**
-     * Returns optional error level for this validation result. Error level is
-     * not present for successful validation results.
+     * Returns optional error level for this validation result. Error level is not present for successful validation
+     * results.
      * <p>
-     * <strong>Note:</strong> By default {@link ErrorLevel#INFO} and
-     * {@link ErrorLevel#WARNING} are not considered to be blocking the
-     * validation and conversion chain.
+     * <strong>Note:</strong> By default {@link ErrorLevel#INFO} and {@link ErrorLevel#WARNING} are not considered to be
+     * blocking the validation and conversion chain.
      *
      * @see #isError()
      *
-     * @return optional error level; error level is present for validation
-     *         results that have not passed validation
+     * @return optional error level; error level is present for validation results that have not passed validation
      *
      */
     Optional<ErrorLevel> getErrorLevel();
@@ -128,16 +122,14 @@ public interface ValidationResult extends Serializable {
     /**
      * Checks if the result denotes an error.
      * <p>
-     * <strong>Note:</strong> By default {@link ErrorLevel#INFO} and
-     * {@link ErrorLevel#WARNING} are not considered to be errors.
+     * <strong>Note:</strong> By default {@link ErrorLevel#INFO} and {@link ErrorLevel#WARNING} are not considered to be
+     * errors.
      *
-     * @return <code>true</code> if the result denotes an error,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the result denotes an error, <code>false</code> otherwise
      */
     default boolean isError() {
         ErrorLevel errorLevel = getErrorLevel().orElse(null);
-        return errorLevel != null && errorLevel != ErrorLevel.INFO
-                && errorLevel != ErrorLevel.WARNING;
+        return errorLevel != null && errorLevel != ErrorLevel.INFO && errorLevel != ErrorLevel.WARNING;
     }
 
     /**
@@ -150,13 +142,11 @@ public interface ValidationResult extends Serializable {
     }
 
     /**
-     * Creates the validation result which represent an error with the given
-     * {@code errorMessage}.
+     * Creates the validation result which represent an error with the given {@code errorMessage}.
      *
      * @param errorMessage
      *            error message, not {@code null}
-     * @return validation result which represent an error with the given
-     *         {@code errorMessage}
+     * @return validation result which represent an error with the given {@code errorMessage}
      * @throws NullPointerException
      *             if {@code errorMessage} is null
      */
@@ -166,9 +156,8 @@ public interface ValidationResult extends Serializable {
     }
 
     /**
-     * Creates the validation result with the given {@code errorMessage} and
-     * {@code errorLevel}. Results with {@link ErrorLevel} of {@code INFO} or
-     * {@code WARNING} are not errors by default.
+     * Creates the validation result with the given {@code errorMessage} and {@code errorLevel}. Results with
+     * {@link ErrorLevel} of {@code INFO} or {@code WARNING} are not errors by default.
      *
      * @see #ok()
      * @see #error(String)
@@ -177,8 +166,7 @@ public interface ValidationResult extends Serializable {
      *            error message, not {@code null}
      * @param errorLevel
      *            error level, not {@code null}
-     * @return validation result with the given {@code errorMessage} and
-     *         {@code errorLevel}
+     * @return validation result with the given {@code errorMessage} and {@code errorLevel}
      * @throws NullPointerException
      *             if {@code errorMessage} or {@code errorLevel} is {@code null}
      *

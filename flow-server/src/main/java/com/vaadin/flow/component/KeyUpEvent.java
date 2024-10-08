@@ -32,9 +32,8 @@ public class KeyUpEvent extends KeyboardEvent {
      * @param source
      *            the component that fired the event
      * @param fromClient
-     *            <code>true</code> if the event was originally fired on the
-     *            client, <code>false</code> if the event originates from
-     *            server-side logic
+     *            <code>true</code> if the event was originally fired on the client, <code>false</code> if the event
+     *            originates from server-side logic
      * @param key
      *            the string value representing the key
      * @param code
@@ -42,36 +41,24 @@ public class KeyUpEvent extends KeyboardEvent {
      * @param location
      *            the integer value representing the location of the key
      * @param ctrlKey
-     *            <code>true</code> if the control key was down when the event
-     *            was fired, <code>false</code> otherwise
+     *            <code>true</code> if the control key was down when the event was fired, <code>false</code> otherwise
      * @param shiftKey
-     *            <code>true</code> if the shift key was down when the event was
-     *            fired, <code>false</code> otherwise
+     *            <code>true</code> if the shift key was down when the event was fired, <code>false</code> otherwise
      * @param altKey
-     *            <code>true</code> if the alt key was down when the event was
-     *            fired, <code>false</code> otherwise
+     *            <code>true</code> if the alt key was down when the event was fired, <code>false</code> otherwise
      * @param metaKey
-     *            <code>true</code> if the meta key was down when the event was
-     *            fired, <code>false</code> otherwise
+     *            <code>true</code> if the meta key was down when the event was fired, <code>false</code> otherwise
      * @param repeat
-     *            <code>true</code> if the key has been pressed in a sustained
-     *            manner
+     *            <code>true</code> if the key has been pressed in a sustained manner
      * @param composing
-     *            <code>true</code> if the key event occurred as part of a
-     *            composition session
+     *            <code>true</code> if the key event occurred as part of a composition session
      */
-    public KeyUpEvent(Component source, boolean fromClient,
-            @EventData("event.key") String key,
-            @EventData("event.code") String code,
-            @EventData("event.location") int location,
-            @EventData("event.ctrlKey") boolean ctrlKey,
-            @EventData("event.shiftKey") boolean shiftKey,
-            @EventData("event.altKey") boolean altKey,
-            @EventData("event.metaKey") boolean metaKey,
-            @EventData("event.repeat") boolean repeat,
-            @EventData("event.isComposing") boolean composing) {
-        super(source, fromClient, key, code, location, ctrlKey, shiftKey,
-                altKey, metaKey, repeat, composing);
+    public KeyUpEvent(Component source, boolean fromClient, @EventData("event.key") String key,
+            @EventData("event.code") String code, @EventData("event.location") int location,
+            @EventData("event.ctrlKey") boolean ctrlKey, @EventData("event.shiftKey") boolean shiftKey,
+            @EventData("event.altKey") boolean altKey, @EventData("event.metaKey") boolean metaKey,
+            @EventData("event.repeat") boolean repeat, @EventData("event.isComposing") boolean composing) {
+        super(source, fromClient, key, code, location, ctrlKey, shiftKey, altKey, metaKey, repeat, composing);
     }
 
     /**

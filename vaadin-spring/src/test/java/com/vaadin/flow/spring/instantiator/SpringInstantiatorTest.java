@@ -84,8 +84,7 @@ public class SpringInstantiatorTest {
     }
 
     @Component
-    public static class TestVaadinServiceInitListener
-            implements VaadinServiceInitListener {
+    public static class TestVaadinServiceInitListener implements VaadinServiceInitListener {
 
         @Override
         public void serviceInit(ServiceInitEvent event) {
@@ -113,94 +112,77 @@ public class SpringInstantiatorTest {
         }
 
         @Override
-        public String getTranslation(String key, Locale locale,
-                Object... params) {
+        public String getTranslation(String key, Locale locale, Object... params) {
             return null;
         }
 
     }
 
     @Test
-    public void createRouteTarget_pojo_instanceIsCreated()
-            throws ServletException {
+    public void createRouteTarget_pojo_instanceIsCreated() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
-        RouteTarget1 target1 = instantiator
-                .createRouteTarget(RouteTarget1.class, null);
+        RouteTarget1 target1 = instantiator.createRouteTarget(RouteTarget1.class, null);
         Assert.assertNotNull(target1);
     }
 
     @Test
-    public void getServiceInitListeners_springManagedBeanAndJavaSPI_bothClassesAreInStream()
-            throws ServletException {
+    public void getServiceInitListeners_springManagedBeanAndJavaSPI_bothClassesAreInStream() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
-        Set<?> set = instantiator.getServiceInitListeners()
-                .map(Object::getClass).collect(Collectors.toSet());
+        Set<?> set = instantiator.getServiceInitListeners().map(Object::getClass).collect(Collectors.toSet());
 
         Assert.assertTrue(set.contains(TestVaadinServiceInitListener.class));
         Assert.assertTrue(set.contains(JavaSPIVaadinServiceInitListener.class));
     }
 
     @Test
-    public void getServiceInitListeners_springEventListener()
-            throws ServletException {
+    public void getServiceInitListeners_springEventListener() throws ServletException {
         getInstantiator(context);
 
-        Assert.assertTrue(context
-                .getBean(ServiceInitListenerWithSpringEvent.class).called);
+        Assert.assertTrue(context.getBean(ServiceInitListenerWithSpringEvent.class).called);
     }
 
     @Test
-    public void createRouteTarget_springManagedBean_instanceIsCreated()
-            throws ServletException {
+    public void createRouteTarget_springManagedBean_instanceIsCreated() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
         RouteTarget2 singleton = context.getBean(RouteTarget2.class);
 
-        Assert.assertEquals(singleton,
-                instantiator.createRouteTarget(RouteTarget2.class, null));
+        Assert.assertEquals(singleton, instantiator.createRouteTarget(RouteTarget2.class, null));
     }
 
     @Test
-    public void getI18NProvider_i18nProviderIsABean_i18nProviderIsAvailable()
-            throws ServletException {
+    public void getI18NProvider_i18nProviderIsABean_i18nProviderIsAvailable() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
         Assert.assertNotNull(instantiator.getI18NProvider());
-        Assert.assertEquals(I18NTestProvider.class,
-                instantiator.getI18NProvider().getClass());
+        Assert.assertEquals(I18NTestProvider.class, instantiator.getI18NProvider().getClass());
     }
 
     @Test
-    public void createComponent_componentIsCreatedOnEveryCall()
-            throws ServletException {
+    public void createComponent_componentIsCreatedOnEveryCall() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
-        RouteTarget2 component = instantiator
-                .createComponent(RouteTarget2.class);
+        RouteTarget2 component = instantiator.createComponent(RouteTarget2.class);
         Assert.assertNotNull(component);
 
-        RouteTarget2 anotherComponent = instantiator
-                .createComponent(RouteTarget2.class);
+        RouteTarget2 anotherComponent = instantiator.createComponent(RouteTarget2.class);
         Assert.assertNotEquals(component, anotherComponent);
     }
 
-    public static VaadinService getService(ApplicationContext context,
-            Properties configProperties) throws ServletException {
+    public static VaadinService getService(ApplicationContext context, Properties configProperties)
+            throws ServletException {
         return getService(context, configProperties, false);
     }
 
-    public static VaadinService getService(ApplicationContext context,
-            Properties configProperties, boolean rootMapping)
+    public static VaadinService getService(ApplicationContext context, Properties configProperties, boolean rootMapping)
             throws ServletException {
         SpringServlet servlet = new SpringServlet(context, rootMapping) {
             @Override
-            protected DeploymentConfiguration createDeploymentConfiguration(
-                    Properties initParameters) {
+            protected DeploymentConfiguration createDeploymentConfiguration(Properties initParameters) {
                 if (configProperties != null) {
                     configProperties.putAll(initParameters);
-                    return super.createDeploymentConfiguration(
-                            configProperties);
+                    return super.createDeploymentConfiguration(configProperties);
                 }
                 return super.createDeploymentConfiguration(initParameters);
             }
@@ -209,59 +191,43 @@ public class SpringInstantiatorTest {
         ServletConfig config = Mockito.mock(ServletConfig.class);
         ServletContext servletContext = Mockito.mock(ServletContext.class);
 
-        Mockito.when(servletContext.getClassLoader())
-                .thenReturn(servlet.getClass().getClassLoader());
+        Mockito.when(servletContext.getClassLoader()).thenReturn(servlet.getClass().getClassLoader());
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(appConfig.getContext())
-                .thenReturn(new VaadinServletContext(servletContext));
-        Mockito.when(servletContext
-                .getAttribute(ApplicationConfiguration.class.getName()))
-                .thenReturn(appConfig);
+        ApplicationConfiguration appConfig = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
+        Mockito.when(appConfig.getContext()).thenReturn(new VaadinServletContext(servletContext));
+        Mockito.when(servletContext.getAttribute(ApplicationConfiguration.class.getName())).thenReturn(appConfig);
 
         Lookup lookup = Mockito.mock(Lookup.class);
         ResourceProvider provider = Mockito.mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
+        Mockito.when(lookup.lookup(ResourceProvider.class)).thenReturn(provider);
 
         StaticFileHandlerFactory staticFileHandlerFactory = vaadinService -> new StaticFileServer(
                 (VaadinServletService) vaadinService);
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
-                .thenReturn(staticFileHandlerFactory);
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class)).thenReturn(staticFileHandlerFactory);
 
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
-                .thenReturn(lookup);
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName())).thenReturn(lookup);
 
         Mockito.when(config.getServletContext()).thenReturn(servletContext);
 
-        Mockito.when(config.getInitParameterNames())
-                .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(config.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
 
-        Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
         servlet.init(config);
         return servlet.getService();
     }
 
-    public static Instantiator getInstantiator(ApplicationContext context)
-            throws ServletException {
+    public static Instantiator getInstantiator(ApplicationContext context) throws ServletException {
         Properties initParameters = new Properties();
         return getService(context, initParameters).getInstantiator();
     }
 
     @Test
     public void getOrCreateBean_noBeansGivenCannotInstantiate_throwsExceptionWithoutHint() {
-        ApplicationContext context = Mockito.mock(ApplicationContext.class,
-                Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(context.getBeanNamesForType(Number.class))
-                .thenReturn(new String[] {});
-        Mockito.when(context.getAutowireCapableBeanFactory()
-                .createBean(Number.class))
-                .thenThrow(new BeanInstantiationException(Number.class,
-                        "This is an abstract class"));
+        ApplicationContext context = Mockito.mock(ApplicationContext.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(context.getBeanNamesForType(Number.class)).thenReturn(new String[] {});
+        Mockito.when(context.getAutowireCapableBeanFactory().createBean(Number.class))
+                .thenThrow(new BeanInstantiationException(Number.class, "This is an abstract class"));
         SpringInstantiator instantiator = new SpringInstantiator(null, context);
 
         try {
@@ -276,14 +242,10 @@ public class SpringInstantiatorTest {
 
     @Test
     public void getOrCreateBean_multipleBeansGivenCannotInstantiate_throwsExceptionWithHint() {
-        ApplicationContext context = Mockito.mock(ApplicationContext.class,
-                Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(context.getBeanNamesForType(Number.class))
-                .thenReturn(new String[] { "one", "two" });
-        Mockito.when(context.getAutowireCapableBeanFactory()
-                .createBean(Number.class))
-                .thenThrow(new BeanInstantiationException(Number.class,
-                        "This is an abstract class"));
+        ApplicationContext context = Mockito.mock(ApplicationContext.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(context.getBeanNamesForType(Number.class)).thenReturn(new String[] { "one", "two" });
+        Mockito.when(context.getAutowireCapableBeanFactory().createBean(Number.class))
+                .thenThrow(new BeanInstantiationException(Number.class, "This is an abstract class"));
         SpringInstantiator instantiator = new SpringInstantiator(null, context);
 
         try {
@@ -299,8 +261,7 @@ public class SpringInstantiatorTest {
     @Test
     public void getOrCreateBean_oneBeanGiven_noException() {
         ApplicationContext context = Mockito.mock(ApplicationContext.class);
-        Mockito.when(context.getBeanNamesForType(Number.class))
-                .thenReturn(new String[] { "one" });
+        Mockito.when(context.getBeanNamesForType(Number.class)).thenReturn(new String[] { "one" });
         Mockito.when(context.getBean(Number.class)).thenReturn(0);
         SpringInstantiator instantiator = new SpringInstantiator(null, context);
 
@@ -311,12 +272,9 @@ public class SpringInstantiatorTest {
 
     @Test
     public void getOrCreateBean_multipleBeansGivenButCanInstantiate_noException() {
-        ApplicationContext context = Mockito.mock(ApplicationContext.class,
-                Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(context.getBeanNamesForType(String.class))
-                .thenReturn(new String[] { "one", "two" });
-        Mockito.when(context.getAutowireCapableBeanFactory()
-                .createBean(String.class)).thenReturn("string");
+        ApplicationContext context = Mockito.mock(ApplicationContext.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(context.getBeanNamesForType(String.class)).thenReturn(new String[] { "one", "two" });
+        Mockito.when(context.getAutowireCapableBeanFactory().createBean(String.class)).thenReturn("string");
         SpringInstantiator instantiator = new SpringInstantiator(null, context);
 
         String bean = instantiator.getOrCreate(String.class);
@@ -325,37 +283,28 @@ public class SpringInstantiatorTest {
     }
 
     @Test
-    public void getApplicationClass_regularClass_getsSameClass()
-            throws ServletException {
+    public void getApplicationClass_regularClass_getsSameClass() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
         RouteTarget1 instance = instantiator.getOrCreate(RouteTarget1.class);
-        Assert.assertSame(RouteTarget1.class,
-                instantiator.getApplicationClass(instance));
-        Assert.assertSame(RouteTarget1.class,
-                instantiator.getApplicationClass(instance.getClass()));
+        Assert.assertSame(RouteTarget1.class, instantiator.getApplicationClass(instance));
+        Assert.assertSame(RouteTarget1.class, instantiator.getApplicationClass(instance.getClass()));
     }
 
     @Test
-    public void getApplicationClass_scopedBean_getsApplicationClass()
-            throws ServletException {
+    public void getApplicationClass_scopedBean_getsApplicationClass() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
         RouteTarget2 instance = context.getBean(RouteTarget2.class);
-        Assert.assertSame(RouteTarget2.class,
-                instantiator.getApplicationClass(instance));
-        Assert.assertSame(RouteTarget2.class,
-                instantiator.getApplicationClass(instance.getClass()));
+        Assert.assertSame(RouteTarget2.class, instantiator.getApplicationClass(instance));
+        Assert.assertSame(RouteTarget2.class, instantiator.getApplicationClass(instance.getClass()));
     }
 
     @Test
-    public void getApplicationClass_proxiedBean_getsApplicationClass()
-            throws ServletException {
+    public void getApplicationClass_proxiedBean_getsApplicationClass() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
         TestConfiguration instance = context.getBean(TestConfiguration.class);
         Assert.assertNotSame(TestConfiguration.class, instance.getClass());
-        Assert.assertSame(TestConfiguration.class,
-                instantiator.getApplicationClass(instance));
-        Assert.assertSame(TestConfiguration.class,
-                instantiator.getApplicationClass(instance.getClass()));
+        Assert.assertSame(TestConfiguration.class, instantiator.getApplicationClass(instance));
+        Assert.assertSame(TestConfiguration.class, instantiator.getApplicationClass(instance.getClass()));
     }
 
 }

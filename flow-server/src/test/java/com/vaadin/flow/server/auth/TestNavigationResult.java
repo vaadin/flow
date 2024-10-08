@@ -28,8 +28,7 @@ class TestNavigationResult {
     public Map<String, Object> sessionAttributes;
 
     public Class<? extends Component> getReroutedTo() {
-        if (!event.hasRerouteTarget()
-                || event.getRerouteTarget() instanceof ErrorStateRenderer) {
+        if (!event.hasRerouteTarget() || event.getRerouteTarget() instanceof ErrorStateRenderer) {
             return null;
         }
         return event.getRerouteTargetType();
@@ -43,8 +42,7 @@ class TestNavigationResult {
     }
 
     public String getRerouteErrorMessage() {
-        if (!event.hasRerouteTarget()
-                || !(event.getRerouteTarget() instanceof ErrorStateRenderer)) {
+        if (!event.hasRerouteTarget() || !(event.getRerouteTarget() instanceof ErrorStateRenderer)) {
             return null;
         }
 
@@ -52,8 +50,7 @@ class TestNavigationResult {
     }
 
     public Class<? extends Exception> getRerouteError() {
-        if (!event.hasRerouteTarget()
-                || !(event.getRerouteTarget() instanceof ErrorStateRenderer)) {
+        if (!event.hasRerouteTarget() || !(event.getRerouteTarget() instanceof ErrorStateRenderer)) {
             return null;
         }
 
@@ -77,9 +74,8 @@ class TestNavigationResult {
     }
 
     public boolean wasTargetViewRendered() {
-        return getReroutedTo() == null && getForwardedTo() == null
-                && getRerouteError() == null && getRerouteURL() == null
-                && getExternalForwardUrl() == null;
+        return getReroutedTo() == null && getForwardedTo() == null && getRerouteError() == null
+                && getRerouteURL() == null && getExternalForwardUrl() == null;
     }
 
 }

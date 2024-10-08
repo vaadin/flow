@@ -34,15 +34,13 @@ public class InternalServerErrorTest {
 
     private VaadinService service = Mockito.mock(VaadinService.class);
 
-    private DeploymentConfiguration configuration = Mockito
-            .mock(DeploymentConfiguration.class);
+    private DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
 
     @Before
     public void setUp() {
         VaadinService.setCurrent(service);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         Location location = new Location("bar");
         Mockito.when(event.getLocation()).thenReturn(location);
@@ -59,11 +57,9 @@ public class InternalServerErrorTest {
 
         InternalServerError testInstance = new InternalServerError();
 
-        testInstance.setErrorParameter(event, new ErrorParameter<>(
-                Exception.class, new NullPointerException("foo")));
+        testInstance.setErrorParameter(event, new ErrorParameter<>(Exception.class, new NullPointerException("foo")));
 
-        Assert.assertEquals(
-                "Only a text node with exception message should be shown", 1,
+        Assert.assertEquals("Only a text node with exception message should be shown", 1,
                 testInstance.getElement().getChildCount());
     }
 
@@ -79,8 +75,7 @@ public class InternalServerErrorTest {
             }
         };
 
-        testInstance.setErrorParameter(event, new ErrorParameter<>(
-                Exception.class, new NullPointerException("foo")));
+        testInstance.setErrorParameter(event, new ErrorParameter<>(Exception.class, new NullPointerException("foo")));
 
         Assert.assertEquals(
                 "3 elements should be shown: exception text, warning about log binding absence and exception stacktrace",
@@ -92,8 +87,7 @@ public class InternalServerErrorTest {
 
         Element stacktrace = testInstance.getElement().getChild(2);
         Assert.assertEquals("pre", stacktrace.getTag());
-        Assert.assertTrue(stacktrace.getText()
-                .contains(NullPointerException.class.getName()));
+        Assert.assertTrue(stacktrace.getText().contains(NullPointerException.class.getName()));
         Assert.assertTrue(stacktrace.getText().contains("foo"));
     }
 
@@ -109,17 +103,14 @@ public class InternalServerErrorTest {
             }
         };
 
-        testInstance.setErrorParameter(event, new ErrorParameter<>(
-                Exception.class, new NullPointerException("foo")));
+        testInstance.setErrorParameter(event, new ErrorParameter<>(Exception.class, new NullPointerException("foo")));
 
-        Assert.assertEquals(
-                "2 elements should be shown: exception text and exception stacktrace",
-                2, testInstance.getElement().getChildCount());
+        Assert.assertEquals("2 elements should be shown: exception text and exception stacktrace", 2,
+                testInstance.getElement().getChildCount());
 
         Element stacktrace = testInstance.getElement().getChild(1);
         Assert.assertEquals("pre", stacktrace.getTag());
-        Assert.assertTrue(stacktrace.getText()
-                .contains(NullPointerException.class.getName()));
+        Assert.assertTrue(stacktrace.getText().contains(NullPointerException.class.getName()));
         Assert.assertTrue(stacktrace.getText().contains("foo"));
     }
 }

@@ -46,8 +46,7 @@ public class LongToBigDecimalConverterTest {
 
     @Test
     public void testConvertToPresentation() {
-        Long value = converter.convertToPresentation(BigDecimal.valueOf(42),
-                null);
+        Long value = converter.convertToPresentation(BigDecimal.valueOf(42), null);
         assertEquals(Long.valueOf(42), value);
     }
 
@@ -60,9 +59,8 @@ public class LongToBigDecimalConverterTest {
 
     @Test
     public void testConvertToPresentationWithLargeValue() {
-        Long value = converter
-                .convertToPresentation(BigDecimal.valueOf(2147483648L), null); // large
-                                                                               // value
+        Long value = converter.convertToPresentation(BigDecimal.valueOf(2147483648L), null); // large
+                                                                                             // value
         assertEquals(Long.valueOf(2147483648L), value);
     }
 }

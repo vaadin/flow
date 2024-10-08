@@ -45,8 +45,7 @@ public final class ExecuteJavaScriptElementUtils {
     }
 
     /**
-     * Calculate the data required for server side callback to attach existing
-     * element and send it to the server.
+     * Calculate the data required for server side callback to attach existing element and send it to the server.
      *
      * @param parent
      *            the parent node whose child is requested to attach
@@ -55,14 +54,12 @@ public final class ExecuteJavaScriptElementUtils {
      * @param tagName
      *            the tag name of the element requested to attach
      * @param id
-     *            the identifier of the server side node which is requested to
-     *            be a counterpart of the client side element
+     *            the identifier of the server side node which is requested to be a counterpart of the client side
+     *            element
      */
-    public static void attachExistingElement(StateNode parent,
-            Element previousSibling, String tagName, int id) {
+    public static void attachExistingElement(StateNode parent, Element previousSibling, String tagName, int id) {
         Element existingElement = null;
-        JsArray<Node> childNodes = DomApi.wrap(parent.getDomNode())
-                .getChildNodes();
+        JsArray<Node> childNodes = DomApi.wrap(parent.getDomNode()).getChildNodes();
         JsMap<Node, Integer> indices = new JsMap<>();
         boolean afterSibling = previousSibling == null;
         int elementIndex = -1;
@@ -81,8 +78,7 @@ public final class ExecuteJavaScriptElementUtils {
 
         if (existingElement == null) {
             // report an error
-            parent.getTree().sendExistingElementAttachToServer(parent, id, -1,
-                    tagName, -1);
+            parent.getTree().sendExistingElementAttachToServer(parent, id, -1, tagName, -1);
         } else {
             NodeList list = parent.getList(NodeFeatures.ELEMENT_CHILDREN);
             Integer existingId = null;
@@ -101,37 +97,31 @@ public final class ExecuteJavaScriptElementUtils {
                 }
             }
 
-            existingId = getExistingIdOrUpdate(parent, id, existingElement,
-                    existingId);
+            existingId = getExistingIdOrUpdate(parent, id, existingElement, existingId);
 
-            parent.getTree().sendExistingElementAttachToServer(parent, id,
-                    existingId, existingElement.getTagName(), childIndex);
+            parent.getTree().sendExistingElementAttachToServer(parent, id, existingId, existingElement.getTagName(),
+                    childIndex);
         }
     }
 
     private static boolean hasTag(Node node, String tag) {
-        return node instanceof Element
-                && tag.equalsIgnoreCase(((Element) node).getTagName());
+        return node instanceof Element && tag.equalsIgnoreCase(((Element) node).getTagName());
     }
 
     /**
-     * Populate model {@code properties}: add them into
-     * {@literal NodeFeatures.ELEMENT_PROPERTIES} {@link NodeMap} if they are
-     * not defined by the client-side element or send their client-side value to
-     * the server otherwise.
+     * Populate model {@code properties}: add them into {@literal NodeFeatures.ELEMENT_PROPERTIES} {@link NodeMap} if
+     * they are not defined by the client-side element or send their client-side value to the server otherwise.
      *
      * @param node
      *            the node whose properties should be populated
      * @param properties
      *            array of property names to populate
      */
-    public static void populateModelProperties(StateNode node,
-            JsArray<String> properties) {
+    public static void populateModelProperties(StateNode node, JsArray<String> properties) {
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
         if (node.getDomNode() == null) {
             PolymerUtils.invokeWhenDefined(PolymerUtils.getTag(node),
-                    () -> Reactive.addPostFlushListener(
-                            () -> populateModelProperties(node, properties)));
+                    () -> Reactive.addPostFlushListener(() -> populateModelProperties(node, properties)));
             return;
         }
         for (int i = 0; i < properties.length(); i++) {
@@ -139,51 +129,43 @@ public final class ExecuteJavaScriptElementUtils {
         }
     }
 
-    private static void populateModelProperty(StateNode node, NodeMap map,
-            String property) {
+    private static void populateModelProperty(StateNode node, NodeMap map, String property) {
         if (!isPropertyDefined(node.getDomNode(), property)) {
             if (!map.hasPropertyValue(property)) {
                 map.getProperty(property).setValue(null);
             }
         } else {
-            UpdatableModelProperties updatableProperties = node
-                    .getNodeData(UpdatableModelProperties.class);
-            if (updatableProperties == null
-                    || !updatableProperties.isUpdatableProperty(property)) {
+            UpdatableModelProperties updatableProperties = node.getNodeData(UpdatableModelProperties.class);
+            if (updatableProperties == null || !updatableProperties.isUpdatableProperty(property)) {
                 return;
             }
-            map.getProperty(property).syncToServer(
-                    WidgetUtil.getJsProperty(node.getDomNode(), property));
+            map.getProperty(property).syncToServer(WidgetUtil.getJsProperty(node.getDomNode(), property));
         }
     }
 
     /**
      * Register the updatable model properties of the {@code node}.
      * <p>
-     * Only updates for the properties from the {@code properties} array will be
-     * sent to the server without explicit synchronization. The
-     * {@code properties} array includes all properties that are allowed to be
-     * updated (including sub properties).
+     * Only updates for the properties from the {@code properties} array will be sent to the server without explicit
+     * synchronization. The {@code properties} array includes all properties that are allowed to be updated (including
+     * sub properties).
      *
      * @param node
      *            the node whose updatable properties should be registered
      * @param properties
      *            all updatable model properties
      */
-    public static void registerUpdatableModelProperties(StateNode node,
-            JsArray<String> properties) {
+    public static void registerUpdatableModelProperties(StateNode node, JsArray<String> properties) {
         if (!properties.isEmpty()) {
-            UpdatableModelProperties data = new UpdatableModelProperties(
-                    properties);
+            UpdatableModelProperties data = new UpdatableModelProperties(properties);
             node.setNodeData(data);
         }
     }
 
-    private static Integer getExistingIdOrUpdate(StateNode parent,
-            int serverSideId, Element existingElement, Integer existingId) {
+    private static Integer getExistingIdOrUpdate(StateNode parent, int serverSideId, Element existingElement,
+            Integer existingId) {
         if (existingId == null) {
-            ExistingElementMap map = parent.getTree().getRegistry()
-                    .getExistingElementMap();
+            ExistingElementMap map = parent.getTree().getRegistry().getExistingElementMap();
             Integer fromMap = map.getId(existingElement);
             if (fromMap == null) {
                 map.add(serverSideId, existingElement);

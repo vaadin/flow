@@ -44,8 +44,7 @@ import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 public class DevModeHandlerStopTest {
 
     private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(Config.class,
-                    SpringBootAutoConfiguration.class));
+            .withConfiguration(AutoConfigurations.of(Config.class, SpringBootAutoConfiguration.class));
 
     @Test
     void devModeStartupListener_contextDestroyAfterSpringContextClosed_shouldNotThrow() {
@@ -57,19 +56,13 @@ public class DevModeHandlerStopTest {
         AtomicReference<ServletContext> contextRef = new AtomicReference<>();
         AtomicReference<MockDevModeHandlerManager> handlerManagerRef = new AtomicReference<>();
         this.contextRunner.run((context) -> {
-            handlerManagerRef
-                    .set(context.getBean(MockDevModeHandlerManager.class));
+            handlerManagerRef.set(context.getBean(MockDevModeHandlerManager.class));
             ServletContext servletContext = context.getServletContext();
             contextRef.set(servletContext);
             new LookupServletContainerInitializer()
-                    .onStartup(
-                            Set.of(LookupInitializer.class,
-                                    SpringLookupInitializer.class),
-                            servletContext);
-            startupListenerAsContainerInitializer.onStartup(Set.of(),
-                    servletContext);
-            startupListenerAsContextListener.contextInitialized(
-                    new ServletContextEvent(servletContext));
+                    .onStartup(Set.of(LookupInitializer.class, SpringLookupInitializer.class), servletContext);
+            startupListenerAsContainerInitializer.onStartup(Set.of(), servletContext);
+            startupListenerAsContextListener.contextInitialized(new ServletContextEvent(servletContext));
         });
         Assertions.assertTrue(handlerManagerRef.get().initialized,
                 "Expecting DevModeHandlerManager initialization to be invoked, but it was not");
@@ -77,8 +70,7 @@ public class DevModeHandlerStopTest {
                 "Expecting DevModeHandler not yet to be yet stopped, but it was");
 
         // Stop the DevModeHandler after Spring Context has been closed
-        startupListenerAsContextListener
-                .contextDestroyed(new ServletContextEvent(contextRef.get()));
+        startupListenerAsContextListener.contextDestroyed(new ServletContextEvent(contextRef.get()));
         Assertions.assertTrue(handlerManagerRef.get().stopped,
                 "Expecting DevModeHandler to be stopped by DevModeHandlerManager, but it was not");
     }
@@ -100,8 +92,7 @@ public class DevModeHandlerStopTest {
         Assertions.assertTrue(watcherClosed.get());
     }
 
-    private static class MockDevModeHandlerManager
-            implements DevModeHandlerManager {
+    private static class MockDevModeHandlerManager implements DevModeHandlerManager {
 
         private boolean initialized;
         private boolean stopped;
@@ -112,8 +103,7 @@ public class DevModeHandlerStopTest {
         }
 
         @Override
-        public void initDevModeHandler(Set<Class<?>> classes,
-                VaadinContext context) {
+        public void initDevModeHandler(Set<Class<?>> classes, VaadinContext context) {
             initialized = true;
         }
 

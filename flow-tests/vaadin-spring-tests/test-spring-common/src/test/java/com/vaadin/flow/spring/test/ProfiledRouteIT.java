@@ -30,8 +30,7 @@ public class ProfiledRouteIT extends AbstractSpringTest {
     public void profiledRouteIsEnabled() {
         open();
 
-        Assert.assertTrue(
-                "Couldn't find a navigation target with enabled profile",
+        Assert.assertTrue("Couldn't find a navigation target with enabled profile",
                 isElementPresent(By.id("profiled-enabled")));
     }
 }

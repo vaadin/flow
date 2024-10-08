@@ -22,9 +22,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 
 /**
- * This testing is using a mock of browser html5 dnd support just for fun
- * because the headless chrome doesn't support html5 dnd:
- * https://bugs.chromium.org/p/chromedriver/issues/detail?id=2695
+ * This testing is using a mock of browser html5 dnd support just for fun because the headless chrome doesn't support
+ * html5 dnd: https://bugs.chromium.org/p/chromedriver/issues/detail?id=2695
  */
 public class DnDIT extends ChromeBrowserTest {
 
@@ -69,8 +68,7 @@ public class DnDIT extends ChromeBrowserTest {
 
         TestBenchElement boxElement = getBoxElement("COPY");
         clickElementWithJs("button-disable-enable-drag-sources");
-        Assert.assertTrue("Invalid enabled state found in drag source",
-                boxElement.hasAttribute("disabled"));
+        Assert.assertTrue("Invalid enabled state found in drag source", boxElement.hasAttribute("disabled"));
         clearEvents();
         drag(boxElement);
         Assert.assertFalse(boxElement.hasClassName("v-dragged"));
@@ -83,8 +81,7 @@ public class DnDIT extends ChromeBrowserTest {
         TestBenchElement boxElement = getBoxElement("COPY");
         TestBenchElement targetElement = getLaneElement("COPY");
         clickElementWithJs("button-disable-enable-drop-targets");
-        Assert.assertTrue("Invalid enabled state found in drop target",
-                targetElement.hasAttribute("disabled"));
+        Assert.assertTrue("Invalid enabled state found in drop target", targetElement.hasAttribute("disabled"));
         dragElementOver(boxElement, targetElement);
         Assert.assertFalse(targetElement.hasClassName("v-drag-over-target"));
     }
@@ -124,10 +121,8 @@ public class DnDIT extends ChromeBrowserTest {
         clearEvents();
         dragAndDrop(boxElement, laneElement);
         waitForElementPresent(By.id("event-3"));
-        Assert.assertEquals("Invalid event order", "1: Start: COPY",
-                getEventlog(1).getText());
-        Assert.assertEquals("Invalid event order", "2: Drop: COPY COPY",
-                getEventlog(2).getText());
+        Assert.assertEquals("Invalid event order", "1: Start: COPY", getEventlog(1).getText());
+        Assert.assertEquals("Invalid event order", "2: Drop: COPY COPY", getEventlog(2).getText());
     }
 
     @Test
@@ -169,10 +164,8 @@ public class DnDIT extends ChromeBrowserTest {
         clearEvents();
         dragAndDrop(boxElement, laneElement);
         waitForElementPresent(By.id("event-3"));
-        Assert.assertEquals("Invalid event order", "1: Start: COPY",
-                getEventlog(1).getText());
-        Assert.assertEquals("Invalid event order", "2: Drop: COPY COPY",
-                getEventlog(2).getText());
+        Assert.assertEquals("Invalid event order", "1: Start: COPY", getEventlog(1).getText());
+        Assert.assertEquals("Invalid event order", "2: Drop: COPY COPY", getEventlog(2).getText());
     }
 
     @Test
@@ -202,8 +195,7 @@ public class DnDIT extends ChromeBrowserTest {
 
         clickElementWithJs("button-add-drag-source-with-drag-image");
 
-        TestBenchElement boxElement = $(TestBenchElement.class)
-                .id("drag-source-with-image");
+        TestBenchElement boxElement = $(TestBenchElement.class).id("drag-source-with-image");
         clearEvents();
         drag(boxElement);
 
@@ -213,8 +205,7 @@ public class DnDIT extends ChromeBrowserTest {
         Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
     }
 
-    private void dragBoxToLanes(TestBenchElement boxElement,
-            TestBenchElement laneElement, boolean dropShouldOccur) {
+    private void dragBoxToLanes(TestBenchElement boxElement, TestBenchElement laneElement, boolean dropShouldOccur) {
         clearEvents();
 
         dragAndDrop(boxElement, laneElement);
@@ -233,41 +224,32 @@ public class DnDIT extends ChromeBrowserTest {
 
     private void verifyStartEvent(int i, TestBenchElement boxElement) {
         TestBenchElement eventlog = getEventlog(i);
-        String expected = new StringBuilder().append(i).append(": Start: ")
-                .append(boxElement.getText()).toString();
-        Assert.assertEquals("Invalid start event details", expected,
-                eventlog.getText());
+        String expected = new StringBuilder().append(i).append(": Start: ").append(boxElement.getText()).toString();
+        Assert.assertEquals("Invalid start event details", expected, eventlog.getText());
     }
 
-    private void verifyEndEvent(int i, TestBenchElement boxElement,
-            TestBenchElement laneElement) {
+    private void verifyEndEvent(int i, TestBenchElement boxElement, TestBenchElement laneElement) {
         TestBenchElement eventlog = getEventlog(i);
 
         // dnd-simulation must hardcode replace a working drop effect when
         // nothing set. in reality, browser determines it based on effect
         // allowed, copy is the default if both are missing (Chrome)
-        String dropEffect = laneElement == null ? "NONE"
-                : laneElement.getText();
+        String dropEffect = laneElement == null ? "NONE" : laneElement.getText();
 
-        String expected = new StringBuilder().append(i).append(": End: ")
-                .append(boxElement.getText()).append(" ").append(dropEffect)
-                .toString();
-        Assert.assertEquals("Invalid end event details", expected,
-                eventlog.getText());
+        String expected = new StringBuilder().append(i).append(": End: ").append(boxElement.getText()).append(" ")
+                .append(dropEffect).toString();
+        Assert.assertEquals("Invalid end event details", expected, eventlog.getText());
     }
 
-    private void verifyDropEvent(int i, TestBenchElement boxElement,
-            TestBenchElement laneElement) {
+    private void verifyDropEvent(int i, TestBenchElement boxElement, TestBenchElement laneElement) {
         TestBenchElement eventlog = getEventlog(i);
 
         String effectAllowed = boxElement.getText();
         String dropEffect = laneElement.getText();
 
-        String expected = new StringBuilder().append(i).append(": Drop: ")
-                .append(effectAllowed).append(" ").append(dropEffect)
-                .toString();
-        Assert.assertEquals("Invalid drop event details", expected,
-                eventlog.getText());
+        String expected = new StringBuilder().append(i).append(": Drop: ").append(effectAllowed).append(" ")
+                .append(dropEffect).toString();
+        Assert.assertEquals("Invalid drop event details", expected, eventlog.getText());
     }
 
     private TestBenchElement getEventlog(int i) {
@@ -286,8 +268,7 @@ public class DnDIT extends ChromeBrowserTest {
         return $(TestBenchElement.class).id("box-" + effectAllowed);
     }
 
-    private void checkDragOverClassName(TestBenchElement dragged,
-            TestBenchElement target) {
+    private void checkDragOverClassName(TestBenchElement dragged, TestBenchElement target) {
         dragElementOver(dragged, target);
         Assert.assertTrue(target.hasClassName("v-drag-over-target"));
     }

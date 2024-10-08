@@ -25,8 +25,7 @@ import java.util.function.Consumer;
 public interface PluginAdapterBuild extends PluginAdapterBase {
 
     /**
-     * Defines the project frontend directory from where resources should be
-     * copied from for use with webpack.
+     * Defines the project frontend directory from where resources should be copied from for use with webpack.
      *
      * @return {@link File}
      */
@@ -42,8 +41,7 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
     boolean generateBundle();
 
     /**
-     * Whether to generate embeddable web components from WebComponentExporter
-     * inheritors.
+     * Whether to generate embeddable web components from WebComponentExporter inheritors.
      *
      * @return boolean
      */
@@ -51,8 +49,7 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
     boolean generateEmbeddableWebComponents();
 
     /**
-     * Whether to use byte code scanner strategy to discover frontend
-     * components.
+     * Whether to use byte code scanner strategy to discover frontend components.
      *
      * @return boolean
      */
@@ -66,11 +63,9 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
     boolean runNpmInstall();
 
     /**
-     * Setting this to true will run {@code npm ci} instead of
-     * {@code npm install} when using npm.
+     * Setting this to true will run {@code npm ci} instead of {@code npm install} when using npm.
      *
-     * If using pnpm or bun, the installation will be run with
-     * {@code --frozen-lockfile} parameter.
+     * If using pnpm or bun, the installation will be run with {@code --frozen-lockfile} parameter.
      *
      * This makes sure that the package lock file will not be overwritten.
      *
@@ -79,41 +74,35 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
     boolean ciBuild();
 
     /**
-     * Setting this to {@code true} will force a build of the production build
-     * even if there is a default production bundle that could be used.
+     * Setting this to {@code true} will force a build of the production build even if there is a default production
+     * bundle that could be used.
      *
-     * Created production bundle optimization is defined by
-     * {@link #optimizeBundle} parameter.
+     * Created production bundle optimization is defined by {@link #optimizeBundle} parameter.
      */
     boolean forceProductionBuild();
 
     /**
-     * Setting this to {@code false} will skip compression of the bundle.
-     * {@code true} by default.
+     * Setting this to {@code false} will skip compression of the bundle. {@code true} by default.
      *
      * @return {@code true} if the bundle should be compressed
      */
     boolean compressBundle();
 
     /**
-     * Checks if the artifact defined by given coordinates is a dependency of
-     * the project, present at runtime.
+     * Checks if the artifact defined by given coordinates is a dependency of the project, present at runtime.
      * <p>
      * </p>
-     * If the dependency is missing or in invalid scope, the method produces a
-     * message containing the necessary instructions to fix the project and
-     * notifies the caller by invoking the provided message consumer, if
-     * present.
+     * If the dependency is missing or in invalid scope, the method produces a message containing the necessary
+     * instructions to fix the project and notifies the caller by invoking the provided message consumer, if present.
      *
      * @param groupId
      *            dependency groupId, not {@literal null}.
      * @param artifactId
      *            dependency artifactId, not {@literal null}.
      * @param missingDependencyMessageConsumer
-     *            a consumer for missing dependency message produced by the
-     *            adapter.
-     * @return {@literal true} if the given coordinates identify a project
-     *         dependency present at runtime, otherwise {@literal false}.
+     *            a consumer for missing dependency message produced by the adapter.
+     * @return {@literal true} if the given coordinates identify a project dependency present at runtime, otherwise
+     *         {@literal false}.
      */
     boolean checkRuntimeDependency(String groupId, String artifactId,
             Consumer<String> missingDependencyMessageConsumer);

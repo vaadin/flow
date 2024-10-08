@@ -33,8 +33,7 @@ public enum Direction {
     }
 
     /**
-     * Gets the value applied as the {@code dir} attribute in html for
-     * {@code document}.
+     * Gets the value applied as the {@code dir} attribute in html for {@code document}.
      *
      * @return the value applied as the "dir" attribute.
      */

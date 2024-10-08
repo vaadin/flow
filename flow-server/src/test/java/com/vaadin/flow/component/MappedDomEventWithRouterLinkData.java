@@ -18,14 +18,12 @@ package com.vaadin.flow.component;
 
 import com.vaadin.flow.router.RouterLink;
 
-public class MappedDomEventWithRouterLinkData
-        extends MappedDomEventWithComponentData {
+public class MappedDomEventWithRouterLinkData extends MappedDomEventWithComponentData {
 
     private final RouterLink routerLink;
 
-    public MappedDomEventWithRouterLinkData(Component source,
-            boolean fromClient, @EventData("component") Component component,
-            @EventData("router.link") RouterLink routerLink) {
+    public MappedDomEventWithRouterLinkData(Component source, boolean fromClient,
+            @EventData("component") Component component, @EventData("router.link") RouterLink routerLink) {
         super(source, fromClient, component);
         this.routerLink = routerLink;
     }

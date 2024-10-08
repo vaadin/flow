@@ -39,15 +39,13 @@ import org.slf4j.LoggerFactory;
  *
  * @since 2.0
  */
-public class TaskCopyLocalFrontendFiles
-        extends AbstractFileGeneratorFallibleCommand {
+public class TaskCopyLocalFrontendFiles extends AbstractFileGeneratorFallibleCommand {
 
     private final Options options;
 
     /**
-     * Copy project local frontend files from defined frontendResourcesDirectory
-     * (by default 'src/main/resources/META-INF/resources/frontend'). This
-     * enables running jar projects locally.
+     * Copy project local frontend files from defined frontendResourcesDirectory (by default
+     * 'src/main/resources/META-INF/resources/frontend'). This enables running jar projects locally.
      *
      */
     TaskCopyLocalFrontendFiles(Options options) {
@@ -55,8 +53,7 @@ public class TaskCopyLocalFrontendFiles
     }
 
     private static boolean shouldApplyWriteableFlag() {
-        return !Boolean.parseBoolean(System.getProperty(
-                "vaadin.frontend.disableWritableFlagCheckOnCopy", "false"));
+        return !Boolean.parseBoolean(System.getProperty("vaadin.frontend.disableWritableFlagCheckOnCopy", "false"));
     }
 
     @Override
@@ -65,14 +62,10 @@ public class TaskCopyLocalFrontendFiles
         File localResourcesFolder = options.getLocalResourcesFolder();
         createTargetFolder(target);
 
-        if (localResourcesFolder != null
-                && localResourcesFolder.isDirectory()) {
+        if (localResourcesFolder != null && localResourcesFolder.isDirectory()) {
             log().info("Copying project local frontend resources.");
-            Set<String> files = copyLocalResources(localResourcesFolder,
-                    target);
-            track(files.stream()
-                    .map(path -> target.toPath().resolve(path).toFile())
-                    .toList());
+            Set<String> files = copyLocalResources(localResourcesFolder, target);
+            track(files.stream().map(path -> target.toPath().resolve(path).toFile()).toList());
 
             log().info("Copying frontend directory completed.");
         } else {
@@ -81,46 +74,39 @@ public class TaskCopyLocalFrontendFiles
     }
 
     /**
-     * Copies the local resources from specified source directory to within the
-     * specified target directory ignoring the file exclusions defined as a
-     * relative paths to source directory.
+     * Copies the local resources from specified source directory to within the specified target directory ignoring the
+     * file exclusions defined as a relative paths to source directory.
      *
      * @param source
      *            directory to copy the files from
      * @param target
      *            directory to copy the files to
      * @param relativePathExclusions
-     *            files or directories that shouldn't be copied, relative to
-     *            source directory
+     *            files or directories that shouldn't be copied, relative to source directory
      * @return set of copied files
      */
-    static Set<String> copyLocalResources(File source, File target,
-            String... relativePathExclusions) {
+    static Set<String> copyLocalResources(File source, File target, String... relativePathExclusions) {
         if (!source.isDirectory() || !target.isDirectory()) {
             return Collections.emptySet();
         }
         try {
             long start = System.nanoTime();
-            Set<String> handledFiles = new HashSet<>(TaskCopyFrontendFiles
-                    .getFilesInDirectory(source, relativePathExclusions));
-            FileUtils.copyDirectory(source, target,
-                    withoutExclusions(source, relativePathExclusions));
+            Set<String> handledFiles = new HashSet<>(
+                    TaskCopyFrontendFiles.getFilesInDirectory(source, relativePathExclusions));
+            FileUtils.copyDirectory(source, target, withoutExclusions(source, relativePathExclusions));
             if (shouldApplyWriteableFlag()) {
-                try (Stream<Path> fileStream = Files
-                        .walk(Paths.get(target.getPath()))) {
+                try (Stream<Path> fileStream = Files.walk(Paths.get(target.getPath()))) {
                     // used with try-with-resources as defined in walk API note
-                    fileStream.filter(file -> !Files.isWritable(file)).forEach(
-                            filePath -> filePath.toFile().setWritable(true));
+                    fileStream.filter(file -> !Files.isWritable(file))
+                            .forEach(filePath -> filePath.toFile().setWritable(true));
                 }
             }
             long ms = (System.nanoTime() - start) / 1000000;
-            log().info("Copied {} local frontend files. Took {} ms.",
-                    handledFiles.size(), ms);
+            log().info("Copied {} local frontend files. Took {} ms.", handledFiles.size(), ms);
             return handledFiles;
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to copy project frontend resources from '%s' to '%s'",
-                    source, target), e);
+            throw new UncheckedIOException(
+                    String.format("Failed to copy project frontend resources from '%s' to '%s'", source, target), e);
         }
     }
 
@@ -128,14 +114,11 @@ public class TaskCopyLocalFrontendFiles
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(target));
         } catch (IOException e) {
-            throw new UncheckedIOException(
-                    String.format("Failed to create directory '%s'", target),
-                    e);
+            throw new UncheckedIOException(String.format("Failed to create directory '%s'", target), e);
         }
     }
 
-    static boolean keepFile(File source, String[] relativePathExclusions,
-            File fileToCheck) {
+    static boolean keepFile(File source, String[] relativePathExclusions, File fileToCheck) {
         for (String exclusion : relativePathExclusions) {
             File basePath = new File(source, exclusion);
             if (fileToCheck.getPath().startsWith(basePath.getPath())) {
@@ -145,8 +128,7 @@ public class TaskCopyLocalFrontendFiles
         return true;
     }
 
-    private static FileFilter withoutExclusions(File source,
-            String[] relativePathExclusions) {
+    private static FileFilter withoutExclusions(File source, String[] relativePathExclusions) {
         return file -> keepFile(source, relativePathExclusions, file);
     }
 

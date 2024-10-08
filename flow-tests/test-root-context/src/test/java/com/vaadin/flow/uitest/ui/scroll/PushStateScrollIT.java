@@ -43,12 +43,10 @@ public class PushStateScrollIT extends ChromeBrowserTest {
         int scrollBeforeClick = getScrollY();
 
         // Sanity check
-        Assert.assertNotEquals("Should be scrolled down before clicking", 0,
-                scrollBeforeClick);
+        Assert.assertNotEquals("Should be scrolled down before clicking", 0, scrollBeforeClick);
 
         button.click();
 
-        Assert.assertEquals("Scroll position should not have changed",
-                scrollBeforeClick, getScrollY());
+        Assert.assertEquals("Scroll position should not have changed", scrollBeforeClick, getScrollY());
     }
 }

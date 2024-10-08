@@ -33,32 +33,27 @@ public class RouterParallelIT extends AbstractParallelTestBenchTest {
 
     @Test
     public void a() {
-        Assert.assertTrue("No button was found on page",
-                isElementPresent(By.tagName(Tag.BUTTON)));
+        Assert.assertTrue("No button was found on page", isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
     @Test
     public void b() {
-        Assert.assertTrue("No button was found on page",
-                isElementPresent(By.tagName(Tag.BUTTON)));
+        Assert.assertTrue("No button was found on page", isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
     @Test
     public void c() {
-        Assert.assertTrue("No button was found on page",
-                isElementPresent(By.tagName(Tag.BUTTON)));
+        Assert.assertTrue("No button was found on page", isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
     @Test
     public void d() {
-        Assert.assertTrue("No button was found on page",
-                isElementPresent(By.tagName(Tag.BUTTON)));
+        Assert.assertTrue("No button was found on page", isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
     @Test
     public void e() {
-        Assert.assertTrue("No button was found on page",
-                isElementPresent(By.tagName(Tag.BUTTON)));
+        Assert.assertTrue("No button was found on page", isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
 }

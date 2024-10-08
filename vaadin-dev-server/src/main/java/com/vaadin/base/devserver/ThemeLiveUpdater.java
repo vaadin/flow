@@ -33,8 +33,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import elemental.json.JsonObject;
 
 /**
- * Watches the given theme folder for changes, combines the theme on changes and
- * pushes the new version to the browser.
+ * Watches the given theme folder for changes, combines the theme on changes and pushes the new version to the browser.
  *
  */
 public class ThemeLiveUpdater implements Closeable {
@@ -52,12 +51,9 @@ public class ThemeLiveUpdater implements Closeable {
     public ThemeLiveUpdater(File themeFolder, VaadinContext context) {
         String themeName = themeFolder.getName();
         File stylesCss = new File(themeFolder, "styles.css");
-        JsonObject themeJson = ThemeUtils
-                .getThemeJson(themeName, ApplicationConfiguration.get(context))
-                .orElse(null);
+        JsonObject themeJson = ThemeUtils.getThemeJson(themeName, ApplicationConfiguration.get(context)).orElse(null);
 
-        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
-                .getLiveReloadFromContext(context);
+        Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor.getLiveReloadFromContext(context);
         if (liveReload.isPresent()) {
             try {
                 watcher = new FileWatcher(file -> {
@@ -65,16 +61,10 @@ public class ThemeLiveUpdater implements Closeable {
                         try {
 
                             // All changes are merged into one style block
-                            liveReload.get()
-                                    .update(ThemeUtils.getThemeFilePath(
-                                            themeName, "styles.css"),
-                                            CssBundler.inlineImports(
-                                                    stylesCss.getParentFile(),
-                                                    stylesCss, themeJson));
+                            liveReload.get().update(ThemeUtils.getThemeFilePath(themeName, "styles.css"),
+                                    CssBundler.inlineImports(stylesCss.getParentFile(), stylesCss, themeJson));
                         } catch (IOException e) {
-                            getLogger().error(
-                                    "Unable to perform hot update of " + file,
-                                    e);
+                            getLogger().error("Unable to perform hot update of " + file, e);
                             liveReload.get().reload();
                         }
                     } else {
@@ -84,12 +74,10 @@ public class ThemeLiveUpdater implements Closeable {
                 watcher.start();
                 getLogger().debug("Watching {} for theme changes", themeFolder);
             } catch (IOException e) {
-                getLogger().error("Unable to watch {} for theme changes",
-                        themeFolder, e);
+                getLogger().error("Unable to watch {} for theme changes", themeFolder, e);
             }
         } else {
-            getLogger().error(
-                    "Browser live reload is not available. Unable to watch {} for theme changes",
+            getLogger().error("Browser live reload is not available. Unable to watch {} for theme changes",
                     themeFolder);
         }
     }

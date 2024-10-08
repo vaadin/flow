@@ -23,18 +23,14 @@ public class DevModeInitializerClassLoaderTest {
         // Get a list of all the URLs in the classPath
         List<URL> path = DevModeInitializerTestBase.getClasspathURLs();
         // Add a couple of locations with test resources
-        path.add(TestUtils.getTestJar("jar-with-frontend-resources.jar").toURI()
-                .toURL());
-        path.add(TestUtils.getTestFolder("dir-with-frontend-resources/").toURI()
-                .toURL());
+        path.add(TestUtils.getTestJar("jar-with-frontend-resources.jar").toURI().toURL());
+        path.add(TestUtils.getTestFolder("dir-with-frontend-resources/").toURI().toURL());
 
         // Create our custom classLoader
-        URLClassLoader customLoader = new URLClassLoader(
-                path.toArray(new URL[0]), null);
+        URLClassLoader customLoader = new URLClassLoader(path.toArray(new URL[0]), null);
 
         // Load the base class with the custom loader
-        Class<?> clz = customLoader
-                .loadClass(DevModeInitializerTestBase.class.getName());
+        Class<?> clz = customLoader.loadClass(DevModeInitializerTestBase.class.getName());
         Object initializer = clz.newInstance();
 
         // Since base class was created using a different classLoader,
@@ -54,22 +50,17 @@ public class DevModeInitializerClassLoaderTest {
 
         customLoader.close();
 
-        List<String> files = TestUtils.listFilesRecursively(Paths.get(baseDir,
-                FrontendUtils.DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED,
-                FrontendUtils.JAR_RESOURCES_FOLDER).toFile());
+        List<String> files = TestUtils.listFilesRecursively(Paths.get(baseDir, FrontendUtils.DEFAULT_FRONTEND_DIR,
+                FrontendUtils.GENERATED, FrontendUtils.JAR_RESOURCES_FOLDER).toFile());
         Assert.assertEquals(5, files.size());
 
-        Assert.assertTrue("A package.json file should be created",
-                files.contains("package.json"));
+        Assert.assertTrue("A package.json file should be created", files.contains("package.json"));
 
-        Assert.assertTrue("Js resource should have been copied from jar file",
-                files.contains("ExampleConnector.js"));
+        Assert.assertTrue("Js resource should have been copied from jar file", files.contains("ExampleConnector.js"));
 
-        Assert.assertTrue("Css resource should have been copied from jar file",
-                files.contains("inline.css"));
+        Assert.assertTrue("Css resource should have been copied from jar file", files.contains("inline.css"));
 
-        Assert.assertTrue(
-                "Js resource should have been copied from resource folder",
+        Assert.assertTrue("Js resource should have been copied from resource folder",
                 files.contains("resourceInFolder.js"));
     }
 

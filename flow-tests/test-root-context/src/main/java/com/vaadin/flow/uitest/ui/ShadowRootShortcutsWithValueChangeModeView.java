@@ -32,8 +32,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ShadowRootShortcutsWithValueChangeModeView", layout = ViewTestLayout.class)
-public class ShadowRootShortcutsWithValueChangeModeView extends Div
-        implements AfterNavigationObserver {
+public class ShadowRootShortcutsWithValueChangeModeView extends Div implements AfterNavigationObserver {
 
     private final Input input;
 
@@ -61,12 +60,9 @@ public class ShadowRootShortcutsWithValueChangeModeView extends Div
         input.setValueChangeTimeout(3000);
 
         // clickShortcutWorks
-        button.setText(
-                "Button triggered by CTRL + ALT + S and CTRL + ENTER (with reset focus)");
-        button.addClickShortcut(Key.KEY_S, KeyModifier.CONTROL,
-                KeyModifier.ALT);
-        button.addClickShortcut(Key.ENTER, KeyModifier.CONTROL)
-                .setResetFocusOnActiveElement(true);
+        button.setText("Button triggered by CTRL + ALT + S and CTRL + ENTER (with reset focus)");
+        button.addClickShortcut(Key.KEY_S, KeyModifier.CONTROL, KeyModifier.ALT);
+        button.addClickShortcut(Key.ENTER, KeyModifier.CONTROL).setResetFocusOnActiveElement(true);
         button.addClickListener(e -> value.setText(input.getValue()));
 
         shadowRoot.appendChild(shadowDiv);
@@ -76,8 +72,7 @@ public class ShadowRootShortcutsWithValueChangeModeView extends Div
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        String valueChangeMode = event.getLocation().getQueryParameters()
-                .getQueryString();
+        String valueChangeMode = event.getLocation().getQueryParameters().getQueryString();
         if (valueChangeMode != null && !valueChangeMode.isBlank()) {
             input.setValueChangeMode(ValueChangeMode.valueOf(valueChangeMode));
         }

@@ -29,8 +29,8 @@ import com.vaadin.flow.router.Route;
 @Route
 public class MissingDependenciesView extends Div {
     /**
-     * Class that has a frontend dependency annotation that won't be noticed
-     * because this class is only referenced using reflection.
+     * Class that has a frontend dependency annotation that won't be noticed because this class is only referenced using
+     * reflection.
      */
     @Tag("div")
     @JsModule("./my-component.js")
@@ -42,9 +42,8 @@ public class MissingDependenciesView extends Div {
 
     public MissingDependenciesView() {
         try {
-            Component unreferenced = (Component) Class.forName(
-                    "com.vaadin.flow.mixedtest.ui.MissingDependenciesView$Unreferenced")
-                    .newInstance();
+            Component unreferenced = (Component) Class
+                    .forName("com.vaadin.flow.mixedtest.ui.MissingDependenciesView$Unreferenced").newInstance();
 
             // Uncomment to test behavior when the component is referenced
             // new Unreferenced();
@@ -53,8 +52,7 @@ public class MissingDependenciesView extends Div {
         } catch (Exception e) {
             e.printStackTrace();
 
-            add(new Span("Could not create unreferenced component instance: "
-                    + e.getMessage()));
+            add(new Span("Could not create unreferenced component instance: " + e.getMessage()));
         }
     }
 }

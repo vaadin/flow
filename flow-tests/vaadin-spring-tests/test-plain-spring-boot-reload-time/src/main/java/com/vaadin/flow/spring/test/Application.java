@@ -35,8 +35,7 @@ public class Application {
 
     public static void triggerReload() {
         try {
-            String classFile = Application.class.getName().replace(".", "/")
-                    + ".class";
+            String classFile = Application.class.getName().replace(".", "/") + ".class";
             touch(new File("target/classes/" + classFile));
         } catch (IOException ioException) {
             throw new UncheckedIOException(ioException);

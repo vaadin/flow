@@ -38,8 +38,8 @@ import com.vaadin.flow.internal.change.NodeChange;
 /**
  * A state node feature that structures data as a list.
  * <p>
- * Should not be used directly, use one of the extending classes instead, which
- * provide a type safe API while ensuring the list is {@link Serializable}.
+ * Should not be used directly, use one of the extending classes instead, which provide a type safe API while ensuring
+ * the list is {@link Serializable}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -81,8 +81,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      * @param <T>
      *            the type of objects in the list (and set)
      */
-    protected abstract static class SetView<T extends Serializable>
-            extends AbstractSet<T> implements Serializable {
+    protected abstract static class SetView<T extends Serializable> extends AbstractSet<T> implements Serializable {
 
         private NodeList<T> nodeList;
 
@@ -221,8 +220,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         int startIndex = values.size();
         values.addAll(itemsList);
 
-        addChange(new ListAddChange<>(this, isNodeValues(), startIndex,
-                itemsList));
+        addChange(new ListAddChange<>(this, isNodeValues(), startIndex, itemsList));
     }
 
     /**
@@ -237,8 +235,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         ensureValues();
         values.add(index, item);
 
-        addChange(new ListAddChange<>(this, isNodeValues(), index,
-                Collections.singletonList(item)));
+        addChange(new ListAddChange<>(this, isNodeValues(), index, Collections.singletonList(item)));
     }
 
     /**
@@ -264,8 +261,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     }
 
     /**
-     * Gets or creates the list used to track changes that should be sent to the
-     * client.
+     * Gets or creates the list used to track changes that should be sent to the client.
      * <p>
      * This method is non-private for testing purposes.
      *
@@ -286,8 +282,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             T item = removeChange.getRemovedItem();
             List<AbstractListChange<T>> tracker = getChangeTracker();
 
-            for (int nextChangeIndex = 0; nextChangeIndex < tracker
-                    .size(); nextChangeIndex++) {
+            for (int nextChangeIndex = 0; nextChangeIndex < tracker.size(); nextChangeIndex++) {
                 AbstractListChange<T> nextChange = tracker.get(nextChangeIndex);
 
                 // If next change in the change list is an "Add" change,
@@ -298,14 +293,12 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
                     ListAddChange<T> addChange = (ListAddChange<T>) nextChange;
                     if (addChange.getNewItems().contains(item)) {
 
-                        int indexToCorrect = removeFromListAddChange(addChange,
-                                item);
+                        int indexToCorrect = removeFromListAddChange(addChange, item);
 
                         // indexToCorrect shows where to start the re-indexing,
                         // i.e. from where to shift all items by one position
                         // back
-                        reindexChanges(tracker, nextChangeIndex,
-                                indexToCorrect);
+                        reindexChanges(tracker, nextChangeIndex, indexToCorrect);
                         return;
                     }
                 }
@@ -322,13 +315,11 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         // TODO Fire some listeners
     }
 
-    private void reindexChanges(List<AbstractListChange<T>> tracker,
-            int startFrom, int indexToCorrect) {
+    private void reindexChanges(List<AbstractListChange<T>> tracker, int startFrom, int indexToCorrect) {
         // Shift (re-index) all the changes back by 1 position, starting from a
         // given position in the list and having a given indexes
 
-        for (int nextIndex = startFrom; nextIndex < tracker
-                .size(); nextIndex++) {
+        for (int nextIndex = startFrom; nextIndex < tracker.size(); nextIndex++) {
             AbstractListChange<T> listChange = tracker.get(nextIndex);
             if (listChange.getIndex() > indexToCorrect) {
                 listChange.setIndex(listChange.getIndex() - 1);
@@ -336,8 +327,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         }
     }
 
-    private int removeFromListAddChange(ListAddChange<T> listAddChange,
-            T item) {
+    private int removeFromListAddChange(ListAddChange<T> listAddChange, T item) {
         int indexToCorrect = 0;
         if (listAddChange.getNewItems().size() == 1) {
             // remove the change completely, if it has only one item and this
@@ -400,8 +390,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         }
         if (values != null) {
             assert !values.isEmpty();
-            getChangeTracker().add(new ListAddChange<>(this, isNodeValues(), 0,
-                    new ArrayList<>(values)));
+            getChangeTracker().add(new ListAddChange<>(this, isNodeValues(), 0, new ArrayList<>(values)));
         } else if (!isPopulated) {
             // make change tracker available so that an empty change can be
             // reported
@@ -412,8 +401,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     /**
      * Checks whether this list contains node values.
      *
-     * @return <code>true</code> if this list contains node values;
-     *         <code>false</code> if this list contains primitive values
+     * @return <code>true</code> if this list contains node values; <code>false</code> if this list contains primitive
+     *         values
      */
     protected boolean isNodeValues() {
         return false;

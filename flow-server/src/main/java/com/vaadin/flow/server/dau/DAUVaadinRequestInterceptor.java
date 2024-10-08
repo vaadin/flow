@@ -15,25 +15,20 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
 
 /**
- * Request interceptor that collects daily active users and stores them in the
- * in-memory cache.
+ * Request interceptor that collects daily active users and stores them in the in-memory cache.
  *
  * For internal use only. May be renamed or removed in a future release.
  */
-public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
-        VaadinServiceInitListener, ServiceDestroyListener {
+public class DAUVaadinRequestInterceptor
+        implements VaadinRequestInterceptor, VaadinServiceInitListener, ServiceDestroyListener {
 
     private final String applicationName;
     private final UserIdentitySupplier userIdentitySupplier;
     private final DAUCustomizer dauCustomizer;
 
-    public DAUVaadinRequestInterceptor(
-            DeploymentConfiguration deploymentConfiguration,
-            DAUCustomizer dauCustomizer) {
+    public DAUVaadinRequestInterceptor(DeploymentConfiguration deploymentConfiguration, DAUCustomizer dauCustomizer) {
         this.applicationName = deploymentConfiguration.getApplicationName();
-        this.userIdentitySupplier = dauCustomizer != null
-                ? dauCustomizer.getUserIdentitySupplier()
-                : null;
+        this.userIdentitySupplier = dauCustomizer != null ? dauCustomizer.getUserIdentitySupplier() : null;
         this.dauCustomizer = dauCustomizer;
     }
 
@@ -44,8 +39,8 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
         }
 
         // user is counted even if request handling throws an exception
-        Optional<DAUUtils.DauCookie> maybePresentCookie = DAUUtils
-                .getTrackingCookie(request).flatMap(DAUUtils::parseCookie);
+        Optional<DAUUtils.DauCookie> maybePresentCookie = DAUUtils.getTrackingCookie(request)
+                .flatMap(DAUUtils::parseCookie);
         if (maybePresentCookie.isPresent()) {
             DAUUtils.DauCookie dauCookie = maybePresentCookie.get();
             // ignore user's activity threshold if enforcement
@@ -62,8 +57,7 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
             // Enforce new users immediately, even if they are not yet active
             // and tracked
             if (FlowDauIntegration.shouldEnforce()) {
-                trackUser(request, DAUUtils.parseCookie(cookie).orElseThrow()
-                        .trackingHash());
+                trackUser(request, DAUUtils.parseCookie(cookie).orElseThrow().trackingHash());
             }
         }
     }
@@ -71,21 +65,18 @@ public class DAUVaadinRequestInterceptor implements VaadinRequestInterceptor,
     private void trackUser(VaadinRequest request, String trackingHash) {
         VaadinSession vaadinSession = VaadinSession.getCurrent();
         String userIdentity = Optional.ofNullable(userIdentitySupplier)
-                .flatMap(supplier -> supplier
-                        .apply(new UserIdentityContext(request, vaadinSession)))
-                .orElse(null);
+                .flatMap(supplier -> supplier.apply(new UserIdentityContext(request, vaadinSession))).orElse(null);
         FlowDauIntegration.trackUser(request, trackingHash, userIdentity);
     }
 
     @Override
-    public void handleException(VaadinRequest request, VaadinResponse response,
-            VaadinSession vaadinSession, Exception t) {
+    public void handleException(VaadinRequest request, VaadinResponse response, VaadinSession vaadinSession,
+            Exception t) {
         // no-op
     }
 
     @Override
-    public void requestEnd(VaadinRequest request, VaadinResponse response,
-            VaadinSession session) {
+    public void requestEnd(VaadinRequest request, VaadinResponse response, VaadinSession session) {
         request.removeAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY);
     }
 

@@ -33,11 +33,10 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
 
 /**
- * Task that installs any Flow webpack plugins into node_modules/@vaadin for use
- * with webpack compilation.
+ * Task that installs any Flow webpack plugins into node_modules/@vaadin for use with webpack compilation.
  * <p>
- * Plugins are copied to <code>{build directory}/plugins</code> and linked to
- * <code>@vaadin/{plugin name}</code> in node_modules by using (p)npm install.
+ * Plugins are copied to <code>{build directory}/plugins</code> and linked to <code>@vaadin/{plugin name}</code> in
+ * node_modules by using (p)npm install.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -48,8 +47,7 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
     private File targetFolder;
 
     /**
-     * Copy Flow webpack plugins into <code>PLUGIN_TARGET</code> under the build
-     * directory.
+     * Copy Flow webpack plugins into <code>PLUGIN_TARGET</code> under the build directory.
      *
      * @param options
      *            the task options
@@ -64,10 +62,7 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
             try {
                 generatePluginFiles(plugin);
             } catch (IOException ioe) {
-                throw new UncheckedIOException(
-                        "Installation of Flow webpack plugin '" + plugin
-                                + "' failed",
-                        ioe);
+                throw new UncheckedIOException("Installation of Flow webpack plugin '" + plugin + "' failed", ioe);
             }
         });
     }
@@ -77,23 +72,18 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
         File pluginTargetFolder = new File(targetFolder, pluginName);
 
         final String pluginFolderName = PLUGIN_TARGET + "/" + pluginName + "/";
-        final JsonObject packageJson = FrontendPluginsUtil
-                .getJsonFile(pluginFolderName + PACKAGE_JSON);
+        final JsonObject packageJson = FrontendPluginsUtil.getJsonFile(pluginFolderName + PACKAGE_JSON);
         if (packageJson == null) {
-            log().error(
-                    "Couldn't locate '{}' for plugin '{}'. Plugin will not be installed.",
-                    PACKAGE_JSON, pluginName);
+            log().error("Couldn't locate '{}' for plugin '{}'. Plugin will not be installed.", PACKAGE_JSON,
+                    pluginName);
             return;
         }
 
-        if (pluginTargetFolder.exists()
-                && new File(pluginTargetFolder, PACKAGE_JSON).exists()) {
-            String packageFile = FileUtils.readFileToString(
-                    new File(pluginTargetFolder, PACKAGE_JSON),
+        if (pluginTargetFolder.exists() && new File(pluginTargetFolder, PACKAGE_JSON).exists()) {
+            String packageFile = FileUtils.readFileToString(new File(pluginTargetFolder, PACKAGE_JSON),
                     StandardCharsets.UTF_8);
             final JsonObject targetJson = Json.parse(packageFile);
-            if (targetJson.hasKey("update")
-                    && !targetJson.getBoolean("update")) {
+            if (targetJson.hasKey("update") && !targetJson.getBoolean("update")) {
                 // This is used only while developing the plugins inside the
                 // Flow project and the attribute is then added manually to
                 // package.json
@@ -108,19 +98,14 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
         final JsonArray files = packageJson.getArray("files");
         for (int i = 0; i < files.length(); i++) {
             final String file = files.getString(i);
-            copyIfNeeded(new File(pluginTargetFolder, file),
-                    pluginFolderName + file);
+            copyIfNeeded(new File(pluginTargetFolder, file), pluginFolderName + file);
         }
         // copy package.json to plugin directory
-        copyIfNeeded(new File(pluginTargetFolder, PACKAGE_JSON),
-                pluginFolderName + PACKAGE_JSON);
+        copyIfNeeded(new File(pluginTargetFolder, PACKAGE_JSON), pluginFolderName + PACKAGE_JSON);
     }
 
-    private void copyIfNeeded(File targetFile, String sourceResource)
-            throws IOException {
-        String content = IOUtils.toString(
-                FrontendPluginsUtil.getResourceUrl(sourceResource),
-                StandardCharsets.UTF_8);
+    private void copyIfNeeded(File targetFile, String sourceResource) throws IOException {
+        String content = IOUtils.toString(FrontendPluginsUtil.getResourceUrl(sourceResource), StandardCharsets.UTF_8);
         FileIOUtils.writeIfChanged(targetFile, content);
     }
 

@@ -26,8 +26,7 @@ public class BarExporter extends WebComponentExporter<Component> {
     }
 
     @Override
-    public void configureInstance(WebComponent<Component> webComponent,
-            Component component) {
+    public void configureInstance(WebComponent<Component> webComponent, Component component) {
     }
 
 }

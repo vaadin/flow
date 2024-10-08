@@ -24,8 +24,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 
-public class CustomExceptionTarget extends Div
-        implements HasErrorParameter<CustomException> {
+public class CustomExceptionTarget extends Div implements HasErrorParameter<CustomException> {
 
     @Autowired
     private ApplicationContext context;
@@ -35,8 +34,7 @@ public class CustomExceptionTarget extends Div
     private com.vaadin.flow.component.Component current;
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<CustomException> parameter) {
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<CustomException> parameter) {
         NativeButton button = new NativeButton("switch content", ev -> {
             remove(current);
             if (isSubDiv) {

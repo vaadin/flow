@@ -25,8 +25,7 @@ public class BrokenRouterLinkView extends AbstractDivView {
     public final static String LINK_ID = "broken-link";
 
     public BrokenRouterLinkView() {
-        final RouterLink routerLink = new RouterLink("Broken",
-                BrokenRouterLinkView.class);
+        final RouterLink routerLink = new RouterLink("Broken", BrokenRouterLinkView.class);
         Div spacer = new Div();
         spacer.setHeight("5000px");
         add(spacer);

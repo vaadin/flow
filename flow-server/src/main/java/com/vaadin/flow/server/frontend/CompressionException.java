@@ -28,20 +28,20 @@ public class CompressionException extends RuntimeException {
      * Constructs a new compression exception with the specified detail message.
      *
      * @param message
-     *            the detail message. The detail message is saved for later
-     *            retrieval by the {@link #getMessage()} method.
+     *            the detail message. The detail message is saved for later retrieval by the {@link #getMessage()}
+     *            method.
      */
     public CompressionException(String message) {
         super(message);
     }
 
     /**
-     * Constructs a new compression exception with the specified detail message
-     * and the root cause throwable for the exception.
+     * Constructs a new compression exception with the specified detail message and the root cause throwable for the
+     * exception.
      *
      * @param message
-     *            the detail message. The detail message is saved for later
-     *            retrieval by the {@link #getMessage()} method.
+     *            the detail message. The detail message is saved for later retrieval by the {@link #getMessage()}
+     *            method.
      * @param cause
      *            throwable cause for the exception
      */

@@ -14,12 +14,11 @@ public class FatherAndSon implements Serializable {
 
     @Override
     public String toString() {
-        return "FatherAndSon [firstName=" + firstName + ", lastName=" + lastName
-                + ", father=" + father + ", son=" + son + "]";
+        return "FatherAndSon [firstName=" + firstName + ", lastName=" + lastName + ", father=" + father + ", son=" + son
+                + "]";
     }
 
-    public FatherAndSon(String firstName, String lastName, FatherAndSon father,
-            FatherAndSon son) {
+    public FatherAndSon(String firstName, String lastName, FatherAndSon father, FatherAndSon son) {
         super();
         this.firstName = firstName;
         this.lastName = lastName;

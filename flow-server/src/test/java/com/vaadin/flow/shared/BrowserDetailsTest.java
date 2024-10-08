@@ -145,8 +145,7 @@ public class BrowserDetailsTest extends TestCase {
     }
 
     public void testIPhoneIOS6Homescreen() {
-        BrowserDetails bd = new BrowserDetails(
-                IPHONE_IOS_6_1_HOMESCREEN_SIMULATOR);
+        BrowserDetails bd = new BrowserDetails(IPHONE_IOS_6_1_HOMESCREEN_SIMULATOR);
         assertWebKit(bd);
         // not identified as Safari, no browser version available
         // assertSafari(bd);
@@ -221,8 +220,7 @@ public class BrowserDetailsTest extends TestCase {
     }
 
     public void testAndroid40Chrome() {
-        BrowserDetails bd = new BrowserDetails(
-                ANDROID_GALAXY_NEXUS_4_0_4_CHROME);
+        BrowserDetails bd = new BrowserDetails(ANDROID_GALAXY_NEXUS_4_0_4_CHROME);
         assertWebKit(bd);
         assertChrome(bd);
         assertBrowserMajorVersion(bd, 18);
@@ -533,8 +531,8 @@ public class BrowserDetailsTest extends TestCase {
         // bd.setIE8InCompatibilityMode();
 
         /*
-         * Trident/4.0 in example user agent string based on beta even though it
-         * should be Trident/5.0 in real (non-beta) user agent strings
+         * Trident/4.0 in example user agent string based on beta even though it should be Trident/5.0 in real
+         * (non-beta) user agent strings
          */
         assertTrident(bd);
         assertEngineVersion(bd, 4);
@@ -591,14 +589,12 @@ public class BrowserDetailsTest extends TestCase {
     }
 
     public void testIE11LaunchDayWindows10CompatibilityViewIE7() {
-        BrowserDetails bd = new BrowserDetails(
-                IE11_IN_IE7_MODE_LAUNCH_DAY_WINDOWS_10);
+        BrowserDetails bd = new BrowserDetails(IE11_IN_IE7_MODE_LAUNCH_DAY_WINDOWS_10);
         assertTrident(bd);
 
         /*
-         * Trident/8.0 in example user agent string based on launch day even
-         * though it should be Trident/7.0 in user agent strings for up-to-date
-         * Windows 10 IE11
+         * Trident/8.0 in example user agent string based on launch day even though it should be Trident/7.0 in user
+         * agent strings for up-to-date Windows 10 IE11
          */
         assertEngineVersion(bd, 7);
         assertIE(bd);
@@ -709,20 +705,17 @@ public class BrowserDetailsTest extends TestCase {
      * Helper methods below
      */
 
-    private void assertEngineVersion(BrowserDetails browserDetails,
-            float version) {
+    private void assertEngineVersion(BrowserDetails browserDetails, float version) {
         assertEquals(version, browserDetails.getBrowserEngineVersion());
 
     }
 
-    private void assertBrowserMajorVersion(BrowserDetails browserDetails,
-            int version) {
+    private void assertBrowserMajorVersion(BrowserDetails browserDetails, int version) {
         assertEquals(version, browserDetails.getBrowserMajorVersion());
 
     }
 
-    private void assertBrowserMinorVersion(BrowserDetails browserDetails,
-            int version) {
+    private void assertBrowserMinorVersion(BrowserDetails browserDetails, int version) {
         assertEquals(version, browserDetails.getBrowserMinorVersion());
 
     }
@@ -827,8 +820,7 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isChromeOS());
     }
 
-    private void assertAndroid(BrowserDetails browserDetails, int majorVersion,
-            int minorVersion) {
+    private void assertAndroid(BrowserDetails browserDetails, int majorVersion, int minorVersion) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
@@ -847,8 +839,7 @@ public class BrowserDetailsTest extends TestCase {
         assertWindows(browserDetails, false);
     }
 
-    private void assertWindows(BrowserDetails browserDetails,
-            boolean isWindowsPhone) {
+    private void assertWindows(BrowserDetails browserDetails, boolean isWindowsPhone) {
         assertFalse(browserDetails.isLinux());
         assertTrue(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());
@@ -865,8 +856,7 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isChromeOS());
     }
 
-    private void assertChromeOS(BrowserDetails browserDetails, int majorVersion,
-            int minorVersion) {
+    private void assertChromeOS(BrowserDetails browserDetails, int majorVersion, int minorVersion) {
         assertFalse(browserDetails.isLinux());
         assertFalse(browserDetails.isWindows());
         assertFalse(browserDetails.isMacOSX());

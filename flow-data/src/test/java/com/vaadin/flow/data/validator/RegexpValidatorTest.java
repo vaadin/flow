@@ -21,8 +21,7 @@ public class RegexpValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testPatternMatchesString() {
-        RegexpValidator v = new RegexpValidator(
-                "Should be foo and bar repeating", "(foo|bar)+", true);
+        RegexpValidator v = new RegexpValidator("Should be foo and bar repeating", "(foo|bar)+", true);
 
         assertPasses("foo", v);
         assertPasses("barfoo", v);
@@ -31,8 +30,7 @@ public class RegexpValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testPatternDoesNotMatchString() {
-        RegexpValidator v = new RegexpValidator(
-                "Should be foo and bar repeating", "(foo|bar)+", true);
+        RegexpValidator v = new RegexpValidator("Should be foo and bar repeating", "(foo|bar)+", true);
 
         assertFails("", v);
         assertFails("barf", v);
@@ -42,8 +40,7 @@ public class RegexpValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testEmptyPatternFoundInAnyString() {
-        RegexpValidator v = new RegexpValidator("Should always pass", "",
-                false);
+        RegexpValidator v = new RegexpValidator("Should always pass", "", false);
 
         assertPasses("", v);
         assertPasses("      ", v);
@@ -52,8 +49,7 @@ public class RegexpValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testPatternFoundInString() {
-        RegexpValidator v = new RegexpValidator("Should contain a number",
-                "\\d+", false);
+        RegexpValidator v = new RegexpValidator("Should contain a number", "\\d+", false);
 
         assertPasses("0", v);
         assertPasses("     123     ", v);
@@ -62,8 +58,7 @@ public class RegexpValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testPatternNotFoundInString() {
-        RegexpValidator v = new RegexpValidator("Should contain a number",
-                "\\d+", false);
+        RegexpValidator v = new RegexpValidator("Should contain a number", "\\d+", false);
 
         assertFails("", v);
         assertFails("qwertyiop", v);

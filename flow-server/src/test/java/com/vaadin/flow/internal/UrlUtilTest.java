@@ -49,16 +49,13 @@ public class UrlUtilTest {
 
     @Test
     public void plusAndSpaceHandledCorrectly() {
-        Assert.assertEquals("Plus+Spa%20+%20ce",
-                UrlUtil.encodeURI("Plus+Spa + ce"));
-        Assert.assertEquals("Plus%2BSpa%20%2B%20ce",
-                UrlUtil.encodeURIComponent("Plus+Spa + ce"));
+        Assert.assertEquals("Plus+Spa%20+%20ce", UrlUtil.encodeURI("Plus+Spa + ce"));
+        Assert.assertEquals("Plus%2BSpa%20%2B%20ce", UrlUtil.encodeURIComponent("Plus+Spa + ce"));
     }
 
     @Test
     public void encodeURI_shouldNotBeEscaped() {
-        Assert.assertEquals(encodeURIShouldNotBeEscaped,
-                UrlUtil.encodeURI(encodeURIShouldNotBeEscaped));
+        Assert.assertEquals(encodeURIShouldNotBeEscaped, UrlUtil.encodeURI(encodeURIShouldNotBeEscaped));
     }
 
     @Test
@@ -74,8 +71,8 @@ public class UrlUtilTest {
 
     @Test
     public void encodeURIComponent_shouldNotBeEscaped() {
-        Assert.assertEquals(encodeURIComponentShouldNotBeEscaped, UrlUtil
-                .encodeURIComponent(encodeURIComponentShouldNotBeEscaped));
+        Assert.assertEquals(encodeURIComponentShouldNotBeEscaped,
+                UrlUtil.encodeURIComponent(encodeURIComponentShouldNotBeEscaped));
     }
 
     @Test
@@ -91,41 +88,28 @@ public class UrlUtilTest {
 
     @Test
     public void getServletPathRelative() {
-        Assert.assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar/",
-                createRequest("/foo", "/bar")));
-        Assert.assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar",
-                createRequest("/foo", "/bar")));
-        Assert.assertEquals("..", UrlUtil.getServletPathRelative("/foo/",
-                createRequest("/foo", "/bar")));
-        Assert.assertEquals("../..", UrlUtil.getServletPathRelative("/",
-                createRequest("/foo", "/bar")));
-        Assert.assertEquals("..", UrlUtil.getServletPathRelative("/foo",
-                createRequest("/foo", "/bar")));
-        Assert.assertEquals("../../login", UrlUtil.getServletPathRelative(
-                "/login", createRequest("/foo", "/bar")));
-        Assert.assertEquals("../login", UrlUtil.getServletPathRelative(
-                "/foo/login", createRequest("/foo", "/bar")));
-        Assert.assertEquals("login", UrlUtil.getServletPathRelative(
-                "/foo/bar/login", createRequest("/foo", "/bar")));
-        Assert.assertEquals("baz/login", UrlUtil.getServletPathRelative(
-                "/foo/bar/baz/login", createRequest("/foo", "/bar")));
+        Assert.assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar/", createRequest("/foo", "/bar")));
+        Assert.assertEquals(".", UrlUtil.getServletPathRelative("/foo/bar", createRequest("/foo", "/bar")));
+        Assert.assertEquals("..", UrlUtil.getServletPathRelative("/foo/", createRequest("/foo", "/bar")));
+        Assert.assertEquals("../..", UrlUtil.getServletPathRelative("/", createRequest("/foo", "/bar")));
+        Assert.assertEquals("..", UrlUtil.getServletPathRelative("/foo", createRequest("/foo", "/bar")));
+        Assert.assertEquals("../../login", UrlUtil.getServletPathRelative("/login", createRequest("/foo", "/bar")));
+        Assert.assertEquals("../login", UrlUtil.getServletPathRelative("/foo/login", createRequest("/foo", "/bar")));
+        Assert.assertEquals("login", UrlUtil.getServletPathRelative("/foo/bar/login", createRequest("/foo", "/bar")));
+        Assert.assertEquals("baz/login",
+                UrlUtil.getServletPathRelative("/foo/bar/baz/login", createRequest("/foo", "/bar")));
     }
 
-    private VaadinServletRequest createRequest(String contextPath,
-            String servletPath) {
+    private VaadinServletRequest createRequest(String contextPath, String servletPath) {
         if (!servletPath.equals("") && !servletPath.startsWith("/")) {
-            throw new IllegalArgumentException(
-                    "A servlet path always starts with / except for the empty mapping \"\"");
+            throw new IllegalArgumentException("A servlet path always starts with / except for the empty mapping \"\"");
         }
-        if (!contextPath.equals("") && (!contextPath.startsWith("/")
-                || contextPath.endsWith("/"))) {
-            throw new IllegalArgumentException(
-                    "A context path is either empty or starts, but not ends with, a slash");
+        if (!contextPath.equals("") && (!contextPath.startsWith("/") || contextPath.endsWith("/"))) {
+            throw new IllegalArgumentException("A context path is either empty or starts, but not ends with, a slash");
         }
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getServletPath()).thenReturn(servletPath);
         Mockito.when(request.getContextPath()).thenReturn(contextPath);
-        return new VaadinServletRequest(request,
-                Mockito.mock(VaadinServletService.class));
+        return new VaadinServletRequest(request, Mockito.mock(VaadinServletService.class));
     }
 }

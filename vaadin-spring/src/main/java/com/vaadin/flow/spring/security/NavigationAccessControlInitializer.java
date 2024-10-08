@@ -24,21 +24,18 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  *
  * @see NavigationAccessControl
  */
-public class NavigationAccessControlInitializer
-        implements VaadinServiceInitListener {
+public class NavigationAccessControlInitializer implements VaadinServiceInitListener {
 
     private final NavigationAccessControl accessControl;
 
-    public NavigationAccessControlInitializer(
-            NavigationAccessControl accessControl) {
+    public NavigationAccessControlInitializer(NavigationAccessControl accessControl) {
         this.accessControl = accessControl;
     }
 
     @Override
     public void serviceInit(ServiceInitEvent serviceInitEvent) {
         serviceInitEvent.getSource()
-                .addUIInitListener(uiInitEvent -> uiInitEvent.getUI()
-                        .addBeforeEnterListener(accessControl));
+                .addUIInitListener(uiInitEvent -> uiInitEvent.getUI().addBeforeEnterListener(accessControl));
     }
 
 }

@@ -29,37 +29,31 @@ import com.vaadin.flow.function.DeploymentConfiguration;
  */
 public enum PushMode {
     /**
-     * Push is disabled. Regular AJAX requests are used to communicate between
-     * the client and the server. Asynchronous messages from the server are not
-     * possible. {@link UI#push() ui.push()} throws IllegalStateException.
+     * Push is disabled. Regular AJAX requests are used to communicate between the client and the server. Asynchronous
+     * messages from the server are not possible. {@link UI#push() ui.push()} throws IllegalStateException.
      * <p>
-     * This is the default mode unless
-     * {@link DeploymentConfiguration#getPushMode() configured} otherwise.
+     * This is the default mode unless {@link DeploymentConfiguration#getPushMode() configured} otherwise.
      */
     DISABLED,
 
     /**
-     * Push is enabled. A bidirectional channel is established between the
-     * client and server and used to communicate state changes and RPC
-     * invocations. The client is not automatically updated if the server-side
-     * state is asynchronously changed; {@link UI#push() ui.push()} must be
-     * explicitly called.
+     * Push is enabled. A bidirectional channel is established between the client and server and used to communicate
+     * state changes and RPC invocations. The client is not automatically updated if the server-side state is
+     * asynchronously changed; {@link UI#push() ui.push()} must be explicitly called.
      */
     MANUAL,
 
     /**
-     * Push is enabled. Like {@link #MANUAL}, but asynchronous changes to the
-     * server-side state are automatically pushed to the client once the session
-     * lock is released.
+     * Push is enabled. Like {@link #MANUAL}, but asynchronous changes to the server-side state are automatically pushed
+     * to the client once the session lock is released.
      */
     AUTOMATIC;
 
     /**
      * Checks whether the push mode is using push functionality
      *
-     * @return <code>true</code> if this mode requires push functionality;
-     *         <code>false</code> if no push functionality is used for this
-     *         mode.
+     * @return <code>true</code> if this mode requires push functionality; <code>false</code> if no push functionality
+     *         is used for this mode.
      */
     public boolean isEnabled() {
         return this != DISABLED;

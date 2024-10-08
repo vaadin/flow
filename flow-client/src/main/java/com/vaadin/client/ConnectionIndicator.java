@@ -29,30 +29,28 @@ public class ConnectionIndicator {
      */
 
     /**
-     * Application is connected to server: last transaction over the wire (XHR /
-     * heartbeat / endpoint call) was successful.
+     * Application is connected to server: last transaction over the wire (XHR / heartbeat / endpoint call) was
+     * successful.
      */
     public static final String CONNECTED = "connected";
 
     /**
-     * Application is connected and Flow is loading application state from the
-     * server, or Fusion is waiting for an endpoint call to return.
+     * Application is connected and Flow is loading application state from the server, or Fusion is waiting for an
+     * endpoint call to return.
      */
     public static final String LOADING = "loading";
 
     /**
-     * Application has been temporarily disconnected from the server because the
-     * last transaction over the wire (XHR / heartbeat / endpoint call) resulted
-     * in a network error, or the browser has received the 'online' event and
-     * needs to verify reconnection with the server. Flow is attempting to
-     * reconnect a configurable number of times before giving up.
+     * Application has been temporarily disconnected from the server because the last transaction over the wire (XHR /
+     * heartbeat / endpoint call) resulted in a network error, or the browser has received the 'online' event and needs
+     * to verify reconnection with the server. Flow is attempting to reconnect a configurable number of times before
+     * giving up.
      */
     public static final String RECONNECTING = "reconnecting";
 
     /**
-     * Application has been permanently disconnected due to browser receiving
-     * the 'offline' event, or the server not being reached after a number of
-     * reconnect attempts.
+     * Application has been permanently disconnected due to browser receiving the 'offline' event, or the server not
+     * being reached after a number of reconnect attempts.
      */
     public static final String CONNECTION_LOST = "connection-lost";
 

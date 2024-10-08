@@ -38,7 +38,6 @@ public class RedirectToPushIT extends ChromeBrowserTest {
         // ignored.
         String pushMode = "DISABLED";
 
-        Assert.assertEquals("Push mode: " + pushMode,
-                $(TestBenchElement.class).id("pushMode").getText());
+        Assert.assertEquals("Push mode: " + pushMode, $(TestBenchElement.class).id("pushMode").getText());
     }
 }

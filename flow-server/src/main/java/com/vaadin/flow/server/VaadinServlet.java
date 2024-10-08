@@ -49,13 +49,11 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * The main servlet, which handles all incoming requests to the application.
  * <p>
- * This servlet is typically subclassed in all applications to provide servlet
- * mappings and init parameters. Together with a {@literal web.xml} file, it is
- * also possible to use this class directly.
+ * This servlet is typically subclassed in all applications to provide servlet mappings and init parameters. Together
+ * with a {@literal web.xml} file, it is also possible to use this class directly.
  * <p>
- * Internally sets up a {@link VaadinService} through
- * {@link #createServletService(DeploymentConfiguration)} and delegates handling
- * of most requests to that.
+ * Internally sets up a {@link VaadinService} through {@link #createServletService(DeploymentConfiguration)} and
+ * delegates handling of most requests to that.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -73,15 +71,12 @@ public class VaadinServlet extends HttpServlet {
     private static List<Runnable> whenFrontendMappingAvailable = new ArrayList<>();
 
     /**
-     * Called by the servlet container to indicate to a servlet that the servlet
-     * is being placed into service.
+     * Called by the servlet container to indicate to a servlet that the servlet is being placed into service.
      *
      * @param servletConfig
-     *            the object containing the servlet's configuration and
-     *            initialization parameters
+     *            the object containing the servlet's configuration and initialization parameters
      * @throws ServletException
-     *             if an exception has occurred that interferes with the
-     *             servlet's normal operation.
+     *             if an exception has occurred that interferes with the servlet's normal operation.
      */
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
@@ -89,20 +84,17 @@ public class VaadinServlet extends HttpServlet {
 
         try {
             /*
-             * There are plenty of reasons why the check should be done. The
-             * main reason is: init method is public which means that everyone
-             * may call this method at any time (including an app developer).
-             * But it's not supposed to be called any times any time.
+             * There are plenty of reasons why the check should be done. The main reason is: init method is public which
+             * means that everyone may call this method at any time (including an app developer). But it's not supposed
+             * to be called any times any time.
              *
-             * This code protects weak API from being called several times so
-             * that config is reset after the very first initialization.
+             * This code protects weak API from being called several times so that config is reset after the very first
+             * initialization.
              *
-             * Normally "init" method is called only once by the servlet
-             * container. But in a specific OSGi case {@code
-             * ServletContextListener} may be called after the servlet
-             * initialized. To be able to initialize the VaadinServlet properly
-             * its "init" method is called from the {@code
-             * ServletContextListener} with the same ServletConfig instance.
+             * Normally "init" method is called only once by the servlet container. But in a specific OSGi case {@code
+             * ServletContextListener} may be called after the servlet initialized. To be able to initialize the
+             * VaadinServlet properly its "init" method is called from the {@code ServletContextListener} with the same
+             * ServletConfig instance.
              */
             VaadinServletContext vaadinServletContext = null;
             if (getServletConfig() == null) {
@@ -113,26 +105,22 @@ public class VaadinServlet extends HttpServlet {
             }
 
             if (getServletConfig() != servletConfig) {
-                throw new IllegalArgumentException(
-                        "Servlet config instance may not differ from the "
-                                + "instance which has been used for the initial method call");
+                throw new IllegalArgumentException("Servlet config instance may not differ from the "
+                        + "instance which has been used for the initial method call");
             }
 
             if (vaadinServletContext == null) {
-                vaadinServletContext = new VaadinServletContext(
-                        getServletConfig().getServletContext());
+                vaadinServletContext = new VaadinServletContext(getServletConfig().getServletContext());
             }
 
-            if (servletService != null || vaadinServletContext
-                    .getAttribute(Lookup.class) == null) {
+            if (servletService != null || vaadinServletContext.getAttribute(Lookup.class) == null) {
                 return;
             }
 
             try {
                 servletService = createServletService();
             } catch (ServiceException e) {
-                throw new ServletException("Could not initialize VaadinServlet",
-                        e);
+                throw new ServletException("Could not initialize VaadinServlet", e);
             }
 
             // Sets current service as it is needed in static file server even
@@ -154,12 +142,10 @@ public class VaadinServlet extends HttpServlet {
                 return;
             }
             String definedPath = null;
-            DeploymentConfiguration deploymentConfiguration = getService()
-                    .getDeploymentConfiguration();
+            DeploymentConfiguration deploymentConfiguration = getService().getDeploymentConfiguration();
             if (deploymentConfiguration != null) {
                 definedPath = deploymentConfiguration.getInitParameters()
-                        .getProperty(
-                                INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH);
+                        .getProperty(INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH);
             }
             if (definedPath != null) {
                 // Use the path define in a property
@@ -169,16 +155,12 @@ public class VaadinServlet extends HttpServlet {
             }
 
             List<String> mappings = new ArrayList<>();
-            Map<String, ? extends ServletRegistration> servletRegistrations = this
-                    .getServletContext().getServletRegistrations();
-            if (servletRegistrations != null
-                    && !servletRegistrations.isEmpty()) {
-                ServletRegistration registration = servletRegistrations
-                        .get(this.getServletName());
+            Map<String, ? extends ServletRegistration> servletRegistrations = this.getServletContext()
+                    .getServletRegistrations();
+            if (servletRegistrations != null && !servletRegistrations.isEmpty()) {
+                ServletRegistration registration = servletRegistrations.get(this.getServletName());
                 if (registration == null) {
-                    getLogger().warn(
-                            "Unable to determin servlet registration for {}. Ignoring",
-                            getServletName());
+                    getLogger().warn("Unable to determin servlet registration for {}. Ignoring", getServletName());
                     return;
                 }
                 Collection<String> urlPatterns = registration.getMappings();
@@ -194,8 +176,7 @@ public class VaadinServlet extends HttpServlet {
                 }
                 Collections.sort(mappings);
                 frontendMapping = mappings.get(0);
-                getLogger().debug("Using mapping " + frontendMapping
-                        + " from servlet " + getClass().getSimpleName()
+                getLogger().debug("Using mapping " + frontendMapping + " from servlet " + getClass().getSimpleName()
                         + " as the frontend servlet because this was the first deployed VaadinServlet");
                 invokeWhenFrontendMappingAvailable();
             }
@@ -240,19 +221,16 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Creates a new instance of {@link StaticFileHandler}, that is responsible
-     * to find and serve static resources. By default it returns a
-     * {@link StaticFileServer} instance.
+     * Creates a new instance of {@link StaticFileHandler}, that is responsible to find and serve static resources. By
+     * default it returns a {@link StaticFileServer} instance.
      *
      * @param vaadinService
      *            the vaadinService created at {@link #createServletService()}
      * @return the file server to be used by this servlet, not <code>null</code>
      */
-    protected StaticFileHandler createStaticFileHandler(
-            VaadinService vaadinService) {
+    protected StaticFileHandler createStaticFileHandler(VaadinService vaadinService) {
         Lookup lookup = vaadinService.getContext().getAttribute(Lookup.class);
-        return lookup.lookup(StaticFileHandlerFactory.class)
-                .createHandler(vaadinService);
+        return lookup.lookup(StaticFileHandlerFactory.class).createHandler(vaadinService);
     }
 
     protected void servletInitialized() throws ServletException {
@@ -260,18 +238,14 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Gets the currently used Vaadin servlet. The current servlet is
-     * automatically defined when initializing the servlet and when processing
-     * requests to the server (see {@link ThreadLocal}) and in
-     * {@link VaadinSession#access(Command)} and {@link UI#access(Command)}. In
-     * other cases, (e.g. from background threads), the current servlet is not
-     * automatically defined.
+     * Gets the currently used Vaadin servlet. The current servlet is automatically defined when initializing the
+     * servlet and when processing requests to the server (see {@link ThreadLocal}) and in
+     * {@link VaadinSession#access(Command)} and {@link UI#access(Command)}. In other cases, (e.g. from background
+     * threads), the current servlet is not automatically defined.
      * <p>
-     * The current servlet is derived from the current service using
-     * {@link VaadinService#getCurrent()}
+     * The current servlet is derived from the current service using {@link VaadinService#getCurrent()}
      *
-     * @return the current Vaadin servlet instance if available, otherwise
-     *         <code>null</code>
+     * @return the current Vaadin servlet instance if available, otherwise <code>null</code>
      *
      */
     public static VaadinServlet getCurrent() {
@@ -285,44 +259,33 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Creates a deployment configuration to be used for the creation of a
-     * {@link VaadinService}. Intended to be used by dependency injection
-     * frameworks.
+     * Creates a deployment configuration to be used for the creation of a {@link VaadinService}. Intended to be used by
+     * dependency injection frameworks.
      *
      * @return the created deployment configuration
      */
-    protected DeploymentConfiguration createDeploymentConfiguration()
-            throws ServletException {
-        return createDeploymentConfiguration(
-                new DeploymentConfigurationFactory().createInitParameters(
-                        getClass(),
-                        new VaadinServletConfig(getServletConfig())));
+    protected DeploymentConfiguration createDeploymentConfiguration() throws ServletException {
+        return createDeploymentConfiguration(new DeploymentConfigurationFactory().createInitParameters(getClass(),
+                new VaadinServletConfig(getServletConfig())));
     }
 
     /**
-     * Creates a deployment configuration to be used for the creation of a
-     * {@link VaadinService}. Override this if you want to override certain
-     * properties.
+     * Creates a deployment configuration to be used for the creation of a {@link VaadinService}. Override this if you
+     * want to override certain properties.
      *
      * @param initParameters
      *            the context-param and init-param values as properties
      * @return the created deployment configuration
      */
-    protected DeploymentConfiguration createDeploymentConfiguration(
-            Properties initParameters) {
-        VaadinServletContext context = new VaadinServletContext(
-                getServletContext());
-        return new DefaultDeploymentConfiguration(
-                ApplicationConfiguration.get(context), getClass(),
-                initParameters);
+    protected DeploymentConfiguration createDeploymentConfiguration(Properties initParameters) {
+        VaadinServletContext context = new VaadinServletContext(getServletContext());
+        return new DefaultDeploymentConfiguration(ApplicationConfiguration.get(context), getClass(), initParameters);
     }
 
     /**
-     * Creates a vaadin servlet service. This method functions as a layer of
-     * indirection between {@link #init(ServletConfig)} and
-     * {@link #createServletService(DeploymentConfiguration)} so dependency
-     * injection frameworks can call {@link #createDeploymentConfiguration()}
-     * when creating a vaadin servlet service lazily.
+     * Creates a vaadin servlet service. This method functions as a layer of indirection between
+     * {@link #init(ServletConfig)} and {@link #createServletService(DeploymentConfiguration)} so dependency injection
+     * frameworks can call {@link #createDeploymentConfiguration()} when creating a vaadin servlet service lazily.
      *
      * @return the created vaadin servlet service
      *
@@ -331,8 +294,7 @@ public class VaadinServlet extends HttpServlet {
      * @throws ServiceException
      *             if creating the vaadin servlet service fails
      */
-    protected VaadinServletService createServletService()
-            throws ServletException, ServiceException {
+    protected VaadinServletService createServletService() throws ServletException, ServiceException {
         return createServletService(createDeploymentConfiguration());
     }
 
@@ -347,34 +309,28 @@ public class VaadinServlet extends HttpServlet {
      * @throws ServiceException
      *             if creating the vaadin servlet service fails
      */
-    protected VaadinServletService createServletService(
-            DeploymentConfiguration deploymentConfiguration)
+    protected VaadinServletService createServletService(DeploymentConfiguration deploymentConfiguration)
             throws ServiceException {
-        VaadinServletService service = new VaadinServletService(this,
-                deploymentConfiguration);
+        VaadinServletService service = new VaadinServletService(this, deploymentConfiguration);
         service.init();
         return service;
     }
 
     /**
-     * Receives standard HTTP requests from the public service method and
-     * dispatches them.
+     * Receives standard HTTP requests from the public service method and dispatches them.
      *
      * @param request
-     *            the object that contains the request the client made of the
-     *            servlet.
+     *            the object that contains the request the client made of the servlet.
      * @param response
-     *            the object that contains the response the servlet returns to
-     *            the client.
+     *            the object that contains the response the servlet returns to the client.
      * @throws ServletException
-     *             if an input or output error occurs while the servlet is
-     *             handling the TRACE request.
+     *             if an input or output error occurs while the servlet is handling the TRACE request.
      * @throws IOException
      *             if the request for the TRACE cannot be handled.
      */
     @Override
-    protected void service(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
+    protected void service(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
         // Handle context root request without trailing slash, see
         // https://github.com/vaadin/framework/issues/2991
@@ -403,29 +359,23 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Handles a request by serving a static file from Webpack when in
-     * npm-dev-mode, or from a WebJar when in bower-dev-mode or from the
-     * file-system when in production.
+     * Handles a request by serving a static file from Webpack when in npm-dev-mode, or from a WebJar when in
+     * bower-dev-mode or from the file-system when in production.
      *
-     * It's not done via {@link VaadinService} handlers because static requests
-     * do not need a established session.
+     * It's not done via {@link VaadinService} handlers because static requests do not need a established session.
      *
      * @param request
-     *            the HTTP servlet request object that contains the request the
-     *            client made of the servlet
+     *            the HTTP servlet request object that contains the request the client made of the servlet
      *
      * @param response
-     *            the HTTP servlet response object that contains the response
-     *            the servlet returns to the client
-     * @return <code>true</code> if the request was handled a response written;
-     *         otherwise <code>false</code>
+     *            the HTTP servlet response object that contains the response the servlet returns to the client
+     * @return <code>true</code> if the request was handled a response written; otherwise <code>false</code>
      *
      * @exception IOException
-     *                if an input or output error occurs while the servlet is
-     *                handling the HTTP request
+     *                if an input or output error occurs while the servlet is handling the HTTP request
      */
-    protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
+    protected boolean serveStaticOrWebJarRequest(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
 
         if (staticFileHandler.serveStaticResource(request, response)) {
             return true;
@@ -435,36 +385,31 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Invoked for every request to this servlet to potentially send a redirect
-     * to avoid problems with requests to the context root with no trailing
-     * slash.
+     * Invoked for every request to this servlet to potentially send a redirect to avoid problems with requests to the
+     * context root with no trailing slash.
      *
      * @param request
      *            the processed request
      * @param response
      *            the processed response
-     * @return <code>true</code> if a redirect has been sent and the request
-     *         should not be processed further; <code>false</code> if the
-     *         request should be processed as usual
+     * @return <code>true</code> if a redirect has been sent and the request should not be processed further;
+     *         <code>false</code> if the request should be processed as usual
      * @throws IOException
      *             If an input or output exception occurs
      */
-    protected boolean handleContextOrServletRootWithoutSlash(
-            HttpServletRequest request, HttpServletResponse response)
+    protected boolean handleContextOrServletRootWithoutSlash(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         // Query parameters like "?a=b" are handled by the servlet container but
         // path parameter (e.g. ;jsessionid=) needs to be handled here
         String location = request.getRequestURI();
 
         String lastPathParameter = getLastPathParameter(location);
-        location = location.substring(0,
-                location.length() - lastPathParameter.length());
+        location = location.substring(0, location.length() - lastPathParameter.length());
 
-        if ((request.getPathInfo() == null || "/".equals(request.getPathInfo()))
-                && !location.endsWith("/")) {
+        if ((request.getPathInfo() == null || "/".equals(request.getPathInfo())) && !location.endsWith("/")) {
             /*
-             * Path info is for the root but request URI doesn't end with a
-             * slash -> redirect to the same URI but with an ending slash.
+             * Path info is for the root but request URI doesn't end with a slash -> redirect to the same URI but with
+             * an ending slash.
              */
             location = location + "/" + lastPathParameter;
             String queryString = request.getQueryString();
@@ -481,20 +426,17 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Finds any path parameter added to the last part of the uri. A path
-     * parameter is any string separated by ";" from the path and ends in / or
-     * at the end of the string.
+     * Finds any path parameter added to the last part of the uri. A path parameter is any string separated by ";" from
+     * the path and ends in / or at the end of the string.
      * <p>
-     * For example the uri http://myhost.com/foo;a=1/bar;b=1 contains two path
-     * parameters, {@literal a=1} related to {@literal /foo} and {@literal b=1}
-     * related to /bar.
+     * For example the uri http://myhost.com/foo;a=1/bar;b=1 contains two path parameters, {@literal a=1} related to
+     * {@literal /foo} and {@literal b=1} related to /bar.
      * <p>
      * For http://myhost.com/foo;a=1/bar;b=1 this method will return ;b=1
      *
      * @param uri
      *            a URI
-     * @return the last path parameter of the uri including the semicolon or an
-     *         empty string. Never null.
+     * @return the last path parameter of the uri including the semicolon or an empty string. Never null.
      */
     protected static String getLastPathParameter(String uri) {
         int lastPathStart = uri.lastIndexOf('/');
@@ -513,21 +455,19 @@ public class VaadinServlet extends HttpServlet {
         }
     }
 
-    private VaadinServletResponse createVaadinResponse(
-            HttpServletResponse response) {
+    private VaadinServletResponse createVaadinResponse(HttpServletResponse response) {
         return new VaadinServletResponse(response, getService());
     }
 
     /**
-     * Creates a Vaadin request for a http servlet request. This method can be
-     * overridden if the Vaadin request should have special properties.
+     * Creates a Vaadin request for a http servlet request. This method can be overridden if the Vaadin request should
+     * have special properties.
      *
      * @param request
      *            the original http servlet request
      * @return a Vaadin request for the original request
      */
-    protected VaadinServletRequest createVaadinRequest(
-            HttpServletRequest request) {
+    protected VaadinServletRequest createVaadinRequest(HttpServletRequest request) {
         return new VaadinServletRequest(request, getService());
     }
 
@@ -541,8 +481,7 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Check that cookie support is enabled in the browser. Only checks UIDL
-     * requests.
+     * Check that cookie support is enabled in the browser. Only checks UIDL requests.
      *
      * @param request
      *            The request from the browser
@@ -551,22 +490,20 @@ public class VaadinServlet extends HttpServlet {
      * @return false if cookies are disabled, true otherwise
      * @throws IOException
      */
-    private boolean ensureCookiesEnabled(VaadinServletRequest request,
-            VaadinServletResponse response) throws IOException {
+    private boolean ensureCookiesEnabled(VaadinServletRequest request, VaadinServletResponse response)
+            throws IOException {
         if (HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             // In all other but the first UIDL request a cookie should be
             // returned by the browser.
             // This can be removed if cookieless mode (#3228) is supported
             if (request.getRequestedSessionId() == null) {
                 // User has cookies disabled
-                SystemMessages systemMessages = getService().getSystemMessages(
-                        HandlerHelper.findLocale(null, request), request);
-                getService().writeUncachedStringResponse(response,
-                        JsonConstants.JSON_CONTENT_TYPE,
-                        VaadinService.createCriticalNotificationJSON(
-                                systemMessages.getCookiesDisabledCaption(),
-                                systemMessages.getCookiesDisabledMessage(),
-                                null, systemMessages.getCookiesDisabledURL()));
+                SystemMessages systemMessages = getService().getSystemMessages(HandlerHelper.findLocale(null, request),
+                        request);
+                getService().writeUncachedStringResponse(response, JsonConstants.JSON_CONTENT_TYPE,
+                        VaadinService.createCriticalNotificationJSON(systemMessages.getCookiesDisabledCaption(),
+                                systemMessages.getCookiesDisabledMessage(), null,
+                                systemMessages.getCookiesDisabledURL()));
                 return false;
             }
         }
@@ -579,36 +516,26 @@ public class VaadinServlet extends HttpServlet {
      * @param request
      *            the HTTP request.
      * @throws MalformedURLException
-     *             if the application is denied access to the persistent data
-     *             store represented by the given URL.
+     *             if the application is denied access to the persistent data store represented by the given URL.
      *
      * @return current application URL
      */
-    static URL getApplicationUrl(HttpServletRequest request)
-            throws MalformedURLException {
-        final URL reqURL = new URL((request.isSecure() ? "https://" : "http://")
-                + request.getServerName()
+    static URL getApplicationUrl(HttpServletRequest request) throws MalformedURLException {
+        final URL reqURL = new URL((request.isSecure() ? "https://" : "http://") + request.getServerName()
                 + ((request.isSecure() && request.getServerPort() == 443)
-                        || (!request.isSecure()
-                                && request.getServerPort() == 80) ? ""
-                                        : ":" + request.getServerPort())
+                        || (!request.isSecure() && request.getServerPort() == 80) ? "" : ":" + request.getServerPort())
                 + request.getRequestURI());
         String servletPath;
-        if (request
-                .getAttribute("jakarta.servlet.include.servlet_path") != null) {
+        if (request.getAttribute("jakarta.servlet.include.servlet_path") != null) {
             // this is an include request
-            servletPath = request
-                    .getAttribute("jakarta.servlet.include.context_path")
-                    .toString()
-                    + request.getAttribute(
-                            "jakarta.servlet.include.servlet_path");
+            servletPath = request.getAttribute("jakarta.servlet.include.context_path").toString()
+                    + request.getAttribute("jakarta.servlet.include.servlet_path");
 
         } else {
             servletPath = request.getContextPath() + request.getServletPath();
         }
 
-        if (servletPath.length() == 0
-                || servletPath.charAt(servletPath.length() - 1) != '/') {
+        if (servletPath.length() == 0 || servletPath.charAt(servletPath.length() - 1) != '/') {
             servletPath = servletPath + "/";
         }
         URL u = new URL(reqURL, servletPath);
@@ -631,16 +558,12 @@ public class VaadinServlet extends HttpServlet {
 
     private VaadinServletContext initializeContext() {
         ServletContext servletContext = getServletConfig().getServletContext();
-        VaadinServletContext vaadinServletContext = new VaadinServletContext(
-                servletContext);
+        VaadinServletContext vaadinServletContext = new VaadinServletContext(servletContext);
         // ensure the web application classloader is available via context
-        ApplicationClassLoaderAccess access = () -> servletContext
-                .getClassLoader();
-        vaadinServletContext.getAttribute(ApplicationClassLoaderAccess.class,
-                () -> access);
+        ApplicationClassLoaderAccess access = () -> servletContext.getClassLoader();
+        vaadinServletContext.getAttribute(ApplicationClassLoaderAccess.class, () -> access);
 
-        VaadinContextInitializer initializer = vaadinServletContext
-                .getAttribute(VaadinContextInitializer.class);
+        VaadinContextInitializer initializer = vaadinServletContext.getAttribute(VaadinContextInitializer.class);
         if (initializer != null) {
             initializer.initialize(vaadinServletContext);
         }

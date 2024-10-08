@@ -42,15 +42,12 @@ public class DevToolsTokenTest {
     @Before
     public void setUp() throws Exception {
         configuration = Mockito.mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.getProjectFolder())
-                .thenReturn(projectFolder.getRoot());
+        Mockito.when(configuration.getProjectFolder()).thenReturn(projectFolder.getRoot());
         service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
         initialToken = DevToolsToken.getToken();
         systemTempDir = System.getProperty("java.io.tmpdir");
-        System.setProperty("java.io.tmpdir",
-                projectFolder.getRoot().getAbsolutePath());
+        System.setProperty("java.io.tmpdir", projectFolder.getRoot().getAbsolutePath());
     }
 
     @After
@@ -83,9 +80,7 @@ public class DevToolsTokenTest {
 
     private void overwriteToken(String token) {
         try {
-            ReflectTools.setJavaFieldValue(null,
-                    DevToolsToken.class.getDeclaredField("randomDevToolsToken"),
-                    token);
+            ReflectTools.setJavaFieldValue(null, DevToolsToken.class.getDeclaredField("randomDevToolsToken"), token);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }

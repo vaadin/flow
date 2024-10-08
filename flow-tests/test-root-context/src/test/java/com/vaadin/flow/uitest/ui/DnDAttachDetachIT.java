@@ -55,8 +55,7 @@ public class DnDAttachDetachIT extends ChromeBrowserTest {
         eventElement = getEvent(1);
         Assert.assertEquals("Drop: 1", eventElement.getText());
 
-        Assert.assertFalse("No second event should have occurred",
-                isElementPresent(By.id("drop-" + 2)));
+        Assert.assertFalse("No second event should have occurred", isElementPresent(By.id("drop-" + 2)));
     }
 
     @Test
@@ -75,8 +74,7 @@ public class DnDAttachDetachIT extends ChromeBrowserTest {
         eventElement = getEvent(1);
         Assert.assertEquals("Drop: 1", eventElement.getText());
 
-        Assert.assertFalse("No second event should have occurred",
-                isElementPresent(By.id("drop-" + 2)));
+        Assert.assertFalse("No second event should have occurred", isElementPresent(By.id("drop-" + 2)));
     }
 
     private TestBenchElement getEvent(int i) {

@@ -37,8 +37,8 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 
 /**
- * Abstract class for collecting Methods which are published as
- * <code>serverObject.&lt;name&gt;</code> on the client side.
+ * Abstract class for collecting Methods which are published as <code>serverObject.&lt;name&gt;</code> on the client
+ * side.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -48,8 +48,7 @@ import com.vaadin.flow.internal.StateNode;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class AbstractServerHandlers<T>
-        extends SerializableNodeList<String> {
+public abstract class AbstractServerHandlers<T> extends SerializableNodeList<String> {
 
     private Map<String, DisabledUpdateMode> disabledRpcModes;
 
@@ -64,8 +63,7 @@ public abstract class AbstractServerHandlers<T>
     }
 
     /**
-     * Validate parameter support for given method. Should validate parameter
-     * amount and parameter types.
+     * Validate parameter support for given method. Should validate parameter amount and parameter types.
      *
      * @param method
      *            Method to check parameters for
@@ -73,8 +71,7 @@ public abstract class AbstractServerHandlers<T>
     protected abstract void ensureSupportedParameterTypes(Method method);
 
     /**
-     * Called by {@link ComponentMapping} whenever a component instance has been
-     * set for the node.
+     * Called by {@link ComponentMapping} whenever a component instance has been set for the node.
      *
      * @param component
      *            the component instance which was set
@@ -85,16 +82,14 @@ public abstract class AbstractServerHandlers<T>
     }
 
     /**
-     * Gets RPC control mode from the client side to the server side for
-     * disabled element.
+     * Gets RPC control mode from the client side to the server side for disabled element.
      *
      * @param handler
      *            the handler name to get control mode
      * @return the handler RPC control mode for disabled element
      */
     public DisabledUpdateMode getDisabledUpdateMode(String handler) {
-        DisabledUpdateMode mode = disabledRpcModes == null ? null
-                : disabledRpcModes.get(handler);
+        DisabledUpdateMode mode = disabledRpcModes == null ? null : disabledRpcModes.get(handler);
         if (mode == null) {
             return DisabledUpdateMode.ONLY_WHEN_ENABLED;
         }
@@ -124,8 +119,7 @@ public abstract class AbstractServerHandlers<T>
         Map<String, Method> map = new HashMap<>();
         for (Method method : methods) {
             Method existing = map.get(method.getName());
-            if (existing != null && !Arrays.equals(existing.getParameterTypes(),
-                    method.getParameterTypes())) {
+            if (existing != null && !Arrays.equals(existing.getParameterTypes(), method.getParameterTypes())) {
                 String msg = String.format(Locale.ENGLISH,
                         "There may be only one handler method with the given name. "
                                 + "Class '%s' (considering its superclasses) "
@@ -135,8 +129,7 @@ public abstract class AbstractServerHandlers<T>
             }
             map.put(method.getName(), method);
         }
-        map.values().forEach(
-                method -> add(method.getName(), getUpdateMode(method)));
+        map.values().forEach(method -> add(method.getName(), getUpdateMode(method)));
     }
 
     /**
@@ -147,16 +140,14 @@ public abstract class AbstractServerHandlers<T>
      * @param methods
      *            Collection to add methods to
      */
-    protected void collectHandlerMethods(Class<?> clazz,
-            Collection<Method> methods) {
+    protected void collectHandlerMethods(Class<?> clazz, Collection<Method> methods) {
         if (clazz == null || clazz.equals(Object.class)) {
             return;
         }
         if (clazz.equals(getType())) {
             return;
         }
-        Stream.of(clazz.getDeclaredMethods()).filter(
-                method -> hasAnnotation(method, getHandlerAnnotationFqn()))
+        Stream.of(clazz.getDeclaredMethods()).filter(method -> hasAnnotation(method, getHandlerAnnotationFqn()))
                 .forEach(method -> addHandlerMethod(method, methods));
         collectHandlerMethods(clazz.getSuperclass(), methods);
     }
@@ -181,16 +172,14 @@ public abstract class AbstractServerHandlers<T>
     protected void addHandlerMethod(Method method, Collection<Method> methods) {
         ensureSupportedParameterTypes(method);
         ensureSupportedReturnType(method);
-        Optional<Class<?>> checkedException = Stream
-                .of(method.getExceptionTypes())
+        Optional<Class<?>> checkedException = Stream.of(method.getExceptionTypes())
                 .filter(ReflectTools::isCheckedException).findFirst();
         if (checkedException.isPresent()) {
             String msg = String.format(Locale.ENGLISH,
                     "Handler method may not declare checked exceptions. "
                             + "Component '%s' has method '%s' which declares checked exception '%s'"
                             + " and annotated with '%s'",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    checkedException.get().getName(),
+                    method.getDeclaringClass().getName(), method.getName(), checkedException.get().getName(),
                     getHandlerAnnotationFqn());
             throw new IllegalStateException(msg);
         }
@@ -205,11 +194,9 @@ public abstract class AbstractServerHandlers<T>
      */
     protected void ensureSupportedReturnType(Method method) {
         if (!void.class.equals(method.getReturnType())) {
-            String msg = String.format(Locale.ENGLISH,
-                    "Only void handler methods are supported. "
-                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but \"%s\"",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    getHandlerAnnotationFqn(),
+            String msg = String.format(Locale.ENGLISH, "Only void handler methods are supported. "
+                    + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but \"%s\"",
+                    method.getDeclaringClass().getName(), method.getName(), getHandlerAnnotationFqn(),
                     method.getReturnType().getSimpleName());
             throw new IllegalStateException(msg);
         }
@@ -223,8 +210,7 @@ public abstract class AbstractServerHandlers<T>
     protected abstract String getHandlerAnnotationFqn();
 
     /**
-     * Returns method's RPC communication mode from the client side to the
-     * server side when the element is disabled.
+     * Returns method's RPC communication mode from the client side to the server side when the element is disabled.
      *
      * @param method
      *            the method to get its update mode
@@ -244,8 +230,7 @@ public abstract class AbstractServerHandlers<T>
 
     @SuppressWarnings("unchecked")
     private final Class<T> getType() {
-        Type type = GenericTypeReflector.getTypeParameter(
-                getClass().getGenericSuperclass(),
+        Type type = GenericTypeReflector.getTypeParameter(getClass().getGenericSuperclass(),
                 getClass().getSuperclass().getTypeParameters()[0]);
         if (type instanceof Class || type instanceof ParameterizedType) {
             return (Class<T>) GenericTypeReflector.erase(type);
@@ -259,13 +244,10 @@ public abstract class AbstractServerHandlers<T>
         }
 
         if (type instanceof TypeVariable) {
-            return String.format(
-                    "Could not determine the composite content type for TypeVariable '%s'. "
-                            + "Either specify exact type or override collectHandlerMethods().",
-                    type.getTypeName());
+            return String.format("Could not determine the composite content type for TypeVariable '%s'. "
+                    + "Either specify exact type or override collectHandlerMethods().", type.getTypeName());
         }
-        return String.format(
-                "Could not determine the composite content type for %s. Override collectHandlerMethods().",
+        return String.format("Could not determine the composite content type for %s. Override collectHandlerMethods().",
                 type.getTypeName());
     }
 }

@@ -21,16 +21,14 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.PreserveOnRefresh;
 
 @PreserveOnRefresh
-public class PreserveOnRefreshExporter
-        extends WebComponentExporter<PreserveOnRefreshComponent> {
+public class PreserveOnRefreshExporter extends WebComponentExporter<PreserveOnRefreshComponent> {
 
     public PreserveOnRefreshExporter() {
         super("preserve-on-refresh");
     }
 
     @Override
-    public void configureInstance(
-            WebComponent<PreserveOnRefreshComponent> webComponent,
+    public void configureInstance(WebComponent<PreserveOnRefreshComponent> webComponent,
             PreserveOnRefreshComponent component) {
     }
 }

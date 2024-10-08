@@ -43,8 +43,7 @@ public class PushConfiguration extends Div {
         Div clientCounterLabel = new Div();
         clientCounterLabel.setText("0");
         clientCounterLabel.setId("client-counter");
-        NativeLabel label = new NativeLabel(
-                "Client counter (click 'increment' to update):");
+        NativeLabel label = new NativeLabel("Client counter (click 'increment' to update):");
         label.setFor(clientCounterLabel);
         add(label, clientCounterLabel);
 
@@ -58,8 +57,7 @@ public class PushConfiguration extends Div {
         serverCounterLabel = new Div();
         serverCounterLabel.setId("server-counter");
         serverCounterLabel.setText(String.valueOf(counter2));
-        label = new NativeLabel(
-                "Server counter (updates each 1s by server thread) :");
+        label = new NativeLabel("Server counter (updates each 1s by server thread) :");
         label.setFor(serverCounterLabel);
         add(label, serverCounterLabel);
 

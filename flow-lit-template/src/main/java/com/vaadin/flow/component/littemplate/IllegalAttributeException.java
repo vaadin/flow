@@ -24,8 +24,7 @@ package com.vaadin.flow.component.littemplate;
 public class IllegalAttributeException extends RuntimeException {
 
     /**
-     * Constructs an <code>IllegalAttributeException</code> with the specified
-     * detail message.
+     * Constructs an <code>IllegalAttributeException</code> with the specified detail message.
      *
      * @param s
      *            the detail message.

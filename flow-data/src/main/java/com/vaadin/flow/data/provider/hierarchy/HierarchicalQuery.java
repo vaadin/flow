@@ -23,8 +23,8 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 
 /**
- * Immutable hierarchical query object used to request data from a backend.
- * Contains the parent node, index limits, sorting and filtering information.
+ * Immutable hierarchical query object used to request data from a backend. Contains the parent node, index limits,
+ * sorting and filtering information.
  *
  * @param <T>
  *            bean type
@@ -37,14 +37,12 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
     private final T parent;
 
     /**
-     * Constructs a new hierarchical query object with given filter and parent
-     * node.
+     * Constructs a new hierarchical query object with given filter and parent node.
      *
      * @param filter
      *            filtering for fetching; can be <code>null</code>
      * @param parent
-     *            the hierarchical parent object, <code>null</code>
-     *            corresponding to the root node
+     *            the hierarchical parent object, <code>null</code> corresponding to the root node
      */
     public HierarchicalQuery(F filter, T parent) {
         super(filter);
@@ -52,8 +50,7 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
     }
 
     /**
-     * Constructs a new hierarchical query object with given offset, limit,
-     * sorting and filtering.
+     * Constructs a new hierarchical query object with given offset, limit, sorting and filtering.
      *
      * @param offset
      *            first index to fetch
@@ -66,19 +63,16 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      * @param filter
      *            filtering for fetching; can be <code>null</code>
      * @param parent
-     *            the hierarchical parent object, <code>null</code>
-     *            corresponding to the root node
+     *            the hierarchical parent object, <code>null</code> corresponding to the root node
      */
-    public HierarchicalQuery(int offset, int limit,
-            List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
+    public HierarchicalQuery(int offset, int limit, List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
             F filter, T parent) {
         super(offset, limit, sortOrders, inMemorySorting, filter);
         this.parent = parent;
     }
 
     /**
-     * Get the hierarchical parent object, where <code>null</code> corresponds
-     * to the root node.
+     * Get the hierarchical parent object, where <code>null</code> corresponds to the root node.
      *
      * @return the hierarchical parent object
      */

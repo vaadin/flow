@@ -26,8 +26,7 @@ public class AssertionsEnabledTest extends TestCase {
         } catch (AssertionError e) {
             assertFailed = true;
         } finally {
-            assertTrue("Unit tests should be run with assertions enabled",
-                    assertFailed);
+            assertTrue("Unit tests should be run with assertions enabled", assertFailed);
         }
     }
 }

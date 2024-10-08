@@ -45,20 +45,16 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
     public void testElementExecuteJavaScriptWithAwait() {
         open();
         getButton("elementAwaitButton").click();
-        WebElement result = waitUntil(
-                d -> findElement(By.id("elementAwaitResult")));
-        Assert.assertEquals("Element execute JS await result: 42",
-                result.getText());
+        WebElement result = waitUntil(d -> findElement(By.id("elementAwaitResult")));
+        Assert.assertEquals("Element execute JS await result: 42", result.getText());
     }
 
     @Test
     public void testPageExecuteJavaScriptWithAwait() {
         open();
         getButton("pageAwaitButton").click();
-        WebElement result = waitUntil(
-                d -> findElement(By.id("pageAwaitResult")));
-        Assert.assertEquals("Page execute JS await result: 72",
-                result.getText());
+        WebElement result = waitUntil(d -> findElement(By.id("pageAwaitResult")));
+        Assert.assertEquals("Page execute JS await result: 72", result.getText());
     }
 
     private WebElement getButton(String id) {

@@ -32,15 +32,13 @@ import com.vaadin.flow.function.SerializableFunction;
 public class DependencyTreeCacheTest {
     @Test
     public void multipleLevels_allIncluded_noneParsedAgain() {
-        MockParser parser = new MockParser().addResult("/a", "/b")
-                .addResult("/b", "/c").addResult("/c");
+        MockParser parser = new MockParser().addResult("/a", "/b").addResult("/b", "/c").addResult("/c");
 
         DependencyTreeCache<String> cache = new DependencyTreeCache<>(parser);
         Set<String> dependencies = cache.getDependencies("/a");
 
         parser.assertConsumed();
-        Assert.assertEquals(new HashSet<>(Arrays.asList("/a", "/b", "/c")),
-                dependencies);
+        Assert.assertEquals(new HashSet<>(Arrays.asList("/a", "/b", "/c")), dependencies);
 
         // Parse again, should not trigger exception because things are parsed
         // multiple times
@@ -50,16 +48,14 @@ public class DependencyTreeCacheTest {
 
     @Test
     public void sharedDependency_onlyParsedOnce() {
-        MockParser parser = new MockParser().addResult("/a", "/b", "/c")
-                .addResult("/b", "/d").addResult("/c", "/d").addResult("/d");
+        MockParser parser = new MockParser().addResult("/a", "/b", "/c").addResult("/b", "/d").addResult("/c", "/d")
+                .addResult("/d");
 
         DependencyTreeCache<String> cache = new DependencyTreeCache<>(parser);
         Set<String> dependencies = cache.getDependencies("/a");
 
         parser.assertConsumed();
-        Assert.assertEquals(
-                new HashSet<>(Arrays.asList("/a", "/b", "/c", "/d")),
-                dependencies);
+        Assert.assertEquals(new HashSet<>(Arrays.asList("/a", "/b", "/c", "/d")), dependencies);
     }
 
     @Test
@@ -84,17 +80,13 @@ public class DependencyTreeCacheTest {
 
         long end = System.currentTimeMillis();
 
-        Assert.assertEquals(new HashSet<>(Arrays.asList("/a", "/b")),
-                dependencies);
+        Assert.assertEquals(new HashSet<>(Arrays.asList("/a", "/b")), dependencies);
         Assert.assertEquals(dependencies, threadResult);
 
         long duration = (end - start);
 
-        Assert.assertTrue("Parsing should take less than 200 ms",
-                duration < 200);
-        Assert.assertTrue(
-                "Parsing should take at least 100 ms, was " + duration,
-                duration >= 100);
+        Assert.assertTrue("Parsing should take less than 200 ms", duration < 200);
+        Assert.assertTrue("Parsing should take at least 100 ms, was " + duration, duration >= 100);
     }
 
     @Test
@@ -109,16 +101,13 @@ public class DependencyTreeCacheTest {
             if (iterationCount++ > 30) {
                 // Less than 1/10^9 chance that 50/50 randomization will give
                 // the same result 30 times in a row
-                Assert.fail(
-                        "Did not observe both slowdown and speedup. Max duration: "
-                                + maxDuration + ", min duration: "
-                                + minDuration);
+                Assert.fail("Did not observe both slowdown and speedup. Max duration: " + maxDuration
+                        + ", min duration: " + minDuration);
             }
 
-            MockParser parser = new MockParser().addResult("/a", 25, "/b", "/c")
-                    .addResult("/b", 25).addResult("/c", 25);
-            DependencyTreeCache<String> cache = new DependencyTreeCache<>(
-                    parser);
+            MockParser parser = new MockParser().addResult("/a", 25, "/b", "/c").addResult("/b", 25).addResult("/c",
+                    25);
+            DependencyTreeCache<String> cache = new DependencyTreeCache<>(parser);
 
             Thread thread = new Thread(() -> cache.getDependencies("/a"));
 
@@ -131,9 +120,7 @@ public class DependencyTreeCacheTest {
             long end = System.currentTimeMillis();
             int duration = (int) (end - start);
 
-            Assert.assertTrue(
-                    "Duration should never be less than 50, was " + duration,
-                    duration >= 50);
+            Assert.assertTrue("Duration should never be less than 50, was " + duration, duration >= 50);
 
             maxDuration = Math.max(maxDuration, duration);
             minDuration = Math.min(minDuration, duration);
@@ -145,10 +132,8 @@ public class DependencyTreeCacheTest {
         public void block() throws InterruptedException;
     }
 
-    private static class MockParser
-            implements SerializableFunction<String, Collection<String>> {
-        private static final Supplier<Collection<String>> USED_PLACEHOLDER = () -> Collections
-                .emptySet();
+    private static class MockParser implements SerializableFunction<String, Collection<String>> {
+        private static final Supplier<Collection<String>> USED_PLACEHOLDER = () -> Collections.emptySet();
 
         private Map<String, Supplier<Collection<String>>> items = new ConcurrentHashMap<>();
 
@@ -157,8 +142,7 @@ public class DependencyTreeCacheTest {
             path = path.replaceFirst("^frontend://", "");
 
             // Get value and mark it as used
-            Supplier<Collection<String>> supplier = items.put(path,
-                    USED_PLACEHOLDER);
+            Supplier<Collection<String>> supplier = items.put(path, USED_PLACEHOLDER);
 
             if (supplier == USED_PLACEHOLDER) {
                 Assert.fail("Path " + path + " has already been parsed");
@@ -173,13 +157,11 @@ public class DependencyTreeCacheTest {
             return addResult(path, null, dependencies);
         }
 
-        public MockParser addResult(String path, int duration,
-                String... dependencies) {
+        public MockParser addResult(String path, int duration, String... dependencies) {
             return addResult(path, () -> Thread.sleep(duration), dependencies);
         }
 
-        public MockParser addResult(String path, Blocker blocker,
-                String... dependencies) {
+        public MockParser addResult(String path, Blocker blocker, String... dependencies) {
             items.put(path, () -> {
                 if (blocker != null) {
                     try {
@@ -194,9 +176,8 @@ public class DependencyTreeCacheTest {
         }
 
         public void assertConsumed() {
-            items.forEach((path, value) -> Assert.assertSame(
-                    path + " should have been parsed", USED_PLACEHOLDER,
-                    value));
+            items.forEach(
+                    (path, value) -> Assert.assertSame(path + " should have been parsed", USED_PLACEHOLDER, value));
         }
     }
 

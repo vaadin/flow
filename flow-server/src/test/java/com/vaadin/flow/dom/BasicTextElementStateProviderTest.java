@@ -26,8 +26,7 @@ public class BasicTextElementStateProviderTest {
 
     @Test
     public void createStateNode_stateNodeHasRequiredElementDataFeature() {
-        StateNode stateNode = BasicTextElementStateProvider
-                .createStateNode("foo");
+        StateNode stateNode = BasicTextElementStateProvider.createStateNode("foo");
         Assert.assertTrue(stateNode.isReportedFeature(TextNodeMap.class));
     }
 }

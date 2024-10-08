@@ -82,29 +82,25 @@ public class VaadinServiceDauTest {
         MockVaadinServletService service = new MockVaadinServletService(config);
         Assert.assertTrue("Expecting DAU interceptor to be installed",
                 vaadinInterceptors(service).anyMatch(IS_DAU_INTERCEPTOR));
-        dauIntegrationMock
-                .verify(() -> DauIntegration.startTracking(anyString()));
+        dauIntegrationMock.verify(() -> DauIntegration.startTracking(anyString()));
     }
 
     @Test
     public void init_productionMode_dauBuild_subscriptionKeyNotAvailable_throws() {
         dauIntegrationMock.reset();
-        dauIntegrationMock.when(() -> DauIntegration.startTracking(anyString()))
-                .thenCallRealMethod();
+        dauIntegrationMock.when(() -> DauIntegration.startTracking(anyString())).thenCallRealMethod();
         System.clearProperty("vaadin.subscriptionKey");
         MockDeploymentConfiguration config = new MockDeploymentConfiguration();
         config.setProductionMode(true);
         config.setApplicationOrSystemProperty(Constants.DAU_TOKEN, "true");
         // VaadinService.init() is called in the constructor
-        Assert.assertThrows(LicenseException.class,
-                () -> new MockVaadinServletService(config));
+        Assert.assertThrows(LicenseException.class, () -> new MockVaadinServletService(config));
     }
 
     @Test
     public void init_dauEnabled_lookupCustomIdentitySupplier() {
 
-        UserIdentitySupplier providedIdentitySupplier = userIdentityContext -> Optional
-                .of("user1");
+        UserIdentitySupplier providedIdentitySupplier = userIdentityContext -> Optional.of("user1");
 
         DAUCustomizer customizer = new DAUCustomizer() {
             @Override
@@ -114,13 +110,10 @@ public class VaadinServiceDauTest {
         };
         VaadinService service = vaadinServiceWithDau(customizer);
 
-        VaadinRequestInterceptor interceptor = vaadinInterceptors(service)
-                .filter(IS_DAU_INTERCEPTOR).findFirst()
-                .orElseThrow(() -> new AssertionError(
-                        "DAU interceptor not installed"));
+        VaadinRequestInterceptor interceptor = vaadinInterceptors(service).filter(IS_DAU_INTERCEPTOR).findFirst()
+                .orElseThrow(() -> new AssertionError("DAU interceptor not installed"));
         // Ugly way to ensure custom user identity function in use
-        UserIdentitySupplier userIdentitySupplier = extractUserIdentitySupplierFromDauInterceptor(
-                interceptor);
+        UserIdentitySupplier userIdentitySupplier = extractUserIdentitySupplierFromDauInterceptor(interceptor);
         Assert.assertSame(providedIdentitySupplier, userIdentitySupplier);
     }
 
@@ -148,14 +141,11 @@ public class VaadinServiceDauTest {
         };
     }
 
-    private Stream<VaadinRequestInterceptor> vaadinInterceptors(
-            VaadinService service) {
-        return StreamSupport.stream(
-                service.getVaadinRequestInterceptors().spliterator(), false);
+    private Stream<VaadinRequestInterceptor> vaadinInterceptors(VaadinService service) {
+        return StreamSupport.stream(service.getVaadinRequestInterceptors().spliterator(), false);
     }
 
-    private UserIdentitySupplier extractUserIdentitySupplierFromDauInterceptor(
-            VaadinRequestInterceptor interceptor) {
+    private UserIdentitySupplier extractUserIdentitySupplierFromDauInterceptor(VaadinRequestInterceptor interceptor) {
         if (interceptor instanceof VaadinService.VaadinSessionOnRequestStartInterceptorWrapper wrapper) {
             interceptor = wrapper.delegate;
         }
@@ -164,15 +154,13 @@ public class VaadinServiceDauTest {
                 Field identitySupplierField = DAUVaadinRequestInterceptor.class
                         .getDeclaredField("userIdentitySupplier");
                 identitySupplierField.setAccessible(true);
-                return (UserIdentitySupplier) identitySupplierField
-                        .get(interceptor);
+                return (UserIdentitySupplier) identitySupplierField.get(interceptor);
             } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new AssertionError(
-                        "Cannot access userIdentitySupplier field", e);
+                throw new AssertionError("Cannot access userIdentitySupplier field", e);
             }
         }
-        throw new AssertionError(interceptor.getClass()
-                + " is not a DAUVaadinRequestInterceptor nor a wrapped instance");
+        throw new AssertionError(
+                interceptor.getClass() + " is not a DAUVaadinRequestInterceptor nor a wrapped instance");
     }
 
 }

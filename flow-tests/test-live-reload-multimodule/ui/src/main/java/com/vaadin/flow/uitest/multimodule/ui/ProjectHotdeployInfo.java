@@ -13,8 +13,8 @@ public class ProjectHotdeployInfo extends Div {
 
     public ProjectHotdeployInfo() {
         VaadinContext context = VaadinService.getCurrent().getContext();
-        Span hotdeploy = new Span(ApplicationConfiguration.get(context)
-                .getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD ? "true"
+        Span hotdeploy = new Span(
+                ApplicationConfiguration.get(context).getMode() == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD ? "true"
                         : "false");
         add(hotdeploy);
     }

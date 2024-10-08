@@ -43,8 +43,7 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the type of the items in the node list
  */
-public class ListAddChange<T extends Serializable>
-        extends AbstractListChange<T> {
+public class ListAddChange<T extends Serializable> extends AbstractListChange<T> {
 
     private final List<? extends T> newItems;
     private final boolean nodeValues;
@@ -61,8 +60,7 @@ public class ListAddChange<T extends Serializable>
      * @param newItems
      *            a list of new items
      */
-    public ListAddChange(NodeList<T> list, boolean nodeValues, int index,
-            List<? extends T> newItems) {
+    public ListAddChange(NodeList<T> list, boolean nodeValues, int index, List<? extends T> newItems) {
         super(list, index);
         this.newItems = newItems;
         this.nodeValues = nodeValues;
@@ -80,24 +78,21 @@ public class ListAddChange<T extends Serializable>
     /**
      * Returns whether this add operation still contains any new items.
      *
-     * @return <code>true</code> if no new items, <code>false</code> if still
-     *         has new items
+     * @return <code>true</code> if no new items, <code>false</code> if still has new items
      */
     public boolean isEmpty() {
         return newItems.isEmpty();
     }
 
     /**
-     * Gets a copy of the change with the same data except a list of new
-     * {@code items}.
+     * Gets a copy of the change with the same data except a list of new {@code items}.
      *
      * @param items
      *            new list of items
      * @return a copy of the change based on new items
      */
     public ListAddChange<T> copy(List<? extends T> items) {
-        return new ListAddChange<>(getNodeList(), nodeValues, getIndex(),
-                items);
+        return new ListAddChange<>(getNodeList(), nodeValues, getIndex(), items);
     }
 
     @Override
@@ -120,27 +115,23 @@ public class ListAddChange<T extends Serializable>
             mapper = item -> Json.create(((StateNode) item).getId());
         } else {
             addKey = JsonConstants.CHANGE_SPLICE_ADD;
-            mapper = item -> JsonCodec.encodeWithConstantPool(item,
-                    constantPool);
+            mapper = item -> JsonCodec.encodeWithConstantPool(item, constantPool);
         }
 
-        JsonArray newItemsJson = newItems.stream().map(mapper)
-                .collect(JsonUtils.asArray());
+        JsonArray newItemsJson = newItems.stream().map(mapper).collect(JsonUtils.asArray());
         json.put(addKey, newItemsJson);
     }
 
     /**
      * Removes item from the change list.
      * <p>
-     * Note: This should be used only when list of changes is being re-indexed
-     * after adding a new change.
+     * Note: This should be used only when list of changes is being re-indexed after adding a new change.
      *
      * @param item
      *            Item to be removed.
      */
     public void removeItem(T item) {
-        assert (newItems.size() > 1)
-                : "Item list can't be empty after item removal";
+        assert (newItems.size() > 1) : "Item list can't be empty after item removal";
         newItems.remove(item);
     }
 

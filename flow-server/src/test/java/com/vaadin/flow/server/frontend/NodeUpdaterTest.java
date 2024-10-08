@@ -69,13 +69,10 @@ public class NodeUpdaterTest {
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
-                this.getClass().getClassLoader()));
-        options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
-                .withFeatureFlags(featureFlags);
+        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(this.getClass().getClassLoader()));
+        options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET).withFeatureFlags(featureFlags);
 
-        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class), options) {
 
             @Override
             public void execute() {
@@ -85,8 +82,7 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getGeneratedModules_should_includeOnlyWebComponents()
-            throws IOException {
+    public void getGeneratedModules_should_includeOnlyWebComponents() throws IOException {
         File frontend = temporaryFolder.newFolder();
         File generated = new File(frontend, FrontendUtils.GENERATED);
         File flow = new File(generated, "flow");
@@ -100,8 +96,7 @@ public class NodeUpdaterTest {
 
         Set<String> modules = NodeUpdater.getGeneratedModules(frontend);
 
-        Assert.assertEquals(
-                Set.of("web-components/a.js", "web-components/b.js"), modules);
+        Assert.assertEquals(Set.of("web-components/a.js", "web-components/b.js"), modules);
     }
 
     private void create(File file) throws IOException {
@@ -129,8 +124,7 @@ public class NodeUpdaterTest {
 
     @Test
     public void getDefaultDevDependencies_includesAllDependencies_whenUsingVite() {
-        Map<String, String> defaultDeps = nodeUpdater
-                .getDefaultDevDependencies();
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDevDependencies();
         Set<String> expectedDependencies = getCommonDevDeps();
 
         // Vite
@@ -200,41 +194,33 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(object);
 
         Assert.assertEquals(POLYMER_VERSION, getPolymerVersion(object));
-        Assert.assertEquals(POLYMER_VERSION, getPolymerVersion(
-                object.getObject(NodeUpdater.VAADIN_DEP_KEY)));
+        Assert.assertEquals(POLYMER_VERSION, getPolymerVersion(object.getObject(NodeUpdater.VAADIN_DEP_KEY)));
     }
 
     @Test
-    public void updateDefaultDependencies_olderVersionsAreUpdated()
-            throws IOException {
+    public void updateDefaultDependencies_olderVersionsAreUpdated() throws IOException {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("glob",
-                "7.0.0");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("glob", "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("10.4.5", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
+        Assert.assertEquals("10.4.5", packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
     @Test // #6907 test when user has set newer versions
-    public void updateDefaultDependencies_newerVersionsAreNotChanged()
-            throws IOException {
+    public void updateDefaultDependencies_newerVersionsAreNotChanged() throws IOException {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
-                "78.2.3");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite", "78.2.3");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("78.2.3", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
+        Assert.assertEquals("78.2.3", packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
     @Test
-    public void shouldUpdateExistingLocalFormPackageToNpmPackage()
-            throws IOException {
+    public void shouldUpdateExistingLocalFormPackageToNpmPackage() throws IOException {
         JsonObject packageJson = Json.createObject();
         JsonObject dependencies = Json.createObject();
         packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
@@ -248,11 +234,9 @@ public class NodeUpdaterTest {
 
         dependencies.put(formPackage, legecyVersion);
 
-        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
-                formPackage, newVersion);
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES, formPackage, newVersion);
 
-        Assert.assertEquals(newVersion, packageJson
-                .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
+        Assert.assertEquals(newVersion, packageJson.getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
     }
 
     @Test
@@ -270,11 +254,9 @@ public class NodeUpdaterTest {
 
         dependencies.put(formPackage, existingVersion);
 
-        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
-                formPackage, newVersion);
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES, formPackage, newVersion);
 
-        Assert.assertEquals(existingVersion, packageJson
-                .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
+        Assert.assertEquals(existingVersion, packageJson.getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
     }
 
     @Test
@@ -291,57 +273,45 @@ public class NodeUpdaterTest {
 
         dependencies.put(pkg, existingVersion);
 
-        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES, pkg,
-                existingVersion);
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES, pkg, existingVersion);
 
-        Assert.assertEquals(existingVersion,
-                packageJson.getObject(NodeUpdater.DEPENDENCIES).getString(pkg));
+        Assert.assertEquals(existingVersion, packageJson.getObject(NodeUpdater.DEPENDENCIES).getString(pkg));
 
     }
 
     @Test
-    public void getJsonFileContent_incorrectPackageJsonContent_throwsExceptionWithFileName()
-            throws IOException {
-        File brokenPackageJsonFile = temporaryFolder
-                .newFile("broken-package.json");
-        FileUtils.writeStringToFile(brokenPackageJsonFile,
-                "{ some broken json ", UTF_8);
+    public void getJsonFileContent_incorrectPackageJsonContent_throwsExceptionWithFileName() throws IOException {
+        File brokenPackageJsonFile = temporaryFolder.newFile("broken-package.json");
+        FileUtils.writeStringToFile(brokenPackageJsonFile, "{ some broken json ", UTF_8);
 
         JsonException exception = Assert.assertThrows(JsonException.class,
                 () -> NodeUpdater.getJsonFileContent(brokenPackageJsonFile));
 
-        MatcherAssert.assertThat(exception.getMessage(),
-                StringContains.containsString("Cannot parse package file "));
-        MatcherAssert.assertThat(exception.getMessage(),
-                StringContains.containsString("broken-package.json"));
+        MatcherAssert.assertThat(exception.getMessage(), StringContains.containsString("Cannot parse package file "));
+        MatcherAssert.assertThat(exception.getMessage(), StringContains.containsString("broken-package.json"));
     }
 
     @Test
     public void removedAllOldAndExistingPlugins() throws IOException {
         File packageJson = new File(npmFolder, "package.json");
         FileWriter packageJsonWriter = new FileWriter(packageJson);
-        packageJsonWriter.write("{\"devDependencies\": {"
-                + "\"@vaadin/some-old-plugin\": \"./target/plugins/some-old-plugin\","
-                + "\"@vaadin/application-theme-plugin\": \"./target/plugins/application-theme-plugin\"}"
-                + "}");
+        packageJsonWriter
+                .write("{\"devDependencies\": {" + "\"@vaadin/some-old-plugin\": \"./target/plugins/some-old-plugin\","
+                        + "\"@vaadin/application-theme-plugin\": \"./target/plugins/application-theme-plugin\"}" + "}");
         packageJsonWriter.close();
-        JsonObject actualDevDeps = nodeUpdater.getPackageJson()
-                .getObject(NodeUpdater.DEV_DEPENDENCIES);
+        JsonObject actualDevDeps = nodeUpdater.getPackageJson().getObject(NodeUpdater.DEV_DEPENDENCIES);
         Assert.assertFalse(actualDevDeps.hasKey("some-old-plugin"));
-        Assert.assertFalse(
-                actualDevDeps.hasKey("@vaadin/application-theme-plugin"));
+        Assert.assertFalse(actualDevDeps.hasKey("@vaadin/application-theme-plugin"));
     }
 
     @Test
-    public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
-            throws IOException {
+    public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson() throws IOException {
         nodeUpdater.generateVersionsJson(Json.createObject());
         Assert.assertEquals("{}", nodeUpdater.versionsJson.toJson());
     }
 
     @Test
-    public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
-            throws IOException {
+    public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps() throws IOException {
 
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -373,58 +343,44 @@ public class NodeUpdaterTest {
             + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
-        nodeUpdater.generateVersionsJson(Json.parse(FileUtils
-                .readFileToString(packageJson, StandardCharsets.UTF_8)));
+        nodeUpdater.generateVersionsJson(Json.parse(FileUtils.readFileToString(packageJson, StandardCharsets.UTF_8)));
         Assert.assertEquals(
-                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.5\","
-                        + "\"@polymer/polymer\":\"3.4.1\"" + "}",
+                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.5\"," + "\"@polymer/polymer\":\"3.4.1\"" + "}",
                 nodeUpdater.versionsJson.toJson());
     }
 
     @Test
-    public void testGetPlatformPinnedDependencies_vaadinCoreVersionIsNotPresent_outputIsEmptyJson()
-            throws IOException {
+    public void testGetPlatformPinnedDependencies_vaadinCoreVersionIsNotPresent_outputIsEmptyJson() throws IOException {
         Logger logger = Mockito.spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
-            loggerFactoryMocked
-                    .when(() -> LoggerFactory.getLogger(nodeUpdater.getClass()))
-                    .thenReturn(logger);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito.mockStatic(LoggerFactory.class)) {
+            loggerFactoryMocked.when(() -> LoggerFactory.getLogger(nodeUpdater.getClass())).thenReturn(logger);
 
-            Mockito.when(
-                    finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                    .thenReturn(null);
-            Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                    .thenReturn(null);
+            Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON)).thenReturn(null);
+            Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON)).thenReturn(null);
 
-            JsonObject pinnedVersions = nodeUpdater
-                    .getPlatformPinnedDependencies();
+            JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
             Assert.assertEquals(0, pinnedVersions.keys().length);
 
-            Mockito.verify(logger, Mockito.times(1)).info(
-                    "Couldn't find {} file to pin dependency versions for core components."
+            Mockito.verify(logger, Mockito.times(1))
+                    .info("Couldn't find {} file to pin dependency versions for core components."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.VAADIN_CORE_VERSIONS_JSON);
+                            Constants.VAADIN_CORE_VERSIONS_JSON);
         }
     }
 
     @Test
     public void testGetPlatformPinnedDependencies_onlyVaadinCoreVersionIsPresent_outputContainsOnlyCoreVersions()
             throws IOException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
-                ".json", temporaryFolder.newFolder());
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions", ".json", temporaryFolder.newFolder());
         JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
         Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
-        Assert.assertTrue(
-                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertTrue(mockedVaadinCoreJson.getObject("core").hasKey("button"));
         Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
-                StandardCharsets.UTF_8);
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(), StandardCharsets.UTF_8);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON)).thenReturn(null);
 
         JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
 
@@ -436,8 +392,7 @@ public class NodeUpdaterTest {
     @Test
     public void testGetPlatformPinnedDependencies_reactNotAvailable_noReactComponents()
             throws IOException, ClassNotFoundException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
-                ".json", temporaryFolder.newFolder());
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions", ".json", temporaryFolder.newFolder());
         JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
 
         JsonObject reactComponents = Json.createObject();
@@ -450,16 +405,13 @@ public class NodeUpdaterTest {
         mockedVaadinCoreJson.put("react", reactComponents);
 
         Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
-        Assert.assertTrue(
-                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertTrue(mockedVaadinCoreJson.getObject("core").hasKey("button"));
         Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
-                StandardCharsets.UTF_8);
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(), StandardCharsets.UTF_8);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON)).thenReturn(null);
 
         JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
 
@@ -470,10 +422,8 @@ public class NodeUpdaterTest {
     @Test
     public void testGetPlatformPinnedDependencies_reactAvailable_containsReactComponents()
             throws IOException, ClassNotFoundException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
-                ".json", temporaryFolder.newFolder());
-        File vaadinVersionsFile = File.createTempFile("vaadin-versions",
-                ".json", temporaryFolder.newFolder());
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions", ".json", temporaryFolder.newFolder());
+        File vaadinVersionsFile = File.createTempFile("vaadin-versions", ".json", temporaryFolder.newFolder());
         JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
 
         JsonObject reactComponents = Json.createObject();
@@ -487,8 +437,7 @@ public class NodeUpdaterTest {
         mockedVaadinCoreJson.put("react", reactComponents);
 
         Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
-        Assert.assertTrue(
-                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertTrue(mockedVaadinCoreJson.getObject("core").hasKey("button"));
         Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
 
         JsonObject mockedVaadinJson = getMockVaadinVersionsJson();
@@ -503,56 +452,43 @@ public class NodeUpdaterTest {
 
         mockedVaadinJson.put("react", reactComponents);
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
-                StandardCharsets.UTF_8);
-        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toJson(),
-                StandardCharsets.UTF_8);
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(), StandardCharsets.UTF_8);
+        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toJson(), StandardCharsets.UTF_8);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(vaadinVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON)).thenReturn(vaadinVersionsFile.toURI().toURL());
         Class clazz = FeatureFlags.class; // actual class doesn't matter
-        Mockito.doReturn(clazz).when(finder).loadClass(
-                "com.vaadin.flow.component.react.ReactAdapterComponent");
+        Mockito.doReturn(clazz).when(finder).loadClass("com.vaadin.flow.component.react.ReactAdapterComponent");
 
         JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
 
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
         Assert.assertTrue(pinnedVersions.hasKey("@vaadin/react-components"));
-        Assert.assertTrue(
-                pinnedVersions.hasKey("@vaadin/react-components-pro"));
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/react-components-pro"));
     }
 
     @Test
     public void testGetPlatformPinnedDependencies_VaadinAndVaadinCoreVersionsArePresent_outputContainsBothCoreAndCommercialVersions()
             throws IOException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
-                ".json", temporaryFolder.newFolder());
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions", ".json", temporaryFolder.newFolder());
         JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
         Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
-        Assert.assertTrue(
-                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertTrue(mockedVaadinCoreJson.getObject("core").hasKey("button"));
         Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
-                StandardCharsets.UTF_8);
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(), StandardCharsets.UTF_8);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(coreVersionsFile.toURI().toURL());
 
-        File vaadinVersionsFile = File.createTempFile("vaadin-versions",
-                ".json", temporaryFolder.newFolder());
+        File vaadinVersionsFile = File.createTempFile("vaadin-versions", ".json", temporaryFolder.newFolder());
         JsonObject mockedVaadinJson = getMockVaadinVersionsJson();
         Assert.assertFalse(mockedVaadinJson.hasKey("core"));
         Assert.assertTrue(mockedVaadinJson.hasKey("vaadin"));
-        Assert.assertTrue(
-                mockedVaadinJson.getObject("vaadin").hasKey("grid-pro"));
-        Assert.assertTrue(
-                mockedVaadinJson.getObject("vaadin").hasKey("vaadin-grid-pro"));
+        Assert.assertTrue(mockedVaadinJson.getObject("vaadin").hasKey("grid-pro"));
+        Assert.assertTrue(mockedVaadinJson.getObject("vaadin").hasKey("vaadin-grid-pro"));
 
-        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toJson(),
-                StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(vaadinVersionsFile.toURI().toURL());
+        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toJson(), StandardCharsets.UTF_8);
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON)).thenReturn(vaadinVersionsFile.toURI().toURL());
 
         JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
 
@@ -564,34 +500,23 @@ public class NodeUpdaterTest {
     @Test
     public void getDefaultDependencies_reactIsUsed_addsHillaReactComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendUtils> mock = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
-            mock.when(() -> FrontendUtils
-                    .isReactRouterRequired(Mockito.any(File.class)))
+        try (MockedStatic<FrontendUtils> mock = Mockito.mockStatic(FrontendUtils.class)) {
+            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class), Mockito.any(ClassFinder.class)))
                     .thenReturn(true);
+            mock.when(() -> FrontendUtils.isReactRouterRequired(Mockito.any(File.class))).thenReturn(true);
             options.withReact(true);
-            Map<String, String> defaultDeps = nodeUpdater
-                    .getDefaultDependencies();
-            Assert.assertFalse(
-                    "Lit component added unexpectedly for react-router",
+            Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+            Assert.assertFalse("Lit component added unexpectedly for react-router",
                     defaultDeps.containsKey("@vaadin/hilla-lit-form"));
-            Assert.assertTrue(
-                    "React component should be added when react-router is used",
+            Assert.assertTrue("React component should be added when react-router is used",
                     defaultDeps.containsKey("@vaadin/hilla-react-auth"));
-            Assert.assertTrue(
-                    defaultDeps.containsKey("@vaadin/hilla-react-crud"));
-            Assert.assertTrue(
-                    defaultDeps.containsKey("@vaadin/hilla-react-form"));
+            Assert.assertTrue(defaultDeps.containsKey("@vaadin/hilla-react-crud"));
+            Assert.assertTrue(defaultDeps.containsKey("@vaadin/hilla-react-form"));
 
-            Map<String, String> defaultDevDeps = nodeUpdater
-                    .getDefaultDevDependencies();
-            Assert.assertFalse(
-                    "Lit dev dependency added unexpectedly for react-router",
+            Map<String, String> defaultDevDeps = nodeUpdater.getDefaultDevDependencies();
+            Assert.assertFalse("Lit dev dependency added unexpectedly for react-router",
                     defaultDevDeps.containsKey("lit-dev-dependency"));
-            Assert.assertTrue(
-                    "React dev dependency should be added when react-router is used",
+            Assert.assertTrue("React dev dependency should be added when react-router is used",
                     defaultDevDeps.containsKey("react-dev-dependency"));
         } finally {
             options.withReact(reactEnabled);
@@ -601,27 +526,20 @@ public class NodeUpdaterTest {
     @Test
     public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendUtils> mock = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
+        try (MockedStatic<FrontendUtils> mock = Mockito.mockStatic(FrontendUtils.class)) {
+            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+                    .thenReturn(true);
             options.withReact(false);
-            Map<String, String> defaultDeps = nodeUpdater
-                    .getDefaultDependencies();
-            Assert.assertTrue(
-                    "Lit component should be when vaadin-router is used",
+            Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+            Assert.assertTrue("Lit component should be when vaadin-router is used",
                     defaultDeps.containsKey("@vaadin/hilla-lit-form"));
-            Assert.assertFalse(
-                    "React component added unexpectedly for vaadin-router",
+            Assert.assertFalse("React component added unexpectedly for vaadin-router",
                     defaultDeps.containsKey("@vaadin/hilla-react-form"));
 
-            Map<String, String> defaultDevDeps = nodeUpdater
-                    .getDefaultDevDependencies();
-            Assert.assertFalse(
-                    "React dev dependency added unexpectedly for vaadin-router",
+            Map<String, String> defaultDevDeps = nodeUpdater.getDefaultDevDependencies();
+            Assert.assertFalse("React dev dependency added unexpectedly for vaadin-router",
                     defaultDevDeps.containsKey("react-dev-dependency"));
-            Assert.assertTrue(
-                    "Lit dev dependency should be added when vaadin-router is used",
+            Assert.assertTrue("Lit dev dependency should be added when vaadin-router is used",
                     defaultDevDeps.containsKey("lit-dev-dependency"));
         } finally {
             options.withReact(reactEnabled);
@@ -631,34 +549,26 @@ public class NodeUpdaterTest {
     @Test
     public void getDefaultDependencies_hillaIsNotUsed_doesntAddHillaComponents() {
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
-        Assert.assertFalse(
-                "Lit component added unexpectedly when Hilla isn't used",
+        Assert.assertFalse("Lit component added unexpectedly when Hilla isn't used",
                 defaultDeps.containsKey("@vaadin/hilla-lit-form"));
-        Assert.assertFalse(
-                "React component added unexpectedly when Hilla isn't used",
+        Assert.assertFalse("React component added unexpectedly when Hilla isn't used",
                 defaultDeps.containsKey("@vaadin/hilla-react-auth"));
 
-        Map<String, String> defaultDevDeps = nodeUpdater
-                .getDefaultDevDependencies();
-        Assert.assertFalse(
-                "React dev dependency added unexpectedly when Hilla isn't used",
+        Map<String, String> defaultDevDeps = nodeUpdater.getDefaultDevDependencies();
+        Assert.assertFalse("React dev dependency added unexpectedly when Hilla isn't used",
                 defaultDevDeps.containsKey("react-dev-dependency"));
-        Assert.assertFalse(
-                "Lit dev dependency added unexpectedly when Hilla isn't used",
+        Assert.assertFalse("Lit dev dependency added unexpectedly when Hilla isn't used",
                 defaultDevDeps.containsKey("lit-dev-dependency"));
     }
 
     @Test
-    public void readPackageJson_nonExistingFile_doesNotThrow()
-            throws IOException {
+    public void readPackageJson_nonExistingFile_doesNotThrow() throws IOException {
         nodeUpdater.readPackageJson("non-existing-folder");
     }
 
     @Test
-    public void readPackageJson_nonExistingFile_jsonContainsDepsAndDevDeps()
-            throws IOException {
-        JsonObject jsonObject = nodeUpdater
-                .readPackageJson("non-existing-folder");
+    public void readPackageJson_nonExistingFile_jsonContainsDepsAndDevDeps() throws IOException {
+        JsonObject jsonObject = nodeUpdater.readPackageJson("non-existing-folder");
         Assert.assertTrue(jsonObject.hasKey("dependencies"));
         Assert.assertTrue(jsonObject.hasKey("devDependencies"));
     }
@@ -672,8 +582,7 @@ public class NodeUpdaterTest {
     @Test
     public void readPackageJsonIfAvailable_nonExistingFile_noErrorLog() {
         Logger log = Mockito.mock(Logger.class);
-        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class), options) {
 
             @Override
             public void execute() {
@@ -684,12 +593,10 @@ public class NodeUpdaterTest {
                 return log;
             }
         };
-        nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
-                "dependencies");
+        nodeUpdater.readDependenciesIfAvailable("non-existing-folder", "dependencies");
         Mockito.verifyNoInteractions(log);
 
-        nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
-                "devDpendencies");
+        nodeUpdater.readDependenciesIfAvailable("non-existing-folder", "devDpendencies");
         Mockito.verifyNoInteractions(log);
     }
 

@@ -46,16 +46,14 @@ public class MetadataWriter implements Serializable {
      * @param repaintAll
      *            Whether the client should repaint everything.
      * @param async
-     *            True if this message is sent by the server asynchronously,
-     *            false if it is a response to a client message.
+     *            True if this message is sent by the server asynchronously, false if it is a response to a client
+     *            message.
      * @param messages
-     *            a {@link SystemMessages} containing client-side error
-     *            messages.
+     *            a {@link SystemMessages} containing client-side error messages.
      * @return JSON object with the metadata
      *
      */
-    public JsonObject createMetadata(UI ui, boolean repaintAll, boolean async,
-            SystemMessages messages) {
+    public JsonObject createMetadata(UI ui, boolean repaintAll, boolean async, SystemMessages messages) {
         JsonObject meta = Json.createObject();
 
         if (repaintAll) {
@@ -74,11 +72,9 @@ public class MetadataWriter implements Serializable {
         // meta instruction for client to enable auto-forward to
         // sessionExpiredURL after timer expires.
         if (messages != null && messages.getSessionExpiredMessage() == null
-                && messages.getSessionExpiredCaption() == null
-                && messages.isSessionExpiredNotificationEnabled()
+                && messages.getSessionExpiredCaption() == null && messages.isSessionExpiredNotificationEnabled()
                 && ui.getSession().getSession() != null) {
-            int newTimeoutInterval = ui.getSession().getSession()
-                    .getMaxInactiveInterval();
+            int newTimeoutInterval = ui.getSession().getSession().getMaxInactiveInterval();
             if (repaintAll || (timeoutInterval != newTimeoutInterval)) {
                 String url = messages.getSessionExpiredURL();
                 if (url == null) {

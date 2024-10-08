@@ -35,28 +35,23 @@ public class SpringDevToolsHorizontalLayoutReloadView extends Div {
         result.setId("result");
         result.setVisible(false);
 
-        NativeButton startTriggerButton = SpringDevToolsReloadUtils
-                .createReloadTriggerButton();
+        NativeButton startTriggerButton = SpringDevToolsReloadUtils.createReloadTriggerButton();
 
-        HorizontalLayout layout = new HorizontalLayout(
-                new Button("Vaadin Button"), new TextField());
+        HorizontalLayout layout = new HorizontalLayout(new Button("Vaadin Button"), new TextField());
         add(startTriggerButton, result);
         add(new Html("<br/>"));
         add(layout);
 
         layout.getElement().addEventListener("componentready", event -> {
 
-            System.out.println("result: "
-                    + event.getEventData().getNumber("event.detail.result"));
+            System.out.println("result: " + event.getEventData().getNumber("event.detail.result"));
 
-            result.setText(String.format(
-                    "Reload time by class change was [%s] ms",
+            result.setText(String.format("Reload time by class change was [%s] ms",
                     event.getEventData().getNumber("event.detail.result")));
             result.setVisible(true);
 
         }).addEventData("event.detail.result");
 
-        UI.getCurrent().getPage()
-                .executeJs("window.benchmark.measureRender($0);", layout);
+        UI.getCurrent().getPage().executeJs("window.benchmark.measureRender($0);", layout);
     }
 }

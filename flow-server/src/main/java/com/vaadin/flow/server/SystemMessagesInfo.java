@@ -19,8 +19,7 @@ import java.io.Serializable;
 import java.util.Locale;
 
 /**
- * Provides information available for {@link SystemMessagesProvider} when
- * defining what {@link SystemMessages} to use.
+ * Provides information available for {@link SystemMessagesProvider} when defining what {@link SystemMessages} to use.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -41,8 +40,7 @@ public class SystemMessagesInfo implements Serializable {
      * @param service
      *            the service instance
      */
-    public SystemMessagesInfo(Locale locale, VaadinRequest request,
-            VaadinService service) {
+    public SystemMessagesInfo(Locale locale, VaadinRequest request, VaadinService service) {
         this.locale = locale;
         this.request = request;
         this.service = service;
@@ -60,8 +58,7 @@ public class SystemMessagesInfo implements Serializable {
     /**
      * Gets the request currently in progress.
      *
-     * @return The request currently in progress or null if no request is in
-     *         progress.
+     * @return The request currently in progress or null if no request is in progress.
      */
     public VaadinRequest getRequest() {
         return request;
@@ -70,8 +67,7 @@ public class SystemMessagesInfo implements Serializable {
     /**
      * Returns the service this SystemMessages request comes from.
      *
-     * @return The service which triggered this request or null of not triggered
-     *         from a service.
+     * @return The service which triggered this request or null of not triggered from a service.
      */
     public VaadinService getService() {
         return service;

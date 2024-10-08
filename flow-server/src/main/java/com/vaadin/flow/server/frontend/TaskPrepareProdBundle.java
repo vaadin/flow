@@ -35,8 +35,8 @@ import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
- * Copies production bundle files from pre-compiled bundle JAR into a folder
- * where production bundle is normally located.
+ * Copies production bundle files from pre-compiled bundle JAR into a folder where production bundle is normally
+ * located.
  * <p>
  * Copies project's custom theme files to the resources output folder.
  * <p>
@@ -55,8 +55,7 @@ public class TaskPrepareProdBundle implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         if (hasProdBundle()) {
-            ProdBundleUtils.unpackBundle(options.getNpmFolder(),
-                    options.getResourceOutputDirectory());
+            ProdBundleUtils.unpackBundle(options.getNpmFolder(), options.getResourceOutputDirectory());
         } else {
             copyDefaultBundleFilesFromJar();
         }
@@ -65,28 +64,23 @@ public class TaskPrepareProdBundle implements FallibleCommand {
     }
 
     private void copyProjectThemes() {
-        File localThemesRoot = new File(options.getFrontendDirectory(),
-                APPLICATION_THEME_ROOT);
+        File localThemesRoot = new File(options.getFrontendDirectory(), APPLICATION_THEME_ROOT);
         if (localThemesRoot.exists()) {
-            File webappResourcesDirectory = options
-                    .getWebappResourcesDirectory();
+            File webappResourcesDirectory = options.getWebappResourcesDirectory();
             if (webappResourcesDirectory == null) {
                 String buildDirectory = options.getBuildDirectoryName();
                 webappResourcesDirectory = new File(buildDirectory,
-                        Paths.get("classes", Constants.VAADIN_WEBAPP_RESOURCES)
-                                .toString());
+                        Paths.get("classes", Constants.VAADIN_WEBAPP_RESOURCES).toString());
             }
             File target = new File(webappResourcesDirectory,
-                    Paths.get(VAADIN_STATIC_FILES_PATH, APPLICATION_THEME_ROOT)
-                            .toString());
+                    Paths.get(VAADIN_STATIC_FILES_PATH, APPLICATION_THEME_ROOT).toString());
             File[] localThemes = localThemesRoot.listFiles(File::isDirectory);
             if (localThemes == null) {
                 throw new IllegalStateException();
             }
             for (File theme : localThemes) {
                 try {
-                    FileUtils.copyDirectory(theme,
-                            new File(target, theme.getName()));
+                    FileUtils.copyDirectory(theme, new File(target, theme.getName()));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -94,10 +88,8 @@ public class TaskPrepareProdBundle implements FallibleCommand {
         }
     }
 
-    private void copyDefaultBundleFilesFromJar()
-            throws ExecutionFailedException {
-        URL statsJson = BundleValidationUtil.getProdBundleResource(
-                "config/stats.json", options.getClassFinder());
+    private void copyDefaultBundleFilesFromJar() throws ExecutionFailedException {
+        URL statsJson = BundleValidationUtil.getProdBundleResource("config/stats.json", options.getClassFinder());
         if (statsJson == null) {
             throw new IllegalStateException(
                     "Could not copy production bundle files, because couldn't find production bundle in the class-path");
@@ -111,34 +103,27 @@ public class TaskPrepareProdBundle implements FallibleCommand {
         try {
             URI jarUri = new URI(pathToJar);
             JarContentsManager jarContentsManager = new JarContentsManager();
-            jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
-                    new File(jarUri), Constants.PROD_BUNDLE_NAME,
+            jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(new File(jarUri), Constants.PROD_BUNDLE_NAME,
                     options.getResourceOutputDirectory(), "**/*.*");
         } catch (URISyntaxException e) {
-            throw new ExecutionFailedException(
-                    "Couldn't copy production bundle files", e);
+            throw new ExecutionFailedException("Couldn't copy production bundle files", e);
         }
     }
 
     private boolean hasProdBundle() {
-        File prodBundleFolder = new File(options.getNpmFolder(),
-                Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
+        File prodBundleFolder = new File(options.getNpmFolder(), Constants.PROD_BUNDLE_COMPRESSED_FILE_LOCATION);
         return prodBundleFolder.exists();
     }
 
     private void writePreCompiledMarker() throws ExecutionFailedException {
         try {
-            File statsJsonFile = new File(options.getResourceOutputDirectory(),
-                    "config/stats.json");
-            JsonObject statsJsonContent = Json.parse(FileUtils
-                    .readFileToString(statsJsonFile, StandardCharsets.UTF_8));
+            File statsJsonFile = new File(options.getResourceOutputDirectory(), "config/stats.json");
+            JsonObject statsJsonContent = Json.parse(FileUtils.readFileToString(statsJsonFile, StandardCharsets.UTF_8));
             statsJsonContent.put("pre-compiled", true);
-            FileUtils.write(statsJsonFile,
-                    JsonUtil.stringify(statsJsonContent, 2) + "\n",
+            FileUtils.write(statsJsonFile, JsonUtil.stringify(statsJsonContent, 2) + "\n",
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
-            throw new ExecutionFailedException(
-                    "Couldn't access stats.json file", e);
+            throw new ExecutionFailedException("Couldn't access stats.json file", e);
         }
     }
 }

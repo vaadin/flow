@@ -34,11 +34,10 @@ class SimpleResult<R> implements Result<R> {
     private final String message;
 
     /**
-     * Creates a new {@link Result} instance using {@code value} for a non error
-     * {@link Result} and {@code message} for an error {@link Result}.
+     * Creates a new {@link Result} instance using {@code value} for a non error {@link Result} and {@code message} for
+     * an error {@link Result}.
      * <p>
-     * If {@code message} is null then {@code value} is ignored and result is an
-     * error.
+     * If {@code message} is null then {@code value} is ignored and result is an error.
      *
      * @param value
      *            the value of the result, may be {@code null}
@@ -47,8 +46,7 @@ class SimpleResult<R> implements Result<R> {
      */
     SimpleResult(R value, String message) {
         // value != null => message == null
-        assert value == null || message == null
-                : "Message must be null if value is provided";
+        assert value == null || message == null : "Message must be null if value is provided";
         this.value = value;
         this.message = message;
     }
@@ -67,8 +65,7 @@ class SimpleResult<R> implements Result<R> {
     }
 
     @Override
-    public void handle(SerializableConsumer<R> ifOk,
-            SerializableConsumer<String> ifError) {
+    public void handle(SerializableConsumer<R> ifOk, SerializableConsumer<String> ifError) {
         Objects.requireNonNull(ifOk, "ifOk cannot be null");
         Objects.requireNonNull(ifError, "ifError cannot be null");
         if (isError()) {
@@ -98,11 +95,8 @@ class SimpleResult<R> implements Result<R> {
     }
 
     @Override
-    public <X extends Throwable> R getOrThrow(
-            SerializableFunction<String, ? extends X> exceptionSupplier)
-            throws X {
-        Objects.requireNonNull(exceptionSupplier,
-                "Exception supplier cannot be null");
+    public <X extends Throwable> R getOrThrow(SerializableFunction<String, ? extends X> exceptionSupplier) throws X {
+        Objects.requireNonNull(exceptionSupplier, "Exception supplier cannot be null");
         if (isError()) {
             throw exceptionSupplier.apply(message);
         } else {
@@ -122,8 +116,7 @@ class SimpleResult<R> implements Result<R> {
             return false;
         }
         SimpleResult<?> that = (SimpleResult<?>) obj;
-        return Objects.equals(that.value, value)
-                && Objects.equals(that.message, message);
+        return Objects.equals(that.value, value) && Objects.equals(that.message, message);
     }
 
     @Override

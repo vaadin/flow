@@ -33,8 +33,7 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class TemplateModelWithEncodersTest extends HasCurrentService {
 
-    public static class TemplateWithEncoders extends
-            EmptyDivTemplate<TemplateWithEncoders.TemplateModelWithEncoders> {
+    public static class TemplateWithEncoders extends EmptyDivTemplate<TemplateWithEncoders.TemplateModelWithEncoders> {
 
         public interface TemplateModelWithEncoders extends TemplateModel {
             @Encode(value = LongToStringEncoder.class)
@@ -75,11 +74,10 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class TemplateWithIncompatibleEncoder extends
-            EmptyDivTemplate<TemplateWithIncompatibleEncoder.TemplateModelWithIncompatibleEncoder> {
+    public static class TemplateWithIncompatibleEncoder
+            extends EmptyDivTemplate<TemplateWithIncompatibleEncoder.TemplateModelWithIncompatibleEncoder> {
 
-        public interface TemplateModelWithIncompatibleEncoder
-                extends TemplateModel {
+        public interface TemplateModelWithIncompatibleEncoder extends TemplateModel {
 
             @Encode(value = LongToStringEncoder.class)
             void setIntValue(int intValue);
@@ -94,8 +92,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
     public static class TemplateWithEncoderOnParameterizedType extends
             EmptyDivTemplate<TemplateWithEncoderOnParameterizedType.TemplateModelWithEncoderOnParameterizedType> {
 
-        public interface TemplateModelWithEncoderOnParameterizedType
-                extends TemplateModel {
+        public interface TemplateModelWithEncoderOnParameterizedType extends TemplateModel {
 
             @Encode(value = LongToStringEncoder.class)
             void setList(List<String> list);
@@ -107,11 +104,10 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class TemplateWithSamePathInEncoders extends
-            EmptyDivTemplate<TemplateWithSamePathInEncoders.TemplateModelWithSamePathInEncoders> {
+    public static class TemplateWithSamePathInEncoders
+            extends EmptyDivTemplate<TemplateWithSamePathInEncoders.TemplateModelWithSamePathInEncoders> {
 
-        public interface TemplateModelWithSamePathInEncoders
-                extends TemplateModel {
+        public interface TemplateModelWithSamePathInEncoders extends TemplateModel {
 
             @Encode(value = LongToStringEncoder.class, path = "same")
             @Encode(value = LongToStringEncoder.class, path = "same")
@@ -124,10 +120,9 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class TemplateWithEncoderOnEncodedType extends
-            EmptyDivTemplate<TemplateWithEncoderOnEncodedType.TemplateModelWithEncoderOnEncodedType> {
-        public interface TemplateModelWithEncoderOnEncodedType
-                extends TemplateModel {
+    public static class TemplateWithEncoderOnEncodedType
+            extends EmptyDivTemplate<TemplateWithEncoderOnEncodedType.TemplateModelWithEncoderOnEncodedType> {
+        public interface TemplateModelWithEncoderOnEncodedType extends TemplateModel {
 
             @Encode(value = LongToBeanWithLongEncoder.class)
             @Encode(value = LongToStringEncoder.class, path = "longValue")
@@ -143,10 +138,9 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class TemplateWithUnsupportedEncoderModel extends
-            EmptyDivTemplate<TemplateWithUnsupportedEncoderModel.TemplateModelWithUnsupportedEncoderModel> {
-        public interface TemplateModelWithUnsupportedEncoderModel
-                extends TemplateModel {
+    public static class TemplateWithUnsupportedEncoderModel
+            extends EmptyDivTemplate<TemplateWithUnsupportedEncoderModel.TemplateModelWithUnsupportedEncoderModel> {
+        public interface TemplateModelWithUnsupportedEncoderModel extends TemplateModel {
 
             @Encode(value = UnsupportedModelEncoder.class)
             void setString(String string);
@@ -158,10 +152,9 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class TemplateWithEncodedReadOnlyBean extends
-            EmptyDivTemplate<TemplateWithEncodedReadOnlyBean.TemplateModelWithEncodedReadOnlyBean> {
-        public interface TemplateModelWithEncodedReadOnlyBean
-                extends TemplateModel {
+    public static class TemplateWithEncodedReadOnlyBean
+            extends EmptyDivTemplate<TemplateWithEncodedReadOnlyBean.TemplateModelWithEncodedReadOnlyBean> {
+        public interface TemplateModelWithEncodedReadOnlyBean extends TemplateModel {
 
             @Encode(value = LongToStringEncoder.class, path = "id")
             void setReadOnlyBean(ReadOnlyBean readOnlyBean);
@@ -176,8 +169,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class TemplateWithDate
-            extends EmptyDivTemplate<TemplateWithDate.TemplateModelWithDate> {
+    public static class TemplateWithDate extends EmptyDivTemplate<TemplateWithDate.TemplateModelWithDate> {
         public interface TemplateModelWithDate extends TemplateModel {
 
             @Encode(value = DateToDateBeanEncoder.class)
@@ -193,8 +185,8 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class TemplateWithListOfBeans extends
-            EmptyDivTemplate<TemplateWithListOfBeans.TemplateModelWithListOfBeans> {
+    public static class TemplateWithListOfBeans
+            extends EmptyDivTemplate<TemplateWithListOfBeans.TemplateModelWithListOfBeans> {
         public interface TemplateModelWithListOfBeans extends TemplateModel {
 
             @Encode(value = LongToStringEncoder.class, path = "longValue")
@@ -211,8 +203,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class LongToStringEncoder
-            implements ModelEncoder<Long, String> {
+    public static class LongToStringEncoder implements ModelEncoder<Long, String> {
 
         @Override
         public String encode(Long applicationValue) {
@@ -225,8 +216,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class DateToStringEncoder
-            implements ModelEncoder<Date, String> {
+    public static class DateToStringEncoder implements ModelEncoder<Date, String> {
 
         @Override
         public String encode(Date applicationValue) {
@@ -239,8 +229,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class StringToBeanWithStringEncoder
-            implements ModelEncoder<String, BeanWithString> {
+    public static class StringToBeanWithStringEncoder implements ModelEncoder<String, BeanWithString> {
 
         @Override
         public BeanWithString encode(String applicationValue) {
@@ -253,8 +242,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class LongToBeanWithLongEncoder
-            implements ModelEncoder<Long, BeanWithLong> {
+    public static class LongToBeanWithLongEncoder implements ModelEncoder<Long, BeanWithLong> {
 
         @Override
         public Class<Long> getDecodedType() {
@@ -272,16 +260,14 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class DateToBeanWithStringEncoder
-            implements ModelEncoder<Date, BeanWithString> {
+    public static class DateToBeanWithStringEncoder implements ModelEncoder<Date, BeanWithString> {
 
         @Override
         public BeanWithString encode(Date applicationValue) {
             if (applicationValue == null) {
                 return null;
             }
-            return new BeanWithString(
-                    Long.toString(applicationValue.getTime()));
+            return new BeanWithString(Long.toString(applicationValue.getTime()));
         }
 
         @Override
@@ -293,8 +279,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class UnsupportedModelEncoder
-            implements ModelEncoder<String, Long> {
+    public static class UnsupportedModelEncoder implements ModelEncoder<String, Long> {
 
         @Override
         public Class<Long> getEncodedType() {
@@ -312,8 +297,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class DateToDateBeanEncoder
-            implements ModelEncoder<Date, DateBean> {
+    public static class DateToDateBeanEncoder implements ModelEncoder<Date, DateBean> {
 
         @Override
         public DateBean encode(Date applicationValue) {
@@ -458,8 +442,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class EncodersOnGetters
-            extends EmptyDivTemplate<EncodersOnGetters.Model> {
+    public static class EncodersOnGetters extends EmptyDivTemplate<EncodersOnGetters.Model> {
 
         public interface Model extends TemplateModel {
             void setLongValue(long longValue);
@@ -500,8 +483,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
         }
     }
 
-    public static class SameEncodersOnAllMethods
-            extends EmptyDivTemplate<SameEncodersOnAllMethods.Model> {
+    public static class SameEncodersOnAllMethods extends EmptyDivTemplate<SameEncodersOnAllMethods.Model> {
 
         public interface Model extends TemplateModel {
             @Encode(value = LongToStringEncoder.class)
@@ -546,11 +528,9 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
     @Override
     protected VaadinService createService() {
         VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
         return service;
     }
 
@@ -628,12 +608,10 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
     @Test
     public void encode_on_list_of_beans() {
         Date date = new Date();
-        List<TestBean> testBeans = Collections
-                .singletonList(new TestBean(0L, date));
+        List<TestBean> testBeans = Collections.singletonList(new TestBean(0L, date));
         TemplateWithListOfBeans template = new TemplateWithListOfBeans();
         template.getModel().setTestBeans(testBeans);
-        assertEquals(0L,
-                template.getModel().getTestBeans().get(0).getLongValue());
+        assertEquals(0L, template.getModel().getTestBeans().get(0).getLongValue());
         assertEquals(date, template.getModel().getTestBeans().get(0).getDate());
     }
 
@@ -699,8 +677,7 @@ public class TemplateModelWithEncodersTest extends HasCurrentService {
 
         StateNode node = template.getElement().getNode();
 
-        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class)
-                .resolveModelMap("date");
+        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class).resolveModelMap("date");
 
         map.setProperty("day", "foo");
         template.getModel().getDate();

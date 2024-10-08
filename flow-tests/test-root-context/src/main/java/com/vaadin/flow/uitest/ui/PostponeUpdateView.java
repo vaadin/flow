@@ -34,8 +34,7 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PostponeUpdateView/:test?", layout = ViewTestLayout.class)
-public class PostponeUpdateView extends Div
-        implements BeforeLeaveObserver, BeforeEnterObserver {
+public class PostponeUpdateView extends Div implements BeforeLeaveObserver, BeforeEnterObserver {
     private ContinueNavigationAction continueNavigationAction;
 
     private int next = 1;
@@ -46,8 +45,7 @@ public class PostponeUpdateView extends Div
         link = new RouterLink();
         link.setText("initial");
         link.setId("link");
-        link.setRoute(PostponeUpdateView.class,
-                new RouteParameters(new RouteParam("test", next++)));
+        link.setRoute(PostponeUpdateView.class, new RouteParameters(new RouteParam("test", next++)));
         add(link);
 
         proceedButton = new NativeButton("proceed", e -> {
@@ -70,8 +68,7 @@ public class PostponeUpdateView extends Div
             if (Integer.parseInt(parameter) >= next) {
                 next = Integer.parseInt(parameter) + 1;
             }
-            link.setRoute(PostponeUpdateView.class,
-                    new RouteParameters(new RouteParam("test", next++)));
+            link.setRoute(PostponeUpdateView.class, new RouteParameters(new RouteParam("test", next++)));
         }
     }
 

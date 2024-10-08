@@ -32,114 +32,95 @@ public class AttachListenerIT extends ChromeBrowserTest {
 
     @Test
     public void firstAddedToMiddleOnFirstAttach() {
-        assertCombination("middleAsHost", "firstAsChild",
-                "attachListenerToFirst", "MiddleFirstLast");
+        assertCombination("middleAsHost", "firstAsChild", "attachListenerToFirst", "MiddleFirstLast");
     }
 
     @Test
     public void firstAddedToMiddleOnMiddleAttach() {
-        assertCombination("middleAsHost", "firstAsChild",
-                "attachListenerToMiddle", "MiddleFirstLast");
+        assertCombination("middleAsHost", "firstAsChild", "attachListenerToMiddle", "MiddleFirstLast");
     }
 
     @Test
     public void firstAddedToMiddleOnLastAttach() {
-        assertCombination("middleAsHost", "firstAsChild",
-                "attachListenerToLast", "MiddleFirstLast");
+        assertCombination("middleAsHost", "firstAsChild", "attachListenerToLast", "MiddleFirstLast");
     }
 
     @Test
     public void firstAddedToLastOnFirstAttach() {
-        assertCombination("lastAsHost", "firstAsChild", "attachListenerToFirst",
-                "MiddleLastFirst");
+        assertCombination("lastAsHost", "firstAsChild", "attachListenerToFirst", "MiddleLastFirst");
     }
 
     @Test
     public void firstAddedToLastOnMiddleAttach() {
-        assertCombination("lastAsHost", "firstAsChild",
-                "attachListenerToMiddle", "MiddleLastFirst");
+        assertCombination("lastAsHost", "firstAsChild", "attachListenerToMiddle", "MiddleLastFirst");
     }
 
     @Test
     public void firstAddedToLastOnLastAttach() {
-        assertCombination("lastAsHost", "firstAsChild", "attachListenerToLast",
-                "MiddleLastFirst");
+        assertCombination("lastAsHost", "firstAsChild", "attachListenerToLast", "MiddleLastFirst");
     }
 
     @Test
     public void lastAddedToMiddleOnFirstAttach() {
-        assertCombination("middleAsHost", "lastAsChild",
-                "attachListenerToFirst", "FirstMiddleLast");
+        assertCombination("middleAsHost", "lastAsChild", "attachListenerToFirst", "FirstMiddleLast");
     }
 
     @Test
     public void lastAddedToMiddleOnMiddleAttach() {
-        assertCombination("middleAsHost", "lastAsChild",
-                "attachListenerToMiddle", "FirstMiddleLast");
+        assertCombination("middleAsHost", "lastAsChild", "attachListenerToMiddle", "FirstMiddleLast");
     }
 
     @Test
     public void lastAddedToMiddleOnLastAttach() {
-        assertCombination("middleAsHost", "lastAsChild", "attachListenerToLast",
-                "FirstMiddleLast");
+        assertCombination("middleAsHost", "lastAsChild", "attachListenerToLast", "FirstMiddleLast");
     }
 
     @Test
     public void middleAddedToLastOnFirstAttach() {
-        assertCombination("lastAsHost", "middleAsChild",
-                "attachListenerToFirst", "FirstLastMiddle");
+        assertCombination("lastAsHost", "middleAsChild", "attachListenerToFirst", "FirstLastMiddle");
     }
 
     @Test
     public void middleAddedToLastOnMiddleAttach() {
-        assertCombination("lastAsHost", "middleAsChild",
-                "attachListenerToMiddle", "FirstLastMiddle");
+        assertCombination("lastAsHost", "middleAsChild", "attachListenerToMiddle", "FirstLastMiddle");
     }
 
     @Test
     public void middleAddedToLastOnLastAttach() {
-        assertCombination("lastAsHost", "middleAsChild", "attachListenerToLast",
-                "FirstLastMiddle");
+        assertCombination("lastAsHost", "middleAsChild", "attachListenerToLast", "FirstLastMiddle");
     }
 
     @Test
     public void middleAddedToFirstOnFirstAttach() {
-        assertCombination("firstAsHost", "middleAsChild",
-                "attachListenerToFirst", "FirstMiddleLast");
+        assertCombination("firstAsHost", "middleAsChild", "attachListenerToFirst", "FirstMiddleLast");
     }
 
     @Test
     public void middleAddedToFirstOnMiddleAttach() {
-        assertCombination("firstAsHost", "middleAsChild",
-                "attachListenerToMiddle", "FirstMiddleLast");
+        assertCombination("firstAsHost", "middleAsChild", "attachListenerToMiddle", "FirstMiddleLast");
     }
 
     @Test
     public void middleAddedToFirstOnLastAttach() {
-        assertCombination("firstAsHost", "middleAsChild",
-                "attachListenerToLast", "FirstMiddleLast");
+        assertCombination("firstAsHost", "middleAsChild", "attachListenerToLast", "FirstMiddleLast");
     }
 
     @Test
     public void lastAddedToFirstOnFirstAttach() {
-        assertCombination("firstAsHost", "lastAsChild", "attachListenerToFirst",
-                "FirstLastMiddle");
+        assertCombination("firstAsHost", "lastAsChild", "attachListenerToFirst", "FirstLastMiddle");
     }
 
     @Test
     public void lastAddedToFirstOnMiddleAttach() {
-        assertCombination("firstAsHost", "lastAsChild",
-                "attachListenerToMiddle", "FirstLastMiddle");
+        assertCombination("firstAsHost", "lastAsChild", "attachListenerToMiddle", "FirstLastMiddle");
     }
 
     @Test
     public void lastAddedToFirstOnLastAttach() {
-        assertCombination("firstAsHost", "lastAsChild", "attachListenerToLast",
-                "FirstLastMiddle");
+        assertCombination("firstAsHost", "lastAsChild", "attachListenerToLast", "FirstLastMiddle");
     }
 
-    private void assertCombination(String host, String child, String listener,
-            String expectedResult) {
+    private void assertCombination(String host, String child, String listener, String expectedResult) {
         WebElement hostRadio = findElement(By.id(host));
         WebElement childRadio = findElement(By.id(child));
         WebElement listenerRadio = findElement(By.id(listener));

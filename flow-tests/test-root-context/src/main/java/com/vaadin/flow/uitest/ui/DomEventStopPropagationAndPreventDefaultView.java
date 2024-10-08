@@ -27,8 +27,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DomEventStopPropagationAndPreventDefaultView", layout = ViewTestLayout.class)
-public class DomEventStopPropagationAndPreventDefaultView
-        extends AbstractDivView {
+public class DomEventStopPropagationAndPreventDefaultView extends AbstractDivView {
 
     @Tag("div")
     public static class DivComponent extends Component {
@@ -38,8 +37,7 @@ public class DomEventStopPropagationAndPreventDefaultView
             setId("component");
         }
 
-        public Registration addClickListener(
-                ComponentEventListener<ClickEvent> listener) {
+        public Registration addClickListener(ComponentEventListener<ClickEvent> listener) {
             return getEventBus().addListener(ClickEvent.class, listener);
         }
     }

@@ -56,8 +56,7 @@ import elemental.json.JsonValue;
 /**
  * Represents an element in the DOM.
  * <p>
- * Contains methods for updating and querying various parts of the element, such
- * as attributes.
+ * Contains methods for updating and querying various parts of the element, such as attributes.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -73,12 +72,10 @@ public class Element extends Node<Element> {
     private static final Map<String, String> illegalPropertyReplacements = new HashMap<>();
 
     static {
-        illegalPropertyReplacements.put("textContent",
-                "setTextContent(String)");
+        illegalPropertyReplacements.put("textContent", "setTextContent(String)");
         illegalPropertyReplacements.put("classList", "getClassList()");
         illegalPropertyReplacements.put("className", "getClassList()");
-        illegalPropertyReplacements.put("outerHTML",
-                "getParent().setProperty('innerHTML',value)");
+        illegalPropertyReplacements.put("outerHTML", "getParent().setProperty('innerHTML',value)");
     }
 
     /**
@@ -90,8 +87,7 @@ public class Element extends Node<Element> {
     };
 
     /**
-     * Private constructor for initializing with an existing node and state
-     * provider.
+     * Private constructor for initializing with an existing node and state provider.
      *
      * @param node
      *            the state node, not null
@@ -106,8 +102,8 @@ public class Element extends Node<Element> {
      * Creates an element using the given tag name.
      *
      * @param tag
-     *            the tag name of the element. Must be a non-empty string and
-     *            can contain letters, numbers and dashes ({@literal -})
+     *            the tag name of the element. Must be a non-empty string and can contain letters, numbers and dashes
+     *            ({@literal -})
      */
     public Element(String tag) {
         super(createStateNode(tag), BasicElementStateProvider.get());
@@ -127,13 +123,11 @@ public class Element extends Node<Element> {
         assert node != null;
 
         return ElementUtil.from(node)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Node is not valid as an element"));
+                .orElseThrow(() -> new IllegalArgumentException("Node is not valid as an element"));
     }
 
     /**
-     * Gets the element mapped to the given state node and element state
-     * provider.
+     * Gets the element mapped to the given state node and element state provider.
      *
      * @param node
      *            the state node
@@ -143,17 +137,15 @@ public class Element extends Node<Element> {
      */
     // Static builder instead of regular constructor to keep it slightly out of
     // view
-    public static Element get(StateNode node,
-            ElementStateProvider stateProvider) {
+    public static Element get(StateNode node, ElementStateProvider stateProvider) {
         return new Element(node, stateProvider);
     }
 
     /**
      * Gets the number of child elements.
      * <p>
-     * If the property "innerHTML" has been set explicitly then its value (the
-     * new element structure) won't be populated on the server side and this
-     * method will return <code>0</code>.
+     * If the property "innerHTML" has been set explicitly then its value (the new element structure) won't be populated
+     * on the server side and this method will return <code>0</code>.
      *
      * @see #setProperty(String, String)
      * @return the number of child elements
@@ -166,9 +158,8 @@ public class Element extends Node<Element> {
     /**
      * Returns the child element at the given position.
      * <p>
-     * If property "innerHTML" has been set explicitly then its value (the new
-     * element structure) won't be populated on the server side and this method
-     * will not work.
+     * If property "innerHTML" has been set explicitly then its value (the new element structure) won't be populated on
+     * the server side and this method will not work.
      *
      * @see #setProperty(String, String)
      * @param index
@@ -183,9 +174,8 @@ public class Element extends Node<Element> {
     /**
      * Gets all the children of this element.
      * <p>
-     * If property "innerHTML" has been set explicitly then its value (the new
-     * element structure) won't be populated on the server side and this method
-     * returns an empty stream.
+     * If property "innerHTML" has been set explicitly then its value (the new element structure) won't be populated on
+     * the server side and this method returns an empty stream.
      *
      * @see #setProperty(String, String)
      *
@@ -200,8 +190,7 @@ public class Element extends Node<Element> {
      * Creates a text node with the given text.
      *
      * @param text
-     *            the text in the node, <code>null</code> is interpreted as an
-     *            empty string
+     *            the text in the node, <code>null</code> is interpreted as an empty string
      * @return an element representing the text node, never <code>null</code>
      */
     public static Element createText(String text) {
@@ -209,8 +198,7 @@ public class Element extends Node<Element> {
             text = "";
         }
 
-        return new Element(BasicTextElementStateProvider.createStateNode(text),
-                BasicTextElementStateProvider.get());
+        return new Element(BasicTextElementStateProvider.createStateNode(text), BasicTextElementStateProvider.get());
     }
 
     /**
@@ -221,8 +209,7 @@ public class Element extends Node<Element> {
      */
     private static StateNode createStateNode(String tag) {
         if (!ElementUtil.isValidTagName(tag)) {
-            throw new IllegalArgumentException(
-                    "Tag " + tag + " is not a valid tag name");
+            throw new IllegalArgumentException("Tag " + tag + " is not a valid tag name");
         }
         return BasicElementStateProvider.createStateNode(tag);
     }
@@ -239,23 +226,21 @@ public class Element extends Node<Element> {
     /**
      * Sets the given attribute to the given value.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
+     * Attribute names are considered case insensitive and all names will be converted to lower case automatically.
      * <p>
      * An attribute always has a String key and a String value.
      * <p>
-     * Note: An empty attribute value ({@literal ""}) will be rendered as
-     * {@literal <div something>} and not {@literal <div something="">}.
+     * Note: An empty attribute value ({@literal ""}) will be rendered as {@literal <div something>} and not
+     * {@literal <div something="">}.
      * <p>
-     * Note that setting the attribute <code>class</code> will override anything
-     * that has been set previously via {@link #getClassList()}.
+     * Note that setting the attribute <code>class</code> will override anything that has been set previously via
+     * {@link #getClassList()}.
      * <p>
-     * Note that you cannot set the attribute <code>style</code> using this
-     * method. Instead you should use {@link #getStyle()} object.
+     * Note that you cannot set the attribute <code>style</code> using this method. Instead you should use
+     * {@link #getStyle()} object.
      * <p>
-     * Note that attribute changes made on the server are sent to the client but
-     * attribute changes made on the client side are not reflected back to the
-     * server.
+     * Note that attribute changes made on the server are sent to the client but attribute changes made on the client
+     * side are not reflected back to the server.
      *
      * @param attribute
      *            the name of the attribute
@@ -266,29 +251,23 @@ public class Element extends Node<Element> {
     public Element setAttribute(String attribute, String value) {
         String lowerCaseAttribute = validateAttribute(attribute, value);
 
-        Optional<CustomAttribute> customAttribute = CustomAttribute
-                .get(lowerCaseAttribute);
+        Optional<CustomAttribute> customAttribute = CustomAttribute.get(lowerCaseAttribute);
         if (customAttribute.isPresent()) {
             customAttribute.get().setAttribute(this, value);
         } else {
-            getStateProvider().setAttribute(getNode(), lowerCaseAttribute,
-                    value);
+            getStateProvider().setAttribute(getNode(), lowerCaseAttribute, value);
         }
         return this;
     }
 
     /**
-     * Sets the given attribute to the given boolean value. Setting the value to
-     * <code>true</code> will internally set the value to <code>""</code>, which
-     * will be rendered as {@literal <div name>}, i.e. without any explicit
-     * value. Setting the value to <code>false</code> is a shorthand for
-     * removing the attribute.
+     * Sets the given attribute to the given boolean value. Setting the value to <code>true</code> will internally set
+     * the value to <code>""</code>, which will be rendered as {@literal <div name>}, i.e. without any explicit value.
+     * Setting the value to <code>false</code> is a shorthand for removing the attribute.
      * <p>
-     * Use {@link #hasAttribute(String)} to check whether a boolean attribute
-     * has been set.
+     * Use {@link #hasAttribute(String)} to check whether a boolean attribute has been set.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
+     * Attribute names are considered case insensitive and all names will be converted to lower case automatically.
      *
      * @see #setAttribute(String, String)
      *
@@ -309,12 +288,10 @@ public class Element extends Node<Element> {
     /**
      * Sets the given attribute to the given {@link StreamResource} value.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
+     * Attribute names are considered case insensitive and all names will be converted to lower case automatically.
      * <p>
-     * This is a convenience method to register a {@link StreamResource}
-     * instance into the session and use the registered resource URI as an
-     * element attribute.
+     * This is a convenience method to register a {@link StreamResource} instance into the session and use the
+     * registered resource URI as an element attribute.
      * <p>
      *
      * @see #setAttribute(String, String)
@@ -325,17 +302,15 @@ public class Element extends Node<Element> {
      *            the resource value, not null
      * @return this element
      */
-    public Element setAttribute(String attribute,
-            AbstractStreamResource resource) {
+    public Element setAttribute(String attribute, AbstractStreamResource resource) {
         String lowerCaseAttribute = validateAttribute(attribute, resource);
 
-        Optional<CustomAttribute> customAttribute = CustomAttribute
-                .get(lowerCaseAttribute);
+        Optional<CustomAttribute> customAttribute = CustomAttribute.get(lowerCaseAttribute);
         if (!customAttribute.isPresent()) {
             getStateProvider().setAttribute(getNode(), attribute, resource);
         } else {
-            throw new IllegalArgumentException("Can't set " + attribute
-                    + " to StreamResource value. This attribute has special semantic");
+            throw new IllegalArgumentException(
+                    "Can't set " + attribute + " to StreamResource value. This attribute has special semantic");
         }
 
         return this;
@@ -344,26 +319,22 @@ public class Element extends Node<Element> {
     /**
      * Gets the value of the given attribute.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
+     * Attribute names are considered case insensitive and all names will be converted to lower case automatically.
      * <p>
      * An attribute always has a String key and a String value.
      * <p>
-     * Note that for attribute <code>class</code> the contents of the
-     * {@link #getClassList()} collection are returned as a single concatenated
-     * string.
+     * Note that for attribute <code>class</code> the contents of the {@link #getClassList()} collection are returned as
+     * a single concatenated string.
      * <p>
-     * Note that for attribute <code>style</code> the contents of the
-     * {@link #getStyle()} object are returned as a single concatenated string.
+     * Note that for attribute <code>style</code> the contents of the {@link #getStyle()} object are returned as a
+     * single concatenated string.
      * <p>
-     * Note that attribute changes made on the server are sent to the client but
-     * attribute changes made on the client side are not reflected back to the
-     * server.
+     * Note that attribute changes made on the server are sent to the client but attribute changes made on the client
+     * side are not reflected back to the server.
      *
      * @param attribute
      *            the name of the attribute
-     * @return the value of the attribute or null if the attribute has not been
-     *         set
+     * @return the value of the attribute or null if the attribute has not been set
      */
     public String getAttribute(String attribute) {
         if (attribute == null) {
@@ -372,21 +343,17 @@ public class Element extends Node<Element> {
 
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
 
-        return CustomAttribute.get(lowerCaseAttribute)
-                .map(attr -> attr.getAttribute(this))
-                .orElseGet(() -> getStateProvider().getAttribute(getNode(),
-                        lowerCaseAttribute));
+        return CustomAttribute.get(lowerCaseAttribute).map(attr -> attr.getAttribute(this))
+                .orElseGet(() -> getStateProvider().getAttribute(getNode(), lowerCaseAttribute));
     }
 
     /**
      * Checks if the given attribute has been set.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
+     * Attribute names are considered case insensitive and all names will be converted to lower case automatically.
      * <p>
-     * Note that attribute changes made on the server are sent to the client but
-     * attribute changes made on the client side are not reflected back to the
-     * server.
+     * Note that attribute changes made on the server are sent to the client but attribute changes made on the client
+     * side are not reflected back to the server.
      *
      * @param attribute
      *            the name of the attribute
@@ -398,13 +365,11 @@ public class Element extends Node<Element> {
         }
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
 
-        Optional<CustomAttribute> customAttribute = CustomAttribute
-                .get(lowerCaseAttribute);
+        Optional<CustomAttribute> customAttribute = CustomAttribute.get(lowerCaseAttribute);
         if (customAttribute.isPresent()) {
             return customAttribute.get().hasAttribute(this);
         } else {
-            return getStateProvider().hasAttribute(getNode(),
-                    lowerCaseAttribute);
+            return getStateProvider().hasAttribute(getNode(), lowerCaseAttribute);
         }
 
     }
@@ -412,26 +377,22 @@ public class Element extends Node<Element> {
     /**
      * Gets the defined attribute names.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
+     * Attribute names are considered case insensitive and all names will be converted to lower case automatically.
      * <p>
-     * Note that attribute changes made on the server are sent to the client but
-     * attribute changes made on the client side are not reflected back to the
-     * server.
+     * Note that attribute changes made on the server are sent to the client but attribute changes made on the client
+     * side are not reflected back to the server.
      *
      * @return a stream of defined attribute names
      */
     public Stream<String> getAttributeNames() {
-        assert getStateProvider().getAttributeNames(getNode())
-                .map(CustomAttribute::get).filter(Optional::isPresent)
+        assert getStateProvider().getAttributeNames(getNode()).map(CustomAttribute::get).filter(Optional::isPresent)
                 .filter(attr -> attr.get().hasAttribute(this)).count() == 0
                 : "Overlap between stored attributes and existing custom attributes";
 
-        Stream<String> regularNames = getStateProvider()
-                .getAttributeNames(getNode());
+        Stream<String> regularNames = getStateProvider().getAttributeNames(getNode());
 
-        Stream<String> customNames = CustomAttribute.getNames().stream().filter(
-                name -> CustomAttribute.get(name).get().hasAttribute(this));
+        Stream<String> customNames = CustomAttribute.getNames().stream()
+                .filter(name -> CustomAttribute.get(name).get().hasAttribute(this));
 
         return Stream.concat(regularNames, customNames);
     }
@@ -439,14 +400,12 @@ public class Element extends Node<Element> {
     /**
      * Removes the given attribute.
      * <p>
-     * Attribute names are considered case insensitive and all names will be
-     * converted to lower case automatically.
+     * Attribute names are considered case insensitive and all names will be converted to lower case automatically.
      * <p>
      * If the attribute has not been set, does nothing.
      * <p>
-     * Note that attribute changes made on the server are sent to the client but
-     * attribute changes made on the client side are not reflected back to the
-     * server.
+     * Note that attribute changes made on the server are sent to the client but attribute changes made on the client
+     * side are not reflected back to the server.
      *
      * @param attribute
      *            the name of the attribute
@@ -458,13 +417,11 @@ public class Element extends Node<Element> {
         }
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
         if (hasAttribute(lowerCaseAttribute)) {
-            Optional<CustomAttribute> customAttribute = CustomAttribute
-                    .get(lowerCaseAttribute);
+            Optional<CustomAttribute> customAttribute = CustomAttribute.get(lowerCaseAttribute);
             if (customAttribute.isPresent()) {
                 customAttribute.get().removeAttribute(this);
             } else {
-                getStateProvider().removeAttribute(getNode(),
-                        lowerCaseAttribute);
+                getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
             }
         }
         return this;
@@ -481,19 +438,16 @@ public class Element extends Node<Element> {
      *            the type of event to listen to, not <code>null</code>
      * @param listener
      *            the listener to add, not <code>null</code>
-     * @return a handle that can be used for configuring or removing the
-     *         listener
+     * @return a handle that can be used for configuring or removing the listener
      */
-    public DomListenerRegistration addEventListener(String eventType,
-            DomEventListener listener) {
+    public DomListenerRegistration addEventListener(String eventType, DomEventListener listener) {
         if (eventType == null) {
             throw new IllegalArgumentException(EVENT_TYPE_MUST_NOT_BE_NULL);
         }
         if (listener == null) {
             throw new IllegalArgumentException("Listener must not be null");
         }
-        return getStateProvider().addEventListener(getNode(), eventType,
-                listener);
+        return getStateProvider().addEventListener(getNode(), eventType, listener);
     }
 
     /**
@@ -514,8 +468,7 @@ public class Element extends Node<Element> {
     /**
      * Removes this element from its parent and state tree.
      * <p>
-     * This will send a detach event for the node, fully releasing it on the
-     * client.
+     * This will send a detach event for the node, fully releasing it on the client.
      *
      * @return this element
      */
@@ -526,9 +479,8 @@ public class Element extends Node<Element> {
     /**
      * Removes this element from its parent and state tree.
      * <p>
-     * sendDetach can be given as false to fully reset the node and not send a
-     * detach event. This for instance when having preserveOnRefresh that only
-     * moves the node.
+     * sendDetach can be given as false to fully reset the node and not send a detach event. This for instance when
+     * having preserveOnRefresh that only moves the node.
      * <p>
      * This method is meant for internal use only.
      *
@@ -553,13 +505,11 @@ public class Element extends Node<Element> {
     /**
      * Gets the parent element.
      * <p>
-     * The method may return {@code null} if the parent is not an element but a
-     * {@link Node}.
+     * The method may return {@code null} if the parent is not an element but a {@link Node}.
      *
      * @see #getParentNode()
      *
-     * @return the parent element or null if this element does not have a parent
-     *         or the parent is not an element
+     * @return the parent element or null if this element does not have a parent or the parent is not an element
      */
     public Element getParent() {
         Node<?> parent = getParentNode();
@@ -572,8 +522,7 @@ public class Element extends Node<Element> {
     /**
      * Sets the given property to the given string value.
      * <p>
-     * Note in order to update the following properties, you need to use the
-     * specific API for that:
+     * Note in order to update the following properties, you need to use the specific API for that:
      * <table>
      * <caption>Properties with different API</caption>
      * <tr>
@@ -590,20 +539,17 @@ public class Element extends Node<Element> {
      * </tr>
      * <tr>
      * <td>textContent</td>
-     * <td>{@link Element#getText()} and {@link Element#getTextRecursively()}
-     * </td>
+     * <td>{@link Element#getText()} and {@link Element#getTextRecursively()}</td>
      * </tr>
      * </table>
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      * <p>
-     * The "innerHTML" property has an impact on the descendants structure of
-     * the element. So setting the "innerHTML" property removes all the
-     * children.
+     * The "innerHTML" property has an impact on the descendants structure of the element. So setting the "innerHTML"
+     * property removes all the children.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -618,11 +564,10 @@ public class Element extends Node<Element> {
     /**
      * Sets the given property to the given boolean value.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -637,11 +582,10 @@ public class Element extends Node<Element> {
     /**
      * Sets the given property to the given numeric value.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -656,15 +600,13 @@ public class Element extends Node<Element> {
     /**
      * Sets the given property to the given JSON value.
      * <p>
-     * Please note that this method does not accept <code>null</code> as a
-     * value, since {@link Json#createNull()} should be used instead for JSON
-     * values.
+     * Please note that this method does not accept <code>null</code> as a value, since {@link Json#createNull()} should
+     * be used instead for JSON values.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -685,11 +627,10 @@ public class Element extends Node<Element> {
     /**
      * Sets the given property to the given bean, converted to a JSON object.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -706,14 +647,12 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Sets the given property to the given list of beans or primitive values,
-     * converted to a JSON array.
+     * Sets the given property to the given list of beans or primitive values, converted to a JSON array.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param <T>
      *            the type of items in the list
@@ -732,14 +671,12 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Sets the given property to the given map of beans or primitive values,
-     * converted to a JSON object.
+     * Sets the given property to the given map of beans or primitive values, converted to a JSON object.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -756,60 +693,49 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Adds a property change listener which is triggered when the property's
-     * value is updated on the server side.
+     * Adds a property change listener which is triggered when the property's value is updated on the server side.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @see #addPropertyChangeListener(String, String, PropertyChangeListener)
      * @param name
-     *            the property name to add the listener for, not
-     *            <code>null</code>
+     *            the property name to add the listener for, not <code>null</code>
      * @param listener
-     *            listener to get notifications about property value changes,
-     *            not <code>null</code>
+     *            listener to get notifications about property value changes, not <code>null</code>
      * @return an event registration handle for removing the listener
      */
-    public Registration addPropertyChangeListener(String name,
-            PropertyChangeListener listener) {
+    public Registration addPropertyChangeListener(String name, PropertyChangeListener listener) {
         verifySetPropertyName(name);
 
-        return getStateProvider().addPropertyChangeListener(getNode(), name,
-                listener);
+        return getStateProvider().addPropertyChangeListener(getNode(), name, listener);
     }
 
     /**
-     * Adds a property change listener and configures the property to be
-     * synchronized to the server when a given DOM event is fired.
+     * Adds a property change listener and configures the property to be synchronized to the server when a given DOM
+     * event is fired.
      *
      * #see {@link #addPropertyChangeListener(String, PropertyChangeListener)}
      *
      * @param propertyName
-     *            the name of the element property to listen to, not
-     *            <code>null</code>
+     *            the name of the element property to listen to, not <code>null</code>
      * @param domEventName
-     *            the name of the DOM event for which the property should be
-     *            synchronized to the server, not <code>null</code>
+     *            the name of the DOM event for which the property should be synchronized to the server, not
+     *            <code>null</code>
      * @param listener
      *            the property change listener not add, not <code>null</code>
-     * @return a handle that can be used for configuring or removing the
-     *         listener
+     * @return a handle that can be used for configuring or removing the listener
      *
      * @since 1.3
      */
-    public DomListenerRegistration addPropertyChangeListener(
-            String propertyName, String domEventName,
+    public DomListenerRegistration addPropertyChangeListener(String propertyName, String domEventName,
             PropertyChangeListener listener) {
-        Registration propertyListenerRegistration = addPropertyChangeListener(
-                propertyName, listener);
+        Registration propertyListenerRegistration = addPropertyChangeListener(propertyName, listener);
 
         // No-op DOM listener since we're also listening to property changes
-        return addEventListener(domEventName, NO_OP_DOM_LISTENER)
-                .synchronizeProperty(propertyName)
+        return addEventListener(domEventName, NO_OP_DOM_LISTENER).synchronizeProperty(propertyName)
                 .onUnregister(propertyListenerRegistration::remove);
     }
 
@@ -827,27 +753,24 @@ public class Element extends Node<Element> {
 
     private static void verifySetPropertyName(String name) {
         if (name == null) {
-            throw new IllegalArgumentException(
-                    "A property name cannot be null");
+            throw new IllegalArgumentException("A property name cannot be null");
         }
 
         String replacement = illegalPropertyReplacements.get(name);
         if (replacement != null) {
             throw new IllegalArgumentException(
-                    "Can't set or synchronize " + name + " as a property, use "
-                            + replacement + " instead.");
+                    "Can't set or synchronize " + name + " as a property, use " + replacement + " instead.");
         }
     }
 
     /**
-     * Gets the value of the given property as a string. The returned value is
-     * converted to a string if it has been set as some other type.
+     * Gets the value of the given property as a string. The returned value is converted to a string if it has been set
+     * as some other type.
      *
      * @param name
      *            the property name, not <code>null</code>
      * @param defaultValue
-     *            the value to return if the property is not set, or if the
-     *            value is <code>null</code>
+     *            the value to return if the property is not set, or if the value is <code>null</code>
      * @return the property value
      */
     public String getProperty(String name, String defaultValue) {
@@ -884,23 +807,20 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Gets the value of the given property as a boolean, or the given default
-     * value if the underlying value is <code>null</code>.
+     * Gets the value of the given property as a boolean, or the given default value if the underlying value is
+     * <code>null</code>.
      * <p>
-     * A value defined as some other type than boolean is converted according to
-     * JavaScript semantics:
+     * A value defined as some other type than boolean is converted according to JavaScript semantics:
      * <ul>
      * <li>String values are <code>true</code>, except for the empty string.
-     * <li>Numerical values are <code>true</code>, except for 0 and
-     * <code>NaN</code>.
+     * <li>Numerical values are <code>true</code>, except for 0 and <code>NaN</code>.
      * <li>JSON object and JSON array values are always <code>true</code>.
      * </ul>
      *
      * @param name
      *            the property name, not <code>null</code>
      * @param defaultValue
-     *            the value to return if the property is not set, or if the
-     *            value is <code>null</code>
+     *            the value to return if the property is not set, or if the value is <code>null</code>
      * @return the property value
      */
     public boolean getProperty(String name, boolean defaultValue) {
@@ -913,14 +833,12 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Gets the value of the given property as a double, or the given default
-     * value if the underlying value is <code>null</code>
+     * Gets the value of the given property as a double, or the given default value if the underlying value is
+     * <code>null</code>
      * <p>
-     * A value defined as some other type than double is converted according to
-     * JavaScript semantics:
+     * A value defined as some other type than double is converted according to JavaScript semantics:
      * <ul>
-     * <li>String values are parsed to a number. <code>NaN</code> is returned if
-     * the string can't be parsed.
+     * <li>String values are parsed to a number. <code>NaN</code> is returned if the string can't be parsed.
      * <li>boolean <code>true</code> is 1, boolean <code>false</code> is 0.
      * <li>JSON object and JSON array values are always <code>NaN</code>.
      * </ul>
@@ -928,8 +846,7 @@ public class Element extends Node<Element> {
      * @param name
      *            the property name, not <code>null</code>
      * @param defaultValue
-     *            the value to return if the property is not set, or if the
-     *            value is <code>null</code>
+     *            the value to return if the property is not set, or if the value is <code>null</code>
      * @return the property value
      */
     public double getProperty(String name, double defaultValue) {
@@ -955,24 +872,21 @@ public class Element extends Node<Element> {
                 }
             }
         } else {
-            throw new IllegalStateException(
-                    "Unsupported property type: " + value.getClass());
+            throw new IllegalStateException("Unsupported property type: " + value.getClass());
         }
     }
 
     /**
-     * Gets the value of the given property as an integer, or the given default
-     * value if the underlying value is <code>null</code>
+     * Gets the value of the given property as an integer, or the given default value if the underlying value is
+     * <code>null</code>
      * <p>
-     * The value is converted in the same way as for
-     * {@link #getProperty(String, double)}, and then truncated to
+     * The value is converted in the same way as for {@link #getProperty(String, double)}, and then truncated to
      * <code>int</code>.
      *
      * @param name
      *            the property name, not <code>null</code>
      * @param defaultValue
-     *            the value to return if the property is not set, or if the
-     *            value is <code>null</code>
+     *            the value to return if the property is not set, or if the value is <code>null</code>
      * @return the property value
      */
     public int getProperty(String name, int defaultValue) {
@@ -980,10 +894,9 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Gets the raw property value without any value conversion. The type of the
-     * value is {@link String}, {@link Double}, {@link Boolean} or
-     * {@link JsonValue}. <code>null</code> is returned if there is no property
-     * with the given name or if the value is set to <code>null</code>.
+     * Gets the raw property value without any value conversion. The type of the value is {@link String},
+     * {@link Double}, {@link Boolean} or {@link JsonValue}. <code>null</code> is returned if there is no property with
+     * the given name or if the value is set to <code>null</code>.
      *
      * @param name
      *            the property name, not null
@@ -996,11 +909,10 @@ public class Element extends Node<Element> {
     /**
      * Removes the given property.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * and {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} and
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -1014,16 +926,14 @@ public class Element extends Node<Element> {
     /**
      * Checks whether this element has a property with the given name.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
-     * @return <code>true</code> if the property is present; otherwise
-     *         <code>false</code>
+     * @return <code>true</code> if the property is present; otherwise <code>false</code>
      */
     public boolean hasProperty(String name) {
         return getStateProvider().hasProperty(getNode(), name);
@@ -1032,11 +942,10 @@ public class Element extends Node<Element> {
     /**
      * Gets the defined property names.
      * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     * Note that properties changed on the server are updated on the client but changes made on the client side are not
+     * reflected back to the server unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)} or
+     * {@link DomListenerRegistration#synchronizeProperty(String)}.
      *
      * @return a stream of defined property names
      */
@@ -1047,8 +956,7 @@ public class Element extends Node<Element> {
     /**
      * Checks whether this element represents a text node.
      *
-     * @return <code>true</code> if this element is a text node; otherwise
-     *         <code>false</code>
+     * @return <code>true</code> if this element is a text node; otherwise <code>false</code>
      */
     public boolean isTextNode() {
         return getStateProvider().isTextNode(getNode());
@@ -1058,8 +966,7 @@ public class Element extends Node<Element> {
      * Sets the text content of this element, replacing any existing children.
      *
      * @param textContent
-     *            the text content to set, <code>null</code> is interpreted as
-     *            an empty string
+     *            the text content to set, <code>null</code> is interpreted as an empty string
      * @return this element
      */
     public Element setText(String textContent) {
@@ -1093,9 +1000,8 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Gets the text content of this element. This includes only the text from
-     * any immediate child text nodes, but ignores text inside child elements.
-     * Use {@link #getTextRecursively()} to get the full text that recursively
+     * Gets the text content of this element. This includes only the text from any immediate child text nodes, but
+     * ignores text inside child elements. Use {@link #getTextRecursively()} to get the full text that recursively
      * includes the text content of the entire element tree.
      *
      * @see #getTextRecursively()
@@ -1108,9 +1014,8 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Gets the text content of this element tree. This includes the text
-     * content of all child nodes recursively. Use {@link #getText()} to only
-     * get the text from text nodes that are immediate children of this element.
+     * Gets the text content of this element tree. This includes the text content of all child nodes recursively. Use
+     * {@link #getText()} to only get the text from text nodes that are immediate children of this element.
      *
      * @see #getText()
      *
@@ -1121,13 +1026,11 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Returns the text content for this element by including children matching
-     * the given filter.
+     * Returns the text content for this element by including children matching the given filter.
      *
      * @param childFilter
      *            the filter used to decide whether to include a child or not
-     * @return the text content for this element and any matching child nodes
-     *         recursively, never {@code null}
+     * @return the text content for this element and any matching child nodes recursively, never {@code null}
      */
     private String getTextContent(Predicate<? super Element> childFilter) {
         if (isTextNode()) {
@@ -1139,24 +1042,20 @@ public class Element extends Node<Element> {
         }
     }
 
-    private void appendTextContent(StringBuilder builder,
-            Predicate<? super Element> childFilter) {
+    private void appendTextContent(StringBuilder builder, Predicate<? super Element> childFilter) {
         if (isTextNode()) {
             builder.append(getText());
         } else {
-            getChildren().filter(childFilter)
-                    .forEach(e -> e.appendTextContent(builder, childFilter));
+            getChildren().filter(childFilter).forEach(e -> e.appendTextContent(builder, childFilter));
         }
     }
 
     /**
-     * Gets the set of CSS class names used for this element. The returned set
-     * can be modified to add or remove class names. The contents of the set is
-     * also reflected in the value of the <code>class</code> attribute.
+     * Gets the set of CSS class names used for this element. The returned set can be modified to add or remove class
+     * names. The contents of the set is also reflected in the value of the <code>class</code> attribute.
      * <p>
-     * Despite the name implying a list being returned, the return type is
-     * actually a {@link Set} since the in-browser return value behaves like a
-     * <code>Set</code> in Java.
+     * Despite the name implying a list being returned, the return type is actually a {@link Set} since the in-browser
+     * return value behaves like a <code>Set</code> in Java.
      *
      * @return a list of class names, never <code>null</code>
      */
@@ -1165,14 +1064,11 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Gets the set of the theme names applied to the corresponding element in
-     * {@code theme} attribute. The set returned can be modified to add or
-     * remove the theme names, changes to the set will be reflected in the
-     * attribute value.
+     * Gets the set of the theme names applied to the corresponding element in {@code theme} attribute. The set returned
+     * can be modified to add or remove the theme names, changes to the set will be reflected in the attribute value.
      * <p>
-     * Despite the name implying a list being returned, the return type is
-     * actually a {@link Set} since the in-browser return value behaves like a
-     * {@link Set} in Java.
+     * Despite the name implying a list being returned, the return type is actually a {@link Set} since the in-browser
+     * return value behaves like a {@link Set} in Java.
      *
      * @return a list of theme names, never {@code null}
      */
@@ -1192,8 +1088,7 @@ public class Element extends Node<Element> {
     /**
      * Gets the component this element has been mapped to, if any.
      *
-     * @return an optional component, or an empty optional if no component has
-     *         been mapped to this element
+     * @return an optional component, or an empty optional if no component has been mapped to this element
      */
     public Optional<Component> getComponent() {
         return getStateProvider().getComponent(getNode());
@@ -1206,9 +1101,8 @@ public class Element extends Node<Element> {
 
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
         if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
-            throw new IllegalArgumentException(String.format(
-                    "Attribute \"%s\" is not a valid attribute name",
-                    lowerCaseAttribute));
+            throw new IllegalArgumentException(
+                    String.format("Attribute \"%s\" is not a valid attribute name", lowerCaseAttribute));
         }
 
         if (value == null) {
@@ -1224,21 +1118,17 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Adds an attach listener for this element. It is invoked when the element
-     * is attached to a UI.
+     * Adds an attach listener for this element. It is invoked when the element is attached to a UI.
      * <p>
-     * When a hierarchy of elements is being attached, the event is fired
-     * child-first.
+     * When a hierarchy of elements is being attached, the event is fired child-first.
      *
      * @param attachListener
      *            the attach listener to add
      * @return an event registration handle for removing the listener
      */
-    public Registration addAttachListener(
-            ElementAttachListener attachListener) {
+    public Registration addAttachListener(ElementAttachListener attachListener) {
         if (attachListener == null) {
-            throw new IllegalArgumentException(
-                    "ElementAttachListener cannot be null");
+            throw new IllegalArgumentException("ElementAttachListener cannot be null");
         }
 
         return getNode().addAttachListener(
@@ -1250,28 +1140,23 @@ public class Element extends Node<Element> {
                 new Command() {
                     @Override
                     public void execute() {
-                        attachListener
-                                .onAttach(new ElementAttachEvent(Element.this));
+                        attachListener.onAttach(new ElementAttachEvent(Element.this));
                     }
                 });
     }
 
     /**
-     * Adds a detach listener for this element. It is invoked when the element
-     * is detached from a UI.
+     * Adds a detach listener for this element. It is invoked when the element is detached from a UI.
      * <p>
-     * When a hierarchy of elements is being detached, the event is fired
-     * child-first.
+     * When a hierarchy of elements is being detached, the event is fired child-first.
      *
      * @param detachListener
      *            the detach listener to add
      * @return an event registration handle for removing the listener
      */
-    public Registration addDetachListener(
-            ElementDetachListener detachListener) {
+    public Registration addDetachListener(ElementDetachListener detachListener) {
         if (detachListener == null) {
-            throw new IllegalArgumentException(
-                    "ElementDetachListener cannot be null");
+            throw new IllegalArgumentException("ElementDetachListener cannot be null");
         }
 
         return getNode().addDetachListener(
@@ -1283,8 +1168,7 @@ public class Element extends Node<Element> {
                 new Command() {
                     @Override
                     public void execute() {
-                        detachListener
-                                .onDetach(new ElementDetachEvent(Element.this));
+                        detachListener.onDetach(new ElementDetachEvent(Element.this));
                     }
                 });
     }
@@ -1297,8 +1181,7 @@ public class Element extends Node<Element> {
     /**
      * Gets the outer HTML for the element.
      * <p>
-     * This operation recursively iterates the element and all children and
-     * should not be called unnecessarily.
+     * This operation recursively iterates the element and all children and should not be called unnecessarily.
      *
      * @return the outer HTML for the element
      */
@@ -1309,18 +1192,15 @@ public class Element extends Node<Element> {
     /**
      * Creates a new component instance using this element.
      * <p>
-     * You can use this method when you have an element instance and want to use
-     * it through the API of a {@link Component} class.
+     * You can use this method when you have an element instance and want to use it through the API of a
+     * {@link Component} class.
      * <p>
-     * This method makes the component instance use the underlying element but
-     * does not attach the new component instance to the element so that
-     * {@link Element#getComponent()} would return the component instance. This
-     * means that {@link #getParent()}, {@link #getChildren()} and possibly
-     * other methods which rely on {@link Element} -&gt; {@link Component}
-     * mappings will not work.
+     * This method makes the component instance use the underlying element but does not attach the new component
+     * instance to the element so that {@link Element#getComponent()} would return the component instance. This means
+     * that {@link #getParent()}, {@link #getChildren()} and possibly other methods which rely on {@link Element} -&gt;
+     * {@link Component} mappings will not work.
      * <p>
-     * To also map the element to the {@link Component} instance, use
-     * {@link Component#from(Element, Class)}
+     * To also map the element to the {@link Component} instance, use {@link Component#from(Element, Class)}
      *
      * @see Component#from(Element, Class)
      *
@@ -1337,121 +1217,94 @@ public class Element extends Node<Element> {
     /**
      * Calls the given function on the element with the given arguments.
      * <p>
-     * It is possible to get access to the return value of the execution by
-     * registering a handler with the returned pending result. If no handler is
-     * registered, the return value will be ignored.
+     * It is possible to get access to the return value of the execution by registering a handler with the returned
+     * pending result. If no handler is registered, the return value will be ignored.
      * <p>
-     * The function will be called after all pending DOM updates have completed,
-     * at the same time that {@link Page#executeJs(String, Serializable...)}
-     * calls are invoked.
+     * The function will be called after all pending DOM updates have completed, at the same time that
+     * {@link Page#executeJs(String, Serializable...)} calls are invoked.
      * <p>
-     * If the element is not attached or not visible, the function call will be
-     * deferred until the element is attached and visible.
+     * If the element is not attached or not visible, the function call will be deferred until the element is attached
+     * and visible.
      *
      * @see JsonCodec JsonCodec for supported argument types
      *
      * @param functionName
-     *            the name of the function to call, may contain dots to indicate
-     *            a function on a property.
+     *            the name of the function to call, may contain dots to indicate a function on a property.
      * @param arguments
-     *            the arguments to pass to the function. Must be of a type
-     *            supported by the communication mechanism, as defined by
-     *            {@link JsonCodec}
-     * @return a pending result that can be used to get a return value from the
-     *         execution
+     *            the arguments to pass to the function. Must be of a type supported by the communication mechanism, as
+     *            defined by {@link JsonCodec}
+     * @return a pending result that can be used to get a return value from the execution
      */
-    public PendingJavaScriptResult callJsFunction(String functionName,
-            Serializable... arguments) {
+    public PendingJavaScriptResult callJsFunction(String functionName, Serializable... arguments) {
         assert functionName != null;
-        assert !functionName.startsWith(".")
-                : "Function name should not start with a dot";
+        assert !functionName.startsWith(".") : "Function name should not start with a dot";
 
         // "$1,$2,$3,..."
-        String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
-                .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
+        String paramPlaceholderString = IntStream.range(1, arguments.length + 1).mapToObj(i -> "$" + i)
+                .collect(Collectors.joining(","));
         // Inject the element as $0
-        Stream<Serializable> jsParameters = Stream.concat(Stream.of(this),
-                Stream.of(arguments));
+        Stream<Serializable> jsParameters = Stream.concat(Stream.of(this), Stream.of(arguments));
 
-        return scheduleJavaScriptInvocation("return $0." + functionName + "("
-                + paramPlaceholderString + ")", jsParameters);
+        return scheduleJavaScriptInvocation("return $0." + functionName + "(" + paramPlaceholderString + ")",
+                jsParameters);
     }
 
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
     /**
-     * Asynchronously runs the given JavaScript expression in the browser in the
-     * context of this element. The expression is executed in an
-     * <code>async</code> JavaScript method, so you can utilize
-     * <code>await</code> syntax when consuming JavaScript API returning a
-     * <code>Promise</code>. The returned <code>PendingJavaScriptResult</code>
-     * can be used to retrieve the <code>return</code> value from the JavaScript
-     * expression. If a <code>Promise</code> is returned in the JavaScript
-     * expression, <code>PendingJavaScriptResult</code> will report the resolved
-     * value once it becomes available. If no return value handler is
-     * registered, the return value will be ignored.
+     * Asynchronously runs the given JavaScript expression in the browser in the context of this element. The expression
+     * is executed in an <code>async</code> JavaScript method, so you can utilize <code>await</code> syntax when
+     * consuming JavaScript API returning a <code>Promise</code>. The returned <code>PendingJavaScriptResult</code> can
+     * be used to retrieve the <code>return</code> value from the JavaScript expression. If a <code>Promise</code> is
+     * returned in the JavaScript expression, <code>PendingJavaScriptResult</code> will report the resolved value once
+     * it becomes available. If no return value handler is registered, the return value will be ignored.
      * <p>
-     * This element will be available to the expression as <code>this</code>.
-     * The given parameters will be available as variables named
-     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
-     * are:
+     * This element will be available to the expression as <code>this</code>. The given parameters will be available as
+     * variables named <code>$0</code>, <code>$1</code>, and so on. Supported parameter types are:
      * <ul>
      * <li>{@link String}
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
      * <li>{@link JsonValue}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
+     * <li>{@link Element} (will be sent as <code>null</code> if the server-side element instance is not attached when
+     * the invocation is sent to the client)
      * </ul>
-     * Note that the parameter variables can only be used in contexts where a
-     * JavaScript variable can be used. You should for instance do
-     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
-     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
-     * variables aren't evaluated inside strings or property names.
+     * Note that the parameter variables can only be used in contexts where a JavaScript variable can be used. You
+     * should for instance do <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and <code>value[$0]</code>
+     * instead of <code>value.$0</code> since JavaScript variables aren't evaluated inside strings or property names.
      * <p>
-     * If the element is not attached or not visible, the function call will be
-     * deferred until the element is attached and visible.
+     * If the element is not attached or not visible, the function call will be deferred until the element is attached
+     * and visible.
      *
      * @param expression
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
-     * @return a pending result that can be used to get a value returned from
-     *         the expression
+     * @return a pending result that can be used to get a value returned from the expression
      */
-    public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+    public PendingJavaScriptResult executeJs(String expression, Serializable... parameters) {
 
         // Add "this" as the last parameter
-        Stream<Serializable> wrappedParameters = Stream
-                .concat(Stream.of(parameters), Stream.of(this));
+        Stream<Serializable> wrappedParameters = Stream.concat(Stream.of(parameters), Stream.of(this));
 
         // Wrap in a function that is applied with last parameter as "this"
-        String wrappedExpression = "return (async function() { " + expression
-                + "}).apply($" + parameters.length + ")";
+        String wrappedExpression = "return (async function() { " + expression + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(wrappedExpression,
-                wrappedParameters);
+        return scheduleJavaScriptInvocation(wrappedExpression, wrappedParameters);
     }
 
-    private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Stream<Serializable> parameters) {
+    private PendingJavaScriptResult scheduleJavaScriptInvocation(String expression, Stream<Serializable> parameters) {
         StateNode node = getNode();
 
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters.toArray(Serializable[]::new));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(expression, parameters.toArray(Serializable[]::new));
 
-        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
-                node, invocation);
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(node, invocation);
 
-        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(node, context -> {
-                    if (!pending.isCanceled()) {
-                        context.getUI().getInternals()
-                                .addJavaScriptInvocation(pending);
-                    }
-                }));
+        node.runWhenAttached(ui -> ui.getInternals().getStateTree().beforeClientResponse(node, context -> {
+            if (!pending.isCanceled()) {
+                context.getUI().getInternals().addJavaScriptInvocation(pending);
+            }
+        }));
 
         return pending;
     }
@@ -1463,8 +1316,7 @@ public class Element extends Node<Element> {
      */
     public ShadowRoot attachShadow() {
         if (getShadowRoot().isPresent()) {
-            throw new IllegalStateException(
-                    "The element already has shadow root");
+            throw new IllegalStateException("The element already has shadow root");
         }
         return ShadowRoot.get(getStateProvider().attachShadow(getNode()));
     }
@@ -1472,8 +1324,7 @@ public class Element extends Node<Element> {
     /**
      * Gets the shadow root of the element, if any.
      *
-     * @return an optional shadow root node, or an empty optional if no shadow
-     *         root has been attached
+     * @return an optional shadow root node, or an empty optional if no shadow root has been attached
      */
     public Optional<ShadowRoot> getShadowRoot() {
         StateNode shadowRoot = getStateProvider().getShadowRoot(getNode());
@@ -1486,9 +1337,8 @@ public class Element extends Node<Element> {
     /**
      * Sets the element visibility value.
      *
-     * Also executes pending javascript invocations, if their execution was
-     * requested while the element was not visible, and the element is now set
-     * as visible.
+     * Also executes pending javascript invocations, if their execution was requested while the element was not visible,
+     * and the element is now set as visible.
      *
      * @param visible
      *            the element visibility value
@@ -1525,8 +1375,8 @@ public class Element extends Node<Element> {
     /**
      * Get the enabled state of the element.
      * <p>
-     * Object may be enabled by itself by but if its ascendant is disabled then
-     * it's considered as (implicitly) disabled.
+     * Object may be enabled by itself by but if its ascendant is disabled then it's considered as (implicitly)
+     * disabled.
      *
      *
      * @return {@code true} if node is enabled, {@code false} otherwise
@@ -1544,8 +1394,7 @@ public class Element extends Node<Element> {
         Optional<Component> componentOptional = element.getComponent();
         if (componentOptional.isPresent()) {
             Component component = componentOptional.get();
-            component.onEnabledStateChanged(
-                    enabled ? element.isEnabled() : false);
+            component.onEnabledStateChanged(enabled ? element.isEnabled() : false);
         }
         informChildrenOfStateChange(enabled, element);
     }
@@ -1556,18 +1405,14 @@ public class Element extends Node<Element> {
         });
         if (element.getNode().hasFeature(VirtualChildrenList.class)) {
             element.getNode().getFeatureIfInitialized(VirtualChildrenList.class)
-                    .ifPresent(list -> list.forEachChild(
-                            node -> informEnabledStateChange(enabled,
-                                    Element.get(node))));
+                    .ifPresent(list -> list.forEachChild(node -> informEnabledStateChange(enabled, Element.get(node))));
         }
     }
 
     /**
      * Executes the similarly named DOM method on the client side.
      *
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
-     *      docs</a>
+     * @see <a href= "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla docs</a>
      * @return the element
      */
     public Element scrollIntoView() {
@@ -1577,9 +1422,7 @@ public class Element extends Node<Element> {
     /**
      * Executes the similarly named DOM method on the client side.
      *
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
-     *      docs</a>
+     * @see <a href= "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla docs</a>
      * @param scrollOptions
      *            the scroll options to pass to the method
      * @return the element
@@ -1589,8 +1432,7 @@ public class Element extends Node<Element> {
         // created element
         String options = scrollOptions == null ? "" : scrollOptions.toJson();
 
-        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
-                + options + ");}, 0);");
+        executeJs("var el = this; setTimeout(function() {el.scrollIntoView(" + options + ");}, 0);");
         return getSelf();
     }
 

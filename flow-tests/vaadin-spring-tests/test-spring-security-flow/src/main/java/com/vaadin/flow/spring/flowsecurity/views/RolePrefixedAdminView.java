@@ -15,13 +15,12 @@ import jakarta.annotation.security.RolesAllowed;
 public class RolePrefixedAdminView extends VerticalLayout {
 
     public RolePrefixedAdminView(SecurityUtils securityUtils) {
-        H1 welcome = new H1("Welcome to the another admin page, "
-                + securityUtils.getAuthenticatedUserInfo().getFullName());
+        H1 welcome = new H1(
+                "Welcome to the another admin page, " + securityUtils.getAuthenticatedUserInfo().getFullName());
         welcome.setId("welcome");
         add(welcome);
         Div div = new Div();
-        div.setText(
-                "This page is full of dangerous controls and secret information");
+        div.setText("This page is full of dangerous controls and secret information");
         add(div);
     }
 }

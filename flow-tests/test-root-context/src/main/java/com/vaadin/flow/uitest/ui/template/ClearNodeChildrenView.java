@@ -31,8 +31,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.ClearNodeChildrenView", layout = ViewTestLayout.class)
 @Tag("clear-node-children")
 @JsModule("./ClearNodeChildren.js")
-public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
-        implements HasComponents, HasText {
+public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel> implements HasComponents, HasText {
 
     @Id
     private Div containerWithElementChildren;
@@ -105,56 +104,38 @@ public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
 
     public ClearNodeChildrenView() {
         setId("root");
-        addChildToContainer1.addClickListener(
-                event -> addDivTo(containerWithElementChildren));
-        addChildToContainer2.addClickListener(
-                event -> addDivTo(containerWithMixedChildren));
-        addChildToContainer3.addClickListener(
-                event -> addDivTo(containerWithClientSideChildren));
-        addChildToNestedContainer
-                .addClickListener(event -> addDivTo(nestedContainer));
+        addChildToContainer1.addClickListener(event -> addDivTo(containerWithElementChildren));
+        addChildToContainer2.addClickListener(event -> addDivTo(containerWithMixedChildren));
+        addChildToContainer3.addClickListener(event -> addDivTo(containerWithClientSideChildren));
+        addChildToNestedContainer.addClickListener(event -> addDivTo(nestedContainer));
         addChildToSlot.addClickListener(event -> addDivTo(this));
-        clearContainer1
-                .addClickListener(event -> clear(containerWithElementChildren,
-                        "containerWithElementChildren"));
-        clearContainer2
-                .addClickListener(event -> clear(containerWithMixedChildren,
-                        "containerWithMixedChildren"));
-        clearContainer3.addClickListener(
-                event -> clear(containerWithClientSideChildren,
-                        "containerWithClientSideChildren"));
-        clearContainer4.addClickListener(event -> clear(containerWithContainer,
-                "containerWithContainer"));
-        setTextToContainer1.addClickListener(event -> setTextTo(
-                containerWithElementChildren, "containerWithElementChildren"));
+        clearContainer1.addClickListener(event -> clear(containerWithElementChildren, "containerWithElementChildren"));
+        clearContainer2.addClickListener(event -> clear(containerWithMixedChildren, "containerWithMixedChildren"));
+        clearContainer3
+                .addClickListener(event -> clear(containerWithClientSideChildren, "containerWithClientSideChildren"));
+        clearContainer4.addClickListener(event -> clear(containerWithContainer, "containerWithContainer"));
+        setTextToContainer1
+                .addClickListener(event -> setTextTo(containerWithElementChildren, "containerWithElementChildren"));
         setTextToContainer2
-                .addClickListener(event -> setTextTo(containerWithMixedChildren,
-                        "containerWithMixedChildren"));
+                .addClickListener(event -> setTextTo(containerWithMixedChildren, "containerWithMixedChildren"));
         setTextToContainer3.addClickListener(
-                event -> setTextTo(containerWithClientSideChildren,
-                        "containerWithClientSideChildren"));
-        setTextToContainer4
-                .addClickListener(event -> setTextTo(containerWithContainer,
-                        "containerWithContainer"));
+                event -> setTextTo(containerWithClientSideChildren, "containerWithClientSideChildren"));
+        setTextToContainer4.addClickListener(event -> setTextTo(containerWithContainer, "containerWithContainer"));
         clear.addClickListener(event -> clear(this, "root"));
         setText.addClickListener(event -> setTextTo(this, "root"));
 
         addTextNodeToContainer1.addClickListener(event -> {
             Element text = Element.createText("Text node");
             containerWithElementChildren.getElement().appendChild(text);
-            message.setText(
-                    "Added 'Text node' to div with id 'containerWithElementChildren'.");
+            message.setText("Added 'Text node' to div with id 'containerWithElementChildren'.");
         });
     }
 
     private void addDivTo(HasComponents container) {
         Div div = new Div();
-        div.setText(
-                "Server div " + (container.getElement().getChildCount() + 1));
-        div.addAttachListener(evt -> message.setText(
-                message.getText() + "\nDiv '" + div.getText() + "' attached."));
-        div.addDetachListener(evt -> message.setText(
-                message.getText() + "\nDiv '" + div.getText() + "' detached."));
+        div.setText("Server div " + (container.getElement().getChildCount() + 1));
+        div.addAttachListener(evt -> message.setText(message.getText() + "\nDiv '" + div.getText() + "' attached."));
+        div.addDetachListener(evt -> message.setText(message.getText() + "\nDiv '" + div.getText() + "' detached."));
         container.add(div);
     }
 
@@ -165,8 +146,7 @@ public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
 
     private void setTextTo(HasText container, String id) {
         container.setText("Hello World");
-        message.setText(message.getText() + "\nDiv '" + id + "' text set to '"
-                + container.getText() + "'.");
+        message.setText(message.getText() + "\nDiv '" + id + "' text set to '" + container.getText() + "'.");
     }
 
 }

@@ -58,12 +58,9 @@ public class HierarchyMapperWithDataTest {
         mapSize = ROOT_COUNT;
         data = new TreeData<>();
         testData = generateTestData(ROOT_COUNT, PARENT_COUNT, LEAF_COUNT);
-        roots = testData.stream().filter(item -> item.getParent() == null)
-                .collect(Collectors.toList());
-        data.addItems(roots,
-                parent -> testData.stream().filter(
-                        item -> Objects.equals(item.getParent(), parent))
-                        .collect(Collectors.toList()));
+        roots = testData.stream().filter(item -> item.getParent() == null).collect(Collectors.toList());
+        data.addItems(roots, parent -> testData.stream().filter(item -> Objects.equals(item.getParent(), parent))
+                .collect(Collectors.toList()));
     }
 
     @Before
@@ -76,70 +73,59 @@ public class HierarchyMapperWithDataTest {
 
     @Test
     public void expandRootNode() {
-        assertEquals("Map size should be equal to root node count", ROOT_COUNT,
-                mapper.getTreeSize());
+        assertEquals("Map size should be equal to root node count", ROOT_COUNT, mapper.getTreeSize());
         expand(testData.get(0));
-        assertEquals("Should be root count + once parent count",
-                ROOT_COUNT + PARENT_COUNT, mapper.getTreeSize());
+        assertEquals("Should be root count + once parent count", ROOT_COUNT + PARENT_COUNT, mapper.getTreeSize());
         checkMapSize();
     }
 
     @Test
     public void expandAndCollapseLastRootNode() {
-        assertEquals("Map size should be equal to root node count", ROOT_COUNT,
-                mapper.getTreeSize());
+        assertEquals("Map size should be equal to root node count", ROOT_COUNT, mapper.getTreeSize());
         expand(roots.get(roots.size() - 1));
-        assertEquals("Should be root count + once parent count",
-                ROOT_COUNT + PARENT_COUNT, mapper.getTreeSize());
+        assertEquals("Should be root count + once parent count", ROOT_COUNT + PARENT_COUNT, mapper.getTreeSize());
         checkMapSize();
         collapse(roots.get(roots.size() - 1));
-        assertEquals("Map size should be equal to root node count again",
-                ROOT_COUNT, mapper.getTreeSize());
+        assertEquals("Map size should be equal to root node count again", ROOT_COUNT, mapper.getTreeSize());
         checkMapSize();
     }
 
     @Test
     public void expandHiddenNode() {
-        assertEquals("Map size should be equal to root node count", ROOT_COUNT,
-                mapper.getTreeSize());
+        assertEquals("Map size should be equal to root node count", ROOT_COUNT, mapper.getTreeSize());
         expand(testData.get(1));
-        assertEquals("Map size should not change when expanding a hidden node",
-                ROOT_COUNT, mapper.getTreeSize());
+        assertEquals("Map size should not change when expanding a hidden node", ROOT_COUNT, mapper.getTreeSize());
         checkMapSize();
         expand(roots.get(0));
-        assertEquals("Hidden node should now be expanded as well",
-                ROOT_COUNT + PARENT_COUNT + LEAF_COUNT, mapper.getTreeSize());
+        assertEquals("Hidden node should now be expanded as well", ROOT_COUNT + PARENT_COUNT + LEAF_COUNT,
+                mapper.getTreeSize());
         checkMapSize();
         collapse(roots.get(0));
-        assertEquals("Map size should be equal to root node count", ROOT_COUNT,
-                mapper.getTreeSize());
+        assertEquals("Map size should be equal to root node count", ROOT_COUNT, mapper.getTreeSize());
         checkMapSize();
     }
 
     @Test
     public void expandLeafNode() {
-        assertEquals("Map size should be equal to root node count", ROOT_COUNT,
-                mapper.getTreeSize());
+        assertEquals("Map size should be equal to root node count", ROOT_COUNT, mapper.getTreeSize());
         expand(testData.get(0));
         expand(testData.get(1));
-        assertEquals("Root and parent node expanded",
-                ROOT_COUNT + PARENT_COUNT + LEAF_COUNT, mapper.getTreeSize());
+        assertEquals("Root and parent node expanded", ROOT_COUNT + PARENT_COUNT + LEAF_COUNT, mapper.getTreeSize());
         checkMapSize();
         expand(testData.get(2));
-        assertEquals("Expanding a leaf node should have no effect",
-                ROOT_COUNT + PARENT_COUNT + LEAF_COUNT, mapper.getTreeSize());
+        assertEquals("Expanding a leaf node should have no effect", ROOT_COUNT + PARENT_COUNT + LEAF_COUNT,
+                mapper.getTreeSize());
         checkMapSize();
     }
 
     @Test
     public void findParentIndexOfLeaf() {
         expand(testData.get(0));
-        assertEquals("Could not find the root node of a parent",
-                Integer.valueOf(0), mapper.getParentIndex(testData.get(1)));
+        assertEquals("Could not find the root node of a parent", Integer.valueOf(0),
+                mapper.getParentIndex(testData.get(1)));
 
         expand(testData.get(1));
-        assertEquals("Could not find the parent of a leaf", Integer.valueOf(1),
-                mapper.getParentIndex(testData.get(2)));
+        assertEquals("Could not find the parent of a leaf", Integer.valueOf(1), mapper.getParentIndex(testData.get(2)));
     }
 
     @Test
@@ -147,10 +133,8 @@ public class HierarchyMapperWithDataTest {
         expand(testData.get(0));
         expand(testData.get(1));
 
-        List<Node> expectedResult = testData.stream()
-                .filter(n -> roots.contains(n)
-                        || n.getParent().equals(testData.get(0))
-                        || n.getParent().equals(testData.get(1)))
+        List<Node> expectedResult = testData.stream().filter(n -> roots.contains(n)
+                || n.getParent().equals(testData.get(0)) || n.getParent().equals(testData.get(1)))
                 .collect(Collectors.toList());
 
         // Range containing deepest level of expanded nodes without their
@@ -175,23 +159,17 @@ public class HierarchyMapperWithDataTest {
 
         // Construct a sorted version of test data with correct filters
         List<List<Node>> levels = new ArrayList<>();
-        Comparator<Node> comparator = Comparator.comparing(Node::getNumber)
-                .reversed();
-        levels.add(testData.stream().filter(n -> n.getParent() == null)
-                .sorted(comparator).collect(Collectors.toList()));
+        Comparator<Node> comparator = Comparator.comparing(Node::getNumber).reversed();
         levels.add(
-                testData.stream().filter(n -> n.getParent() == testData.get(0))
-                        .sorted(comparator).collect(Collectors.toList()));
-        levels.add(
-                testData.stream().filter(n -> n.getParent() == testData.get(1))
-                        .sorted(comparator).collect(Collectors.toList()));
+                testData.stream().filter(n -> n.getParent() == null).sorted(comparator).collect(Collectors.toList()));
+        levels.add(testData.stream().filter(n -> n.getParent() == testData.get(0)).sorted(comparator)
+                .collect(Collectors.toList()));
+        levels.add(testData.stream().filter(n -> n.getParent() == testData.get(1)).sorted(comparator)
+                .collect(Collectors.toList()));
 
         List<Node> expectedResult = levels.get(0).stream().flatMap(root -> {
-            Stream<Node> nextLevel = levels.get(1).stream()
-                    .filter(n -> n.getParent() == root)
-                    .flatMap(node -> Stream.concat(Stream.of(node),
-                            levels.get(2).stream()
-                                    .filter(n -> n.getParent() == node)));
+            Stream<Node> nextLevel = levels.get(1).stream().filter(n -> n.getParent() == root).flatMap(
+                    node -> Stream.concat(Stream.of(node), levels.get(2).stream().filter(n -> n.getParent() == node)));
             return Stream.concat(Stream.of(root), nextLevel);
         }).collect(Collectors.toList());
 
@@ -222,8 +200,7 @@ public class HierarchyMapperWithDataTest {
 
         // Root nodes plus children of expanded nodes 0 and 4 that match the
         // filter
-        List<Node> expectedResult = IntStream
-                .of(0, 1, 4, 6, 7, 10, 13, 26, 39, 52).mapToObj(testData::get)
+        List<Node> expectedResult = IntStream.of(0, 1, 4, 6, 7, 10, 13, 26, 39, 52).mapToObj(testData::get)
                 .collect(Collectors.toList());
 
         mapper.setFilter(filter);
@@ -242,12 +219,10 @@ public class HierarchyMapperWithDataTest {
         TreeNode third11 = new TreeNode("third-1-1", second1);
         TreeNode third21 = new TreeNode("third-2-1", second2);
 
-        HierarchicalDataProvider<TreeNode, Void> dataProvider = new ThreeLevelStaticHierarchicalDataProvider(
-                root, new TreeNode[] { second1, second2 },
-                new TreeNode[] { third11, third21 });
+        HierarchicalDataProvider<TreeNode, Void> dataProvider = new ThreeLevelStaticHierarchicalDataProvider(root,
+                new TreeNode[] { second1, second2 }, new TreeNode[] { third11, third21 });
 
-        HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
-                dataProvider);
+        HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(dataProvider);
 
         Collection<TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
         Assert.assertNotNull(expandedItems);
@@ -260,8 +235,7 @@ public class HierarchyMapperWithDataTest {
         Assert.assertNotNull(expandedItems);
         Assert.assertEquals(2L, expandedItems.size());
         Assert.assertArrayEquals(new Object[] { "root", "second-2" },
-                expandedItems.stream().map(TreeNode::getName).sorted()
-                        .toArray());
+                expandedItems.stream().map(TreeNode::getName).sorted().toArray());
     }
 
     @Test
@@ -275,12 +249,10 @@ public class HierarchyMapperWithDataTest {
         TreeNode third11 = new TreeNode("third-1-1", second1);
         TreeNode third21 = new TreeNode("third-2-1", second2);
 
-        HierarchicalDataProvider<TreeNode, Void> dataProvider = new ThreeLevelStaticHierarchicalDataProvider(
-                root, new TreeNode[] { second1, second2 },
-                new TreeNode[] { third11, third21 });
+        HierarchicalDataProvider<TreeNode, Void> dataProvider = new ThreeLevelStaticHierarchicalDataProvider(root,
+                new TreeNode[] { second1, second2 }, new TreeNode[] { third11, third21 });
 
-        HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
-                dataProvider);
+        HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(dataProvider);
 
         hierarchyMapper.expand(root);
         hierarchyMapper.expand(second1);
@@ -294,10 +266,8 @@ public class HierarchyMapperWithDataTest {
         AtomicBoolean streamIsClosed = new AtomicBoolean();
         mapper = new HierarchyMapper<>(new TreeDataProvider<>(data) {
             @Override
-            public Stream<Node> fetchChildren(
-                    HierarchicalQuery<Node, SerializablePredicate<Node>> query) {
-                return super.fetchChildren(query)
-                        .onClose(() -> streamIsClosed.set(true));
+            public Stream<Node> fetchChildren(HierarchicalQuery<Node, SerializablePredicate<Node>> query) {
+                return super.fetchChildren(query).onClose(() -> streamIsClosed.set(true));
             }
         });
         Node rootNode = testData.get(0);
@@ -312,10 +282,8 @@ public class HierarchyMapperWithDataTest {
         AtomicBoolean streamIsClosed = new AtomicBoolean();
         mapper = new HierarchyMapper<>(new TreeDataProvider<>(data) {
             @Override
-            public Stream<Node> fetchChildren(
-                    HierarchicalQuery<Node, SerializablePredicate<Node>> query) {
-                return super.fetchChildren(query)
-                        .onClose(() -> streamIsClosed.set(true));
+            public Stream<Node> fetchChildren(HierarchicalQuery<Node, SerializablePredicate<Node>> query) {
+                return super.fetchChildren(query).onClose(() -> streamIsClosed.set(true));
             }
         });
         Node rootNode = testData.get(0);
@@ -334,16 +302,13 @@ public class HierarchyMapperWithDataTest {
     }
 
     private void verifyFetchIsCorrect(List<Node> expectedResult, Range range) {
-        List<Node> collect = mapper.fetchHierarchyItems(range)
-                .collect(Collectors.toList());
+        List<Node> collect = mapper.fetchHierarchyItems(range).collect(Collectors.toList());
         for (int i = 0; i < range.length(); ++i) {
-            assertEquals("Unexpected fetch results.",
-                    expectedResult.get(i + range.getStart()), collect.get(i));
+            assertEquals("Unexpected fetch results.", expectedResult.get(i + range.getStart()), collect.get(i));
         }
     }
 
-    static List<Node> generateTestData(int rootCount, int parentCount,
-            int leafCount) {
+    static List<Node> generateTestData(int rootCount, int parentCount, int leafCount) {
         int counter = 0;
         List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < rootCount; ++i) {
@@ -361,21 +326,17 @@ public class HierarchyMapperWithDataTest {
     }
 
     private void checkMapSize() {
-        assertEquals("Map size not properly updated", mapper.getTreeSize(),
-                mapSize);
+        assertEquals("Map size not properly updated", mapper.getTreeSize(), mapSize);
     }
 
     public void removeRows(Range range) {
-        assertTrue("Index not in range",
-                0 <= range.getStart() && range.getStart() < mapSize);
-        assertTrue("Removing more items than in map",
-                range.getEnd() <= mapSize);
+        assertTrue("Index not in range", 0 <= range.getStart() && range.getStart() < mapSize);
+        assertTrue("Removing more items than in map", range.getEnd() <= mapSize);
         mapSize -= range.length();
     }
 
     public void insertRows(Range range) {
-        assertTrue("Index not in range",
-                0 <= range.getStart() && range.getStart() <= mapSize);
+        assertTrue("Index not in range", 0 <= range.getStart() && range.getStart() <= mapSize);
         mapSize += range.length();
     }
 
@@ -416,8 +377,8 @@ public class HierarchyMapperWithDataTest {
         private TreeNode[] secondLevelNodes;
         private TreeNode[] thirdLevelNodes;
 
-        public ThreeLevelStaticHierarchicalDataProvider(TreeNode root,
-                TreeNode[] secondLevelNodes, TreeNode[] thirdLevelNodes) {
+        public ThreeLevelStaticHierarchicalDataProvider(TreeNode root, TreeNode[] secondLevelNodes,
+                TreeNode[] thirdLevelNodes) {
             this.root = root;
             this.secondLevelNodes = secondLevelNodes;
             this.thirdLevelNodes = thirdLevelNodes;
@@ -430,34 +391,28 @@ public class HierarchyMapperWithDataTest {
                 return secondLevelNodes.length;
             }
             // query node is among the last(third) layer:
-            if (Arrays.stream(secondLevelNodes)
-                    .anyMatch(node -> node == query.getParent())) {
+            if (Arrays.stream(secondLevelNodes).anyMatch(node -> node == query.getParent())) {
                 return 0;
             }
             // count nodes of last(third) layer that are children of query's
             // parent:
-            return (int) Arrays.stream(thirdLevelNodes)
-                    .filter(node -> node.getParent() == query.getParent())
-                    .count();
+            return (int) Arrays.stream(thirdLevelNodes).filter(node -> node.getParent() == query.getParent()).count();
         }
 
         @Override
         public boolean hasChildren(TreeNode item) {
-            return item.getParent() == null || Arrays.stream(secondLevelNodes)
-                    .anyMatch(node -> node == item);
+            return item.getParent() == null || Arrays.stream(secondLevelNodes).anyMatch(node -> node == item);
         }
 
         @Override
-        protected Stream<TreeNode> fetchChildrenFromBackEnd(
-                HierarchicalQuery<TreeNode, Void> query) {
+        protected Stream<TreeNode> fetchChildrenFromBackEnd(HierarchicalQuery<TreeNode, Void> query) {
             if (query.getParent() == null) {
                 return Arrays.stream(new TreeNode[] { root });
             }
             if (query.getParent() == root) {
                 return Arrays.stream(secondLevelNodes);
             }
-            return Arrays.stream(thirdLevelNodes)
-                    .filter(node -> node.getParent() == query.getParent());
+            return Arrays.stream(thirdLevelNodes).filter(node -> node.getParent() == query.getParent());
         }
     }
 

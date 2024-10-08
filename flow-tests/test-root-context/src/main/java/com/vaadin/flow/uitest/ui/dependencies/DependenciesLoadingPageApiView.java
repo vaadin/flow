@@ -6,16 +6,14 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * See {@link DependenciesLoadingAnnotationsView} for more details about the
- * test.
+ * See {@link DependenciesLoadingAnnotationsView} for more details about the test.
  *
  * @author Vaadin Ltd
  * @since 1.0.
  * @see DependenciesLoadingAnnotationsView
  */
 @Route("com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingPageApiView")
-public class DependenciesLoadingPageApiView
-        extends DependenciesLoadingBaseView {
+public class DependenciesLoadingPageApiView extends DependenciesLoadingBaseView {
 
     public DependenciesLoadingPageApiView() {
         super("WebRes");

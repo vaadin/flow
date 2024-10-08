@@ -19,12 +19,11 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 
 /**
- * Event listener that can be registered to a {@link VaadinService} to get an
- * event when a new Vaadin service session is initialized for that service.
+ * Event listener that can be registered to a {@link VaadinService} to get an event when a new Vaadin service session is
+ * initialized for that service.
  * <p>
- * Because of the way different service instances share the same session, the
- * listener is not necessarily notified immediately when the session is created
- * but only when the first request for that session is handled by a specific
+ * Because of the way different service instances share the same session, the listener is not necessarily notified
+ * immediately when the session is created but only when the first request for that session is handled by a specific
  * service.
  *
  * @see VaadinService#addSessionInitListener(SessionInitListener)
@@ -34,13 +33,11 @@ import java.io.Serializable;
  */
 public interface SessionInitListener extends Serializable {
     /**
-     * Invoked when a new Vaadin service session is initialized for that
-     * service.
+     * Invoked when a new Vaadin service session is initialized for that service.
      * <p>
-     * Because of the way different service instances share the same session,
-     * the listener is not necessarily notified immediately when the session is
-     * created but only when the first request for that session is handled by a
-     * specific service.
+     * Because of the way different service instances share the same session, the listener is not necessarily notified
+     * immediately when the session is created but only when the first request for that session is handled by a specific
+     * service.
      *
      * @param event
      *            the initialization event

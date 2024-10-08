@@ -34,11 +34,9 @@ public class JsApiGetByIdView extends AbstractDivView {
         add(target);
 
         getElement().getNode()
-                .runWhenAttached(ui -> ui.getPage().executeJs(
-                        "window.jsApiConnector.jsFunction($0, this.$appId, $1)",
+                .runWhenAttached(ui -> ui.getPage().executeJs("window.jsApiConnector.jsFunction($0, this.$appId, $1)",
                         target, label.getElement().getNode().getId()));
 
-        add(createButton("Update target", "update",
-                event -> target.getElement().callJsFunction("operation")));
+        add(createButton("Update target", "update", event -> target.getElement().callJsFunction("operation")));
     }
 }

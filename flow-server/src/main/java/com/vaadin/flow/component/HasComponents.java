@@ -26,19 +26,15 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.dom.Element;
 
 /**
- * A component to which the user can add and remove child components.
- * {@link Component} in itself provides basic support for child components that
- * are manually added as children of an element belonging to the component. This
- * interface provides an explicit API for components that explicitly supports
- * adding and removing arbitrary child components.
+ * A component to which the user can add and remove child components. {@link Component} in itself provides basic support
+ * for child components that are manually added as children of an element belonging to the component. This interface
+ * provides an explicit API for components that explicitly supports adding and removing arbitrary child components.
  * <p>
- * {@link HasComponents} is generally implemented by layouts or components whose
- * primary function is to host child components. It isn't for example
- * implemented by non-layout components such as fields.
+ * {@link HasComponents} is generally implemented by layouts or components whose primary function is to host child
+ * components. It isn't for example implemented by non-layout components such as fields.
  * <p>
- * The default implementations assume that children are attached to
- * {@link #getElement()}. Override all methods in this interface if the
- * components should be added to some other element.
+ * The default implementations assume that children are attached to {@link #getElement()}. Override all methods in this
+ * interface if the components should be added to some other element.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -47,8 +43,8 @@ public interface HasComponents extends HasElement, HasEnabled {
     /**
      * Adds the given components as children of this component.
      * <p>
-     * In case any of the specified components has already been added to another
-     * parent, it will be removed from there and added to this one.
+     * In case any of the specified components has already been added to another parent, it will be removed from there
+     * and added to this one.
      *
      * @param components
      *            the components to add
@@ -61,17 +57,15 @@ public interface HasComponents extends HasElement, HasEnabled {
     /**
      * Adds the given components as children of this component.
      * <p>
-     * In case any of the specified components has already been added to another
-     * parent, it will be removed from there and added to this one.
+     * In case any of the specified components has already been added to another parent, it will be removed from there
+     * and added to this one.
      *
      * @param components
      *            the components to add
      */
     default void add(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
-        components.stream()
-                .map(component -> Objects.requireNonNull(component,
-                        "Component to add cannot be null"))
+        components.stream().map(component -> Objects.requireNonNull(component, "Component to add cannot be null"))
                 .map(Component::getElement).forEach(getElement()::appendChild);
     }
 
@@ -91,8 +85,7 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @param components
      *            the components to remove
      * @throws IllegalArgumentException
-     *             if there is a component whose non {@code null} parent is not
-     *             this component
+     *             if there is a component whose non {@code null} parent is not this component
      */
     default void remove(Component... components) {
         Objects.requireNonNull(components, "Components should not be null");
@@ -105,60 +98,54 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @param components
      *            the components to remove
      * @throws IllegalArgumentException
-     *             if there is a component whose non {@code null} parent is not
-     *             this component
+     *             if there is a component whose non {@code null} parent is not this component
      */
     default void remove(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
         List<Component> toRemove = new ArrayList<>(components.size());
         for (Component component : components) {
-            Objects.requireNonNull(component,
-                    "Component to remove cannot be null");
+            Objects.requireNonNull(component, "Component to remove cannot be null");
             Element parent = component.getElement().getParent();
             if (parent == null) {
-                LoggerFactory.getLogger(HasComponents.class).debug(
-                        "Remove of a component with no parent does nothing.");
+                LoggerFactory.getLogger(HasComponents.class)
+                        .debug("Remove of a component with no parent does nothing.");
                 continue;
             }
             if (getElement().equals(parent)) {
                 toRemove.add(component);
             } else {
-                throw new IllegalArgumentException("The given component ("
-                        + component + ") is not a child of this component");
+                throw new IllegalArgumentException(
+                        "The given component (" + component + ") is not a child of this component");
             }
         }
-        toRemove.stream().map(Component::getElement)
-                .forEach(getElement()::removeChild);
+        toRemove.stream().map(Component::getElement).forEach(getElement()::removeChild);
     }
 
     /**
-     * Removes all contents from this component, this includes child components,
-     * text content as well as child elements that have been added directly to
-     * this component using the {@link Element} API. it also removes the
-     * children that were added only at the client-side.
+     * Removes all contents from this component, this includes child components, text content as well as child elements
+     * that have been added directly to this component using the {@link Element} API. it also removes the children that
+     * were added only at the client-side.
      */
     default void removeAll() {
         getElement().removeAllChildren();
     }
 
     /**
-     * Adds the given component as child of this component at the specific
-     * index.
+     * Adds the given component as child of this component at the specific index.
      * <p>
-     * In case the specified component has already been added to another parent,
-     * it will be removed from there and added to this one.
+     * In case the specified component has already been added to another parent, it will be removed from there and added
+     * to this one.
      *
      * @param index
-     *            the index, where the component will be added. The index must
-     *            be non-negative and may not exceed the children count
+     *            the index, where the component will be added. The index must be non-negative and may not exceed the
+     *            children count
      * @param component
      *            the component to add, value should not be null
      */
     default void addComponentAtIndex(int index, Component component) {
         Objects.requireNonNull(component, "Component should not be null");
         if (index < 0) {
-            throw new IllegalArgumentException(
-                    "Cannot add a component with a negative index");
+            throw new IllegalArgumentException("Cannot add a component with a negative index");
         }
         // The case when the index is bigger than the children count is handled
         // inside the method below
@@ -168,8 +155,8 @@ public interface HasComponents extends HasElement, HasEnabled {
     /**
      * Adds the given component as the first child of this component.
      * <p>
-     * In case the specified component has already been added to another parent,
-     * it will be removed from there and added to this one.
+     * In case the specified component has already been added to another parent, it will be removed from there and added
+     * to this one.
      *
      * @param component
      *            the component to add, value should not be null

@@ -32,13 +32,11 @@ public class AttachExistingElementFeatureTest {
     @Test
     public void register_dataIsAvailaleByNode() {
         StateNode node = new StateNode();
-        AttachExistingElementFeature feature = new AttachExistingElementFeature(
-                node);
+        AttachExistingElementFeature feature = new AttachExistingElementFeature(node);
 
         Element element = Mockito.mock(Element.class);
         StateNode child = Mockito.mock(StateNode.class);
-        ChildElementConsumer callback = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer callback = Mockito.mock(ChildElementConsumer.class);
         Node<?> parent = Mockito.mock(Node.class);
         feature.register(parent, element, child, callback);
 
@@ -52,13 +50,11 @@ public class AttachExistingElementFeatureTest {
     @Test
     public void forEachChild_register_registeredStatNodeIsAChild() {
         StateNode node = new StateNode();
-        AttachExistingElementFeature feature = new AttachExistingElementFeature(
-                node);
+        AttachExistingElementFeature feature = new AttachExistingElementFeature(node);
 
         Element element = Mockito.mock(Element.class);
         StateNode child = Mockito.mock(StateNode.class);
-        ChildElementConsumer callback = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer callback = Mockito.mock(ChildElementConsumer.class);
         Node<?> parent = Mockito.mock(Node.class);
         feature.register(parent, element, child, callback);
 
@@ -71,13 +67,11 @@ public class AttachExistingElementFeatureTest {
     @Test
     public void unregister_dataIsNotAvailaleByNode() {
         StateNode node = new StateNode();
-        AttachExistingElementFeature feature = new AttachExistingElementFeature(
-                node);
+        AttachExistingElementFeature feature = new AttachExistingElementFeature(node);
 
         Element element = Mockito.mock(Element.class);
         StateNode child = Mockito.mock(StateNode.class);
-        ChildElementConsumer callback = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer callback = Mockito.mock(ChildElementConsumer.class);
         Node<?> parent = Mockito.mock(Node.class);
         feature.register(parent, element, child, callback);
 

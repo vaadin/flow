@@ -43,14 +43,12 @@ public class UploadIT extends AbstractSpringTest {
 
         waitUntil(driver -> {
             By selector = By.id(UPLOAD_ID);
-            return isElementPresent(selector)
-                    && findElement(selector).isDisplayed();
+            return isElementPresent(selector) && findElement(selector).isDisplayed();
         });
 
         File tempFile = createTempFile("foo");
 
-        TestBenchElement input = $(TestBenchElement.class).id(UPLOAD_ID)
-                .$(TestBenchElement.class).id("fileInput");
+        TestBenchElement input = $(TestBenchElement.class).id(UPLOAD_ID).$(TestBenchElement.class).id("fileInput");
         setLocalFileDetector(input);
         input.sendKeys(tempFile.getPath());
 
@@ -63,15 +61,11 @@ public class UploadIT extends AbstractSpringTest {
     public void uploadComponentIsInitialized() {
         open();
 
-        waitUntil(driver -> isElementPresent(By.id(UPLOAD_ID))
-                && findElement(By.id(UPLOAD_ID)).isDisplayed());
+        waitUntil(driver -> isElementPresent(By.id(UPLOAD_ID)) && findElement(By.id(UPLOAD_ID)).isDisplayed());
 
-        List<TestBenchElement> inputs = $(TestBenchElement.class).id(UPLOAD_ID)
-                .$("input").all();
-        Assert.assertFalse(
-                "Upload element is not initialized: it doesn't contain "
-                        + "any child element (so it has no element in the shadow root)",
-                inputs.isEmpty());
+        List<TestBenchElement> inputs = $(TestBenchElement.class).id(UPLOAD_ID).$("input").all();
+        Assert.assertFalse("Upload element is not initialized: it doesn't contain "
+                + "any child element (so it has no element in the shadow root)", inputs.isEmpty());
     }
 
     @Override
@@ -97,12 +91,10 @@ public class UploadIT extends AbstractSpringTest {
             element = ((WrapsElement) element).getWrappedElement();
         }
         if (element instanceof RemoteWebElement) {
-            ((RemoteWebElement) element)
-                    .setFileDetector(new LocalFileDetector());
+            ((RemoteWebElement) element).setFileDetector(new LocalFileDetector());
         } else {
             throw new IllegalArgumentException(
-                    "Expected argument of type RemoteWebElement, received "
-                            + element.getClass().getName());
+                    "Expected argument of type RemoteWebElement, received " + element.getClass().getName());
         }
     }
 }

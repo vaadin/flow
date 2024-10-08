@@ -28,10 +28,9 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
 /**
- * A view for testing for CSS priority computing on browser, make sure that the
- * same selectors (with same priority) from different sources (i.e. Application
- * Theme, @CssImport, @StyleSheet, Page.addStyleSheet) are overridden in a
- * correct order.
+ * A view for testing for CSS priority computing on browser, make sure that the same selectors (with same priority) from
+ * different sources (i.e. Application Theme, @CssImport, @StyleSheet, Page.addStyleSheet) are overridden in a correct
+ * order.
  * <p>
  * See {@code OrderedDependencyIT} for testing dependency loading order.
  *
@@ -71,44 +70,33 @@ public class CssLoadingView extends Div {
     public CssLoadingView() {
         setClassName("margin");
 
-        Span appThemeVsParent = new Span(
-                "App theme vs parent, should be green from app theme");
+        Span appThemeVsParent = new Span("App theme vs parent, should be green from app theme");
         appThemeVsParent.addClassNames("compare", APP_THEME, PARENT_THEME);
         add(wrap("appThemeVsParent", appThemeVsParent));
 
-        Span parentThemeVsStylesheet = new Span(
-                "Parent theme vs @Stylesheet, should be blue from parent theme");
-        parentThemeVsStylesheet.addClassNames("compare", PARENT_THEME,
-                STYLESHEET);
+        Span parentThemeVsStylesheet = new Span("Parent theme vs @Stylesheet, should be blue from parent theme");
+        parentThemeVsStylesheet.addClassNames("compare", PARENT_THEME, STYLESHEET);
         add(wrap("parentThemeVsStylesheet", parentThemeVsStylesheet));
 
-        Span stylesheetVsAddStylesheet = new Span(
-                "@Stylesheet vs addStylesheet, should be purple from stylesheet");
-        stylesheetVsAddStylesheet.addClassNames("compare", STYLESHEET,
-                ADD_STYLESHEET);
+        Span stylesheetVsAddStylesheet = new Span("@Stylesheet vs addStylesheet, should be purple from stylesheet");
+        stylesheetVsAddStylesheet.addClassNames("compare", STYLESHEET, ADD_STYLESHEET);
         add(wrap("stylesheetVsAddStylesheet", stylesheetVsAddStylesheet));
 
-        Span addStylesheetVsCssImport = new Span(
-                "addStylesheet vs @CSSImport , should be yellow from add stylesheet");
-        addStylesheetVsCssImport.addClassNames("compare", ADD_STYLESHEET,
-                CSSIMPORT);
+        Span addStylesheetVsCssImport = new Span("addStylesheet vs @CSSImport , should be yellow from add stylesheet");
+        addStylesheetVsCssImport.addClassNames("compare", ADD_STYLESHEET, CSSIMPORT);
         add(wrap("addStylesheetVsCssImport", addStylesheetVsCssImport));
 
         Span laterAddStylesheetVsCssImport = new Span(
                 "Later addStylesheet vs @CSSImport, should be darkgoldenrod from added stylesheet after the button has been pressed");
-        laterAddStylesheetVsCssImport.addClassNames("compare",
-                ADD_STYLESHEET_LATER, CSSIMPORT);
+        laterAddStylesheetVsCssImport.addClassNames("compare", ADD_STYLESHEET_LATER, CSSIMPORT);
         NativeButton load = new NativeButton("Load", e -> {
-            getUI().get().getPage()
-                    .addStyleSheet("/styles/page-addstylesheet-later.css");
+            getUI().get().getPage().addStyleSheet("/styles/page-addstylesheet-later.css");
         });
         load.setId("load");
         laterAddStylesheetVsCssImport.add(load);
-        add(wrap("laterAddStylesheetVsCssImport",
-                laterAddStylesheetVsCssImport));
+        add(wrap("laterAddStylesheetVsCssImport", laterAddStylesheetVsCssImport));
 
-        Span cssImportVsLumo = new Span(
-                "CSSImport vs Lumo, should be orange from cssimport");
+        Span cssImportVsLumo = new Span("CSSImport vs Lumo, should be orange from cssimport");
         cssImportVsLumo.addClassNames("compare", "bg-contrast-20");
         add(wrap("cssImportVsLumo", cssImportVsLumo));
 
@@ -130,8 +118,7 @@ public class CssLoadingView extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        attachEvent.getUI().getPage()
-                .addStyleSheet("/styles/page-addstylesheet.css");
+        attachEvent.getUI().getPage().addStyleSheet("/styles/page-addstylesheet.css");
     }
 
 }

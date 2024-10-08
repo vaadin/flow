@@ -16,9 +16,8 @@
 package com.vaadin.flow.data.provider;
 
 /**
- * Helper classes with fluent API for constructing {@link QuerySortOrder} lists.
- * When the sort order is ready to be passed on, calling {@link #build()} will
- * create the list of sort orders.
+ * Helper classes with fluent API for constructing {@link QuerySortOrder} lists. When the sort order is ready to be
+ * passed on, calling {@link #build()} will create the list of sort orders.
  *
  * @see QuerySortOrder
  * @see #thenDesc(String)
@@ -26,8 +25,7 @@ package com.vaadin.flow.data.provider;
  * @see #build()
  * @since 1.0
  */
-public class QuerySortOrderBuilder
-        extends SortOrderBuilder<QuerySortOrder, String> {
+public class QuerySortOrderBuilder extends SortOrderBuilder<QuerySortOrder, String> {
 
     @Override
     public QuerySortOrderBuilder thenAsc(String by) {
@@ -40,8 +38,7 @@ public class QuerySortOrderBuilder
     }
 
     @Override
-    protected QuerySortOrder createSortOrder(String by,
-            SortDirection direction) {
+    protected QuerySortOrder createSortOrder(String by, SortDirection direction) {
         return new QuerySortOrder(by, direction);
     }
 }

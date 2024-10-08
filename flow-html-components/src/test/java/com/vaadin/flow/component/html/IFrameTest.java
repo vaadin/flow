@@ -33,14 +33,12 @@ public class IFrameTest extends ComponentTest {
         addOptionalStringProperty("name");
         addOptionalStringProperty("allow");
 
-        addProperty("importance", IFrame.ImportanceType.class,
-                IFrame.ImportanceType.AUTO, IFrame.ImportanceType.HIGH, true,
-                true);
+        addProperty("importance", IFrame.ImportanceType.class, IFrame.ImportanceType.AUTO, IFrame.ImportanceType.HIGH,
+                true, true);
 
         addProperty("sandbox", IFrame.SandboxType[].class, null,
-                new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS,
-                        IFrame.SandboxType.ALLOW_MODALS },
-                true, true);
+                new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS }, true,
+                true);
     }
 
     @Test

@@ -30,19 +30,15 @@ public class InjectsJsTemplateIT extends ChromeBrowserTest {
 
         TestBenchElement parent = $("injects-js-template").first();
 
-        TestBenchElement injectedTemplate = parent.$(TestBenchElement.class)
-                .id("injected-template");
+        TestBenchElement injectedTemplate = parent.$(TestBenchElement.class).id("injected-template");
 
-        WebElement fooLabel = injectedTemplate.$(TestBenchElement.class)
-                .id("foo-prop");
+        WebElement fooLabel = injectedTemplate.$(TestBenchElement.class).id("foo-prop");
         Assert.assertEquals("bar", fooLabel.getText());
 
-        WebElement bazLabel = injectedTemplate.$(TestBenchElement.class)
-                .id("baz-prop");
+        WebElement bazLabel = injectedTemplate.$(TestBenchElement.class).id("baz-prop");
         Assert.assertEquals("setFromParent", bazLabel.getText());
 
-        WebElement injectedDiv = parent.$(TestBenchElement.class)
-                .id("injected-div");
+        WebElement injectedDiv = parent.$(TestBenchElement.class).id("injected-div");
         Assert.assertEquals("setFromParent", injectedDiv.getAttribute("class"));
     }
 }

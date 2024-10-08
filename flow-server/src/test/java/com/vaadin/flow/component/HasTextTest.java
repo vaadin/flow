@@ -42,8 +42,7 @@ public class HasTextTest {
     public void setWhiteSpace_styleIsSet() {
         hasText.setWhiteSpace(WhiteSpace.NOWRAP);
 
-        Assert.assertEquals("nowrap",
-                hasText.getElement().getStyle().get("white-space"));
+        Assert.assertEquals("nowrap", hasText.getElement().getStyle().get("white-space"));
     }
 
     @Test

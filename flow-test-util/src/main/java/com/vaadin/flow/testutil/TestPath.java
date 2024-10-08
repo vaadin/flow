@@ -22,8 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Setup the path to be tested for the tests that extend
- * {@link AbstractComponentIT}.
+ * Setup the path to be tested for the tests that extend {@link AbstractComponentIT}.
  *
  * @author Vaadin Ltd
  * @since 1.0.

@@ -39,14 +39,12 @@ public class NativeFunction {
      */
     public NativeFunction(String... paramsAndCode) {
         /*
-         * The GWT compiler will replace this JsInterop constructor with a JS
-         * invocation of new Function(<arguments>)
+         * The GWT compiler will replace this JsInterop constructor with a JS invocation of new Function(<arguments>)
          */
     }
 
     /**
-     * Invokes this function with a given <code>this</code> and arguments
-     * provided as an array.
+     * Invokes this function with a given <code>this</code> and arguments provided as an array.
      *
      * @param thisArg
      *            the value of <code>this</code>
@@ -57,8 +55,7 @@ public class NativeFunction {
     public native Object apply(Object thisArg, JsArray<?> arguments);
 
     /**
-     * Invokes this function with a given <code>this</code> and arguments
-     * provides as varargs.
+     * Invokes this function with a given <code>this</code> and arguments provides as varargs.
      *
      * @param thisArg
      *            the value of <code>this</code>
@@ -69,9 +66,8 @@ public class NativeFunction {
     public native Object call(Object thisArg, Object... arguments);
 
     /**
-     * Creates a new function with the given parameters and implementation. The
-     * return value of this method is intended to be used as a type annotated
-     * with {@link JsFunction @JsFunction}.
+     * Creates a new function with the given parameters and implementation. The return value of this method is intended
+     * to be used as a type annotated with {@link JsFunction @JsFunction}.
      *
      * @param paramsAndCode
      *            parameter names followed by the code of the function

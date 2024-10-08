@@ -35,8 +35,7 @@ import static org.mockito.Mockito.when;
 public class HeartbeatHandlerTest {
 
     @Test
-    public void synchronizedHandleRequest_uiPresent_setLastHeartbeatTimestampIsCalledOnce()
-            throws IOException {
+    public void synchronizedHandleRequest_uiPresent_setLastHeartbeatTimestampIsCalledOnce() throws IOException {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
         VaadinRequest request = mock(VaadinRequest.class);
@@ -51,7 +50,6 @@ public class HeartbeatHandlerTest {
         HeartbeatHandler handler = new HeartbeatHandler();
         handler.synchronizedHandleRequest(session, request, response);
 
-        Mockito.verify(ui.getInternals(), times(1))
-                .setLastHeartbeatTimestamp(anyLong());
+        Mockito.verify(ui.getInternals(), times(1)).setLastHeartbeatTimestamp(anyLong());
     }
 }

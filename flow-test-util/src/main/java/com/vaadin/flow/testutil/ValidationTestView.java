@@ -21,8 +21,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 
 /**
- * Abstract view class for testing validation with components that implement
- * {@link HasValidation}.
+ * Abstract view class for testing validation with components that implement {@link HasValidation}.
  *
  * @since 1.0
  */

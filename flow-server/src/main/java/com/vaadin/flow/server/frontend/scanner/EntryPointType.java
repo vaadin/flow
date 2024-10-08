@@ -18,8 +18,8 @@ package com.vaadin.flow.server.frontend.scanner;
 /**
  * The type of an entry point (scanned for frontend dependencies).
  * <p>
- * The "real" entry points are routes and exported web components. In addition
- * to those, there are a bunch of internal entry points that are also scanned.
+ * The "real" entry points are routes and exported web components. In addition to those, there are a bunch of internal
+ * entry points that are also scanned.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */

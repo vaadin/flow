@@ -34,8 +34,8 @@ public @interface DebounceSettings {
     int timeout();
 
     /**
-     * Gets an array of debounce phases for which the event should be sent to
-     * the server. There must be at least one phase.
+     * Gets an array of debounce phases for which the event should be sent to the server. There must be at least one
+     * phase.
      *
      * @see DebouncePhase
      *

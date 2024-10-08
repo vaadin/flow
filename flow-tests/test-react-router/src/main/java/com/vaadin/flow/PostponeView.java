@@ -36,11 +36,9 @@ public class PostponeView extends Div implements BeforeLeaveObserver {
     private NativeButton navigate, stay;
 
     public PostponeView() {
-        Anchor link = new Anchor("com.vaadin.flow.NavigationView",
-                "Navigation");// NavigationView.class);
+        Anchor link = new Anchor("com.vaadin.flow.NavigationView", "Navigation");// NavigationView.class);
         link.setId(NAVIGATION_ID);
-        RouterLink routerLink = new RouterLink("Navigation",
-                NavigationView.class);
+        RouterLink routerLink = new RouterLink("Navigation", NavigationView.class);
         routerLink.setId(NAVIGATION_ROUTER_LINK_ID);
 
         add(new Span("PostponeView"), new Div(), link, new Div(), routerLink);

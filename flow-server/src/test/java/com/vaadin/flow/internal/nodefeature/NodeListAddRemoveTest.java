@@ -19,8 +19,7 @@ import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
-public class NodeListAddRemoveTest
-        extends AbstractNodeFeatureTest<ElementClassList> {
+public class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     protected ElementClassList nodeList = createFeature();
 
     private List<String> resetToRemoveAfterAddCase() {
@@ -120,11 +119,10 @@ public class NodeListAddRemoveTest
         String item = nodeList.get(index);
         nodeList.remove(index);
         // verify that nodelist is adjusted immediately to avoid memory leaks
-        Optional<AbstractListChange<String>> optionalChange = nodeList
-                .getChangeTracker().stream().filter(change -> {
-                    ListAddChange<String> addChange = (ListAddChange<String>) change;
-                    return addChange.getNewItems().contains(item);
-                }).findFirst();
+        Optional<AbstractListChange<String>> optionalChange = nodeList.getChangeTracker().stream().filter(change -> {
+            ListAddChange<String> addChange = (ListAddChange<String>) change;
+            return addChange.getNewItems().contains(item);
+        }).findFirst();
         Assert.assertFalse(optionalChange.isPresent());
         Assert.assertEquals(2, nodeList.getChangeTracker().size());
 
@@ -287,10 +285,8 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = collectChanges(nodeList);
 
         Assert.assertEquals(2, changes.size());
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(ListClearChange.class));
-        MatcherAssert.assertThat(changes.get(1),
-                CoreMatchers.instanceOf(ListAddChange.class));
+        MatcherAssert.assertThat(changes.get(0), CoreMatchers.instanceOf(ListClearChange.class));
+        MatcherAssert.assertThat(changes.get(1), CoreMatchers.instanceOf(ListAddChange.class));
 
         Assert.assertEquals(1, nodeList.size());
         Assert.assertEquals("baz", nodeList.get(0));
@@ -304,11 +300,9 @@ public class NodeListAddRemoveTest
 
         nodeList.clear();
 
-        StateTree tree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(), ElementChildrenList.class);
         // attach the feature node to the tree
-        tree.getRootNode().getFeature(ElementChildrenList.class)
-                .add(nodeList.getNode());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(nodeList.getNode());
 
         nodeList.add("bar");
 
@@ -318,12 +312,9 @@ public class NodeListAddRemoveTest
         nodeList.getNode().collectChanges(changes::add);
 
         Assert.assertEquals(3, changes.size());
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(NodeAttachChange.class));
-        MatcherAssert.assertThat(changes.get(1),
-                CoreMatchers.instanceOf(ListClearChange.class));
-        MatcherAssert.assertThat(changes.get(2),
-                CoreMatchers.instanceOf(ListAddChange.class));
+        MatcherAssert.assertThat(changes.get(0), CoreMatchers.instanceOf(NodeAttachChange.class));
+        MatcherAssert.assertThat(changes.get(1), CoreMatchers.instanceOf(ListClearChange.class));
+        MatcherAssert.assertThat(changes.get(2), CoreMatchers.instanceOf(ListAddChange.class));
 
         nodeList.add("baz");
 
@@ -343,11 +334,9 @@ public class NodeListAddRemoveTest
 
         nodeList.clear();
 
-        StateTree tree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(), ElementChildrenList.class);
         // attach the feature node to the tree
-        tree.getRootNode().getFeature(ElementChildrenList.class)
-                .add(nodeList.getNode());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(nodeList.getNode());
 
         nodeList.add("bar");
 
@@ -362,8 +351,7 @@ public class NodeListAddRemoveTest
         });
 
         // reattach it back
-        tree.getRootNode().getFeature(ElementChildrenList.class)
-                .add(nodeList.getNode());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(nodeList.getNode());
 
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
@@ -389,11 +377,9 @@ public class NodeListAddRemoveTest
         // removes all children
         nodeList.clear();
 
-        StateTree tree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(), ElementChildrenList.class);
         // attach the feature node to the tree
-        tree.getRootNode().getFeature(ElementChildrenList.class)
-                .add(nodeList.getNode());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(nodeList.getNode());
 
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
@@ -408,11 +394,9 @@ public class NodeListAddRemoveTest
         // removes all children
         nodeList.clear();
 
-        StateTree tree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(), ElementChildrenList.class);
         // attach the feature node to the tree
-        tree.getRootNode().getFeature(ElementChildrenList.class)
-                .add(nodeList.getNode());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(nodeList.getNode());
 
         nodeList.getNode().collectChanges(change -> {
         });
@@ -428,8 +412,7 @@ public class NodeListAddRemoveTest
         });
 
         // reattach it back
-        tree.getRootNode().getFeature(ElementChildrenList.class)
-                .add(nodeList.getNode());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(nodeList.getNode());
 
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
@@ -444,11 +427,9 @@ public class NodeListAddRemoveTest
         // removes all children
         nodeList.clear();
 
-        StateTree tree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(), ElementChildrenList.class);
         // attach the feature node to the tree
-        tree.getRootNode().getFeature(ElementChildrenList.class)
-                .add(nodeList.getNode());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(nodeList.getNode());
 
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
@@ -467,11 +448,9 @@ public class NodeListAddRemoveTest
         nodeList.clear();
         nodeList.add("foo");
 
-        StateTree tree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(), ElementChildrenList.class);
         // attach the feature node to the tree
-        tree.getRootNode().getFeature(ElementChildrenList.class)
-                .add(nodeList.getNode());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(nodeList.getNode());
 
         List<NodeChange> changes = new ArrayList<>();
         nodeList.getNode().collectChanges(changes::add);
@@ -516,29 +495,24 @@ public class NodeListAddRemoveTest
     private void verifyCleared(List<NodeChange> changes) {
         Assert.assertEquals(1, changes.size());
         NodeChange nodeChange = changes.get(0);
-        MatcherAssert.assertThat(nodeChange,
-                CoreMatchers.instanceOf(ListClearChange.class));
+        MatcherAssert.assertThat(nodeChange, CoreMatchers.instanceOf(ListClearChange.class));
     }
 
-    private void verifyRemoved(List<NodeChange> changes, List<String> items,
-            Integer... indexes) {
+    private void verifyRemoved(List<NodeChange> changes, List<String> items, Integer... indexes) {
         Assert.assertTrue(changes.size() > 0);
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            MatcherAssert.assertThat(nodeChange,
-                    CoreMatchers.instanceOf(ListRemoveChange.class));
+            MatcherAssert.assertThat(nodeChange, CoreMatchers.instanceOf(ListRemoveChange.class));
             ListRemoveChange<?> change = (ListRemoveChange<?>) nodeChange;
             Assert.assertEquals(indexes[i].intValue(), change.getIndex());
             Assert.assertEquals(items.get(i), change.getRemovedItem());
         }
     }
 
-    private void verifyAdded(List<NodeChange> changes, List<String> items,
-            Integer... indexes) {
+    private void verifyAdded(List<NodeChange> changes, List<String> items, Integer... indexes) {
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            MatcherAssert.assertThat(nodeChange,
-                    CoreMatchers.instanceOf(ListAddChange.class));
+            MatcherAssert.assertThat(nodeChange, CoreMatchers.instanceOf(ListAddChange.class));
             ListAddChange<?> change = (ListAddChange<?>) nodeChange;
             Assert.assertEquals(indexes[i].intValue(), change.getIndex());
             Assert.assertEquals(1, change.getNewItems().size());

@@ -22,8 +22,7 @@ import com.vaadin.flow.component.react.ReactAdapterComponent;
 import com.vaadin.flow.router.Route;
 
 /**
- * Component used to create a React {@code Outlet} element for binding a Hilla
- * React view inside a Flow view.
+ * Component used to create a React {@code Outlet} element for binding a Hilla React view inside a Flow view.
  */
 @Tag("react-router-outlet")
 @JsModule("./ReactRouterOutletElement.tsx")

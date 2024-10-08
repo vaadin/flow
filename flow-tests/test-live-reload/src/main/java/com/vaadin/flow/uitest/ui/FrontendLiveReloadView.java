@@ -59,23 +59,20 @@ public class FrontendLiveReloadView extends AbstractLiveReloadView {
         getElement().appendChild(codeArea);
         File frontendFile = getFrontendFile(VaadinService.getCurrent());
         try {
-            String code = FileUtils.readFileToString(frontendFile,
-                    StandardCharsets.UTF_8);
+            String code = FileUtils.readFileToString(frontendFile, StandardCharsets.UTF_8);
             codeArea.setText(code);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
 
-        Element updateFrontend = ElementFactory
-                .createButton("Replace frontend code");
+        Element updateFrontend = ElementFactory.createButton("Replace frontend code");
         updateFrontend.setProperty("id", FRONTEND_CODE_UPDATE_BUTTON);
         updateFrontend.setAttribute("onclick",
-                "fetch('update_frontend', { method: 'POST', body: document.getElementById('"
-                        + FRONTEND_CODE_TEXT + "').value})");
+                "fetch('update_frontend', { method: 'POST', body: document.getElementById('" + FRONTEND_CODE_TEXT
+                        + "').value})");
         getElement().appendChild(updateFrontend);
 
-        Element resetFrontend = ElementFactory
-                .createButton("Reset frontend code");
+        Element resetFrontend = ElementFactory.createButton("Reset frontend code");
         resetFrontend.setProperty("id", FRONTEND_CODE_RESET_BUTTON);
         resetFrontend.setAttribute("onclick", "fetch('reset_frontend')");
         getElement().appendChild(resetFrontend);
@@ -85,14 +82,12 @@ public class FrontendLiveReloadView extends AbstractLiveReloadView {
         add(customComponent);
     }
 
-    public static void replaceFrontendFile(VaadinService vaadinService,
-            String code) {
+    public static void replaceFrontendFile(VaadinService vaadinService, String code) {
         File frontendFile = getFrontendFile(vaadinService);
         try {
             if (frontendFileBackup == null) {
                 // make a backup so it can be restored at teardown
-                frontendFileBackup = File.createTempFile(
-                        FrontendUtils.DEFAULT_FRONTEND_DIR, "ts");
+                frontendFileBackup = File.createTempFile(FrontendUtils.DEFAULT_FRONTEND_DIR, "ts");
                 FileUtils.copyFile(frontendFile, frontendFileBackup);
             }
             FileUtils.write(frontendFile, code, StandardCharsets.UTF_8);
@@ -113,8 +108,7 @@ public class FrontendLiveReloadView extends AbstractLiveReloadView {
     }
 
     private static File getFrontendFile(VaadinService vaadinService) {
-        final File projectFrontendDir = FrontendUtils.getProjectFrontendDir(
-                vaadinService.getDeploymentConfiguration());
+        final File projectFrontendDir = FrontendUtils.getProjectFrontendDir(vaadinService.getDeploymentConfiguration());
         return new File(projectFrontendDir, FRONTEND_FILE);
     }
 }

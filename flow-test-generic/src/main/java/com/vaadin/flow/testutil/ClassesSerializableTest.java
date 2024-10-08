@@ -39,39 +39,30 @@ import static java.lang.reflect.Modifier.isStatic;
 import static org.junit.Assert.fail;
 
 /**
- * A superclass for serialization testing. The test scans all the classpath and
- * tries to serialize every single class (except ones from whitelist) in the
- * classpath. Subclasses may adjust the whitelist by overriding
- * {@link #getExcludedPatterns()}, {@link #getBasePackages()},
- * {@link #getJarPattern()}
+ * A superclass for serialization testing. The test scans all the classpath and tries to serialize every single class
+ * (except ones from whitelist) in the classpath. Subclasses may adjust the whitelist by overriding
+ * {@link #getExcludedPatterns()}, {@link #getBasePackages()}, {@link #getJarPattern()}
  *
  * @since 1.0
  */
 
 public abstract class ClassesSerializableTest extends ClassFinder {
 
-    private final Class<?> COMPONENT_CLASS = loadComponent(
-            "com.vaadin.flow.component.Component");
-    private final Class<?> DIV_CLASS = loadComponent(
-            "com.vaadin.flow.component.html.Div");
+    private final Class<?> COMPONENT_CLASS = loadComponent("com.vaadin.flow.component.Component");
+    private final Class<?> DIV_CLASS = loadComponent("com.vaadin.flow.component.html.Div");
 
-    private final Class<?> UI_CLASS = loadComponent(
-            "com.vaadin.flow.component.UI");
+    private final Class<?> UI_CLASS = loadComponent("com.vaadin.flow.component.UI");
 
     @SuppressWarnings("WeakerAccess")
     protected Stream<String> getExcludedPatterns() {
-        return Stream.of(
-                "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
-                "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
-                ".*\\.fileupload2\\..*", ".*\\.slf4j\\..*",
-                ".*\\.testbench\\..*", ".*\\.testutil\\..*",
+        return Stream.of("com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
+                "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability", ".*\\.fileupload2\\..*",
+                ".*\\.slf4j\\..*", ".*\\.testbench\\..*", ".*\\.testutil\\..*",
                 // Various utils with inner classes
-                ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
-                "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
+                ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$", "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerOutputTracker.*",
-                "com\\.vaadin\\.base\\.devserver\\.viteproxy\\..*",
-                "com\\.vaadin\\.base\\.devserver\\.stats..*",
+                "com\\.vaadin\\.base\\.devserver\\.viteproxy\\..*", "com\\.vaadin\\.base\\.devserver\\.stats..*",
                 "com\\.vaadin\\.flow\\.internal\\.VaadinContextInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.ApplicationClassLoaderAccess",
                 "com\\.vaadin\\.base\\.devserver\\.BrowserLauncher",
@@ -84,12 +75,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.DevToolsInterface",
                 "com\\.vaadin\\.base\\.devserver\\.DevToolsMessageHandler",
                 "com\\.vaadin\\.base\\.devserver\\.ExternalDependencyWatcher",
-                "com\\.vaadin\\.base\\.devserver\\.FileWatcher",
-                "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
+                "com\\.vaadin\\.base\\.devserver\\.FileWatcher", "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
                 "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde",
                 "com\\.vaadin\\.base\\.devserver\\.RestartMonitor",
-                "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater",
-                "com\\.vaadin\\.base\\.devserver\\.editor..*",
+                "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater", "com\\.vaadin\\.base\\.devserver\\.editor..*",
                 "com\\.vaadin\\.base\\.devserver\\.themeeditor..*",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.PortProber",
@@ -97,10 +86,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.EphemeralPortRangeDetector",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.LinuxEphemeralPortRangeDetector",
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
-                "com\\.vaadin\\.flow\\.di\\.InstantiatorFactory",
-                "com\\.vaadin\\.flow\\.di\\.Lookup(\\$.*)?",
-                "com\\.vaadin\\.flow\\.di\\.ResourceProvider",
-                "com\\.vaadin\\.flow\\.di\\.AbstractLookupInitializer",
+                "com\\.vaadin\\.flow\\.di\\.InstantiatorFactory", "com\\.vaadin\\.flow\\.di\\.Lookup(\\$.*)?",
+                "com\\.vaadin\\.flow\\.di\\.ResourceProvider", "com\\.vaadin\\.flow\\.di\\.AbstractLookupInitializer",
                 "com\\.vaadin\\.flow\\.di\\.LookupInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.di\\.OneTimeInitializerPredicate",
                 "com\\.vaadin\\.flow\\.dom\\.ElementConstants",
@@ -113,23 +100,20 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.dnd\\.osgi\\.DndConnectorResource",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.DeadlockDetectingCompletableFuture",
                 "com\\.vaadin\\.flow\\.function\\.VaadinApplicationInitializationBootstrap",
-                "com\\.vaadin\\.flow\\.hotswap\\.Hotswapper",
-                "com\\.vaadin\\.flow\\.hotswap\\.VaadinHotswapper",
+                "com\\.vaadin\\.flow\\.hotswap\\.Hotswapper", "com\\.vaadin\\.flow\\.hotswap\\.VaadinHotswapper",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccessor",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccess",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReload",
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadImpl",
                 "com\\.vaadin\\.flow\\.internal\\.DevModeHandlerManager",
-                "com\\.vaadin\\.flow\\.internal\\.DevModeHandler",
-                "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
+                "com\\.vaadin\\.flow\\.internal\\.DevModeHandler", "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.JsonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.ReflectionCacheHotswapper",
                 "com\\.vaadin\\.flow\\.internal\\.UsageStatistics(\\$.*)?",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatureRegistry",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatures",
                 "com\\.vaadin\\.flow\\.internal\\.CustomElementNameValidator",
-                "com\\.vaadin\\.flow\\.router\\.HighlightActions",
-                "com\\.vaadin\\.flow\\.router\\.HighlightConditions",
+                "com\\.vaadin\\.flow\\.router\\.HighlightActions", "com\\.vaadin\\.flow\\.router\\.HighlightConditions",
                 "com\\.vaadin\\.flow\\.router\\.ParameterDeserializer",
                 "com\\.vaadin\\.flow\\.router\\.NavigationStateBuilder",
                 "com\\.vaadin\\.flow\\.router\\.AbstractRouteNotFoundError\\$LazyInit",
@@ -162,8 +146,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.startup\\.LookupServletContainerInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication.JSR356WebsocketInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
-                "com\\.vaadin\\.flow\\.server\\.InlineTargets",
-                "com\\.vaadin\\.flow\\.server\\.AppShellSettings",
+                "com\\.vaadin\\.flow\\.server\\.InlineTargets", "com\\.vaadin\\.flow\\.server\\.AppShellSettings",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.IndexHtmlResponse",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
@@ -174,8 +157,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ErrorNavigationTargetInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.RouteRegistryInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.WebComponentConfigurationRegistryInitializer",
-                "com\\.vaadin\\.flow\\.server\\.VaadinResponse",
-                "com\\.vaadin\\.flow\\.component\\.Key",
+                "com\\.vaadin\\.flow\\.server\\.VaadinResponse", "com\\.vaadin\\.flow\\.component\\.Key",
                 "com\\.vaadin\\.flow\\.server\\.VaadinRequest",
                 "com\\.vaadin\\.flow\\.server\\.DevServerWatchDog(\\$.*)?",
                 "com\\.vaadin\\.flow\\.router\\.DefaultRoutePathProvider",
@@ -198,19 +180,16 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.ParserData",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
-                "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
-                "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
+                "com\\.vaadin\\.flow\\.dom\\.ElementFactory", "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeList(\\$.*)?",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PropertyFilter",
-                "com\\.vaadin\\.flow\\.internal\\.ReflectTools(\\$.*)?",
-                "com\\.vaadin\\.flow\\.server\\.FutureAccess",
+                "com\\.vaadin\\.flow\\.internal\\.ReflectTools(\\$.*)?", "com\\.vaadin\\.flow\\.server\\.FutureAccess",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.ElementPropertyMap\\$PutResult",
                 "com\\.vaadin\\.flow\\.client\\.osgi\\.OSGiClientStaticResource(\\$.*)?",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\.OsgiVaadinContributor(\\$.*)?",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\.OsgiVaadinStaticResource(\\$.*)?",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\.VaadinResourceTrackerComponent(\\$.*)?",
-                "com\\.vaadin\\.flow\\.client\\.osgi\\..*",
-                "com\\.vaadin\\.flow\\.data\\.osgi\\..*",
+                "com\\.vaadin\\.flow\\.client\\.osgi\\..*", "com\\.vaadin\\.flow\\.data\\.osgi\\..*",
                 "com\\.vaadin\\.flow\\.push\\.osgi\\.PushOsgiStaticResource",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.HtmlImportParser",
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
@@ -243,8 +222,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.webpush\\.WebPushMessage",
 
                 // Flow client classes
-                "com\\.vaadin\\.client\\..*",
-                "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker",
+                "com\\.vaadin\\.client\\..*", "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker",
                 "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker\\$Script",
 
                 // Node downloader classes
@@ -260,13 +238,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.ProxyFactory",
 
                 // Various test classes
-                ".*\\.test(s)?\\..*", ".*Test.*",
-                "com\\.vaadin\\.flow\\.server\\.MockVaadinServletService",
+                ".*\\.test(s)?\\..*", ".*Test.*", "com\\.vaadin\\.flow\\.server\\.MockVaadinServletService",
                 "com\\.vaadin\\.flow\\.server\\.MockServletServiceSessionSetup",
-                "com\\.vaadin\\.flow\\.server\\.MockServletConfig",
-                "com\\.vaadin\\.flow\\.server\\.MockServletContext",
-                "com\\.vaadin\\.flow\\.templatemodel\\.Bean",
-                "com\\.vaadin\\.flow\\.internal\\.HasCurrentService",
+                "com\\.vaadin\\.flow\\.server\\.MockServletConfig", "com\\.vaadin\\.flow\\.server\\.MockServletContext",
+                "com\\.vaadin\\.flow\\.templatemodel\\.Bean", "com\\.vaadin\\.flow\\.internal\\.HasCurrentService",
                 "com\\.vaadin\\.flow\\.component\\.ValueChangeMonitor",
                 "com\\.vaadin\\.flow\\.templatemodel\\.BeanContainingBeans(\\$.*)?");
     }
@@ -288,8 +263,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
         ObjectOutputStream out = new ObjectOutputStream(bs);
         out.writeObject(instance);
         byte[] data = bs.toByteArray();
-        ObjectInputStream in = new ObjectInputStream(
-                new ByteArrayInputStream(data));
+        ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
 
         @SuppressWarnings("unchecked")
         T readObject = (T) in.readObject();
@@ -298,8 +272,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
     }
 
     /**
-     * The method is called right after a class instantiation and might be
-     * overriden by subclasses to reset thread local values (ex. current UI).
+     * The method is called right after a class instantiation and might be overriden by subclasses to reset thread local
+     * values (ex. current UI).
      *
      * @see #setupThreadLocals
      */
@@ -308,9 +282,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
     }
 
     /**
-     * The method is called right a class instantiation and might be overriden
-     * by subclasses to install some necessary thread local values (ex. current
-     * UI).
+     * The method is called right a class instantiation and might be overriden by subclasses to install some necessary
+     * thread local values (ex. current UI).
      *
      * @see #resetThreadLocals
      */
@@ -319,8 +292,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
     }
 
     /**
-     * Tests that all the relevant classes and interfaces under
-     * {@link #getBasePackages} implement Serializable.
+     * Tests that all the relevant classes and interfaces under {@link #getBasePackages} implement Serializable.
      *
      * @throws Throwable
      *             serialization goes wrong
@@ -330,8 +302,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
         List<String> rawClasspathEntries = getRawClasspathEntries();
 
         List<String> classes = new ArrayList<>();
-        List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile)
-                .collect(Collectors.toList());
+        List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile).collect(Collectors.toList());
         for (String location : rawClasspathEntries) {
             if (!isTestClassPath(location)) {
                 classes.addAll(findServerClasses(location, excludes));
@@ -350,18 +321,15 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
             // report fields that use lambda types that won't be serializable
             // (also in synthetic classes)
-            Stream.of(cls.getDeclaredFields())
-                    .filter(field -> isFunctionalType(field.getGenericType()))
-                    .filter(field -> !isStatic(field.getModifiers()))
-                    .forEach(nonSerializableFunctionFields::add);
+            Stream.of(cls.getDeclaredFields()).filter(field -> isFunctionalType(field.getGenericType()))
+                    .filter(field -> !isStatic(field.getModifiers())).forEach(nonSerializableFunctionFields::add);
 
             // skip annotations and synthetic classes
             if (cls.isAnnotation() || cls.isSynthetic()) {
                 continue;
             }
 
-            if (!cls.isInterface()
-                    && !Modifier.isAbstract(cls.getModifiers())) {
+            if (!cls.isInterface() && !Modifier.isAbstract(cls.getModifiers())) {
                 serializeAndDeserialize(cls);
                 serializeAndDeserializeInsideContainer(cls);
             }
@@ -412,10 +380,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
             }
 
             Object divElement = getElement(div);
-            Optional<Method> setChild = Stream
-                    .of(divElement.getClass().getMethods())
-                    .filter(method -> "setChild".equals(method.getName()))
-                    .findFirst();
+            Optional<Method> setChild = Stream.of(divElement.getClass().getMethods())
+                    .filter(method -> "setChild".equals(method.getName())).findFirst();
             setChild.get().invoke(divElement, 0, getElement(instance));
             serializeAndDeserialize(div);
         } catch (Throwable e) {
@@ -423,17 +389,15 @@ public abstract class ClassesSerializableTest extends ClassFinder {
         }
     }
 
-    private Object getElement(Object obj) throws NoSuchMethodException,
-            SecurityException, IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException {
+    private Object getElement(Object obj) throws NoSuchMethodException, SecurityException, IllegalAccessException,
+            IllegalArgumentException, InvocationTargetException {
         Method method = obj.getClass().getMethod("getElement");
         return method.invoke(obj);
     }
 
-    private Object instantiate(Class<?> clazz) throws InstantiationException,
-            IllegalAccessException, InvocationTargetException {
-        Optional<Constructor<?>> defaultCtor = Stream
-                .of(clazz.getDeclaredConstructors())
+    private Object instantiate(Class<?> clazz)
+            throws InstantiationException, IllegalAccessException, InvocationTargetException {
+        Optional<Constructor<?>> defaultCtor = Stream.of(clazz.getDeclaredConstructors())
                 .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
         if (!defaultCtor.isPresent()) {
             return null;
@@ -447,34 +411,27 @@ public abstract class ClassesSerializableTest extends ClassFinder {
         }
     }
 
-    private void failSerializableFields(
-            List<Field> nonSerializableFunctionFields) {
+    private void failSerializableFields(List<Field> nonSerializableFunctionFields) {
         String nonSerializableString = nonSerializableFunctionFields.stream()
-                .map(field -> String.format("%s.%s",
-                        field.getDeclaringClass().getName(), field.getName()))
+                .map(field -> String.format("%s.%s", field.getDeclaringClass().getName(), field.getName()))
                 .collect(Collectors.joining(", "));
 
-        fail("Fields with functional types that are not serializable: "
-                + nonSerializableString);
+        fail("Fields with functional types that are not serializable: " + nonSerializableString);
     }
 
-    private void failSerializableClasses(
-            List<Class<?>> nonSerializableClasses) {
+    private void failSerializableClasses(List<Class<?>> nonSerializableClasses) {
         StringBuilder nonSerializableString = new StringBuilder();
         for (Class<?> c : nonSerializableClasses) {
             nonSerializableString.append(",\n").append(c.getName());
             if (c.isAnonymousClass()) {
-                nonSerializableString.append("(super: ")
-                        .append(c.getSuperclass().getName())
-                        .append(", interfaces: ");
+                nonSerializableString.append("(super: ").append(c.getSuperclass().getName()).append(", interfaces: ");
                 for (Class<?> i : c.getInterfaces()) {
                     nonSerializableString.append(i.getName()).append(",");
                 }
                 nonSerializableString.append(")");
             }
         }
-        fail("Serializable not implemented by the following classes and interfaces: "
-                + nonSerializableString);
+        fail("Serializable not implemented by the following classes and interfaces: " + nonSerializableString);
 
     }
 

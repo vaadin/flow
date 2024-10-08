@@ -26,9 +26,8 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
- * Internal collection of initializers which may not be executed immediately but
- * requires a {@link Lookup} instance which will be set in the
- * {@link VaadinContext} ({@link ServletContext}) only when
+ * Internal collection of initializers which may not be executed immediately but requires a {@link Lookup} instance
+ * which will be set in the {@link VaadinContext} ({@link ServletContext}) only when
  * {@link LookupServletContainerInitializer} completed.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -40,9 +39,8 @@ import com.vaadin.flow.server.VaadinContext;
 class DeferredServletContextInitializers {
 
     /**
-     * A callback which will be called to run
-     * {@link ServletContainerInitializer} logic once a {@link ServletContext}
-     * is initialized with {@link Lookup}.
+     * A callback which will be called to run {@link ServletContainerInitializer} logic once a {@link ServletContext} is
+     * initialized with {@link Lookup}.
      *
      * @author Vaadin Ltd
      * @since
@@ -50,8 +48,7 @@ class DeferredServletContextInitializers {
      */
     interface Initializer {
         /**
-         * Runs {@link ServletContainerInitializer} logic with the provided
-         * {@code context}.
+         * Runs {@link ServletContainerInitializer} logic with the provided {@code context}.
          *
          * @param context
          *            a ServletContext for the initializer

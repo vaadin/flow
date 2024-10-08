@@ -26,18 +26,15 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
- * Contains helper methods to work with Spring Data based back-ends and Vaadin
- * components.
+ * Contains helper methods to work with Spring Data based back-ends and Vaadin components.
  */
 public interface VaadinSpringDataHelpers extends Serializable {
 
     /**
-     * Translates given Query object from a Vaadin component to Spring Data Sort
-     * object.
+     * Translates given Query object from a Vaadin component to Spring Data Sort object.
      * <p>
-     * Can be used as a helper when making a lazy data binding from a Vaadin
-     * component to a Spring Data based back-end. The method expects Vaadin sort
-     * data to include the property name.
+     * Can be used as a helper when making a lazy data binding from a Vaadin component to a Spring Data based back-end.
+     * The method expects Vaadin sort data to include the property name.
      *
      * @param vaadinQuery
      *            the Vaadin Query object passed by the component
@@ -45,30 +42,26 @@ public interface VaadinSpringDataHelpers extends Serializable {
      */
     static Sort toSpringDataSort(Query<?, ?> vaadinQuery) {
         return Sort.by(vaadinQuery.getSortOrders().stream()
-                .map(so -> so.getDirection() == SortDirection.ASCENDING
-                        ? Order.asc(so.getSorted())
+                .map(so -> so.getDirection() == SortDirection.ASCENDING ? Order.asc(so.getSorted())
                         : Order.desc(so.getSorted()))
                 .collect(Collectors.toList()));
     }
 
     /**
-     * Creates a Spring Data {@link PageRequest} based on the Vaadin
-     * {@link Query} object. Takes sort into account, based on properties.
+     * Creates a Spring Data {@link PageRequest} based on the Vaadin {@link Query} object. Takes sort into account,
+     * based on properties.
      *
      * @param vaadinQuery
      *            the query object from Vaadin component
-     * @return a {@link PageRequest} that can be passed for Spring Data based
-     *         back-end
+     * @return a {@link PageRequest} that can be passed for Spring Data based back-end
      */
     static PageRequest toSpringPageRequest(Query<?, ?> vaadinQuery) {
         Sort sort = VaadinSpringDataHelpers.toSpringDataSort(vaadinQuery);
-        return PageRequest.of(vaadinQuery.getPage(), vaadinQuery.getPageSize(),
-                sort);
+        return PageRequest.of(vaadinQuery.getPage(), vaadinQuery.getPageSize(), sort);
     }
 
     /**
-     * Binds all items from a given paging Spring Data repository to
-     * {@code Grid}. Usage example:
+     * Binds all items from a given paging Spring Data repository to {@code Grid}. Usage example:
      * <p>
      * {@code grid.setItems(fromPagingRepository(repo));}
      * <p>
@@ -79,8 +72,7 @@ public interface VaadinSpringDataHelpers extends Serializable {
      *            the repository where the results should be fetched from
      * @return the FetchCallback that makes the lazy binding to {@code Grid}.
      */
-    static <T> FetchCallback<T, Void> fromPagingRepository(
-            PagingAndSortingRepository<T, ?> repo) {
+    static <T> FetchCallback<T, Void> fromPagingRepository(PagingAndSortingRepository<T, ?> repo) {
         return query -> repo.findAll(toSpringPageRequest(query)).stream();
     }
 

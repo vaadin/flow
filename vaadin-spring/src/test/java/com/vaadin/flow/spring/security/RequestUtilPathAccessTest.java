@@ -61,8 +61,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest()
-@ContextConfiguration(classes = { RequestUtilPathAccessTest.TestConfig.class,
-        SpringBootAutoConfiguration.class,
+@ContextConfiguration(classes = { RequestUtilPathAccessTest.TestConfig.class, SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class, })
 public class RequestUtilPathAccessTest {
 
@@ -83,18 +82,15 @@ public class RequestUtilPathAccessTest {
 
     @Before
     public void setupMockAccessPathChecker() {
-        Set<String> publicPaths = Set.of("", "alias/public", "other",
-                "alias/other");
+        Set<String> publicPaths = Set.of("", "alias/public", "other", "alias/other");
         Set<String> publicPathsPrefix = Set.of("tpl/public/", "tpl/other/");
-        Mockito.when(accessPathChecker.hasAccess(any(), any(), any()))
-                .then(i -> {
-                    String path = i.getArgument(0);
-                    if (publicPaths.contains(path) || publicPathsPrefix.stream()
-                            .anyMatch(path::startsWith)) {
-                        return true;
-                    }
-                    return false;
-                });
+        Mockito.when(accessPathChecker.hasAccess(any(), any(), any())).then(i -> {
+            String path = i.getArgument(0);
+            if (publicPaths.contains(path) || publicPathsPrefix.stream().anyMatch(path::startsWith)) {
+                return true;
+            }
+            return false;
+        });
     }
 
     @Route("")
@@ -120,8 +116,7 @@ public class RequestUtilPathAccessTest {
 
     @Test
     public void testAnonymousRouteRequest_rootMappedServlet_publicView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
         addRoute(servlet, AnotherPublicView.class);
@@ -153,8 +148,7 @@ public class RequestUtilPathAccessTest {
 
     @Test
     public void testAnonymousRouteRequest_rootMappedServlet_notAView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
         addRoute(servlet, AnotherPublicView.class);
@@ -187,8 +181,7 @@ public class RequestUtilPathAccessTest {
 
     @Test
     public void testAnonymousRouteRequest_rootMappedServlet_privateView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/*");
         addRoute(setupMockServlet(), AdminView.class);
 
         MockHttpServletRequest request = createRequest(null);
@@ -206,8 +199,7 @@ public class RequestUtilPathAccessTest {
 
     @Test
     public void testAnonymousRouteRequest_fooMappedServlet_publicView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/foo/*");
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
         addRoute(servlet, AnotherPublicView.class);
@@ -247,8 +239,7 @@ public class RequestUtilPathAccessTest {
 
     @Test
     public void testAnonymousRouteRequest_fooMappedServlet_notAView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/foo/*");
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
         addRoute(servlet, AnotherPublicView.class);
@@ -280,8 +271,7 @@ public class RequestUtilPathAccessTest {
 
     @Test
     public void testAnonymousRouteRequest_fooMappedServlet_privateView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/foo/*");
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/foo/*");
         addRoute(setupMockServlet(), AdminView.class);
 
         MockHttpServletRequest request = createRequest(null);
@@ -299,8 +289,7 @@ public class RequestUtilPathAccessTest {
 
     @Test
     public void testAnonymousRouteRequest_fooMappedServlet_publicViewPathOutsideServlet() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/foo/*");
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
         addRoute(servlet, AnotherPublicView.class);
@@ -333,8 +322,7 @@ public class RequestUtilPathAccessTest {
 
     @Test
     public void testRouteRequest_servletNotInited() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/*");
         setupMockServlet(false);
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
@@ -368,38 +356,30 @@ public class RequestUtilPathAccessTest {
 
     private SpringServlet setupMockServlet(boolean inited) {
         SpringServlet servlet = Mockito.mock(SpringServlet.class);
-        SpringVaadinServletService service = Mockito
-                .mock(SpringVaadinServletService.class);
+        SpringVaadinServletService service = Mockito.mock(SpringVaadinServletService.class);
         Router router = Mockito.mock(Router.class);
 
         RouteRegistry routeRegistry = new TestRouteRegistry();
-        DeploymentConfiguration deploymentConfiguration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration deploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
 
-        Mockito.when(springServletRegistration.getServlet())
-                .thenReturn(servlet);
+        Mockito.when(springServletRegistration.getServlet()).thenReturn(servlet);
         if (inited) {
             Mockito.when(servlet.getService()).thenReturn(service);
         }
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(deploymentConfiguration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(deploymentConfiguration);
         Mockito.when(service.getRouter()).thenReturn(router);
         Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
         return servlet;
     }
 
-    private void addRoute(SpringServlet servlet,
-            Class<? extends Component> view) {
+    private void addRoute(SpringServlet servlet, Class<? extends Component> view) {
 
-        Optional<Route> route = AnnotationReader.getAnnotationFor(view,
-                Route.class);
+        Optional<Route> route = AnnotationReader.getAnnotationFor(view, Route.class);
 
         if (!route.isPresent()) {
-            throw new IllegalArgumentException(
-                    "Unable find a @Route annotation");
+            throw new IllegalArgumentException("Unable find a @Route annotation");
         }
-        RouteRegistry routeRegistry = servlet.getService().getRouter()
-                .getRegistry();
+        RouteRegistry routeRegistry = servlet.getService().getRouter().getRegistry();
         RouteConfiguration.forRegistry(routeRegistry).setAnnotatedRoute(view);
     }
 
@@ -407,19 +387,16 @@ public class RequestUtilPathAccessTest {
         return createRequest(pathInfo, null);
     }
 
-    static MockHttpServletRequest createRequest(String pathInfo,
-            RequestType type) {
+    static MockHttpServletRequest createRequest(String pathInfo, RequestType type) {
         return createRequest(pathInfo, type, Collections.emptyMap());
     }
 
-    static MockHttpServletRequest createRequest(String pathInfo,
-            RequestType type, Map<String, String> headers) {
+    static MockHttpServletRequest createRequest(String pathInfo, RequestType type, Map<String, String> headers) {
         String uri = (pathInfo == null ? "/" : pathInfo);
         MockHttpServletRequest r = new MockHttpServletRequest("GET", uri);
         r.setPathInfo(pathInfo);
         if (type != null) {
-            r.setParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER,
-                    type.getIdentifier());
+            r.setParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER, type.getIdentifier());
         }
         headers.forEach((key, value) -> r.addHeader(key, value));
 
@@ -437,8 +414,7 @@ public class RequestUtilPathAccessTest {
 
         @Bean
         NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
-            return new NavigationAccessControlConfigurer()
-                    .withRoutePathAccessChecker();
+            return new NavigationAccessControlConfigurer().withRoutePathAccessChecker();
         }
     }
 }

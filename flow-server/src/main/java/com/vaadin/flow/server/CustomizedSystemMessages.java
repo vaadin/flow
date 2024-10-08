@@ -17,31 +17,24 @@
 package com.vaadin.flow.server;
 
 /**
- * Contains the system messages used to notify the user about various critical
- * situations that can occur.
+ * Contains the system messages used to notify the user about various critical situations that can occur.
  * <p>
- * Vaadin gets the SystemMessages from the {@link SystemMessagesProvider}
- * configured in {@link VaadinService}. You can customize this by creating a
- * {@link VaadinServiceInitListener} that sets an instance of
- * {@link SystemMessagesProvider} to
- * {@link VaadinService#setSystemMessagesProvider(SystemMessagesProvider)}, that
- * in turns creates instances of CustomizedSystemMessages.
+ * Vaadin gets the SystemMessages from the {@link SystemMessagesProvider} configured in {@link VaadinService}. You can
+ * customize this by creating a {@link VaadinServiceInitListener} that sets an instance of
+ * {@link SystemMessagesProvider} to {@link VaadinService#setSystemMessagesProvider(SystemMessagesProvider)}, that in
+ * turns creates instances of CustomizedSystemMessages.
  * <p>
- * The default behavior is to show a notification, and reload the browser page
- * once the user clicks the message.<br>
- * However, only for session expiration, that default is to reload the page
- * without any notification. Instead of reloading the page, you can set a
- * specific URL that the user is taken to.<br>
- * Setting both caption and message to null will reload the page (or go to the
- * specified URL) without displaying a notification.
- * set*NotificationEnabled(false) will achieve the same thing.
+ * The default behavior is to show a notification, and reload the browser page once the user clicks the message.<br>
+ * However, only for session expiration, that default is to reload the page without any notification. Instead of
+ * reloading the page, you can set a specific URL that the user is taken to.<br>
+ * Setting both caption and message to null will reload the page (or go to the specified URL) without displaying a
+ * notification. set*NotificationEnabled(false) will achieve the same thing.
  * <p>
  * The situations are:
  * <ul>
  * <li>Session expired: the user session has expired, usually due to inactivity.
  * <li>Cookies disabled: the cookie support is disabled in the browser.
- * <li>Internal error: unhandled critical server error (e.g out of memory,
- * database crash)
+ * <li>Internal error: unhandled critical server error (e.g out of memory, database crash)
  * </ul>
  *
  * @since 1.0
@@ -51,8 +44,7 @@ package com.vaadin.flow.server;
 public class CustomizedSystemMessages extends SystemMessages {
 
     /**
-     * Sets the URL the user will be redirected to after dismissing a "session
-     * expired" message.
+     * Sets the URL the user will be redirected to after dismissing a "session expired" message.
      *
      * Default value is {@literal null}.
      *
@@ -64,28 +56,23 @@ public class CustomizedSystemMessages extends SystemMessages {
     }
 
     /**
-     * Sets whether a "session expired" notification should be shown to the end
-     * user. If the notification is disabled the user will be immediately
-     * redirected to the URL returned by {@link #getSessionExpiredURL()}.
+     * Sets whether a "session expired" notification should be shown to the end user. If the notification is disabled
+     * the user will be immediately redirected to the URL returned by {@link #getSessionExpiredURL()}.
      *
      * By default, the "session expired" notification is disabled.
      *
      * @param sessionExpiredNotificationEnabled
-     *            {@code true} to show the notification to the end user,
-     *            {@code false} to redirect directly
+     *            {@code true} to show the notification to the end user, {@code false} to redirect directly
      */
-    public void setSessionExpiredNotificationEnabled(
-            boolean sessionExpiredNotificationEnabled) {
+    public void setSessionExpiredNotificationEnabled(boolean sessionExpiredNotificationEnabled) {
         this.sessionExpiredNotificationEnabled = sessionExpiredNotificationEnabled;
     }
 
     /**
      * Sets the caption to show in a "session expired" notification.
      * <p>
-     * If both {@link #getSessionExpiredCaption()} and
-     * {@link #getSessionExpiredMessage()} return null, the user will
-     * automatically be forwarded to the URL returned by
-     * {@link #getSessionExpiredURL()} when the session expires.
+     * If both {@link #getSessionExpiredCaption()} and {@link #getSessionExpiredMessage()} return null, the user will
+     * automatically be forwarded to the URL returned by {@link #getSessionExpiredURL()} when the session expires.
      *
      * @param sessionExpiredCaption
      *            The caption to show or {@code null} to show no caption.
@@ -97,10 +84,8 @@ public class CustomizedSystemMessages extends SystemMessages {
     /**
      * Sets the message to show in a "session expired" notification.
      * <p>
-     * If both {@link #getSessionExpiredCaption()} and
-     * {@link #getSessionExpiredMessage()} return null, the user will
-     * automatically be forwarded to the URL returned by
-     * {@link #getSessionExpiredURL()} when the session expires.
+     * If both {@link #getSessionExpiredCaption()} and {@link #getSessionExpiredMessage()} return null, the user will
+     * automatically be forwarded to the URL returned by {@link #getSessionExpiredURL()} when the session expires.
      *
      * @param sessionExpiredMessage
      *            The message to show or {@code null} to show no message.
@@ -110,8 +95,7 @@ public class CustomizedSystemMessages extends SystemMessages {
     }
 
     /**
-     * Sets the URL the user will be redirected to after dismissing an "internal
-     * error" message.
+     * Sets the URL the user will be redirected to after dismissing an "internal error" message.
      *
      * Default value is {@literal null}.
      *
@@ -123,19 +107,16 @@ public class CustomizedSystemMessages extends SystemMessages {
     }
 
     /**
-     * Sets whether an "internal error" notification should be shown to the end
-     * user. If the notification is disabled the user will be immediately
-     * redirected to the URL returned by {@link #getInternalErrorURL()}.
+     * Sets whether an "internal error" notification should be shown to the end user. If the notification is disabled
+     * the user will be immediately redirected to the URL returned by {@link #getInternalErrorURL()}.
      *
      * By default, the "internal error" notification is enabled.
      *
      *
      * @param internalErrorNotificationEnabled
-     *            {@code true} to show the notification to the end user,
-     *            {@code false} to redirect directly
+     *            {@code true} to show the notification to the end user, {@code false} to redirect directly
      */
-    public void setInternalErrorNotificationEnabled(
-            boolean internalErrorNotificationEnabled) {
+    public void setInternalErrorNotificationEnabled(boolean internalErrorNotificationEnabled) {
         this.internalErrorNotificationEnabled = internalErrorNotificationEnabled;
     }
 
@@ -160,8 +141,7 @@ public class CustomizedSystemMessages extends SystemMessages {
     }
 
     /**
-     * Sets the URL the user will be redirected to after dismissing a "cookies
-     * disabled" message.
+     * Sets the URL the user will be redirected to after dismissing a "cookies disabled" message.
      *
      * Default value is {@literal null}.
      *
@@ -173,18 +153,15 @@ public class CustomizedSystemMessages extends SystemMessages {
     }
 
     /**
-     * Sets whether a "cookies disabled" notification should be shown to the end
-     * user. If the notification is disabled the user will be immediately
-     * redirected to the URL returned by {@link #getCookiesDisabledURL()}.
+     * Sets whether a "cookies disabled" notification should be shown to the end user. If the notification is disabled
+     * the user will be immediately redirected to the URL returned by {@link #getCookiesDisabledURL()}.
      *
      * By default, the "cookies disabled" notification is enabled.
      *
      * @param cookiesDisabledNotificationEnabled
-     *            {@code true} to show the notification to the end user,
-     *            {@code false} to redirect directly
+     *            {@code true} to show the notification to the end user, {@code false} to redirect directly
      */
-    public void setCookiesDisabledNotificationEnabled(
-            boolean cookiesDisabledNotificationEnabled) {
+    public void setCookiesDisabledNotificationEnabled(boolean cookiesDisabledNotificationEnabled) {
         this.cookiesDisabledNotificationEnabled = cookiesDisabledNotificationEnabled;
     }
 

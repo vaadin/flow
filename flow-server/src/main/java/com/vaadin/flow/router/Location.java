@@ -23,8 +23,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Represents a relative URL made up of path segments and query parameters, but
- * lacking e.g. the hostname that can also be present in URLs.
+ * Represents a relative URL made up of path segments and query parameters, but lacking e.g. the hostname that can also
+ * be present in URLs.
  * <p>
  * For related utility methods, see {@link LocationUtil}.
  *
@@ -42,21 +42,19 @@ public class Location implements Serializable {
     /**
      * Creates a new {@link Location} object for given location string.
      * <p>
-     * This string can contain relative path and query parameters, if needed. A
-     * possible fragment {@code #fragment} is also retained.
+     * This string can contain relative path and query parameters, if needed. A possible fragment {@code #fragment} is
+     * also retained.
      * <p>
-     * A possible "/" prefix of the location is ignored and a <code>null</code>
-     * location is interpreted as <code>""</code>
+     * A possible "/" prefix of the location is ignored and a <code>null</code> location is interpreted as
+     * <code>""</code>
      *
      * @param location
-     *            the relative location or <code>null</code> which is
-     *            interpreted as <code>""</code>]
+     *            the relative location or <code>null</code> which is interpreted as <code>""</code>]
      * @throws InvalidLocationException
      *             If the given string cannot be used for the {@link Location}
      */
     public Location(String location) throws InvalidLocationException {
-        this(LocationUtil.parsePathToSegments(
-                LocationUtil.ensureRelativeNonNull(location), true),
+        this(LocationUtil.parsePathToSegments(LocationUtil.ensureRelativeNonNull(location), true),
                 LocationUtil.parseQueryParameters(location));
         int fragmentIndex = location == null ? -1 : location.indexOf('#');
         if (fragmentIndex > -1) {
@@ -65,30 +63,24 @@ public class Location implements Serializable {
     }
 
     /**
-     * Creates a new {@link Location} object for given location string and query
-     * parameters.
+     * Creates a new {@link Location} object for given location string and query parameters.
      * <p>
-     * The location string can not contain query parameters. To pass query
-     * parameters, either specify them in {@link QueryParameters} in this
-     * constructor, or use {@link Location#Location(String)}
+     * The location string can not contain query parameters. To pass query parameters, either specify them in
+     * {@link QueryParameters} in this constructor, or use {@link Location#Location(String)}
      * <p>
-     * A possible "/" prefix of the location is ignored and a <code>null</code>
-     * location is interpreted as <code>""</code>
+     * A possible "/" prefix of the location is ignored and a <code>null</code> location is interpreted as
+     * <code>""</code>
      *
      *
      * @param location
-     *            the relative location or <code>null</code> which is
-     *            interpreted as <code>""</code>
+     *            the relative location or <code>null</code> which is interpreted as <code>""</code>
      * @param queryParameters
      *            query parameters information, not {@code null}
      * @throws InvalidLocationException
      *             If the given string cannot be used for the {@link Location}
      */
-    public Location(String location, QueryParameters queryParameters)
-            throws InvalidLocationException {
-        this(LocationUtil.parsePathToSegments(
-                LocationUtil.ensureRelativeNonNull(location), false),
-                queryParameters);
+    public Location(String location, QueryParameters queryParameters) throws InvalidLocationException {
+        this(LocationUtil.parsePathToSegments(LocationUtil.ensureRelativeNonNull(location), false), queryParameters);
     }
 
     /**
@@ -102,12 +94,10 @@ public class Location implements Serializable {
     }
 
     /**
-     * Creates a new location based on a list of path segments and query
-     * parameters.
+     * Creates a new location based on a list of path segments and query parameters.
      *
      * @param segments
-     *            a non-empty list of path segments, not {@code null} and not
-     *            empty
+     *            a non-empty list of path segments, not {@code null} and not empty
      * @param queryParameters
      *            query parameters information, not {@code null}
      */
@@ -116,12 +106,10 @@ public class Location implements Serializable {
             throw new IllegalArgumentException("Segments cannot be null");
         }
         if (segments.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "There must be at least one segment");
+            throw new IllegalArgumentException("There must be at least one segment");
         }
         if (queryParameters == null) {
-            throw new IllegalArgumentException(
-                    "Query parameters cannot be null");
+            throw new IllegalArgumentException("Query parameters cannot be null");
         }
 
         this.segments = segments;
@@ -156,11 +144,10 @@ public class Location implements Serializable {
     }
 
     /**
-     * Creates a new location without the first path segment. The result is
-     * empty if this location only consists of one segment.
+     * Creates a new location without the first path segment. The result is empty if this location only consists of one
+     * segment.
      *
-     * @return an optional new location, or an empty optional if this location
-     *         has only one path segment
+     * @return an optional new location, or an empty optional if this location has only one path segment
      */
     public Optional<Location> getSubLocation() {
         List<String> subSegments = segments.subList(1, segments.size());
@@ -181,16 +168,13 @@ public class Location implements Serializable {
     }
 
     /**
-     * Gets the path string with {@link QueryParameters} and including the
-     * possible fragment if one existed.
+     * Gets the path string with {@link QueryParameters} and including the possible fragment if one existed.
      *
      * @return path string with parameters
      */
     public String getPathWithQueryParameters() {
         String basePath = getPath();
-        assert !basePath.contains(QUERY_SEPARATOR)
-                : "Base path can not contain query separator="
-                        + QUERY_SEPARATOR;
+        assert !basePath.contains(QUERY_SEPARATOR) : "Base path can not contain query separator=" + QUERY_SEPARATOR;
         assert !basePath.contains("#") : "Base path can not contain fragment #";
 
         final StringBuilder pathBuilder = new StringBuilder(basePath);
@@ -205,8 +189,8 @@ public class Location implements Serializable {
     }
 
     /**
-     * Removes or adds slash to the end of the location path. Creates new
-     * {@link Location} instance instead of modifying the old one.
+     * Removes or adds slash to the end of the location path. Creates new {@link Location} instance instead of modifying
+     * the old one.
      *
      * @return new {@link Location} instance with updated path
      */
@@ -217,14 +201,12 @@ public class Location implements Serializable {
         String lastSegment = segments.get(segments.size() - 1);
 
         if (segments.size() == 1 && "".equals(lastSegment)) {
-            throw new IllegalArgumentException(
-                    "Can't toggle ending slash for the \"\" location");
+            throw new IllegalArgumentException("Can't toggle ending slash for the \"\" location");
         }
 
         if (lastSegment.isEmpty()) {
             // New location without ending empty segment
-            return new Location(segments.subList(0, segments.size() - 1),
-                    queryParameters);
+            return new Location(segments.subList(0, segments.size() - 1), queryParameters);
         } else {
             // Add empty ending segment
             List<String> newSegments = new ArrayList<>(segments);

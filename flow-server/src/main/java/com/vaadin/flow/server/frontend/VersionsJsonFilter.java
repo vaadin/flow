@@ -23,8 +23,8 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 
 /**
- * Filters out versions based on package json (if user has defined a custom
- * version then this version is not included into the result).
+ * Filters out versions based on package json (if user has defined a custom version then this version is not included
+ * into the result).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -46,8 +46,7 @@ class VersionsJsonFilter {
     }
 
     /**
-     * Collect framework managed versions to enforce that the user hasn't
-     * changed.
+     * Collect framework managed versions to enforce that the user hasn't changed.
      *
      * @param versions
      *            to be filtered for user managed ones
@@ -58,8 +57,7 @@ class VersionsJsonFilter {
     JsonObject getFilteredVersions(JsonObject versions, String versionOrigin) {
         JsonObject json = Json.createObject();
         for (String key : versions.keys()) {
-            final FrontendVersion version = FrontendUtils
-                    .getPackageVersionFromJson(versions, key, versionOrigin);
+            final FrontendVersion version = FrontendUtils.getPackageVersionFromJson(versions, key, versionOrigin);
             if (version == null) {
                 continue;
             }
@@ -68,15 +66,12 @@ class VersionsJsonFilter {
             if (version.getFullVersion().contains("SNAPSHOT")) {
                 continue;
             }
-            final FrontendVersion userManagedVersion = FrontendUtils
-                    .getPackageVersionFromJson(userManagedDependencies, key,
-                            "/package.json -> { dependencies }");
+            final FrontendVersion userManagedVersion = FrontendUtils.getPackageVersionFromJson(userManagedDependencies,
+                    key, "/package.json -> { dependencies }");
             if (userManagedVersion != null) {
                 if (version.isNewerThan(userManagedVersion)) {
-                    LoggerFactory.getLogger("Versions").warn(
-                            OLDER_VERSION_WARNING,
-                            userManagedDependencies.getString(key), key,
-                            versions.getString(key));
+                    LoggerFactory.getLogger("Versions").warn(OLDER_VERSION_WARNING,
+                            userManagedDependencies.getString(key), key, versions.getString(key));
                 }
             }
             json.put(key, versions.getString(key));
@@ -85,8 +80,7 @@ class VersionsJsonFilter {
     }
 
     /**
-     * Collect all dependencies that the user has changed that do not match the
-     * flow managed dependency versions.
+     * Collect all dependencies that the user has changed that do not match the flow managed dependency versions.
      *
      * @param packageJson
      *            package.json Json object
@@ -109,21 +103,16 @@ class VersionsJsonFilter {
         return json;
     }
 
-    private boolean isUserChanged(String key, JsonObject vaadinDep,
-            JsonObject dependencies) {
+    private boolean isUserChanged(String key, JsonObject vaadinDep, JsonObject dependencies) {
         if (vaadinDep.hasKey(key)) {
             try {
-                FrontendVersion vaadin = new FrontendVersion(key,
-                        vaadinDep.getString(key));
-                FrontendVersion dep = new FrontendVersion(key,
-                        dependencies.getString(key));
+                FrontendVersion vaadin = new FrontendVersion(key, vaadinDep.getString(key));
+                FrontendVersion dep = new FrontendVersion(key, dependencies.getString(key));
                 return !vaadin.isEqualTo(dep);
             } catch (NumberFormatException nfe) {
-                LoggerFactory.getLogger("VersionsFilter").debug(
-                        "Received version with non numbers {} and {}",
+                LoggerFactory.getLogger("VersionsFilter").debug("Received version with non numbers {} and {}",
                         vaadinDep.getString(key), dependencies.getString(key));
-                return !vaadinDep.getString(key)
-                        .equals(dependencies.getString(key));
+                return !vaadinDep.getString(key).equals(dependencies.getString(key));
             }
         }
         // User changed if not in vaadin dependency
@@ -138,10 +127,8 @@ class VersionsJsonFilter {
      * @return Vaadin dependencies or empty object
      */
     private JsonObject collectFrameworkVersions(JsonObject packageJson) {
-        if (packageJson.hasKey(VAADIN_DEP_KEY) && packageJson
-                .getObject(VAADIN_DEP_KEY).hasKey(dependenciesKey)) {
-            return packageJson.getObject(VAADIN_DEP_KEY)
-                    .getObject(dependenciesKey);
+        if (packageJson.hasKey(VAADIN_DEP_KEY) && packageJson.getObject(VAADIN_DEP_KEY).hasKey(dependenciesKey)) {
+            return packageJson.getObject(VAADIN_DEP_KEY).getObject(dependenciesKey);
         }
         return Json.createObject();
     }

@@ -20,8 +20,7 @@ import com.google.gwt.xhr.client.XMLHttpRequest;
 import elemental.json.JsonObject;
 
 /**
- * XhrConnectionError provides detail about an error which occurred during an
- * XHR request to the server.
+ * XhrConnectionError provides detail about an error which occurred during an XHR request to the server.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -33,19 +32,16 @@ public class XhrConnectionError {
     private final JsonObject payload;
 
     /**
-     * Creates a XhrConnectionError for the given request using the given
-     * payload.
+     * Creates a XhrConnectionError for the given request using the given payload.
      *
      * @param xhr
      *            the request which caused the error
      * @param payload
      *            the payload which was on its way to the server
      * @param exception
-     *            the exception which caused the error or null if the error was
-     *            not caused by an exception
+     *            the exception which caused the error or null if the error was not caused by an exception
      */
-    public XhrConnectionError(XMLHttpRequest xhr, JsonObject payload,
-            Exception exception) {
+    public XhrConnectionError(XMLHttpRequest xhr, JsonObject payload, Exception exception) {
         this.xhr = xhr;
         this.payload = payload;
         this.exception = exception;

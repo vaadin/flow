@@ -41,8 +41,7 @@ import elemental.json.Json;
 import elemental.json.JsonValue;
 
 // Using ElementStylePropertyMap since it closely maps to the underlying map
-public class NodeMapTest
-        extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
+public class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     private static final String KEY = "key";
     private ElementStylePropertyMap nodeMap = createFeature();
 
@@ -53,8 +52,7 @@ public class NodeMapTest
         }
 
         @Override
-        protected boolean producePutChange(String key, boolean hadValueEarlier,
-                Serializable newValue) {
+        protected boolean producePutChange(String key, boolean hadValueEarlier, Serializable newValue) {
             return true;
         }
 
@@ -67,8 +65,7 @@ public class NodeMapTest
         }
 
         @Override
-        protected boolean producePutChange(String key, boolean hadValueEarlier,
-                Serializable newValue) {
+        protected boolean producePutChange(String key, boolean hadValueEarlier, Serializable newValue) {
             return false;
         }
 
@@ -161,8 +158,7 @@ public class NodeMapTest
 
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(1, changes.size());
-        Assert.assertEquals("value2",
-                ((MapPutChange) changes.get(0)).getValue());
+        Assert.assertEquals("value2", ((MapPutChange) changes.get(0)).getValue());
     }
 
     @Test
@@ -197,8 +193,7 @@ public class NodeMapTest
 
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(1, changes.size());
-        Assert.assertEquals("value",
-                ((MapPutChange) changes.get(0)).getValue());
+        Assert.assertEquals("value", ((MapPutChange) changes.get(0)).getValue());
     }
 
     @Test
@@ -276,8 +271,7 @@ public class NodeMapTest
         Map<String, Object> values = new HashMap<>();
         nodeMap.keySet().forEach(key -> values.put(key, nodeMap.get(key)));
 
-        NodeMap copy = SerializationUtils
-                .deserialize(SerializationUtils.serialize(nodeMap));
+        NodeMap copy = SerializationUtils.deserialize(SerializationUtils.serialize(nodeMap));
 
         Assert.assertNotSame(nodeMap, copy);
 
@@ -360,8 +354,7 @@ public class NodeMapTest
 
     @Test
     public void put_sameValue_hasNoEffect() {
-        StateTree tree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI().getInternals(), ElementChildrenList.class);
         StateNode child = new StateNode();
 
         AtomicBoolean listenerIsCalled = new AtomicBoolean();
@@ -372,8 +365,7 @@ public class NodeMapTest
 
         nodeMap.put("foo", child);
 
-        tree.getRootNode().getFeature(ElementChildrenList.class)
-                .add(child.getParent());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(child.getParent());
 
         Assert.assertTrue(listenerIsCalled.get());
 
@@ -399,8 +391,7 @@ public class NodeMapTest
         Assert.assertTrue(nodeMap.usesSingleMap());
 
         nodeMap.forEachChild(child -> {
-            Assert.fail(
-                    "Should not happen, but forEachChild shouldn't explode either");
+            Assert.fail("Should not happen, but forEachChild shouldn't explode either");
         });
     }
 
@@ -485,8 +476,7 @@ public class NodeMapTest
         assertChangeIsNotCollected(map, "baz");
     }
 
-    private void assertChangeIsNotCollected(NeverProduceChangeMap map,
-            String value) {
+    private void assertChangeIsNotCollected(NeverProduceChangeMap map, String value) {
         map.put("foo", value);
 
         List<NodeChange> changes = new ArrayList<>();

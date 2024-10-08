@@ -16,12 +16,9 @@ import java.util.function.Predicate;
  * @author Vaadin Ltd
  * @since 1.0
  *
- * @deprecated This functionality is internal and bound to template model which
- *             is not supported for lit template. Polymer template support is
- *             deprecated - we recommend you to use {@code LitTemplate} instead.
- *             Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated This functionality is internal and bound to template model which is not supported for lit template.
+ *             Polymer template support is deprecated - we recommend you to use {@code LitTemplate} instead. Read more
+ *             details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 public class PropertyFilter implements Predicate<String> {
@@ -32,8 +29,7 @@ public class PropertyFilter implements Predicate<String> {
     /**
      * An unwrapped filter that accepts all property names.
      */
-    public static final PropertyFilter ACCEPT_ALL = new PropertyFilter(
-            name -> true);
+    public static final PropertyFilter ACCEPT_ALL = new PropertyFilter(name -> true);
 
     /**
      * Creates a new unwrapped filter from the given predicate.
@@ -46,21 +42,18 @@ public class PropertyFilter implements Predicate<String> {
     }
 
     /**
-     * Creates a new filter by combining a predicate with a filter for an outer
-     * scope.
+     * Creates a new filter by combining a predicate with a filter for an outer scope.
      *
      * @param outerFilter
      *            the filter of the outer scope, not <code>null</code>
      * @param scopeName
-     *            the name used in the outer filter when referencing properties
-     *            in the inner scope, not <code>null</code>
+     *            the name used in the outer filter when referencing properties in the inner scope, not
+     *            <code>null</code>
      * @param predicate
      *            a predicate matching property names in the inner scope
      */
-    public PropertyFilter(PropertyFilter outerFilter, String scopeName,
-            Predicate<String> predicate) {
-        this(composePrefix(outerFilter, scopeName),
-                predicate.and(composeFilter(outerFilter, scopeName)));
+    public PropertyFilter(PropertyFilter outerFilter, String scopeName, Predicate<String> predicate) {
+        this(composePrefix(outerFilter, scopeName), predicate.and(composeFilter(outerFilter, scopeName)));
     }
 
     /**
@@ -69,8 +62,8 @@ public class PropertyFilter implements Predicate<String> {
      * @param outerFilter
      *            the filter of the outer scope, not <code>null</code>
      * @param scopeName
-     *            the name used in the outer filter when referencing properties
-     *            in the inner scope, not <code>null</code>
+     *            the name used in the outer filter when referencing properties in the inner scope, not
+     *            <code>null</code>
      */
     public PropertyFilter(PropertyFilter outerFilter, String scopeName) {
         this(outerFilter, scopeName, name -> true);
@@ -86,8 +79,7 @@ public class PropertyFilter implements Predicate<String> {
         this.predicate = predicate;
     }
 
-    private static String composePrefix(PropertyFilter outerFilter,
-            String scopeName) {
+    private static String composePrefix(PropertyFilter outerFilter, String scopeName) {
         assert scopeName != null;
         assert !scopeName.isEmpty();
         assert !scopeName.contains(".");
@@ -95,8 +87,7 @@ public class PropertyFilter implements Predicate<String> {
         return outerFilter.prefix + scopeName + ".";
     }
 
-    private static Predicate<? super String> composeFilter(
-            PropertyFilter outerFilter, String scopeName) {
+    private static Predicate<? super String> composeFilter(PropertyFilter outerFilter, String scopeName) {
         return name -> outerFilter.test(scopeName + "." + name);
     }
 
@@ -106,9 +97,8 @@ public class PropertyFilter implements Predicate<String> {
     }
 
     /**
-     * Get the full path prefix of this property filter. The prefix is
-     * accumulated when constructing new property filters from outer filters and
-     * scope names.
+     * Get the full path prefix of this property filter. The prefix is accumulated when constructing new property
+     * filters from outer filters and scope names.
      *
      * @return the prefix string of this filter
      */

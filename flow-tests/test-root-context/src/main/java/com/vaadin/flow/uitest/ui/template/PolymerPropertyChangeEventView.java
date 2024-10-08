@@ -35,15 +35,14 @@ public class PolymerPropertyChangeEventView extends AbstractDivView {
     public PolymerPropertyChangeEventView() {
         PolymerPropertyChange template = new PolymerPropertyChange();
         template.setId("template");
-        template.getElement().addPropertyChangeListener("text",
-                this::propertyChanged);
+        template.getElement().addPropertyChangeListener("text", this::propertyChanged);
         add(template);
     }
 
     private void propertyChanged(PropertyChangeEvent event) {
         Div div = new Div();
-        div.setText("New property value: '" + event.getValue()
-                + "', old property value: '" + event.getOldValue() + "'");
+        div.setText(
+                "New property value: '" + event.getValue() + "', old property value: '" + event.getOldValue() + "'");
         div.addClassName("change-event");
         add(div);
     }

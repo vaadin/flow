@@ -32,9 +32,8 @@ import com.vaadin.flow.internal.StringUtil;
  */
 public class Version implements Serializable {
     /**
-     * The version number of this release. For example "6.2.0". Always in the
-     * format "major.minor.revision[.build]". The build part is optional. All of
-     * major, minor, revision must be integers.
+     * The version number of this release. For example "6.2.0". Always in the format "major.minor.revision[.build]". The
+     * build part is optional. All of major, minor, revision must be integers.
      */
     private static final String VERSION;
     /**
@@ -53,8 +52,7 @@ public class Version implements Serializable {
     private static final int VERSION_REVISION;
 
     /**
-     * Build identifier. For example "nightly-20091123-c9963" in
-     * 6.2.0.nightly-20091123-c9963.
+     * Build identifier. For example "nightly-20091123-c9963" in 6.2.0.nightly-20091123-c9963.
      */
     private static final String VERSION_BUILD;
 
@@ -69,13 +67,11 @@ public class Version implements Serializable {
         String buildTimestamp = "";
         Properties properties = new Properties();
         try {
-            properties.load(
-                    Version.class.getResourceAsStream("version.properties"));
+            properties.load(Version.class.getResourceAsStream("version.properties"));
             flowVersion = properties.getProperty("flow.version");
             buildTimestamp = properties.getProperty("flow.build.timestamp");
         } catch (IOException e) {
-            LoggerFactory.getLogger(Version.class.getName())
-                    .warn("Unable to determine Flow version number", e);
+            LoggerFactory.getLogger(Version.class.getName()).warn("Unable to determine Flow version number", e);
         }
 
         VERSION = flowVersion;
@@ -98,13 +94,11 @@ public class Version implements Serializable {
         }
         VERSION_REVISION = revision;
         VERSION_BUILD = build;
-        VERSION_BUILD_HASH = StringUtil.getHash(buildTimestamp,
-                StandardCharsets.UTF_8);
+        VERSION_BUILD_HASH = StringUtil.getHash(buildTimestamp, StandardCharsets.UTF_8);
     }
 
     /**
-     * Gets the full version, in format {@literal x.y.z} or
-     * {@literal x.y.z.qualifier}.
+     * Gets the full version, in format {@literal x.y.z} or {@literal x.y.z.qualifier}.
      *
      * @return the full version number
      */
@@ -140,8 +134,7 @@ public class Version implements Serializable {
     }
 
     /**
-     * Gets the version qualifier, {@literal qualifier} in
-     * {@literal x.y.z.qualifier}.
+     * Gets the version qualifier, {@literal qualifier} in {@literal x.y.z.qualifier}.
      *
      * @return the version qualifier
      */
@@ -150,8 +143,7 @@ public class Version implements Serializable {
     }
 
     /**
-     * Gets the version's build hash. This hash is based on build's timestamp
-     * and varies from build to build.
+     * Gets the version's build hash. This hash is based on build's timestamp and varies from build to build.
      *
      * @return version's build hash
      */

@@ -41,12 +41,11 @@ public class ExternalDependencyWatcher implements Closeable {
 
     final private static Set<FileWatcher> watchers = new HashSet<>();
 
-    public ExternalDependencyWatcher(VaadinContext context,
-            File jarFrontendResourcesFolder) {
+    public ExternalDependencyWatcher(VaadinContext context, File jarFrontendResourcesFolder) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
-        String hotdeployDependenciesProperty = config.getStringProperty(
-                InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES, null);
+        String hotdeployDependenciesProperty = config.getStringProperty(InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES,
+                null);
 
         List<String> hotdeployDependencyFolders = new ArrayList<>();
         File projectFolder = config.getProjectFolder();
@@ -58,37 +57,28 @@ public class ExternalDependencyWatcher implements Closeable {
             }
         } else {
             File pomFile = new File(projectFolder, "pom.xml");
-            File parentPomFile = MavenUtils
-                    .getParentPomOfMultiModuleProject(pomFile);
+            File parentPomFile = MavenUtils.getParentPomOfMultiModuleProject(pomFile);
             if (parentPomFile != null) {
                 Document parentPom = MavenUtils.parsePomFile(parentPomFile);
                 if (parentPom != null) {
-                    Path currentPomToParentPomPath = pomFile.getParentFile()
-                            .toPath()
+                    Path currentPomToParentPomPath = pomFile.getParentFile().toPath()
                             .relativize(parentPomFile.getParentFile().toPath());
-                    hotdeployDependencyFolders = MavenUtils
-                            .getModuleFolders(parentPom).stream()
-                            .map(folder -> currentPomToParentPomPath
-                                    + File.separator + folder)
-                            .toList();
+                    hotdeployDependencyFolders = MavenUtils.getModuleFolders(parentPom).stream()
+                            .map(folder -> currentPomToParentPomPath + File.separator + folder).toList();
                 }
             }
         }
 
         for (String hotdeployDependencyFolder : hotdeployDependencyFolders) {
-            Path moduleFolder = projectFolder.toPath()
-                    .resolve(hotdeployDependencyFolder).normalize();
+            Path moduleFolder = projectFolder.toPath().resolve(hotdeployDependencyFolder).normalize();
             if (moduleFolder.equals(projectFolder.toPath())) {
                 // Don't watch the active module
                 continue;
             }
-            Path metaInf = moduleFolder
-                    .resolve(Path.of("src", "main", "resources", "META-INF"));
-            if (!watchDependencyFolder(metaInf.toFile(),
-                    jarFrontendResourcesFolder)
+            Path metaInf = moduleFolder.resolve(Path.of("src", "main", "resources", "META-INF"));
+            if (!watchDependencyFolder(metaInf.toFile(), jarFrontendResourcesFolder)
                     && hotdeployDependenciesProperty != null) {
-                getLogger().warn("No folders to watch were found in "
-                        + metaInf.normalize().toAbsolutePath()
+                getLogger().warn("No folders to watch were found in " + metaInf.normalize().toAbsolutePath()
                         + ". This should be the META-INF folder that contains either frontend or resources/frontend");
             }
         }
@@ -101,23 +91,16 @@ public class ExternalDependencyWatcher implements Closeable {
      *            the folder to watch
      * @param jarFrontendResourcesFolder
      *            the jar frontend resource folder to copy changed files to
-     * @return true if at least one folder is watched, false if no folders to
-     *         watch were found
+     * @return true if at least one folder is watched, false if no folders to watch were found
      */
-    private boolean watchDependencyFolder(File metaInfFolder,
-            File jarFrontendResourcesFolder) {
+    private boolean watchDependencyFolder(File metaInfFolder, File jarFrontendResourcesFolder) {
         File metaInfFrontend = new File(metaInfFolder, "frontend");
-        File metaInfResourcesFrontend = new File(
-                new File(metaInfFolder, "resources"), "frontend");
-        File metaInfResourcesThemes = new File(
-                new File(metaInfFolder, "resources"), "themes");
+        File metaInfResourcesFrontend = new File(new File(metaInfFolder, "resources"), "frontend");
+        File metaInfResourcesThemes = new File(new File(metaInfFolder, "resources"), "themes");
 
-        boolean watching1 = watchAndCopy(metaInfFrontend,
-                jarFrontendResourcesFolder);
-        boolean watching2 = watchAndCopy(metaInfResourcesFrontend,
-                jarFrontendResourcesFolder);
-        boolean watching3 = watchAndCopy(metaInfResourcesThemes,
-                new File(jarFrontendResourcesFolder, "themes"));
+        boolean watching1 = watchAndCopy(metaInfFrontend, jarFrontendResourcesFolder);
+        boolean watching2 = watchAndCopy(metaInfResourcesFrontend, jarFrontendResourcesFolder);
+        boolean watching3 = watchAndCopy(metaInfResourcesThemes, new File(jarFrontendResourcesFolder, "themes"));
 
         return watching1 || watching2 || watching3;
     }
@@ -132,29 +115,23 @@ public class ExternalDependencyWatcher implements Closeable {
                 if (FileIOUtils.isProbablyTemporaryFile(updatedFile)) {
                     return;
                 }
-                Path pathInsideWatchFolder = watchFolder.toPath()
-                        .relativize(updatedFile.toPath());
-                Path target = targetFolder.toPath()
-                        .resolve(pathInsideWatchFolder);
+                Path pathInsideWatchFolder = watchFolder.toPath().relativize(updatedFile.toPath());
+                Path target = targetFolder.toPath().resolve(pathInsideWatchFolder);
                 try {
-                    Files.copy(updatedFile.toPath(), target,
-                            StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(updatedFile.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
                 } catch (NoSuchFileException e) {
                     // This happens if an editor creates temporary files and
                     // they are removed before copy is called
                 } catch (IOException e) {
-                    getLogger().warn("Unable to copy modified file from "
-                            + updatedFile + " to " + target, e);
+                    getLogger().warn("Unable to copy modified file from " + updatedFile + " to " + target, e);
                 }
             }, watchFolder);
             watcher.start();
             watchers.add(watcher);
-            getLogger().debug("Watching {} for frontend file changes",
-                    watchFolder);
+            getLogger().debug("Watching {} for frontend file changes", watchFolder);
             return true;
         } catch (Exception e) {
-            getLogger().error("Unable to start file watcher for " + watchFolder,
-                    e);
+            getLogger().error("Unable to start file watcher for " + watchFolder, e);
         }
         return false;
     }

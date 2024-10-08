@@ -39,9 +39,8 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.testutil.ClassFinder;
 
 /**
- * Checks that any class which implements {@link ServletContainerInitializer}
- * implements {@link FixedServletContainerInitializer} instead and doesn't
- * override
+ * Checks that any class which implements {@link ServletContainerInitializer} implements
+ * {@link FixedServletContainerInitializer} instead and doesn't override
  * {@link ServletContainerInitializer#onStartup(java.util.Set, jakarta.servlet.ServletContext)}
  */
 public class ServletContainerInitializerTest extends ClassFinder {
@@ -53,8 +52,7 @@ public class ServletContainerInitializerTest extends ClassFinder {
         ClassLoaderAwareServletContainerInitializer initializer = new ClassLoaderAwareServletContainerInitializer() {
 
             @Override
-            public void process(Set<Class<?>> set, ServletContext ctx)
-                    throws ServletException {
+            public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
                 processIsExecuted.set(true);
             }
 
@@ -62,8 +60,7 @@ public class ServletContainerInitializerTest extends ClassFinder {
         ServletContext context = Mockito.mock(ServletContext.class);
         initializer.onStartup(Collections.emptySet(), context);
 
-        Mockito.verify(context).setAttribute(
-                Mockito.eq(DeferredServletContextInitializers.class.getName()),
+        Mockito.verify(context).setAttribute(Mockito.eq(DeferredServletContextInitializers.class.getName()),
                 Mockito.any());
 
         Assert.assertFalse(processIsExecuted.get());
@@ -76,34 +73,28 @@ public class ServletContainerInitializerTest extends ClassFinder {
         ClassLoaderAwareServletContainerInitializer initializer = new ClassLoaderAwareServletContainerInitializer() {
 
             @Override
-            public void process(Set<Class<?>> set, ServletContext ctx)
-                    throws ServletException {
+            public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
                 processIsExecuted.set(true);
             }
 
         };
         ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(context.getAttribute(Lookup.class.getName()))
-                .thenReturn(Mockito.mock(Lookup.class));
+        Mockito.when(context.getAttribute(Lookup.class.getName())).thenReturn(Mockito.mock(Lookup.class));
 
-        Mockito.when(context.getClassLoader())
-                .thenReturn(initializer.getClass().getClassLoader());
+        Mockito.when(context.getClassLoader()).thenReturn(initializer.getClass().getClassLoader());
         initializer.onStartup(Collections.emptySet(), context);
 
-        Mockito.verify(context, Mockito.times(0)).setAttribute(
-                Mockito.eq(DeferredServletContextInitializers.class.getName()),
-                Mockito.any());
+        Mockito.verify(context, Mockito.times(0))
+                .setAttribute(Mockito.eq(DeferredServletContextInitializers.class.getName()), Mockito.any());
 
         Assert.assertTrue(processIsExecuted.get());
     }
 
     @Test
-    public void anyServletContainerInitializerSubclassImplementsFixedServletContainerInitializer()
-            throws IOException {
+    public void anyServletContainerInitializerSubclassImplementsFixedServletContainerInitializer() throws IOException {
         List<String> rawClasspathEntries = getRawClasspathEntries();
 
-        List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile)
-                .collect(Collectors.toList());
+        List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile).collect(Collectors.toList());
 
         List<String> classes = new ArrayList<>();
         for (String location : rawClasspathEntries) {
@@ -114,9 +105,7 @@ public class ServletContainerInitializerTest extends ClassFinder {
 
         List<String> brokenInitializers = new ArrayList<>();
         for (String className : classes) {
-            if (className
-                    .equals(ClassLoaderAwareServletContainerInitializer.class
-                            .getName())) {
+            if (className.equals(ClassLoaderAwareServletContainerInitializer.class.getName())) {
                 continue;
             }
             try {
@@ -126,23 +115,16 @@ public class ServletContainerInitializerTest extends ClassFinder {
                     continue;
                 }
 
-                if (ServletContainerInitializer.class.isAssignableFrom(clazz)
-                        && isBadSubType(clazz)) {
+                if (ServletContainerInitializer.class.isAssignableFrom(clazz) && isBadSubType(clazz)) {
                     brokenInitializers.add(className);
                 }
             } catch (ClassNotFoundException ignore) {
                 // ignore
             }
         }
-        Assert.assertTrue(
-                brokenInitializers + " classes are subtypes of "
-                        + ServletContainerInitializer.class
-                        + " but either are not subtypes of "
-                        + ClassLoaderAwareServletContainerInitializer.class
-                        + " or override "
-                        + ClassLoaderAwareServletContainerInitializer.class
-                                .getName()
-                        + ".onStartup method",
+        Assert.assertTrue(brokenInitializers + " classes are subtypes of " + ServletContainerInitializer.class
+                + " but either are not subtypes of " + ClassLoaderAwareServletContainerInitializer.class
+                + " or override " + ClassLoaderAwareServletContainerInitializer.class.getName() + ".onStartup method",
                 brokenInitializers.isEmpty());
 
     }
@@ -153,21 +135,16 @@ public class ServletContainerInitializerTest extends ClassFinder {
     }
 
     private boolean isBadSubType(Class<?> clazz) {
-        if (!ClassLoaderAwareServletContainerInitializer.class
-                .isAssignableFrom(clazz)) {
+        if (!ClassLoaderAwareServletContainerInitializer.class.isAssignableFrom(clazz)) {
             return true;
         }
-        Method onStartUpMethod = Stream
-                .of(ServletContainerInitializer.class.getDeclaredMethods())
+        Method onStartUpMethod = Stream.of(ServletContainerInitializer.class.getDeclaredMethods())
                 .filter(method -> !method.isSynthetic()).findFirst().get();
-        return Stream.of(clazz.getDeclaredMethods())
-                .anyMatch(method -> sameSignature(method, onStartUpMethod));
+        return Stream.of(clazz.getDeclaredMethods()).anyMatch(method -> sameSignature(method, onStartUpMethod));
     }
 
     private boolean sameSignature(Method method1, Method method2) {
-        return method1.getName().equals(method2.getName())
-                && method1.getReturnType().equals(method2.getReturnType())
-                && Arrays.asList(method1.getParameterTypes())
-                        .equals(Arrays.asList(method2.getParameterTypes()));
+        return method1.getName().equals(method2.getName()) && method1.getReturnType().equals(method2.getReturnType())
+                && Arrays.asList(method1.getParameterTypes()).equals(Arrays.asList(method2.getParameterTypes()));
     }
 }

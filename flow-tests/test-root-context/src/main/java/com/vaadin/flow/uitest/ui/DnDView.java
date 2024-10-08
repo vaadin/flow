@@ -54,57 +54,49 @@ public class DnDView extends Div {
         eventLog = new Div();
         eventLog.add(new Text("Events:"));
         eventLog.add(new NativeButton("Clear", event -> {
-            eventLog.getChildren().filter(component -> component instanceof Div)
-                    .forEach(eventLog::remove);
+            eventLog.getChildren().filter(component -> component instanceof Div).forEach(eventLog::remove);
             eventCounter = 0;
         }));
         eventLog.add(new NativeButton("Data: " + data, event -> {
             data = !data;
             event.getSource().setText("Data: " + data);
         }));
-        NativeButton toggleThreeImages = new NativeButton("Toggle image",
-                event -> {
-                    if (image instanceof Image) {
-                        image = event.getSource();
-                    } else if (image == event.getSource()) {
-                        image = noEffectsDraggableBox;
-                    } else {
-                        image = new Image("/images/gift.png", "Gift");
-                    }
-                    setDragImage(startLane, image);
-                });
+        NativeButton toggleThreeImages = new NativeButton("Toggle image", event -> {
+            if (image instanceof Image) {
+                image = event.getSource();
+            } else if (image == event.getSource()) {
+                image = noEffectsDraggableBox;
+            } else {
+                image = new Image("/images/gift.png", "Gift");
+            }
+            setDragImage(startLane, image);
+        });
         toggleThreeImages.setEnabled(false);
         toggleThreeImages.setId("button-toggle-image");
-        NativeButton addDragSourceWithImage = new NativeButton(
-                "DragImage: add DragSource", event -> {
-                    dragSource.getDragSourceComponent()
-                            .setId("drag-source-with-image");
-                    dragSource.setDragImage(
-                            new Image("/images/gift.png", "Gift"));
-                    add(dragSource.getDragSourceComponent());
-                    eventLog.remove(event.getSource());
-                });
+        NativeButton addDragSourceWithImage = new NativeButton("DragImage: add DragSource", event -> {
+            dragSource.getDragSourceComponent().setId("drag-source-with-image");
+            dragSource.setDragImage(new Image("/images/gift.png", "Gift"));
+            add(dragSource.getDragSourceComponent());
+            eventLog.remove(event.getSource());
+        });
         addDragSourceWithImage.setId("button-add-drag-source-with-drag-image");
-        NativeButton toggleDragImageEnabled = new NativeButton(
-                "DragImage: " + dragImage, event -> {
-                    dragImage = !dragImage;
-                    toggleThreeImages.setEnabled(dragImage);
-                    event.getSource().setText("DragImage: " + dragImage);
-                    setDragImage(startLane, image);
-                });
+        NativeButton toggleDragImageEnabled = new NativeButton("DragImage: " + dragImage, event -> {
+            dragImage = !dragImage;
+            toggleThreeImages.setEnabled(dragImage);
+            event.getSource().setText("DragImage: " + dragImage);
+            setDragImage(startLane, image);
+        });
         toggleDragImageEnabled.setId("button-toggle-drag-image-enabled");
         eventLog.add(toggleDragImageEnabled);
         eventLog.add(toggleThreeImages);
         eventLog.add(addDragSourceWithImage);
         eventLog.setHeightFull();
         eventLog.setWidth("400px");
-        eventLog.getStyle().set("display", "inline-block").set("border",
-                "2px " + "solid");
+        eventLog.getStyle().set("display", "inline-block").set("border", "2px " + "solid");
         add(eventLog);
 
         startLane.add(noEffectsDraggableBox);
-        Stream.of(EffectAllowed.values()).map(this::createDraggableBox)
-                .forEach(startLane::add);
+        Stream.of(EffectAllowed.values()).map(this::createDraggableBox).forEach(startLane::add);
 
         Div noEffectLane = createDropLane(null);
         Div copyDropLane = createDropLane(DropEffect.COPY);
@@ -114,16 +106,14 @@ public class DnDView extends Div {
 
         Div deactivatedLane = createDropLane(DropEffect.COPY);
         deactivatedLane.setId("lane-deactivated");
-        deactivatedLane.getChildren().findFirst().ifPresent(
-                component -> component.getElement().setText("deactivated"));
+        deactivatedLane.getChildren().findFirst().ifPresent(component -> component.getElement().setText("deactivated"));
         DropTarget.configure(deactivatedLane, false);
 
-        eventLog.add(createToggleDropTargetsButton(noEffectLane, copyDropLane,
-                moveDropLane, linkDropLane, noneDropLane));
+        eventLog.add(
+                createToggleDropTargetsButton(noEffectLane, copyDropLane, moveDropLane, linkDropLane, noneDropLane));
         eventLog.add(createToggleDragSourcesButton(startLane));
 
-        add(startLane, noEffectLane, copyDropLane, moveDropLane, linkDropLane,
-                noneDropLane, deactivatedLane);
+        add(startLane, noEffectLane, copyDropLane, moveDropLane, linkDropLane, noneDropLane, deactivatedLane);
 
         dragSource = DragSource.create(new Div("DragSource"));
         dragSource.addDragStartListener(event -> {
@@ -153,68 +143,60 @@ public class DnDView extends Div {
     }
 
     private Component createToggleDragSourcesButton(Div startLane) {
-        NativeButton nativeButton = new NativeButton("Disable DragSources",
-                event -> {
-                    if (event.getSource().getText()
-                            .equals("Enable DragSources")) {
-                        startLane.getChildren().iterator()
-                                .forEachRemaining(box -> {
-                                    box.getElement().setEnabled(true);
-                                    addLogEntry(box.getId() + " enabled");
-                                });
-                        event.getSource().setText("Disable DragSources");
-                    } else {
-                        startLane.getChildren().iterator()
-                                .forEachRemaining(box -> {
-                                    box.getElement().setEnabled(false);
-                                    addLogEntry(box.getId() + " disabled");
-                                });
-                        event.getSource().setText("Enable DragSources");
-                    }
+        NativeButton nativeButton = new NativeButton("Disable DragSources", event -> {
+            if (event.getSource().getText().equals("Enable DragSources")) {
+                startLane.getChildren().iterator().forEachRemaining(box -> {
+                    box.getElement().setEnabled(true);
+                    addLogEntry(box.getId() + " enabled");
                 });
+                event.getSource().setText("Disable DragSources");
+            } else {
+                startLane.getChildren().iterator().forEachRemaining(box -> {
+                    box.getElement().setEnabled(false);
+                    addLogEntry(box.getId() + " disabled");
+                });
+                event.getSource().setText("Enable DragSources");
+            }
+        });
         nativeButton.setId("button-disable-enable-drag-sources");
         return nativeButton;
     }
 
-    private Component createToggleDropTargetsButton(Div noEffectLane,
-            Div copyDropLane, Div moveDropLane, Div linkDropLane,
-            Div noneDropLane) {
-        NativeButton nativeButton = new NativeButton("Disable DropTargets",
-                event -> {
-                    if (event.getSource().getText()
-                            .equals("Enable DropTargets")) {
-                        noEffectLane.setEnabled(true);
-                        addLogEntry(noEffectLane.getId().get() + " enabled");
-                        copyDropLane.setEnabled(true);
-                        addLogEntry(copyDropLane.getId().get() + " enabled");
-                        moveDropLane.setEnabled(true);
-                        addLogEntry(moveDropLane.getId().get() + " enabled");
-                        linkDropLane.setEnabled(true);
-                        addLogEntry(linkDropLane.getId().get() + " enabled");
-                        noneDropLane.setEnabled(true);
-                        addLogEntry(noneDropLane.getId().get() + " enabled");
-                        event.getSource().setText("Disable DropTargets");
-                    } else {
-                        noEffectLane.setEnabled(false);
-                        addLogEntry(noEffectLane.getId().get() + " disabled");
-                        copyDropLane.setEnabled(false);
-                        addLogEntry(copyDropLane.getId().get() + " disabled");
-                        moveDropLane.setEnabled(false);
-                        addLogEntry(moveDropLane.getId().get() + " disabled");
-                        linkDropLane.setEnabled(false);
-                        addLogEntry(linkDropLane.getId().get() + " disabled");
-                        noneDropLane.setEnabled(false);
-                        addLogEntry(noneDropLane.getId().get() + " disabled");
-                        event.getSource().setText("Enable DropTargets");
-                    }
-                });
+    private Component createToggleDropTargetsButton(Div noEffectLane, Div copyDropLane, Div moveDropLane,
+            Div linkDropLane, Div noneDropLane) {
+        NativeButton nativeButton = new NativeButton("Disable DropTargets", event -> {
+            if (event.getSource().getText().equals("Enable DropTargets")) {
+                noEffectLane.setEnabled(true);
+                addLogEntry(noEffectLane.getId().get() + " enabled");
+                copyDropLane.setEnabled(true);
+                addLogEntry(copyDropLane.getId().get() + " enabled");
+                moveDropLane.setEnabled(true);
+                addLogEntry(moveDropLane.getId().get() + " enabled");
+                linkDropLane.setEnabled(true);
+                addLogEntry(linkDropLane.getId().get() + " enabled");
+                noneDropLane.setEnabled(true);
+                addLogEntry(noneDropLane.getId().get() + " enabled");
+                event.getSource().setText("Disable DropTargets");
+            } else {
+                noEffectLane.setEnabled(false);
+                addLogEntry(noEffectLane.getId().get() + " disabled");
+                copyDropLane.setEnabled(false);
+                addLogEntry(copyDropLane.getId().get() + " disabled");
+                moveDropLane.setEnabled(false);
+                addLogEntry(moveDropLane.getId().get() + " disabled");
+                linkDropLane.setEnabled(false);
+                addLogEntry(linkDropLane.getId().get() + " disabled");
+                noneDropLane.setEnabled(false);
+                addLogEntry(noneDropLane.getId().get() + " disabled");
+                event.getSource().setText("Enable DropTargets");
+            }
+        });
         nativeButton.setId("button-disable-enable-drop-targets");
         return nativeButton;
     }
 
     private Component createDraggableBox(EffectAllowed effectAllowed) {
-        String identifier = effectAllowed == null ? NO_EFFECT_SETUP
-                : effectAllowed.toString();
+        String identifier = effectAllowed == null ? NO_EFFECT_SETUP : effectAllowed.toString();
 
         Div box = createBox(identifier);
 
@@ -226,9 +208,7 @@ public class DnDView extends Div {
         dragSource.addDragStartListener(event -> {
             addLogEntry("Start: " + event.getComponent().getText());
             if (dragImage) {
-                Element dragElement = Optional
-                        .ofNullable(DragSource.configure(event.getSource())
-                                .getDragImage())
+                Element dragElement = Optional.ofNullable(DragSource.configure(event.getSource()).getDragImage())
                         .map(Component::getElement).orElse(null);
                 addLogEntry("DragImage: " + dragElement);
             }
@@ -237,15 +217,13 @@ public class DnDView extends Div {
             }
         });
         dragSource.addDragEndListener(event -> {
-            addLogEntry("End: " + event.getComponent().getText() + " "
-                    + event.getDropEffect());
+            addLogEntry("End: " + event.getComponent().getText() + " " + event.getDropEffect());
         });
         return box;
     }
 
     private Div createDropLane(DropEffect dropEffect) {
-        String identifier = dropEffect == null ? "no-effect"
-                : dropEffect.toString();
+        String identifier = dropEffect == null ? "no-effect" : dropEffect.toString();
 
         Div lane = createLane(identifier);
 
@@ -254,9 +232,8 @@ public class DnDView extends Div {
         if (dropEffect != null) {
             dropTarget.setDropEffect(dropEffect);
         }
-        dropTarget.addDropListener(event -> addLogEntry("Drop: "
-                + event.getEffectAllowed() + " " + event.getDropEffect()
-                + (data ? (" " + event.getDragData()) : "")));
+        dropTarget.addDropListener(event -> addLogEntry("Drop: " + event.getEffectAllowed() + " "
+                + event.getDropEffect() + (data ? (" " + event.getDragData()) : "")));
 
         return lane;
     }
@@ -275,8 +252,7 @@ public class DnDView extends Div {
         Div lane = new Div();
         lane.add(identifier);
         lane.setId("lane-" + identifier);
-        lane.getStyle().set("margin", "20px").set("border", "1px solid black")
-                .set("display", "inline-block");
+        lane.getStyle().set("margin", "20px").set("border", "1px solid black").set("display", "inline-block");
         lane.setHeightFull();
         lane.setWidth("150px");
         return lane;

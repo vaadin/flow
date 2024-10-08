@@ -45,21 +45,18 @@ public class BeforeLeaveEvent extends BeforeEvent {
         }
 
         /**
-         * Sets the navigation {@code handler} and the navigation {@code event}
-         * for this action.
+         * Sets the navigation {@code handler} and the navigation {@code event} for this action.
          *
          * @param handler
          *            the navigation handler
          * @param event
          *            the navigation event
          */
-        public void setReferences(NavigationHandler handler,
-                NavigationEvent event) {
+        public void setReferences(NavigationHandler handler, NavigationEvent event) {
             if (event != null) {
                 event.getUI().getSession().hasLock();
             } else {
-                assert UI.getCurrent() != null
-                        && UI.getCurrent().getSession().hasLock();
+                assert UI.getCurrent() != null && UI.getCurrent().getSession().hasLock();
             }
             this.handler = handler;
             this.event = event;
@@ -72,15 +69,13 @@ public class BeforeLeaveEvent extends BeforeEvent {
             BeforeLeaveEvent.this.continueNavigationAction = null;
             if (handler != null && event != null) {
                 if (!event.getUI().getSession().hasLock()) {
-                    throw new IllegalStateException(
-                            "The method 'proceed' may not be called without the session lock. "
-                                    + "Use UI.access() to execute any UI related code from a separate thread properly");
+                    throw new IllegalStateException("The method 'proceed' may not be called without the session lock. "
+                            + "Use UI.access() to execute any UI related code from a separate thread properly");
                 }
 
                 if (event.getUI().wrapperElement != null) {
                     // See UI.SERVER_CONNECTED and acknowledgeClient.
-                    event.getUI().wrapperElement
-                            .executeJs("this.serverConnected($0)", false);
+                    event.getUI().wrapperElement.executeJs("this.serverConnected($0)", false);
                 }
 
                 // Change the trigger to programmatic as the url will be
@@ -88,11 +83,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
                 // If the server updates the url also we will get 2 history
                 // changes instead of 1.
                 if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                        && !event.getUI().getSession().getService()
-                                .getDeploymentConfiguration()
-                                .isReactEnabled()) {
-                    event = new NavigationEvent(event.getSource(),
-                            event.getLocation(), event.getUI(),
+                        && !event.getUI().getSession().getService().getDeploymentConfiguration().isReactEnabled()) {
+                    event = new NavigationEvent(event.getSource(), event.getLocation(), event.getUI(),
                             NavigationTrigger.PROGRAMMATIC);
                 }
 
@@ -108,16 +100,14 @@ public class BeforeLeaveEvent extends BeforeEvent {
         /**
          * Cancel the navigation that was postponed.
          * <p>
-         * This is so that the client router pending promise closes. Also
-         * updates the correct url on back navigation if blocking back.
+         * This is so that the client router pending promise closes. Also updates the correct url on back navigation if
+         * blocking back.
          */
         public void cancel() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
-            if (handler != null && event != null
-                    && event.getUI().wrapperElement != null) {
+            if (handler != null && event != null && event.getUI().wrapperElement != null) {
                 // See UI.SERVER_CONNECTED and cancelClient.
-                event.getUI().wrapperElement
-                        .executeJs("this.serverConnected($0)", true);
+                event.getUI().wrapperElement.executeJs("this.serverConnected($0)", true);
             }
         }
     }
@@ -149,8 +139,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param layouts
      *            navigation layout chain, not <code>null</code>
      */
-    public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
-            RouteParameters parameters,
+    public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget, RouteParameters parameters,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, parameters, layouts);
     }
@@ -161,8 +150,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param router
      *            the router that triggered the change, not <code>null</code>
      * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
+     *            the type of user action that triggered this location change, not <code>null</code>
      * @param location
      *            the new location, not <code>null</code>
      * @param navigationTarget
@@ -170,12 +158,10 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param ui
      *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target, not
-     *            <code>null</code>
+     *            the layout chain for the navigation target, not <code>null</code>
      */
-    public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui,
-            List<Class<? extends RouterLayout>> layouts) {
+    public BeforeLeaveEvent(Router router, NavigationTrigger trigger, Location location, Class<?> navigationTarget,
+            UI ui, List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, ui, layouts);
     }
 
@@ -185,8 +171,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param router
      *            the router that triggered the change, not <code>null</code>
      * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
+     *            the type of user action that triggered this location change, not <code>null</code>
      * @param location
      *            the new location, not <code>null</code>
      * @param navigationTarget
@@ -196,25 +181,19 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param ui
      *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target, not
-     *            <code>null</code>
+     *            the layout chain for the navigation target, not <code>null</code>
      */
-    public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget,
-            RouteParameters parameters, UI ui,
-            List<Class<? extends RouterLayout>> layouts) {
-        super(router, trigger, location, navigationTarget, parameters, ui,
-                layouts);
+    public BeforeLeaveEvent(Router router, NavigationTrigger trigger, Location location, Class<?> navigationTarget,
+            RouteParameters parameters, UI ui, List<Class<? extends RouterLayout>> layouts) {
+        super(router, trigger, location, navigationTarget, parameters, ui, layouts);
     }
 
     /**
-     * Initiates the postponement of the current navigation transition, allowing
-     * a listener to e.g. display a confirmation dialog before finishing the
-     * transition.
+     * Initiates the postponement of the current navigation transition, allowing a listener to e.g. display a
+     * confirmation dialog before finishing the transition.
      * <p>
-     * This is only valid while leaving (deactivating) a page; if the method is
-     * called while entering / activating the new page, it will throw an
-     * {@link IllegalStateException}.
+     * This is only valid while leaving (deactivating) a page; if the method is called while entering / activating the
+     * new page, it will throw an {@link IllegalStateException}.
      *
      * @return the action to run when the transition is to be resumed, or null
      */
@@ -235,8 +214,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
     /**
      * Gets the action used to resume this event, if it was postponed.
      *
-     * @return the action used to resume this event if it was postponed, or null
-     *         if it is not being postponed
+     * @return the action used to resume this event if it was postponed, or null if it is not being postponed
      */
     public ContinueNavigationAction getContinueNavigationAction() {
         return continueNavigationAction;

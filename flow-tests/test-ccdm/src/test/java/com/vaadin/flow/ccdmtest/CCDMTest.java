@@ -54,8 +54,7 @@ public class CCDMTest extends ChromeBrowserTest {
         return null;
     }
 
-    protected final void assertView(String viewId, String assertViewText,
-            String assertViewRoute) {
+    protected final void assertView(String viewId, String assertViewText, String assertViewRoute) {
         waitForElementPresent(By.id(viewId));
         final WebElement serverViewDiv = findElement(By.id(viewId));
 
@@ -65,8 +64,8 @@ public class CCDMTest extends ChromeBrowserTest {
 
     protected final void assertCurrentRoute(String route) {
         final String currentUrl = getDriver().getCurrentUrl();
-        Assert.assertTrue(String.format("Expecting route '%s', but url is '%s'",
-                route, currentUrl), currentUrl.endsWith(route));
+        Assert.assertTrue(String.format("Expecting route '%s', but url is '%s'", route, currentUrl),
+                currentUrl.endsWith(route));
     }
 
 }

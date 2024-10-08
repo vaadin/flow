@@ -41,9 +41,8 @@ public class ExecutionContext implements Serializable {
      * @param ui
      *            The UI associated with the execution
      * @param clientSideInitialized
-     *            <code>true</code> if the client side is already initialized,
-     *            <code>false</code> if it is being initialized as part of the
-     *            current response
+     *            <code>true</code> if the client side is already initialized, <code>false</code> if it is being
+     *            initialized as part of the current response
      */
     public ExecutionContext(UI ui, boolean clientSideInitialized) {
         assert ui != null;
@@ -61,12 +60,10 @@ public class ExecutionContext implements Serializable {
     }
 
     /**
-     * Gets whether the client side is being initialized as part of the server
-     * response.
+     * Gets whether the client side is being initialized as part of the server response.
      *
-     * @return <code>true</code> if the client side is already initialized,
-     *         <code>false</code> if it is being initialized as part of the
-     *         current response
+     * @return <code>true</code> if the client side is already initialized, <code>false</code> if it is being
+     *         initialized as part of the current response
      */
     public boolean isClientSideInitialized() {
         return clientSideInitialized;

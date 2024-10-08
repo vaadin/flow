@@ -63,8 +63,7 @@ public class PageTest {
         }
 
         @Override
-        public PendingJavaScriptResult executeJs(String expression,
-                Serializable... parameters) {
+        public PendingJavaScriptResult executeJs(String expression, Serializable... parameters) {
             this.expression = expression;
             firstParam = parameters[0];
             count++;
@@ -92,8 +91,7 @@ public class PageTest {
         List<Runnable> invocations = new ArrayList<>();
         final Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+            public PendingJavaScriptResult executeJs(String expression, Serializable... params) {
                 super.executeJs(expression, params);
 
                 return new PendingJavaScriptResult() {
@@ -109,8 +107,7 @@ public class PageTest {
                     }
 
                     @Override
-                    public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                    public void then(SerializableConsumer<JsonValue> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         final HashMap<String, String> params = new HashMap<>();
                         params.put("v-sw", "2560");
@@ -127,8 +124,7 @@ public class PageTest {
                         } else {
                             params.put("v-wn", "foo");
                         }
-                        invocations.add(() -> resultHandler.accept(
-                                JsonUtils.createObject(params, Json::create)));
+                        invocations.add(() -> resultHandler.accept(JsonUtils.createObject(params, Json::create)));
                     }
                 };
             }
@@ -147,8 +143,7 @@ public class PageTest {
 
         Assert.assertEquals(2, callbackInvocations.get());
 
-        Assert.assertEquals("ROOT-1234567-0.1234567", mockUI.getInternals()
-                .getExtendedClientDetails().getWindowName());
+        Assert.assertEquals("ROOT-1234567-0.1234567", mockUI.getInternals().getExtendedClientDetails().getWindowName());
     }
 
     @Test
@@ -157,8 +152,7 @@ public class PageTest {
         final UI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+            public PendingJavaScriptResult executeJs(String expression, Serializable... params) {
                 super.executeJs(expression, params);
 
                 return new PendingJavaScriptResult() {
@@ -174,8 +168,7 @@ public class PageTest {
                     }
 
                     @Override
-                    public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                    public void then(SerializableConsumer<JsonValue> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         final HashMap<String, String> params = new HashMap<>();
                         params.put("v-sw", "2560");
@@ -188,8 +181,7 @@ public class PageTest {
                         params.put("v-curdate", "1555000000000");
                         params.put("v-td", "false");
                         params.put("v-wn", "ROOT-1234567-0.1234567");
-                        resultHandler.accept(
-                                JsonUtils.createObject(params, Json::create));
+                        resultHandler.accept(JsonUtils.createObject(params, Json::create));
                     }
                 };
             }
@@ -204,8 +196,7 @@ public class PageTest {
         page.retrieveExtendedClientDetails(receiver);
 
         // then
-        final int jsInvocations = mockUI.getInternals()
-                .dumpPendingJavaScriptInvocations().size();
+        final int jsInvocations = mockUI.getInternals().dumpPendingJavaScriptInvocations().size();
         Assert.assertEquals(1, jsInvocations);
         Assert.assertEquals(2, callbackInvocations.get());
     }
@@ -216,11 +207,9 @@ public class PageTest {
         final UI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+            public PendingJavaScriptResult executeJs(String expression, Serializable... params) {
                 super.executeJs(expression, params);
-                Assert.assertEquals(
-                        "Expected javascript for fetching location is wrong.",
+                Assert.assertEquals("Expected javascript for fetching location is wrong.",
                         "return window.location.href", expression);
 
                 return new PendingJavaScriptResult() {
@@ -236,11 +225,9 @@ public class PageTest {
                     }
 
                     @Override
-                    public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                    public void then(SerializableConsumer<JsonValue> resultHandler,
                             SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(
-                                Json.create("http://localhost:8080/home"));
+                        resultHandler.accept(Json.create("http://localhost:8080/home"));
                     }
                 };
             }
@@ -254,8 +241,7 @@ public class PageTest {
         page.fetchCurrentURL(receiver);
 
         // then
-        Assert.assertEquals("Returned URL was wrong",
-                "http://localhost:8080/home",
+        Assert.assertEquals("Returned URL was wrong", "http://localhost:8080/home",
                 callbackInvocations.get().toString());
     }
 
@@ -280,28 +266,21 @@ public class PageTest {
             page.addJsModule(url);
         }
 
-        Collection<Dependency> pendingSendToClient = ui.getInternals()
-                .getDependencyList().getPendingSendToClient();
+        Collection<Dependency> pendingSendToClient = ui.getInternals().getDependencyList().getPendingSendToClient();
 
-        Assert.assertEquals("There should be 4 dependencies added.", 4,
-                pendingSendToClient.size());
+        Assert.assertEquals("There should be 4 dependencies added.", 4, pendingSendToClient.size());
 
         for (Dependency dependency : pendingSendToClient) {
-            Assert.assertEquals("Dependency should be a JSModule",
-                    Dependency.Type.JS_MODULE, dependency.getType());
-            Assert.assertEquals("JS module dependency should be EAGER",
-                    LoadMode.EAGER, dependency.getLoadMode());
+            Assert.assertEquals("Dependency should be a JSModule", Dependency.Type.JS_MODULE, dependency.getType());
+            Assert.assertEquals("JS module dependency should be EAGER", LoadMode.EAGER, dependency.getLoadMode());
 
-            Assert.assertTrue(
-                    "Dependency " + dependency.getUrl()
-                            + " is not found in the source list.",
+            Assert.assertTrue("Dependency " + dependency.getUrl() + " is not found in the source list.",
                     urls.contains(dependency.getUrl()));
 
             urls.remove(dependency.getUrl());
         }
 
-        Assert.assertEquals("Not all urls were added as dependencies", 0,
-                urls.size());
+        Assert.assertEquals("Not all urls were added as dependencies", 0, urls.size());
     }
 
     @Test
@@ -309,8 +288,7 @@ public class PageTest {
         try {
             page.addJsModule("mod.js");
 
-            Assert.fail(
-                    "Adding a file without starting \"/\" is not to be allowed.");
+            Assert.fail("Adding a file without starting \"/\" is not to be allowed.");
         } catch (IllegalArgumentException e) {
         }
     }
@@ -322,11 +300,9 @@ public class PageTest {
 
         Page page = new Page(new MockUI()) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... parameters) {
+            public PendingJavaScriptResult executeJs(String expression, Serializable... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
-                Assert.assertNull("There should be no old expression",
-                        oldExpression);
+                Assert.assertNull("There should be no old expression", oldExpression);
 
                 Serializable[] oldParams = invokedParams.getAndSet(parameters);
                 Assert.assertNull("There should be no old params", oldParams);
@@ -335,8 +311,7 @@ public class PageTest {
             }
         };
 
-        PendingJavaScriptResult executionCanceler = page.executeJs("foo", 1,
-                true);
+        PendingJavaScriptResult executionCanceler = page.executeJs("foo", 1, true);
 
         Assert.assertNull(executionCanceler);
 
@@ -351,8 +326,7 @@ public class PageTest {
         List<Serializable> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {
             @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Serializable[] parameters) {
+            public PendingJavaScriptResult executeJs(String expression, Serializable[] parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
                 return Mockito.mock(PendingJavaScriptResult.class);
@@ -364,7 +338,6 @@ public class PageTest {
         // self check
         Assert.assertEquals("_self", params.get(1));
 
-        MatcherAssert.assertThat(capture.get(), CoreMatchers
-                .startsWith("if ($1 == '_self') this.stopApplication();"));
+        MatcherAssert.assertThat(capture.get(), CoreMatchers.startsWith("if ($1 == '_self') this.stopApplication();"));
     }
 }

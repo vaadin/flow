@@ -39,8 +39,7 @@ public class NativeDetailsTest extends ComponentTest {
 
         details = new NativeDetails(new Paragraph("text-summary"));
         Assert.assertEquals("", details.getSummaryText());
-        Assert.assertEquals("text-summary",
-                details.getSummary().getElement().getTextRecursively());
+        Assert.assertEquals("text-summary", details.getSummary().getElement().getTextRecursively());
         Assert.assertNull(details.getContent());
 
         Paragraph content = new Paragraph("content");
@@ -52,13 +51,11 @@ public class NativeDetailsTest extends ComponentTest {
     @Test
     public void testSetSummaryReplacesSummary() {
         Paragraph summmary2 = new Paragraph("summary2");
-        NativeDetails details = new NativeDetails("summary1",
-                new Paragraph("content"));
+        NativeDetails details = new NativeDetails("summary1", new Paragraph("content"));
         Assert.assertEquals("summary1", details.getSummaryText());
 
         details.setSummary(summmary2);
-        Assert.assertEquals("summary2",
-                details.getSummary().getElement().getTextRecursively());
+        Assert.assertEquals("summary2", details.getSummary().getElement().getTextRecursively());
 
         details.setSummaryText("summary3");
         Assert.assertEquals("summary3", details.getSummaryText());

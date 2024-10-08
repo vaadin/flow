@@ -36,12 +36,10 @@ import elemental.json.JsonObject;
 /**
  * Default implementation of the connection state handler.
  * <p>
- * Handles temporary errors by showing a reconnect dialog to the user while
- * trying to re-establish the connection to the server and re-send the pending
- * message.
+ * Handles temporary errors by showing a reconnect dialog to the user while trying to re-establish the connection to the
+ * server and re-send the pending message.
  * <p>
- * Handles permanent errors by showing a critical system notification to the
- * user
+ * Handles permanent errors by showing a critical system notification to the user
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -73,8 +71,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
          *
          * @param type
          *            the type to compare to
-         * @return true if this type has higher priority than the given type,
-         *         false otherwise
+         * @return true if this type has higher priority than the given type, false otherwise
          */
         public boolean isHigherPriorityThan(Type type) {
             return priority > type.priority;
@@ -95,8 +92,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
                     giveUp();
                     stopApplication();
                 }
-                if (scheduledReconnect != null
-                        && scheduledReconnect.isRunning()) {
+                if (scheduledReconnect != null && scheduledReconnect.isRunning()) {
                     scheduledReconnect.cancel();
                 }
             }
@@ -109,8 +105,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     /**
      * Checks if we are currently trying to reconnect.
      *
-     * @return true if we have noted a problem and are trying to re-establish
-     *         server connection, false otherwise
+     * @return true if we have noted a problem and are trying to re-establish server connection, false otherwise
      */
     private boolean isReconnecting() {
         return reconnectionCause != null;
@@ -123,8 +118,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     @Override
-    public void heartbeatException(XMLHttpRequest request,
-            Exception exception) {
+    public void heartbeatException(XMLHttpRequest request, Exception exception) {
         Console.error("Heartbeat exception: " + exception.getMessage());
         handleRecoverableError(Type.HEARTBEAT, null);
     }
@@ -162,15 +156,14 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     /**
-     * Called whenever an error occurs in communication which should be handled
-     * by showing the reconnect dialog and retrying communication until
-     * successful again.
+     * Called whenever an error occurs in communication which should be handled by showing the reconnect dialog and
+     * retrying communication until successful again.
      *
      * @param type
      *            The type of failure detected
      * @param payload
-     *            The message which did not reach the server, or null if no
-     *            message was involved (heartbeat or push connection failed)
+     *            The message which did not reach the server, or null if no message was involved (heartbeat or push
+     *            connection failed)
      */
     protected void handleRecoverableError(Type type, final JsonObject payload) {
         debug("handleTemporaryError(" + type + ")");
@@ -190,8 +183,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             // If a higher priority issues is resolved, we can assume the lower
             // one will be also
             if (type.isHigherPriorityThan(reconnectionCause)) {
-                Console.warn(
-                        "Now reconnecting because of " + type + " failure");
+                Console.warn("Now reconnecting because of " + type + " failure");
                 reconnectionCause = type;
             }
         }
@@ -214,12 +206,11 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     /**
      * Called after a problem occurred.
      *
-     * This method is responsible for re-sending the payload to the server (if
-     * not null) or re-send a heartbeat request at some point
+     * This method is responsible for re-sending the payload to the server (if not null) or re-send a heartbeat request
+     * at some point
      *
      * @param payload
-     *            the payload that did not reach the server, null if the problem
-     *            was detected by a heartbeat
+     *            the payload that did not reach the server, null if the problem was detected by a heartbeat
      */
     protected void scheduleReconnect(final JsonObject payload) {
         // Here and not in timer to avoid TB for getting in between
@@ -237,25 +228,21 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
                     doReconnect(payload);
                 }
             };
-            scheduledReconnect
-                    .schedule(getConfiguration().getReconnectInterval());
+            scheduledReconnect.schedule(getConfiguration().getReconnectInterval());
         }
     }
 
     /**
-     * Re-sends the payload to the server (if not null) or re-sends a heartbeat
-     * request immediately.
+     * Re-sends the payload to the server (if not null) or re-sends a heartbeat request immediately.
      *
      * @param payload
-     *            the payload that did not reach the server, null if the problem
-     *            was detected by a heartbeat
+     *            the payload that did not reach the server, null if the problem was detected by a heartbeat
      */
     protected void doReconnect(JsonObject payload) {
         if (!registry.getUILifecycle().isRunning()) {
             // This should not happen as nobody should call this if the
             // application has been stopped
-            Console.warn(
-                    "Trying to reconnect after application has been stopped. Giving up");
+            Console.warn("Trying to reconnect after application has been stopped. Giving up");
             return;
         }
         if (payload != null) {
@@ -269,8 +256,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     /**
-     * Called when we should give up trying to reconnect and inform the user
-     * that the application is in CONNECTION_LOST state.
+     * Called when we should give up trying to reconnect and inform the user that the application is in CONNECTION_LOST
+     * state.
      */
     protected final void giveUp() {
         reconnectionCause = null;
@@ -284,16 +271,14 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     /**
-     * Gets the text to show in the reconnect dialog after giving up (reconnect
-     * limit reached).
+     * Gets the text to show in the reconnect dialog after giving up (reconnect limit reached).
      *
      * @param reconnectAttempt
      *            The number of the current reconnection attempt
      * @return The text to show in the reconnect dialog after giving up
      */
     protected String getDialogTextGaveUp(int reconnectAttempt) {
-        return getConfiguration().getDialogTextGaveUp().replace("{0}",
-                reconnectAttempt + "");
+        return getConfiguration().getDialogTextGaveUp().replace("{0}", reconnectAttempt + "");
     }
 
     /**
@@ -304,20 +289,17 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      * @return The text to show in the reconnect dialog
      */
     protected String getDialogText(int reconnectAttempt) {
-        return getConfiguration().getDialogText().replace("{0}",
-                reconnectAttempt + "");
+        return getConfiguration().getDialogText().replace("{0}", reconnectAttempt + "");
     }
 
     @Override
     public void configurationUpdated() {
         // All other properties are fetched directly from the state when needed
         if (getConfiguration().getDialogText() != null) {
-            ConnectionIndicator.setProperty("reconnectingText",
-                    getConfiguration().getDialogText());
+            ConnectionIndicator.setProperty("reconnectingText", getConfiguration().getDialogText());
         }
         if (getConfiguration().getDialogTextGaveUp() != null) {
-            ConnectionIndicator.setProperty("offlineText",
-                    getConfiguration().getDialogTextGaveUp());
+            ConnectionIndicator.setProperty("offlineText", getConfiguration().getDialogTextGaveUp());
         }
     }
 
@@ -332,16 +314,14 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         String responseText = xhrConnectionError.getXhr().getResponseText();
         if (!redirectIfRefreshToken(responseText)) {
-            handleUnrecoverableCommunicationError(
-                    "Invalid JSON response from server: " + responseText,
+            handleUnrecoverableCommunicationError("Invalid JSON response from server: " + responseText,
                     xhrConnectionError);
         }
 
     }
 
     @Override
-    public void pushInvalidContent(PushConnection pushConnection,
-            String message) {
+    public void pushInvalidContent(PushConnection pushConnection, String message) {
         debug("pushInvalidContent");
         if (pushConnection.isBidirectional()) {
             // We can't be sure that what was pushed was actually a response but
@@ -351,8 +331,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
 
         if (!redirectIfRefreshToken(message)) {
-            handleUnrecoverableCommunicationError(
-                    "Invalid JSON from server: " + message, null);
+            handleUnrecoverableCommunicationError("Invalid JSON from server: " + message, null);
         }
 
     }
@@ -384,8 +363,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     protected void handleUnauthorized(XhrConnectionError xhrConnectionError) {
         /*
-         * Authorization has failed (401). Assume that the session has timed
-         * out.
+         * Authorization has failed (401). Assume that the session has timed out.
          */
         registry.getSystemErrorHandler().handleSessionExpiredError("");
         stopApplication();
@@ -402,8 +380,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
     }
 
-    private void handleUnrecoverableCommunicationError(String details,
-            XhrConnectionError xhrConnectionError) {
+    private void handleUnrecoverableCommunicationError(String details, XhrConnectionError xhrConnectionError) {
         int statusCode = -1;
         if (xhrConnectionError != null) {
             XMLHttpRequest xhr = xhrConnectionError.getXhr();
@@ -426,8 +403,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      *            the status code
      */
     protected void handleCommunicationError(String details, int statusCode) {
-        registry.getSystemErrorHandler().handleUnrecoverableError("", details,
-                "", null);
+        registry.getSystemErrorHandler().handleUnrecoverableError("", details, "", null);
     }
 
     @Override
@@ -463,8 +439,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     @Override
     public void pushScriptLoadError(String resourceUrl) {
-        handleCommunicationError(
-                resourceUrl + " could not be loaded. Push will not work.", 0);
+        handleCommunicationError(resourceUrl + " could not be loaded. Push will not work.", 0);
     }
 
     @Override
@@ -475,8 +450,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     @Override
     public void pushReconnectPending(PushConnection pushConnection) {
-        debug("pushReconnectPending(" + pushConnection.getTransportType()
-                + ")");
+        debug("pushReconnectPending(" + pushConnection.getTransportType() + ")");
         Console.log("Reopening push connection");
         if (pushConnection.isBidirectional()) {
             // Lost connection for a connection which will tell us when the
@@ -491,28 +465,22 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     @Override
-    public void pushError(PushConnection pushConnection,
-            JavaScriptObject response) {
+    public void pushError(PushConnection pushConnection, JavaScriptObject response) {
         debug("pushError()");
-        handleCommunicationError("Push connection using "
-                + ((AtmosphereResponse) response).getTransport() + " failed!",
+        handleCommunicationError("Push connection using " + ((AtmosphereResponse) response).getTransport() + " failed!",
                 -1);
     }
 
     @Override
-    public void pushClientTimeout(PushConnection pushConnection,
-            JavaScriptObject response) {
+    public void pushClientTimeout(PushConnection pushConnection, JavaScriptObject response) {
         debug("pushClientTimeout()");
         // TODO Reconnect, allowing client timeout to be set
         // https://dev.vaadin.com/ticket/18429
-        handleCommunicationError(
-                "Client unexpectedly disconnected. Ensure client timeout is disabled.",
-                -1);
+        handleCommunicationError("Client unexpectedly disconnected. Ensure client timeout is disabled.", -1);
     }
 
     @Override
-    public void pushClosed(PushConnection pushConnection,
-            JavaScriptObject response) {
+    public void pushClosed(PushConnection pushConnection, JavaScriptObject response) {
         debug("pushClosed()");
         Console.log("Push connection closed");
     }
@@ -522,20 +490,16 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     private void resumeHeartbeats() {
-        registry.getHeartbeat().setInterval(
-                registry.getApplicationConfiguration().getHeartbeatInterval());
+        registry.getHeartbeat().setInterval(registry.getApplicationConfiguration().getHeartbeatInterval());
     }
 
     private boolean redirectIfRefreshToken(String message) {
         /*
-         * A servlet filter or equivalent may have intercepted the request and
-         * served non-UIDL content (for instance, a login page if the session
-         * has expired.) If the response contains a magic substring, do a
-         * synchronous refresh. See #8241.
+         * A servlet filter or equivalent may have intercepted the request and served non-UIDL content (for instance, a
+         * login page if the session has expired.) If the response contains a magic substring, do a synchronous refresh.
+         * See #8241.
          */
-        MatchResult refreshToken = RegExp
-                .compile(UIDL_REFRESH_TOKEN + "(:\\s*(.*?))?(\\s|$)")
-                .exec(message);
+        MatchResult refreshToken = RegExp.compile(UIDL_REFRESH_TOKEN + "(:\\s*(.*?))?(\\s|$)").exec(message);
         if (refreshToken != null) {
             WidgetUtil.redirect(refreshToken.getGroup(2));
             return true;

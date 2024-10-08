@@ -26,8 +26,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 /**
  * Test CSS loading order from different sources.
  *
- * The expected priority is: Lumo styles < @CssImport < page.addStylesheet
- * < @Stylehseet < parent theme < current theme (app theme)
+ * The expected priority is: Lumo styles < @CssImport < page.addStylesheet < @Stylehseet < parent theme < current theme
+ * (app theme)
  */
 public class CssLoadingIT extends ChromeBrowserTest {
 
@@ -41,10 +41,8 @@ public class CssLoadingIT extends ChromeBrowserTest {
         open();
         WebElement htmlElement = findElement(By.tagName("html"));
 
-        Assert.assertEquals("CssImport styles should override Lumo styles.",
-                STYLESHEET_LUMO_FONT_SIZE_M,
-                executeScript(
-                        "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
+        Assert.assertEquals("CssImport styles should override Lumo styles.", STYLESHEET_LUMO_FONT_SIZE_M,
+                executeScript("return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
                         htmlElement).toString().trim());
     }
 
@@ -59,13 +57,10 @@ public class CssLoadingIT extends ChromeBrowserTest {
         assertStylesOverride("p3", YELLOW_RGBA, "20px", "2px");
     }
 
-    private void assertStylesOverride(String elementId, String expectedColor,
-            String expectedFontSize, String expectedMargin) {
-        Assert.assertEquals(expectedColor,
-                $(ParagraphElement.class).id(elementId).getCssValue("color"));
-        Assert.assertEquals(expectedFontSize, $(ParagraphElement.class)
-                .id(elementId).getCssValue("font-size"));
-        Assert.assertEquals(expectedMargin,
-                $(ParagraphElement.class).id(elementId).getCssValue("margin"));
+    private void assertStylesOverride(String elementId, String expectedColor, String expectedFontSize,
+            String expectedMargin) {
+        Assert.assertEquals(expectedColor, $(ParagraphElement.class).id(elementId).getCssValue("color"));
+        Assert.assertEquals(expectedFontSize, $(ParagraphElement.class).id(elementId).getCssValue("font-size"));
+        Assert.assertEquals(expectedMargin, $(ParagraphElement.class).id(elementId).getCssValue("margin"));
     }
 }

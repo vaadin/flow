@@ -34,8 +34,7 @@ public class ProjectHelpersTest {
 
     @Test
     public void readUserKey() throws IOException {
-        System.setProperty("user.home",
-                TestUtils.getTestFolder("stats-data").toPath().toString());
+        System.setProperty("user.home", TestUtils.getTestFolder("stats-data").toPath().toString());
 
         // Read from file
         String keyString = "user-ab641d2c-test-test-file-223cf1fa628e";
@@ -52,8 +51,7 @@ public class ProjectHelpersTest {
         assertNotNull(newKey);
         assertNotSame(keyString, newKey);
         File userKeyFile = new File(vaadinHome, "userKey");
-        Assert.assertTrue("userKey should be created automatically",
-                userKeyFile.exists());
+        Assert.assertTrue("userKey should be created automatically", userKeyFile.exists());
     }
 
     private File createTempDir() throws IOException {
@@ -71,10 +69,8 @@ public class ProjectHelpersTest {
         Assert.assertNotNull(userKey);
 
         // Check file
-        File userFile = new File(System.getProperty("user.home"),
-                ".vaadin/userKey");
-        String fromFile = IOUtils.toString(new FileInputStream(userFile),
-                StandardCharsets.UTF_8);
+        File userFile = new File(System.getProperty("user.home"), ".vaadin/userKey");
+        String fromFile = IOUtils.toString(new FileInputStream(userFile), StandardCharsets.UTF_8);
         Assert.assertEquals("{\"key\":\"" + userKey + "\"}", fromFile);
 
         Assert.assertEquals(userKey, ProjectHelpers.getUserKey());
@@ -82,8 +78,7 @@ public class ProjectHelpersTest {
 
     @Test
     public void readProKey() {
-        System.setProperty("user.home",
-                TestUtils.getTestFolder("stats-data").toPath().toString());
+        System.setProperty("user.home", TestUtils.getTestFolder("stats-data").toPath().toString());
 
         // File is used by default
         String keyStringFile = "test@vaadin.com/pro-536e1234-test-test-file-f7a1ef311234";

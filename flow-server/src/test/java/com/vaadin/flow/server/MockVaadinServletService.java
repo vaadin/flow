@@ -50,14 +50,12 @@ public class MockVaadinServletService extends VaadinServletService {
         }
 
         @Override
-        protected DeploymentConfiguration createDeploymentConfiguration()
-                throws ServletException {
+        protected DeploymentConfiguration createDeploymentConfiguration() throws ServletException {
             return configuration;
         }
 
         @Override
-        protected VaadinServletService createServletService(
-                DeploymentConfiguration deploymentConfiguration)
+        protected VaadinServletService createServletService(DeploymentConfiguration deploymentConfiguration)
                 throws ServiceException {
             return service;
         }
@@ -68,10 +66,8 @@ public class MockVaadinServletService extends VaadinServletService {
         this(new MockDeploymentConfiguration());
     }
 
-    public MockVaadinServletService(
-            DeploymentConfiguration deploymentConfiguration) {
-        super(new MockVaadinServlet(deploymentConfiguration),
-                deploymentConfiguration);
+    public MockVaadinServletService(DeploymentConfiguration deploymentConfiguration) {
+        super(new MockVaadinServlet(deploymentConfiguration), deploymentConfiguration);
         init();
     }
 
@@ -85,8 +81,7 @@ public class MockVaadinServletService extends VaadinServletService {
     }
 
     @Override
-    protected List<RequestHandler> createRequestHandlers()
-            throws ServiceException {
+    protected List<RequestHandler> createRequestHandlers() throws ServiceException {
         return Collections.emptyList();
     }
 

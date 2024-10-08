@@ -31,8 +31,7 @@ public class ClassScannerView extends Div {
     public static final String SCANNED_CLASSES = "scanned-classes";
 
     public ClassScannerView() {
-        Span scannedClasses = new Span(classes.stream()
-                .map(Class::getSimpleName).collect(Collectors.joining(",")));
+        Span scannedClasses = new Span(classes.stream().map(Class::getSimpleName).collect(Collectors.joining(",")));
         scannedClasses.setId(SCANNED_CLASSES);
         add(scannedClasses);
     }

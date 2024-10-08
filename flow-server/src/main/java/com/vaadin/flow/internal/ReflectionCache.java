@@ -27,9 +27,8 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * A thread-safe cache for the result of doing some reflection lookup based on a
- * class. Cached values never expire since it's assumed that the there is a
- * finite number of classes for which reflection results are used.
+ * A thread-safe cache for the result of doing some reflection lookup based on a class. Cached values never expire since
+ * it's assumed that the there is a finite number of classes for which reflection results are used.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -49,21 +48,19 @@ public class ReflectionCache<C, T> {
     private final SerializableFunction<Class<? extends C>, T> valueProvider;
 
     /*
-     * Capture the action in a field to prevent garbage collection. This is
-     * necessary because the actions are stored with weak references.
+     * Capture the action in a field to prevent garbage collection. This is necessary because the actions are stored
+     * with weak references.
      */
     private final SerializableRunnable clearAction = this::clear;
 
     /**
-     * Creates a new reflection cache with the given value provider. The value
-     * provider will be used to produce a new cached value whenever there is a
-     * cache miss. It will be run in a context where no {@link CurrentInstance}
-     * is available to prevent accidentally caching values that are computed
-     * differently depending on external circumstances.
+     * Creates a new reflection cache with the given value provider. The value provider will be used to produce a new
+     * cached value whenever there is a cache miss. It will be run in a context where no {@link CurrentInstance} is
+     * available to prevent accidentally caching values that are computed differently depending on external
+     * circumstances.
      *
      * @param valueProvider
-     *            a function that computes the cached value for a class, not
-     *            <code>null</code>
+     *            a function that computes the cached value for a class, not <code>null</code>
      */
     public ReflectionCache(SerializableFunction<Class<C>, T> valueProvider) {
         if (valueProvider == null) {
@@ -78,17 +75,14 @@ public class ReflectionCache<C, T> {
     private static <C, T> SerializableFunction<Class<? extends C>, T> wrapValueProvider(
             SerializableFunction<Class<C>, T> valueProvider) {
         return type -> {
-            Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                    .getInstances();
+            Map<Class<?>, CurrentInstance> instances = CurrentInstance.getInstances();
             try {
                 CurrentInstance.clearAll();
 
                 /*
-                 * Raw cast to deal with weird generics of valueProvider which
-                 * in turn is there to deal with the fact that javac in some
-                 * cases cannot infer type parameters for Foo::new as a
-                 * Function<Class<? extends C>, T> even when Foo has a
-                 * constructor that takes Class<? extends Something>.
+                 * Raw cast to deal with weird generics of valueProvider which in turn is there to deal with the fact
+                 * that javac in some cases cannot infer type parameters for Foo::new as a Function<Class<? extends C>,
+                 * T> even when Foo has a constructor that takes Class<? extends Something>.
                  */
                 return (T) ((Function) valueProvider).apply(type);
             } finally {
@@ -98,9 +92,8 @@ public class ReflectionCache<C, T> {
     }
 
     /**
-     * Gets a cached value. If this cache does not contain a value for the key,
-     * the value is computed using the configured value provider and the cache
-     * is populated with the new value.
+     * Gets a cached value. If this cache does not contain a value for the key, the value is computed using the
+     * configured value provider and the cache is populated with the new value.
      *
      * @param type
      *            the type for which to get reflection results
@@ -115,8 +108,7 @@ public class ReflectionCache<C, T> {
      *
      * @param type
      *            the type to check for
-     * @return <code>true</code> if there is a mapping for the type,
-     *         <code>false</code> if there is no mapping
+     * @return <code>true</code> if there is a mapping for the type, <code>false</code> if there is no mapping
      */
     public boolean contains(Class<? extends C> type) {
         return values.containsKey(type);
@@ -132,9 +124,8 @@ public class ReflectionCache<C, T> {
     /**
      * Adds an action that will be run when all reflection caches are cleared.
      * <p>
-     * The actions are held with a weak reference, which typically means that
-     * the action will be ignored if the returned registration is garbage
-     * collected.
+     * The actions are held with a weak reference, which typically means that the action will be ignored if the returned
+     * registration is garbage collected.
      *
      * @see #clearAll()
      *

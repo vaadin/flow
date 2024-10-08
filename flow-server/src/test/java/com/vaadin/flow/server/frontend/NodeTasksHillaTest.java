@@ -90,37 +90,27 @@ public class NodeTasksHillaTest {
 
     private Options createOptions() {
         Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(lookup).lookup(ClassFinder.class);
+        Mockito.doReturn(new DefaultClassFinder(this.getClass().getClassLoader())).when(lookup)
+                .lookup(ClassFinder.class);
         File npmFolder = new File(userDir);
-        return new Options(lookup, npmFolder).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .withRunNpmInstall(false).withEmbeddableWebComponents(false)
-                .withJarFrontendResourcesFolder(new File(userDir,
-                        FrontendUtils.GENERATED
-                                + FrontendUtils.JAR_RESOURCES_FOLDER))
-                .withFrontendGeneratedFolder(new File(userDir))
-                .withBuildResultFolders(npmFolder, npmFolder)
+        return new Options(lookup, npmFolder).withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).withRunNpmInstall(false).withEmbeddableWebComponents(false)
+                .withJarFrontendResourcesFolder(
+                        new File(userDir, FrontendUtils.GENERATED + FrontendUtils.JAR_RESOURCES_FOLDER))
+                .withFrontendGeneratedFolder(new File(userDir)).withBuildResultFolders(npmFolder, npmFolder)
                 .setJavaResourceFolder(propertiesDir);
     }
 
     @Test
-    public void should_useHillaEngine_whenEnabled()
-            throws ExecutionFailedException, IOException {
+    public void should_useHillaEngine_whenEnabled() throws ExecutionFailedException, IOException {
         Options options = createOptions();
-        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
-                .createTaskGenerateOpenAPI(any());
-        Mockito.doReturn(taskGenerateEndpoint)
-                .when(endpointGeneratorTaskFactory)
-                .createTaskGenerateEndpoint(any());
+        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory).createTaskGenerateOpenAPI(any());
+        Mockito.doReturn(taskGenerateEndpoint).when(endpointGeneratorTaskFactory).createTaskGenerateEndpoint(any());
         Mockito.doReturn(endpointGeneratorTaskFactory).when(options.getLookup())
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+        try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(), Mockito.any())).thenReturn(true);
 
             new NodeTasks(options).execute();
         }
@@ -129,8 +119,7 @@ public class NodeTasksHillaTest {
     }
 
     @Test
-    public void should_notHillaEngine_whenDisabled()
-            throws ExecutionFailedException, IOException {
+    public void should_notHillaEngine_whenDisabled() throws ExecutionFailedException, IOException {
         Options options = createOptions();
         new NodeTasks(options).execute();
         verifyHillaEngine(false);
@@ -142,16 +131,10 @@ public class NodeTasksHillaTest {
         }
     }
 
-    private void verifyHillaEngine(boolean expected)
-            throws ExecutionFailedException {
-        Mockito.verify(endpointGeneratorTaskFactory,
-                expected ? times(1) : never())
-                .createTaskGenerateEndpoint(any());
-        Mockito.verify(endpointGeneratorTaskFactory,
-                expected ? times(1) : never()).createTaskGenerateOpenAPI(any());
-        Mockito.verify(taskGenerateOpenAPI, expected ? times(1) : never())
-                .execute();
-        Mockito.verify(taskGenerateEndpoint, expected ? times(1) : never())
-                .execute();
+    private void verifyHillaEngine(boolean expected) throws ExecutionFailedException {
+        Mockito.verify(endpointGeneratorTaskFactory, expected ? times(1) : never()).createTaskGenerateEndpoint(any());
+        Mockito.verify(endpointGeneratorTaskFactory, expected ? times(1) : never()).createTaskGenerateOpenAPI(any());
+        Mockito.verify(taskGenerateOpenAPI, expected ? times(1) : never()).execute();
+        Mockito.verify(taskGenerateEndpoint, expected ? times(1) : never()).execute();
     }
 }

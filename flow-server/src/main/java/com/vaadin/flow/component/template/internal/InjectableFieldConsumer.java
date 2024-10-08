@@ -32,8 +32,8 @@ public interface InjectableFieldConsumer {
     /**
      * Performs this operation on the given arguments.
      * <p>
-     * The arguments are: the field declared in a template class, the identifier
-     * of the element inside the HTML template file, the element tag.
+     * The arguments are: the field declared in a template class, the identifier of the element inside the HTML template
+     * file, the element tag.
      *
      * @param field
      *            the field declared in a template class

@@ -17,10 +17,8 @@
 package com.vaadin.flow.internal;
 
 /**
- * A stateless singleton node owner that is used for nodes that have not yet
- * been attached to a state tree. An instance of this type is used instead of a
- * <code>null</code> pointer to avoid cluttering implementations with null
- * checks.
+ * A stateless singleton node owner that is used for nodes that have not yet been attached to a state tree. An instance
+ * of this type is used instead of a <code>null</code> pointer to avoid cluttering implementations with null checks.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

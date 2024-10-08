@@ -16,8 +16,7 @@ public class ManualLongPollingPushIT extends AbstractLogTest {
         waitUntil(textToBePresentInElement(() -> getLastLog(),
                 "2. Second message logged after 1s, followed by manual push"));
         $(TestBenchElement.class).id("manaul-push").click();
-        waitUntil(textToBePresentInElement(() -> getLastLog(),
-                "3. Logged after 1s, followed by manual push"));
+        waitUntil(textToBePresentInElement(() -> getLastLog(), "3. Logged after 1s, followed by manual push"));
     }
 
 }

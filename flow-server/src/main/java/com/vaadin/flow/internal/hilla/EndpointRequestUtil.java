@@ -36,14 +36,12 @@ public interface EndpointRequestUtil extends Serializable {
     /**
      * Checks if the request is for an endpoint.
      * <p>
-     * Note even if this method returns <code>true</code>, there is no guarantee
-     * that an endpoint method will actually be called, e.g. access might be
-     * denied.
+     * Note even if this method returns <code>true</code>, there is no guarantee that an endpoint method will actually
+     * be called, e.g. access might be denied.
      *
      * @param request
      *            the HTTP request
-     * @return <code>true</code> if the request is for an endpoint,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the request is for an endpoint, <code>false</code> otherwise
      */
     boolean isEndpointRequest(HttpServletRequest request);
 
@@ -52,8 +50,7 @@ public interface EndpointRequestUtil extends Serializable {
      *
      * @param request
      *            the HTTP request to check
-     * @return <code>true</code> if the request goes to an anonymous endpoint,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the request goes to an anonymous endpoint, <code>false</code> otherwise
      */
     boolean isAnonymousEndpoint(HttpServletRequest request);
 

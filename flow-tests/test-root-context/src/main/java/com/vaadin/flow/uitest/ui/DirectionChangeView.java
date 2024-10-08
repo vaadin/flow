@@ -31,8 +31,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DirectionChangeView", layout = ViewTestLayout.class)
-public class DirectionChangeView extends AbstractDivView
-        implements HasUrlParameter<String>, LocaleChangeObserver {
+public class DirectionChangeView extends AbstractDivView implements HasUrlParameter<String>, LocaleChangeObserver {
 
     private Div locale = new Div();
 
@@ -43,28 +42,22 @@ public class DirectionChangeView extends AbstractDivView
         locale.setText(attachEvent.getUI().getLocale().toString());
         locale.setId("initial-direction");
 
-        NativeButton changeLocale = new NativeButton(
-                "Swap location to " + Locale.SIMPLIFIED_CHINESE,
-                event -> attachEvent.getUI()
-                        .setLocale(Locale.SIMPLIFIED_CHINESE));
+        NativeButton changeLocale = new NativeButton("Swap location to " + Locale.SIMPLIFIED_CHINESE,
+                event -> attachEvent.getUI().setLocale(Locale.SIMPLIFIED_CHINESE));
         changeLocale.setId("locale-button");
 
-        NativeButton ltrButton = new NativeButton(
-                "Swap to " + Direction.LEFT_TO_RIGHT, event -> attachEvent
-                        .getUI().setDirection(Direction.LEFT_TO_RIGHT));
+        NativeButton ltrButton = new NativeButton("Swap to " + Direction.LEFT_TO_RIGHT,
+                event -> attachEvent.getUI().setDirection(Direction.LEFT_TO_RIGHT));
         ltrButton.setId("ltr-button");
-        NativeButton rtlButton = new NativeButton(
-                "Swap to " + Direction.RIGHT_TO_LEFT, event -> attachEvent
-                        .getUI().setDirection(Direction.RIGHT_TO_LEFT));
+        NativeButton rtlButton = new NativeButton("Swap to " + Direction.RIGHT_TO_LEFT,
+                event -> attachEvent.getUI().setDirection(Direction.RIGHT_TO_LEFT));
         rtlButton.setId("rtl-button");
         add(locale, ltrButton, rtlButton, changeLocale);
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
-        String queryString = event.getLocation().getQueryParameters()
-                .getQueryString();
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+        String queryString = event.getLocation().getQueryParameters().getQueryString();
         if ("rtl".equals(queryString)) {
             event.getUI().setDirection(Direction.RIGHT_TO_LEFT);
         } else if ("ltr".equals(queryString)) {

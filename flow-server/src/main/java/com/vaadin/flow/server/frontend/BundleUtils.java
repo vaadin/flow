@@ -47,8 +47,7 @@ public final class BundleUtils {
     }
 
     /**
-     * Loads stats.json from the classpath (from the production bundle) and
-     * returns the "bundleImports" part of it.
+     * Loads stats.json from the classpath (from the production bundle) and returns the "bundleImports" part of it.
      *
      * @return the bundle imports as a set
      */
@@ -65,13 +64,10 @@ public final class BundleUtils {
             bundledImports.add(jsImport);
             bundledImports.add(jsImport.replace("/theme/lumo/", "/src/"));
             bundledImports.add(jsImport.replace("/theme/material/", "/src/"));
-            bundledImports.add(jsImport.replaceFirst(
-                    "^Frontend/generated/jar-resources/theme/(lumo|material)/",
-                    "./src/"));
-            bundledImports.add(jsImport
-                    .replaceFirst("^Frontend/generated/jar-resources/", "./"));
-            bundledImports.add(jsImport
-                    .replaceFirst("^Frontend/generated/jar-resources/", ""));
+            bundledImports
+                    .add(jsImport.replaceFirst("^Frontend/generated/jar-resources/theme/(lumo|material)/", "./src/"));
+            bundledImports.add(jsImport.replaceFirst("^Frontend/generated/jar-resources/", "./"));
+            bundledImports.add(jsImport.replaceFirst("^Frontend/generated/jar-resources/", ""));
             bundledImports.add(jsImport.replaceFirst("^Frontend/", "./"));
             bundledImports.add(jsImport.replaceFirst("^Frontend/", ""));
         }
@@ -84,17 +80,14 @@ public final class BundleUtils {
      * @return the stats json as a json object
      */
     static JsonObject loadStatsJson() {
-        URL statsUrl = BundleUtils.class.getClassLoader()
-                .getResource("META-INF/VAADIN/config/stats.json");
+        URL statsUrl = BundleUtils.class.getClassLoader().getResource("META-INF/VAADIN/config/stats.json");
         if (statsUrl == null) {
             return Json.createObject();
         }
         try {
-            return Json
-                    .parse(IOUtils.toString(statsUrl, StandardCharsets.UTF_8));
+            return Json.parse(IOUtils.toString(statsUrl, StandardCharsets.UTF_8));
         } catch (IOException e) {
-            getLogger().warn(
-                    "Unable to parse META-INF/VAADIN/config/stats.json", e);
+            getLogger().warn("Unable to parse META-INF/VAADIN/config/stats.json", e);
             return Json.createObject();
         }
     }
@@ -104,8 +97,7 @@ public final class BundleUtils {
      *
      * @param componentClass
      *            the class
-     * @return an identifier for the component class that does not reveal the
-     *         name of the component class
+     * @return an identifier for the component class that does not reveal the name of the component class
      */
     public static String getChunkId(Class<? extends Component> componentClass) {
         return getChunkId(componentClass.getName());
@@ -116,16 +108,14 @@ public final class BundleUtils {
      *
      * @param className
      *            the name of the class
-     * @return an identifier for the component class that does not reveal the
-     *         name of the component class
+     * @return an identifier for the component class that does not reveal the name of the component class
      */
     public static String getChunkId(String className) {
         return StringUtil.getHash(className, StandardCharsets.UTF_8);
     }
 
     /**
-     * Calculates a hash for bundle JavaScript chunk containing given string
-     * lines.
+     * Calculates a hash for bundle JavaScript chunk containing given string lines.
      *
      * @param chunkLines
      *            content of the chunk, collection of string lines
@@ -134,16 +124,13 @@ public final class BundleUtils {
     public static String getChunkHash(List<String> chunkLines) {
         List<String> sortedChunkLines = new ArrayList<>(chunkLines);
         Collections.sort(sortedChunkLines);
-        return StringUtil.getHash(String.join(";", sortedChunkLines),
-                StandardCharsets.UTF_8);
+        return StringUtil.getHash(String.join(";", sortedChunkLines), StandardCharsets.UTF_8);
     }
 
     /**
-     * Returns whether the application uses pre-compiled production bundle or a
-     * custom bundle.
+     * Returns whether the application uses pre-compiled production bundle or a custom bundle.
      *
-     * @return <code>true</code> in case of pre-compiled bundle,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> in case of pre-compiled bundle, <code>false</code> otherwise
      */
     public static boolean isPreCompiledProductionBundle() {
         JsonObject stats = loadStatsJson();
@@ -155,8 +142,7 @@ public final class BundleUtils {
     }
 
     /**
-     * Copy package-lock.json/.yaml file from existing dev-bundle for building
-     * new bundle.
+     * Copy package-lock.json/.yaml file from existing dev-bundle for building new bundle.
      *
      * @param options
      *            task options
@@ -177,21 +163,15 @@ public final class BundleUtils {
         try {
             copyAppropriatePackageLock(options, packageLock);
         } catch (IOException ioe) {
-            getLogger().error(
-                    "Failed to copy existing `" + lockFile + "` to use", ioe);
+            getLogger().error("Failed to copy existing `" + lockFile + "` to use", ioe);
         }
 
     }
 
-    private static void copyAppropriatePackageLock(Options options,
-            File packageLock) throws IOException {
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
+    private static void copyAppropriatePackageLock(Options options, File packageLock) throws IOException {
+        File devBundleFolder = new File(new File(options.getNpmFolder(), options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
-        String packageLockFile = options.isEnablePnpm()
-                ? Constants.PACKAGE_LOCK_YAML
-                : Constants.PACKAGE_LOCK_JSON;
+        String packageLockFile = options.isEnablePnpm() ? Constants.PACKAGE_LOCK_YAML : Constants.PACKAGE_LOCK_JSON;
         if (devBundleFolder.exists()) {
             File devPackageLock = new File(devBundleFolder, packageLockFile);
             if (devPackageLock.exists()) {
@@ -199,12 +179,10 @@ public final class BundleUtils {
                 return;
             }
         }
-        boolean hillaUsed = FrontendUtils.isHillaUsed(
-                options.getFrontendDirectory(), options.getClassFinder());
+        boolean hillaUsed = FrontendUtils.isHillaUsed(options.getFrontendDirectory(), options.getClassFinder());
         URL resource = null;
         if (hillaUsed) {
-            resource = options.getClassFinder().getResource(
-                    DEV_BUNDLE_JAR_PATH + "hybrid-" + packageLockFile);
+            resource = options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + "hybrid-" + packageLockFile);
         }
         if (resource == null) {
             // If Hilla is in used but the hybrid lock file is not found in the
@@ -216,13 +194,10 @@ public final class BundleUtils {
                         "The '{}' template for hybrid application could not be found in dev-bundle JAR. Fallback to standard template.",
                         packageLockFile);
             }
-            resource = options.getClassFinder()
-                    .getResource(DEV_BUNDLE_JAR_PATH + packageLockFile);
+            resource = options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + packageLockFile);
         }
         if (resource != null) {
-            FileUtils.write(packageLock,
-                    IOUtils.toString(resource, StandardCharsets.UTF_8),
-                    StandardCharsets.UTF_8);
+            FileUtils.write(packageLock, IOUtils.toString(resource, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
         } else {
             getLogger().debug(
                     "The '{}' file cannot be created because the dev-bundle JAR does not contain a suitable template.",

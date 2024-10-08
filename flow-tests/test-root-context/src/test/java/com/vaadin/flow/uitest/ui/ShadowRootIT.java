@@ -35,8 +35,7 @@ public class ShadowRootIT extends ChromeBrowserTest {
         WebElement shadowDiv = div.$(DivElement.class).id("shadow-div");
         Assert.assertEquals("Div inside shadow DOM", shadowDiv.getText());
 
-        WebElement shadowLabel = div.$(NativeLabelElement.class)
-                .id("shadow-label");
+        WebElement shadowLabel = div.$(NativeLabelElement.class).id("shadow-label");
         Assert.assertEquals("Label inside shadow DOM", shadowLabel.getText());
 
         findElement(By.id("remove")).click();

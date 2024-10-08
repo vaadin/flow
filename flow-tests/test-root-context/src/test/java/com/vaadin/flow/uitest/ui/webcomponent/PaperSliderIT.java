@@ -30,8 +30,7 @@ public class PaperSliderIT extends ChromeBrowserTest {
     public void domCorrect() {
         open();
 
-        WebElement eventField = findElement(
-                By.id(PaperSliderView.VALUE_TEXT_ID));
+        WebElement eventField = findElement(By.id(PaperSliderView.VALUE_TEXT_ID));
         Assert.assertNotNull("No text value found on the page", eventField);
 
         WebElement paperSlider = findElement(By.tagName("paper-slider"));
@@ -42,36 +41,28 @@ public class PaperSliderIT extends ChromeBrowserTest {
         assertSliderValue(paperSlider, initialValue);
 
         changeSliderValueViaApi(eventField, paperSlider, initialValue + 1);
-        changeSliderValueViaButton(eventField, paperSlider,
-                PaperSliderView.UPDATED_VALUE);
+        changeSliderValueViaButton(eventField, paperSlider, PaperSliderView.UPDATED_VALUE);
     }
 
-    private void changeSliderValueViaApi(WebElement eventField,
-            WebElement paperSlider, int expectedValue) {
+    private void changeSliderValueViaApi(WebElement eventField, WebElement paperSlider, int expectedValue) {
         executeScript("arguments[0].increment()", paperSlider);
         assertSliderValue(paperSlider, expectedValue);
         assertEventFieldValue(eventField, expectedValue);
     }
 
-    private void changeSliderValueViaButton(WebElement eventField,
-            WebElement paperSlider, int expectedValue) {
+    private void changeSliderValueViaButton(WebElement eventField, WebElement paperSlider, int expectedValue) {
         findElement(By.id(PaperSliderView.CHANGE_VALUE_ID)).click();
         assertSliderValue(paperSlider, expectedValue);
         assertEventFieldValue(eventField, expectedValue);
     }
 
-    private static void assertSliderValue(WebElement paperSlider,
-            int expectedValue) {
-        Assert.assertThat("Slider has incorrect value",
-                Integer.valueOf(paperSlider.getAttribute("value")),
+    private static void assertSliderValue(WebElement paperSlider, int expectedValue) {
+        Assert.assertThat("Slider has incorrect value", Integer.valueOf(paperSlider.getAttribute("value")),
                 is(expectedValue));
     }
 
-    private static void assertEventFieldValue(WebElement eventField,
-            int expectedValue) {
-        Assert.assertThat(
-                "Expected event field to be updated after slider value was changed",
-                eventField.getText(),
+    private static void assertEventFieldValue(WebElement eventField, int expectedValue) {
+        Assert.assertThat("Expected event field to be updated after slider value was changed", eventField.getText(),
                 is(String.format("Value: %s (set on client)", expectedValue)));
     }
 }

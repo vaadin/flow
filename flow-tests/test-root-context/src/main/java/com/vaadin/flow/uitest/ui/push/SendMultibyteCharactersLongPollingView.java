@@ -20,7 +20,6 @@ import com.vaadin.flow.shared.ui.Transport;
 
 @CustomPush(transport = Transport.LONG_POLLING)
 @Route("com.vaadin.flow.uitest.ui.push.SendMultibyteCharactersLongPollingView")
-public class SendMultibyteCharactersLongPollingView
-        extends SendMultibyteCharactersView {
+public class SendMultibyteCharactersLongPollingView extends SendMultibyteCharactersView {
 
 }

@@ -63,8 +63,7 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
     private Map<String, Method> correctlyAnnotatedHandlers;
     private Map<String, Method> wronglyAnnotatedHandlers;
 
-    private static class AbstractTemplate extends Component
-            implements DeprecatedPolymerTemplate {
+    private static class AbstractTemplate extends Component implements DeprecatedPolymerTemplate {
 
     }
 
@@ -88,8 +87,7 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
         }
 
         @EventHandler
-        public void eventDataAndRepeatIndexOnDifferentParams(
-                @EventData("test") String test, @RepeatIndex int index) {
+        public void eventDataAndRepeatIndexOnDifferentParams(@EventData("test") String test, @RepeatIndex int index) {
         }
 
     }
@@ -100,48 +98,37 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
         }
 
         @EventHandler
-        public void wrongTypeOfRepeatIndexParam(
-                @RepeatIndex String iCauseThemToo) {
+        public void wrongTypeOfRepeatIndexParam(@RepeatIndex String iCauseThemToo) {
         }
 
         @EventHandler
-        public void eventDataAndRepeatIndexOnOneParam(
-                @EventData("test") @RepeatIndex int meToo) {
+        public void eventDataAndRepeatIndexOnOneParam(@EventData("test") @RepeatIndex int meToo) {
         }
     }
 
-    private static Map<String, Method> getEventHandlerNamesAndMethods(
-            Class<?> clazz) {
-        return Stream.of(clazz.getMethods())
-                .filter(method -> Objects
-                        .nonNull(method.getAnnotation(EventHandler.class)))
-                .collect(
-                        Collectors.toMap(Method::getName, Function.identity()));
+    private static Map<String, Method> getEventHandlerNamesAndMethods(Class<?> clazz) {
+        return Stream.of(clazz.getMethods()).filter(method -> Objects.nonNull(method.getAnnotation(EventHandler.class)))
+                .collect(Collectors.toMap(Method::getName, Function.identity()));
     }
 
     @Before
     public void setUp() {
-        Collection<Class<? extends NodeFeature>> features = BasicElementStateProvider
-                .getFeatures();
+        Collection<Class<? extends NodeFeature>> features = BasicElementStateProvider.getFeatures();
         stateNode = new StateNode(features.toArray(new Class[features.size()]));
         stateNode.getFeature(ElementData.class).setTag("test");
         handlers = new PolymerServerEventHandlers(stateNode);
         methodCollector = new ArrayList<>();
-        correctlyAnnotatedHandlers = getEventHandlerNamesAndMethods(
-                CorrectAnnotationUsage.class);
-        wronglyAnnotatedHandlers = getEventHandlerNamesAndMethods(
-                WrongAnnotationUsage.class);
+        correctlyAnnotatedHandlers = getEventHandlerNamesAndMethods(CorrectAnnotationUsage.class);
+        wronglyAnnotatedHandlers = getEventHandlerNamesAndMethods(WrongAnnotationUsage.class);
 
     }
 
     @Override
     protected VaadinService createService() {
         VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         return service;
     }
@@ -151,13 +138,11 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
 
         assertEquals(1, methodCollector.size());
         assertEquals(method, methodCollector.iterator().next());
-        assertEquals(method.getParameters().length,
-                extractParametersData(method).length());
+        assertEquals(method.getParameters().length, extractParametersData(method).length());
     }
 
     private JreJsonArray extractParametersData(Method method) {
-        ConstantPoolKey parametersData = (ConstantPoolKey) stateNode
-                .getFeature(PolymerEventListenerMap.class)
+        ConstantPoolKey parametersData = (ConstantPoolKey) stateNode.getFeature(PolymerEventListenerMap.class)
                 .get(method.getName());
         assertNotNull(parametersData);
 
@@ -172,28 +157,23 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
     }
 
     @Test
-    public void testCorrectMethodWithDifferentAnnotations()
-            throws NoSuchFieldException, IllegalAccessException {
+    public void testCorrectMethodWithDifferentAnnotations() throws NoSuchFieldException, IllegalAccessException {
         // Insert component without using ComponentMapping::setComponent as we
         // only want to map and test the method
         // `eventDataAndRepeatIndexOnDifferentParams`
         Field component = ComponentMapping.class.getDeclaredField("component");
         component.setAccessible(true);
-        component.set(stateNode.getFeature(ComponentMapping.class),
-                new CorrectAnnotationUsage());
-        addAndVerifyMethod(correctlyAnnotatedHandlers
-                .get("eventDataAndRepeatIndexOnDifferentParams"));
+        component.set(stateNode.getFeature(ComponentMapping.class), new CorrectAnnotationUsage());
+        addAndVerifyMethod(correctlyAnnotatedHandlers.get("eventDataAndRepeatIndexOnDifferentParams"));
     }
 
     @Test
-    public void testEventDataParam()
-            throws NoSuchFieldException, IllegalAccessException {
+    public void testEventDataParam() throws NoSuchFieldException, IllegalAccessException {
         // Insert component without using ComponentMapping::setComponent as we
         // only want to map and test the method `eventDataParam`
         Field component = ComponentMapping.class.getDeclaredField("component");
         component.setAccessible(true);
-        component.set(stateNode.getFeature(ComponentMapping.class),
-                new CorrectAnnotationUsage());
+        component.set(stateNode.getFeature(ComponentMapping.class), new CorrectAnnotationUsage());
         addAndVerifyMethod(correctlyAnnotatedHandlers.get("eventDataParam"));
     }
 
@@ -214,13 +194,11 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
 
     @Test(expected = IllegalStateException.class)
     public void testWrongTypeOfRepeatIndexParam() {
-        addAndVerifyMethod(
-                wronglyAnnotatedHandlers.get("wrongTypeOfRepeatIndexParam"));
+        addAndVerifyMethod(wronglyAnnotatedHandlers.get("wrongTypeOfRepeatIndexParam"));
     }
 
     @Test(expected = IllegalStateException.class)
     public void testMultipleAnnotationsOnOneParam() {
-        addAndVerifyMethod(wronglyAnnotatedHandlers
-                .get("eventDataAndRepeatIndexOnOneParam"));
+        addAndVerifyMethod(wronglyAnnotatedHandlers.get("eventDataAndRepeatIndexOnOneParam"));
     }
 }

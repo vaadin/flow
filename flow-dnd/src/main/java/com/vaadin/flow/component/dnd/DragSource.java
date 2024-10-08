@@ -31,9 +31,8 @@ import com.vaadin.flow.shared.Registration;
 /**
  * Mixin interface that provides basic drag source API for any component.
  * <p>
- * This can be used by either implementing this interface, or with the static
- * API {@link #create(Component)}, {@link #configure(Component)} or
- * {@link #configure(Component, boolean)}.
+ * This can be used by either implementing this interface, or with the static API {@link #create(Component)},
+ * {@link #configure(Component)} or {@link #configure(Component, boolean)}.
  *
  * @param <T>
  *            the type of the drag source component
@@ -45,12 +44,10 @@ import com.vaadin.flow.shared.Registration;
 public interface DragSource<T extends Component> extends HasElement {
 
     /**
-     * Makes the given component draggable and gives access to the generic drag
-     * source API for the component.
+     * Makes the given component draggable and gives access to the generic drag source API for the component.
      * <p>
-     * The given component will be always set as draggable, if this is not
-     * desired, use either method {@link #configure(Component, boolean)} or
-     * {@link #setDraggable(boolean)}.
+     * The given component will be always set as draggable, if this is not desired, use either method
+     * {@link #configure(Component, boolean)} or {@link #setDraggable(boolean)}.
      *
      * @param component
      *            the component to make draggable
@@ -67,8 +64,7 @@ public interface DragSource<T extends Component> extends HasElement {
     /**
      * Gives access to the generic drag source API for the given component.
      * <p>
-     * Unlike {@link #create(Component)} and
-     * {@link #configure(Component, boolean)}, this method does not change the
+     * Unlike {@link #create(Component)} and {@link #configure(Component, boolean)}, this method does not change the
      * active drop target status of the given component.
      *
      * @param component
@@ -89,14 +85,11 @@ public interface DragSource<T extends Component> extends HasElement {
     }
 
     /**
-     * Gives access to the generic drag source API for the given component and
-     * applies the given draggable status to it.
+     * Gives access to the generic drag source API for the given component and applies the given draggable status to it.
      * <p>
-     * This method is a shorthand for calling {@link #configure(Component)} and
-     * {@link #setDraggable(boolean)}.
+     * This method is a shorthand for calling {@link #configure(Component)} and {@link #setDraggable(boolean)}.
      * <p>
-     * The component draggable state can be changed later on with
-     * {@link #setDraggable(boolean)}.
+     * The component draggable state can be changed later on with {@link #setDraggable(boolean)}.
      *
      * @param component
      *            the component to make draggable
@@ -108,29 +101,25 @@ public interface DragSource<T extends Component> extends HasElement {
      * @see #create(Component)
      * @see #configure(Component, boolean)
      */
-    static <T extends Component> DragSource<T> configure(T component,
-            boolean draggable) {
+    static <T extends Component> DragSource<T> configure(T component, boolean draggable) {
         DragSource<T> dragSource = configure(component);
         dragSource.setDraggable(draggable);
         return dragSource;
     }
 
     /**
-     * Returns the drag source component. This component is used in the drag
-     * start and end events, and set as active drag source for the UI when
-     * dragged.
+     * Returns the drag source component. This component is used in the drag start and end events, and set as active
+     * drag source for the UI when dragged.
      * <p>
-     * The default implementation of this method returns {@code this}. This
-     * method exists for type safe access for the drag source component.
+     * The default implementation of this method returns {@code this}. This method exists for type safe access for the
+     * drag source component.
      *
      * @return the drag source component
      */
     /*
-     * Implementation note: This could be mayhaps removed and replaced with
-     * magic that digs the component from an element. But keeping this method
-     * adds some convenience to the static usage. And it enables using an
-     * element that is not the root element of this component as the draggable
-     * element.
+     * Implementation note: This could be mayhaps removed and replaced with magic that digs the component from an
+     * element. But keeping this method adds some convenience to the static usage. And it enables using an element that
+     * is not the root element of this component as the draggable element.
      */
     default T getDragSourceComponent() {
         return (T) this;
@@ -142,19 +131,17 @@ public interface DragSource<T extends Component> extends HasElement {
     }
 
     /**
-     * Returns the element where the {@code draggable} attribute is applied,
-     * making it draggable by the user. By default it is the element of the
-     * component returned by {@link #getDragSourceComponent()}.
+     * Returns the element where the {@code draggable} attribute is applied, making it draggable by the user. By default
+     * it is the element of the component returned by {@link #getDragSourceComponent()}.
      * <p>
-     * Override this method to provide another element to be draggable instead
-     * of the root element of the component.
+     * Override this method to provide another element to be draggable instead of the root element of the component.
      *
      * @return the element made draggable
      * @since 2.1
      */
     /*
-     * Implementation note: this is added so that user can change the draggable
-     * element to be something else than the root element of the component.
+     * Implementation note: this is added so that user can change the draggable element to be something else than the
+     * root element of the component.
      */
     default Element getDraggableElement() {
         return getDragSourceComponent().getElement();
@@ -172,39 +159,30 @@ public interface DragSource<T extends Component> extends HasElement {
         }
         if (draggable) {
             // The attribute is an enumerated one and not a Boolean one.
-            getDraggableElement().setProperty("draggable",
-                    Boolean.TRUE.toString());
+            getDraggableElement().setProperty("draggable", Boolean.TRUE.toString());
             DndUtil.updateDragSourceActivation(this);
 
             // store & clear the component as active drag source for the UI
-            Registration startListenerRegistration = addDragStartListener(
-                    event -> getDragSourceComponent().getUI()
-                            .orElseThrow(() -> new IllegalStateException(
-                                    "DragSource not attached to an UI but received a drag start event."))
-                            .getInternals().setActiveDragSourceComponent(
-                                    getDragSourceComponent()));
-            Registration endListenerRegistration = addDragEndListener(
-                    event -> getDragSourceComponent().getUI()
-                            .orElse(UI.getCurrent()).getInternals()
-                            .setActiveDragSourceComponent(null));
-            ComponentUtil.setData(getDragSourceComponent(),
-                    DndUtil.START_LISTENER_REGISTRATION_KEY,
+            Registration startListenerRegistration = addDragStartListener(event -> getDragSourceComponent().getUI()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "DragSource not attached to an UI but received a drag start event."))
+                    .getInternals().setActiveDragSourceComponent(getDragSourceComponent()));
+            Registration endListenerRegistration = addDragEndListener(event -> getDragSourceComponent().getUI()
+                    .orElse(UI.getCurrent()).getInternals().setActiveDragSourceComponent(null));
+            ComponentUtil.setData(getDragSourceComponent(), DndUtil.START_LISTENER_REGISTRATION_KEY,
                     startListenerRegistration);
-            ComponentUtil.setData(getDragSourceComponent(),
-                    DndUtil.END_LISTENER_REGISTRATION_KEY,
+            ComponentUtil.setData(getDragSourceComponent(), DndUtil.END_LISTENER_REGISTRATION_KEY,
                     endListenerRegistration);
         } else {
             getDraggableElement().removeProperty("draggable");
             DndUtil.updateDragSourceActivation(this);
             // clear listeners for setting active data source
-            Object startListenerRegistration = ComponentUtil.getData(
-                    getDragSourceComponent(),
+            Object startListenerRegistration = ComponentUtil.getData(getDragSourceComponent(),
                     DndUtil.START_LISTENER_REGISTRATION_KEY);
             if (startListenerRegistration instanceof Registration) {
                 ((Registration) startListenerRegistration).remove();
             }
-            Object endListenerRegistration = ComponentUtil.getData(
-                    getDragSourceComponent(),
+            Object endListenerRegistration = ComponentUtil.getData(getDragSourceComponent(),
                     DndUtil.END_LISTENER_REGISTRATION_KEY);
             if (endListenerRegistration instanceof Registration) {
                 ((Registration) endListenerRegistration).remove();
@@ -224,13 +202,11 @@ public interface DragSource<T extends Component> extends HasElement {
     }
 
     /**
-     * Set server side drag data. This data is available in the drop event and
-     * can be used to transfer data between drag source and {@link DropTarget}
-     * if they are in the same UI.
+     * Set server side drag data. This data is available in the drop event and can be used to transfer data between drag
+     * source and {@link DropTarget} if they are in the same UI.
      * <p>
      * The drag data can be set also in the drag start event listener added with
-     * {@link #addDragStartListener(ComponentEventListener)} using
-     * {@link DragStartEvent#setDragData(Object)}.
+     * {@link #addDragStartListener(ComponentEventListener)} using {@link DragStartEvent#setDragData(Object)}.
      *
      * @param data
      *            Data to transfer to drop event.
@@ -239,82 +215,67 @@ public interface DragSource<T extends Component> extends HasElement {
      * @see DragEndEvent#clearDragData()
      */
     default void setDragData(Object data) {
-        ComponentUtil.setData(getDragSourceComponent(),
-                DndUtil.DRAG_SOURCE_DATA_KEY, data);
+        ComponentUtil.setData(getDragSourceComponent(), DndUtil.DRAG_SOURCE_DATA_KEY, data);
     }
 
     /**
-     * Get server side drag data. This data is available in the drop event and
-     * can be used to transfer data between drag source and drop target if they
-     * are in the same UI.
+     * Get server side drag data. This data is available in the drop event and can be used to transfer data between drag
+     * source and drop target if they are in the same UI.
      *
      * @return Server side drag data if set, otherwise {@literal null}.
      */
     default Object getDragData() {
-        return ComponentUtil.getData(getDragSourceComponent(),
-                DndUtil.DRAG_SOURCE_DATA_KEY);
+        return ComponentUtil.getData(getDragSourceComponent(), DndUtil.DRAG_SOURCE_DATA_KEY);
     }
 
     /**
-     * Sets the allowed effects for the current drag source element. Used for
-     * setting client side {@code DataTransfer.effectAllowed} parameter for the
-     * drag event.
+     * Sets the allowed effects for the current drag source element. Used for setting client side
+     * {@code DataTransfer.effectAllowed} parameter for the drag event.
      * <p>
-     * By default the value is {@link EffectAllowed#UNINITIALIZED} which is
-     * equivalent to {@link EffectAllowed#ALL}.
+     * By default the value is {@link EffectAllowed#UNINITIALIZED} which is equivalent to {@link EffectAllowed#ALL}.
      * <p>
-     * <em>NOTE:</em> The effect should be set in advance, setting it after the
-     * user has started dragging and the {@link DragStartEvent} has been fired
-     * is too late - it will take effect only for next drag operation.
+     * <em>NOTE:</em> The effect should be set in advance, setting it after the user has started dragging and the
+     * {@link DragStartEvent} has been fired is too late - it will take effect only for next drag operation.
      * <p>
-     * <em>NOTE 2: Edge, Safari and IE11 will allow the drop to occur even when
-     * the effect allowed does not match the drop effect set on the drop target.
-     * Chrome and Firefox prevent the drop if those do not match.</em>
+     * <em>NOTE 2: Edge, Safari and IE11 will allow the drop to occur even when the effect allowed does not match the
+     * drop effect set on the drop target. Chrome and Firefox prevent the drop if those do not match.</em>
      *
      * @param effect
      *            Effects to allow for this draggable element. Cannot be {@code
      *               null}.
      * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations#drageffects">
-     *      MDN web docs</a> for more information.
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/Drag_operations#drageffects"> MDN
+     *      web docs</a> for more information.
      */
     default void setEffectAllowed(EffectAllowed effect) {
         if (effect == null) {
             throw new IllegalArgumentException("Allowed effect cannot be null");
         }
-        getDraggableElement().setProperty(
-                DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY,
-                effect.getClientPropertyValue());
+        getDraggableElement().setProperty(DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY, effect.getClientPropertyValue());
     }
 
     /**
-     * Returns the allowed effects for the current drag source element. Used to
-     * set client side {@code DataTransfer.effectAllowed} parameter for the drag
-     * event.
+     * Returns the allowed effects for the current drag source element. Used to set client side
+     * {@code DataTransfer.effectAllowed} parameter for the drag event.
      *
      * @return effects that are allowed for this draggable element.
      */
     default EffectAllowed getEffectAllowed() {
-        return EffectAllowed.valueOf(getDraggableElement().getProperty(
-                DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY,
-                EffectAllowed.UNINITIALIZED.getClientPropertyValue()
-                        .toUpperCase(Locale.ENGLISH)));
+        return EffectAllowed.valueOf(getDraggableElement().getProperty(DndUtil.EFFECT_ALLOWED_ELEMENT_PROPERTY,
+                EffectAllowed.UNINITIALIZED.getClientPropertyValue().toUpperCase(Locale.ENGLISH)));
     }
 
     /**
-     * Sets the drag image for the current drag source element. The image is
-     * applied automatically in the next drag start event in the browser. Drag
-     * image is shown by default with zero offset which means that pointer
-     * location is in the top left corner of the image.
+     * Sets the drag image for the current drag source element. The image is applied automatically in the next drag
+     * start event in the browser. Drag image is shown by default with zero offset which means that pointer location is
+     * in the top left corner of the image.
      * <p>
-     * {@code com.vaadin.flow.component.html.Image} is fully supported as a drag
-     * image component. Other components can be used as well, but the support
-     * may vary between browsers. If given component is visible element in the
+     * {@code com.vaadin.flow.component.html.Image} is fully supported as a drag image component. Other components can
+     * be used as well, but the support may vary between browsers. If given component is visible element in the
      * viewport, browser can show it as a drag image.
      *
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setDragImage">
-     *      MDN web docs</a> for more information.
+     * @see <a href= "https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setDragImage"> MDN web docs</a> for
+     *      more information.
      * @param dragImage
      *            the image to be used as drag image or null to remove it
      */
@@ -323,19 +284,16 @@ public interface DragSource<T extends Component> extends HasElement {
     }
 
     /**
-     * Sets the drag image for the current drag source element. The image is
-     * applied automatically in the next drag start event in the browser.
-     * Coordinates define the offset of the pointer location from the top left
-     * corner of the image.
+     * Sets the drag image for the current drag source element. The image is applied automatically in the next drag
+     * start event in the browser. Coordinates define the offset of the pointer location from the top left corner of the
+     * image.
      * <p>
-     * {@code com.vaadin.flow.component.html.Image} is fully supported as a drag
-     * image component. Other components can be used as well, but the support
-     * may vary between browsers. If given component is visible element in the
+     * {@code com.vaadin.flow.component.html.Image} is fully supported as a drag image component. Other components can
+     * be used as well, but the support may vary between browsers. If given component is visible element in the
      * viewport, browser can show it as a drag image.
      *
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setDragImage">
-     *      MDN web docs</a> for more information.
+     * @see <a href= "https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/setDragImage"> MDN web docs</a> for
+     *      more information.
      * @param dragImage
      *            the image to be used as drag image or null to remove it
      * @param offsetX
@@ -346,77 +304,65 @@ public interface DragSource<T extends Component> extends HasElement {
     default void setDragImage(Component dragImage, int offsetX, int offsetY) {
         if (getDragImage() != null && getDragImage() != dragImage) {
             // Remove drag image from the virtual children list if it's there.
-            if (getDraggableElement().getNode()
-                    .hasFeature(VirtualChildrenList.class)) {
-                VirtualChildrenList childrenList = getDraggableElement()
-                        .getNode().getFeature(VirtualChildrenList.class);
+            if (getDraggableElement().getNode().hasFeature(VirtualChildrenList.class)) {
+                VirtualChildrenList childrenList = getDraggableElement().getNode()
+                        .getFeature(VirtualChildrenList.class);
                 // dodging exception with empty list
                 if (childrenList.size() > 0) {
-                    getDraggableElement()
-                            .removeVirtualChild(getDragImage().getElement());
+                    getDraggableElement().removeVirtualChild(getDragImage().getElement());
                 }
             }
         }
         if (dragImage != null && !dragImage.isAttached()) {
             if (!getDragSourceComponent().isAttached()) {
                 getDragSourceComponent().addAttachListener(event -> {
-                    if (!dragImage.isAttached()
-                            && dragImage.getParent().isEmpty()) {
-                        getDraggableElement()
-                                .appendVirtualChild(dragImage.getElement());
+                    if (!dragImage.isAttached() && dragImage.getParent().isEmpty()) {
+                        getDraggableElement().appendVirtualChild(dragImage.getElement());
                     }
                     event.unregisterListener();
                 });
             } else {
-                getDraggableElement()
-                        .appendVirtualChild(dragImage.getElement());
+                getDraggableElement().appendVirtualChild(dragImage.getElement());
             }
         }
-        ComponentUtil.setData(getDragSourceComponent(),
-                DndUtil.DRAG_SOURCE_IMAGE, dragImage);
-        getDraggableElement().executeJs(
-                "window.Vaadin.Flow.dndConnector.setDragImage($0, $1, $2, $3)",
-                dragImage, (dragImage == null ? 0 : offsetX),
-                (dragImage == null ? 0 : offsetY), getDraggableElement());
+        ComponentUtil.setData(getDragSourceComponent(), DndUtil.DRAG_SOURCE_IMAGE, dragImage);
+        getDraggableElement().executeJs("window.Vaadin.Flow.dndConnector.setDragImage($0, $1, $2, $3)", dragImage,
+                (dragImage == null ? 0 : offsetX), (dragImage == null ? 0 : offsetY), getDraggableElement());
     }
 
     /**
-     * Get server side drag image. This image is applied automatically in the
-     * next drag start event in the browser.
+     * Get server side drag image. This image is applied automatically in the next drag start event in the browser.
      *
      * @return Server side drag image if set, otherwise {@literal null}.
      */
     default Component getDragImage() {
-        return (Component) ComponentUtil.getData(getDragSourceComponent(),
-                DndUtil.DRAG_SOURCE_IMAGE);
+        return (Component) ComponentUtil.getData(getDragSourceComponent(), DndUtil.DRAG_SOURCE_IMAGE);
     }
 
     /**
-     * Attaches dragstart listener for the current drag source. The listener is
-     * triggered when dragstart event happens on the client side.
+     * Attaches dragstart listener for the current drag source. The listener is triggered when dragstart event happens
+     * on the client side.
      *
      * @param listener
      *            Listener to handle dragstart event.
      * @return Handle to be used to remove this listener.
      */
-    default Registration addDragStartListener(
-            ComponentEventListener<DragStartEvent<T>> listener) {
-        return ComponentUtil.addListener(getDragSourceComponent(),
-                DragStartEvent.class, (ComponentEventListener) listener);
+    default Registration addDragStartListener(ComponentEventListener<DragStartEvent<T>> listener) {
+        return ComponentUtil.addListener(getDragSourceComponent(), DragStartEvent.class,
+                (ComponentEventListener) listener);
     }
 
     /**
-     * Attaches dragend listener for the current drag source.The listener is
-     * triggered when dragend event happens on the client side.
+     * Attaches dragend listener for the current drag source.The listener is triggered when dragend event happens on the
+     * client side.
      *
      * @param listener
      *            Listener to handle dragend event.
      * @return Handle to be used to remove this listener.
      */
-    default Registration addDragEndListener(
-            ComponentEventListener<DragEndEvent<T>> listener) {
-        return ComponentUtil.addListener(getDragSourceComponent(),
-                DragEndEvent.class, (ComponentEventListener) listener);
+    default Registration addDragEndListener(ComponentEventListener<DragEndEvent<T>> listener) {
+        return ComponentUtil.addListener(getDragSourceComponent(), DragEndEvent.class,
+                (ComponentEventListener) listener);
     }
 
 }

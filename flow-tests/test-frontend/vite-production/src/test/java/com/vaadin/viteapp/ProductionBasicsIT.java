@@ -15,10 +15,8 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL());
         waitForDevServer();
         TestBenchElement header = $("h2").first();
-        Assert.assertEquals("This place intentionally left empty",
-                header.getText());
-        Assert.assertFalse((Boolean) getCommandExecutor()
-                .executeScript("return Vaadin.developmentMode"));
+        Assert.assertEquals("This place intentionally left empty", header.getText());
+        Assert.assertFalse((Boolean) getCommandExecutor().executeScript("return Vaadin.developmentMode"));
     }
 
     @Test
@@ -28,8 +26,7 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
         TestBenchElement img = $("img").id(MainView.PLANT);
         waitUntil(driver -> {
             String heightString = (String) executeScript(
-                    "return getComputedStyle(arguments[0]).height.replace('px','')",
-                    img);
+                    "return getComputedStyle(arguments[0]).height.replace('px','')", img);
             float height = Float.parseFloat(heightString);
             return (height > 150);
         });

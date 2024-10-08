@@ -73,58 +73,46 @@ public class ThemeListImplTest {
     public void themeListCreatedWithNoThemes() {
         ThemeListImpl emptyList = new ThemeListImpl(new MockElement());
 
-        assertTrue(
-                "ThemeList created from the element without themes should be empty",
-                emptyList.isEmpty());
-        assertEquals(
-                "ThemeList created from the element without themes should be empty",
-                emptyList.size(), 0);
+        assertTrue("ThemeList created from the element without themes should be empty", emptyList.isEmpty());
+        assertEquals("ThemeList created from the element without themes should be empty", emptyList.size(), 0);
     }
 
     @Test
     public void themeListCreatedWithOneThemes() {
         String themeName = "theme1";
 
-        ThemeListImpl elementWithOneTheme = new ThemeListImpl(
-                new MockElement(themeName));
+        ThemeListImpl elementWithOneTheme = new ThemeListImpl(new MockElement(themeName));
 
-        assertEquals(
-                "ThemeList created from the element with one theme should contain single element",
+        assertEquals("ThemeList created from the element with one theme should contain single element",
                 elementWithOneTheme.size(), 1);
-        assertTrue(
-                "ThemeList created from the element with one theme should contain this theme as its single element",
+        assertTrue("ThemeList created from the element with one theme should contain this theme as its single element",
                 elementWithOneTheme.contains(themeName));
     }
 
     @Test
     public void themeListCreatedWithMultipleThemes() {
         String[] themeNames = { "theme1", "theme2" };
-        ThemeListImpl elementWithMultipleThemes = new ThemeListImpl(
-                new MockElement(themeNames));
+        ThemeListImpl elementWithMultipleThemes = new ThemeListImpl(new MockElement(themeNames));
 
-        assertFalse(
-                "ThemeList created from the element with multiple distinct themes should not be empty",
+        assertFalse("ThemeList created from the element with multiple distinct themes should not be empty",
                 elementWithMultipleThemes.isEmpty());
         assertEquals(
                 "ThemeList created from the element with multiple distinct themes should be of the same size as number of the themes",
                 elementWithMultipleThemes.size(), themeNames.length);
         assertTrue(
                 "ThemeList created from the element with multiple distinct themes should contain them all and oly them",
-                elementWithMultipleThemes
-                        .containsAll(Arrays.asList(themeNames)));
+                elementWithMultipleThemes.containsAll(Arrays.asList(themeNames)));
     }
 
     @Test
     public void themeListCreatedWithDuplicateThemes() {
         String[] themeNames = { "theme1", "theme1", "theme1" };
-        ThemeListImpl elementWithMultipleThemes = new ThemeListImpl(
-                new MockElement(themeNames));
+        ThemeListImpl elementWithMultipleThemes = new ThemeListImpl(new MockElement(themeNames));
 
         assertEquals(
                 "ThemeList created from the element with multiple themes should be of the same size as number of unique themes",
                 elementWithMultipleThemes.size(), 1);
-        assertTrue(
-                "ThemeList created from the element with multiple themes should be contain all unique themes",
+        assertTrue("ThemeList created from the element with multiple themes should be contain all unique themes",
                 elementWithMultipleThemes.contains(themeNames[0]));
     }
 
@@ -135,10 +123,8 @@ public class ThemeListImplTest {
 
         themeList.clear();
 
-        assertTrue("ThemeList should be empty after it's cleared",
-                themeList.isEmpty());
-        assertNull(
-                "If corresponding ThemeList is cleared, no themes should be preset in the corresponding element",
+        assertTrue("ThemeList should be empty after it's cleared", themeList.isEmpty());
+        assertNull("If corresponding ThemeList is cleared, no themes should be preset in the corresponding element",
                 element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME));
     }
 
@@ -151,15 +137,10 @@ public class ThemeListImplTest {
 
         themeList.remove(themeToRemove);
 
-        assertEquals(
-                "Only one theme should be present in ThemeList after removal",
-                themeList.size(), 1);
-        assertTrue("ThemeList should contain theme that was not removed",
-                themeList.contains(themeToLeave));
-        assertEquals(
-                "Corresponding element should contain only the theme that was not removed",
-                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
-                themeToLeave);
+        assertEquals("Only one theme should be present in ThemeList after removal", themeList.size(), 1);
+        assertTrue("ThemeList should contain theme that was not removed", themeList.contains(themeToLeave));
+        assertEquals("Corresponding element should contain only the theme that was not removed",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME), themeToLeave);
     }
 
     @Test
@@ -167,21 +148,15 @@ public class ThemeListImplTest {
         String themeToRemove1 = "theme3";
         String themeToRemove2 = "theme2";
         String themeToLeave = "theme1";
-        MockElement element = new MockElement(themeToLeave, themeToRemove1,
-                themeToRemove2);
+        MockElement element = new MockElement(themeToLeave, themeToRemove1, themeToRemove2);
         ThemeListImpl themeList = new ThemeListImpl(element);
 
         themeList.removeAll(Arrays.asList(themeToRemove1, themeToRemove2));
 
-        assertEquals(
-                "Only one theme should be present in ThemeList after removal",
-                themeList.size(), 1);
-        assertTrue("ThemeList should contain theme that was not removed",
-                themeList.contains(themeToLeave));
-        assertEquals(
-                "Corresponding element should contain only the theme that was not removed",
-                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
-                themeToLeave);
+        assertEquals("Only one theme should be present in ThemeList after removal", themeList.size(), 1);
+        assertTrue("ThemeList should contain theme that was not removed", themeList.contains(themeToLeave));
+        assertEquals("Corresponding element should contain only the theme that was not removed",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME), themeToLeave);
     }
 
     @Test
@@ -192,30 +167,23 @@ public class ThemeListImplTest {
 
         themeList.removeAll(Arrays.asList(themeNames));
 
-        assertTrue(
-                "ThemeList should be empty after all it's themes are removed",
-                themeList.isEmpty());
-        assertNull(
-                "If corresponding ThemeList is cleared, no themes should be preset in the corresponding element",
+        assertTrue("ThemeList should be empty after all it's themes are removed", themeList.isEmpty());
+        assertNull("If corresponding ThemeList is cleared, no themes should be preset in the corresponding element",
                 element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME));
     }
 
     @Test
     public void retainAll() {
-        List<String> elementsToRetain = Arrays.asList("retained",
-                "notRetained");
+        List<String> elementsToRetain = Arrays.asList("retained", "notRetained");
         String[] themeNames = { elementsToRetain.get(0), "theme2", "theme3" };
         MockElement element = new MockElement(themeNames);
         ThemeListImpl themeList = new ThemeListImpl(element);
 
         themeList.retainAll(elementsToRetain);
 
-        assertEquals("ThemeList should contain one retained theme",
-                themeList.size(), 1);
-        assertEquals(
-                "Corresponding element should contain the only element present in ThemeList",
-                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
-                themeList.iterator().next());
+        assertEquals("ThemeList should contain one retained theme", themeList.size(), 1);
+        assertEquals("Corresponding element should contain the only element present in ThemeList",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME), themeList.iterator().next());
     }
 
     @Test
@@ -226,13 +194,10 @@ public class ThemeListImplTest {
 
         themeList.add(themeToAdd);
 
-        assertEquals("ThemeList should not be empty after adding a theme",
-                themeList.size(), 1);
-        assertTrue("ThemeList should contain theme added",
-                themeList.contains(themeToAdd));
+        assertEquals("ThemeList should not be empty after adding a theme", themeList.size(), 1);
+        assertTrue("ThemeList should contain theme added", themeList.contains(themeToAdd));
         assertEquals("Corresponding element should contain the theme added",
-                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
-                themeToAdd);
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME), themeToAdd);
     }
 
     @Test
@@ -243,17 +208,13 @@ public class ThemeListImplTest {
 
         themeList.addAll(themesToAdd);
 
-        assertFalse("ThemeList should not be empty after adding themes",
-                themeList.isEmpty());
-        assertEquals(
-                "ThemeList size should be equal to number of distinct themes added if it was empty before",
+        assertFalse("ThemeList should not be empty after adding themes", themeList.isEmpty());
+        assertEquals("ThemeList size should be equal to number of distinct themes added if it was empty before",
                 themeList.size(), themesToAdd.size());
-        assertTrue("ThemeList should contain all distinct themes added",
-                themeList.containsAll(themesToAdd));
+        assertTrue("ThemeList should contain all distinct themes added", themeList.containsAll(themesToAdd));
         themesToAdd.forEach(themeName -> assertTrue(
                 "Each distinct theme added to ThemeList should be present in correspondent element's 'theme' attribute",
-                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME)
-                        .contains(themeName)));
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME).contains(themeName)));
     }
 
     @Test
@@ -264,15 +225,10 @@ public class ThemeListImplTest {
 
         themeList.addAll(themesToAdd);
 
-        assertEquals(
-                "ThemeList should not be empty after themes have been added",
-                themeList.size(), 1);
-        assertTrue("ThemeList should contain all distinct themes added",
-                themeList.contains(themesToAdd.get(0)));
-        assertEquals(
-                "Corresponding element should have all distinct themes added",
-                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
-                themesToAdd.get(0));
+        assertEquals("ThemeList should not be empty after themes have been added", themeList.size(), 1);
+        assertTrue("ThemeList should contain all distinct themes added", themeList.contains(themesToAdd.get(0)));
+        assertEquals("Corresponding element should have all distinct themes added",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME), themesToAdd.get(0));
     }
 
     @Test
@@ -289,21 +245,16 @@ public class ThemeListImplTest {
         removedElements.add(iterator.next());
         iterator.remove();
 
-        assertEquals("ThemeList should have one element left after removal",
-                themeList.size(), 1);
+        assertEquals("ThemeList should have one element left after removal", themeList.size(), 1);
         String notRemovedTheme = themeList.iterator().next();
-        assertTrue(
-                "Themes returned by ThemeList's iterator.next() should be present in the original list of themes",
+        assertTrue("Themes returned by ThemeList's iterator.next() should be present in the original list of themes",
                 originalThemes.containsAll(removedElements));
-        assertTrue(
-                "Theme left in ThemeList after removal should be present in the original list of themes",
+        assertTrue("Theme left in ThemeList after removal should be present in the original list of themes",
                 originalThemes.contains(notRemovedTheme));
-        assertFalse(
-                "Removed themes should not contain theme left in the ThemeList",
+        assertFalse("Removed themes should not contain theme left in the ThemeList",
                 removedElements.contains(notRemovedTheme));
         assertEquals(
                 "Theme left in ThemeList after removal should be the only theme preset in the corresponding element",
-                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
-                notRemovedTheme);
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME), notRemovedTheme);
     }
 }

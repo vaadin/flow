@@ -13,8 +13,7 @@ public class MyVaadinServiceInitListener implements VaadinServiceInitListener {
 
     private final List<VaadinRequestInterceptor> interceptors;
 
-    public MyVaadinServiceInitListener(
-            @Autowired List<VaadinRequestInterceptor> interceptors) {
+    public MyVaadinServiceInitListener(@Autowired List<VaadinRequestInterceptor> interceptors) {
         this.interceptors = interceptors;
     }
 

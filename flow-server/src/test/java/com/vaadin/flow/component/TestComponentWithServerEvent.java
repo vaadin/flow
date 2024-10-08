@@ -19,8 +19,7 @@ import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.shared.Registration;
 
 public class TestComponentWithServerEvent extends TestComponent {
-    public Registration addServerEventListener(
-            ComponentEventListener<ServerEvent> listener) {
+    public Registration addServerEventListener(ComponentEventListener<ServerEvent> listener) {
         return super.addListener(ServerEvent.class, listener);
     }
 }

@@ -28,8 +28,7 @@ public class PreserveOnRefreshForwardingIT extends ChromeBrowserTest {
 
         waitUntil(driver -> {
             String url = driver.getCurrentUrl();
-            return url.endsWith(
-                    "PreserveOnRefreshForwardToView?afterforward=true");
+            return url.endsWith("PreserveOnRefreshForwardToView?afterforward=true");
         });
     }
 }

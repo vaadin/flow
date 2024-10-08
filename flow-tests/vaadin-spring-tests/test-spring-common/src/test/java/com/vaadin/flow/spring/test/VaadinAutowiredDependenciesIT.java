@@ -35,8 +35,7 @@ public class VaadinAutowiredDependenciesIT extends AbstractSpringTest {
         WebElement uiCurrent = findElement(By.id("ui-current"));
 
         Assert.assertEquals(
-                "UI id and hashcode for injected UI instance are "
-                        + "not the same as for current UI instance",
+                "UI id and hashcode for injected UI instance are " + "not the same as for current UI instance",
                 uiCurrent.getText(), uiInjected.getText());
     }
 

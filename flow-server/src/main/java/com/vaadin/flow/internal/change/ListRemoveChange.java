@@ -34,8 +34,7 @@ import elemental.json.JsonObject;
  * @param <T>
  *            the type of the items in the node list
  */
-public class ListRemoveChange<T extends Serializable>
-        extends AbstractListChange<T> {
+public class ListRemoveChange<T extends Serializable> extends AbstractListChange<T> {
 
     private final T removedItem;
 

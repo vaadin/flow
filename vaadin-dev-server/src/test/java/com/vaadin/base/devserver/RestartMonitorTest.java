@@ -29,8 +29,7 @@ import org.junit.Test;
 
 public class RestartMonitorTest {
 
-    private final RestartMonitor monitor = new RestartMonitor(
-            Pattern.compile("^restart$"),
+    private final RestartMonitor monitor = new RestartMonitor(Pattern.compile("^restart$"),
             Pattern.compile("^restart(ed| failed)$"));
 
     private ScheduledExecutorService executorService;
@@ -46,29 +45,24 @@ public class RestartMonitorTest {
     }
 
     @Test
-    public void waitForServerReady_serverReady_notBlocking()
-            throws InterruptedException {
+    public void waitForServerReady_serverReady_notBlocking() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         executorService.submit(() -> simulateTask(latch));
-        Assert.assertTrue(
-                "Not restarting, execution should not have been blocked",
+        Assert.assertTrue("Not restarting, execution should not have been blocked",
                 latch.await(100, TimeUnit.MILLISECONDS));
     }
 
     @Test
-    public void waitForServerReady_serverRestarting_executionBlockedAndResumed()
-            throws InterruptedException {
+    public void waitForServerReady_serverRestarting_executionBlockedAndResumed() throws InterruptedException {
         simulateServerRestart("restarted");
     }
 
     @Test
-    public void waitForServerReady_serverRestartFailure_executionBlockedAndResumed()
-            throws InterruptedException {
+    public void waitForServerReady_serverRestartFailure_executionBlockedAndResumed() throws InterruptedException {
         simulateServerRestart("restart failed");
     }
 
-    private void simulateServerRestart(String restartMessage)
-            throws InterruptedException {
+    private void simulateServerRestart(String restartMessage) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(2);
         monitor.parseLine("restart");
         executorService.submit(() -> simulateTask(latch));
@@ -76,12 +70,9 @@ public class RestartMonitorTest {
             monitor.parseLine(restartMessage);
             latch.countDown();
         }, 1, TimeUnit.SECONDS);
-        Assert.assertEquals("Restarting, execution should be blocked", 2,
-                latch.getCount());
-        Assert.assertFalse("Restarting, execution should be blocked",
-                latch.await(500, TimeUnit.MILLISECONDS));
-        Assert.assertTrue(
-                "Restart completed, execution should have been completed",
+        Assert.assertEquals("Restarting, execution should be blocked", 2, latch.getCount());
+        Assert.assertFalse("Restarting, execution should be blocked", latch.await(500, TimeUnit.MILLISECONDS));
+        Assert.assertTrue("Restart completed, execution should have been completed",
                 latch.await(1100, TimeUnit.MILLISECONDS));
     }
 

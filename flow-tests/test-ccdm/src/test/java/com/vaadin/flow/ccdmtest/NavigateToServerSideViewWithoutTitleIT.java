@@ -29,8 +29,7 @@ public class NavigateToServerSideViewWithoutTitleIT extends CCDMTest {
         findAnchor("view-with-server-view-button").click();
 
         // "app-shell-title" is defined in AppShell
-        Assert.assertEquals("Shoul use app shell title", "app-shell-title",
-                getDriver().getTitle());
+        Assert.assertEquals("Shoul use app shell title", "app-shell-title", getDriver().getTitle());
     }
 
     @Test
@@ -39,15 +38,13 @@ public class NavigateToServerSideViewWithoutTitleIT extends CCDMTest {
 
         // update document.title on the client-side
         findElement(By.id("updatePageTitle")).click();
-        Assert.assertEquals(
-                "Client-side should have updated the app shell title",
-                "client-side-updated-title", getDriver().getTitle());
+        Assert.assertEquals("Client-side should have updated the app shell title", "client-side-updated-title",
+                getDriver().getTitle());
 
         findAnchor("view-with-server-view-button").click();
 
         // "app-shell-title" is defined in AppShell
-        Assert.assertEquals("Shoul use app shell title", "app-shell-title",
-                getDriver().getTitle());
+        Assert.assertEquals("Shoul use app shell title", "app-shell-title", getDriver().getTitle());
     }
 
 }

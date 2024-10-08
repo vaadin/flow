@@ -29,11 +29,9 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Converts platform versions file to internal format which doesn't contain
- * extra information.
+ * Converts platform versions file to internal format which doesn't contain extra information.
  * <p>
- * The result contains all framework dependencies as keys and their versions as
- * value.
+ * The result contains all framework dependencies as keys and their versions as value.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -80,8 +78,7 @@ class VersionsJsonConverter {
         return LoggerFactory.getLogger(VersionsJsonConverter.class);
     }
 
-    VersionsJsonConverter(JsonObject platformVersions,
-            boolean collectReactComponents) {
+    VersionsJsonConverter(JsonObject platformVersions, boolean collectReactComponents) {
         this.reactEnabled = collectReactComponents;
         exclusions = new HashSet<>();
         convertedObject = Json.createObject();
@@ -91,8 +88,7 @@ class VersionsJsonConverter {
     }
 
     /**
-     * Collect framework managed versions to enforce that the user hasn't
-     * changed.
+     * Collect framework managed versions to enforce that the user hasn't changed.
      *
      * @return flatten the platform versions Json
      */
@@ -159,9 +155,8 @@ class VersionsJsonConverter {
         } else if (obj.hasKey(JS_VERSION)) {
             version = obj.getString(JS_VERSION);
         } else {
-            throw new IllegalStateException("Vaadin code versions file "
-                    + "contains unexpected data: dependency '" + npmName
-                    + "' has" + " no 'npmVersion'/'jsVersion' . "
+            throw new IllegalStateException("Vaadin code versions file " + "contains unexpected data: dependency '"
+                    + npmName + "' has" + " no 'npmVersion'/'jsVersion' . "
                     + "Please report a bug in https://github.com/vaadin/platform/issues/new");
         }
         convertedObject.put(npmName, version);
@@ -169,12 +164,11 @@ class VersionsJsonConverter {
         if (obj.hasKey(EXCLUSIONS)) {
             JsonArray array = obj.getArray(EXCLUSIONS);
             if (array != null) {
-                IntStream.range(0, array.length())
-                        .forEach(i -> exclusions.add(array.getString(i)));
+                IntStream.range(0, array.length()).forEach(i -> exclusions.add(array.getString(i)));
             }
         }
-        getLogger().debug("versions.json adds dependency {} with version {}{}",
-                npmName, version, (mode != null ? " for mode " + mode : ""));
+        getLogger().debug("versions.json adds dependency {} with version {}{}", npmName, version,
+                (mode != null ? " for mode " + mode : ""));
     }
 
 }

@@ -28,8 +28,7 @@ public class JavaLiveReloadView extends AbstractLiveReloadView {
     public static final String JAVA_LIVE_RELOAD_TRIGGER_BUTTON = "java-live-reload-trigger-button";
 
     public JavaLiveReloadView() {
-        NativeButton javaReloadButton = new NativeButton(
-                "Trigger Java live reload");
+        NativeButton javaReloadButton = new NativeButton("Trigger Java live reload");
         javaReloadButton.addClickListener(this::handleClickJavaLiveReload);
         javaReloadButton.setId(JAVA_LIVE_RELOAD_TRIGGER_BUTTON);
         add(javaReloadButton);
@@ -37,10 +36,9 @@ public class JavaLiveReloadView extends AbstractLiveReloadView {
 
     // Java triggered live reload is faked as we do not have Trava JDK in test
     private void handleClickJavaLiveReload(ClickEvent<?> event) {
-        BrowserLiveReloadAccessor liveReloadAccess = VaadinService.getCurrent()
-                .getInstantiator().getOrCreate(BrowserLiveReloadAccessor.class);
-        BrowserLiveReload browserLiveReload = liveReloadAccess
-                .getLiveReload(VaadinService.getCurrent());
+        BrowserLiveReloadAccessor liveReloadAccess = VaadinService.getCurrent().getInstantiator()
+                .getOrCreate(BrowserLiveReloadAccessor.class);
+        BrowserLiveReload browserLiveReload = liveReloadAccess.getLiveReload(VaadinService.getCurrent());
         browserLiveReload.reload();
     }
 }

@@ -22,25 +22,21 @@ import com.vaadin.flow.testutil.ClassesSerializableTest;
 public class FlowClassesSerializableTest extends ClassesSerializableTest {
 
     /**
-     * {@link HtmlComponent} and {@link HtmlContainer} are not covered by
-     * generic test because of their constructors
+     * {@link HtmlComponent} and {@link HtmlContainer} are not covered by generic test because of their constructors
      */
     @Test
     public void htmlComponentAndHtmlContainer() throws Throwable {
-        Component[] components = { new HtmlComponent("dummy-tag"),
-                new HtmlContainer("dummy-tag") };
+        Component[] components = { new HtmlComponent("dummy-tag"), new HtmlContainer("dummy-tag") };
         for (Component component : components) {
             Component componentCopy = serializeAndDeserialize(component);
-            assertEquals(component.getElement().getTag(),
-                    componentCopy.getElement().getTag());
+            assertEquals(component.getElement().getTag(), componentCopy.getElement().getTag());
             assertNotSame(component.getElement(), componentCopy.getElement());
         }
     }
 
     /**
-     * Tests a serialization bug (probably located in JVM ) when serialized
-     * {@link Command} is deserialized as some internal lambda and produces
-     * {@link ClassCastException}
+     * Tests a serialization bug (probably located in JVM ) when serialized {@link Command} is deserialized as some
+     * internal lambda and produces {@link ClassCastException}
      *
      * see the workaround in ElementAttributeMap#deferRegistration
      */
@@ -50,13 +46,11 @@ public class FlowClassesSerializableTest extends ClassesSerializableTest {
         UI.setCurrent(ui);
         try {
             Element element = new Element("dummy-element");
-            StreamReceiver streamReceiver = new StreamReceiver(
-                    element.getNode(), "upload", new MyStreamVariable());
+            StreamReceiver streamReceiver = new StreamReceiver(element.getNode(), "upload", new MyStreamVariable());
             Assert.assertEquals(ui, UI.getCurrent());
             element.setAttribute("target", streamReceiver);
             serializeAndDeserialize(element);
-            assertTrue("Basic smoke test with ",
-                    element.getAttribute("target").length() > 10);
+            assertTrue("Basic smoke test with ", element.getAttribute("target").length() > 10);
 
         } finally {
             UI.setCurrent(null);

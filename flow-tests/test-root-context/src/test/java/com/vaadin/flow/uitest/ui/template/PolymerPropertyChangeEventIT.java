@@ -34,12 +34,11 @@ public class PolymerPropertyChangeEventIT extends ChromeBrowserTest {
         TestBenchElement template = $(TestBenchElement.class).id("template");
         template.$(TestBenchElement.class).id("input").sendKeys("foo");
 
-        List<WebElement> changeEvents = findElements(
-                By.className("change-event"));
-        Assert.assertTrue("Expected property change event is not fired. "
-                + "Element with expected old and new value is not found",
+        List<WebElement> changeEvents = findElements(By.className("change-event"));
+        Assert.assertTrue(
+                "Expected property change event is not fired. "
+                        + "Element with expected old and new value is not found",
                 changeEvents.stream().anyMatch(
-                        event -> "New property value: 'foo', old property value: 'fo'"
-                                .equals(event.getText())));
+                        event -> "New property value: 'foo', old property value: 'fo'".equals(event.getText())));
     }
 }

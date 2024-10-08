@@ -28,8 +28,7 @@ import java.io.Serializable;
 public interface HighlightCondition<T> extends Serializable {
 
     /**
-     * Tests if the target should be highlighted based on the navigation
-     * {@code event}.
+     * Tests if the target should be highlighted based on the navigation {@code event}.
      *
      * @param t
      *            the target of the highlight condition

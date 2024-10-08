@@ -22,8 +22,7 @@ import jsinterop.annotations.JsType;
 
 /**
  * Implementation of {@link DomApiImpl} that uses the
- * <a href="https://www.polymer-project.org/1.0/docs/devguide/local-dom">Polymer
- * 's DOM API</a>.
+ * <a href="https://www.polymer-project.org/1.0/docs/devguide/local-dom">Polymer 's DOM API</a>.
  * <p>
  * Contains methods for checking whether polymer-micro.html has been loaded.
  *
@@ -40,13 +39,11 @@ public class PolymerDomApiImpl implements DomApiImpl {
     /**
      * Checks whether the polymer-micro.html is loaded or not.
      *
-     * @return <code>true</code> if polymer micro has been loaded,
-     *         <code>false</code> if not
+     * @return <code>true</code> if polymer micro has been loaded, <code>false</code> if not
      */
     public static boolean isPolymerMicroLoaded() {
         // Don't use the impl with Polymer 2
-        return getPolymer() != null
-                && getPolymer().getVersion().startsWith("1.");
+        return getPolymer() != null && getPolymer().getVersion().startsWith("1.");
     }
 
     /**
@@ -56,10 +53,8 @@ public class PolymerDomApiImpl implements DomApiImpl {
     interface Polymer {
 
         /**
-         * A <a href=
-         * "https://www.polymer-project.org/1.0/docs/devguide/local-dom">Polymer
-         * .dom</a> method java representation. Wraps a <code>Node</code> so
-         * that it works with Polymer based web components.
+         * A <a href= "https://www.polymer-project.org/1.0/docs/devguide/local-dom">Polymer .dom</a> method java
+         * representation. Wraps a <code>Node</code> so that it works with Polymer based web components.
          *
          * @param node
          *            the node to wrap to Polymer dom
@@ -80,11 +75,9 @@ public class PolymerDomApiImpl implements DomApiImpl {
     /**
      * Returns a reference to the native Polymer object in JavaScript.
      * <p>
-     * The existence of this object can be used to check whether
-     * polymer-micro.html has been loaded.
+     * The existence of this object can be used to check whether polymer-micro.html has been loaded.
      *
-     * @return the polymer object, or <code>null</code> if polymer micro has not
-     *         been loaded
+     * @return the polymer object, or <code>null</code> if polymer micro has not been loaded
      */
     @JsProperty(namespace = JsPackage.GLOBAL, name = "Polymer")
     private static native Polymer getPolymer();

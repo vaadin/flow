@@ -26,8 +26,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 
 /**
- * Methods which are published as <code>element.$server.&lt;name&gt;</code> on
- * the client side.
+ * Methods which are published as <code>element.$server.&lt;name&gt;</code> on the client side.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -65,13 +64,11 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
             returnType = ReflectTools.convertPrimitiveType(returnType);
         }
 
-        if (!void.class.equals(returnType)
-                && !JsonCodec.canEncodeWithTypeInfo(returnType)) {
+        if (!void.class.equals(returnType) && !JsonCodec.canEncodeWithTypeInfo(returnType)) {
             String msg = String.format(Locale.ENGLISH,
                     "Only return types that can be used as Element.executeJs parameters are supported. "
                             + "Component '%s' has method '%s' annotated with '%s' whose return type is \"%s\"",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    getHandlerAnnotationFqn(),
+                    method.getDeclaringClass().getName(), method.getName(), getHandlerAnnotationFqn(),
                     method.getReturnType().getSimpleName());
             throw new IllegalStateException(msg);
         }

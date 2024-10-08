@@ -24,38 +24,32 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_BOOTST
 
 /**
  * A task for generating the bootstrap file for exported web components
- * {@link FrontendUtils#WEB_COMPONENT_BOOTSTRAP_FILE_NAME} during `package`
- * Maven goal.
+ * {@link FrontendUtils#WEB_COMPONENT_BOOTSTRAP_FILE_NAME} during `package` Maven goal.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  */
-public class TaskGenerateWebComponentBootstrap
-        extends AbstractTaskClientGenerator {
+public class TaskGenerateWebComponentBootstrap extends AbstractTaskClientGenerator {
 
     private final File frontendGeneratedDirectory;
 
     /**
-     * Create a task to generate <code>vaadin-web-component.ts</code> if
-     * necessary.
+     * Create a task to generate <code>vaadin-web-component.ts</code> if necessary.
      *
      * @param options
      *            the task options
      */
     TaskGenerateWebComponentBootstrap(Options options) {
-        this.frontendGeneratedDirectory = new File(
-                options.getFrontendDirectory(), GENERATED);
+        this.frontendGeneratedDirectory = new File(options.getFrontendDirectory(), GENERATED);
     }
 
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
 
-        lines.add("import 'Frontend/generated/flow/"
-                + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
-        lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
-                + "FlowClient.js';");
+        lines.add("import 'Frontend/generated/flow/" + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
+        lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT + "FlowClient.js';");
         lines.add("init();");
 
         return String.join("\n", lines);
@@ -63,8 +57,7 @@ public class TaskGenerateWebComponentBootstrap
 
     @Override
     protected File getGeneratedFile() {
-        return new File(frontendGeneratedDirectory,
-                WEB_COMPONENT_BOOTSTRAP_FILE_NAME);
+        return new File(frontendGeneratedDirectory, WEB_COMPONENT_BOOTSTRAP_FILE_NAME);
     }
 
     @Override

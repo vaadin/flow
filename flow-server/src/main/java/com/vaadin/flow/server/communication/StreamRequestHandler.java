@@ -40,8 +40,7 @@ import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT
 import static com.vaadin.flow.server.communication.StreamReceiverHandler.DEFAULT_SIZE_MAX;
 
 /**
- * Handles {@link StreamResource} and {@link StreamReceiver} instances
- * registered in {@link VaadinSession}.
+ * Handles {@link StreamResource} and {@link StreamReceiver} instances registered in {@link VaadinSession}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -61,8 +60,7 @@ public class StreamRequestHandler implements RequestHandler {
     private final StreamReceiverHandler receiverHandler;
 
     /**
-     * Create a new stream request handler with the default
-     * StreamReceiverHandler.
+     * Create a new stream request handler with the default StreamReceiverHandler.
      */
     public StreamRequestHandler() {
         this(new StreamReceiverHandler());
@@ -76,8 +74,8 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
 
         String pathInfo = request.getPathInfo();
         if (pathInfo == null) {
@@ -97,8 +95,7 @@ public class StreamRequestHandler implements RequestHandler {
             abstractStreamResource = StreamRequestHandler.getPathUri(pathInfo)
                     .flatMap(session.getResourceRegistry()::getResource);
             if (!abstractStreamResource.isPresent()) {
-                response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
-                        "Resource is not found for path=" + pathInfo);
+                response.sendError(HttpStatusCode.NOT_FOUND.getCode(), "Resource is not found for path=" + pathInfo);
                 return true;
             }
         } finally {
@@ -108,14 +105,12 @@ public class StreamRequestHandler implements RequestHandler {
         if (abstractStreamResource.isPresent()) {
             AbstractStreamResource resource = abstractStreamResource.get();
             if (resource instanceof StreamResource) {
-                resourceHandler.handleRequest(session, request, response,
-                        (StreamResource) resource);
+                resourceHandler.handleRequest(session, request, response, (StreamResource) resource);
             } else if (resource instanceof StreamReceiver) {
                 StreamReceiver streamReceiver = (StreamReceiver) resource;
                 String[] parts = parsePath(pathInfo);
 
-                receiverHandler.handleRequest(session, request, response,
-                        streamReceiver, parts[0], parts[1]);
+                receiverHandler.handleRequest(session, request, response, streamReceiver, parts[0], parts[1]);
             } else {
                 getLogger().warn("Received unknown stream resource.");
             }
@@ -132,8 +127,7 @@ public class StreamRequestHandler implements RequestHandler {
      */
     private String[] parsePath(String pathInfo) {
         // strip away part until the data we are interested starts
-        int startOfData = pathInfo.indexOf(DYN_RES_PREFIX)
-                + DYN_RES_PREFIX.length();
+        int startOfData = pathInfo.indexOf(DYN_RES_PREFIX) + DYN_RES_PREFIX.length();
 
         String uppUri = pathInfo.substring(startOfData);
         // [0] UIid, [1] security key, [2] name
@@ -141,8 +135,8 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     /**
-     * Generates URI string for a dynamic resource using its {@code id} and
-     * {@code name}. [0] UIid, [1] sec key, [2] name
+     * Generates URI string for a dynamic resource using its {@code id} and {@code name}. [0] UIid, [1] sec key, [2]
+     * name
      *
      * @param name
      *            file or attribute name to use in path
@@ -172,16 +166,13 @@ public class StreamRequestHandler implements RequestHandler {
             URI uri = new URI(prefix + UrlUtil.encodeURIComponent(name));
             return Optional.of(uri);
         } catch (URISyntaxException e) {
-            getLogger().info(
-                    "Path '{}' is not correct URI (it violates RFC 2396)", path,
-                    e);
+            getLogger().info("Path '{}' is not correct URI (it violates RFC 2396)", path, e);
             return Optional.empty();
         }
     }
 
     /**
-     * Returns maximum request size for upload. Override this to increase the
-     * default. Defaults to -1 (no limit).
+     * Returns maximum request size for upload. Override this to increase the default. Defaults to -1 (no limit).
      *
      * @return maximum request size for upload
      */
@@ -190,8 +181,7 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     /**
-     * Returns maximum file size for upload. Override this to increase the
-     * default. Defaults to -1 (no limit).
+     * Returns maximum file size for upload. Override this to increase the default. Defaults to -1 (no limit).
      *
      * @return maximum file size for upload
      */
@@ -200,8 +190,7 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     /**
-     * Returns maximum file part count for upload. Override this to increase the
-     * default. Defaults to 10000.
+     * Returns maximum file part count for upload. Override this to increase the default. Defaults to 10000.
      *
      * @return maximum file part count for upload
      */

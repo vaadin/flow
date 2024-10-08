@@ -48,9 +48,8 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Map of DOM events with server-side listeners. The key set of this map
- * describes the event types for which listeners are present. The values
- * associated with the keys are currently not used.
+ * Map of DOM events with server-side listeners. The key set of this map describes the event types for which listeners
+ * are present. The values associated with the keys are currently not used.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -63,8 +62,7 @@ public class ElementListenerMap extends NodeMap {
      */
     public static final String ALWAYS_TRUE_FILTER = "1";
 
-    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES = EnumSet
-            .of(DebouncePhase.LEADING);
+    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES = EnumSet.of(DebouncePhase.LEADING);
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
@@ -73,30 +71,25 @@ public class ElementListenerMap extends NodeMap {
         private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
 
         public void addDebouncePhases(int timeout, Set<DebouncePhase> phases) {
-            debounceSettings.merge(Integer.valueOf(timeout), phases,
-                    (phases1, phases2) -> {
-                        EnumSet<DebouncePhase> merge = EnumSet.copyOf(phases1);
-                        merge.addAll(phases2);
-                        return merge;
-                    });
+            debounceSettings.merge(Integer.valueOf(timeout), phases, (phases1, phases2) -> {
+                EnumSet<DebouncePhase> merge = EnumSet.copyOf(phases1);
+                merge.addAll(phases2);
+                return merge;
+            });
         }
 
         public JsonValue toJson() {
             if (debounceSettings.isEmpty()) {
                 return Json.create(false);
-            } else if (debounceSettings.size() == 1
-                    && debounceSettings.containsKey(Integer.valueOf(0))) {
+            } else if (debounceSettings.size() == 1 && debounceSettings.containsKey(Integer.valueOf(0))) {
                 // Shorthand if only debounce is a dummy filter debounce
                 return Json.create(true);
             } else {
                 // [[timeout1, phase1, phase2, ...], [timeout2, phase1, ...]]
                 return debounceSettings.entrySet().stream()
-                        .map(entry -> Stream.concat(
-                                Stream.of(
-                                        Json.create(entry.getKey().intValue())),
-                                entry.getValue().stream()
-                                        .map(DebouncePhase::getIdentifier)
-                                        .map(Json::create))
+                        .map(entry -> Stream
+                                .concat(Stream.of(Json.create(entry.getKey().intValue())),
+                                        entry.getValue().stream().map(DebouncePhase::getIdentifier).map(Json::create))
                                 .collect(JsonUtils.asArray()))
                         .collect(JsonUtils.asArray());
             }
@@ -104,8 +97,7 @@ public class ElementListenerMap extends NodeMap {
         }
     }
 
-    private static class DomEventListenerWrapper
-            implements DomListenerRegistration {
+    private static class DomEventListenerWrapper implements DomListenerRegistration {
         private final String type;
         private final DomEventListener origin;
         private final ElementListenerMap listenerMap;
@@ -119,8 +111,7 @@ public class ElementListenerMap extends NodeMap {
         private List<SerializableRunnable> unregisterHandlers;
         private boolean allowInert;
 
-        private DomEventListenerWrapper(ElementListenerMap listenerMap,
-                String type, DomEventListener origin) {
+        private DomEventListenerWrapper(ElementListenerMap listenerMap, String type, DomEventListener origin) {
             this.listenerMap = listenerMap;
             this.type = type;
             this.origin = origin;
@@ -143,8 +134,7 @@ public class ElementListenerMap extends NodeMap {
             // same type registered, we want to remove settings set by this
             // particular listener from the overall set
             // fixes #5090
-            if (listenerMap.listeners != null
-                    && listenerMap.listeners.containsKey(type)) {
+            if (listenerMap.listeners != null && listenerMap.listeners.containsKey(type)) {
                 listenerMap.updateEventSettings(type);
             }
         }
@@ -152,8 +142,7 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public DomListenerRegistration addEventData(String eventData) {
             if (eventData == null) {
-                throw new IllegalArgumentException(
-                        "The event data expression must not be null");
+                throw new IllegalArgumentException("The event data expression must not be null");
             }
 
             if (eventDataExpressions == null) {
@@ -175,8 +164,7 @@ public class ElementListenerMap extends NodeMap {
         }
 
         @Override
-        public DomListenerRegistration setDisabledUpdateMode(
-                DisabledUpdateMode disabledUpdateMode) {
+        public DomListenerRegistration setDisabledUpdateMode(DisabledUpdateMode disabledUpdateMode) {
             if (disabledUpdateMode == null) {
                 throw new IllegalArgumentException(
                         "RPC communication control mode for disabled element must not be null");
@@ -219,11 +207,10 @@ public class ElementListenerMap extends NodeMap {
         }
 
         @Override
-        public DomListenerRegistration debounce(int timeout,
-                DebouncePhase firstPhase, DebouncePhase... additionalPhases) {
+        public DomListenerRegistration debounce(int timeout, DebouncePhase firstPhase,
+                DebouncePhase... additionalPhases) {
             if (timeout < 0) {
-                throw new IllegalArgumentException(
-                        "Timeout cannot be negative");
+                throw new IllegalArgumentException("Timeout cannot be negative");
             }
 
             debounceTimeout = timeout;
@@ -254,20 +241,17 @@ public class ElementListenerMap extends NodeMap {
         }
 
         @Override
-        public DomListenerRegistration onUnregister(
-                SerializableRunnable unregisterHandler) {
+        public DomListenerRegistration onUnregister(SerializableRunnable unregisterHandler) {
             if (unregisterHandlers == null) {
                 unregisterHandlers = new ArrayList<>(1);
             }
-            unregisterHandlers.add(Objects.requireNonNull(unregisterHandler,
-                    "Unregister handler cannot be null"));
+            unregisterHandlers.add(Objects.requireNonNull(unregisterHandler, "Unregister handler cannot be null"));
             return this;
         }
 
         private boolean isPropertySynchronized(String propertyName) {
-            return eventDataExpressions != null && eventDataExpressions
-                    .contains(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
-                            + propertyName);
+            return eventDataExpressions != null
+                    && eventDataExpressions.contains(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + propertyName);
         }
 
         @Override
@@ -297,16 +281,14 @@ public class ElementListenerMap extends NodeMap {
      *            the listener to add
      * @return a handle for configuring and removing the listener
      */
-    public DomListenerRegistration add(String eventType,
-            DomEventListener listener) {
+    public DomListenerRegistration add(String eventType, DomEventListener listener) {
         assert eventType != null;
         assert listener != null;
 
         if (!contains(eventType)) {
             assert listeners == null || !listeners.containsKey(eventType);
 
-            ArrayList<DomEventListenerWrapper> listenerList = new ArrayList<>(
-                    1);
+            ArrayList<DomEventListenerWrapper> listenerList = new ArrayList<>(1);
 
             if (listeners == null) {
                 listeners = Collections.singletonMap(eventType, listenerList);
@@ -320,8 +302,7 @@ public class ElementListenerMap extends NodeMap {
 
         }
 
-        DomEventListenerWrapper listenerWrapper = new DomEventListenerWrapper(
-                this, eventType, listener);
+        DomEventListenerWrapper listenerWrapper = new DomEventListenerWrapper(this, eventType, listener);
 
         listeners.get(eventType).add(listenerWrapper);
 
@@ -342,14 +323,13 @@ public class ElementListenerMap extends NodeMap {
         return typeListeners;
     }
 
-    private Map<String, ExpressionSettings> collectEventExpressions(
-            String eventType) {
+    private Map<String, ExpressionSettings> collectEventExpressions(String eventType) {
         Map<String, ExpressionSettings> expressions = new HashMap<>();
         boolean hasUnfilteredListener = false;
         boolean hasFilteredListener = false;
 
-        Function<String, ExpressionSettings> ensureExpression = expression -> expressions
-                .computeIfAbsent(expression, (key -> new ExpressionSettings()));
+        Function<String, ExpressionSettings> ensureExpression = expression -> expressions.computeIfAbsent(expression,
+                (key -> new ExpressionSettings()));
 
         Collection<DomEventListenerWrapper> wrappers = getWrappers(eventType);
 
@@ -370,45 +350,36 @@ public class ElementListenerMap extends NodeMap {
             } else {
                 hasFilteredListener = true;
 
-                ensureExpression.apply(filter).addDebouncePhases(timeout,
-                        wrapper.debouncePhases);
+                ensureExpression.apply(filter).addDebouncePhases(timeout, wrapper.debouncePhases);
             }
         }
 
         if (hasFilteredListener && hasUnfilteredListener) {
             /*
-             * If there are filters and none match, then client won't send
-             * anything to the server.
+             * If there are filters and none match, then client won't send anything to the server.
              *
-             * Include a filter that always passes to ensure that unfiltered
-             * listeners are still notified.
+             * Include a filter that always passes to ensure that unfiltered listeners are still notified.
              */
-            ensureExpression.apply(ALWAYS_TRUE_FILTER).addDebouncePhases(0,
-                    NO_TIMEOUT_PHASES);
+            ensureExpression.apply(ALWAYS_TRUE_FILTER).addDebouncePhases(0, NO_TIMEOUT_PHASES);
         }
 
         return expressions;
     }
 
     private void updateEventSettings(String eventType) {
-        Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
-                eventType);
-        JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
-                ExpressionSettings::toJson);
+        Map<String, ExpressionSettings> eventSettings = collectEventExpressions(eventType);
+        JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings, ExpressionSettings::toJson);
 
-        ConstantPoolKey constantPoolKey = new ConstantPoolKey(
-                eventSettingsJson);
+        ConstantPoolKey constantPoolKey = new ConstantPoolKey(eventSettingsJson);
 
         put(eventType, constantPoolKey);
     }
 
-    private void removeListener(String eventType,
-            DomEventListenerWrapper wrapper) {
+    private void removeListener(String eventType, DomEventListenerWrapper wrapper) {
         if (listeners == null) {
             return;
         }
-        Collection<DomEventListenerWrapper> listenerList = listeners
-                .get(eventType);
+        Collection<DomEventListenerWrapper> listenerList = listeners.get(eventType);
         if (listenerList != null) {
             listenerList.remove(wrapper);
 
@@ -439,16 +410,13 @@ public class ElementListenerMap extends NodeMap {
         }
         final boolean isElementEnabled = event.getSource().isEnabled();
 
-        final boolean isNavigationRequest = UI.BrowserNavigateEvent.EVENT_NAME
-                .equals(event.getType())
-                || UI.BrowserLeaveNavigationEvent.EVENT_NAME
-                        .equals(event.getType())
+        final boolean isNavigationRequest = UI.BrowserNavigateEvent.EVENT_NAME.equals(event.getType())
+                || UI.BrowserLeaveNavigationEvent.EVENT_NAME.equals(event.getType())
                 || UI.BrowserRefreshEvent.EVENT_NAME.equals(event.getType());
 
         final boolean inert = event.getSource().getNode().isInert();
 
-        List<DomEventListenerWrapper> typeListeners = listeners
-                .get(event.getType());
+        List<DomEventListenerWrapper> typeListeners = listeners.get(event.getType());
         if (typeListeners == null) {
             return;
         }
@@ -457,17 +425,14 @@ public class ElementListenerMap extends NodeMap {
         for (DomEventListenerWrapper wrapper : typeListeners) {
             if (!isNavigationRequest && inert && !wrapper.allowInert) {
                 // drop as inert
-                LoggerFactory.getLogger(ElementListenerMap.class.getName())
-                        .info("Ignored listener invocation for {} event from "
-                                + "the client side for an inert {} element",
-                                event.getType(), event.getSource().getTag());
+                LoggerFactory.getLogger(ElementListenerMap.class.getName()).info(
+                        "Ignored listener invocation for {} event from " + "the client side for an inert {} element",
+                        event.getType(), event.getSource().getTag());
                 continue;
             }
 
-            if ((isElementEnabled
-                    || DisabledUpdateMode.ALWAYS.equals(wrapper.mode))
-                    && wrapper.matchesFilter(event.getEventData())
-                    && wrapper.matchesPhase(event.getPhase())) {
+            if ((isElementEnabled || DisabledUpdateMode.ALWAYS.equals(wrapper.mode))
+                    && wrapper.matchesFilter(event.getEventData()) && wrapper.matchesPhase(event.getPhase())) {
                 listeners.add(wrapper.origin);
             }
         }
@@ -476,13 +441,12 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * Gets the event data expressions defined for the given event name. This
-     * method is currently only provided to facilitate unit testing.
+     * Gets the event data expressions defined for the given event name. This method is currently only provided to
+     * facilitate unit testing.
      *
      * @param eventName
      *            the name of the event, not <code>null</code>
-     * @return an unmodifiable set of event data expressions, not
-     *         <code>null</code>
+     * @return an unmodifiable set of event data expressions, not <code>null</code>
      */
     public Set<String> getExpressions(String eventName) {
         assert eventName != null;
@@ -490,16 +454,15 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * Gets the most permissive update mode for any event registration that is
-     * configured to synchronize the given property.
+     * Gets the most permissive update mode for any event registration that is configured to synchronize the given
+     * property.
      *
      * @param propertyName
      *            the property name to check, not <code>null</code>
-     * @return the most permissive update mode, or <code>null</code> if
-     *         synchronization is not configured for the given property
+     * @return the most permissive update mode, or <code>null</code> if synchronization is not configured for the given
+     *         property
      */
-    public DisabledUpdateMode getPropertySynchronizationMode(
-            String propertyName) {
+    public DisabledUpdateMode getPropertySynchronizationMode(String propertyName) {
         assert propertyName != null;
 
         if (listeners == null) {
@@ -507,8 +470,7 @@ public class ElementListenerMap extends NodeMap {
         }
 
         return listeners.values().stream().flatMap(List::stream)
-                .filter(wrapper -> wrapper.isPropertySynchronized(propertyName))
-                .map(wrapper -> wrapper.mode)
+                .filter(wrapper -> wrapper.isPropertySynchronized(propertyName)).map(wrapper -> wrapper.mode)
                 .reduce(DisabledUpdateMode::mostPermissive).orElse(null);
     }
 

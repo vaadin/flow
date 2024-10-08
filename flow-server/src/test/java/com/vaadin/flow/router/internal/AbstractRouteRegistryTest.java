@@ -50,13 +50,11 @@ public class AbstractRouteRegistryTest {
             public void run() {
                 awaitCountDown(waitUpdaterThread);
 
-                Assert.assertTrue("Registry should still remain empty",
-                        registry.getRegisteredRoutes().isEmpty());
+                Assert.assertTrue("Registry should still remain empty", registry.getRegisteredRoutes().isEmpty());
 
                 awaitCountDown(waitUpdaterThread);
 
-                Assert.assertTrue("Registry should still remain empty",
-                        registry.getRegisteredRoutes().isEmpty());
+                Assert.assertTrue("Registry should still remain empty", registry.getRegisteredRoutes().isEmpty());
 
                 waitReaderThread.countDown();
             }
@@ -69,9 +67,8 @@ public class AbstractRouteRegistryTest {
             registry.setRoute("path", Secondary.class, Collections.emptyList());
         });
 
-        Assert.assertEquals(
-                "After unlock registry should be updated for others to configure with new data",
-                2, registry.getRegisteredRoutes().size());
+        Assert.assertEquals("After unlock registry should be updated for others to configure with new data", 2,
+                registry.getRegisteredRoutes().size());
     }
 
     @Test
@@ -88,39 +85,29 @@ public class AbstractRouteRegistryTest {
 
         registry.setRoute("", MyRoute.class, Collections.emptyList());
 
-        Assert.assertFalse("Added should contain data for one entry",
-                added.isEmpty());
-        Assert.assertTrue("No routes should have been removed",
-                removed.isEmpty());
+        Assert.assertFalse("Added should contain data for one entry", added.isEmpty());
+        Assert.assertTrue("No routes should have been removed", removed.isEmpty());
 
         Assert.assertEquals(MyRoute.class, added.get(0).getNavigationTarget());
         Assert.assertEquals("", added.get(0).getTemplate());
-        Assert.assertEquals(Collections.emptyList(),
-                added.get(0).getParentLayouts());
+        Assert.assertEquals(Collections.emptyList(), added.get(0).getParentLayouts());
 
         registry.setRoute("home", Secondary.class, Collections.emptyList());
 
-        Assert.assertFalse("Added should contain data for one entry",
-                added.isEmpty());
-        Assert.assertEquals("Only latest change should be available", 1,
-                added.size());
-        Assert.assertTrue("No routes should have been removed",
-                removed.isEmpty());
+        Assert.assertFalse("Added should contain data for one entry", added.isEmpty());
+        Assert.assertEquals("Only latest change should be available", 1, added.size());
+        Assert.assertTrue("No routes should have been removed", removed.isEmpty());
 
-        Assert.assertEquals(Secondary.class,
-                added.get(0).getNavigationTarget());
+        Assert.assertEquals(Secondary.class, added.get(0).getNavigationTarget());
         Assert.assertEquals("home", added.get(0).getTemplate());
 
         registry.removeRoute("home");
 
         Assert.assertTrue("No routes should have been added", added.isEmpty());
-        Assert.assertFalse("One route should have gotten removed",
-                removed.isEmpty());
+        Assert.assertFalse("One route should have gotten removed", removed.isEmpty());
 
-        Assert.assertEquals(Secondary.class,
-                removed.get(0).getNavigationTarget());
-        Assert.assertEquals("The 'home' route should have been removed", "home",
-                removed.get(0).getTemplate());
+        Assert.assertEquals(Secondary.class, removed.get(0).getNavigationTarget());
+        Assert.assertEquals("The 'home' route should have been removed", "home", removed.get(0).getTemplate());
     }
 
     @Test
@@ -140,8 +127,7 @@ public class AbstractRouteRegistryTest {
         registry.update(() -> {
             registry.removeRoute("");
             registry.setRoute("path", Secondary.class, Collections.emptyList());
-            registry.setRoute("", MyRoute.class,
-                    Collections.singletonList(MainLayout.class));
+            registry.setRoute("", MyRoute.class, Collections.singletonList(MainLayout.class));
         });
 
         Assert.assertFalse("", added.isEmpty());
@@ -150,21 +136,18 @@ public class AbstractRouteRegistryTest {
 
         for (RouteBaseData data : added) {
             if (data.getTemplate().equals("")) {
-                Assert.assertEquals("MyRoute should have been added",
-                        MyRoute.class, data.getNavigationTarget());
-                Assert.assertEquals(
-                        "MyRoute should have been seen as a update as the parent layouts changed.",
+                Assert.assertEquals("MyRoute should have been added", MyRoute.class, data.getNavigationTarget());
+                Assert.assertEquals("MyRoute should have been seen as a update as the parent layouts changed.",
                         MainLayout.class, data.getParentLayout());
             } else {
-                Assert.assertEquals("", Secondary.class,
-                        data.getNavigationTarget());
+                Assert.assertEquals("", Secondary.class, data.getNavigationTarget());
             }
         }
 
-        Assert.assertEquals("MyRoute should have been both removed and added",
-                MyRoute.class, removed.get(0).getNavigationTarget());
-        Assert.assertEquals("Removed version should not have a parent layout",
-                Collections.emptyList(), removed.get(0).getParentLayouts());
+        Assert.assertEquals("MyRoute should have been both removed and added", MyRoute.class,
+                removed.get(0).getNavigationTarget());
+        Assert.assertEquals("Removed version should not have a parent layout", Collections.emptyList(),
+                removed.get(0).getParentLayouts());
     }
 
     @Test
@@ -181,24 +164,17 @@ public class AbstractRouteRegistryTest {
 
         registry.update(() -> {
             registry.setRoute("main", Secondary.class, Collections.emptyList());
-            registry.setRoute("Alias1", Secondary.class,
-                    Collections.emptyList());
-            registry.setRoute("Alias2", Secondary.class,
-                    Collections.emptyList());
+            registry.setRoute("Alias1", Secondary.class, Collections.emptyList());
+            registry.setRoute("Alias2", Secondary.class, Collections.emptyList());
         });
 
-        Assert.assertEquals(
-                "Main route and aliases should all be seen as added.", 3,
-                added.size());
-        Assert.assertTrue("No routes should have been removed",
-                removed.isEmpty());
+        Assert.assertEquals("Main route and aliases should all be seen as added.", 3, added.size());
+        Assert.assertTrue("No routes should have been removed", removed.isEmpty());
 
         registry.removeRoute("Alias2");
 
         Assert.assertTrue("No routes should have been added", added.isEmpty());
-        Assert.assertEquals(
-                "Removing the alias route should be seen in the event", 1,
-                removed.size());
+        Assert.assertEquals("Removing the alias route should be seen in the event", 1, removed.size());
     }
 
     @Test
@@ -208,8 +184,7 @@ public class AbstractRouteRegistryTest {
 
         registry.update(() -> {
             registry.setRoute("main", Secondary.class, Collections.emptyList());
-            registry.setRoute("Alias1", Secondary.class,
-                    Collections.emptyList());
+            registry.setRoute("Alias1", Secondary.class, Collections.emptyList());
 
             // Long running task was done here and another thread added a
             // listener
@@ -220,35 +195,27 @@ public class AbstractRouteRegistryTest {
                 removed.addAll(event.getRemovedRoutes());
             });
 
-            registry.setRoute("Alias2", Secondary.class,
-                    Collections.emptyList());
+            registry.setRoute("Alias2", Secondary.class, Collections.emptyList());
         });
 
-        Assert.assertEquals(
-                "Main route and aliases should all be seen as added.", 3,
-                added.size());
-        Assert.assertTrue("No routes should have been removed",
-                removed.isEmpty());
+        Assert.assertEquals("Main route and aliases should all be seen as added.", 3, added.size());
+        Assert.assertTrue("No routes should have been removed", removed.isEmpty());
 
         registry.removeRoute("Alias2");
 
         Assert.assertTrue("No routes should have been added", added.isEmpty());
-        Assert.assertEquals(
-                "Removing the alias route should be seen in the event", 1,
-                removed.size());
+        Assert.assertEquals("Removing the alias route should be seen in the event", 1, removed.size());
     }
 
     @Test
     public void removeChangeListener_noEventsAreFired() {
         List<RoutesChangedEvent> events = new ArrayList<>();
 
-        Registration registration = registry
-                .addRoutesChangeListener(events::add);
+        Registration registration = registry.addRoutesChangeListener(events::add);
 
         registry.setRoute("home", MyRoute.class, Collections.emptyList());
 
-        Assert.assertEquals("Event should have been fired for listener", 1,
-                events.size());
+        Assert.assertEquals("Event should have been fired for listener", 1, events.size());
 
         registration.remove();
 
@@ -262,30 +229,20 @@ public class AbstractRouteRegistryTest {
         registry.setRoute("MyRoute1", MyRoute.class, Collections.emptyList());
 
         registry.addRoutesChangeListener(event -> {
-            Assert.assertEquals("MyRoute2 and Alias2 must be added", 2,
-                    event.getAddedRoutes().size());
-            Assert.assertEquals("MyRoute1 must be deleted", 1,
-                    event.getRemovedRoutes().size());
+            Assert.assertEquals("MyRoute2 and Alias2 must be added", 2, event.getAddedRoutes().size());
+            Assert.assertEquals("MyRoute1 must be deleted", 1, event.getRemovedRoutes().size());
 
-            Assert.assertTrue("MyRoute2 must be added",
-                    event.isRouteAdded(MyRoute.class));
-            Assert.assertTrue("Alias2 must be added",
-                    event.isRouteAdded(Secondary.class));
-            Assert.assertTrue("MyRoute1 must be deleted",
-                    event.isRouteRemoved(MyRoute.class));
-            Assert.assertTrue("MyRoute2 must be added",
-                    event.getAddedNavigationTargets().contains(MyRoute.class));
-            Assert.assertTrue("Alias2 must be added", event
-                    .getAddedNavigationTargets().contains(Secondary.class));
-            Assert.assertTrue("MyRoute1 must be deleted", event
-                    .getRemovedNavigationTargets().contains(MyRoute.class));
+            Assert.assertTrue("MyRoute2 must be added", event.isRouteAdded(MyRoute.class));
+            Assert.assertTrue("Alias2 must be added", event.isRouteAdded(Secondary.class));
+            Assert.assertTrue("MyRoute1 must be deleted", event.isRouteRemoved(MyRoute.class));
+            Assert.assertTrue("MyRoute2 must be added", event.getAddedNavigationTargets().contains(MyRoute.class));
+            Assert.assertTrue("Alias2 must be added", event.getAddedNavigationTargets().contains(Secondary.class));
+            Assert.assertTrue("MyRoute1 must be deleted", event.getRemovedNavigationTargets().contains(MyRoute.class));
         });
 
         registry.update(() -> {
-            registry.setRoute("MyRoute2", MyRoute.class,
-                    Collections.emptyList());
-            registry.setRoute("Alias2", Secondary.class,
-                    Collections.emptyList());
+            registry.setRoute("MyRoute2", MyRoute.class, Collections.emptyList());
+            registry.setRoute("Alias2", Secondary.class, Collections.emptyList());
             registry.removeRoute("MyRoute1");
         });
     }
@@ -295,30 +252,20 @@ public class AbstractRouteRegistryTest {
         registry.setRoute("MyRoute1", MyRoute.class, Collections.emptyList());
 
         registry.addRoutesChangeListener(event -> {
-            Assert.assertEquals("MyRoute2 and Alias2 must be added", 2,
-                    event.getAddedRoutes().size());
-            Assert.assertEquals("MyRoute1 must be deleted", 1,
-                    event.getRemovedRoutes().size());
+            Assert.assertEquals("MyRoute2 and Alias2 must be added", 2, event.getAddedRoutes().size());
+            Assert.assertEquals("MyRoute1 must be deleted", 1, event.getRemovedRoutes().size());
 
-            Assert.assertTrue("MyRoute2 must be added",
-                    event.isPathAdded("MyRoute2"));
-            Assert.assertTrue("Alias2 must be added",
-                    event.isPathAdded("Alias2"));
-            Assert.assertTrue("MyRoute1 must be deleted",
-                    event.isPathRemoved("MyRoute1"));
-            Assert.assertTrue("MyRoute2 must be added",
-                    event.getAddedURLs().contains("MyRoute2"));
-            Assert.assertTrue("Alias2 must be added",
-                    event.getAddedURLs().contains("Alias2"));
-            Assert.assertTrue("MyRoute1 must be deleted",
-                    event.getRemovedURLs().contains("MyRoute1"));
+            Assert.assertTrue("MyRoute2 must be added", event.isPathAdded("MyRoute2"));
+            Assert.assertTrue("Alias2 must be added", event.isPathAdded("Alias2"));
+            Assert.assertTrue("MyRoute1 must be deleted", event.isPathRemoved("MyRoute1"));
+            Assert.assertTrue("MyRoute2 must be added", event.getAddedURLs().contains("MyRoute2"));
+            Assert.assertTrue("Alias2 must be added", event.getAddedURLs().contains("Alias2"));
+            Assert.assertTrue("MyRoute1 must be deleted", event.getRemovedURLs().contains("MyRoute1"));
         });
 
         registry.update(() -> {
-            registry.setRoute("MyRoute2", MyRoute.class,
-                    Collections.emptyList());
-            registry.setRoute("Alias2", Secondary.class,
-                    Collections.emptyList());
+            registry.setRoute("MyRoute2", MyRoute.class, Collections.emptyList());
+            registry.setRoute("Alias2", Secondary.class, Collections.emptyList());
             registry.removeRoute("MyRoute1");
         });
     }
@@ -329,49 +276,41 @@ public class AbstractRouteRegistryTest {
     public void only_normal_target_works_as_expected() {
         addTarget(NormalRoute.class);
 
-        Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, getTarget());
+        Assert.assertEquals("NormalRoute should have been returned", NormalRoute.class, getTarget());
     }
 
     @Test
     public void only_has_url_target_works_as_expected() {
         addTarget(HasUrlRoute.class);
 
-        Assert.assertNull(
-                "No has url should have been returned without parameter",
-                getTarget(new ArrayList<>()));
+        Assert.assertNull("No has url should have been returned without parameter", getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("HasUrlRoute should have been returned",
-                HasUrlRoute.class, getTarget(Arrays.asList("parameter")));
+        Assert.assertEquals("HasUrlRoute should have been returned", HasUrlRoute.class,
+                getTarget(Arrays.asList("parameter")));
     }
 
     @Test
     public void only_optional_target_works_as_expected() {
         addTarget(OptionalRoute.class);
 
-        Assert.assertEquals(
-                "OptionalRoute should have been returned with no parameter",
-                OptionalRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("OptionalRoute should have been returned with no parameter", OptionalRoute.class,
+                getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("OptionalRoute should have been returned",
-                OptionalRoute.class, getTarget(Arrays.asList("optional")));
+        Assert.assertEquals("OptionalRoute should have been returned", OptionalRoute.class,
+                getTarget(Arrays.asList("optional")));
     }
 
     @Test
     public void only_wildcard_target_works_as_expected() {
         addTarget(WildcardRoute.class);
 
-        Assert.assertEquals(
-                "WildcardRoute should have been returned with no parameter",
-                WildcardRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("WildcardRoute should have been returned with no parameter", WildcardRoute.class,
+                getTarget(new ArrayList<>()));
 
-        Assert.assertEquals(
-                "WildcardRoute should have been returned for one parameter",
-                WildcardRoute.class, getTarget(Arrays.asList("wild")));
+        Assert.assertEquals("WildcardRoute should have been returned for one parameter", WildcardRoute.class,
+                getTarget(Arrays.asList("wild")));
 
-        Assert.assertEquals(
-                "WildcardRoute should have been returned for multiple parameters",
-                WildcardRoute.class,
+        Assert.assertEquals("WildcardRoute should have been returned for multiple parameters", WildcardRoute.class,
                 getTarget(Arrays.asList("wild", "card", "target")));
     }
 
@@ -380,11 +319,10 @@ public class AbstractRouteRegistryTest {
         addTarget(NormalRoute.class);
         addTarget(HasUrlRoute.class);
 
-        Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("NormalRoute should have been returned", NormalRoute.class, getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("HasUrlRoute should have been returned",
-                HasUrlRoute.class, getTarget(Arrays.asList("parameter")));
+        Assert.assertEquals("HasUrlRoute should have been returned", HasUrlRoute.class,
+                getTarget(Arrays.asList("parameter")));
     }
 
     @Test
@@ -392,11 +330,10 @@ public class AbstractRouteRegistryTest {
         addTarget(HasUrlRoute.class);
         addTarget(NormalRoute.class);
 
-        Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("NormalRoute should have been returned", NormalRoute.class, getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("HasUrlRoute should have been returned",
-                HasUrlRoute.class, getTarget(Arrays.asList("parameter")));
+        Assert.assertEquals("HasUrlRoute should have been returned", HasUrlRoute.class,
+                getTarget(Arrays.asList("parameter")));
     }
 
     @Test
@@ -404,15 +341,12 @@ public class AbstractRouteRegistryTest {
         addTarget(NormalRoute.class);
         addTarget(WildcardRoute.class);
 
-        Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("NormalRoute should have been returned", NormalRoute.class, getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("WildcardRoute should have been returned",
-                WildcardRoute.class, getTarget(Arrays.asList("parameter")));
+        Assert.assertEquals("WildcardRoute should have been returned", WildcardRoute.class,
+                getTarget(Arrays.asList("parameter")));
 
-        Assert.assertEquals(
-                "WildcardRoute should have been returned for multiple parameters",
-                WildcardRoute.class,
+        Assert.assertEquals("WildcardRoute should have been returned for multiple parameters", WildcardRoute.class,
                 getTarget(Arrays.asList("wild", "card", "target")));
     }
 
@@ -421,21 +355,17 @@ public class AbstractRouteRegistryTest {
         addTarget(WildcardRoute.class);
         addTarget(NormalRoute.class);
 
-        Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("NormalRoute should have been returned", NormalRoute.class, getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("WildcardRoute should have been returned",
-                WildcardRoute.class, getTarget(Arrays.asList("parameter")));
+        Assert.assertEquals("WildcardRoute should have been returned", WildcardRoute.class,
+                getTarget(Arrays.asList("parameter")));
 
-        Assert.assertEquals(
-                "WildcardRoute should have been returned for multiple parameters",
-                WildcardRoute.class,
+        Assert.assertEquals("WildcardRoute should have been returned for multiple parameters", WildcardRoute.class,
                 getTarget(Arrays.asList("wild", "card", "target")));
     }
 
     @Test
-    public void normal_and_has_url_and_wildcard_work_together()
-            throws InvalidRouteConfigurationException {
+    public void normal_and_has_url_and_wildcard_work_together() throws InvalidRouteConfigurationException {
         addTarget(NormalRoute.class);
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
@@ -444,8 +374,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void normal_and_wildcard_and_has_url_work_together()
-            throws InvalidRouteConfigurationException {
+    public void normal_and_wildcard_and_has_url_work_together() throws InvalidRouteConfigurationException {
         addTarget(NormalRoute.class);
         addTarget(WildcardRoute.class);
         addTarget(HasUrlRoute.class);
@@ -454,8 +383,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void wildcard_and_normal_and_has_url_work_together()
-            throws InvalidRouteConfigurationException {
+    public void wildcard_and_normal_and_has_url_work_together() throws InvalidRouteConfigurationException {
         addTarget(WildcardRoute.class);
         addTarget(HasUrlRoute.class);
         addTarget(NormalRoute.class);
@@ -464,8 +392,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_wildcard_and_normal_work_together()
-            throws InvalidRouteConfigurationException {
+    public void has_url_and_wildcard_and_normal_work_together() throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
         addTarget(NormalRoute.class);
@@ -474,8 +401,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_normal_and_wildcard_work_together()
-            throws InvalidRouteConfigurationException {
+    public void has_url_and_normal_and_wildcard_work_together() throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(NormalRoute.class);
         addTarget(WildcardRoute.class);
@@ -484,34 +410,29 @@ public class AbstractRouteRegistryTest {
     }
 
     private void assertNormalHasUrlAndWildcard() {
-        Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("NormalRoute should have been returned", NormalRoute.class, getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("HasUrlRoute should have been returned",
-                HasUrlRoute.class, getTarget(Arrays.asList("parameter")));
+        Assert.assertEquals("HasUrlRoute should have been returned", HasUrlRoute.class,
+                getTarget(Arrays.asList("parameter")));
 
-        Assert.assertEquals(
-                "WildcardRoute should have been returned for multiple parameters",
-                WildcardRoute.class,
+        Assert.assertEquals("WildcardRoute should have been returned for multiple parameters", WildcardRoute.class,
                 getTarget(Arrays.asList("wild", "card", "target")));
     }
 
     @Test
-    public void has_url_and_optional_parameter_work_together()
-            throws InvalidRouteConfigurationException {
+    public void has_url_and_optional_parameter_work_together() throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(OptionalRoute.class);
 
-        Assert.assertEquals("OptionalRoute should have been returned",
-                OptionalRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("OptionalRoute should have been returned", OptionalRoute.class,
+                getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("HasUrlRoute should have been returned",
-                HasUrlRoute.class, getTarget(Arrays.asList("parameter")));
+        Assert.assertEquals("HasUrlRoute should have been returned", HasUrlRoute.class,
+                getTarget(Arrays.asList("parameter")));
     }
 
     @Test
-    public void has_url_and_wildcard_and_optional_parameter_work_together()
-            throws InvalidRouteConfigurationException {
+    public void has_url_and_wildcard_and_optional_parameter_work_together() throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
         addTarget(OptionalRoute.class);
@@ -520,8 +441,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void optional_parameter_and_has_url_and_wildcard_work_together()
-            throws InvalidRouteConfigurationException {
+    public void optional_parameter_and_has_url_and_wildcard_work_together() throws InvalidRouteConfigurationException {
         addTarget(OptionalRoute.class);
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
@@ -530,8 +450,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void optional_parameter_and_wildcard_and_has_url_work_together()
-            throws InvalidRouteConfigurationException {
+    public void optional_parameter_and_wildcard_and_has_url_work_together() throws InvalidRouteConfigurationException {
         addTarget(OptionalRoute.class);
         addTarget(WildcardRoute.class);
         addTarget(HasUrlRoute.class);
@@ -540,8 +459,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void wildcard_and_has_url_and_optional_parameter_work_together()
-            throws InvalidRouteConfigurationException {
+    public void wildcard_and_has_url_and_optional_parameter_work_together() throws InvalidRouteConfigurationException {
         addTarget(WildcardRoute.class);
         addTarget(HasUrlRoute.class);
         addTarget(OptionalRoute.class);
@@ -550,8 +468,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void wildcard_and_optional_parameter_and_has_url_work_together()
-            throws InvalidRouteConfigurationException {
+    public void wildcard_and_optional_parameter_and_has_url_work_together() throws InvalidRouteConfigurationException {
         addTarget(WildcardRoute.class);
         addTarget(OptionalRoute.class);
         addTarget(HasUrlRoute.class);
@@ -560,8 +477,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void has_url_and_optional_parameter_and_wildcard_work_together()
-            throws InvalidRouteConfigurationException {
+    public void has_url_and_optional_parameter_and_wildcard_work_together() throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(OptionalRoute.class);
         addTarget(WildcardRoute.class);
@@ -570,21 +486,18 @@ public class AbstractRouteRegistryTest {
     }
 
     private void assertHasUrlOptionalAndWildcard() {
-        Assert.assertEquals("OptionalRoute should have been returned",
-                OptionalRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("OptionalRoute should have been returned", OptionalRoute.class,
+                getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("HasUrlRoute should have been returned",
-                HasUrlRoute.class, getTarget(Arrays.asList("parameter")));
+        Assert.assertEquals("HasUrlRoute should have been returned", HasUrlRoute.class,
+                getTarget(Arrays.asList("parameter")));
 
-        Assert.assertEquals(
-                "WildcardRoute should have been returned for multiple parameters",
-                WildcardRoute.class,
+        Assert.assertEquals("WildcardRoute should have been returned for multiple parameters", WildcardRoute.class,
                 getTarget(Arrays.asList("wild", "card", "target")));
     }
 
     @Test
-    public void has_url_and_wildcard_work_together()
-            throws InvalidRouteConfigurationException {
+    public void has_url_and_wildcard_work_together() throws InvalidRouteConfigurationException {
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
 
@@ -592,8 +505,7 @@ public class AbstractRouteRegistryTest {
     }
 
     @Test
-    public void wildcard_and_has_url_work_together()
-            throws InvalidRouteConfigurationException {
+    public void wildcard_and_has_url_work_together() throws InvalidRouteConfigurationException {
         addTarget(WildcardRoute.class);
         addTarget(HasUrlRoute.class);
 
@@ -601,15 +513,13 @@ public class AbstractRouteRegistryTest {
     }
 
     private void assertHasUrlAndWildcard() {
-        Assert.assertEquals("WildcardRoute should have been returned",
-                WildcardRoute.class, getTarget(new ArrayList<>()));
+        Assert.assertEquals("WildcardRoute should have been returned", WildcardRoute.class,
+                getTarget(new ArrayList<>()));
 
-        Assert.assertEquals("HasUrlRoute should have been returned",
-                HasUrlRoute.class, getTarget(Arrays.asList("parameter")));
+        Assert.assertEquals("HasUrlRoute should have been returned", HasUrlRoute.class,
+                getTarget(Arrays.asList("parameter")));
 
-        Assert.assertEquals(
-                "WildcardRoute should have been returned for multiple parameters",
-                WildcardRoute.class,
+        Assert.assertEquals("WildcardRoute should have been returned for multiple parameters", WildcardRoute.class,
                 getTarget(Arrays.asList("wild", "card", "target")));
     }
 
@@ -617,26 +527,22 @@ public class AbstractRouteRegistryTest {
 
     /* "normal" target registered first */
     @Test
-    public void multiple_normal_routes_throw_exception()
-            throws InvalidRouteConfigurationException {
+    public void multiple_normal_routes_throw_exception() throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
-                NormalRoute.class.getName(),
-                SecondNormalRoute.class.getName()));
+                NormalRoute.class.getName(), SecondNormalRoute.class.getName()));
 
         addTarget(NormalRoute.class);
         addTarget(SecondNormalRoute.class);
     }
 
     @Test
-    public void normal_and_optional_throws_exception()
-            throws InvalidRouteConfigurationException {
+    public void normal_and_optional_throws_exception() throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                NormalRoute.class.getName(), OptionalRoute.class.getName(),
-                OptionalRoute.class.getName()));
+                NormalRoute.class.getName(), OptionalRoute.class.getName(), OptionalRoute.class.getName()));
 
         addTarget(NormalRoute.class);
         addTarget(OptionalRoute.class);
@@ -645,26 +551,22 @@ public class AbstractRouteRegistryTest {
     /* Optional target registered first */
 
     @Test
-    public void two_optionals_throw_exception()
-            throws InvalidRouteConfigurationException {
+    public void two_optionals_throw_exception() throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                OptionalRoute.class.getName(),
-                SecondOptionalRoute.class.getName()));
+                OptionalRoute.class.getName(), SecondOptionalRoute.class.getName()));
 
         addTarget(OptionalRoute.class);
         addTarget(SecondOptionalRoute.class);
     }
 
     @Test
-    public void optional_and_normal_throws_exception()
-            throws InvalidRouteConfigurationException {
+    public void optional_and_normal_throws_exception() throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                NormalRoute.class.getName(), OptionalRoute.class.getName(),
-                OptionalRoute.class.getName()));
+                NormalRoute.class.getName(), OptionalRoute.class.getName(), OptionalRoute.class.getName()));
 
         addTarget(OptionalRoute.class);
         addTarget(NormalRoute.class);
@@ -672,13 +574,11 @@ public class AbstractRouteRegistryTest {
 
     /* HasUrl parameter */
     @Test
-    public void two_has_route_parameters_throw_exception()
-            throws InvalidRouteConfigurationException {
+    public void two_has_route_parameters_throw_exception() throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                HasUrlRoute.class.getName(),
-                SecondHasUrlRoute.class.getName()));
+                HasUrlRoute.class.getName(), SecondHasUrlRoute.class.getName()));
 
         addTarget(HasUrlRoute.class);
         addTarget(SecondHasUrlRoute.class);
@@ -686,13 +586,11 @@ public class AbstractRouteRegistryTest {
 
     /* Wildcard parameters */
     @Test
-    public void two_wildcard_parameters_throw_exception()
-            throws InvalidRouteConfigurationException {
+    public void two_wildcard_parameters_throw_exception() throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-                WildcardRoute.class.getName(),
-                SecondWildcardRoute.class.getName()));
+                WildcardRoute.class.getName(), SecondWildcardRoute.class.getName()));
 
         addTarget(WildcardRoute.class);
         addTarget(SecondWildcardRoute.class);
@@ -704,18 +602,14 @@ public class AbstractRouteRegistryTest {
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
 
-        Assert.assertEquals("Expected three routes to be registered", 3,
-                config().getTargetRoutes().size());
+        Assert.assertEquals("Expected three routes to be registered", 3, config().getTargetRoutes().size());
 
         registry.removeRoute(HasUrlRoute.class);
 
-        Assert.assertEquals("Only 2 routes should remain after removing one.",
-                2, config().getTargetRoutes().size());
+        Assert.assertEquals("Only 2 routes should remain after removing one.", 2, config().getTargetRoutes().size());
 
-        Assert.assertTrue("NormalRoute should still be available",
-                config().hasRouteTarget(NormalRoute.class));
-        Assert.assertTrue("WildcardRoute should still be available",
-                config().hasRouteTarget(WildcardRoute.class));
+        Assert.assertTrue("NormalRoute should still be available", config().hasRouteTarget(NormalRoute.class));
+        Assert.assertTrue("WildcardRoute should still be available", config().hasRouteTarget(WildcardRoute.class));
     }
 
     @Test
@@ -724,16 +618,13 @@ public class AbstractRouteRegistryTest {
         addTarget(HasUrlRoute.class);
         addTarget(WildcardRoute.class);
 
-        Assert.assertEquals("Expected three routes to be registered", 3,
-                config().getTargetRoutes().size());
+        Assert.assertEquals("Expected three routes to be registered", 3, config().getTargetRoutes().size());
 
         registry.removeRoute(HasUrlRoute.class);
         registry.removeRoute(NormalRoute.class);
         registry.removeRoute(WildcardRoute.class);
 
-        Assert.assertTrue(
-                "All routes should have been removed from the target.",
-                config().getTargetRoutes().isEmpty());
+        Assert.assertTrue("All routes should have been removed from the target.", config().getTargetRoutes().isEmpty());
     }
 
     @Test
@@ -742,31 +633,22 @@ public class AbstractRouteRegistryTest {
         registry.setRoute("url", HasUrlRoute.class, null);
         registry.setRoute("optional", OptionalRoute.class, null);
         registry.setRoute("wild", WildcardRoute.class, null);
-        registry.setRoute(
-                ParameterView.class.getAnnotation(Route.class).value(),
-                ParameterView.class, null);
+        registry.setRoute(ParameterView.class.getAnnotation(Route.class).value(), ParameterView.class, null);
 
-        Assert.assertEquals("All routes should be registered.", 5,
-                config().getTargetRoutes().size());
+        Assert.assertEquals("All routes should be registered.", 5, config().getTargetRoutes().size());
 
-        Assert.assertFalse(
-                "Normal route should not mark as requiring parameter",
+        Assert.assertFalse("Normal route should not mark as requiring parameter",
                 registry.hasMandatoryParameter(NormalRoute.class));
-        Assert.assertFalse(
-                "Optional parameter should not mark as requiring parameter",
+        Assert.assertFalse("Optional parameter should not mark as requiring parameter",
                 registry.hasMandatoryParameter(OptionalRoute.class));
-        Assert.assertFalse(
-                "Wildcard parameter should not mark as requiring parameter",
+        Assert.assertFalse("Wildcard parameter should not mark as requiring parameter",
                 registry.hasMandatoryParameter(WildcardRoute.class));
 
-        Assert.assertTrue("HasUrl should require parameter",
-                registry.hasMandatoryParameter(HasUrlRoute.class));
+        Assert.assertTrue("HasUrl should require parameter", registry.hasMandatoryParameter(HasUrlRoute.class));
         Assert.assertTrue("Template parameter should require parameter",
                 registry.hasMandatoryParameter(ParameterView.class));
 
-        Assert.assertThrows(
-                "Checking unregistered route should throw exception",
-                NotFoundException.class,
+        Assert.assertThrows("Checking unregistered route should throw exception", NotFoundException.class,
                 () -> registry.hasMandatoryParameter(Secondary.class));
     }
 
@@ -775,23 +657,19 @@ public class AbstractRouteRegistryTest {
         registry.setLayout(DefaultLayout.class);
         registry.setLayout(ViewLayout.class);
 
-        Assert.assertEquals("Path match returned wrong layout",
-                ViewLayout.class, registry.getLayout("/view"));
-        Assert.assertEquals("Beginning path match returned wrong layout",
-                ViewLayout.class, registry.getLayout("/view/home"));
+        Assert.assertEquals("Path match returned wrong layout", ViewLayout.class, registry.getLayout("/view"));
+        Assert.assertEquals("Beginning path match returned wrong layout", ViewLayout.class,
+                registry.getLayout("/view/home"));
 
-        Assert.assertEquals("Any route match returned wrong layout",
-                DefaultLayout.class, registry.getLayout("/path"));
+        Assert.assertEquals("Any route match returned wrong layout", DefaultLayout.class, registry.getLayout("/path"));
     }
 
     @Test
     public void singleLayout_nonMatchingPathsReturnFalseOnHasLayout() {
         registry.setLayout(ViewLayout.class);
 
-        Assert.assertTrue("Existing layout should have returned true",
-                registry.hasLayout("/view"));
-        Assert.assertFalse("Path outside layout should return false",
-                registry.hasLayout("/path"));
+        Assert.assertTrue("Existing layout should have returned true", registry.hasLayout("/view"));
+        Assert.assertFalse("Path outside layout should return false", registry.hasLayout("/path"));
     }
     /* Private stuff */
 
@@ -805,8 +683,7 @@ public class AbstractRouteRegistryTest {
 
     @Tag("div")
     @Layout
-    private static class DefaultLayout extends Component
-            implements RouterLayout {
+    private static class DefaultLayout extends Component implements RouterLayout {
     }
 
     @Tag("div")
@@ -839,8 +716,7 @@ public class AbstractRouteRegistryTest {
 
     @Route("")
     @Tag(Tag.DIV)
-    private static class HasUrlRoute extends Component
-            implements HasUrlParameter<String> {
+    private static class HasUrlRoute extends Component implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
         }
@@ -848,8 +724,7 @@ public class AbstractRouteRegistryTest {
 
     @Route("")
     @Tag(Tag.DIV)
-    private static class SecondHasUrlRoute extends Component
-            implements HasUrlParameter<String> {
+    private static class SecondHasUrlRoute extends Component implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
         }
@@ -857,41 +732,33 @@ public class AbstractRouteRegistryTest {
 
     @Route("")
     @Tag(Tag.DIV)
-    private static class OptionalRoute extends Component
-            implements HasUrlParameter<String> {
+    private static class OptionalRoute extends Component implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeEvent event,
-                @OptionalParameter String parameter) {
+        public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
         }
     }
 
     @Route("")
     @Tag(Tag.DIV)
-    private static class SecondOptionalRoute extends Component
-            implements HasUrlParameter<String> {
+    private static class SecondOptionalRoute extends Component implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeEvent event,
-                @OptionalParameter String parameter) {
+        public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
         }
     }
 
     @Route("")
     @Tag(Tag.DIV)
-    private static class WildcardRoute extends Component
-            implements HasUrlParameter<String> {
+    private static class WildcardRoute extends Component implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeEvent event,
-                @WildcardParameter String parameter) {
+        public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
         }
     }
 
     @Route("")
     @Tag(Tag.DIV)
-    private static class SecondWildcardRoute extends Component
-            implements HasUrlParameter<String> {
+    private static class SecondWildcardRoute extends Component implements HasUrlParameter<String> {
         @Override
-        public void setParameter(BeforeEvent event,
-                @WildcardParameter String parameter) {
+        public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
         }
     }
 
@@ -926,8 +793,7 @@ public class AbstractRouteRegistryTest {
     }
 
     private Class<? extends Component> getTarget(List<String> segments) {
-        return registry.getNavigationTarget(PathUtil.getPath(segments))
-                .orElse(null);
+        return registry.getNavigationTarget(PathUtil.getPath(segments)).orElse(null);
     }
 
 }

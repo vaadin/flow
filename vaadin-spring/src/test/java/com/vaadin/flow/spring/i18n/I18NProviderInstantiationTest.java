@@ -59,8 +59,7 @@ public class I18NProviderInstantiationTest {
         }
 
         @Override
-        public String getTranslation(String key, Locale locale,
-                Object... params) {
+        public String getTranslation(String key, Locale locale, Object... params) {
             return null;
         }
 
@@ -76,21 +75,16 @@ public class I18NProviderInstantiationTest {
     }
 
     @Test
-    public void getI18NProvider_i18nProviderIsABean_i18nProviderIsAvailable()
-            throws ServletException {
+    public void getI18NProvider_i18nProviderIsABean_i18nProviderIsAvailable() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
         Assert.assertNotNull(instantiator.getI18NProvider());
-        Assert.assertEquals(DefaultI18NTestProvider.class,
-                instantiator.getI18NProvider().getClass());
+        Assert.assertEquals(DefaultI18NTestProvider.class, instantiator.getI18NProvider().getClass());
     }
 
-    public static Instantiator getInstantiator(ApplicationContext context)
-            throws ServletException {
+    public static Instantiator getInstantiator(ApplicationContext context) throws ServletException {
         Properties properties = new Properties();
-        properties.put(InitParameters.I18N_PROVIDER,
-                DefaultI18NTestProvider.class.getName());
-        return SpringInstantiatorTest.getService(context, properties)
-                .getInstantiator();
+        properties.put(InitParameters.I18N_PROVIDER, DefaultI18NTestProvider.class.getName());
+        return SpringInstantiatorTest.getService(context, properties).getInstantiator();
     }
 }

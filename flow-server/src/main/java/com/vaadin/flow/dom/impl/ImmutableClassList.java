@@ -32,8 +32,7 @@ import com.vaadin.flow.dom.ClassList;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class ImmutableClassList extends AbstractSet<String>
-        implements ClassList, Serializable {
+public class ImmutableClassList extends AbstractSet<String> implements ClassList, Serializable {
 
     private static final String CANT_MODIFY_MESSAGE = ImmutableEmptyStyle.CANT_MODIFY_MESSAGE;
 

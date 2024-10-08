@@ -32,10 +32,8 @@ public class ExceptionLoggingIT extends ChromeBrowserTest {
 
         // Checking that the log count is exactly 1 also ensures that no info or
         // debug level messages were logged before the exception message.
-        assertThat("Flow in production mode should output exception to console",
-                getLogEntriesCount(), is(1L));
-        assertThat("Error message should have contained 'foo'",
-                checkFirstErrorMessageContains("foo"));
+        assertThat("Flow in production mode should output exception to console", getLogEntriesCount(), is(1L));
+        assertThat("Error message should have contained 'foo'", checkFirstErrorMessageContains("foo"));
     }
 
     @Test
@@ -45,10 +43,8 @@ public class ExceptionLoggingIT extends ChromeBrowserTest {
 
         // Checking that the log count is exactly 1 also ensures that no info or
         // debug level messages were logged before the exception message.
-        assertThat("Flow in production mode should output exception to console",
-                getLogEntriesCount(), is(1L));
-        assertThat("Error message should have contained 'bar'",
-                checkFirstErrorMessageContains("bar"));
+        assertThat("Flow in production mode should output exception to console", getLogEntriesCount(), is(1L));
+        assertThat("Error message should have contained 'bar'", checkFirstErrorMessageContains("bar"));
     }
 
     private Long getLogEntriesCount() {
@@ -56,8 +52,7 @@ public class ExceptionLoggingIT extends ChromeBrowserTest {
     }
 
     private boolean checkFirstErrorMessageContains(String shouldContain) {
-        return ((String) executeScript("return window.allLogMessages[0];"))
-                .contains(shouldContain);
+        return ((String) executeScript("return window.allLogMessages[0];")).contains(shouldContain);
     }
 
     @Override

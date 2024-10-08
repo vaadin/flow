@@ -20,12 +20,10 @@ import com.vaadin.flow.dom.ElementConstants;
 /**
  * A component that supports label definition.
  * <p>
- * The default implementations set the label of the component to the given text
- * for {@link #getElement()}. Override all methods in this interface if the text
- * should be added to some other element.
+ * The default implementations set the label of the component to the given text for {@link #getElement()}. Override all
+ * methods in this interface if the text should be added to some other element.
  * <p>
- * Root element should be a web component with a structure that supports the
- * 'label' property:
+ * Root element should be a web component with a structure that supports the 'label' property:
  *
  * <pre>{@code
  *     <field-with-label>
@@ -53,11 +51,9 @@ public interface HasLabel extends HasElement {
     /**
      * Gets the label of the component.
      *
-     * @return the label of the component or {@code null} if no label has been
-     *         set
+     * @return the label of the component or {@code null} if no label has been set
      */
     default String getLabel() {
-        return getElement().getProperty(ElementConstants.LABEL_PROPERTY_NAME,
-                null);
+        return getElement().getProperty(ElementConstants.LABEL_PROPERTY_NAME, null);
     }
 }

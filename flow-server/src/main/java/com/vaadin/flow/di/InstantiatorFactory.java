@@ -31,8 +31,8 @@ public interface InstantiatorFactory {
      *
      * @param service
      *            a {@code VaadinService} to create an {@code Instantiator} for
-     * @return an instantiator for the service or null if this factory is not
-     *         able to create an instantiator for the provided service
+     * @return an instantiator for the service or null if this factory is not able to create an instantiator for the
+     *         provided service
      */
     Instantiator createInstantitor(VaadinService service);
 }

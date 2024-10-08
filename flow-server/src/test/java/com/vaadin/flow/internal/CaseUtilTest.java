@@ -29,12 +29,9 @@ public class CaseUtilTest {
     public void upperCaseUnderscoreToHumanFriendly() {
         assertNull(CaseUtil.upperCaseUnderscoreToHumanFriendly(null));
         assertEquals("", CaseUtil.upperCaseUnderscoreToHumanFriendly(""));
-        assertEquals("My Bean Container", CaseUtil
-                .upperCaseUnderscoreToHumanFriendly("MY_BEAN_CONTAINER"));
-        assertEquals("Awesome Url Factory", CaseUtil
-                .upperCaseUnderscoreToHumanFriendly("AWESOME_URL_FACTORY"));
-        assertEquals("Something",
-                CaseUtil.upperCaseUnderscoreToHumanFriendly("SOMETHING"));
+        assertEquals("My Bean Container", CaseUtil.upperCaseUnderscoreToHumanFriendly("MY_BEAN_CONTAINER"));
+        assertEquals("Awesome Url Factory", CaseUtil.upperCaseUnderscoreToHumanFriendly("AWESOME_URL_FACTORY"));
+        assertEquals("Something", CaseUtil.upperCaseUnderscoreToHumanFriendly("SOMETHING"));
     }
 
     @Test

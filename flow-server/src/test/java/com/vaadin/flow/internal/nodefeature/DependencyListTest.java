@@ -108,21 +108,17 @@ public class DependencyListTest {
         validateDependency(URL, Type.JAVASCRIPT, LoadMode.INLINE);
     }
 
-    private void validateDependency(String url, Type dependencyType,
-            LoadMode loadMode) {
+    private void validateDependency(String url, Type dependencyType, LoadMode loadMode) {
         JsonObject expectedJson = Json.createObject();
         expectedJson.put(Dependency.KEY_URL, url);
         expectedJson.put(Dependency.KEY_TYPE, dependencyType.name());
         expectedJson.put(Dependency.KEY_LOAD_MODE, loadMode.name());
 
-        assertEquals("Expected to receive exactly one dependency", 1,
-                deps.getPendingSendToClient().size());
-        assertTrue(String.format(
-                "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
-                expectedJson.toJson(),
-                deps.getPendingSendToClient().iterator().next().toJson()),
-                JsonUtils.jsonEquals(expectedJson, deps.getPendingSendToClient()
-                        .iterator().next().toJson()));
+        assertEquals("Expected to receive exactly one dependency", 1, deps.getPendingSendToClient().size());
+        assertTrue(
+                String.format("Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
+                        expectedJson.toJson(), deps.getPendingSendToClient().iterator().next().toJson()),
+                JsonUtils.jsonEquals(expectedJson, deps.getPendingSendToClient().iterator().next().toJson()));
     }
 
     @Test
@@ -146,8 +142,7 @@ public class DependencyListTest {
 
     private void assertDependencyUrl(String expectedUrl, String dependencyUrl) {
         addSimpleDependency(dependencyUrl);
-        assertEquals(expectedUrl,
-                deps.getPendingSendToClient().iterator().next().getUrl());
+        assertEquals(expectedUrl, deps.getPendingSendToClient().iterator().next().getUrl());
         deps.clearPendingSendToClient();
     }
 
@@ -168,31 +163,21 @@ public class DependencyListTest {
 
     @Test
     public void addSameDependencyInDifferentModes_usesMostEagerLoadMode() {
-        testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.EAGER,
-                LoadMode.EAGER);
-        testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.LAZY,
-                LoadMode.EAGER);
-        testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.INLINE,
-                LoadMode.INLINE);
+        testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.EAGER, LoadMode.EAGER);
+        testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.LAZY, LoadMode.EAGER);
+        testAddingDuplicateDependencies(LoadMode.EAGER, LoadMode.INLINE, LoadMode.INLINE);
 
-        testAddingDuplicateDependencies(LoadMode.LAZY, LoadMode.EAGER,
-                LoadMode.EAGER);
-        testAddingDuplicateDependencies(LoadMode.LAZY, LoadMode.LAZY,
-                LoadMode.LAZY);
-        testAddingDuplicateDependencies(LoadMode.LAZY, LoadMode.INLINE,
-                LoadMode.INLINE);
+        testAddingDuplicateDependencies(LoadMode.LAZY, LoadMode.EAGER, LoadMode.EAGER);
+        testAddingDuplicateDependencies(LoadMode.LAZY, LoadMode.LAZY, LoadMode.LAZY);
+        testAddingDuplicateDependencies(LoadMode.LAZY, LoadMode.INLINE, LoadMode.INLINE);
 
-        testAddingDuplicateDependencies(LoadMode.INLINE, LoadMode.EAGER,
-                LoadMode.INLINE);
-        testAddingDuplicateDependencies(LoadMode.INLINE, LoadMode.LAZY,
-                LoadMode.INLINE);
-        testAddingDuplicateDependencies(LoadMode.INLINE, LoadMode.INLINE,
-                LoadMode.INLINE);
+        testAddingDuplicateDependencies(LoadMode.INLINE, LoadMode.EAGER, LoadMode.INLINE);
+        testAddingDuplicateDependencies(LoadMode.INLINE, LoadMode.LAZY, LoadMode.INLINE);
+        testAddingDuplicateDependencies(LoadMode.INLINE, LoadMode.INLINE, LoadMode.INLINE);
 
     }
 
-    private void testAddingDuplicateDependencies(LoadMode first,
-            LoadMode second, LoadMode expected) {
+    private void testAddingDuplicateDependencies(LoadMode first, LoadMode second, LoadMode expected) {
 
         String url = "foo/bar.js";
         Type type = Type.JAVASCRIPT;
@@ -202,12 +187,9 @@ public class DependencyListTest {
         deps.add(new Dependency(type, url, first));
         deps.add(new Dependency(type, url, second));
 
-        Collection<Dependency> pendingSendToClient = deps
-                .getPendingSendToClient();
-        assertEquals("Expected to have only one dependency", 1,
-                pendingSendToClient.size());
-        assertEquals("Wrong load mode resolved",
-                pendingSendToClient.iterator().next().getLoadMode(), expected);
+        Collection<Dependency> pendingSendToClient = deps.getPendingSendToClient();
+        assertEquals("Expected to have only one dependency", 1, pendingSendToClient.size());
+        assertEquals("Wrong load mode resolved", pendingSendToClient.iterator().next().getLoadMode(), expected);
     }
 
     @Test
@@ -218,48 +200,35 @@ public class DependencyListTest {
         }
         long time = System.currentTimeMillis() - start;
 
-        assertTrue("Adding 10K dependencies should take about 50ms. Took "
-                + time + "ms", time < 500);
+        assertTrue("Adding 10K dependencies should take about 50ms. Took " + time + "ms", time < 500);
     }
 
     @Test
     public void ensureDependenciesSentToClientHaveTheSameOrderAsAdded() {
-        Dependency eagerJs = new Dependency(Type.JAVASCRIPT, "eager.js",
-                LoadMode.EAGER);
-        Dependency eagerCss = new Dependency(Type.STYLESHEET, "eager.css",
-                LoadMode.EAGER);
-        Dependency lazyJs = new Dependency(Type.JAVASCRIPT, "lazy.js",
-                LoadMode.LAZY);
-        Dependency lazyCss = new Dependency(Type.STYLESHEET, "lazy.css",
-                LoadMode.LAZY);
-        assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
-                eagerJs.getLoadMode());
-        assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
-                eagerCss.getLoadMode());
-        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
-                lazyJs.getLoadMode());
-        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
-                lazyCss.getLoadMode());
+        Dependency eagerJs = new Dependency(Type.JAVASCRIPT, "eager.js", LoadMode.EAGER);
+        Dependency eagerCss = new Dependency(Type.STYLESHEET, "eager.css", LoadMode.EAGER);
+        Dependency lazyJs = new Dependency(Type.JAVASCRIPT, "lazy.js", LoadMode.LAZY);
+        Dependency lazyCss = new Dependency(Type.STYLESHEET, "lazy.css", LoadMode.LAZY);
+        assertEquals("Expected the dependency to be eager", LoadMode.EAGER, eagerJs.getLoadMode());
+        assertEquals("Expected the dependency to be eager", LoadMode.EAGER, eagerCss.getLoadMode());
+        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY, lazyJs.getLoadMode());
+        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY, lazyCss.getLoadMode());
 
-        List<Dependency> dependencies = new ArrayList<>(
-                Arrays.asList(eagerJs, eagerCss, lazyJs, lazyCss));
+        List<Dependency> dependencies = new ArrayList<>(Arrays.asList(eagerJs, eagerCss, lazyJs, lazyCss));
         assertEquals("Expected to have 4 dependencies", 4, dependencies.size());
 
         Collections.shuffle(dependencies);
         dependencies.forEach(deps::add);
-        List<Dependency> pendingSendToClient = new ArrayList<>(
-                deps.getPendingSendToClient());
+        List<Dependency> pendingSendToClient = new ArrayList<>(deps.getPendingSendToClient());
 
         for (int i = 0; i < pendingSendToClient.size(); i++) {
             Dependency actualDependency = pendingSendToClient.get(i);
             Dependency expectedDependency = dependencies.get(i);
-            assertEquals(
-                    "Expected to have the same dependency on the same position for list, but urls do not match",
+            assertEquals("Expected to have the same dependency on the same position for list, but urls do not match",
                     expectedDependency.getUrl(), actualDependency.getUrl());
             assertEquals(
                     "Expected to have the same dependency on the same position for list, but load modes do not match",
-                    expectedDependency.getLoadMode(),
-                    actualDependency.getLoadMode());
+                    expectedDependency.getLoadMode(), actualDependency.getLoadMode());
         }
     }
 }

@@ -51,8 +51,8 @@ public class SpringVaadinServletService extends VaadinServletService {
     static final String SPRING_BOOT_WEBPROPERTIES_CLASS = "org.springframework.boot.autoconfigure.web.WebProperties";
 
     /**
-     * Creates an instance connected to the given servlet and using the given
-     * configuration with provided application {@code context}.
+     * Creates an instance connected to the given servlet and using the given configuration with provided application
+     * {@code context}.
      *
      * @param servlet
      *            the servlet which receives requests
@@ -61,47 +61,36 @@ public class SpringVaadinServletService extends VaadinServletService {
      * @param context
      *            the Spring application context
      */
-    public SpringVaadinServletService(VaadinServlet servlet,
-            DeploymentConfiguration deploymentConfiguration,
+    public SpringVaadinServletService(VaadinServlet servlet, DeploymentConfiguration deploymentConfiguration,
             ApplicationContext context) {
         super(servlet, deploymentConfiguration);
         this.context = context;
-        SessionDestroyListener listener = event -> sessionDestroyed(
-                event.getSession());
+        SessionDestroyListener listener = event -> sessionDestroyed(event.getSession());
         Registration registration = addSessionDestroyListener(listener);
-        serviceDestroyRegistration = addServiceDestroyListener(
-                event -> serviceDestroyed(registration));
+        serviceDestroyRegistration = addServiceDestroyListener(event -> serviceDestroyed(registration));
     }
 
     @Override
-    protected Optional<Instantiator> loadInstantiators()
-            throws ServiceException {
+    protected Optional<Instantiator> loadInstantiators() throws ServiceException {
         Optional<Instantiator> spiInstantiator = super.loadInstantiators();
-        List<Instantiator> springInstantiators = context
-                .getBeansOfType(Instantiator.class).values().stream()
+        List<Instantiator> springInstantiators = context.getBeansOfType(Instantiator.class).values().stream()
                 .collect(Collectors.toList());
         if (spiInstantiator.isPresent() && !springInstantiators.isEmpty()) {
-            throw new ServiceException(
-                    "Cannot init VaadinService because there are multiple eligible "
-                            + "instantiator implementations: Java SPI registered instantiator "
-                            + spiInstantiator.get()
-                            + " and Spring instantiator beans: "
-                            + springInstantiators);
+            throw new ServiceException("Cannot init VaadinService because there are multiple eligible "
+                    + "instantiator implementations: Java SPI registered instantiator " + spiInstantiator.get()
+                    + " and Spring instantiator beans: " + springInstantiators);
         }
         if (!spiInstantiator.isPresent() && springInstantiators.isEmpty()) {
-            Instantiator defaultInstantiator = new SpringInstantiator(this,
-                    context);
+            Instantiator defaultInstantiator = new SpringInstantiator(this, context);
             return Optional.of(defaultInstantiator);
         }
-        return spiInstantiator.isPresent() ? spiInstantiator
-                : springInstantiators.stream().findFirst();
+        return spiInstantiator.isPresent() ? spiInstantiator : springInstantiators.stream().findFirst();
     }
 
     @Override
     public void init() throws ServiceException {
         super.init();
-        Map<String, UIInitListener> uiInitListeners = context
-                .getBeansOfType(UIInitListener.class);
+        Map<String, UIInitListener> uiInitListeners = context.getBeansOfType(UIInitListener.class);
         uiInitListeners.values().forEach(this::addUIInitListener);
     }
 
@@ -133,8 +122,7 @@ public class SpringVaadinServletService extends VaadinServletService {
         if (!isSpringBootConfigured()) {
             return null;
         }
-        for (String prefix : context.getBean(
-                org.springframework.boot.autoconfigure.web.WebProperties.class)
+        for (String prefix : context.getBean(org.springframework.boot.autoconfigure.web.WebProperties.class)
                 .getResources().getStaticLocations()) {
             Resource resource = context.getResource(getFullPath(path, prefix));
             if (resource != null && resource.exists()) {
@@ -142,8 +130,7 @@ public class SpringVaadinServletService extends VaadinServletService {
                     URI uri = resource.getURI();
                     if (uri.isOpaque() && resource.isFile()) {
                         // Prevents 'URI is not hierarchical' error
-                        return resource.getFile().getAbsoluteFile().toURI()
-                                .toURL();
+                        return resource.getFile().getAbsoluteFile().toURI().toURL();
                     }
                     return resource.getURL();
                 } catch (IOException e) {
@@ -162,8 +149,8 @@ public class SpringVaadinServletService extends VaadinServletService {
     }
 
     /**
-     * Checks if the spring boot resources class is available without causing
-     * ClassNotFound or similar exceptions in plain Spring.
+     * Checks if the spring boot resources class is available without causing ClassNotFound or similar exceptions in
+     * plain Spring.
      */
     private boolean isSpringBootConfigured() {
         Class<?> resourcesClass = resolveClass(SPRING_BOOT_WEBPROPERTIES_CLASS);
@@ -175,8 +162,7 @@ public class SpringVaadinServletService extends VaadinServletService {
 
     private static Class<?> resolveClass(String clazzName) {
         try {
-            return Class.forName(clazzName, false,
-                    SpringVaadinServletService.class.getClassLoader());
+            return Class.forName(clazzName, false, SpringVaadinServletService.class.getClassLoader());
         } catch (LinkageError | ClassNotFoundException e) {
             return null;
         }

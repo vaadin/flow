@@ -16,9 +16,8 @@
 package com.vaadin.flow.data.validator;
 
 /**
- * A string validator for e-mail addresses. The e-mail address syntax is not
- * complete according to RFC 822 but handles the vast majority of valid e-mail
- * addresses correctly.
+ * A string validator for e-mail addresses. The e-mail address syntax is not complete according to RFC 822 but handles
+ * the vast majority of valid e-mail addresses correctly.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -34,12 +33,10 @@ public class EmailValidator extends RegexpValidator {
     private final boolean allowEmptyValue;
 
     /**
-     * Creates a validator for checking that a string is a syntactically valid
-     * e-mail address.
+     * Creates a validator for checking that a string is a syntactically valid e-mail address.
      * <p>
-     * This constructor creates a validator which doesn't accept an empty string
-     * as a valid e-mail address. Use {@link #EmailValidator(String, boolean)}
-     * constructor with {@code true} as a value for the second argument to
+     * This constructor creates a validator which doesn't accept an empty string as a valid e-mail address. Use
+     * {@link #EmailValidator(String, boolean)} constructor with {@code true} as a value for the second argument to
      * create a validator which accepts an empty string.
      *
      * @param errorMessage
@@ -51,14 +48,12 @@ public class EmailValidator extends RegexpValidator {
     }
 
     /**
-     * Creates a validator for checking that a string is a syntactically valid
-     * e-mail address.
+     * Creates a validator for checking that a string is a syntactically valid e-mail address.
      *
      * @param errorMessage
      *            the message to display in case the value does not validate.
      * @param allowEmpty
-     *            if {@code true} then an empty string passes the validation,
-     *            otherwise the validation fails
+     *            if {@code true} then an empty string passes the validation, otherwise the validation fails
      */
     public EmailValidator(String errorMessage, boolean allowEmpty) {
         super(errorMessage, PATTERN, true);

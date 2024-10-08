@@ -56,8 +56,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     private File frontendDirectory;
     private File nodeModulesPath;
     private File tmpRoot;
-    private Class<?>[] testClasses = { FlagView.class,
-            EagerFlagRouteAppConf.class };
+    private Class<?>[] testClasses = { FlagView.class, EagerFlagRouteAppConf.class };
 
     @Before
     public void before() throws IOException {
@@ -76,66 +75,49 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
         createExpectedImports(frontendDirectory, nodeModulesPath);
     }
 
-    protected FrontendDependenciesScanner getScanner(ClassFinder finder,
-            FeatureFlags featureFlags) {
-        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, true, featureFlags);
+    protected FrontendDependenciesScanner getScanner(ClassFinder finder, FeatureFlags featureFlags) {
+        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory().createScanner(false, finder, true,
+                featureFlags);
     }
 
     @Test
-    public void should_ExcludeExperimentalComponent_WhenFlagDisabled()
-            throws IOException {
+    public void should_ExcludeExperimentalComponent_WhenFlagDisabled() throws IOException {
         createUpdater().execute();
 
-        String content = FileUtils.readFileToString(importsFile,
-                Charset.defaultCharset());
-        assertFalse(content
-                .contains("@vaadin/example-flag/experimental-module-1.js"));
-        assertFalse(content
-                .contains("@vaadin/example-flag/experimental-module-2.js"));
+        String content = FileUtils.readFileToString(importsFile, Charset.defaultCharset());
+        assertFalse(content.contains("@vaadin/example-flag/experimental-module-1.js"));
+        assertFalse(content.contains("@vaadin/example-flag/experimental-module-2.js"));
         assertFalse(content.contains("experimental-Connector.js"));
     }
 
     @Test
-    public void should_ExcludeExperimentalComponent_WhenFlagFoo()
-            throws IOException {
-        createFeatureFlagsFile(
-                "com.vaadin.experimental.exampleFeatureFlag=FOO\n");
+    public void should_ExcludeExperimentalComponent_WhenFlagFoo() throws IOException {
+        createFeatureFlagsFile("com.vaadin.experimental.exampleFeatureFlag=FOO\n");
         featureFlags.loadProperties();
 
         createUpdater().execute();
 
-        String content = FileUtils.readFileToString(importsFile,
-                Charset.defaultCharset());
-        assertFalse(content
-                .contains("@vaadin/example-flag/experimental-module-1.js"));
-        assertFalse(content
-                .contains("@vaadin/example-flag/experimental-module-2.js"));
+        String content = FileUtils.readFileToString(importsFile, Charset.defaultCharset());
+        assertFalse(content.contains("@vaadin/example-flag/experimental-module-1.js"));
+        assertFalse(content.contains("@vaadin/example-flag/experimental-module-2.js"));
         assertFalse(content.contains("experimental-Connector.js"));
     }
 
     @Test
-    public void should_IncludeExperimentalComponent_WhenFlagEnabled()
-            throws IOException {
-        createFeatureFlagsFile(
-                "com.vaadin.experimental.exampleFeatureFlag=true\n");
+    public void should_IncludeExperimentalComponent_WhenFlagEnabled() throws IOException {
+        createFeatureFlagsFile("com.vaadin.experimental.exampleFeatureFlag=true\n");
         featureFlags.loadProperties();
 
         createUpdater().execute();
 
-        String content = FileUtils.readFileToString(importsFile,
-                Charset.defaultCharset());
-        assertTrue(content
-                .contains("@vaadin/example-flag/experimental-module-1.js"));
-        assertTrue(content
-                .contains("@vaadin/example-flag/experimental-module-2.js"));
+        String content = FileUtils.readFileToString(importsFile, Charset.defaultCharset());
+        assertTrue(content.contains("@vaadin/example-flag/experimental-module-1.js"));
+        assertTrue(content.contains("@vaadin/example-flag/experimental-module-2.js"));
         assertTrue(content.contains("experimental-Connector.js"));
     }
 
     private void createFeatureFlagsFile(String data) throws IOException {
-        FileUtils.write(
-                new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME), data,
-                StandardCharsets.UTF_8);
+        FileUtils.write(new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME), data, StandardCharsets.UTF_8);
     }
 
     @LoadDependenciesOnStartup()
@@ -146,10 +128,8 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     private TaskUpdateImports createUpdater() throws IOException {
         ClassFinder classFinder = getClassFinder(testClasses);
 
-        Options options = new MockOptions(classFinder, tmpRoot)
-                .withFrontendDirectory(frontendDirectory)
+        Options options = new MockOptions(classFinder, tmpRoot).withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
-        return new TaskUpdateImports(getScanner(classFinder, featureFlags),
-                options);
+        return new TaskUpdateImports(getScanner(classFinder, featureFlags), options);
     }
 }

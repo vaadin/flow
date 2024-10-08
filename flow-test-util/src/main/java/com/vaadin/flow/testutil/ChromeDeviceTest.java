@@ -38,17 +38,14 @@ import com.vaadin.testbench.TestBench;
 import com.vaadin.testbench.parallel.Browser;
 
 /**
- * Base class for TestBench tests to run in Chrome with customized options,
- * which enable device emulation mode by default.
+ * Base class for TestBench tests to run in Chrome with customized options, which enable device emulation mode by
+ * default.
  * <p>
- * This facilitates testing with network connection overrides, e. g., using
- * offline mode in the tests.
+ * This facilitates testing with network connection overrides, e. g., using offline mode in the tests.
  * <p>
- * It is required to set system property with path to the driver to be able to
- * run the test.
+ * It is required to set system property with path to the driver to be able to run the test.
  * <p>
- * The test can be executed locally and on a test Hub. ChromeDriver is used if
- * test is executed locally.
+ * The test can be executed locally and on a test Hub. ChromeDriver is used if test is executed locally.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -63,15 +60,13 @@ public class ChromeDeviceTest extends ViewOrUITest {
     }
 
     static boolean isJavaInDebugMode() {
-        return ManagementFactory.getRuntimeMXBean().getInputArguments()
-                .toString().contains("jdwp");
+        return ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains("jdwp");
     }
 
     @Before
     @Override
     public void setup() throws Exception {
-        ChromeOptions chromeOptions = customizeChromeOptions(
-                new ChromeOptions());
+        ChromeOptions chromeOptions = customizeChromeOptions(new ChromeOptions());
 
         WebDriver driver;
         if (Browser.CHROME == getRunLocallyBrowser()) {
@@ -94,14 +89,11 @@ public class ChromeDeviceTest extends ViewOrUITest {
      *            Chrome options to customize
      * @return customized Chrome options instance
      */
-    protected ChromeOptions customizeChromeOptions(
-            ChromeOptions chromeOptions) {
+    protected ChromeOptions customizeChromeOptions(ChromeOptions chromeOptions) {
         final Map<String, Object> mobileEmulationParams = new HashMap<>();
-        mobileEmulationParams.put("deviceMetrics",
-                Map.of("width", 1280, "height", 950, "pixelRatio", 1));
+        mobileEmulationParams.put("deviceMetrics", Map.of("width", 1280, "height", 950, "pixelRatio", 1));
 
-        chromeOptions.setExperimentalOption("mobileEmulation",
-                mobileEmulationParams);
+        chromeOptions.setExperimentalOption("mobileEmulation", mobileEmulationParams);
 
         if (getDeploymentHostname().equals("localhost")) {
             // Use headless Chrome for running locally
@@ -110,9 +102,7 @@ public class ChromeDeviceTest extends ViewOrUITest {
             }
         } else {
             // Enable service workers over http remote connection
-            chromeOptions.addArguments(String.format(
-                    "--unsafely-treat-insecure-origin-as-secure=%s",
-                    getRootURL()));
+            chromeOptions.addArguments(String.format("--unsafely-treat-insecure-origin-as-secure=%s", getRootURL()));
 
             // NOTE: this flag is not supported in headless Chrome, see
             // https://crbug.com/814146
@@ -135,43 +125,31 @@ public class ChromeDeviceTest extends ViewOrUITest {
                 (Boolean) executeScript("return !!navigator.serviceWorker;"));
 
         // Wait until service worker is ready
-        Assert.assertTrue("Should have service worker registered",
-                (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
-                        "const done = arguments[arguments.length - 1];"
-                                + "const timeout = new Promise("
-                                + "  resolve => setTimeout(resolve, 100000)"
-                                + ");" + "Promise.race(["
-                                + "  navigator.serviceWorker.ready,"
-                                + "  timeout])"
-                                + ".then(result => done(!!result));"));
+        Assert.assertTrue("Should have service worker registered", (Boolean) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript("const done = arguments[arguments.length - 1];" + "const timeout = new Promise("
+                        + "  resolve => setTimeout(resolve, 100000)" + ");" + "Promise.race(["
+                        + "  navigator.serviceWorker.ready," + "  timeout])" + ".then(result => done(!!result));"));
     }
 
     /**
-     * Sets the `se:cdp` and `se:cdpVersion` capabilities for the remote web
-     * driver. Note that the capabilities are set at runtime because they depend
-     * on the session id that becomes only available after the driver is
-     * initialized. Without these capabilities, Selenium cannot establish a
-     * connection with DevTools.
+     * Sets the `se:cdp` and `se:cdpVersion` capabilities for the remote web driver. Note that the capabilities are set
+     * at runtime because they depend on the session id that becomes only available after the driver is initialized.
+     * Without these capabilities, Selenium cannot establish a connection with DevTools.
      */
-    private void setDevToolsRuntimeCapabilities(RemoteWebDriver driver,
-            URL remoteUrl) throws RuntimeException {
+    private void setDevToolsRuntimeCapabilities(RemoteWebDriver driver, URL remoteUrl) throws RuntimeException {
         try {
-            Field capabilitiesField = RemoteWebDriver.class
-                    .getDeclaredField("capabilities");
+            Field capabilitiesField = RemoteWebDriver.class.getDeclaredField("capabilities");
             capabilitiesField.setAccessible(true);
 
             String sessionId = driver.getSessionId().toString();
-            String devtoolsUrl = String.format("ws://%s:%s/devtools/%s/page",
-                    remoteUrl.getHost(), remoteUrl.getPort(), sessionId);
+            String devtoolsUrl = String.format("ws://%s:%s/devtools/%s/page", remoteUrl.getHost(), remoteUrl.getPort(),
+                    sessionId);
 
-            MutableCapabilities mutableCapabilities = (MutableCapabilities) capabilitiesField
-                    .get(driver);
+            MutableCapabilities mutableCapabilities = (MutableCapabilities) capabilitiesField.get(driver);
             mutableCapabilities.setCapability("se:cdp", devtoolsUrl);
-            mutableCapabilities.setCapability("se:cdpVersion",
-                    mutableCapabilities.getBrowserVersion());
+            mutableCapabilities.setCapability("se:cdpVersion", mutableCapabilities.getBrowserVersion());
         } catch (Exception e) {
-            throw new RuntimeException(
-                    "Failed to set DevTools capabilities for RemoteWebDriver");
+            throw new RuntimeException("Failed to set DevTools capabilities for RemoteWebDriver");
         }
     }
 }

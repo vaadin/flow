@@ -50,10 +50,8 @@ public class AbstractDataViewTest {
 
     @Before
     public void init() {
-        items = new ArrayList<>(
-                Arrays.asList(new Item(1L, "first", "description1"),
-                        new Item(2L, "middle", "description2"),
-                        new Item(3L, "last", "description3")));
+        items = new ArrayList<>(Arrays.asList(new Item(1L, "first", "description1"),
+                new Item(2L, "middle", "description2"), new Item(3L, "last", "description3")));
         dataProvider = DataProvider.ofCollection(items);
         component = new TestComponent();
         dataView = new DataViewImpl(() -> dataProvider, component);
@@ -62,34 +60,29 @@ public class AbstractDataViewTest {
     @Test
     public void getItems_noFiltersSet_allItemsObtained() {
         Stream<Item> allItems = dataView.getItems();
-        Assert.assertArrayEquals("Unexpected data set", items.toArray(),
-                allItems.toArray());
+        Assert.assertArrayEquals("Unexpected data set", items.toArray(), allItems.toArray());
     }
 
     @Test
     public void getItems_filtersSet_filteredItemsObtained() {
         dataProvider.setFilter(item -> item.getValue().equals("first"));
-        Assert.assertArrayEquals("Unexpected data set after filtering",
-                new String[] { "first" },
+        Assert.assertArrayEquals("Unexpected data set after filtering", new String[] { "first" },
                 dataView.getItems().map(Item::getValue).toArray());
     }
 
     @Test
     public void getItems_sortingSet_sortedItemsObtained() {
         dataProvider.setSortOrder(Item::getId, SortDirection.DESCENDING);
-        Assert.assertArrayEquals("Unexpected items sorting",
-                new Long[] { 3L, 2L, 1L },
+        Assert.assertArrayEquals("Unexpected items sorting", new Long[] { 3L, 2L, 1L },
                 dataView.getItems().map(Item::getId).toArray());
     }
 
     @Test
     public void addItemCountChangeListener_fireEvent_listenerNotified() {
         AtomicInteger fired = new AtomicInteger(0);
-        dataView.addItemCountChangeListener(
-                event -> fired.compareAndSet(0, event.getItemCount()));
+        dataView.addItemCountChangeListener(event -> fired.compareAndSet(0, event.getItemCount()));
 
-        ComponentUtil.fireEvent(component,
-                new ItemCountChangeEvent<>(component, 10, false));
+        ComponentUtil.fireEvent(component, new ItemCountChangeEvent<>(component, 10, false));
 
         Assert.assertEquals(10, fired.get());
     }
@@ -111,8 +104,7 @@ public class AbstractDataViewTest {
         // starting with EmptyDataProvider to bypass checking too early in
         // the DataViewImpl constructor.
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
-        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
-                component) {
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider, component) {
             @Override
             public Class<?> getSupportedDataProviderType() {
                 return InMemoryDataProvider.class;
@@ -125,8 +117,7 @@ public class AbstractDataViewTest {
     @Test
     public void verifyDataProviderType_withConfigurableFilter_wrappedDataProviderIsSupported() {
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
-        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
-                component) {
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider, component) {
             @Override
             public Class<?> getSupportedDataProviderType() {
                 return InMemoryDataProvider.class;
@@ -139,38 +130,33 @@ public class AbstractDataViewTest {
     @Test
     public void verifyDataProviderType_wrappedDataProviderIsNotSupported() {
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
-        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
-                component) {
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider, component) {
             @Override
             public Class<?> getSupportedDataProviderType() {
                 return BackEndDataProvider.class;
             }
         };
         wrapperDataProvider = getWrapperDataProvider();
-        Assert.assertThrows(IllegalStateException.class,
-                () -> dataView.verifyDataProviderType(wrapperDataProvider));
+        Assert.assertThrows(IllegalStateException.class, () -> dataView.verifyDataProviderType(wrapperDataProvider));
     }
 
     @Test
     public void verifyDataProviderType_withConfigurableFilter_wrappedDataProviderIsNotSupported() {
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
-        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
-                component) {
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider, component) {
             @Override
             public Class<?> getSupportedDataProviderType() {
                 return BackEndDataProvider.class;
             }
         };
         wrapperDataProvider = dataProvider.withConfigurableFilter();
-        Assert.assertThrows(IllegalStateException.class,
-                () -> dataView.verifyDataProviderType(wrapperDataProvider));
+        Assert.assertThrows(IllegalStateException.class, () -> dataView.verifyDataProviderType(wrapperDataProvider));
     }
 
     @Test
     public void verifyDataProviderType_wrapperIsBackEndDataProvider_wrapperDataProviderIsSupported() {
         wrapperDataProvider = new DataCommunicator.EmptyDataProvider<>();
-        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider,
-                component) {
+        DataViewImpl dataView = new DataViewImpl(() -> wrapperDataProvider, component) {
             @Override
             public Class<?> getSupportedDataProviderType() {
                 return BackEndDataProvider.class;
@@ -181,8 +167,7 @@ public class AbstractDataViewTest {
     }
 
     private DataProvider<Item, Object> getWrapperDataProvider() {
-        return new DataProviderWrapper<Item, Object, SerializablePredicate<Item>>(
-                dataProvider) {
+        return new DataProviderWrapper<Item, Object, SerializablePredicate<Item>>(dataProvider) {
             @Override
             protected SerializablePredicate<Item> getFilter(Query query) {
                 return null;
@@ -196,11 +181,10 @@ public class AbstractDataViewTest {
     }
 
     // BackEndDataProvider that is also a DataProviderWrapper
-    private static class BackEndDataProviderWrapper extends
-            DataProviderWrapper<Item, Object, SerializablePredicate<Item>>
+    private static class BackEndDataProviderWrapper
+            extends DataProviderWrapper<Item, Object, SerializablePredicate<Item>>
             implements BackEndDataProvider<Item, Object> {
-        protected BackEndDataProviderWrapper(
-                DataProvider<Item, SerializablePredicate<Item>> dataProvider) {
+        protected BackEndDataProviderWrapper(DataProvider<Item, SerializablePredicate<Item>> dataProvider) {
             super(dataProvider);
         }
 
@@ -219,8 +203,7 @@ public class AbstractDataViewTest {
         }
 
         @Override
-        protected SerializablePredicate<Item> getFilter(
-                Query<Item, Object> query) {
+        protected SerializablePredicate<Item> getFilter(Query<Item, Object> query) {
             return null;
         }
 
@@ -233,15 +216,13 @@ public class AbstractDataViewTest {
         }
 
         @Override
-        public Registration addDataProviderListener(
-                DataProviderListener<Item> listener) {
+        public Registration addDataProviderListener(DataProviderListener<Item> listener) {
             return null;
         }
     }
 
     /**
-     * setIdentifierProvider is tested in AbstractListDataView since it has the
-     * container(T item) method.
+     * setIdentifierProvider is tested in AbstractListDataView since it has the container(T item) method.
      */
 
     @Tag("test-component")
@@ -250,9 +231,7 @@ public class AbstractDataViewTest {
 
     private static class DataViewImpl extends AbstractDataView<Item> {
 
-        public DataViewImpl(
-                SerializableSupplier<DataProvider<Item, ?>> dataProviderSupplier,
-                Component component) {
+        public DataViewImpl(SerializableSupplier<DataProvider<Item, ?>> dataProviderSupplier, Component component) {
             super(dataProviderSupplier, component);
         }
 

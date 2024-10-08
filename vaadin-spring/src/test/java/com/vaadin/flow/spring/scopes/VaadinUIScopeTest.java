@@ -89,11 +89,9 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
     public void destroySession_sessionAttributeIsCleanedAndDestructionCallbackIsCalled() {
         mockUI();
 
-        SpringVaadinSession springSession = (SpringVaadinSession) VaadinSession
-                .getCurrent();
+        SpringVaadinSession springSession = (SpringVaadinSession) VaadinSession.getCurrent();
 
-        doCallRealMethod().when(springSession)
-                .addDestroyListener(Mockito.any());
+        doCallRealMethod().when(springSession).addDestroyListener(Mockito.any());
 
         doCallRealMethod().when(springSession).fireSessionDestroy();
 

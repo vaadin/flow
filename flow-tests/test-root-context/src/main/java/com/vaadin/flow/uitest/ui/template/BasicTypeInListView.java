@@ -52,9 +52,7 @@ public class BasicTypeInListView extends AbstractDivView {
         BasicTypeList list = new BasicTypeList();
         list.setId("template");
         add(list);
-        add(createButton("Add an item", "add",
-                event -> list.getModel().getItems().add("newItem")));
-        add(createButton("Remove the first item", "remove",
-                event -> list.getModel().getItems().remove(0)));
+        add(createButton("Add an item", "add", event -> list.getModel().getItems().add("newItem")));
+        add(createButton("Remove the first item", "remove", event -> list.getModel().getItems().remove(0)));
     }
 }

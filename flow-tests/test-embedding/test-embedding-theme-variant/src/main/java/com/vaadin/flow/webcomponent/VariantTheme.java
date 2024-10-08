@@ -25,8 +25,7 @@ public class VariantTheme implements AbstractTheme {
 
     @Override
     public List<String> getHeaderInlineContents() {
-        return Collections
-                .singletonList("<custom-style>\n" + "</custom-style>");
+        return Collections.singletonList("<custom-style>\n" + "</custom-style>");
     }
 
     @Override
@@ -40,9 +39,8 @@ public class VariantTheme implements AbstractTheme {
             attributes.put("theme", DARK);
             break;
         default:
-            LoggerFactory.getLogger(VariantTheme.class.getName()).warn(
-                    "Theme variant not recognized: '{}'. Using no variant.",
-                    variant);
+            LoggerFactory.getLogger(VariantTheme.class.getName())
+                    .warn("Theme variant not recognized: '{}'. Using no variant.", variant);
         }
         return attributes;
     }

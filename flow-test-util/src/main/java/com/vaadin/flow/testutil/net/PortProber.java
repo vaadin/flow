@@ -29,8 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.frontend.installer.Platform;
 
 /**
- * Class for determining a free localhost port that is not used by any ipv4 or
- * ipv6 interfaces.
+ * Class for determining a free localhost port that is not used by any ipv4 or ipv6 interfaces.
  * <p>
  * Derived from SeleniumHQ / selenium
  * <p>
@@ -56,8 +55,7 @@ public class PortProber {
         final Platform current = Platform.guess();
 
         if (current.isLinux()) {
-            ephemeralRangeDetector = LinuxEphemeralPortRangeDetector
-                    .getInstance();
+            ephemeralRangeDetector = LinuxEphemeralPortRangeDetector.getInstance();
         } else {
             ephemeralRangeDetector = new FixedIANAPortRange();
         }
@@ -93,18 +91,15 @@ public class PortProber {
      * <p/>
      * See https://en.wikipedia.org/wiki/Ephemeral_ports for more information.
      * <p/>
-     * If the system provides a too short range (mostly on old windows systems)
-     * the port range suggested from Internet Assigned Numbers Authority will be
-     * used.
+     * If the system provides a too short range (mostly on old windows systems) the port range suggested from Internet
+     * Assigned Numbers Authority will be used.
      *
      * @return a random port number
      */
     private static int createAcceptablePort() {
         synchronized (random) {
-            int FIRST_PORT = Math.max(START_OF_USER_PORTS,
-                    ephemeralRangeDetector.getLowestEphemeralPort());
-            int LAST_PORT = Math.min(HIGHEST_PORT,
-                    ephemeralRangeDetector.getHighestEphemeralPort());
+            int FIRST_PORT = Math.max(START_OF_USER_PORTS, ephemeralRangeDetector.getLowestEphemeralPort());
+            int LAST_PORT = Math.min(HIGHEST_PORT, ephemeralRangeDetector.getHighestEphemeralPort());
 
             if (LAST_PORT - FIRST_PORT < 5000) {
                 EphemeralPortRangeDetector ianaRange = new FixedIANAPortRange();
@@ -116,12 +111,10 @@ public class PortProber {
                 return FIRST_PORT;
             }
             if (FIRST_PORT > LAST_PORT) {
-                throw new UnsupportedOperationException(
-                        "Could not find ephemeral port to use");
+                throw new UnsupportedOperationException("Could not find ephemeral port to use");
             }
             final int randomInt = random.nextInt();
-            final int portWithoutOffset = Math
-                    .abs(randomInt % (LAST_PORT - FIRST_PORT + 1));
+            final int portWithoutOffset = Math.abs(randomInt % (LAST_PORT - FIRST_PORT + 1));
             return portWithoutOffset + FIRST_PORT;
         }
     }

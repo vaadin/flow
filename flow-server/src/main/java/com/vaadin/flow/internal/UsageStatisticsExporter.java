@@ -35,15 +35,14 @@ import elemental.json.JsonObject;
 public class UsageStatisticsExporter implements Serializable {
 
     /**
-     * Export {@link UsageStatistics} entries to a document. It appends a
-     * {@code <script>} element to the {@code <body>} element.
+     * Export {@link UsageStatistics} entries to a document. It appends a {@code <script>} element to the {@code <body>}
+     * element.
      *
      * @param document
      *            the document where the statistic entries to be exported to.
      */
     public static void exportUsageStatisticsToDocument(Document document) {
-        String entries = UsageStatistics.getEntries()
-                .map(UsageStatisticsExporter::createUsageStatisticsJson)
+        String entries = UsageStatistics.getEntries().map(UsageStatisticsExporter::createUsageStatisticsJson)
                 .collect(Collectors.joining(","));
 
         if (!entries.isEmpty()) {
@@ -56,8 +55,7 @@ public class UsageStatisticsExporter implements Serializable {
         }
     }
 
-    private static String createUsageStatisticsJson(
-            UsageStatistics.UsageEntry entry) {
+    private static String createUsageStatisticsJson(UsageStatistics.UsageEntry entry) {
         JsonObject json = Json.createObject();
 
         json.put("is", entry.getName());

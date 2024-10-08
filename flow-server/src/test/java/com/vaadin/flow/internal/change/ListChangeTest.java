@@ -33,29 +33,23 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class ListChangeTest {
-    private NodeList<StateNode> feature = AbstractNodeFeatureTest
-            .createFeature(ElementChildrenList.class);
+    private NodeList<StateNode> feature = AbstractNodeFeatureTest.createFeature(ElementChildrenList.class);
 
     @Test
     public void testBasicJson() {
         StateNode child1 = StateNodeTest.createEmptyNode("child1");
         StateNode child2 = StateNodeTest.createEmptyNode("child2");
-        ListAddChange<StateNode> change = new ListAddChange<>(feature, true, 0,
-                Arrays.asList(child1, child2));
+        ListAddChange<StateNode> change = new ListAddChange<>(feature, true, 0, Arrays.asList(child1, child2));
 
         JsonObject json = change.toJson(null);
 
-        Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber(JsonConstants.CHANGE_NODE));
+        Assert.assertEquals(change.getNode().getId(), (int) json.getNumber(JsonConstants.CHANGE_NODE));
         Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
                 (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
-        Assert.assertEquals(JsonConstants.CHANGE_TYPE_SPLICE,
-                json.getString(JsonConstants.CHANGE_TYPE));
-        Assert.assertEquals(0,
-                (int) json.getNumber(JsonConstants.CHANGE_SPLICE_INDEX));
+        Assert.assertEquals(JsonConstants.CHANGE_TYPE_SPLICE, json.getString(JsonConstants.CHANGE_TYPE));
+        Assert.assertEquals(0, (int) json.getNumber(JsonConstants.CHANGE_SPLICE_INDEX));
 
-        JsonArray addNodes = json
-                .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
+        JsonArray addNodes = json.getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
         Assert.assertEquals(2, addNodes.length());
 
         Assert.assertEquals(child1.getId(), (int) addNodes.getNumber(0));
@@ -64,8 +58,7 @@ public class ListChangeTest {
 
     @Test
     public void testZeroRemoveNotInJson() {
-        ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1,
-                Arrays.asList());
+        ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1, Arrays.asList());
 
         JsonObject json = change.toJson(null);
 
@@ -74,8 +67,7 @@ public class ListChangeTest {
 
     @Test
     public void testEmptyAddNotInJson() {
-        ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1,
-                Arrays.asList());
+        ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1, Arrays.asList());
 
         JsonObject json = change.toJson(null);
 

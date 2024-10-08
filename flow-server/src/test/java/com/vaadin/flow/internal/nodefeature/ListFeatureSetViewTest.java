@@ -55,8 +55,7 @@ public class ListFeatureSetViewTest {
         @Override
         protected void validate(String string) {
             if (string.length() > 5) {
-                throw new IllegalArgumentException(
-                        "All strings must be less than 5 characters");
+                throw new IllegalArgumentException("All strings must be less than 5 characters");
             }
         }
     }

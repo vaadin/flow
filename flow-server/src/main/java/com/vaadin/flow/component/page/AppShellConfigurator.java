@@ -22,17 +22,13 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.AppShellSettings;
 
 /**
- * An interface to configure application features and the host page where the
- * Vaadin application is running. It automatically configures the index.html
- * page. Configuration can be done using a class implementing this interface
- * with following annotations that affect the generated index.html page (also
- * known as 'application shell'):
+ * An interface to configure application features and the host page where the Vaadin application is running. It
+ * automatically configures the index.html page. Configuration can be done using a class implementing this interface
+ * with following annotations that affect the generated index.html page (also known as 'application shell'):
  *
  * <ul>
- * <li>{@link Meta}: appends an HTML {@code <meta>} tag to the bottom of the
- * {@code <head>} element</li>
- * <li>{@link Inline}: inlines a static content in any point of the
- * document</li>
+ * <li>{@link Meta}: appends an HTML {@code <meta>} tag to the bottom of the {@code <head>} element</li>
+ * <li>{@link Inline}: inlines a static content in any point of the document</li>
  * <li>{@link Viewport}: defines the viewport tag of the page</li>
  * <li>{@link BodySize}: configures the size of the body</li>
  * <li>{@link PageTitle}: establishes the page title</li>
@@ -41,18 +37,15 @@ import com.vaadin.flow.server.AppShellSettings;
  * </ul>
  *
  * <p>
- * There is a single application shell for the entire Vaadin application, and
- * there can only be one class implementing {@link AppShellConfigurator} per
- * Application. Also, app shell class is not allowed to extend Vaadin Component,
- * since app shells are only intended for page configuration and are
- * instantiated before the UI is created.
+ * There is a single application shell for the entire Vaadin application, and there can only be one class implementing
+ * {@link AppShellConfigurator} per Application. Also, app shell class is not allowed to extend Vaadin Component, since
+ * app shells are only intended for page configuration and are instantiated before the UI is created.
  * </p>
  *
  * <p>
- * NOTE: the application shell class is the only valid target for the page
- * configuration annotations listed below. The application would fail to start
- * if any of these annotations is wrongly placed on a class other than the
- * application shell class.
+ * NOTE: the application shell class is the only valid target for the page configuration annotations listed below. The
+ * application would fail to start if any of these annotations is wrongly placed on a class other than the application
+ * shell class.
  * <p>
  *
  * Example:

@@ -29,13 +29,11 @@ import com.vaadin.flow.dom.ThemeList;
  * <p>
  * This handler applies visual effects for the field if its type allows this:
  * <ul>
- * <li>If the field's class implements {@link HasValidation} interface then its
- * validity and error message is set based on a {@link ValidationResult}
- * <li>If the field's class may have a theme (e.g. implements {@link HasTheme}
- * or {@link HasElement}) then theme name derived from the {@link ErrorLevel} of
- * the {@link ValidationResult} instance is applied. E.g., for
- * {@link ErrorLevel#WARNING} the element will get the "theme"="warning"
- * attribute and value in HTML.
+ * <li>If the field's class implements {@link HasValidation} interface then its validity and error message is set based
+ * on a {@link ValidationResult}
+ * <li>If the field's class may have a theme (e.g. implements {@link HasTheme} or {@link HasElement}) then theme name
+ * derived from the {@link ErrorLevel} of the {@link ValidationResult} instance is applied. E.g., for
+ * {@link ErrorLevel#WARNING} the element will get the "theme"="warning" attribute and value in HTML.
  * </ul>
  *
  *
@@ -43,12 +41,10 @@ import com.vaadin.flow.dom.ThemeList;
  * @since
  *
  */
-public class DefaultBinderValidationErrorHandler
-        implements BinderValidationErrorHandler {
+public class DefaultBinderValidationErrorHandler implements BinderValidationErrorHandler {
 
     /**
-     * Handles a validation error emitted when trying to write the value of the
-     * given field.
+     * Handles a validation error emitted when trying to write the value of the given field.
      *
      * @param field
      *            the field with the invalid value
@@ -96,15 +92,13 @@ public class DefaultBinderValidationErrorHandler
      *
      * @param field
      *            a field
-     * @return an optional theme list, or an empty optional if the {@code field}
-     *         doesn't have it
+     * @return an optional theme list, or an empty optional if the {@code field} doesn't have it
      */
     protected Optional<ThemeList> getThemes(HasValue<?, ?> field) {
         if (field instanceof HasTheme) {
             return Optional.of(((HasTheme) field).getThemeNames());
         } else if (field instanceof HasElement) {
-            return Optional
-                    .of(((HasElement) field).getElement().getThemeList());
+            return Optional.of(((HasElement) field).getElement().getThemeList());
         } else {
             return Optional.empty();
         }
@@ -117,8 +111,8 @@ public class DefaultBinderValidationErrorHandler
      *            a feild
      */
     protected void clearErrorTheme(HasValue<?, ?> field) {
-        getThemes(field).ifPresent(themes -> Stream.of(ErrorLevel.values())
-                .map(this::getErrorThemeName).forEach(themes::remove));
+        getThemes(field).ifPresent(
+                themes -> Stream.of(ErrorLevel.values()).map(this::getErrorThemeName).forEach(themes::remove));
     }
 
     /**
@@ -129,11 +123,9 @@ public class DefaultBinderValidationErrorHandler
      * @param result
      *            a validation result
      */
-    protected void setErrorTheme(HasValue<?, ?> field,
-            ValidationResult result) {
+    protected void setErrorTheme(HasValue<?, ?> field, ValidationResult result) {
         result.getErrorLevel().map(this::getErrorThemeName)
-                .ifPresent(errorTheme -> getThemes(field)
-                        .ifPresent(themes -> themes.add(errorTheme)));
+                .ifPresent(errorTheme -> getThemes(field).ifPresent(themes -> themes.add(errorTheme)));
     }
 
 }

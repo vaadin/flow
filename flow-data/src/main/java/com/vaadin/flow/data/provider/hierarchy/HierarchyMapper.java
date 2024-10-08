@@ -37,12 +37,10 @@ import com.vaadin.flow.internal.Range;
 /**
  * Mapper for hierarchical data.
  * <p>
- * Keeps track of the expanded nodes, and size of of the subtrees for each
- * expanded node.
+ * Keeps track of the expanded nodes, and size of of the subtrees for each expanded node.
  * <p>
- * This class is framework internal implementation details, and can be changed /
- * moved at any point. This means that you should not directly use this for
- * anything.
+ * This class is framework internal implementation details, and can be changed / moved at any point. This means that you
+ * should not directly use this for anything.
  *
  * @author Vaadin Ltd
  *
@@ -91,8 +89,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the amount of available root data
      */
     public int getRootSize() {
-        return getDataProvider()
-                .getChildCount(new HierarchicalQuery<>(filter, null));
+        return getDataProvider().getChildCount(new HierarchicalQuery<>(filter, null));
     }
 
     /**
@@ -141,8 +138,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      *
      * @param item
      *            the item to expand
-     * @return {@code true} if this method expanded the item, {@code false}
-     *         otherwise
+     * @return {@code true} if this method expanded the item, {@code false} otherwise
      */
     public boolean expand(T item) {
         return doExpand(item);
@@ -159,21 +155,18 @@ public class HierarchyMapper<T, F> implements Serializable {
      */
     public Range expand(T item, Integer position) {
         if (doExpand(item) && position != null) {
-            return Range.withLength(position + 1,
-                    (int) getHierarchy(item, false).count());
+            return Range.withLength(position + 1, (int) getHierarchy(item, false).count());
         }
 
         return Range.withLength(0, 0);
     }
 
     /**
-     * Expands the given item if it is collapsed and has children, and returns
-     * whether this method expanded the item.
+     * Expands the given item if it is collapsed and has children, and returns whether this method expanded the item.
      *
      * @param item
      *            the item to expand
-     * @return {@code true} if this method expanded the item, {@code false}
-     *         otherwise
+     * @return {@code true} if this method expanded the item, {@code false} otherwise
      */
     private boolean doExpand(T item) {
         boolean expanded = false;
@@ -189,8 +182,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      *
      * @param item
      *            the item to collapse
-     * @return {@code true} if item has been collapsed, {@code false} if item is
-     *         empty or already collapsed
+     * @return {@code true} if item has been collapsed, {@code false} if item is empty or already collapsed
      */
     public boolean collapse(T item) {
         if (item == null) {
@@ -217,8 +209,7 @@ public class HierarchyMapper<T, F> implements Serializable {
         Range removedRows = Range.withLength(0, 0);
         if (isExpanded(item)) {
             if (position != null) {
-                removedRows = Range.withLength(position + 1,
-                        (int) getHierarchy(item, false).count());
+                removedRows = Range.withLength(position + 1, (int) getHierarchy(item, false).count());
             }
             expandedItems.remove(getDataProvider().getId(item));
         }
@@ -235,8 +226,7 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * Sets the current in-memory sorting. This will cause the hierarchy to be
-     * constructed again.
+     * Sets the current in-memory sorting. This will cause the hierarchy to be constructed again.
      *
      * @param inMemorySorting
      *            the in-memory sorting
@@ -255,8 +245,7 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * Sets the current back-end sorting. This will cause the hierarchy to be
-     * constructed again.
+     * Sets the current back-end sorting. This will cause the hierarchy to be constructed again.
      *
      * @param backEndSorting
      *            the back-end sorting
@@ -275,8 +264,7 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * Sets the current filter. This will cause the hierarchy to be constructed
-     * again.
+     * Sets the current filter. This will cause the hierarchy to be constructed again.
      *
      * @param filter
      *            the filter
@@ -286,8 +274,7 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * Gets the {@code HierarchicalDataProvider} for this
-     * {@code HierarchyMapper}.
+     * Gets the {@code HierarchicalDataProvider} for this {@code HierarchyMapper}.
      *
      * @return the hierarchical data provider
      */
@@ -309,8 +296,8 @@ public class HierarchyMapper<T, F> implements Serializable {
     /* Fetch methods. These are used to calculate what to request. */
 
     /**
-     * Gets a stream of items in the form of a flattened hierarchy from the
-     * back-end and filter the wanted results from the list.
+     * Gets a stream of items in the form of a flattened hierarchy from the back-end and filter the wanted results from
+     * the list.
      *
      * @param range
      *            the requested item range
@@ -321,8 +308,8 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * Gets a stream of children for the given item in the form of a flattened
-     * hierarchy from the back-end and filter the wanted results from the list.
+     * Gets a stream of children for the given item in the form of a flattened hierarchy from the back-end and filter
+     * the wanted results from the list.
      *
      * @param parent
      *            the parent item for the fetch
@@ -331,13 +318,11 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the stream of items
      */
     public Stream<T> fetchHierarchyItems(T parent, Range range) {
-        return getHierarchy(parent, false).skip(range.getStart())
-                .limit(range.length());
+        return getHierarchy(parent, false).skip(range.getStart()).limit(range.length());
     }
 
     /**
-     * Gets a stream of root items from the back-end and filter the wanted
-     * results from the list.
+     * Gets a stream of root items from the back-end and filter the wanted results from the list.
      *
      * @param range
      *            the requested item range
@@ -352,15 +337,13 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     public int countChildItems(T parent) {
-        return getDataProvider()
-                .getChildCount(new HierarchicalQuery<>(filter, parent));
+        return getDataProvider().getChildCount(new HierarchicalQuery<>(filter, parent));
     }
 
     /* Methods for providing information on the hierarchy. */
 
     /**
-     * Generic method for finding direct children of a given parent, limited by
-     * given range.
+     * Generic method for finding direct children of a given parent, limited by given range.
      *
      * @param parent
      *            the parent
@@ -370,18 +353,13 @@ public class HierarchyMapper<T, F> implements Serializable {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Stream<T> doFetchDirectChildren(T parent, Range range) {
-        Range actualRange = (range == null)
-                ? Range.withLength(0, Integer.MAX_VALUE)
-                : range;
-        return getDataProvider()
-                .fetchChildren(new HierarchicalQuery(actualRange.getStart(),
-                        actualRange.length(), getBackEndSorting(),
-                        getInMemorySorting(), getFilter(), parent));
+        Range actualRange = (range == null) ? Range.withLength(0, Integer.MAX_VALUE) : range;
+        return getDataProvider().fetchChildren(new HierarchicalQuery(actualRange.getStart(), actualRange.length(),
+                getBackEndSorting(), getInMemorySorting(), getFilter(), parent));
     }
 
     /**
-     * Generic method for finding full range of direct children of a given
-     * parent.
+     * Generic method for finding full range of direct children of a given parent.
      *
      * @param parent
      *            the parent
@@ -412,8 +390,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      *
      * @param item
      *            the item
-     * @return parent item or {@code null} for root items or if the parent is
-     *         closed
+     * @return parent item or {@code null} for root items or if the parent is closed
      */
     protected T getParentOfItem(T item) {
         Objects.requireNonNull(item, "Can not find the parent of null");
@@ -421,10 +398,9 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * Removes all children of an item identified by a given id. Items removed
-     * by this method as well as the original item are all marked to be
-     * collapsed. May be overridden in subclasses for removing obsolete data to
-     * avoid memory leaks.
+     * Removes all children of an item identified by a given id. Items removed by this method as well as the original
+     * item are all marked to be collapsed. May be overridden in subclasses for removing obsolete data to avoid memory
+     * leaks.
      *
      * @param id
      *            the item id
@@ -442,16 +418,14 @@ public class HierarchyMapper<T, F> implements Serializable {
             }
         }
         expandedItems.remove(id);
-        invalidatedChildren.stream().map(getDataProvider()::getId)
-                .forEach(x -> {
-                    removeChildren(x);
-                    parentIdMap.remove(x);
-                });
+        invalidatedChildren.stream().map(getDataProvider()::getId).forEach(x -> {
+            removeChildren(x);
+            parentIdMap.remove(x);
+        });
     }
 
     /**
-     * Finds the current index of given object. This is based on a search in
-     * flattened version of the hierarchy.
+     * Finds the current index of given object. This is based on a search in flattened version of the hierarchy.
      *
      * @param target
      *            the target object to find
@@ -462,8 +436,7 @@ public class HierarchyMapper<T, F> implements Serializable {
             return Optional.empty();
         }
 
-        final List<Object> collect = getHierarchy(null).map(provider::getId)
-                .collect(Collectors.toList());
+        final List<Object> collect = getHierarchy(null).map(provider::getId).collect(Collectors.toList());
         int index = collect.indexOf(getDataProvider().getId(target));
         return Optional.ofNullable(index < 0 ? null : index);
     }
@@ -480,8 +453,7 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * Gets the full hierarchy tree starting from given node. The starting node
-     * can be omitted.
+     * Gets the full hierarchy tree starting from given node. The starting node can be omitted.
      *
      * @param parent
      *            the parent node to start from
@@ -490,8 +462,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return the flattened hierarchy as a stream
      */
     private Stream<T> getHierarchy(T parent, boolean includeParent) {
-        return Stream.of(parent)
-                .flatMap(node -> getFlatChildrenStream(node, includeParent));
+        return Stream.of(parent).flatMap(node -> getFlatChildrenStream(node, includeParent));
     }
 
     /**
@@ -507,9 +478,8 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * The method to recursively fetch the children of given parent. Used with
-     * {@link Stream#flatMap} to expand a stream of parent nodes into a
-     * flattened hierarchy.
+     * The method to recursively fetch the children of given parent. Used with {@link Stream#flatMap} to expand a stream
+     * of parent nodes into a flattened hierarchy.
      *
      * @param parent
      *            the parent node
@@ -520,15 +490,13 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * The method to recursively fetch the children of given parent. Used with
-     * {@link Stream#flatMap} to expand a stream of parent nodes into a
-     * flattened hierarchy.
+     * The method to recursively fetch the children of given parent. Used with {@link Stream#flatMap} to expand a stream
+     * of parent nodes into a flattened hierarchy.
      *
      * @param parent
      *            the parent node
      * @param includeParent
-     *            {@code true} to include the parent in the stream;
-     *            {@code false} if not
+     *            {@code true} to include the parent in the stream; {@code false} if not
      * @return the stream of all children under the parent
      */
     private Stream<T> getFlatChildrenStream(T parent, boolean includeParent) {
@@ -538,14 +506,12 @@ public class HierarchyMapper<T, F> implements Serializable {
                 childList = stream.collect(Collectors.toList());
             }
             if (childList.isEmpty()) {
-                removeChildren(parent == null ? null
-                        : getDataProvider().getId(parent));
+                removeChildren(parent == null ? null : getDataProvider().getId(parent));
             } else {
                 registerChildren(parent, childList);
             }
         }
-        return combineParentAndChildStreams(parent,
-                childList.stream().flatMap(this::getFlatChildrenStream),
+        return combineParentAndChildStreams(parent, childList.stream().flatMap(this::getFlatChildrenStream),
                 includeParent);
     }
 
@@ -556,31 +522,26 @@ public class HierarchyMapper<T, F> implements Serializable {
      *            the parent node
      * @param range
      * @param includeParent
-     *            {@code true} to include the parent in the stream;
-     *            {@code false} if not
+     *            {@code true} to include the parent in the stream; {@code false} if not
      * @return the stream of all direct children under the parent
      */
-    private Stream<T> getChildrenStream(T parent, Range range,
-            boolean includeParent) {
+    private Stream<T> getChildrenStream(T parent, Range range, boolean includeParent) {
         List<T> childList = Collections.emptyList();
         if (isExpanded(parent)) {
             try (Stream<T> stream = doFetchDirectChildren(parent, range)) {
                 childList = stream.collect(Collectors.toList());
             }
             if (childList.isEmpty()) {
-                removeChildren(parent == null ? null
-                        : getDataProvider().getId(parent));
+                removeChildren(parent == null ? null : getDataProvider().getId(parent));
             } else {
                 registerChildren(parent, childList);
             }
         }
-        return combineParentAndChildStreams(parent, childList.stream(),
-                includeParent);
+        return combineParentAndChildStreams(parent, childList.stream(), includeParent);
     }
 
     /**
-     * Register parent and children items into inner structures. May be
-     * overridden in subclasses.
+     * Register parent and children items into inner structures. May be overridden in subclasses.
      *
      * @param parent
      *            the parent item
@@ -589,29 +550,24 @@ public class HierarchyMapper<T, F> implements Serializable {
      */
     protected void registerChildren(T parent, List<T> childList) {
         childMap.put(parent, new HashSet<>(childList));
-        childList.forEach(
-                x -> parentIdMap.put(getDataProvider().getId(x), parent));
+        childList.forEach(x -> parentIdMap.put(getDataProvider().getId(x), parent));
     }
 
     /**
-     * Helper method for combining parent and a stream of children into one
-     * stream. {@code null} item is never included, and parent can be skipped by
-     * providing the correct value for {@code includeParent}.
+     * Helper method for combining parent and a stream of children into one stream. {@code null} item is never included,
+     * and parent can be skipped by providing the correct value for {@code includeParent}.
      *
      * @param parent
      *            the parent node
      * @param children
      *            the stream of children
      * @param includeParent
-     *            {@code true} to include the parent in the stream;
-     *            {@code false} if not
+     *            {@code true} to include the parent in the stream; {@code false} if not
      * @return the combined stream of parent and its children
      */
-    private Stream<T> combineParentAndChildStreams(T parent, Stream<T> children,
-            boolean includeParent) {
+    private Stream<T> combineParentAndChildStreams(T parent, Stream<T> children, boolean includeParent) {
         boolean parentIncluded = includeParent && parent != null;
-        Stream<T> parentStream = parentIncluded ? Stream.of(parent)
-                : Stream.empty();
+        Stream<T> parentStream = parentIncluded ? Stream.of(parent) : Stream.empty();
         return Stream.concat(parentStream, children);
     }
 
@@ -633,8 +589,7 @@ public class HierarchyMapper<T, F> implements Serializable {
     /**
      * Returns the expanded items in form of an unmodifiable collection.
      *
-     * @return an unmodifiable {@code Collection<T>} containing the expanded
-     *         items.
+     * @return an unmodifiable {@code Collection<T>} containing the expanded items.
      */
     public Collection<T> getExpandedItems() {
         return Collections.unmodifiableCollection(expandedItems.values());
@@ -645,8 +600,7 @@ public class HierarchyMapper<T, F> implements Serializable {
      *
      * @param item
      *            Item to test
-     * @return {@literal true} if item is an active child, {@literal false}
-     *         otherwise.
+     * @return {@literal true} if item is an active child, {@literal false} otherwise.
      */
     boolean hasCurrentlyActiveChild(T item) {
         for (Set<T> children : childMap.values()) {

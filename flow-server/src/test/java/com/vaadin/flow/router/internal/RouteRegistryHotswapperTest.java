@@ -61,20 +61,17 @@ public class RouteRegistryHotswapperTest {
 
         ApplicationRouteRegistry applicationRouteRegistry = ApplicationRouteRegistry
                 .getInstance(vaadinService.getContext());
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(applicationRouteRegistry);
+        RouteConfiguration routeConfiguration = RouteConfiguration.forRegistry(applicationRouteRegistry);
         routeConfiguration.setAnnotatedRoute(MyRouteA.class);
         // simulate a route class whose annotation value will change
         routeConfiguration.setRoute("ORIGINAL_B", MyRouteB.class);
         routeConfiguration.setRoute("M1", NotAnnotatedRouteA.class);
 
         appRouteRegistryTracker = new RegistryChangeTracking();
-        applicationRouteRegistry
-                .addRoutesChangeListener(appRouteRegistryTracker);
+        applicationRouteRegistry.addRoutesChangeListener(appRouteRegistryTracker);
     }
 
-    private static class RegistryChangeTracking
-            implements RoutesChangedListener {
+    private static class RegistryChangeTracking implements RoutesChangedListener {
 
         private final List<RouteBaseData<?>> added = new ArrayList<>();
         private final List<RouteBaseData<?>> removed = new ArrayList<>();
@@ -100,36 +97,28 @@ public class RouteRegistryHotswapperTest {
     @Test
     public void onClassLoadEvent_applicationRegistry_changesApplied() {
         updater.onClassLoadEvent(vaadinService, Set.of(MyRouteC.class), false);
-        updater.onClassLoadEvent(vaadinService,
-                Set.of(MyRouteB.class, MyRouteA.class), true);
+        updater.onClassLoadEvent(vaadinService, Set.of(MyRouteB.class, MyRouteA.class), true);
 
-        Assert.assertEquals(
-                "Expected only changed route to be removed from the registry",
-                1, appRouteRegistryTracker.removed.size());
+        Assert.assertEquals("Expected only changed route to be removed from the registry", 1,
+                appRouteRegistryTracker.removed.size());
 
-        Assert.assertEquals(Set.of(MyRouteB.class),
-                appRouteRegistryTracker.removed.stream()
-                        .map(RouteBaseData::getNavigationTarget)
-                        .collect(Collectors.toSet()));
+        Assert.assertEquals(Set.of(MyRouteB.class), appRouteRegistryTracker.removed.stream()
+                .map(RouteBaseData::getNavigationTarget).collect(Collectors.toSet()));
 
-        Assert.assertEquals(
-                "Expected added and modified routes to be added to the registry",
-                2, appRouteRegistryTracker.added.size());
+        Assert.assertEquals("Expected added and modified routes to be added to the registry", 2,
+                appRouteRegistryTracker.added.size());
 
-        Assert.assertEquals(Set.of(MyRouteC.class, MyRouteB.class),
-                appRouteRegistryTracker.added.stream()
-                        .map(RouteBaseData::getNavigationTarget)
-                        .collect(Collectors.toSet()));
+        Assert.assertEquals(Set.of(MyRouteC.class, MyRouteB.class), appRouteRegistryTracker.added.stream()
+                .map(RouteBaseData::getNavigationTarget).collect(Collectors.toSet()));
     }
 
     @Test
     public void onClassLoadEvent_applicationRegistry_lazyRouteAdded_noChangesApplied() {
-        updater.onClassLoadEvent(vaadinService, Set.of(SessionRouteA.class,
-                SessionRouteB.class, SessionRouteC.class), false);
+        updater.onClassLoadEvent(vaadinService, Set.of(SessionRouteA.class, SessionRouteB.class, SessionRouteC.class),
+                false);
 
-        Assert.assertEquals(
-                "Expected routes with registerAtStartup=false not to be added to the registry",
-                0, appRouteRegistryTracker.removed.size());
+        Assert.assertEquals("Expected routes with registerAtStartup=false not to be added to the registry", 0,
+                appRouteRegistryTracker.removed.size());
 
     }
 
@@ -137,168 +126,123 @@ public class RouteRegistryHotswapperTest {
     @Test
     public void onClassLoadEvent_sessionRegistries_updatesOnlyOnModifiedAndRemovedClasses() {
         VaadinSession session = new AlwaysLockedVaadinSession(vaadinService);
-        RouteRegistry sessionRegistry = SessionRouteRegistry
-                .getSessionRegistry(session);
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(sessionRegistry);
+        RouteRegistry sessionRegistry = SessionRouteRegistry.getSessionRegistry(session);
+        RouteConfiguration routeConfiguration = RouteConfiguration.forRegistry(sessionRegistry);
         routeConfiguration.setAnnotatedRoute(SessionRouteA.class);
         // simulate a route class whose annotation value will change
         routeConfiguration.setRoute("ORIGINAL_S-B", SessionRouteB.class);
         routeConfiguration.setRoute("S-M1", NotAnnotatedRouteA.class);
 
-        RegistryChangeTracking tracker = new RegistryChangeTracking(
-                sessionRegistry);
+        RegistryChangeTracking tracker = new RegistryChangeTracking(sessionRegistry);
         sessionRegistry.addRoutesChangeListener(tracker);
 
-        updater.onClassLoadEvent(session,
-                Set.of(SessionRouteC.class, NotAnnotatedRouteA.class), false);
-        updater.onClassLoadEvent(session,
-                Set.of(SessionRouteB.class, SessionRouteA.class), true);
+        updater.onClassLoadEvent(session, Set.of(SessionRouteC.class, NotAnnotatedRouteA.class), false);
+        updater.onClassLoadEvent(session, Set.of(SessionRouteB.class, SessionRouteA.class), true);
 
-        Assert.assertEquals(
-                "Expected only changed routes to be removed from the registry",
-                2, tracker.removed.size());
+        Assert.assertEquals("Expected only changed routes to be removed from the registry", 2, tracker.removed.size());
 
         Assert.assertEquals(Set.of(SessionRouteB.class),
-                tracker.removed.stream().map(RouteBaseData::getNavigationTarget)
-                        .collect(Collectors.toSet()));
+                tracker.removed.stream().map(RouteBaseData::getNavigationTarget).collect(Collectors.toSet()));
 
-        Assert.assertEquals(
-                "Expected only modified route to be added to the registry", 1,
-                tracker.added.size());
+        Assert.assertEquals("Expected only modified route to be added to the registry", 1, tracker.added.size());
 
         Assert.assertEquals(Set.of(SessionRouteB.class),
-                tracker.added.stream().map(RouteBaseData::getNavigationTarget)
-                        .collect(Collectors.toSet()));
+                tracker.added.stream().map(RouteBaseData::getNavigationTarget).collect(Collectors.toSet()));
     }
 
     @Test
     public void onClassLoadEvent_sessionRegistries_modifiedClass_routePathShouldBePreserved() {
         VaadinSession session = new AlwaysLockedVaadinSession(vaadinService);
 
-        RouteRegistry sessionRegistry = SessionRouteRegistry
-                .getSessionRegistry(session);
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(sessionRegistry);
+        RouteRegistry sessionRegistry = SessionRouteRegistry.getSessionRegistry(session);
+        RouteConfiguration routeConfiguration = RouteConfiguration.forRegistry(sessionRegistry);
         routeConfiguration.setRoute("R1", SessionRouteA.class);
         routeConfiguration.setRoute("R2", SessionRouteB.class);
 
-        Set<RouteData> before = new HashSet<>(
-                sessionRegistry.getRegisteredRoutes());
+        Set<RouteData> before = new HashSet<>(sessionRegistry.getRegisteredRoutes());
 
-        RegistryChangeTracking tracker = new RegistryChangeTracking(
-                sessionRegistry);
+        RegistryChangeTracking tracker = new RegistryChangeTracking(sessionRegistry);
         sessionRegistry.addRoutesChangeListener(tracker);
 
         updater.onClassLoadEvent(session, Set.of(SessionRouteA.class), true);
 
-        Set<RouteData> after = new HashSet<>(
-                sessionRegistry.getRegisteredRoutes());
+        Set<RouteData> after = new HashSet<>(sessionRegistry.getRegisteredRoutes());
 
-        Assert.assertTrue(
-                "No changes to session registry should be applied after session destroy",
+        Assert.assertTrue("No changes to session registry should be applied after session destroy",
                 tracker.removed.isEmpty() && tracker.added.isEmpty());
         Assert.assertEquals(before, after);
 
     }
 
     @Test
-    public void onClassLoadEvent_reactEnabled_layoutChanges_layoutJsonUpdated()
-            throws IOException {
+    public void onClassLoadEvent_reactEnabled_layoutChanges_layoutJsonUpdated() throws IOException {
         MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
                 .getDeploymentConfiguration();
         configuration.setReactEnabled(true);
-        configuration.setProjectFolder(
-                Files.createTempDirectory("temp-project").toFile());
-        Path layoutFile = configuration.getFrontendFolder().toPath()
-                .resolve(Path.of("generated", "layouts.json"));
-        Assert.assertFalse(
-                "Expected layouts.json file not to be present before hotswap",
-                Files.exists(layoutFile));
+        configuration.setProjectFolder(Files.createTempDirectory("temp-project").toFile());
+        Path layoutFile = configuration.getFrontendFolder().toPath().resolve(Path.of("generated", "layouts.json"));
+        Assert.assertFalse("Expected layouts.json file not to be present before hotswap", Files.exists(layoutFile));
 
         @Layout
         class MyLayout extends Component implements RouterLayout {
         }
 
         updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
-        Assert.assertTrue("Expected layouts.json file to be written",
-                Files.exists(layoutFile));
+        Assert.assertTrue("Expected layouts.json file to be written", Files.exists(layoutFile));
     }
 
     @Test
-    public void onClassLoadEvent_reactEnabled_layoutNotChanged_layoutJsonNotUpdated()
-            throws IOException {
+    public void onClassLoadEvent_reactEnabled_layoutNotChanged_layoutJsonNotUpdated() throws IOException {
         MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
                 .getDeploymentConfiguration();
         configuration.setReactEnabled(true);
-        configuration.setProjectFolder(
-                Files.createTempDirectory("temp-project").toFile());
-        Path layoutFile = configuration.getFrontendFolder().toPath()
-                .resolve(Path.of("generated", "layouts.json"));
-        Assert.assertFalse(
-                "Expected layouts.json file not to be present before hotswap",
-                Files.exists(layoutFile));
+        configuration.setProjectFolder(Files.createTempDirectory("temp-project").toFile());
+        Path layoutFile = configuration.getFrontendFolder().toPath().resolve(Path.of("generated", "layouts.json"));
+        Assert.assertFalse("Expected layouts.json file not to be present before hotswap", Files.exists(layoutFile));
 
         @Layout
         class MyLayout extends Component implements RouterLayout {
         }
 
         updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
-        Assert.assertTrue("Expected layouts.json file to be written",
-                Files.exists(layoutFile));
+        Assert.assertTrue("Expected layouts.json file to be written", Files.exists(layoutFile));
         long lastModified = layoutFile.toFile().lastModified();
 
         updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
-        Assert.assertTrue("Expected layouts.json file to be written",
-                Files.exists(layoutFile));
-        Assert.assertEquals(
-                "Layout not changed, json file should not be written",
-                lastModified, layoutFile.toFile().lastModified());
+        Assert.assertTrue("Expected layouts.json file to be written", Files.exists(layoutFile));
+        Assert.assertEquals("Layout not changed, json file should not be written", lastModified,
+                layoutFile.toFile().lastModified());
 
     }
 
     @Test
-    public void onClassLoadEvent_reactEnabled_notLayoutChanges_layoutJsonNotUpdated()
-            throws IOException {
+    public void onClassLoadEvent_reactEnabled_notLayoutChanges_layoutJsonNotUpdated() throws IOException {
         MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
                 .getDeploymentConfiguration();
         configuration.setReactEnabled(true);
-        configuration.setProjectFolder(
-                Files.createTempDirectory("temp-project").toFile());
-        Path layoutFile = configuration.getFrontendFolder().toPath()
-                .resolve(Path.of("generated", "layouts.json"));
-        Assert.assertFalse(
-                "Expected layouts.json file not to be present before hotswap",
-                Files.exists(layoutFile));
+        configuration.setProjectFolder(Files.createTempDirectory("temp-project").toFile());
+        Path layoutFile = configuration.getFrontendFolder().toPath().resolve(Path.of("generated", "layouts.json"));
+        Assert.assertFalse("Expected layouts.json file not to be present before hotswap", Files.exists(layoutFile));
 
         updater.onClassLoadEvent(vaadinService, Set.of(MyRouteA.class), true);
-        Assert.assertFalse(
-                "Expected layouts.json file not to be present after hotswap",
-                Files.exists(layoutFile));
+        Assert.assertFalse("Expected layouts.json file not to be present after hotswap", Files.exists(layoutFile));
     }
 
     @Test
-    public void onClassLoadEvent_reactDisabled_layoutChanges_layoutJsonNotWritten()
-            throws IOException {
+    public void onClassLoadEvent_reactDisabled_layoutChanges_layoutJsonNotWritten() throws IOException {
         MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
                 .getDeploymentConfiguration();
         configuration.setReactEnabled(false);
-        configuration.setProjectFolder(
-                Files.createTempDirectory("temp-project").toFile());
-        Path layoutFile = configuration.getFrontendFolder().toPath()
-                .resolve(Path.of("generated", "layouts.json"));
-        Assert.assertFalse(
-                "Expected layouts.json file not to be present before hotswap",
-                Files.exists(layoutFile));
+        configuration.setProjectFolder(Files.createTempDirectory("temp-project").toFile());
+        Path layoutFile = configuration.getFrontendFolder().toPath().resolve(Path.of("generated", "layouts.json"));
+        Assert.assertFalse("Expected layouts.json file not to be present before hotswap", Files.exists(layoutFile));
 
         @Layout
         class MyLayout extends Component implements RouterLayout {
         }
 
         updater.onClassLoadEvent(vaadinService, Set.of(MyLayout.class), true);
-        Assert.assertFalse(
-                "Expected layouts.json file not to be present after hotswap",
-                Files.exists(layoutFile));
+        Assert.assertFalse("Expected layouts.json file not to be present after hotswap", Files.exists(layoutFile));
     }
 
     @Test
@@ -307,8 +251,7 @@ public class RouteRegistryHotswapperTest {
         updater.onClassLoadEvent(vaadinService, Set.of(Long.class), true);
 
         Assert.assertTrue("Expected registry not to be updated",
-                appRouteRegistryTracker.removed.isEmpty()
-                        && appRouteRegistryTracker.added.isEmpty());
+                appRouteRegistryTracker.removed.isEmpty() && appRouteRegistryTracker.added.isEmpty());
     }
 
     @Test
@@ -317,8 +260,7 @@ public class RouteRegistryHotswapperTest {
         updater.onClassLoadEvent(vaadinService, Set.of(), true);
 
         Assert.assertTrue("Expected registry not to be updated",
-                appRouteRegistryTracker.removed.isEmpty()
-                        && appRouteRegistryTracker.added.isEmpty());
+                appRouteRegistryTracker.removed.isEmpty() && appRouteRegistryTracker.added.isEmpty());
     }
 
     @Test
@@ -327,8 +269,7 @@ public class RouteRegistryHotswapperTest {
         updater.onClassLoadEvent(vaadinService, null, true);
 
         Assert.assertTrue("Expected registry not to be updated",
-                appRouteRegistryTracker.removed.isEmpty()
-                        && appRouteRegistryTracker.added.isEmpty());
+                appRouteRegistryTracker.removed.isEmpty() && appRouteRegistryTracker.added.isEmpty());
     }
 
     @Tag("div")

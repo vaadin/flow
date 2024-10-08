@@ -41,25 +41,22 @@ public class LocaleChangeView extends Div {
 
     public LocaleChangeView() {
         Locale defaultLocale = UI.getCurrent().getLocale();
-        NativeButton changeLocaleButton = new NativeButton("Change Locale",
-                click -> {
-                    if (defaultLocale.equals(Locale.ENGLISH)) {
-                        changeSessionLocale(Locale.FRANCE);
-                    } else {
-                        changeSessionLocale(Locale.ENGLISH);
-                    }
-                });
+        NativeButton changeLocaleButton = new NativeButton("Change Locale", click -> {
+            if (defaultLocale.equals(Locale.ENGLISH)) {
+                changeSessionLocale(Locale.FRANCE);
+            } else {
+                changeSessionLocale(Locale.ENGLISH);
+            }
+        });
         changeLocaleButton.setId(CHANGE_LOCALE_BUTTON_ID);
 
-        LocaleObserverComponent localeObserverComponent = new LocaleObserverComponent(
-                defaultLocale);
+        LocaleObserverComponent localeObserverComponent = new LocaleObserverComponent(defaultLocale);
 
         NativeButton showLocaleUpdates = new NativeButton("Show locale updates",
                 click -> localeObserverComponent.showLocaleUpdates());
         showLocaleUpdates.setId(SHOW_RESULTS_BUTTON_ID);
 
-        add(changeLocaleButton, showLocaleUpdates, new HtmlComponent(Tag.BR),
-                localeObserverComponent);
+        add(changeLocaleButton, showLocaleUpdates, new HtmlComponent(Tag.BR), localeObserverComponent);
     }
 
     private void changeSessionLocale(Locale locale) {
@@ -67,8 +64,7 @@ public class LocaleChangeView extends Div {
     }
 
     @Tag("Div")
-    private static class LocaleObserverComponent extends Component
-            implements HasComponents, LocaleChangeObserver {
+    private static class LocaleObserverComponent extends Component implements HasComponents, LocaleChangeObserver {
 
         private final Locale defaultLocale;
 
@@ -81,8 +77,7 @@ public class LocaleChangeView extends Div {
             if (event.getLocale().equals(defaultLocale)) {
                 return;
             }
-            final boolean sameUI = getUI().isPresent()
-                    && getUI().get() == UI.getCurrent();
+            final boolean sameUI = getUI().isPresent() && getUI().get() == UI.getCurrent();
 
             registerLocaleUpdate(sameUI);
         }
@@ -96,11 +91,9 @@ public class LocaleChangeView extends Div {
             for (int i = 0; i < localeUpdates.getUiCheckResults().size(); i++) {
                 Boolean checkResult = localeUpdates.getUiCheckResults().get(i);
                 Span sameUIResult = new Span();
-                sameUIResult
-                        .setId(String.format("%s-%d", SAME_UI_RESULT_ID, i));
+                sameUIResult.setId(String.format("%s-%d", SAME_UI_RESULT_ID, i));
                 sameUIResult.setText(Boolean.toString(checkResult));
-                Span caption = new Span(String
-                        .format("Component %d uses current UI instance = ", i));
+                Span caption = new Span(String.format("Component %d uses current UI instance = ", i));
                 add(caption, sameUIResult, new HtmlComponent(Tag.BR));
             }
         }
@@ -109,8 +102,7 @@ public class LocaleChangeView extends Div {
             VaadinSession session = VaadinSession.getCurrent();
             // no lock needed, since flow listeners are called under lock
             // already
-            LocaleUpdates localeUpdates = session
-                    .getAttribute(LocaleUpdates.class);
+            LocaleUpdates localeUpdates = session.getAttribute(LocaleUpdates.class);
             if (localeUpdates == null) {
                 localeUpdates = new LocaleUpdates();
             }

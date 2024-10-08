@@ -27,8 +27,7 @@ public class PolymerDefaultPropertyValueView extends AbstractDivView {
         template.setId("template");
         add(template);
 
-        add(createButton("Show email value", "show-email",
-                event -> createEmailValue(template)));
+        add(createButton("Show email value", "show-email", event -> createEmailValue(template)));
     }
 
     private void createEmailValue(PolymerDefaultPropertyValue template) {

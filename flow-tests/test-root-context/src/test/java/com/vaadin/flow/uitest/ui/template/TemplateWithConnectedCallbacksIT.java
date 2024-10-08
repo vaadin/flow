@@ -33,21 +33,17 @@ public class TemplateWithConnectedCallbacksIT extends ChromeBrowserTest {
         WebElement button = findElement(By.id("toggle-button"));
 
         scrollIntoViewAndClick(button);
-        waitForElementNotPresent(
-                By.tagName("template-with-connected-callbacks"));
+        waitForElementNotPresent(By.tagName("template-with-connected-callbacks"));
         scrollIntoViewAndClick(button);
         assertMessageIsWrittenFromServer();
     }
 
     private void assertMessageIsWrittenFromServer() {
         waitForElementPresent(By.tagName("template-with-connected-callbacks"));
-        TestBenchElement element = $("template-with-connected-callbacks")
-                .first();
-        TestBenchElement messageElement = element.$(TestBenchElement.class)
-                .id("connectedMessage");
+        TestBenchElement element = $("template-with-connected-callbacks").first();
+        TestBenchElement messageElement = element.$(TestBenchElement.class).id("connectedMessage");
 
-        Assert.assertEquals("Connected (checked from server side)",
-                messageElement.getText());
+        Assert.assertEquals("Connected (checked from server side)", messageElement.getText());
     }
 
 }

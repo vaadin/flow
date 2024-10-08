@@ -27,16 +27,14 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
- * Defines the route template suffix for components that function as navigation
- * targets in routing.
+ * Defines the route template suffix for components that function as navigation targets in routing.
  * <p>
- * The route template of the navigation target is composed of the values of all
- * {@link RoutePrefix} annotated on the {@link #layout()} and
- * {@link ParentLayout} class values, starting from the root parent and joined
- * together using slash delimiter to form a path form string.
+ * The route template of the navigation target is composed of the values of all {@link RoutePrefix} annotated on the
+ * {@link #layout()} and {@link ParentLayout} class values, starting from the root parent and joined together using
+ * slash delimiter to form a path form string.
  * <p>
- * There is also {@link RouteAlias} annotation which may be declared in addition
- * to this annotation and may be used multiple times.
+ * There is also {@link RouteAlias} annotation which may be declared in addition to this annotation and may be used
+ * multiple times.
  *
  * @see RouteAlias
  * @see RoutePrefix
@@ -56,21 +54,19 @@ public @interface Route {
      * Sets the route template suffix value of the annotated class.
      *
      * <p>
-     * If no value is provided, the path will be derived from the class name of
-     * the component. The derived name will be in lower case and trailing "View"
-     * will be removed. Also, MainView or Main names will be mapped to root
-     * (value will be "").
+     * If no value is provided, the path will be derived from the class name of the component. The derived name will be
+     * in lower case and trailing "View" will be removed. Also, MainView or Main names will be mapped to root (value
+     * will be "").
      * </p>
      *
      * <p>
-     * This value accepts also parameter template segments which can be defined
-     * using following format: <code>:parameterName[?|*][(regex)]</code>.
+     * This value accepts also parameter template segments which can be defined using following format:
+     * <code>:parameterName[?|*][(regex)]</code>.
      * </p>
      *
      * <p>
-     * Note for framework developers: do not use the value directly, but use the
-     * helper method {@link RouteUtil#resolve(VaadinContext, Class)}, so that
-     * naming convention based values are dealt correctly.
+     * Note for framework developers: do not use the value directly, but use the helper method
+     * {@link RouteUtil#resolve(VaadinContext, Class)}, so that naming convention based values are dealt correctly.
      * </p>
      *
      * @return the explicit path value of this route
@@ -80,15 +76,12 @@ public @interface Route {
     /**
      * Sets the parent component for the route target component.
      * <p>
-     * When navigating between components that use the same layout, the same
-     * component instance is reused. Default layout target is the {@link UI},
-     * but the layout should not be a custom {@code UI} as {@code UI} is a
-     * special class used to know where the route stack ends and no parent
-     * layouts should be involved.
+     * When navigating between components that use the same layout, the same component instance is reused. Default
+     * layout target is the {@link UI}, but the layout should not be a custom {@code UI} as {@code UI} is a special
+     * class used to know where the route stack ends and no parent layouts should be involved.
      *
      * <p>
-     * All layout stacks will be appended to the {@code UI} as it represents the
-     * Body element.
+     * All layout stacks will be appended to the {@code UI} as it represents the Body element.
      *
      * @return the layout component class used by the route target component.
      * @see RouterLayout
@@ -96,17 +89,14 @@ public @interface Route {
     Class<? extends RouterLayout> layout() default UI.class;
 
     /**
-     * Ignore route prefixes from parent layouts and only use the path defined
-     * in this annotation.
+     * Ignore route prefixes from parent layouts and only use the path defined in this annotation.
      *
-     * @return <code>true</code> to ignore parent layout prefixes,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> to ignore parent layout prefixes, <code>false</code> otherwise
      */
     boolean absolute() default false;
 
     /**
-     * Marks if this Route should be registered during the initial route
-     * registration on servlet startup.
+     * Marks if this Route should be registered during the initial route registration on servlet startup.
      * <p>
      * Default is to register route at startup.
      *
@@ -115,9 +105,8 @@ public @interface Route {
     boolean registerAtStartup() default true;
 
     /**
-     * Marks if Route should apply a {@link Layout} matching route value when no
-     * {@link #layout()} defined. If set to false no layout will be searched
-     * for.
+     * Marks if Route should apply a {@link Layout} matching route value when no {@link #layout()} defined. If set to
+     * false no layout will be searched for.
      *
      * @return {@code false} skips automatic layout
      */

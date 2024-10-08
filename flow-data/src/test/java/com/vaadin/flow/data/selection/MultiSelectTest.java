@@ -31,8 +31,7 @@ import com.vaadin.flow.shared.Registration;
 
 public class MultiSelectTest {
 
-    private static class MultiSelectMock
-            implements MultiSelect<TestLabel, String> {
+    private static class MultiSelectMock implements MultiSelect<TestLabel, String> {
 
         private final TestLabel component = new TestLabel();
         private final Set<String> selectedItems = new LinkedHashSet<>();
@@ -53,8 +52,7 @@ public class MultiSelectTest {
         }
 
         @Override
-        public void updateSelection(Set<String> addedItems,
-                Set<String> removedItems) {
+        public void updateSelection(Set<String> addedItems, Set<String> removedItems) {
             selectedItems.removeAll(removedItems);
             selectedItems.addAll(addedItems);
         }
@@ -65,8 +63,7 @@ public class MultiSelectTest {
         }
 
         @Override
-        public Registration addSelectionListener(
-                MultiSelectionListener<TestLabel, String> listener) {
+        public Registration addSelectionListener(MultiSelectionListener<TestLabel, String> listener) {
             return null;
         }
 
@@ -76,24 +73,21 @@ public class MultiSelectTest {
     public void selectItem_previousItemsAreStillSelected() {
         MultiSelectMock select = new MultiSelectMock("item 1");
         Assert.assertEquals(1, select.getSelectedItems().size());
-        Assert.assertArrayEquals(new Object[] { "item 1" },
-                select.getSelectedItems().toArray());
+        Assert.assertArrayEquals(new Object[] { "item 1" }, select.getSelectedItems().toArray());
         Assert.assertTrue(select.isSelected("item 1"));
         Assert.assertFalse(select.isSelected("item 2"));
 
         select.select("item 2");
 
         Assert.assertEquals(2, select.getSelectedItems().size());
-        Assert.assertArrayEquals(new Object[] { "item 1", "item 2" },
-                select.getSelectedItems().toArray());
+        Assert.assertArrayEquals(new Object[] { "item 1", "item 2" }, select.getSelectedItems().toArray());
         Assert.assertTrue(select.isSelected("item 1"));
         Assert.assertTrue(select.isSelected("item 2"));
 
         select.select(Arrays.asList("item 3", "item 4"));
 
         Assert.assertEquals(4, select.getSelectedItems().size());
-        Assert.assertArrayEquals(
-                new Object[] { "item 1", "item 2", "item 3", "item 4" },
+        Assert.assertArrayEquals(new Object[] { "item 1", "item 2", "item 3", "item 4" },
                 select.getSelectedItems().toArray());
         Assert.assertTrue(select.isSelected("item 1"));
         Assert.assertTrue(select.isSelected("item 2"));
@@ -107,21 +101,18 @@ public class MultiSelectTest {
         select.deselect("item 2");
 
         Assert.assertEquals(1, select.getSelectedItems().size());
-        Assert.assertArrayEquals(new Object[] { "item 1" },
-                select.getSelectedItems().toArray());
+        Assert.assertArrayEquals(new Object[] { "item 1" }, select.getSelectedItems().toArray());
         Assert.assertTrue(select.isSelected("item 1"));
         Assert.assertFalse(select.isSelected("item 2"));
     }
 
     @Test
     public void deselectItem_deselectSelectedItem_itemIsDesselected() {
-        MultiSelectMock select = new MultiSelectMock("item 1", "item 2",
-                "item 3");
+        MultiSelectMock select = new MultiSelectMock("item 1", "item 2", "item 3");
         select.deselect("item 2");
 
         Assert.assertEquals(2, select.getSelectedItems().size());
-        Assert.assertArrayEquals(new Object[] { "item 1", "item 3" },
-                select.getSelectedItems().toArray());
+        Assert.assertArrayEquals(new Object[] { "item 1", "item 3" }, select.getSelectedItems().toArray());
         Assert.assertTrue(select.isSelected("item 1"));
         Assert.assertFalse(select.isSelected("item 2"));
         Assert.assertTrue(select.isSelected("item 3"));
@@ -140,8 +131,7 @@ public class MultiSelectTest {
         select.setValue(new HashSet<>(Arrays.asList("item 3")));
 
         Assert.assertEquals(1, select.getSelectedItems().size());
-        Assert.assertArrayEquals(new Object[] { "item 3" },
-                select.getSelectedItems().toArray());
+        Assert.assertArrayEquals(new Object[] { "item 3" }, select.getSelectedItems().toArray());
         Assert.assertFalse(select.isSelected("item 1"));
         Assert.assertFalse(select.isSelected("item 2"));
         Assert.assertTrue(select.isSelected("item 3"));
@@ -159,20 +149,17 @@ public class MultiSelectTest {
         MultiSelectMock select = new MultiSelectMock("item 1", "item 2");
 
         Assert.assertEquals(2, select.getValue().size());
-        Assert.assertArrayEquals(new Object[] { "item 1", "item 2" },
-                select.getValue().toArray());
+        Assert.assertArrayEquals(new Object[] { "item 1", "item 2" }, select.getValue().toArray());
 
         select.select("item 3");
 
         Assert.assertEquals(3, select.getValue().size());
-        Assert.assertArrayEquals(new Object[] { "item 1", "item 2", "item 3" },
-                select.getValue().toArray());
+        Assert.assertArrayEquals(new Object[] { "item 1", "item 2", "item 3" }, select.getValue().toArray());
 
         select.deselect("item 2");
 
         Assert.assertEquals(2, select.getValue().size());
-        Assert.assertArrayEquals(new Object[] { "item 1", "item 3" },
-                select.getValue().toArray());
+        Assert.assertArrayEquals(new Object[] { "item 1", "item 3" }, select.getValue().toArray());
     }
 
     @Test

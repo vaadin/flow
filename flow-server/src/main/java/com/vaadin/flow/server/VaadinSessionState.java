@@ -29,13 +29,13 @@ public enum VaadinSessionState {
      */
     OPEN,
     /**
-     * The {@link VaadinSession#close() close} method has been called; the
-     * session will be closed as soon as the current request ends.
+     * The {@link VaadinSession#close() close} method has been called; the session will be closed as soon as the current
+     * request ends.
      */
     CLOSING,
     /**
-     * The session is closed; all the {@link UI}s have been removed and
-     * {@link SessionDestroyListener}s have been called.
+     * The session is closed; all the {@link UI}s have been removed and {@link SessionDestroyListener}s have been
+     * called.
      */
     CLOSED;
 

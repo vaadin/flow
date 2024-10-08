@@ -74,21 +74,14 @@ public class WebComponentConfigurationRegistryInitializerTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         Mockito.when(vaadinService.getContext()).thenReturn(context);
-        Mockito.when(
-                context.getAttribute(WebComponentConfigurationRegistry.class))
-                .thenReturn(registry);
-        Mockito.when(context.getAttribute(
-                eq(WebComponentConfigurationRegistry.class), any()))
-                .thenReturn(registry);
+        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(registry);
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), any())).thenReturn(registry);
 
         initializer = new WebComponentConfigurationRegistryInitializer();
-        when(servletContext.getAttribute(
-                WebComponentConfigurationRegistry.class.getName()))
-                .thenReturn(registry);
+        when(servletContext.getAttribute(WebComponentConfigurationRegistry.class.getName())).thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);
-        when(vaadinService.getInstantiator())
-                .thenReturn(new MockInstantiator());
+        when(vaadinService.getInstantiator()).thenReturn(new MockInstantiator());
     }
 
     @After
@@ -98,18 +91,14 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
     @Test
     public void process() throws ServletException {
-        initializer.process(
-                Stream.of(MyComponentExporter.class, UserBoxExporter.class,
-                        ExporterFactory.class).collect(Collectors.toSet()),
-                servletContext);
+        initializer.process(Stream.of(MyComponentExporter.class, UserBoxExporter.class, ExporterFactory.class)
+                .collect(Collectors.toSet()), servletContext);
         ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
         Mockito.verify(registry).setConfigurations(captor.capture());
         Set<?> set = captor.getValue();
         Assert.assertEquals(3, set.size());
-        Set<Class> componentClasses = set.stream()
-                .map(WebComponentConfiguration.class::cast)
-                .map(WebComponentConfiguration::getComponentClass)
-                .collect(Collectors.toSet());
+        Set<Class> componentClasses = set.stream().map(WebComponentConfiguration.class::cast)
+                .map(WebComponentConfiguration::getComponentClass).collect(Collectors.toSet());
         Assert.assertTrue(componentClasses.contains(MyComponent.class));
         Assert.assertTrue(componentClasses.contains(UserBox.class));
         Assert.assertTrue(componentClasses.contains(InvalidName.class));
@@ -120,8 +109,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         try {
             initializer.process(null, servletContext);
         } catch (Exception e) {
-            Assert.fail(
-                    "WebComponentRegistryInitializer.process should not throw with null argument");
+            Assert.fail("WebComponentRegistryInitializer.process should not throw with null argument");
         }
         // Expect a call to setWebComponents even if we have an empty or null
         // set
@@ -131,13 +119,10 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void process_noExceptionForMultipleCorrectExportsOfTheSameComponent() {
         try {
-            initializer.process(
-                    Stream.of(MyComponentExporter.class, SiblingExporter.class)
-                            .collect(Collectors.toSet()),
+            initializer.process(Stream.of(MyComponentExporter.class, SiblingExporter.class).collect(Collectors.toSet()),
                     servletContext);
         } catch (Exception e) {
-            Assert.fail("WebComponentRegistryInitializer.process should not "
-                    + "throw with 'sibling' exporters");
+            Assert.fail("WebComponentRegistryInitializer.process should not " + "throw with 'sibling' exporters");
         }
     }
 
@@ -146,53 +131,39 @@ public class WebComponentConfigurationRegistryInitializerTest {
         try {
             initializer.process(Collections.emptySet(), servletContext);
         } catch (Exception e) {
-            Assert.fail(
-                    "WebComponentRegistryInitializer.process should not throw with empty set");
+            Assert.fail("WebComponentRegistryInitializer.process should not throw with empty set");
         }
         Mockito.verify(registry).setConfigurations(Collections.emptySet());
     }
 
     @Test
-    public void duplicateNamesFoundprocess_exceptionIsThrown()
-            throws ServletException {
+    public void duplicateNamesFoundprocess_exceptionIsThrown() throws ServletException {
         expectedEx.expect(ServletException.class);
         expectedEx.expectCause(CauseMatcher.ex(IllegalArgumentException.class)
                 .msgStartsWith("Found two WebComponentExporter classes"));
         initializer.process(
-                Stream.of(MyComponentExporter.class, DuplicateTagExporter.class)
-                        .collect(Collectors.toSet()),
+                Stream.of(MyComponentExporter.class, DuplicateTagExporter.class).collect(Collectors.toSet()),
                 servletContext);
     }
 
     @Test
-    public void invalidCustomElementName_initializerThrowsException()
-            throws ServletException {
+    public void invalidCustomElementName_initializerThrowsException() throws ServletException {
         expectedEx.expect(ServletException.class);
-        expectedEx.expectCause(CauseMatcher
-                .ex(InvalidCustomElementNameException.class)
-                .msgEquals(String.format(
-                        "Tag name '%s' given by '%s' is not a valid custom element "
-                                + "name.",
-                        "invalid",
-                        InvalidNameExporter.class.getCanonicalName())));
+        expectedEx.expectCause(CauseMatcher.ex(InvalidCustomElementNameException.class)
+                .msgEquals(String.format("Tag name '%s' given by '%s' is not a valid custom element " + "name.",
+                        "invalid", InvalidNameExporter.class.getCanonicalName())));
 
-        initializer.process(Collections.singleton(InvalidNameExporter.class),
-                servletContext);
+        initializer.process(Collections.singleton(InvalidNameExporter.class), servletContext);
     }
 
     @Test
-    public void duplicatePropertyRegistration_doesNotCauseIssues()
-            throws ServletException {
-        initializer.process(
-                Collections.singleton(DuplicatePropertyExporter.class),
-                servletContext);
+    public void duplicatePropertyRegistration_doesNotCauseIssues() throws ServletException {
+        initializer.process(Collections.singleton(DuplicatePropertyExporter.class), servletContext);
     }
 
     @Test
-    public void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues()
-            throws ServletException {
-        initializer.process(Collections.singleton(ExtendingExporter.class),
-                servletContext);
+    public void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues() throws ServletException {
+        initializer.process(Collections.singleton(ExtendingExporter.class), servletContext);
     }
 
     private static class MyComponent extends Component {
@@ -204,8 +175,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
     private static class InvalidName extends Component {
     }
 
-    public static class MyComponentExporter
-            extends WebComponentExporter<MyComponent> {
+    public static class MyComponentExporter extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {
             this("my-component");
@@ -217,14 +187,12 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
 
         }
     }
 
-    public static class ExporterFactory
-            implements WebComponentExporterFactory<InvalidName> {
+    public static class ExporterFactory implements WebComponentExporterFactory<InvalidName> {
 
         @Override
         public WebComponentExporter<InvalidName> create() {
@@ -233,16 +201,14 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
     }
 
-    private static class PrivateExporter
-            extends WebComponentExporter<InvalidName> {
+    private static class PrivateExporter extends WebComponentExporter<InvalidName> {
 
         private PrivateExporter(String tag) {
             super(tag);
         }
 
         @Override
-        protected void configureInstance(WebComponent<InvalidName> webComponent,
-                InvalidName component) {
+        protected void configureInstance(WebComponent<InvalidName> webComponent, InvalidName component) {
         }
 
     }
@@ -255,22 +221,19 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<UserBox> webComponent,
-                UserBox component) {
+        public void configureInstance(WebComponent<UserBox> webComponent, UserBox component) {
 
         }
     }
 
-    public static class InvalidNameExporter
-            extends WebComponentExporter<InvalidName> {
+    public static class InvalidNameExporter extends WebComponentExporter<InvalidName> {
 
         public InvalidNameExporter() {
             super("invalid");
         }
 
         @Override
-        public void configureInstance(WebComponent<InvalidName> webComponent,
-                InvalidName component) {
+        public void configureInstance(WebComponent<InvalidName> webComponent, InvalidName component) {
 
         }
     }
@@ -283,8 +246,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
     }
 
-    public static class SiblingExporter
-            extends WebComponentExporter<MyComponent> {
+    public static class SiblingExporter extends WebComponentExporter<MyComponent> {
 
         public SiblingExporter() {
             super("my-component-sibling");
@@ -292,28 +254,24 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
 
         }
     }
 
-    public static class DuplicateTagExporter
-            extends WebComponentExporter<MyComponent> {
+    public static class DuplicateTagExporter extends WebComponentExporter<MyComponent> {
 
         public DuplicateTagExporter() {
             super("my-component");
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
 
         }
     }
 
-    public static class DuplicatePropertyExporter
-            extends WebComponentExporter<MyComponent> {
+    public static class DuplicatePropertyExporter extends WebComponentExporter<MyComponent> {
 
         public DuplicatePropertyExporter() {
             super("tag-2");
@@ -322,8 +280,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
 
         }
     }
@@ -357,13 +314,11 @@ public class WebComponentConfigurationRegistryInitializerTest {
 
         @Override
         public void describeTo(Description description) {
-            description.appendText(String.format("<%s: %s%s>",
-                    throwableType.getCanonicalName(), matchable,
+            description.appendText(String.format("<%s: %s%s>", throwableType.getCanonicalName(), matchable,
                     (startsWith ? "..." : "")));
         }
 
-        public static CauseMatcher ex(
-                Class<? extends Throwable> throwableType) {
+        public static CauseMatcher ex(Class<? extends Throwable> throwableType) {
             return new CauseMatcher(throwableType);
         }
 

@@ -142,8 +142,7 @@ public class StatisticsContainer {
      *
      * @param name
      *            name of the field to get
-     * @return the value of the field as an integer, 0 if missing or not an
-     *         integer
+     * @return the value of the field as an integer, 0 if missing or not an integer
      */
     int getValueAsInt(String name) {
         if (json.has(name) && json.get(name).isInt()) {

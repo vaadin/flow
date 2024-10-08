@@ -36,21 +36,19 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
- * Utility class for use with ErrorHandler to show HasErrorParameter view when
- * an exception happens during a RPC call outside of navigation.
+ * Utility class for use with ErrorHandler to show HasErrorParameter view when an exception happens during a RPC call
+ * outside of navigation.
  */
 public final class ErrorHandlerUtil {
 
     /**
-     * Check throwable is Exception and redraw error view if matching error
-     * handler target exists.
+     * Check throwable is Exception and redraw error view if matching error handler target exists.
      *
      * @param throwable
      *            throwable to find handler for
      * @return {@code true} if error handled, {@code false} if no error handler
      */
-    public static boolean handleErrorByRedirectingToErrorView(
-            Throwable throwable) {
+    public static boolean handleErrorByRedirectingToErrorView(Throwable throwable) {
         if (throwable instanceof Exception) {
             return handleErrorByRedirectingToErrorView((Exception) throwable);
         }
@@ -58,8 +56,7 @@ public final class ErrorHandlerUtil {
     }
 
     /**
-     * Check throwable is Exception and redraw error view if matching error
-     * handler target exists.
+     * Check throwable is Exception and redraw error view if matching error handler target exists.
      *
      * @param throwable
      *            throwable to find handler for
@@ -69,25 +66,21 @@ public final class ErrorHandlerUtil {
      *            current UI instance
      * @return
      */
-    public static boolean handleErrorByRedirectingToErrorView(
-            Throwable throwable, VaadinContext context, UI ui) {
+    public static boolean handleErrorByRedirectingToErrorView(Throwable throwable, VaadinContext context, UI ui) {
         if (throwable instanceof Exception) {
-            return handleErrorByRedirectingToErrorView((Exception) throwable,
-                    context, ui);
+            return handleErrorByRedirectingToErrorView((Exception) throwable, context, ui);
         }
         return false;
     }
 
     /**
-     * Check if matching error handler target exists for exception and redraw
-     * view using ErrorTarget.
+     * Check if matching error handler target exists for exception and redraw view using ErrorTarget.
      *
      * @param exception
      *            exception to find handler for
      * @return {@code true} if error handled, {@code false} if no error handler
      */
-    public static boolean handleErrorByRedirectingToErrorView(
-            Exception exception) {
+    public static boolean handleErrorByRedirectingToErrorView(Exception exception) {
         UI ui = UI.getCurrent();
         if (ui == null) {
             return false;
@@ -102,8 +95,7 @@ public final class ErrorHandlerUtil {
     }
 
     /**
-     * Check if matching error handler target exists for exception and redraw
-     * view using ErrorTarget.
+     * Check if matching error handler target exists for exception and redraw view using ErrorTarget.
      *
      * @param exception
      *            exception to find handler for
@@ -113,56 +105,41 @@ public final class ErrorHandlerUtil {
      *            current UI instance
      * @return
      */
-    public static boolean handleErrorByRedirectingToErrorView(
-            Exception exception, VaadinContext context, UI ui) {
-        ApplicationRouteRegistry appRegistry = ApplicationRouteRegistry
-                .getInstance(context);
-        Optional<ErrorTargetEntry> errorNavigationTarget = appRegistry
-                .getErrorNavigationTarget(exception);
+    public static boolean handleErrorByRedirectingToErrorView(Exception exception, VaadinContext context, UI ui) {
+        ApplicationRouteRegistry appRegistry = ApplicationRouteRegistry.getInstance(context);
+        Optional<ErrorTargetEntry> errorNavigationTarget = appRegistry.getErrorNavigationTarget(exception);
         // Found error target and handled exception is the same as thrown
         // exception. else do not handle
-        if (errorNavigationTarget.isPresent() && errorNavigationTarget.get()
-                .getHandledExceptionType().equals(exception.getClass())) {
+        if (errorNavigationTarget.isPresent()
+                && errorNavigationTarget.get().getHandledExceptionType().equals(exception.getClass())) {
             // Init error view and parents
-            Component routeTarget = getRouteTarget(
-                    errorNavigationTarget.get().getNavigationTarget(), ui);
+            Component routeTarget = getRouteTarget(errorNavigationTarget.get().getNavigationTarget(), ui);
             List<Class<? extends RouterLayout>> routeLayouts = RouteUtil
                     .getParentLayoutsForNonRouteTarget(routeTarget.getClass());
-            List<RouterLayout> parentLayouts = routeLayouts.stream()
-                    .map(route -> getRouteTarget(route, ui))
+            List<RouterLayout> parentLayouts = routeLayouts.stream().map(route -> getRouteTarget(route, ui))
                     .collect(Collectors.toList());
 
             // Connect to ui
             UIInternals internals = ui.getInternals();
-            internals.showRouteTarget(internals.getActiveViewLocation(),
-                    routeTarget, parentLayouts);
+            internals.showRouteTarget(internals.getActiveViewLocation(), routeTarget, parentLayouts);
 
             // Build before enter event for setErrorParameter
-            NavigationEvent navigationEvent = new NavigationEvent(
-                    internals.getRouter(), internals.getActiveViewLocation(),
-                    ui, NavigationTrigger.PROGRAMMATIC);
-            BeforeEnterEvent beforeEnterEvent = new BeforeEnterEvent(
-                    navigationEvent,
-                    errorNavigationTarget.get().getNavigationTarget(),
-                    routeLayouts);
+            NavigationEvent navigationEvent = new NavigationEvent(internals.getRouter(),
+                    internals.getActiveViewLocation(), ui, NavigationTrigger.PROGRAMMATIC);
+            BeforeEnterEvent beforeEnterEvent = new BeforeEnterEvent(navigationEvent,
+                    errorNavigationTarget.get().getNavigationTarget(), routeLayouts);
 
             // Execute error view error parameter
-            ((HasErrorParameter) routeTarget).setErrorParameter(
-                    beforeEnterEvent,
+            ((HasErrorParameter) routeTarget).setErrorParameter(beforeEnterEvent,
                     new ErrorParameter(exception.getClass(), exception));
             return true;
         }
         return false;
     }
 
-    private static <T extends HasElement> T getRouteTarget(
-            Class<T> routeTargetType, UI ui) {
-        Optional<HasElement> currentInstance = ui.getInternals()
-                .getActiveRouterTargetsChain().stream()
-                .filter(component -> component.getClass()
-                        .equals(routeTargetType))
-                .findAny();
-        return (T) currentInstance.orElseGet(() -> Instantiator.get(ui)
-                .createRouteTarget(routeTargetType, null));
+    private static <T extends HasElement> T getRouteTarget(Class<T> routeTargetType, UI ui) {
+        Optional<HasElement> currentInstance = ui.getInternals().getActiveRouterTargetsChain().stream()
+                .filter(component -> component.getClass().equals(routeTargetType)).findAny();
+        return (T) currentInstance.orElseGet(() -> Instantiator.get(ui).createRouteTarget(routeTargetType, null));
     }
 }

@@ -25,8 +25,7 @@ import com.vaadin.tests.util.MockUI;
 
 public class FocusableTest {
     @Tag("div")
-    private static class FocusableTestComponent extends Component
-            implements Focusable {
+    private static class FocusableTestComponent extends Component implements Focusable {
 
     }
 
@@ -37,9 +36,7 @@ public class FocusableTest {
     public void focusUnattached_nothingScheduled() {
         component.focus();
 
-        assertPendingInvocationCount(
-                "Nothing should be scheduled when component is not attached",
-                0);
+        assertPendingInvocationCount("Nothing should be scheduled when component is not attached", 0);
     }
 
     @Test
@@ -47,9 +44,7 @@ public class FocusableTest {
         component.focus();
         ui.add(component);
 
-        assertPendingInvocationCount(
-                "An focus() inovocation should be pending for the attached component",
-                1);
+        assertPendingInvocationCount("An focus() inovocation should be pending for the attached component", 1);
     }
 
     @Test
@@ -57,9 +52,7 @@ public class FocusableTest {
         ui.add(component);
         component.focus();
 
-        assertPendingInvocationCount(
-                "An focus() inovocation should be pending for the attached component",
-                1);
+        assertPendingInvocationCount("An focus() inovocation should be pending for the attached component", 1);
     }
 
     @Test
@@ -68,14 +61,11 @@ public class FocusableTest {
         component.focus();
         ui.remove(component);
 
-        assertPendingInvocationCount(
-                "Nothing should be scheduled when component is not attached",
-                0);
+        assertPendingInvocationCount("Nothing should be scheduled when component is not attached", 0);
     }
 
     private void assertPendingInvocationCount(String message, int expected) {
-        List<PendingJavaScriptInvocation> invocations = ui
-                .dumpPendingJsInvocations();
+        List<PendingJavaScriptInvocation> invocations = ui.dumpPendingJsInvocations();
         Assert.assertEquals(message, expected, invocations.size());
     }
 }

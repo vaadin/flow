@@ -41,57 +41,50 @@ public class FloatToDoubleConverterTest {
 
     @Test
     public void testConvertToPresentation() {
-        assertEquals(Float.valueOf(42.0f),
-                converter.convertToPresentation(42.0, null));
+        assertEquals(Float.valueOf(42.0f), converter.convertToPresentation(42.0, null));
     }
 
     // Test conversion of extreme values
     @Test
     public void testConvertToModelMaxFloat() {
-        assertEquals(Result.ok((double) Float.MAX_VALUE),
-                converter.convertToModel(Float.MAX_VALUE, null));
+        assertEquals(Result.ok((double) Float.MAX_VALUE), converter.convertToModel(Float.MAX_VALUE, null));
     }
 
     @Test
     public void testConvertToPresentationMaxFloat() {
-        assertEquals(Float.valueOf(Float.MAX_VALUE), converter
-                .convertToPresentation((double) Float.MAX_VALUE, null));
+        assertEquals(Float.valueOf(Float.MAX_VALUE), converter.convertToPresentation((double) Float.MAX_VALUE, null));
     }
 
     @Test
     public void testConvertToModelMinFloat() {
-        assertEquals(Result.ok((double) Float.MIN_VALUE),
-                converter.convertToModel(Float.MIN_VALUE, null));
+        assertEquals(Result.ok((double) Float.MIN_VALUE), converter.convertToModel(Float.MIN_VALUE, null));
     }
 
     @Test
     public void testConvertToPresentationMinFloat() {
-        assertEquals(Float.valueOf(Float.MIN_VALUE), converter
-                .convertToPresentation((double) Float.MIN_VALUE, null));
+        assertEquals(Float.valueOf(Float.MIN_VALUE), converter.convertToPresentation((double) Float.MIN_VALUE, null));
     }
 
     @Test
     public void testConvertToModelPositiveInfinity() {
-        assertEquals(Result.ok(Double.POSITIVE_INFINITY),
-                converter.convertToModel(Float.POSITIVE_INFINITY, null));
+        assertEquals(Result.ok(Double.POSITIVE_INFINITY), converter.convertToModel(Float.POSITIVE_INFINITY, null));
     }
 
     @Test
     public void testConvertToPresentationPositiveInfinity() {
-        assertEquals(Float.valueOf(Float.POSITIVE_INFINITY), converter
-                .convertToPresentation(Double.POSITIVE_INFINITY, null));
+        assertEquals(Float.valueOf(Float.POSITIVE_INFINITY),
+                converter.convertToPresentation(Double.POSITIVE_INFINITY, null));
     }
 
     @Test
     public void testConvertToModelNegativeInfinity() {
-        assertEquals(Result.ok(Double.NEGATIVE_INFINITY),
-                converter.convertToModel(Float.NEGATIVE_INFINITY, null));
+        assertEquals(Result.ok(Double.NEGATIVE_INFINITY), converter.convertToModel(Float.NEGATIVE_INFINITY, null));
     }
 
     @Test
     public void testConvertToPresentationNegativeInfinity() {
-        assertEquals(Float.valueOf(Float.NEGATIVE_INFINITY), converter
-                .convertToPresentation(Double.NEGATIVE_INFINITY, null));
+        assertEquals(Float.valueOf(Float.NEGATIVE_INFINITY),
+                converter.convertToPresentation(Double.NEGATIVE_INFINITY, null));
     }
 
 }

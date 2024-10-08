@@ -37,9 +37,8 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         openTestUrl("/");
         waitForElementPresent(By.tagName("output"));
         String content = findElement(By.tagName("output")).getText();
-        Assert.assertEquals(
-                "The page should have label element which is added by a listener",
-                "Modified page", content);
+        Assert.assertEquals("The page should have label element which is added by a listener", "Modified page",
+                content);
     }
 
     @Test
@@ -49,11 +48,9 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         WebElement meta = findElement(By.cssSelector("meta[name=foo]"));
         Assert.assertNotNull(meta);
         Assert.assertEquals("bar", meta.getAttribute("content"));
-        WebElement metaViewPort = findElement(
-                By.cssSelector("meta[name=viewport]"));
+        WebElement metaViewPort = findElement(By.cssSelector("meta[name=viewport]"));
         Assert.assertNotNull(metaViewPort);
-        Assert.assertEquals(
-                "width=device-width, height=device-height, initial-scale=1.0",
+        Assert.assertEquals("width=device-width, height=device-height, initial-scale=1.0",
                 metaViewPort.getAttribute("content"));
     }
 
@@ -61,8 +58,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
     public void should_accessVaadinService_getCurrent_inAppShellConstructor() {
         openTestUrl("/");
         waitForElementPresent(By.tagName("meta"));
-        WebElement meta = findElement(
-                By.cssSelector("meta[name=test-resource-url]"));
+        WebElement meta = findElement(By.cssSelector("meta[name=test-resource-url]"));
         Assert.assertNotNull(meta);
         Assert.assertEquals("my-resource", meta.getAttribute("content"));
     }
@@ -70,23 +66,15 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
     public void indexHtmlRequestListener_openRootURL_shouldDynamicMetaContent() {
         openTestUrl("/");
         waitForElementPresent(By.cssSelector("meta[name]"));
-        Optional<WebElement> ogImageMeta = findElements(By.tagName("meta"))
-                .stream().filter(webElement -> webElement.getAttribute("name")
-                        .equals("og:image"))
-                .findFirst();
-        Assert.assertTrue("The response should have ogImage meta element",
-                ogImageMeta.isPresent());
-        Assert.assertEquals(
-                "ogImage meta element should have correct image URL",
-                "http://localhost:8888/image/my_app.png",
-                ogImageMeta.get().getAttribute("content"));
+        Optional<WebElement> ogImageMeta = findElements(By.tagName("meta")).stream()
+                .filter(webElement -> webElement.getAttribute("name").equals("og:image")).findFirst();
+        Assert.assertTrue("The response should have ogImage meta element", ogImageMeta.isPresent());
+        Assert.assertEquals("ogImage meta element should have correct image URL",
+                "http://localhost:8888/image/my_app.png", ogImageMeta.get().getAttribute("content"));
 
-        Optional<WebElement> viewportMeta = findElements(By.tagName("meta"))
-                .stream().filter(webElement -> webElement.getAttribute("name")
-                        .equals("viewport"))
-                .findFirst();
-        Assert.assertTrue("The response should have viewport meta element",
-                viewportMeta.isPresent());
+        Optional<WebElement> viewportMeta = findElements(By.tagName("meta")).stream()
+                .filter(webElement -> webElement.getAttribute("name").equals("viewport")).findFirst();
+        Assert.assertTrue("The response should have viewport meta element", viewportMeta.isPresent());
         Assert.assertEquals("viewport meta element should have correct content",
                 "width=device-width, height=device-height, initial-scale=1.0",
                 viewportMeta.get().getAttribute("content"));
@@ -95,14 +83,10 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
     public void indexHtmlRequestListener_openRootURL_shouldDynamicBodySizeContent() {
         openTestUrl("/");
         waitForElementPresent(By.cssSelector("style"));
-        Optional<WebElement> styleElement = findElements(By.tagName("style"))
-                .stream().filter(webElement -> webElement.getAttribute("type")
-                        .equals("text/css"))
-                .findFirst();
-        Assert.assertTrue("The response should have style element",
-                styleElement.isPresent());
-        Assert.assertEquals("style element should have correct content",
-                "body,#outlet{height:50vh;width:50vw;}",
+        Optional<WebElement> styleElement = findElements(By.tagName("style")).stream()
+                .filter(webElement -> webElement.getAttribute("type").equals("text/css")).findFirst();
+        Assert.assertTrue("The response should have style element", styleElement.isPresent());
+        Assert.assertEquals("style element should have correct content", "body,#outlet{height:50vh;width:50vw;}",
                 styleElement.get().getText());
     }
 
@@ -148,8 +132,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         // In Selenium, getAttribute('href') won't return the exact value of
         // 'href'.
         // https://stackoverflow.com/questions/35494519/how-to-get-the-exact-text-of-href-attribute-of-tag-a
-        String outerHTML = findElement(By.tagName("head"))
-                .findElement(By.tagName("base")).getAttribute("outerHTML");
+        String outerHTML = findElement(By.tagName("head")).findElement(By.tagName("base")).getAttribute("outerHTML");
         Assert.assertTrue(outerHTML.contains("href=\".\""));
     }
 
@@ -157,8 +140,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
     public void indexHtmlRequestHandler_openTwoSlashesURL_shouldAddBaseHrefCorrectly() {
         openTestUrl("/abc/xyz");
         waitForElementPresent(By.id("div0"));
-        String outerHTML = findElement(By.tagName("head"))
-                .findElement(By.tagName("base")).getAttribute("outerHTML");
+        String outerHTML = findElement(By.tagName("head")).findElement(By.tagName("base")).getAttribute("outerHTML");
         Assert.assertTrue(outerHTML.contains("href=\"./..\""));
     }
 
@@ -207,8 +189,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertTrue("It should ignore the first slash in route path",
-                content.contains("Empty view"));
+        Assert.assertTrue("It should ignore the first slash in route path", content.contains("Empty view"));
     }
 
     @Test
@@ -221,11 +202,10 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertTrue("Flow.navigate should return view by route from "
-                + "server views", content.contains("Server view"));
+        Assert.assertTrue("Flow.navigate should return view by route from " + "server views",
+                content.contains("Server view"));
 
-        Assert.assertTrue("Flow.navigate should include router layout",
-                content.contains("Main layout"));
+        Assert.assertTrue("Flow.navigate should include router layout", content.contains("Main layout"));
     }
 
     @Test
@@ -238,8 +218,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertEquals("Should execute set parameter method",
-                "Main layout\nParameter: " + inputParam, content);
+        Assert.assertEquals("Should execute set parameter method", "Main layout\nParameter: " + inputParam, content);
     }
 
     @Test
@@ -255,9 +234,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
         String content = findElement(By.id("result")).getText();
         Assert.assertEquals("Should execute set parameter method",
-                "Main layout\nParameter: " + inputParam + " - Query string: "
-                        + queryString,
-                content);
+                "Main layout\nParameter: " + inputParam + " - Query string: " + queryString, content);
     }
 
     @Test
@@ -269,9 +246,8 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertEquals(
-                "Should execute onBeforeEnter and reroute to ServerSideView",
-                "Main layout\nServer view", content);
+        Assert.assertEquals("Should execute onBeforeEnter and reroute to ServerSideView", "Main layout\nServer view",
+                content);
     }
 
     @Test
@@ -283,9 +259,8 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertEquals(
-                "Should execute onBeforeEnter and forward to ServerSideView",
-                "Main layout\nServer view", content);
+        Assert.assertEquals("Should execute onBeforeEnter and forward to ServerSideView", "Main layout\nServer view",
+                content);
     }
 
     @Test
@@ -298,12 +273,9 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
         String content = findElement(By.id("result")).getText();
 
-        String expectedContent = "Main layout\nViewWithAllEvents: 1 "
-                + "setParameter\nViewWithAllEvents: 2 "
-                + "beforeEnter\nViewWithAllEvents: 3 "
-                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
-        Assert.assertEquals("Should execute all lifecycle callbacks",
-                expectedContent, content);
+        String expectedContent = "Main layout\nViewWithAllEvents: 1 " + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 " + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should execute all lifecycle callbacks", expectedContent, content);
     }
 
     @Test
@@ -325,10 +297,9 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         findElement(By.id("button3")).click();
         waitForElementPresent(By.id("result"));
 
-        String inputPreservedContent = findElement(By.id("inputPreserved"))
-                .getAttribute("value");
-        Assert.assertEquals("Text in the input field should be preserved",
-                shouldBePreservedText, inputPreservedContent);
+        String inputPreservedContent = findElement(By.id("inputPreserved")).getAttribute("value");
+        Assert.assertEquals("Text in the input field should be preserved", shouldBePreservedText,
+                inputPreservedContent);
     }
 
     @Test
@@ -340,18 +311,15 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
         findElement(By.linkText("Client view")).click();
         waitForElementPresent(By.id("clientView"));
-        String clientSideViewContent = findElement(By.id("clientView"))
-                .getText();
-        Assert.assertEquals(
-                "Should load client side view content with vaadin-router",
-                "Client view", clientSideViewContent);
+        String clientSideViewContent = findElement(By.id("clientView")).getText();
+        Assert.assertEquals("Should load client side view content with vaadin-router", "Client view",
+                clientSideViewContent);
 
         findElement(By.linkText("Server view")).click();
         waitForElementPresent(By.id("mainLayout"));
         String mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        Assert.assertEquals(
-                "Should load server view content with " + "vaadin-router",
-                "Main layout\nServer view", mainLayoutContent);
+        Assert.assertEquals("Should load server view content with " + "vaadin-router", "Main layout\nServer view",
+                mainLayoutContent);
 
     }
 
@@ -365,17 +333,14 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         findElement(By.linkText("Server view")).click();
         waitForElementPresent(By.id("mainLayout"));
         String mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        Assert.assertEquals(
-                "Should load server view content with " + "vaadin-router",
-                "Main layout\nServer view", mainLayoutContent);
+        Assert.assertEquals("Should load server view content with " + "vaadin-router", "Main layout\nServer view",
+                mainLayoutContent);
 
         findElement(By.linkText("Client view")).click();
         waitForElementPresent(By.id("clientView"));
-        String clientSideViewContent = findElement(By.id("clientView"))
-                .getText();
-        Assert.assertEquals(
-                "Should load client side view content with vaadin-router",
-                "Client view", clientSideViewContent);
+        String clientSideViewContent = findElement(By.id("clientView")).getText();
+        Assert.assertEquals("Should load client side view content with vaadin-router", "Client view",
+                clientSideViewContent);
     }
 
     @Test
@@ -388,19 +353,15 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         findElement(By.linkText("View with all events")).click();
         waitForElementPresent(By.id("mainLayout"));
         String mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        String expectedContent = "Main layout\nViewWithAllEvents: 1 "
-                + "setParameter\nViewWithAllEvents: 2 "
-                + "beforeEnter\nViewWithAllEvents: 3 "
-                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
-        Assert.assertEquals("Should load view with all events", expectedContent,
-                mainLayoutContent);
+        String expectedContent = "Main layout\nViewWithAllEvents: 1 " + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 " + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should load view with all events", expectedContent, mainLayoutContent);
 
         findElement(By.linkText("Server view")).click();
         waitForElementPresent(By.id("serverView"));
         String serverViewContent = findElement(By.id("mainLayout")).getText();
-        Assert.assertEquals(
-                "Should load server side view content with vaadin-router",
-                "Main layout\nServer view", serverViewContent);
+        Assert.assertEquals("Should load server side view content with vaadin-router", "Main layout\nServer view",
+                serverViewContent);
     }
 
     @Test
@@ -413,8 +374,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("result"));
 
         String content = findElement(By.id("result")).getText();
-        Assert.assertTrue("Flow.navigate should return not found view",
-                content.contains("Could not navigate"));
+        Assert.assertTrue("Flow.navigate should return not found view", content.contains("Could not navigate"));
     }
 
     @Test
@@ -427,30 +387,22 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         findElement(By.linkText("View with all events")).click();
         waitForElementPresent(By.id("mainLayout"));
         String mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        String expectedContent = "Main layout\nViewWithAllEvents: 1 "
-                + "setParameter\nViewWithAllEvents: 2 "
-                + "beforeEnter\nViewWithAllEvents: 3 "
-                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
-        Assert.assertEquals("Should load view with all events", expectedContent,
-                mainLayoutContent);
+        String expectedContent = "Main layout\nViewWithAllEvents: 1 " + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 " + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should load view with all events", expectedContent, mainLayoutContent);
 
         findElement(By.linkText("Client view")).click();
         waitForElementPresent(By.id("clientView"));
-        String clientSideViewContent = findElement(By.id("clientView"))
-                .getText();
-        Assert.assertEquals(
-                "Should load client side view content with vaadin-router",
-                "Client view", clientSideViewContent);
+        String clientSideViewContent = findElement(By.id("clientView")).getText();
+        Assert.assertEquals("Should load client side view content with vaadin-router", "Client view",
+                clientSideViewContent);
 
         findElement(By.linkText("View with all events")).click();
         waitForElementPresent(By.id("mainLayout"));
         mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        expectedContent = "Main layout\nViewWithAllEvents: 1 "
-                + "setParameter\nViewWithAllEvents: 2 "
-                + "beforeEnter\nViewWithAllEvents: 3 "
-                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
-        Assert.assertEquals("Should load a fresh view with all events",
-                expectedContent, mainLayoutContent);
+        expectedContent = "Main layout\nViewWithAllEvents: 1 " + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 " + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should load a fresh view with all events", expectedContent, mainLayoutContent);
     }
 
     @Test
@@ -465,36 +417,26 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         // click the link again to trigger `action` of `flow.route`
         findElement(By.linkText("View with all events")).click();
         String mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        String expectedContent = "Main layout\n"
-                + "ViewWithAllEvents: 1 setParameter\n"
-                + "ViewWithAllEvents: 2 beforeEnter\n"
-                + "ViewWithAllEvents: 3 onAttach\n"
-                + "ViewWithAllEvents: 4 afterNavigation\n"
-                + "ViewWithAllEvents: beforeLeave\n"
-                + "ViewWithAllEvents: 1 setParameter\n"
-                + "ViewWithAllEvents: 2 beforeEnter\n"
+        String expectedContent = "Main layout\n" + "ViewWithAllEvents: 1 setParameter\n"
+                + "ViewWithAllEvents: 2 beforeEnter\n" + "ViewWithAllEvents: 3 onAttach\n"
+                + "ViewWithAllEvents: 4 afterNavigation\n" + "ViewWithAllEvents: beforeLeave\n"
+                + "ViewWithAllEvents: 1 setParameter\n" + "ViewWithAllEvents: 2 beforeEnter\n"
                 + "ViewWithAllEvents: 4 afterNavigation";
 
-        Assert.assertEquals("Should load view with all events", expectedContent,
-                mainLayoutContent);
+        Assert.assertEquals("Should load view with all events", expectedContent, mainLayoutContent);
 
         findElement(By.linkText("Client view")).click();
         waitForElementPresent(By.id("clientView"));
-        String clientSideViewContent = findElement(By.id("clientView"))
-                .getText();
-        Assert.assertEquals(
-                "Should load client side view content with vaadin-router",
-                "Client view", clientSideViewContent);
+        String clientSideViewContent = findElement(By.id("clientView")).getText();
+        Assert.assertEquals("Should load client side view content with vaadin-router", "Client view",
+                clientSideViewContent);
 
         findElement(By.linkText("View with all events")).click();
         waitForElementPresent(By.id("mainLayout"));
         mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        expectedContent = "Main layout\nViewWithAllEvents: 1 "
-                + "setParameter\nViewWithAllEvents: 2 "
-                + "beforeEnter\nViewWithAllEvents: 3 "
-                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
-        Assert.assertEquals("Should load a fresh view with all events",
-                expectedContent, mainLayoutContent);
+        expectedContent = "Main layout\nViewWithAllEvents: 1 " + "setParameter\nViewWithAllEvents: 2 "
+                + "beforeEnter\nViewWithAllEvents: 3 " + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        Assert.assertEquals("Should load a fresh view with all events", expectedContent, mainLayoutContent);
     }
 
     @Test
@@ -511,19 +453,17 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.cssSelector("p[class=\"prevented-route\"]"));
 
         findElement(By.linkText("Client view")).click();
-        String preventedRoute = findElement(
-                By.cssSelector("p[class" + "=\"prevented-route\"]")).getText();
+        String preventedRoute = findElement(By.cssSelector("p[class" + "=\"prevented-route\"]")).getText();
         Assert.assertEquals(
-                "Should pass correct location object in "
-                        + "navigation events so that the view can prevent the "
+                "Should pass correct location object in " + "navigation events so that the view can prevent the "
                         + "navigation and stay in the same view",
                 "preventing navigation to 'client-view'", preventedRoute);
 
         findElement(By.linkText("Server view")).click();
         waitForElementPresent(By.id("serverView"));
         String mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        Assert.assertEquals("Should be able to navigate to other view",
-                "Main" + " layout\nServer view", mainLayoutContent);
+        Assert.assertEquals("Should be able to navigate to other view", "Main" + " layout\nServer view",
+                mainLayoutContent);
     }
 
     @Test
@@ -539,14 +479,12 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
         waitForElementPresent(By.id("emptyUi"));
         String homeViewContent = findElement(By.id("emptyUi")).getText();
-        Assert.assertEquals(
-                "Should render home view when calling ui.navigate(\"\")",
-                "Empty view", homeViewContent);
+        Assert.assertEquals("Should render home view when calling ui.navigate(\"\")", "Empty view", homeViewContent);
 
         String expectedUrl = getRootURL() + "/foo/";
         String actualUrl = getDriver().getCurrentUrl();
-        Assert.assertEquals("Should update URL to context path when calling"
-                + " ui.navigate(\"\"),", expectedUrl, actualUrl);
+        Assert.assertEquals("Should update URL to context path when calling" + " ui.navigate(\"\"),", expectedUrl,
+                actualUrl);
     }
 
     @Test
@@ -563,10 +501,8 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("serverView"));
         String expectedUrl = getRootURL() + "/foo/serverview";
         String currentUrl = getDriver().getCurrentUrl();
-        Assert.assertEquals(
-                "Should update the browser url when calling"
-                        + " ui.navigate(\"serverview\")",
-                expectedUrl, currentUrl);
+        Assert.assertEquals("Should update the browser url when calling" + " ui.navigate(\"serverview\")", expectedUrl,
+                currentUrl);
     }
 
     @Test
@@ -578,9 +514,8 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
         Assert.assertEquals("Should have window.vaadinPush", "object",
                 executeScript("return typeof window.vaadinPush"));
-        Assert.assertEquals("Should have window.vaadinPush.atmosphere",
-                "object", executeScript(
-                        "return typeof window.vaadinPush" + ".atmosphere"));
+        Assert.assertEquals("Should have window.vaadinPush.atmosphere", "object",
+                executeScript("return typeof window.vaadinPush" + ".atmosphere"));
     }
 
     @Test
@@ -593,8 +528,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("pushedContent"));
 
         String content = findElement(By.id("pushedContent")).getText();
-        Assert.assertEquals(
-                "Should have content sent from server using push mechanism",
-                "Message pushed from server", content);
+        Assert.assertEquals("Should have content sent from server using push mechanism", "Message pushed from server",
+                content);
     }
 }

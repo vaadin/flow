@@ -18,45 +18,38 @@ package com.vaadin.flow.server;
 import com.vaadin.flow.component.Component;
 
 /**
- * Exception indicating that the application's routes already has the navigation
- * target with the given path.
+ * Exception indicating that the application's routes already has the navigation target with the given path.
  *
  * @author Vaadin Ltd
  * @since 1.4
  */
-public class AmbiguousRouteConfigurationException
-        extends InvalidRouteConfigurationException {
+public class AmbiguousRouteConfigurationException extends InvalidRouteConfigurationException {
 
     private final Class<? extends Component> navigationTarget;
 
     /**
-     * Constructs a new invalid route configuration exception with the specified
-     * detail message and the existing navigation target component which already
-     * presents in the configuration with the route path.
+     * Constructs a new invalid route configuration exception with the specified detail message and the existing
+     * navigation target component which already presents in the configuration with the route path.
      *
      * @param message
-     *            the detail message. The detail message is saved for later
-     *            retrieval by the {@link #getMessage()} method.
+     *            the detail message. The detail message is saved for later retrieval by the {@link #getMessage()}
+     *            method.
      * @param navigationTarget
      *            the configured navigation target, not {@code null}
      */
-    public AmbiguousRouteConfigurationException(String message,
-            Class<? extends Component> navigationTarget) {
+    public AmbiguousRouteConfigurationException(String message, Class<? extends Component> navigationTarget) {
         super(message);
         this.navigationTarget = navigationTarget;
     }
 
     /**
-     * Returns the already configured navigation target component class which
-     * caused the exception.
+     * Returns the already configured navigation target component class which caused the exception.
      * <p>
-     * In case the exception happens as a result of a navigation target
-     * collision for the same route path this method returns the configured
-     * navigation target for the path.
+     * In case the exception happens as a result of a navigation target collision for the same route path this method
+     * returns the configured navigation target for the path.
      *
-     * @return an optional existing navigation target in the configuration which
-     *         caused the exception, or an empty optional if the exception is
-     *         not caused by a collision, not {@code null}
+     * @return an optional existing navigation target in the configuration which caused the exception, or an empty
+     *         optional if the exception is not caused by a collision, not {@code null}
      */
     public Class<? extends Component> getConfiguredNavigationTarget() {
         return navigationTarget;

@@ -35,8 +35,7 @@ public class TimingInfoReportedIT extends ChromeBrowserTest {
         open();
 
         Assert.assertEquals(1, findElements(By.className("log")).size());
-        Assert.assertEquals("Timings ok",
-                findElement(By.className("log")).getText());
+        Assert.assertEquals("Timings ok", findElement(By.className("log")).getText());
 
     }
 }

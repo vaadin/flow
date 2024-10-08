@@ -29,8 +29,7 @@ import java.util.function.Function;
  *            the type of the result of the function
  */
 @FunctionalInterface
-public interface SerializableFunction<T, R>
-        extends Function<T, R>, Serializable {
+public interface SerializableFunction<T, R> extends Function<T, R>, Serializable {
 
     /**
      * Returns a function that always returns its input argument.

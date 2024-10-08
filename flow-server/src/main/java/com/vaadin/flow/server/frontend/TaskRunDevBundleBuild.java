@@ -88,8 +88,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
      */
     TaskRunDevBundleBuild(Options options) {
         this.options = options;
-        README_NOT_CREATED = "Failed to create a README file in "
-                + options.getBuildDirectoryName() + "/"
+        README_NOT_CREATED = "Failed to create a README file in " + options.getBuildDirectoryName() + "/"
                 + Constants.DEV_BUNDLE_LOCATION;
     }
 
@@ -98,8 +97,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         getLogger().info(
                 "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
 
-        runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(),
-                "build");
+        runFrontendBuildTool("Vite", "vite/bin/vite.js", Collections.emptyMap(), "build");
 
         copyPackageLockToBundleFolder();
 
@@ -110,13 +108,11 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return LoggerFactory.getLogger(TaskRunDevBundleBuild.class);
     }
 
-    private void runFrontendBuildTool(String toolName, String executable,
-            Map<String, String> environment, String... params)
-            throws ExecutionFailedException {
+    private void runFrontendBuildTool(String toolName, String executable, Map<String, String> environment,
+            String... params) throws ExecutionFailedException {
         Logger logger = getLogger();
 
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                options.getNpmFolder().getAbsolutePath(),
+        FrontendToolsSettings settings = new FrontendToolsSettings(options.getNpmFolder().getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
         settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
@@ -125,8 +121,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         settings.setNodeVersion(options.getNodeVersion());
         FrontendTools frontendTools = new FrontendTools(settings);
 
-        File buildExecutable = new File(options.getNpmFolder(),
-                "node_modules/" + executable);
+        File buildExecutable = new File(options.getNpmFolder(), "node_modules/" + executable);
         if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate %s executable by path '%s'. Double"
@@ -146,8 +141,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         command.add(buildExecutable.getAbsolutePath());
         command.addAll(Arrays.asList(params));
 
-        String commandString = command.stream()
-                .collect(Collectors.joining(" "));
+        String commandString = command.stream().collect(Collectors.joining(" "));
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("devBundle", "true");
@@ -164,30 +158,25 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             // This will allow to destroy the process which does IO regardless
             // whether it's executed in the same thread or another (may be
             // daemon) thread
-            Runtime.getRuntime()
-                    .addShutdownHook(new Thread(process::destroyForcibly));
+            Runtime.getRuntime().addShutdownHook(new Thread(process::destroyForcibly));
 
             logger.debug("Output of `{}`:", commandString);
             StringBuilder toolOutput = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(),
-                            StandardCharsets.UTF_8))) {
+                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                 String stdoutLine;
                 while ((stdoutLine = reader.readLine()) != null) {
                     logger.debug(stdoutLine);
-                    toolOutput.append(stdoutLine)
-                            .append(System.lineSeparator());
+                    toolOutput.append(stdoutLine).append(System.lineSeparator());
                 }
             }
 
             int errorCode = process.waitFor();
 
             if (errorCode != 0) {
-                logger.error("Command `{}` failed:\n{}", commandString,
-                        toolOutput);
+                logger.error("Command `{}` failed:\n{}", commandString, toolOutput);
                 throw new ExecutionFailedException(
-                        SharedUtil.capitalize(toolName)
-                                + " build exited with a non zero status");
+                        SharedUtil.capitalize(toolName) + " build exited with a non zero status");
             } else {
                 logger.info("Development frontend bundle built");
             }
@@ -197,42 +186,31 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 // Restore interrupted state
                 Thread.currentThread().interrupt();
             }
-            throw new ExecutionFailedException(
-                    "Command '" + commandString + "' failed to finish", e);
+            throw new ExecutionFailedException("Command '" + commandString + "' failed to finish", e);
         } finally {
             if (process != null) {
                 process.destroyForcibly();
             }
         }
         if (options.isCompressBundle()) {
-            DevBundleUtils.compressBundle(options.getNpmFolder(),
-                    new File(
-                            new File(options.getNpmFolder(),
-                                    options.getBuildDirectoryName()),
-                            Constants.DEV_BUNDLE_LOCATION));
+            DevBundleUtils.compressBundle(options.getNpmFolder(), new File(
+                    new File(options.getNpmFolder(), options.getBuildDirectoryName()), Constants.DEV_BUNDLE_LOCATION));
         }
     }
 
     private void copyPackageLockToBundleFolder() {
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
+        File devBundleFolder = new File(new File(options.getNpmFolder(), options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         assert devBundleFolder.exists() : "No dev-bundle folder created";
 
-        String packageLockFile = options.isEnablePnpm()
-                ? Constants.PACKAGE_LOCK_YAML
-                : Constants.PACKAGE_LOCK_JSON;
+        String packageLockFile = options.isEnablePnpm() ? Constants.PACKAGE_LOCK_YAML : Constants.PACKAGE_LOCK_JSON;
 
-        File packageLockJson = new File(options.getNpmFolder(),
-                packageLockFile);
+        File packageLockJson = new File(options.getNpmFolder(), packageLockFile);
         if (packageLockJson.exists()) {
             try {
-                FileUtils.copyFile(packageLockJson,
-                        new File(devBundleFolder, packageLockFile));
+                FileUtils.copyFile(packageLockJson, new File(devBundleFolder, packageLockFile));
             } catch (IOException e) {
-                getLogger().error("Failed to copy '" + packageLockFile + "' to "
-                        + Constants.DEV_BUNDLE_LOCATION, e);
+                getLogger().error("Failed to copy '" + packageLockFile + "' to " + Constants.DEV_BUNDLE_LOCATION, e);
             }
         }
     }
@@ -241,8 +219,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (!options.isCompressBundle()) {
             return;
         }
-        File devBundleFolder = new File(options.getNpmFolder(),
-                Constants.BUNDLE_LOCATION);
+        File devBundleFolder = new File(options.getNpmFolder(), Constants.BUNDLE_LOCATION);
         assert devBundleFolder.exists();
 
         try {
@@ -252,8 +229,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             }
             boolean created = readme.createNewFile();
             if (created) {
-                FileUtils.writeStringToFile(readme, README,
-                        StandardCharsets.UTF_8);
+                FileUtils.writeStringToFile(readme, README, StandardCharsets.UTF_8);
             } else {
                 getLogger().warn(README_NOT_CREATED);
             }

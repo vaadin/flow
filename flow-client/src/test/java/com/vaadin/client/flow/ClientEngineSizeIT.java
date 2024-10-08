@@ -12,12 +12,10 @@ public class ClientEngineSizeIT {
     @Test
     public void testClientEngineSize() throws Exception {
         File compiledModuleFolder = new File(
-                "target/classes/META-INF/resources/"
-                        + ApplicationConstants.CLIENT_ENGINE_PATH);
+                "target/classes/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH);
         if (!compiledModuleFolder.exists()) {
             throw new IOException(
-                    "Folder with compiled client engine does not exist: "
-                            + compiledModuleFolder.getAbsolutePath());
+                    "Folder with compiled client engine does not exist: " + compiledModuleFolder.getAbsolutePath());
         }
 
         boolean cacheJsReported = false;
@@ -25,8 +23,7 @@ public class ClientEngineSizeIT {
         for (File f : compiledModuleFolder.listFiles()) {
             if (f.getName().endsWith(".cache.js")) {
                 if (cacheJsReported) {
-                    throw new IOException(
-                            "Multiple uncompressed cache.js files found!");
+                    throw new IOException("Multiple uncompressed cache.js files found!");
                 }
                 printTeamcityStats("clientEngine", f.length());
                 cacheJsReported = true;
@@ -40,8 +37,7 @@ public class ClientEngineSizeIT {
     private void printTeamcityStats(String key, long value) {
         // ##teamcity[buildStatisticValue key=&#39;&lt;valueTypeKey&gt;&#39;
         // value=&#39;&lt;value&gt;&#39;]
-        System.out.println("##teamcity[buildStatisticValue key='" + key
-                + "' value='" + value + "']");
+        System.out.println("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']");
 
     }
 

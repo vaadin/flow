@@ -74,8 +74,7 @@ public enum KeyModifier implements Key {
      * @return the {@code KeyModifier}
      */
     public static KeyModifier of(String key) {
-        return Stream.of(values()).filter(k -> k.matches(key)).findFirst()
-                .orElseThrow(IllegalArgumentException::new);
+        return Stream.of(values()).filter(k -> k.matches(key)).findFirst().orElseThrow(IllegalArgumentException::new);
     }
 
 }

@@ -44,16 +44,13 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the value type
  */
-public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
-        extends AbstractField<C, T> {
+public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>, T> extends AbstractField<C, T> {
     @SuppressWarnings("rawtypes")
-    private static final SerializableBiFunction RAW_IDENTITY = (ignore,
-            value) -> value;
+    private static final SerializableBiFunction RAW_IDENTITY = (ignore, value) -> value;
 
     @SuppressWarnings("rawtypes")
-    private static final SerializableBiFunction RAW_NON_NULL_IDENTITY = (ignore,
-            value) -> Objects.requireNonNull(value,
-                    "Null value is not supported");
+    private static final SerializableBiFunction RAW_NON_NULL_IDENTITY = (ignore, value) -> Objects.requireNonNull(value,
+            "Null value is not supported");
 
     @FunctionalInterface
     // Helper since Java has no TriConsumer
@@ -68,8 +65,8 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     }
 
     /**
-     * Encapsulates everything related to reading and writing element properties
-     * of a given type and converting them to a model type.
+     * Encapsulates everything related to reading and writing element properties of a given type and converting them to
+     * a model type.
      *
      * @param <P>
      *            the element property type
@@ -78,40 +75,33 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         private final ElementSetter<P> setter;
         private final SerializableBiFunction<Element, String, P> getter;
 
-        private TypeHandler(ElementSetter<P> setter, ElementGetter<P> getter,
-                P typeDefault) {
+        private TypeHandler(ElementSetter<P> setter, ElementGetter<P> getter, P typeDefault) {
             this.setter = setter;
-            this.getter = (element, propertyName) -> getter.getValue(element,
-                    propertyName, typeDefault);
+            this.getter = (element, propertyName) -> getter.getValue(element, propertyName, typeDefault);
         }
 
-        private <C extends AbstractField<C, V>, V> SerializableBiFunction<C, V, V> createReader(
-                Element element, String propertyName,
-                SerializableBiFunction<C, P, V> presentationToModel) {
+        private <C extends AbstractField<C, V>, V> SerializableBiFunction<C, V, V> createReader(Element element,
+                String propertyName, SerializableBiFunction<C, P, V> presentationToModel) {
             return (component, defaultModelValue) -> {
                 if (element.getPropertyRaw(propertyName) != null) {
                     P presentationValue = getter.apply(element, propertyName);
 
-                    return presentationToModel.apply(component,
-                            presentationValue);
+                    return presentationToModel.apply(component, presentationValue);
                 } else {
                     return defaultModelValue;
                 }
             };
         }
 
-        private <C extends AbstractField<C, V>, V> SerializableBiConsumer<C, V> createWriter(
-                Element element, String propertyName,
-                SerializableBiFunction<C, V, P> modelToPresentation) {
+        private <C extends AbstractField<C, V>, V> SerializableBiConsumer<C, V> createWriter(Element element,
+                String propertyName, SerializableBiFunction<C, V, P> modelToPresentation) {
             return (component, modelValue) -> {
-                P presentationValue = modelToPresentation.apply(component,
-                        modelValue);
+                P presentationValue = modelToPresentation.apply(component, modelValue);
 
                 if (presentationValue == null) {
                     element.removeProperty(propertyName);
                 } else {
-                    setter.setElementValue(element, propertyName,
-                            presentationValue);
+                    setter.setElementValue(element, propertyName, presentationValue);
                 }
             };
         }
@@ -120,14 +110,10 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     private static final Map<Class<?>, TypeHandler<?>> typeHandlers = new HashMap<>();
 
     static {
-        addHandler(Element::setProperty, Element::getProperty, String.class,
-                "");
-        addHandler(Element::setProperty, Element::getProperty, Double.class,
-                Double.valueOf(0));
-        addHandler(Element::setProperty, Element::getProperty, Boolean.class,
-                Boolean.FALSE);
-        addHandler(Element::setProperty, Element::getProperty, Integer.class,
-                Integer.valueOf(0));
+        addHandler(Element::setProperty, Element::getProperty, String.class, "");
+        addHandler(Element::setProperty, Element::getProperty, Double.class, Double.valueOf(0));
+        addHandler(Element::setProperty, Element::getProperty, Boolean.class, Boolean.FALSE);
+        addHandler(Element::setProperty, Element::getProperty, Integer.class, Integer.valueOf(0));
         typeHandlers.put(JsonValue.class, getHandler(JsonValue.class));
     }
 
@@ -140,32 +126,27 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     /**
      * Creates a new field that uses a property value without any conversion.
      * <p>
-     * The value type of the class must be one of the types that can be written
-     * as an element property value: String, Integer, Double or Boolean.
+     * The value type of the class must be one of the types that can be written as an element property value: String,
+     * Integer, Double or Boolean.
      *
      * @param propertyName
      *            the name of the element property to use
      * @param defaultValue
      *            the default value to use if the property isn't defined
      * @param acceptNullValues
-     *            if <code>true</code>, an exception will be thrown if the model
-     *            value is set to <code>null</code>; if <code>false</code> the
-     *            property will be removed when the model value is set to
-     *            <code>null</code>
+     *            if <code>true</code>, an exception will be thrown if the model value is set to <code>null</code>; if
+     *            <code>false</code> the property will be removed when the model value is set to <code>null</code>
      */
     @SuppressWarnings("unchecked")
-    public AbstractSinglePropertyField(String propertyName, T defaultValue,
-            boolean acceptNullValues) {
-        this(propertyName, defaultValue, null, RAW_IDENTITY,
-                acceptNullValues ? RAW_IDENTITY : RAW_NON_NULL_IDENTITY);
+    public AbstractSinglePropertyField(String propertyName, T defaultValue, boolean acceptNullValues) {
+        this(propertyName, defaultValue, null, RAW_IDENTITY, acceptNullValues ? RAW_IDENTITY : RAW_NON_NULL_IDENTITY);
     }
 
     /**
-     * Creates a new field that uses a property value with the given stateless
-     * converters for producing a model value.
+     * Creates a new field that uses a property value with the given stateless converters for producing a model value.
      * <p>
-     * The property type must be one of the types that can be written as an
-     * element property value: String, Integer, Double or Boolean.
+     * The property type must be one of the types that can be written as an element property value: String, Integer,
+     * Double or Boolean.
      *
      * @param propertyName
      *            the name of the element property to use
@@ -180,21 +161,17 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
      * @param <P>
      *            the property type
      */
-    public <P> AbstractSinglePropertyField(String propertyName, T defaultValue,
-            Class<P> elementPropertyType,
-            SerializableFunction<P, T> presentationToModel,
-            SerializableFunction<T, P> modelToPresentation) {
-        this(propertyName, defaultValue, elementPropertyType,
-                (ignore, value) -> presentationToModel.apply(value),
+    public <P> AbstractSinglePropertyField(String propertyName, T defaultValue, Class<P> elementPropertyType,
+            SerializableFunction<P, T> presentationToModel, SerializableFunction<T, P> modelToPresentation) {
+        this(propertyName, defaultValue, elementPropertyType, (ignore, value) -> presentationToModel.apply(value),
                 (ignore, value) -> modelToPresentation.apply(value));
     }
 
     /**
-     * Creates a new field that uses a property value with the given contextual
-     * converters for producing a model value.
+     * Creates a new field that uses a property value with the given contextual converters for producing a model value.
      * <p>
-     * The property type must be one of the types that can be written as an
-     * element property value: String, Integer, Double or Boolean.
+     * The property type must be one of the types that can be written as an element property value: String, Integer,
+     * Double or Boolean.
      *
      * @param propertyName
      *            the name of the element property to use
@@ -203,32 +180,26 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
      * @param elementPropertyType
      *            the type of the element property
      * @param presentationToModel
-     *            a function that accepts this component and a property value
-     *            and returns a model value
+     *            a function that accepts this component and a property value and returns a model value
      * @param modelToPresentation
-     *            a function that accepts this component and a model value and
-     *            returns a property value
+     *            a function that accepts this component and a model value and returns a property value
      * @param <P>
      *            the property type
      */
-    public <P> AbstractSinglePropertyField(String propertyName, T defaultValue,
-            Class<P> elementPropertyType,
-            SerializableBiFunction<C, P, T> presentationToModel,
-            SerializableBiFunction<C, T, P> modelToPresentation) {
+    public <P> AbstractSinglePropertyField(String propertyName, T defaultValue, Class<P> elementPropertyType,
+            SerializableBiFunction<C, P, T> presentationToModel, SerializableBiFunction<C, T, P> modelToPresentation) {
         super(defaultValue);
         this.propertyName = propertyName;
 
         if (elementPropertyType == null) {
             if (presentationToModel == RAW_IDENTITY) {
-                elementPropertyType = findElementPropertyTypeFromTypeParameter(
-                        getClass());
+                elementPropertyType = findElementPropertyTypeFromTypeParameter(getClass());
                 if (elementPropertyType == null) {
                     throw new IllegalStateException(
                             "Cannot automatically determine element property type based on type parameters.");
                 }
             } else {
-                throw new IllegalArgumentException(
-                        "Element property type cannot be null");
+                throw new IllegalArgumentException("Element property type cannot be null");
             }
         }
 
@@ -236,10 +207,8 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
 
         Element element = getElement();
 
-        propertyWriter = typeHandler.createWriter(element, propertyName,
-                modelToPresentation);
-        propertyReader = typeHandler.createReader(element, propertyName,
-                presentationToModel);
+        propertyWriter = typeHandler.createWriter(element, propertyName, modelToPresentation);
+        propertyReader = typeHandler.createReader(element, propertyName, presentationToModel);
 
         // if underlying element already has a property value then it should be
         // set for the component
@@ -247,8 +216,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
             doSetModelValue(false);
         }
 
-        doSetSynchronizedEvent(
-                SharedUtil.camelCaseToDashSeparated(propertyName) + "-changed");
+        doSetSynchronizedEvent(SharedUtil.camelCaseToDashSeparated(propertyName) + "-changed");
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -259,49 +227,39 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         }
         if (typeHandler == null) {
             throw new IllegalArgumentException(
-                    "Unsupported element property type: " + clazz.getName()
-                            + ". Supported types are: "
-                            + typeHandlers.keySet().stream().map(Class::getName)
-                                    .collect(Collectors.joining(", ")));
+                    "Unsupported element property type: " + clazz.getName() + ". Supported types are: "
+                            + typeHandlers.keySet().stream().map(Class::getName).collect(Collectors.joining(", ")));
         }
         return typeHandler;
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Class<T> findElementPropertyTypeFromTypeParameter(
-            Class<?> hasValueClass) {
+    private static <T> Class<T> findElementPropertyTypeFromTypeParameter(Class<?> hasValueClass) {
         return (Class<T>) GenericTypeReflector
-                .erase(GenericTypeReflector.getTypeParameter(hasValueClass,
-                        HasValue.class.getTypeParameters()[1]));
+                .erase(GenericTypeReflector.getTypeParameter(hasValueClass, HasValue.class.getTypeParameters()[1]));
     }
 
     /**
-     * Sets the name of the DOM event for which property values are synchronized
-     * from the client to the server. By default, the event name is the property
-     * name with <code>-changed</code> appended. This means that if the property
-     * name is <code>value</code>, then the event default name is
-     * <code>value-changed</code>.
+     * Sets the name of the DOM event for which property values are synchronized from the client to the server. By
+     * default, the event name is the property name with <code>-changed</code> appended. This means that if the property
+     * name is <code>value</code>, then the event default name is <code>value-changed</code>.
      *
-     * @see Element#addPropertyChangeListener(String, String,
-     *      PropertyChangeListener)
+     * @see Element#addPropertyChangeListener(String, String, PropertyChangeListener)
      * @see #getSynchronizationRegistration()
      *
      * @param synchronizedEvent
-     *            the property name to synchronize, or <code>null</code> to
-     *            disable property synchronization
+     *            the property name to synchronize, or <code>null</code> to disable property synchronization
      */
     protected void setSynchronizedEvent(String synchronizedEvent) {
         doSetSynchronizedEvent(synchronizedEvent);
     }
 
     /**
-     * Returns the registration of the DOM event listener that synchronizes the
-     * property value. The registration is created by
-     * {@link #setSynchronizedEvent(String)}.
+     * Returns the registration of the DOM event listener that synchronizes the property value. The registration is
+     * created by {@link #setSynchronizedEvent(String)}.
      *
-     * @return the registration of the DOM event listener that synchronizes the
-     *         property value, or <code>null</code> if property synchronization
-     *         is disabled
+     * @return the registration of the DOM event listener that synchronizes the property value, or <code>null</code> if
+     *         property synchronization is disabled
      */
     protected DomListenerRegistration getSynchronizationRegistration() {
         return synchronizationRegistration;
@@ -314,34 +272,31 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
             synchronizationRegistration.remove();
         }
         if (propChangeEvent != null) {
-            synchronizationRegistration = getElement()
-                    .addPropertyChangeListener(propertyName, propChangeEvent,
-                            // This explicit class instantiation is the
-                            // workaround
-                            // which fixes a JVM optimization+serialization bug.
-                            // Do not convert to lambda.
-                            // See #5973.
-                            new PropertyChangeListener() {
+            synchronizationRegistration = getElement().addPropertyChangeListener(propertyName, propChangeEvent,
+                    // This explicit class instantiation is the
+                    // workaround
+                    // which fixes a JVM optimization+serialization bug.
+                    // Do not convert to lambda.
+                    // See #5973.
+                    new PropertyChangeListener() {
 
-                                @Override
-                                public void propertyChange(
-                                        PropertyChangeEvent event) {
-                                    handlePropertyChange(event);
-                                }
-                            });
+                        @Override
+                        public void propertyChange(PropertyChangeEvent event) {
+                            handlePropertyChange(event);
+                        }
+                    });
         } else {
             synchronizationRegistration = null;
         }
     }
 
     /**
-     * Checks whether the element property has a value that can be converted to
-     * the model type. Property changes from the element will be ignored if this
-     * method returns <code>false</code>. The default implementation always
-     * return <code>true</code>.
+     * Checks whether the element property has a value that can be converted to the model type. Property changes from
+     * the element will be ignored if this method returns <code>false</code>. The default implementation always return
+     * <code>true</code>.
      *
-     * @return <code>true</code> if the element property value can be converted
-     *         to the model type; otherwise <code>false</code>
+     * @return <code>true</code> if the element property value can be converted to the model type; otherwise
+     *         <code>false</code>
      */
     protected boolean hasValidValue() {
         return true;
@@ -366,23 +321,20 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         propertyWriter.accept((C) this, newPresentationValue);
     }
 
-    private static <P extends JsonValue> TypeHandler<P> getHandler(
-            Class<P> type) {
+    private static <P extends JsonValue> TypeHandler<P> getHandler(Class<P> type) {
         ElementGetter<P> getter = (element, property, defaultValue) -> {
             Serializable value = element.getPropertyRaw(property);
             // JsonValue is passed straight through, other primitive
             // values are jsonified
             return type.cast(JsonCodec.encodeWithoutTypeInfo(value));
         };
-        ElementSetter<P> setter = (element, property, value) -> element
-                .setPropertyJson(property, value);
+        ElementSetter<P> setter = (element, property, value) -> element.setPropertyJson(property, value);
         return new TypeHandler<P>(setter, getter, null);
     }
 
-    private static <T> void addHandler(ElementSetter<T> setter,
-            ElementGetter<T> getter, Class<T> type, T typeDefaultValue) {
-        typeHandlers.put(type,
-                new TypeHandler<>(setter, getter, typeDefaultValue));
+    private static <T> void addHandler(ElementSetter<T> setter, ElementGetter<T> getter, Class<T> type,
+            T typeDefaultValue) {
+        typeHandlers.put(type, new TypeHandler<>(setter, getter, typeDefaultValue));
     }
 
 }

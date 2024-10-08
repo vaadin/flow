@@ -39,13 +39,11 @@ public class InnerTemplateVisibilityView extends AbstractDivView {
         outer.setId(OUTER_ID);
         outer.inner.setId(INNER_ID);
 
-        NativeButton toggleOuterVisibilityButton = new NativeButton(
-                "Toggle visibility of outer",
+        NativeButton toggleOuterVisibilityButton = new NativeButton("Toggle visibility of outer",
                 e -> outer.setVisible(!outer.isVisible()));
         toggleOuterVisibilityButton.setId(TOGGLE_OUTER_VISIBILITY_BUTTON_ID);
 
-        NativeButton toggleInnerVisibility = new NativeButton(
-                "Toggle visibility of inner",
+        NativeButton toggleInnerVisibility = new NativeButton("Toggle visibility of inner",
                 e -> outer.inner.setVisible(!outer.inner.isVisible()));
         toggleInnerVisibility.setId(TOGGLE_INNER_VISIBILITY_BUTTON_ID);
 

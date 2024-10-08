@@ -38,12 +38,9 @@ import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
  *
  * @since 2.0
  */
-public class TaskCopyFrontendFiles
-        extends AbstractFileGeneratorFallibleCommand {
-    private static final String[] WILDCARD_INCLUSIONS = new String[] {
-            "**/*.js", "**/*.js.map", "**/*.css", "**/*.css.map", "**/*.ts",
-            "**/*.ts.map", "**/*.tsx", "**/*.tsx.map", "**/*.jsx",
-            "**/*.jsx.map" };
+public class TaskCopyFrontendFiles extends AbstractFileGeneratorFallibleCommand {
+    private static final String[] WILDCARD_INCLUSIONS = new String[] { "**/*.js", "**/*.js.map", "**/*.css",
+            "**/*.css.map", "**/*.ts", "**/*.ts.map", "**/*.tsx", "**/*.tsx.map", "**/*.jsx", "**/*.jsx.map" };
     private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
     private final Options options;
     private Set<File> resourceLocations = null;
@@ -56,8 +53,7 @@ public class TaskCopyFrontendFiles
      */
     TaskCopyFrontendFiles(Options options) {
         this.options = options;
-        resourceLocations = options.getJarFiles().stream().filter(File::exists)
-                .collect(Collectors.toSet());
+        resourceLocations = options.getJarFiles().stream().filter(File::exists).collect(Collectors.toSet());
     }
 
     @Override
@@ -72,60 +68,43 @@ public class TaskCopyFrontendFiles
         } catch (IOException e) {
             // If we do not find the existing files, we will not delete anything
             existingFiles = new HashSet<>();
-            log().error("Unable to list contents of the directory "
-                    + targetDirectory.getAbsolutePath());
+            log().error("Unable to list contents of the directory " + targetDirectory.getAbsolutePath());
         }
         JarContentsManager jarContentsManager = new JarContentsManager();
         Set<String> handledFiles = new HashSet<>();
         for (File location : resourceLocations) {
             if (location.isDirectory()) {
-                handledFiles
-                        .addAll(TaskCopyLocalFrontendFiles.copyLocalResources(
-                                new File(location, RESOURCES_FRONTEND_DEFAULT),
-                                targetDirectory));
                 handledFiles.addAll(TaskCopyLocalFrontendFiles
-                        .copyLocalResources(new File(location,
-                                COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
-                                targetDirectory));
+                        .copyLocalResources(new File(location, RESOURCES_FRONTEND_DEFAULT), targetDirectory));
+                handledFiles.addAll(TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT), targetDirectory));
                 // copies from resources, but excludes already copied from
                 // resources/frontend
-                handledFiles
-                        .addAll(TaskCopyLocalFrontendFiles.copyLocalResources(
-                                new File(location, RESOURCES_JAR_DEFAULT),
-                                targetDirectory, FrontendUtils.FRONTEND));
+                handledFiles.addAll(TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(location, RESOURCES_JAR_DEFAULT), targetDirectory, FrontendUtils.FRONTEND));
             } else {
-                handledFiles.addAll(jarContentsManager
-                        .copyIncludedFilesFromJarTrimmingBasePath(location,
-                                RESOURCES_FRONTEND_DEFAULT, targetDirectory,
-                                WILDCARD_INCLUSIONS));
-                handledFiles.addAll(jarContentsManager
-                        .copyIncludedFilesFromJarTrimmingBasePath(location,
-                                COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
-                                targetDirectory, WILDCARD_INCLUSIONS));
-                handledFiles.addAll(jarContentsManager
-                        .copyIncludedFilesFromJarTrimmingBasePath(location,
-                                RESOURCES_JAR_DEFAULT, targetDirectory,
-                                WILDCARD_INCLUSION_APP_THEME_JAR));
+                handledFiles.addAll(jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(location,
+                        RESOURCES_FRONTEND_DEFAULT, targetDirectory, WILDCARD_INCLUSIONS));
+                handledFiles.addAll(jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(location,
+                        COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT, targetDirectory, WILDCARD_INCLUSIONS));
+                handledFiles.addAll(jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(location,
+                        RESOURCES_JAR_DEFAULT, targetDirectory, WILDCARD_INCLUSION_APP_THEME_JAR));
             }
         }
         existingFiles.removeAll(handledFiles);
-        existingFiles.forEach(
-                filename -> new File(targetDirectory, filename).delete());
+        existingFiles.forEach(filename -> new File(targetDirectory, filename).delete());
         long ms = (System.nanoTime() - start) / 1000000;
-        log().info("Visited {} resources. Took {} ms.",
-                resourceLocations.size(), ms);
-        track(handledFiles.stream().map(relativePath -> targetDirectory.toPath()
-                .resolve(relativePath).toFile()).toList());
+        log().info("Visited {} resources. Took {} ms.", resourceLocations.size(), ms);
+        track(handledFiles.stream().map(relativePath -> targetDirectory.toPath().resolve(relativePath).toFile())
+                .toList());
     }
 
-    static Set<String> getFilesInDirectory(File targetDirectory,
-            String... relativePathExclusions) throws IOException {
+    static Set<String> getFilesInDirectory(File targetDirectory, String... relativePathExclusions) throws IOException {
         try (Stream<Path> stream = Files.walk(targetDirectory.toPath())) {
-            return stream.filter(path -> path.toFile().isFile()
-                    && TaskCopyLocalFrontendFiles.keepFile(targetDirectory,
+            return stream
+                    .filter(path -> path.toFile().isFile() && TaskCopyLocalFrontendFiles.keepFile(targetDirectory,
                             relativePathExclusions, path.toFile()))
-                    .map(path -> targetDirectory.toPath().relativize(path)
-                            .toString().replaceAll("\\\\", "/"))
+                    .map(path -> targetDirectory.toPath().relativize(path).toString().replaceAll("\\\\", "/"))
                     .collect(Collectors.toSet());
         }
     }

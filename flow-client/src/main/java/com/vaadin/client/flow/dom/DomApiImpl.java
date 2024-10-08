@@ -27,8 +27,7 @@ import elemental.dom.Node;
 public interface DomApiImpl {
 
     /**
-     * Wraps the given DOM node to make it safe to invoke any of the methods
-     * from {@link DomNode} or {@link DomElement}.
+     * Wraps the given DOM node to make it safe to invoke any of the methods from {@link DomNode} or {@link DomElement}.
      *
      * @param node
      *            the node to wrap

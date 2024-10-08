@@ -70,17 +70,14 @@ public class ComponentEventBusUtilTest {
         try {
             ComponentEventBusUtil.getEventConstructor(InnerClass.class);
         } catch (IllegalArgumentException exception) {
-            Assert.assertEquals("Cannot instantiate '"
-                    + InnerClass.class.getName() + "'. "
-                    + "Make sure the class is static if it is an inner class.",
-                    exception.getMessage());
+            Assert.assertEquals("Cannot instantiate '" + InnerClass.class.getName() + "'. "
+                    + "Make sure the class is static if it is an inner class.", exception.getMessage());
         }
     }
 
     @Test
     public void domEvent_nestedEventClass() {
-        Constructor<NestedClass> ctor = ComponentEventBusUtil
-                .getEventConstructor(NestedClass.class);
+        Constructor<NestedClass> ctor = ComponentEventBusUtil.getEventConstructor(NestedClass.class);
         Assert.assertNotNull(ctor);
     }
 
@@ -97,11 +94,8 @@ public class ComponentEventBusUtilTest {
         try {
             ComponentEventBusUtil.getEventConstructor(LocalClass.class);
         } catch (IllegalArgumentException exception) {
-            Assert.assertEquals(
-                    "Cannot instantiate local class '"
-                            + LocalClass.class.getName() + "'. "
-                            + "Move class declaration outside the method.",
-                    exception.getMessage());
+            Assert.assertEquals("Cannot instantiate local class '" + LocalClass.class.getName() + "'. "
+                    + "Move class declaration outside the method.", exception.getMessage());
         }
     }
 }

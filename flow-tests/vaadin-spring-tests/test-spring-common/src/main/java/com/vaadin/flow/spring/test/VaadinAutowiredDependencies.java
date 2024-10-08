@@ -39,8 +39,7 @@ public class VaadinAutowiredDependencies extends Div {
         uiId.setText(String.valueOf(ui.getUIId()) + ui.hashCode());
 
         Div currentUi = new Div();
-        currentUi.setText(String.valueOf(UI.getCurrent().getUIId())
-                + UI.getCurrent().hashCode());
+        currentUi.setText(String.valueOf(UI.getCurrent().getUIId()) + UI.getCurrent().hashCode());
         currentUi.setId("ui-current");
 
         Div sessionDiv = new Div();
@@ -48,8 +47,7 @@ public class VaadinAutowiredDependencies extends Div {
         sessionDiv.setId("session-injected");
 
         Div sessionCurrent = new Div();
-        sessionCurrent.setText(UI.getCurrent().getCsrfToken()
-                + VaadinSession.getCurrent().hashCode());
+        sessionCurrent.setText(UI.getCurrent().getCsrfToken() + VaadinSession.getCurrent().hashCode());
         sessionCurrent.setId("session-current");
 
         add(uiId, currentUi, sessionDiv, sessionCurrent);

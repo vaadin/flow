@@ -26,13 +26,11 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.TwoWayPolymerBindingView", layout = ViewTestLayout.class)
 @Tag("my-template")
 @JsModule("./TwoWayPolymerBinding.js")
-public class TwoWayPolymerBindingView
-        extends PolymerTemplate<TwoWayPolymerBindingView.TwoWayModel> {
+public class TwoWayPolymerBindingView extends PolymerTemplate<TwoWayPolymerBindingView.TwoWayModel> {
     public TwoWayPolymerBindingView() {
         setId("template");
 
-        getElement().addPropertyChangeListener("value",
-                event -> valueUpdated());
+        getElement().addPropertyChangeListener("value", event -> valueUpdated());
     }
 
     public interface TwoWayModel extends TemplateModel {

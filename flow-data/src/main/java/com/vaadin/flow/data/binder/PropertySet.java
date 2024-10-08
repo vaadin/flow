@@ -20,8 +20,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Describes a set of properties that can be used for configuration based on
- * property names instead of setter and getter callbacks.
+ * Describes a set of properties that can be used for configuration based on property names instead of setter and getter
+ * callbacks.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -39,13 +39,11 @@ public interface PropertySet<T> extends Serializable {
     Stream<PropertyDefinition<T, ?>> getProperties();
 
     /**
-     * Gets the definition for the named property, or an empty optional if there
-     * is no property with the given name.
+     * Gets the definition for the named property, or an empty optional if there is no property with the given name.
      *
      * @param name
      *            the property name to look for, not <code>null</code>
-     * @return the property definition, or empty optional if property doesn't
-     *         exist
+     * @return the property definition, or empty optional if property doesn't exist
      */
     Optional<PropertyDefinition<T, ?>> getProperty(String name);
 }

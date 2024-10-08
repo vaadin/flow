@@ -20,12 +20,11 @@ import java.io.Serializable;
 import com.vaadin.flow.component.UI;
 
 /**
- * Constants for all servlet init parameters. Keeping them in a separate class
- * allows using reflection to expose the parameters in the Spring add-on.
+ * Constants for all servlet init parameters. Keeping them in a separate class allows using reflection to expose the
+ * parameters in the Spring add-on.
  *
  * <p>
- * Note: do not add other constants than String constants representing init
- * parameters here.
+ * Note: do not add other constants than String constants representing init parameters here.
  *
  * @author Vaadin Ltd
  * @since
@@ -33,8 +32,8 @@ import com.vaadin.flow.component.UI;
 public class InitParameters implements Serializable {
 
     /**
-     * The name of the parameter that is by default used in e.g. web.xml to
-     * define the name of the default {@link UI} class.
+     * The name of the parameter that is by default used in e.g. web.xml to define the name of the default {@link UI}
+     * class.
      */
     // javadoc in UI should be updated if this value is changed
     public static final String UI_PARAMETER = "UI";
@@ -68,25 +67,21 @@ public class InitParameters implements Serializable {
     public static final String REACT_ENABLE = "react.enable";
 
     /**
-     * Configuration name for the parameter that determines whether Brotli
-     * compression should be used for static resources in cases when a
-     * precompressed file is available.
+     * Configuration name for the parameter that determines whether Brotli compression should be used for static
+     * resources in cases when a precompressed file is available.
      */
     public static final String SERVLET_PARAMETER_BROTLI = "brotli";
 
     /**
-     * Configuration name for the frontend statistics json file to use to
-     * determine template contents.
+     * Configuration name for the frontend statistics json file to use to determine template contents.
      * <p>
-     * File needs to be available either for the ClassLoader as a resource, or
-     * as a static web resource. By default it returns the value in
-     * {@link Constants#STATISTICS_JSON_DEFAULT}
+     * File needs to be available either for the ClassLoader as a resource, or as a static web resource. By default it
+     * returns the value in {@link Constants#STATISTICS_JSON_DEFAULT}
      */
     public static final String SERVLET_PARAMETER_STATISTICS_JSON = "statistics.file.path";
 
     /**
-     * Configuration name for the time waiting for the frontend build tool to
-     * output a success or error pattern.
+     * Configuration name for the time waiting for the frontend build tool to output a success or error pattern.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_TIMEOUT = "devmode.output.pattern.timeout";
 
@@ -96,25 +91,21 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS = "devmode.vite.options";
 
     /**
-     * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
-     * If enabled, entry points are scanned for reachable frontend resources. If
-     * disabled, all classes on the classpath are scanned.
+     * Boolean parameter for enabling/disabling bytecode scanning in dev mode. If enabled, entry points are scanned for
+     * reachable frontend resources. If disabled, all classes on the classpath are scanned.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
 
     /**
-     * A comma separated list of IP addresses, potentially with wildcards, which
-     * can connect to the dev tools. If not specified, only localhost
-     * connections are allowed.
+     * A comma separated list of IP addresses, potentially with wildcards, which can connect to the dev tools. If not
+     * specified, only localhost connections are allowed.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED = "devmode.hostsAllowed";
 
     /**
-     * The name of the custom HTTP header that contains the client IP address
-     * that is checked to allow access to the dev mode server. The HTTP header
-     * is supposed to contain a single address, and the HTTP request to have a
-     * single occurrence of the header. If not specified, remote address are
-     * read from the {@literal X-Forwarded-For} header.
+     * The name of the custom HTTP header that contains the client IP address that is checked to allow access to the dev
+     * mode server. The HTTP header is supposed to contain a single address, and the HTTP request to have a single
+     * occurrence of the header. If not specified, remote address are read from the {@literal X-Forwarded-For} header.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER = "devmode.remoteAddressHeader";
 
@@ -138,16 +129,14 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_STATISTICS = "devmode.usageStatistics.enabled";
 
     /**
-     * Configuration parameter name for using globally installed pnpm or default
-     * one.
+     * Configuration parameter name for using globally installed pnpm or default one.
      */
     public static final String SERVLET_PARAMETER_GLOBAL_PNPM = "pnpm.global";
 
     /**
      * Configuration parameter name for enabling live reload.
      * <p>
-     * Note that if the dev tools are disabled
-     * ({@link #SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS} is set to {@code
+     * Note that if the dev tools are disabled ({@link #SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS} is set to {@code
      * false}), the live reload will be disabled as well.
      *
      * @since
@@ -162,18 +151,16 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS = "devmode.devTools.enabled";
 
     /**
-     * Configuration parameter name for enabling session serialization in
-     * development. If enabled, all the session's associated
-     * {@link com.vaadin.flow.component.UI} instances will be serialized.
-     * Otherwise, it won't be serialized.
+     * Configuration parameter name for enabling session serialization in development. If enabled, all the session's
+     * associated {@link com.vaadin.flow.component.UI} instances will be serialized. Otherwise, it won't be serialized.
      *
      * @since
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
 
     /**
-     * Configuration parameter name for enabling component tracking in
-     * development mode. If not set, tracking is enabled by default.
+     * Configuration parameter name for enabling component tracking in development mode. If not set, tracking is enabled
+     * by default.
      *
      * @since
      */
@@ -190,34 +177,30 @@ public class InitParameters implements Serializable {
     public static final String MENU_ACCESS_CONTROL = "menu.access.control";
 
     /**
-     * Configuration name for the parameter that determines if Flow should
-     * automatically register servlets needed for the application to work.
+     * Configuration name for the parameter that determines if Flow should automatically register servlets needed for
+     * the application to work.
      */
     public static final String DISABLE_AUTOMATIC_SERVLET_REGISTRATION = "disable.automatic.servlet.registration";
 
     /**
-     * Configuration parameter name for requiring node executable installed in
-     * home directory.
+     * Configuration parameter name for requiring node executable installed in home directory.
      *
      * @since
      */
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
 
     /**
-     * Configuration parameter name for requiring node executable installed in
-     * home directory.
+     * Configuration parameter name for requiring node executable installed in home directory.
      *
      * @since
      */
     public static final String NODE_AUTO_UPDATE = "node.auto.update";
 
     /**
-     * Configuration name for the parameter that sets the compiled web
-     * components path. The path should be the same as
-     * {@code webComponentOutputDirectoryName} in the maven plugin that
-     * transpiles ES6 code. This path is only used for generated web components
-     * (server side web components) module in case they are transpiled: web
-     * component UI imports them as dependencies.
+     * Configuration name for the parameter that sets the compiled web components path. The path should be the same as
+     * {@code webComponentOutputDirectoryName} in the maven plugin that transpiles ES6 code. This path is only used for
+     * generated web components (server side web components) module in case they are transpiled: web component UI
+     * imports them as dependencies.
      */
     public static final String COMPILED_WEB_COMPONENTS_PATH = "compiled.web.components.path";
 
@@ -229,22 +212,20 @@ public class InitParameters implements Serializable {
     public static final String BUILD_FOLDER = "build.folder";
 
     /**
-     * Packages, in addition to the internally used ones, to run postinstall
-     * scripts for.
+     * Packages, in addition to the internally used ones, to run postinstall scripts for.
      *
      * @since
      */
     public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
 
     /**
-     * Configuration name for enabling development using the frontend
-     * development server instead of using an application bundle.
+     * Configuration name for enabling development using the frontend development server instead of using an application
+     * bundle.
      */
     public static final String FRONTEND_HOTDEPLOY = "frontend.hotdeploy";
 
     /**
-     * Configuration name for adding dependencies on other projects when using
-     * the frontend development server.
+     * Configuration name for adding dependencies on other projects when using the frontend development server.
      */
     public static final String FRONTEND_HOTDEPLOY_DEPENDENCIES = "frontend.hotdeploy.dependencies";
 
@@ -273,8 +254,8 @@ public class InitParameters implements Serializable {
     public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";
 
     /**
-     * Configuration name for how long since last browser open before we open a
-     * new tab for the application in development mode.
+     * Configuration name for how long since last browser open before we open a new tab for the application in
+     * development mode.
      *
      * Time is given in minutes.
      */

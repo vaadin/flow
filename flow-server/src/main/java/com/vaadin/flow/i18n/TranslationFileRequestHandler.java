@@ -35,15 +35,14 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 /**
- * Handles translation file requests. Translation file requests are internal
- * requests sent by the client-side to retrieve the translation file for the
- * specified language tag. The response contains the translations in JSON
- * format. Also, the language tag of the retrieved translation file is included
- * as a header with the name {@code X-Vaadin-Retrieved-Locale}. The language tag
- * parameter {@code langtag} supports both dash and underscore as separators.
+ * Handles translation file requests. Translation file requests are internal requests sent by the client-side to
+ * retrieve the translation file for the specified language tag. The response contains the translations in JSON format.
+ * Also, the language tag of the retrieved translation file is included as a header with the name
+ * {@code X-Vaadin-Retrieved-Locale}. The language tag parameter {@code langtag} supports both dash and underscore as
+ * separators.
  * <p>
- * The translation file to return is determined by matching the requested locale
- * to the available bundles with the following prioritization order:
+ * The translation file to return is determined by matching the requested locale to the available bundles with the
+ * following prioritization order:
  * <ul>
  * <li>Exact match</li>
  * <li>Language and country match</li>
@@ -71,22 +70,19 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     public TranslationFileRequestHandler(I18NProvider i18NProvider) {
         boolean hasDefaultI18NProvider = i18NProvider != null
                 && DefaultI18NProvider.class.equals(i18NProvider.getClass());
-        this.i18NProvider = hasDefaultI18NProvider
-                ? (DefaultI18NProvider) i18NProvider
-                : null;
+        this.i18NProvider = hasDefaultI18NProvider ? (DefaultI18NProvider) i18NProvider : null;
         this.hasFallbackBundle = hasFallbackBundle();
     }
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
         if (i18NProvider == null) {
             handleCustomI18NProvider(session, response);
             return true;
         }
         Locale locale = getLocale(request);
-        ResourceBundle translationPropertyFile = getTranslationPropertyFile(
-                locale);
+        ResourceBundle translationPropertyFile = getTranslationPropertyFile(locale);
         if (translationPropertyFile == null) {
             handleNotFound(response);
         } else {
@@ -97,15 +93,12 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.TRANSLATION_FILE);
+        return HandlerHelper.isRequestType(request, HandlerHelper.RequestType.TRANSLATION_FILE);
     }
 
-    private void handleFound(VaadinResponse response,
-            ResourceBundle translationPropertyFile) throws IOException {
+    private void handleFound(VaadinResponse response, ResourceBundle translationPropertyFile) throws IOException {
         response.setStatus(HttpStatusCode.OK.getCode());
-        response.setHeader(RETRIEVED_LOCALE_HEADER_NAME,
-                translationPropertyFile.getLocale().toLanguageTag());
+        response.setHeader(RETRIEVED_LOCALE_HEADER_NAME, translationPropertyFile.getLocale().toLanguageTag());
         writeFileToResponse(response, translationPropertyFile);
     }
 
@@ -113,30 +106,25 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
-    private void handleCustomI18NProvider(VaadinSession session,
-            VaadinResponse response) throws IOException {
+    private void handleCustomI18NProvider(VaadinSession session, VaadinResponse response) throws IOException {
         String errorMessage = "Loading translations is not supported when using a custom i18n provider.";
-        if (session.getService().getDeploymentConfiguration()
-                .isProductionMode()) {
+        if (session.getService().getDeploymentConfiguration().isProductionMode()) {
             response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
         } else {
-            response.sendError(HttpStatusCode.NOT_IMPLEMENTED.getCode(),
-                    errorMessage);
+            response.sendError(HttpStatusCode.NOT_IMPLEMENTED.getCode(), errorMessage);
         }
         getLogger().debug(errorMessage);
     }
 
-    private void writeFileToResponse(VaadinResponse response,
-            ResourceBundle translationPropertyFile) throws IOException {
+    private void writeFileToResponse(VaadinResponse response, ResourceBundle translationPropertyFile)
+            throws IOException {
         JsonObject json = Json.createObject();
-        translationPropertyFile.keySet().forEach(
-                key -> json.put(key, translationPropertyFile.getString(key)));
+        translationPropertyFile.keySet().forEach(key -> json.put(key, translationPropertyFile.getString(key)));
         response.getWriter().write(json.toJson());
     }
 
     private Locale getLocale(VaadinRequest request) {
-        String languageTag = Objects.requireNonNullElse(
-                request.getParameter(LANGUAGE_TAG_PARAMETER_NAME), "");
+        String languageTag = Objects.requireNonNullElse(request.getParameter(LANGUAGE_TAG_PARAMETER_NAME), "");
         if (languageTag.contains("_")) {
             String[] tokens = languageTag.split("_");
             String language = tokens[0];
@@ -151,55 +139,41 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         Locale bestMatchLocale = getBestMatchLocale(locale);
         if (bestMatchLocale == null) {
             if (FALLBACK_LOCALE.equals(locale)) {
-                getLogger().debug(
-                        "Missing the requested default bundle for {}.",
-                        DefaultI18NProvider.BUNDLE_PREFIX);
+                getLogger().debug("Missing the requested default bundle for {}.", DefaultI18NProvider.BUNDLE_PREFIX);
             } else {
                 getLogger().debug(
                         "Missing resource bundles for {}, both the requested locale {} and the default bundle.",
-                        DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName());
+                        DefaultI18NProvider.BUNDLE_PREFIX, locale.getDisplayName());
             }
             return null;
         }
         if (!locale.equals(bestMatchLocale)) {
             if (FALLBACK_LOCALE.equals(bestMatchLocale)) {
-                getLogger().debug(
-                        "Missing resource bundle for {} and locale {}. Using the default bundle.",
-                        DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName());
+                getLogger().debug("Missing resource bundle for {} and locale {}. Using the default bundle.",
+                        DefaultI18NProvider.BUNDLE_PREFIX, locale.getDisplayName());
             } else {
-                getLogger().debug(
-                        "Missing resource bundle for {} and locale {}. Using the best match locale {}.",
-                        DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName(),
-                        bestMatchLocale.getDisplayName());
+                getLogger().debug("Missing resource bundle for {} and locale {}. Using the best match locale {}.",
+                        DefaultI18NProvider.BUNDLE_PREFIX, locale.getDisplayName(), bestMatchLocale.getDisplayName());
             }
         }
         return i18NProvider.getBundle(bestMatchLocale,
-                ResourceBundle.Control.getNoFallbackControl(
-                        ResourceBundle.Control.FORMAT_PROPERTIES));
+                ResourceBundle.Control.getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES));
     }
 
     private Locale getBestMatchLocale(Locale locale) {
-        Set<Locale> providedLocales = Set
-                .copyOf(i18NProvider.getProvidedLocales());
+        Set<Locale> providedLocales = Set.copyOf(i18NProvider.getProvidedLocales());
         if (providedLocales.contains(locale)) {
             return locale;
         }
         Optional<Locale> languageAndCountryMatch = providedLocales.stream()
-                .filter(providedLocale -> providedLocale.getLanguage()
-                        .equals(locale.getLanguage())
-                        && providedLocale.getCountry()
-                                .equals(locale.getCountry()))
+                .filter(providedLocale -> providedLocale.getLanguage().equals(locale.getLanguage())
+                        && providedLocale.getCountry().equals(locale.getCountry()))
                 .findAny();
         if (languageAndCountryMatch.isPresent()) {
             return languageAndCountryMatch.get();
         }
         Optional<Locale> languageMatch = providedLocales.stream()
-                .filter(providedLocale -> providedLocale.getLanguage()
-                        .equals(locale.getLanguage()))
-                .findAny();
+                .filter(providedLocale -> providedLocale.getLanguage().equals(locale.getLanguage())).findAny();
         if (languageMatch.isPresent()) {
             return languageMatch.get();
         }
@@ -213,8 +187,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         if (this.i18NProvider != null) {
             try {
                 this.i18NProvider.getBundle(FALLBACK_LOCALE,
-                        ResourceBundle.Control.getNoFallbackControl(
-                                ResourceBundle.Control.FORMAT_PROPERTIES));
+                        ResourceBundle.Control.getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES));
                 return true;
             } catch (MissingResourceException e) {
                 // NO-OP

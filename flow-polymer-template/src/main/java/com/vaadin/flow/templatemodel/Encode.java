@@ -16,21 +16,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines a ModelEncoder on a template model property found through
- * {@link #path()}.
+ * Defines a ModelEncoder on a template model property found through {@link #path()}.
  * <p>
- * Use this annotation on setters in your {@link TemplateModel} class to perform
- * type conversions on properties.
+ * Use this annotation on setters in your {@link TemplateModel} class to perform type conversions on properties.
  *
  * @see ModelEncoder
  *
  * @author Vaadin Ltd
  * @since 1.0
  *
- * @deprecated Template model and polymer template support is deprecated - we
- *             recommend you to use {@code LitTemplate} instead. Read more
- *             details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ * @deprecated Template model and polymer template support is deprecated - we recommend you to use {@code LitTemplate}
+ *             instead. Read more details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
  */
 @Deprecated
@@ -40,20 +36,17 @@ import java.lang.annotation.Target;
 public @interface Encode {
 
     /**
-     * The ModelEncoder class to use for encoding the property found through
-     * {{@link #path()}.
+     * The ModelEncoder class to use for encoding the property found through {{@link #path()}.
      *
      * @return the ModelEncoder class
      */
     Class<? extends ModelEncoder<?, ?>> value();
 
     /**
-     * The dot separated path from the TemplateModel property to the value to
-     * apply encoding to. Empty string by default, which will apply encoding
-     * directly to the property.
+     * The dot separated path from the TemplateModel property to the value to apply encoding to. Empty string by
+     * default, which will apply encoding directly to the property.
      *
-     * @return the dot separated path to the bean property to encode, empty
-     *         string by default
+     * @return the dot separated path to the bean property to encode, empty string by default
      */
     String path() default "";
 

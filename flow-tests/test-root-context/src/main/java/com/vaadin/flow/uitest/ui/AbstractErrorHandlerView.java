@@ -25,8 +25,7 @@ public abstract class AbstractErrorHandlerView extends AbstractDivView {
     protected void onAttach(AttachEvent attachEvent) {
         if (attachEvent.isInitialAttach()) {
             attachEvent.getSession().setErrorHandler(e -> {
-                Div div = new Div(
-                        new Text("An error occurred: " + e.getThrowable()));
+                Div div = new Div(new Text("An error occurred: " + e.getThrowable()));
                 div.addClassName("error");
                 add(div);
             });

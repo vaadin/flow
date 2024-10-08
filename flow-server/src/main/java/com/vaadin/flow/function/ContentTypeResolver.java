@@ -25,14 +25,12 @@ import com.vaadin.flow.server.StreamResource;
 /**
  * Content type resolver.
  * <p>
- * Allows to get content type for the given {@link StreamResource} instance
- * using the current {@link ServletContext}.
+ * Allows to get content type for the given {@link StreamResource} instance using the current {@link ServletContext}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  *
  */
-public interface ContentTypeResolver extends
-        BiFunction<StreamResource, ServletContext, String>, Serializable {
+public interface ContentTypeResolver extends BiFunction<StreamResource, ServletContext, String>, Serializable {
 
 }

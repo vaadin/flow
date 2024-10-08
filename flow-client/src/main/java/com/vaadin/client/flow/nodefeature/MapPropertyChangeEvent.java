@@ -38,8 +38,7 @@ public class MapPropertyChangeEvent extends ReactiveValueChangeEvent {
      * @param newValue
      *            the new value
      */
-    public MapPropertyChangeEvent(MapProperty source, Object oldValue,
-            Object newValue) {
+    public MapPropertyChangeEvent(MapProperty source, Object oldValue, Object newValue) {
         super(source);
         this.oldValue = oldValue;
         this.newValue = newValue;

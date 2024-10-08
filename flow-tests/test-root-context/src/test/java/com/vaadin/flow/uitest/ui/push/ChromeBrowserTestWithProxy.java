@@ -9,8 +9,7 @@ import org.junit.experimental.categories.Category;
 import com.vaadin.flow.testcategory.PushTests;
 
 @Category(PushTests.class)
-public abstract class ChromeBrowserTestWithProxy
-        extends AbstractBrowserConsoleTest {
+public abstract class ChromeBrowserTestWithProxy extends AbstractBrowserConsoleTest {
 
     private static AtomicInteger availablePort = new AtomicInteger(2000);
     private SimpleProxy proxySession;
@@ -84,16 +83,14 @@ public abstract class ChromeBrowserTestWithProxy
                     new RuntimeException(exception);
                 }
                 if (i == 9) {
-                    throw new RuntimeException(
-                            "All 10 attempts to connect a proxy failed", e);
+                    throw new RuntimeException("All 10 attempts to connect a proxy failed", e);
                 }
             }
         }
     }
 
     private void createProxy(int proxyPort) throws IOException {
-        proxySession = new SimpleProxy(proxyPort, getDeploymentHostname(),
-                getDeploymentPort());
+        proxySession = new SimpleProxy(proxyPort, getDeploymentHostname(), getDeploymentPort());
         proxySession.start();
     }
 

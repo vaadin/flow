@@ -26,8 +26,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 
 @Route("")
-public class RouteComponentWithMethodReference extends Component
-        implements HasComponents {
+public class RouteComponentWithMethodReference extends Component implements HasComponents {
 
     @JsModule("foo.js")
     public static class MyComponent extends Component {
@@ -44,8 +43,7 @@ public class RouteComponentWithMethodReference extends Component
     private Supplier<Component> fieldGenerator = YetAnotherComponent::new;
 
     public RouteComponentWithMethodReference() {
-        List<Supplier<Component>> suppliers = Collections
-                .singletonList(AnotherComponent::new);
+        List<Supplier<Component>> suppliers = Collections.singletonList(AnotherComponent::new);
 
         Supplier<Component> generator = MyComponent::new;
         add(generator.get(), fieldGenerator.get());

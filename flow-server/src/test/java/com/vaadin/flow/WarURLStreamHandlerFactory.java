@@ -19,9 +19,8 @@ public class WarURLStreamHandlerFactory implements URLStreamHandlerFactory {
     private final boolean registered;
 
     /**
-     * Obtain a reference to the singleton instance. It is recommended that
-     * callers check the value of {@link #isRegistered()} before using the
-     * returned instance.
+     * Obtain a reference to the singleton instance. It is recommended that callers check the value of
+     * {@link #isRegistered()} before using the returned instance.
      *
      * @return A reference to the singleton instance
      */
@@ -30,8 +29,7 @@ public class WarURLStreamHandlerFactory implements URLStreamHandlerFactory {
         return instance;
     }
 
-    private static WarURLStreamHandlerFactory getInstanceInternal(
-            boolean register) {
+    private static WarURLStreamHandlerFactory getInstanceInternal(boolean register) {
         // Double checked locking. OK because instance is volatile.
         if (instance == null) {
             synchronized (WarURLStreamHandlerFactory.class) {
@@ -58,26 +56,21 @@ public class WarURLStreamHandlerFactory implements URLStreamHandlerFactory {
     }
 
     /**
-     * Register this factory with the JVM. May be called more than once. The
-     * implementation ensures that registration only occurs once.
+     * Register this factory with the JVM. May be called more than once. The implementation ensures that registration
+     * only occurs once.
      *
-     * @return <code>true</code> if the factory is already registered with the
-     *         JVM or was successfully registered as a result of this call.
-     *         <code>false</code> if the factory was disabled prior to this
-     *         call.
+     * @return <code>true</code> if the factory is already registered with the JVM or was successfully registered as a
+     *         result of this call. <code>false</code> if the factory was disabled prior to this call.
      */
     public static boolean register() {
         return getInstanceInternal(true).isRegistered();
     }
 
     /**
-     * Prevent this this factory from registering with the JVM. May be called
-     * more than once.
+     * Prevent this this factory from registering with the JVM. May be called more than once.
      *
-     * @return <code>true</code> if the factory is already disabled or was
-     *         successfully disabled as a result of this call.
-     *         <code>false</code> if the factory was already registered prior to
-     *         this call.
+     * @return <code>true</code> if the factory is already disabled or was successfully disabled as a result of this
+     *         call. <code>false</code> if the factory was already registered prior to this call.
      */
     public static boolean disable() {
         return !getInstanceInternal(false).isRegistered();
@@ -104,9 +97,8 @@ public class WarURLStreamHandlerFactory implements URLStreamHandlerFactory {
         }
 
         @Override
-        protected void setURL(URL u, String protocol, String host, int port,
-                String authority, String userInfo, String path, String query,
-                String ref) {
+        protected void setURL(URL u, String protocol, String host, int port, String authority, String userInfo,
+                String path, String query, String ref) {
             if (path.startsWith("file:") && !path.startsWith("file:/")) {
                 // Work around a problem with the URLs in the security policy
                 // file.
@@ -122,8 +114,7 @@ public class WarURLStreamHandlerFactory implements URLStreamHandlerFactory {
                 // here
                 path = "file:/" + path.substring(5);
             }
-            super.setURL(u, protocol, host, port, authority, userInfo, path,
-                    query, ref);
+            super.setURL(u, protocol, host, port, authority, userInfo, path, query, ref);
         }
 
     }

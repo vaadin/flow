@@ -17,17 +17,12 @@ public class MakeComponentVisibleWithPushIT extends ChromeBrowserTest {
         open();
 
         $(TestBenchElement.class).id("update").click();
-        Assert.assertEquals(
-                "Unexpected value after updating the value when component is invisible",
-                "foobar", $(TestBenchElement.class).id("input")
-                        .getPropertyString("value"));
+        Assert.assertEquals("Unexpected value after updating the value when component is invisible", "foobar",
+                $(TestBenchElement.class).id("input").getPropertyString("value"));
         $(TestBenchElement.class).id("update").click();
-        Assert.assertEquals(
-                "Unexpected value after updating the value when component is invisible",
-                "foobarbar", $(TestBenchElement.class).id("input")
-                        .getPropertyString("value"));
+        Assert.assertEquals("Unexpected value after updating the value when component is invisible", "foobarbar",
+                $(TestBenchElement.class).id("input").getPropertyString("value"));
 
-        checkLogsForErrors(
-                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
+        checkLogsForErrors(msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
     }
 }

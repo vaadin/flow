@@ -31,8 +31,7 @@ public class Postpone implements Serializable {
     private final ArrayDeque<BeforeLeaveHandler> remainingLeaveListeners;
     private final ArrayDeque<BeforeEnterHandler> remainingNavigationListeners;
 
-    private Postpone(Deque<BeforeLeaveHandler> beforeLeave,
-            Deque<BeforeEnterHandler> beforeNavigation) {
+    private Postpone(Deque<BeforeLeaveHandler> beforeLeave, Deque<BeforeEnterHandler> beforeNavigation) {
         remainingLeaveListeners = new ArrayDeque<>(beforeLeave);
         remainingNavigationListeners = new ArrayDeque<>(beforeNavigation);
     }
@@ -44,8 +43,7 @@ public class Postpone implements Serializable {
      *            listeners to continue calling
      * @return uncalled listeners to continue from
      */
-    public static Postpone withLeaveObservers(
-            Deque<BeforeLeaveHandler> beforeLeave) {
+    public static Postpone withLeaveObservers(Deque<BeforeLeaveHandler> beforeLeave) {
         return new Postpone(beforeLeave, new ArrayDeque<>());
     }
 
@@ -56,8 +54,7 @@ public class Postpone implements Serializable {
      *            listeners to continue calling
      * @return uncalled listeners to continue from
      */
-    public static Postpone withNavigationObservers(
-            Deque<BeforeEnterHandler> beforeNavigation) {
+    public static Postpone withNavigationObservers(Deque<BeforeEnterHandler> beforeNavigation) {
         return new Postpone(new ArrayDeque<>(), beforeNavigation);
     }
 

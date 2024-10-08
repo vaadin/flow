@@ -109,8 +109,7 @@ public class ModelListView extends PolymerTemplate<MyModel> {
     public ModelListView() {
         getModel().getItems().add(new Item("Item 1"));
         getModel().getMoreItems().add(new Item("Item 2"));
-        getModel().setLotsOfItems(
-                Arrays.asList(new ArrayList<>(), new ArrayList<>()));
+        getModel().setLotsOfItems(Arrays.asList(new ArrayList<>(), new ArrayList<>()));
         getModel().getLotsOfItems().get(0).add(new Item("Item 3"));
         getModel().getLotsOfItems().get(1).add(new Item("Item 4"));
 
@@ -143,11 +142,9 @@ public class ModelListView extends PolymerTemplate<MyModel> {
     public void setNullTexts() {
         getModel().getItems().forEach(item -> item.setText(null));
         getModel().getMoreItems().forEach(item -> item.setText(null));
-        getModel().getLotsOfItems()
-                .forEach(list -> list.forEach(item -> item.setText(null)));
+        getModel().getLotsOfItems().forEach(list -> list.forEach(item -> item.setText(null)));
 
-        getModel().getItemWithItems().getItems()
-                .forEach(item -> item.setText(null));
+        getModel().getItemWithItems().getItems().forEach(item -> item.setText(null));
 
         getModel().getItemWithItem().getItem().setText(null);
     }

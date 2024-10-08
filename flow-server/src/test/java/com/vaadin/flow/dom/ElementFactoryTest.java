@@ -54,10 +54,8 @@ public class ElementFactoryTest {
         String href = "hrefhref";
         String textContent = "textContent";
 
-        assertElement("<a href='" + href + "'></a>",
-                ElementFactory.createAnchor(href));
-        assertElement("<a href='" + href + "'>textContent</a>",
-                ElementFactory.createAnchor(href, textContent));
+        assertElement("<a href='" + href + "'></a>", ElementFactory.createAnchor(href));
+        assertElement("<a href='" + href + "'>textContent</a>", ElementFactory.createAnchor(href, textContent));
         assertElement("<a href='" + href + "' router-link=''>textContent</a>",
                 ElementFactory.createRouterLink(href, textContent));
     }
@@ -66,8 +64,7 @@ public class ElementFactoryTest {
     public void createTextInput() {
         String type = "typetype";
 
-        assertElement("<input type='" + type + "'></input>",
-                ElementFactory.createInput(type));
+        assertElement("<input type='" + type + "'></input>", ElementFactory.createInput(type));
     }
 
     private void assertElement(String expectedOuterHtml, Element createAnchor) {
@@ -79,8 +76,7 @@ public class ElementFactoryTest {
         StringBuilder sb = new StringBuilder();
         sb.append("<");
         sb.append(e.getTag());
-        String attrs = e.getAttributeNames().sorted()
-                .map(name -> name + "='" + e.getAttribute(name) + "'")
+        String attrs = e.getAttributeNames().sorted().map(name -> name + "='" + e.getAttribute(name) + "'")
                 .collect(Collectors.joining(" "));
         if (!attrs.isEmpty()) {
             sb.append(" ").append(attrs);
@@ -109,35 +105,27 @@ public class ElementFactoryTest {
             Element element = (Element) method.invoke(null);
             String expectedTag = tagNameFromMethod(method);
 
-            assertElement("<" + expectedTag + "></" + expectedTag + ">",
-                    element);
+            assertElement("<" + expectedTag + "></" + expectedTag + ">", element);
         } else if (isTextContentMethod(method)) {
             Element element = (Element) method.invoke(null, "textContent");
             String expectedTag = tagNameFromMethod(method);
 
-            assertElement(
-                    "<" + expectedTag + ">textContent</" + expectedTag + ">",
-                    element);
+            assertElement("<" + expectedTag + ">textContent</" + expectedTag + ">", element);
         } else {
             Assert.fail("Untested method: " + method.getName() + "("
-                    + Stream.of(method.getParameterTypes())
-                            .map(Class::getSimpleName)
-                            .collect(Collectors.joining(","))
+                    + Stream.of(method.getParameterTypes()).map(Class::getSimpleName).collect(Collectors.joining(","))
                     + ")");
         }
     }
 
     private boolean isTestedSeparately(Method method) {
-        if (method.getName().equals("createAnchor")
-                && method.getParameterTypes().length > 0) {
+        if (method.getName().equals("createAnchor") && method.getParameterTypes().length > 0) {
             return true;
         }
-        if (method.getName().equals("createRouterLink")
-                && method.getParameterTypes().length > 0) {
+        if (method.getName().equals("createRouterLink") && method.getParameterTypes().length > 0) {
             return true;
         }
-        if (method.getName().equals("createInput")
-                && method.getParameterTypes().length > 0) {
+        if (method.getName().equals("createInput") && method.getParameterTypes().length > 0) {
             return true;
         }
 
@@ -151,8 +139,7 @@ public class ElementFactoryTest {
     }
 
     private String tagNameFromMethod(Method method) {
-        String tagFromMethod = method.getName().replace("create", "")
-                .toLowerCase(Locale.ENGLISH);
+        String tagFromMethod = method.getName().replace("create", "").toLowerCase(Locale.ENGLISH);
         if (methodToTag.containsKey(tagFromMethod)) {
             return methodToTag.get(tagFromMethod);
         } else {

@@ -30,27 +30,24 @@ public interface Style extends Serializable {
     /**
      * Gets the value of the given style property.
      * <p>
-     * Note that the name should be in camelCase and not dash-separated, i.e.
-     * use "fontFamily" and not "font-family"
+     * Note that the name should be in camelCase and not dash-separated, i.e. use "fontFamily" and not "font-family"
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
-     * @return the style property value, or <code>null</code> if the style
-     *         property has not been set
+     * @return the style property value, or <code>null</code> if the style property has not been set
      */
     String get(String name);
 
     /**
      * Sets the given style property to the given value.
      * <p>
-     * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
-     * <code>font-family</code> versions are supported.
+     * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g. <code>font-family</code> versions are
+     * supported.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     Style set(String name, String value);
@@ -58,8 +55,8 @@ public interface Style extends Serializable {
     /**
      * Removes the given style property if it has been set.
      * <p>
-     * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
-     * <code>font-family</code> versions are supported.
+     * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g. <code>font-family</code> versions are
+     * supported.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
@@ -77,23 +74,21 @@ public interface Style extends Serializable {
     /**
      * Checks if the given style property has been set.
      * <p>
-     * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
-     * <code>font-family</code> versions are supported.
+     * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g. <code>font-family</code> versions are
+     * supported.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
      *
-     * @return <code>true</code> if the style property has been set,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the style property has been set, <code>false</code> otherwise
      */
     boolean has(String name);
 
     /**
      * Gets the defined style property names.
      * <p>
-     * Note that this always returns the name as camelCased, e.g.
-     * <code>fontFamily</code> even if it has been set as dash-separated
-     * (<code>font-family</code>).
+     * Note that this always returns the name as camelCased, e.g. <code>fontFamily</code> even if it has been set as
+     * dash-separated (<code>font-family</code>).
      *
      * @return a stream of defined style property names
      */
@@ -103,8 +98,7 @@ public interface Style extends Serializable {
      * Sets the <code>background</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBackground(String value) {
@@ -115,8 +109,7 @@ public interface Style extends Serializable {
      * Sets the <code>background-color</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBackgroundColor(String value) {
@@ -127,8 +120,7 @@ public interface Style extends Serializable {
      * Sets the <code>border</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBorder(String value) {
@@ -139,8 +131,7 @@ public interface Style extends Serializable {
      * Sets the <code>border-left</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBorderLeft(String value) {
@@ -151,8 +142,7 @@ public interface Style extends Serializable {
      * Sets the <code>border-right</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBorderRight(String value) {
@@ -163,8 +153,7 @@ public interface Style extends Serializable {
      * Sets the <code>border-top</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBorderTop(String value) {
@@ -175,8 +164,7 @@ public interface Style extends Serializable {
      * Sets the <code>border-bottom</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBorderBottom(String value) {
@@ -187,8 +175,7 @@ public interface Style extends Serializable {
      * Sets the <code>border-radius</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBorderRadius(String value) {
@@ -203,8 +190,7 @@ public interface Style extends Serializable {
      * Sets the <code>box-sizing</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBoxSizing(BoxSizing value) {
@@ -215,8 +201,7 @@ public interface Style extends Serializable {
      * Sets the <code>box-shadow</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBoxShadow(String value) {
@@ -234,8 +219,7 @@ public interface Style extends Serializable {
      * Sets the <code>clear</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setClear(Clear value) {
@@ -246,8 +230,7 @@ public interface Style extends Serializable {
      * Sets the <code>cursor</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setCursor(String value) {
@@ -258,8 +241,7 @@ public interface Style extends Serializable {
      * Sets the <code>color</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setColor(String value) {
@@ -296,8 +278,7 @@ public interface Style extends Serializable {
      * Sets the <code>display</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setDisplay(Display value) {
@@ -316,8 +297,7 @@ public interface Style extends Serializable {
      * Sets the <code>float</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFloat(FloatCss value) {
@@ -328,8 +308,7 @@ public interface Style extends Serializable {
      * Sets the <code>font</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFont(String value) {
@@ -340,8 +319,7 @@ public interface Style extends Serializable {
      * Sets the <code>height</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setHeight(String value) {
@@ -352,8 +330,7 @@ public interface Style extends Serializable {
      * Sets the <code>min-height</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMinHeight(String value) {
@@ -364,8 +341,7 @@ public interface Style extends Serializable {
      * Sets the <code>max-height</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMaxHeight(String value) {
@@ -376,8 +352,7 @@ public interface Style extends Serializable {
      * Sets the <code>margin</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMargin(String value) {
@@ -388,8 +363,7 @@ public interface Style extends Serializable {
      * Sets the <code>margin-left</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMarginLeft(String value) {
@@ -400,8 +374,7 @@ public interface Style extends Serializable {
      * Sets the <code>margin-right</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMarginRight(String value) {
@@ -412,8 +385,7 @@ public interface Style extends Serializable {
      * Sets the <code>margin-top</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMarginTop(String value) {
@@ -424,8 +396,7 @@ public interface Style extends Serializable {
      * Sets the <code>margin-bottom</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMarginBottom(String value) {
@@ -436,8 +407,7 @@ public interface Style extends Serializable {
      * Sets the <code>margin-inline-start</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMarginInlineStart(String value) {
@@ -448,8 +418,7 @@ public interface Style extends Serializable {
      * Sets the <code>margin-inline-end</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMarginInlineEnd(String value) {
@@ -460,8 +429,7 @@ public interface Style extends Serializable {
      * Sets the <code>outline</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setOutline(String value) {
@@ -472,8 +440,7 @@ public interface Style extends Serializable {
      * Sets the <code>opacity</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setOpacity(String value) {
@@ -488,8 +455,7 @@ public interface Style extends Serializable {
      * Sets the <code>overflow</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setOverflow(Overflow value) {
@@ -500,8 +466,7 @@ public interface Style extends Serializable {
      * Sets the <code>padding</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setPadding(String value) {
@@ -512,8 +477,7 @@ public interface Style extends Serializable {
      * Sets the <code>padding-left</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setPaddingLeft(String value) {
@@ -524,8 +488,7 @@ public interface Style extends Serializable {
      * Sets the <code>padding-right</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setPaddingRight(String value) {
@@ -536,8 +499,7 @@ public interface Style extends Serializable {
      * Sets the <code>padding-top</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setPaddingTop(String value) {
@@ -548,8 +510,7 @@ public interface Style extends Serializable {
      * Sets the <code>padding-bottom</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setPaddingBottom(String value) {
@@ -567,8 +528,7 @@ public interface Style extends Serializable {
      * Sets the <code>position</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setPosition(Position value) {
@@ -579,8 +539,7 @@ public interface Style extends Serializable {
      * Sets the <code>scale</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setScale(String value) {
@@ -598,8 +557,7 @@ public interface Style extends Serializable {
      * Sets the <code>text-align</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setTextAlign(TextAlign value) {
@@ -610,8 +568,7 @@ public interface Style extends Serializable {
      * Sets the <code>text-decoration</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setTextDecoration(String value) {
@@ -622,8 +579,7 @@ public interface Style extends Serializable {
      * Sets the <code>transform</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setTransform(String value) {
@@ -634,8 +590,7 @@ public interface Style extends Serializable {
      * Sets the <code>transform-origin</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setTransformOrigin(String value) {
@@ -646,8 +601,7 @@ public interface Style extends Serializable {
      * Sets the <code>transition</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setTransition(String value) {
@@ -665,8 +619,7 @@ public interface Style extends Serializable {
      * Sets the <code>visibility</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setVisibility(Visibility value) {
@@ -677,8 +630,7 @@ public interface Style extends Serializable {
      * Sets the <code>width</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setWidth(String value) {
@@ -689,8 +641,7 @@ public interface Style extends Serializable {
      * Sets the <code>min-width</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMinWidth(String value) {
@@ -701,8 +652,7 @@ public interface Style extends Serializable {
      * Sets the <code>max-width</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setMaxWidth(String value) {
@@ -720,8 +670,7 @@ public interface Style extends Serializable {
      * Sets the <code>white-space</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setWhiteSpace(WhiteSpace value) {
@@ -732,8 +681,7 @@ public interface Style extends Serializable {
      * Sets the <code>left</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setLeft(String value) {
@@ -744,8 +692,7 @@ public interface Style extends Serializable {
      * Sets the <code>right</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setRight(String value) {
@@ -756,8 +703,7 @@ public interface Style extends Serializable {
      * Sets the <code>top</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setTop(String value) {
@@ -768,8 +714,7 @@ public interface Style extends Serializable {
      * Sets the <code>bottom</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setBottom(String value) {
@@ -780,8 +725,7 @@ public interface Style extends Serializable {
      * Sets the <code>z-index</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setZIndex(Integer value) {
@@ -799,8 +743,7 @@ public interface Style extends Serializable {
      * Sets the <code>font-weight</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFontWeight(FontWeight value) {
@@ -811,8 +754,7 @@ public interface Style extends Serializable {
      * Sets the <code>font-weight</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFontWeight(Integer value) {
@@ -823,8 +765,7 @@ public interface Style extends Serializable {
      * Sets the <code>font-weight</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFontWeight(String value) {
@@ -835,8 +776,7 @@ public interface Style extends Serializable {
      * Sets the <code>font-size</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFontSize(String value) {
@@ -847,8 +787,7 @@ public interface Style extends Serializable {
      * Sets the <code>line-height</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setLineHeight(String value) {
@@ -878,8 +817,7 @@ public interface Style extends Serializable {
      * Sets the <code>align-items</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setAlignItems(AlignItems value) {
@@ -910,8 +848,7 @@ public interface Style extends Serializable {
      * Sets the <code>align-self</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setAlignSelf(AlignSelf value) {
@@ -929,8 +866,7 @@ public interface Style extends Serializable {
      * Sets the <code>flex-wrap</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFlexWrap(FlexWrap value) {
@@ -941,8 +877,7 @@ public interface Style extends Serializable {
      * Sets the <code>flex-grow</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFlexGrow(String value) {
@@ -953,8 +888,7 @@ public interface Style extends Serializable {
      * Sets the <code>flex-shrink</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFlexShrink(String value) {
@@ -986,8 +920,7 @@ public interface Style extends Serializable {
      * Sets the <code>justify-content</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setJustifyContent(JustifyContent value) {
@@ -1005,8 +938,7 @@ public interface Style extends Serializable {
      * Sets the <code>flex-direction</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFlexDirection(FlexDirection value) {
@@ -1024,8 +956,7 @@ public interface Style extends Serializable {
      * Sets the <code>flex-basis</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFlexBasis(FlexBasis value) {
@@ -1036,8 +967,7 @@ public interface Style extends Serializable {
      * Sets the <code>flex-basis</code> property.
      *
      * @param value
-     *            the style property value (if <code>null</code>, the property
-     *            will be removed)
+     *            the style property value (if <code>null</code>, the property will be removed)
      * @return this style instance
      */
     default Style setFlexBasis(String value) {
@@ -1048,8 +978,7 @@ public interface Style extends Serializable {
         if (value == null) {
             return remove(propertyName);
         } else {
-            return set(propertyName,
-                    value.name().replace("_", "-").toLowerCase());
+            return set(propertyName, value.name().replace("_", "-").toLowerCase());
         }
     }
 

@@ -16,8 +16,7 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     public void versionInfoAvailableInDevelopmentMopde() {
         open();
         WebElement version = findElement(By.id("version"));
-        Assert.assertEquals("version: " + Version.getFullVersion(),
-                version.getText());
+        Assert.assertEquals("version: " + Version.getFullVersion(), version.getText());
     }
 
     @Test
@@ -59,9 +58,8 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     }
 
     private List<Long> getProfilingData() {
-        Object data = executeScript(
-                "var key = Object.keys(Vaadin.Flow.clients).filter(k => k !== 'TypeScript')[0];"
-                        + "return Vaadin.Flow.clients[key].getProfilingData();");
+        Object data = executeScript("var key = Object.keys(Vaadin.Flow.clients).filter(k => k !== 'TypeScript')[0];"
+                + "return Vaadin.Flow.clients[key].getProfilingData();");
         if (data == null) {
             throw new IllegalStateException("No profiling data available");
         }

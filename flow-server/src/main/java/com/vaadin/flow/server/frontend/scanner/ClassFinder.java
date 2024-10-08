@@ -38,8 +38,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
 public interface ClassFinder extends Serializable {
 
     /**
-     * Implementation that searches for annotated classes or subclasses in a
-     * list of classes.
+     * Implementation that searches for annotated classes or subclasses in a list of classes.
      */
     class DefaultClassFinder implements ClassFinder {
         private final LinkedHashSet<Class<?>> classes;
@@ -54,13 +53,11 @@ public interface ClassFinder extends Serializable {
          */
         public DefaultClassFinder(Set<Class<?>> classes) {
             /*
-             * Order the classes to get deterministic behavior. It does not
-             * really matter HOW the classes are ordered as long as they are
-             * always in the same order
+             * Order the classes to get deterministic behavior. It does not really matter HOW the classes are ordered as
+             * long as they are always in the same order
              */
             List<Class<?>> classList = new ArrayList<>(classes);
-            classList.sort(
-                    (cls1, cls2) -> cls1.getName().compareTo(cls2.getName()));
+            classList.sort((cls1, cls2) -> cls1.getName().compareTo(cls2.getName()));
             this.classes = new LinkedHashSet<>(classList);
 
             // The classes might be loaded with different class loaders, e.g app
@@ -74,17 +71,15 @@ public interface ClassFinder extends Serializable {
         }
 
         /**
-         * ClassFinder using a specified <code>ClassLoader</code> to load
-         * classes and a list of classes where to look for annotations or
-         * subclasses.
+         * ClassFinder using a specified <code>ClassLoader</code> to load classes and a list of classes where to look
+         * for annotations or subclasses.
          *
          * @param classLoader
          *            classloader for getting resources or loading classes.
          * @param classes
          *            classes where to look for annotations or subclasses.
          */
-        public DefaultClassFinder(ClassLoader classLoader,
-                Class<?>... classes) {
+        public DefaultClassFinder(ClassLoader classLoader, Class<?>... classes) {
             this.classLoader = classLoader;
             this.classes = new LinkedHashSet<>();
             for (Class<?> clazz : classes) {
@@ -93,10 +88,8 @@ public interface ClassFinder extends Serializable {
         }
 
         @Override
-        public Set<Class<?>> getAnnotatedClasses(
-                Class<? extends Annotation> annotation) {
-            return classes.stream().filter(
-                    cl -> cl.getAnnotationsByType(annotation).length > 0)
+        public Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
+            return classes.stream().filter(cl -> cl.getAnnotationsByType(annotation).length > 0)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
@@ -107,19 +100,15 @@ public interface ClassFinder extends Serializable {
 
         @SuppressWarnings("unchecked")
         @Override
-        public <T> Class<T> loadClass(String name)
-                throws ClassNotFoundException {
+        public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
             return (Class<T>) classLoader.loadClass(name);
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
-            return this.classes.stream()
-                    .filter(cl -> GenericTypeReflector.isSuperType(type, cl)
-                            && !type.equals(cl))
-                    .map(cl -> (Class<T>) cl)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            return this.classes.stream().filter(cl -> GenericTypeReflector.isSuperType(type, cl) && !type.equals(cl))
+                    .map(cl -> (Class<T>) cl).collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
         @Override
@@ -148,10 +137,8 @@ public interface ClassFinder extends Serializable {
         }
 
         @Override
-        public Set<Class<?>> getAnnotatedClasses(
-                Class<? extends Annotation> annotation) {
-            return annotatedClassesMapCache.computeIfAbsent(annotation,
-                    key -> classFinder.getAnnotatedClasses(key));
+        public Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
+            return annotatedClassesMapCache.computeIfAbsent(annotation, key -> classFinder.getAnnotatedClasses(key));
         }
 
         @Override
@@ -160,8 +147,7 @@ public interface ClassFinder extends Serializable {
         }
 
         @Override
-        public <T> Class<T> loadClass(String name)
-                throws ClassNotFoundException {
+        public <T> Class<T> loadClass(String name) throws ClassNotFoundException {
             return classFinder.loadClass(name);
         }
 
@@ -194,8 +180,7 @@ public interface ClassFinder extends Serializable {
      * @throws ClassNotFoundException
      *             when the class not found
      */
-    default Set<Class<?>> getAnnotatedClasses(String className)
-            throws ClassNotFoundException {
+    default Set<Class<?>> getAnnotatedClasses(String className) throws ClassNotFoundException {
         return getAnnotatedClasses(loadClass(className));
     }
 
@@ -248,8 +233,7 @@ public interface ClassFinder extends Serializable {
      * @throws ClassNotFoundException
      *             when the parent class is not in the classpath
      */
-    default <T> Set<Class<? extends T>> getSubTypesOf(final String name)
-            throws ClassNotFoundException {
+    default <T> Set<Class<? extends T>> getSubTypesOf(final String name) throws ClassNotFoundException {
         Class<T> parent = loadClass(name);
         return getSubTypesOf(parent);
     }

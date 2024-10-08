@@ -34,16 +34,13 @@ import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.internal.BeanUtil;
 
 /**
- * A {@code Validator} using the JSR-303 (jakarta.validation) annotation-based
- * bean validation mechanism. Values passed to this validator are compared
- * against the constraints, if any, specified by annotations on the
- * corresponding bean property.
+ * A {@code Validator} using the JSR-303 (jakarta.validation) annotation-based bean validation mechanism. Values passed
+ * to this validator are compared against the constraints, if any, specified by annotations on the corresponding bean
+ * property.
  * <p>
- * Note that a JSR-303 implementation (for instance
- * <a href="http://hibernate.org/validator/">Hibernate Validator</a> or
- * <a href="http://bval.apache.org/">Apache BVal</a>) must be present on the
- * project classpath when using bean validation. Specification versions 1.0 and
- * 1.1 are supported.
+ * Note that a JSR-303 implementation (for instance <a href="http://hibernate.org/validator/">Hibernate Validator</a> or
+ * <a href="http://bval.apache.org/">Apache BVal</a>) must be present on the project classpath when using bean
+ * validation. Specification versions 1.0 and 1.1 are supported.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -80,22 +77,19 @@ public class BeanValidator implements Validator<Object> {
     private Class<?> beanType;
 
     /**
-     * Creates a new JSR-303 {@code BeanValidator} that validates values of the
-     * specified property. Localizes validation messages using the
-     * {@linkplain Locale#getDefault() default locale}.
+     * Creates a new JSR-303 {@code BeanValidator} that validates values of the specified property. Localizes validation
+     * messages using the {@linkplain Locale#getDefault() default locale}.
      *
      * @param beanType
      *            the bean type declaring the property, not null
      * @param propertyName
      *            the property to validate, not null
      * @throws IllegalStateException
-     *             if {@link BeanUtil#checkBeanValidationAvailable()} returns
-     *             false
+     *             if {@link BeanUtil#checkBeanValidationAvailable()} returns false
      */
     public BeanValidator(Class<?> beanType, String propertyName) {
         if (!BeanUtil.checkBeanValidationAvailable()) {
-            throw new IllegalStateException("Cannot create a "
-                    + BeanValidator.class.getSimpleName()
+            throw new IllegalStateException("Cannot create a " + BeanValidator.class.getSimpleName()
                     + ": a JSR-303 Bean Validation implementation not found on the classpath");
         }
         Objects.requireNonNull(beanType, "bean class cannot be null");
@@ -106,13 +100,11 @@ public class BeanValidator implements Validator<Object> {
     }
 
     /**
-     * Validates the given value as if it were the value of the bean property
-     * configured for this validator. Returns {@code Result.ok} if there are no
-     * JSR-303 constraint violations, a {@code Result.error} of chained
-     * constraint violation messages otherwise.
+     * Validates the given value as if it were the value of the bean property configured for this validator. Returns
+     * {@code Result.ok} if there are no JSR-303 constraint violations, a {@code Result.error} of chained constraint
+     * violation messages otherwise.
      * <p>
-     * Null values are accepted unless the property has an {@code @NotNull}
-     * annotation or equivalent.
+     * Null values are accepted unless the property has an {@code @NotNull} annotation or equivalent.
      *
      * @param value
      *            the input value to validate
@@ -122,27 +114,24 @@ public class BeanValidator implements Validator<Object> {
      */
     @Override
     public ValidationResult apply(final Object value, ValueContext context) {
-        Set<? extends ConstraintViolation<?>> violations = getJavaxBeanValidator()
-                .validateValue(beanType, propertyName, value);
+        Set<? extends ConstraintViolation<?>> violations = getJavaxBeanValidator().validateValue(beanType, propertyName,
+                value);
 
         Locale locale = context.getLocale().orElse(Locale.getDefault());
 
         Optional<ValidationResult> result = violations.stream()
-                .map(violation -> ValidationResult
-                        .error(getMessage(violation, locale)))
-                .findFirst();
+                .map(violation -> ValidationResult.error(getMessage(violation, locale))).findFirst();
         return result.orElse(ValidationResult.ok());
     }
 
     @Override
     public String toString() {
-        return String.format("%s[%s.%s]", getClass().getSimpleName(),
-                beanType.getSimpleName(), propertyName);
+        return String.format("%s[%s.%s]", getClass().getSimpleName(), beanType.getSimpleName(), propertyName);
     }
 
     /**
-     * Returns the underlying JSR-303 bean validator factory used. A factory is
-     * created using {@link Validation} if necessary.
+     * Returns the underlying JSR-303 bean validator factory used. A factory is created using {@link Validation} if
+     * necessary.
      *
      * @return the validator factory to use
      */
@@ -160,8 +149,8 @@ public class BeanValidator implements Validator<Object> {
     }
 
     /**
-     * Returns the interpolated error message for the given constraint violation
-     * using the locale specified for this validator.
+     * Returns the interpolated error message for the given constraint violation using the locale specified for this
+     * validator.
      *
      * @param violation
      *            the constraint violation
@@ -169,16 +158,13 @@ public class BeanValidator implements Validator<Object> {
      *            the used locale
      * @return the localized error message
      */
-    protected String getMessage(ConstraintViolation<?> violation,
-            Locale locale) {
-        return getJavaxBeanValidatorFactory().getMessageInterpolator()
-                .interpolate(violation.getMessageTemplate(),
-                        createContext(violation), locale);
+    protected String getMessage(ConstraintViolation<?> violation, Locale locale) {
+        return getJavaxBeanValidatorFactory().getMessageInterpolator().interpolate(violation.getMessageTemplate(),
+                createContext(violation), locale);
     }
 
     /**
-     * Creates a simple message interpolation context based on the given
-     * constraint violation.
+     * Creates a simple message interpolation context based on the given constraint violation.
      *
      * @param violation
      *            the constraint violation

@@ -30,8 +30,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.DL)
-public class DescriptionList extends HtmlContainer
-        implements ClickNotifier<DescriptionList> {
+public class DescriptionList extends HtmlContainer implements ClickNotifier<DescriptionList> {
 
     /**
      * Component representing a <code>&lt;dt&gt;</code> element.
@@ -40,8 +39,7 @@ public class DescriptionList extends HtmlContainer
      * @since 1.0
      */
     @Tag(Tag.DT)
-    public static class Term extends HtmlContainer
-            implements ClickNotifier<Term> {
+    public static class Term extends HtmlContainer implements ClickNotifier<Term> {
 
         /**
          * Creates a new empty term.
@@ -79,8 +77,7 @@ public class DescriptionList extends HtmlContainer
      * @since 1.0
      */
     @Tag(Tag.DD)
-    public static class Description extends HtmlContainer
-            implements ClickNotifier<Description> {
+    public static class Description extends HtmlContainer implements ClickNotifier<Description> {
 
         /**
          * Creates a new empty description.
@@ -119,15 +116,13 @@ public class DescriptionList extends HtmlContainer
     }
 
     /**
-     * Creates a new description list with the given map of terms and
-     * descriptions.
+     * Creates a new description list with the given map of terms and descriptions.
      *
      * @param terms
      *            the map of terms and descriptions
      */
     public DescriptionList(Map<Term, Description> terms) {
-        super(terms.entrySet().stream()
-                .flatMap(entry -> Stream.of(entry.getKey(), entry.getValue()))
+        super(terms.entrySet().stream().flatMap(entry -> Stream.of(entry.getKey(), entry.getValue()))
                 .toArray(Component[]::new));
     }
 }

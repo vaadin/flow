@@ -32,18 +32,15 @@ public class DynamicallyRegisteredRouteIT extends ChromeBrowserTest {
 
     @Test
     public void testServiceInitListener_canRegisterRoutes() {
-        String testURL = getTestURL(getRootURL(), "/view/"
-                + TestingServiceInitListener.DYNAMICALLY_REGISTERED_ROUTE,
+        String testURL = getTestURL(getRootURL(), "/view/" + TestingServiceInitListener.DYNAMICALLY_REGISTERED_ROUTE,
                 null);
         getDriver().get(testURL);
         waitForDevServer();
 
-        List<WebElement> elements = findElements(
-                By.id(DynamicallyRegisteredRoute.ID));
+        List<WebElement> elements = findElements(By.id(DynamicallyRegisteredRoute.ID));
 
-        Assert.assertEquals("Route registered during startup is not available",
-                1, elements.size());
-        Assert.assertEquals("Dynamically registered route not rendered",
-                DynamicallyRegisteredRoute.TEXT, elements.get(0).getText());
+        Assert.assertEquals("Route registered during startup is not available", 1, elements.size());
+        Assert.assertEquals("Dynamically registered route not rendered", DynamicallyRegisteredRoute.TEXT,
+                elements.get(0).getText());
     }
 }

@@ -66,31 +66,24 @@ public class TemplateInitializerTest {
     public void setUp() throws Exception {
         service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
-        String parentTemplateId = InTemplateClass.class.getAnnotation(Tag.class)
-                .value();
+        String parentTemplateId = InTemplateClass.class.getAnnotation(Tag.class).value();
         assertThat("Both classes should have the same '@Tag' annotation",
-                OutsideTemplateClass.class.getAnnotation(Tag.class).value(),
-                is(parentTemplateId));
+                OutsideTemplateClass.class.getAnnotation(Tag.class).value(), is(parentTemplateId));
 
-        String inTemplateElementId = InTemplateClass.class.getField("element")
-                .getAnnotation(Id.class).value();
-        String outsideTemplateElementId = OutsideTemplateClass.class
-                .getField("element").getAnnotation(Id.class).value();
+        String inTemplateElementId = InTemplateClass.class.getField("element").getAnnotation(Id.class).value();
+        String outsideTemplateElementId = OutsideTemplateClass.class.getField("element").getAnnotation(Id.class)
+                .value();
 
-        templateParser = (clazz, tag, service) -> new TemplateData("",
-                Jsoup.parse(String.format("<dom-module id='%s'><template>"
-                        + "    <template><div id='%s'>Test</div></template>"
-                        + "    <div id='%s'></div>"
-                        + "    <div a='{{twoWay}}' b='{{invalid}} syntax' c='{{two.way}}'"
+        templateParser = (clazz, tag, service) -> new TemplateData("", Jsoup.parse(String.format(
+                "<dom-module id='%s'><template>" + "    <template><div id='%s'>Test</div></template>"
+                        + "    <div id='%s'></div>" + "    <div a='{{twoWay}}' b='{{invalid}} syntax' c='{{two.way}}'"
                         + "        d='{{invalidSyntax' e='{{withEvent::eventName}}' f='[[oneWay]]'></div>"
-                        + "</template></dom-module>", parentTemplateId,
-                        inTemplateElementId, outsideTemplateElementId)));
+                        + "</template></dom-module>",
+                parentTemplateId, inTemplateElementId, outsideTemplateElementId)));
     }
 
     @After
@@ -105,19 +98,15 @@ public class TemplateInitializerTest {
 
     @Test
     public void outsideTemplateShouldNotThrowAnException() {
-        new TemplateInitializer(new OutsideTemplateClass(), templateParser,
-                service);
+        new TemplateInitializer(new OutsideTemplateClass(), templateParser, service);
     }
 
     @Test
     public void twoWayBindingPaths() {
-        Set<String> twoWayBindingPaths = new TemplateInitializer(
-                new OutsideTemplateClass(), templateParser, service)
+        Set<String> twoWayBindingPaths = new TemplateInitializer(new OutsideTemplateClass(), templateParser, service)
                 .getTwoWayBindingPaths();
 
-        Assert.assertEquals(
-                new HashSet<>(Arrays.asList("twoWay", "two.way", "withEvent")),
-                twoWayBindingPaths);
+        Assert.assertEquals(new HashSet<>(Arrays.asList("twoWay", "two.way", "withEvent")), twoWayBindingPaths);
     }
 
 }

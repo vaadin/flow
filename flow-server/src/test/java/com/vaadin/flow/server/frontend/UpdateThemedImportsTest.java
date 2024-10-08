@@ -89,13 +89,11 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue(nodeModulesPath.mkdirs());
         createImport("./src/subfolder/sub-template.js", "");
-        createImport("./src/client-side-template.js",
-                "import 'xx' from './subfolder/sub-template.js';"
-                        + "import '@vaadin/vaadin-button/src/vaadin-button.js'");
+        createImport("./src/client-side-template.js", "import 'xx' from './subfolder/sub-template.js';"
+                + "import '@vaadin/vaadin-button/src/vaadin-button.js'");
         createImport("./src/client-side-no-themed-template.js", "");
         createImport("./src/main-template.js",
-                "import 'xx' from './client-side-template.js';"
-                        + "import \"./client-side-no-themed-template.js\";"
+                "import 'xx' from './client-side-template.js';" + "import \"./client-side-no-themed-template.js\";"
                         + "import './src/wrong-themed-template.js';"
                         + "import '@vaadin/vaadin-button/src/vaadin-button.js'");
 
@@ -114,16 +112,14 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         // make external component's module and its themed version
         createImport("@vaadin/vaadin-button/src/vaadin-button.js", "");
-        createImport("@vaadin/vaadin-button/theme/myTheme/vaadin-button.js",
-                "");
+        createImport("@vaadin/vaadin-button/theme/myTheme/vaadin-button.js", "");
 
         ClassFinder finder = getClassFinder();
         FrontendDependencies deps = new FrontendDependencies(finder) {
 
             @Override
             public Map<ChunkInfo, List<String>> getModules() {
-                return Collections.singletonMap(ChunkInfo.GLOBAL,
-                        List.of("./src/main-template.js"));
+                return Collections.singletonMap(ChunkInfo.GLOBAL, List.of("./src/main-template.js"));
             }
 
             @Override
@@ -141,54 +137,39 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 return new ThemeDefinition(MyTheme.class, "", "");
             }
         };
-        Options options = new MockOptions(finder, tmpRoot)
-                .withFrontendDirectory(frontendDirectory)
+        Options options = new MockOptions(finder, tmpRoot).withFrontendDirectory(frontendDirectory)
                 .withBuildDirectory(TARGET).withProductionMode(true);
         updater = new TaskUpdateImports(deps, options);
     }
 
     @Test
-    public void themedClientSideModulesAreWrittenIntoImportsFile()
-            throws Exception {
+    public void themedClientSideModulesAreWrittenIntoImportsFile() throws Exception {
         updater.execute();
 
-        String content = FileUtils.readFileToString(importsFile,
-                Charset.defaultCharset());
+        String content = FileUtils.readFileToString(importsFile, Charset.defaultCharset());
         MatcherAssert.assertThat(content, CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/main-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/client-side-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/subfolder/sub-template.js';"),
-                CoreMatchers.containsString(
-                        "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';"),
-                CoreMatchers.not(CoreMatchers.containsString(
-                        "import 'theme/myTheme/wrong-themed-template.js';"))));
+                CoreMatchers.containsString("import 'Frontend/theme/myTheme/main-template.js';"),
+                CoreMatchers.containsString("import 'Frontend/theme/myTheme/client-side-template.js';"),
+                CoreMatchers.containsString("import 'Frontend/theme/myTheme/subfolder/sub-template.js';"),
+                CoreMatchers.containsString("import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';"),
+                CoreMatchers.not(CoreMatchers.containsString("import 'theme/myTheme/wrong-themed-template.js';"))));
     }
 
     @Test
-    public void noDuplicateImportEntryIsWrittenIntoImportsFile()
-            throws Exception {
+    public void noDuplicateImportEntryIsWrittenIntoImportsFile() throws Exception {
         updater.execute();
 
-        String content = FileUtils.readFileToString(importsFile,
-                Charset.defaultCharset());
-        int count = StringUtils.countMatches(content,
-                "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';");
-        Assert.assertEquals(
-                "Import entries in the imports file should be unique.", 1,
-                count);
+        String content = FileUtils.readFileToString(importsFile, Charset.defaultCharset());
+        int count = StringUtils.countMatches(content, "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';");
+        Assert.assertEquals("Import entries in the imports file should be unique.", 1, count);
     }
 
     @Test
     public void directoryImportEntryIsResolvedAsIndexJS() throws Exception {
 
-        createImport("./src/directory/index.js",
-                "import { xx } from './sub1.js';");
+        createImport("./src/directory/index.js", "import { xx } from './sub1.js';");
         createImport("./src/directory/sub1.js", "");
-        createImport("./src/main-template.js",
-                "import 'xx' from './directory';");
+        createImport("./src/main-template.js", "import 'xx' from './directory';");
 
         // create themed modules
         createImport("./theme/myTheme/directory/index.js", "");
@@ -197,26 +178,20 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         updater.execute();
 
-        String content = FileUtils.readFileToString(importsFile,
-                Charset.defaultCharset());
-        MatcherAssert.assertThat(content, CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/main-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/directory';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/directory/sub1.js';")));
+        String content = FileUtils.readFileToString(importsFile, Charset.defaultCharset());
+        MatcherAssert.assertThat(content,
+                CoreMatchers.allOf(CoreMatchers.containsString("import 'Frontend/theme/myTheme/main-template.js';"),
+                        CoreMatchers.containsString("import 'Frontend/theme/myTheme/directory';"),
+                        CoreMatchers.containsString("import 'Frontend/theme/myTheme/directory/sub1.js';")));
     }
 
     @Test
     public void directoryImportEntry_avoidRecursion() throws Exception {
 
-        createImport("./src/directory/index.js",
-                "import { xx } from '../import2.js';");
+        createImport("./src/directory/index.js", "import { xx } from '../import2.js';");
         createImport("./src/import1.js", "import { xx } from './directory/';");
         createImport("./src/import2.js", "import 'xx' from './import1.js';");
-        createImport("./src/main-template.js",
-                "import 'xx' from './directory';");
+        createImport("./src/main-template.js", "import 'xx' from './directory';");
 
         // create themed modules
         createImport("./theme/myTheme/directory", "");
@@ -226,22 +201,16 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         updater.execute();
 
-        String content = FileUtils.readFileToString(importsFile,
-                Charset.defaultCharset());
-        MatcherAssert.assertThat(content, CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/main-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/directory';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/import1.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/import2.js';")));
+        String content = FileUtils.readFileToString(importsFile, Charset.defaultCharset());
+        MatcherAssert.assertThat(content,
+                CoreMatchers.allOf(CoreMatchers.containsString("import 'Frontend/theme/myTheme/main-template.js';"),
+                        CoreMatchers.containsString("import 'Frontend/theme/myTheme/directory';"),
+                        CoreMatchers.containsString("import 'Frontend/theme/myTheme/import1.js';"),
+                        CoreMatchers.containsString("import 'Frontend/theme/myTheme/import2.js';")));
     }
 
     private void createImport(String path, String content) throws IOException {
-        File newFile = resolveImportFile(frontendDirectory, nodeModulesPath,
-                path);
+        File newFile = resolveImportFile(frontendDirectory, nodeModulesPath, path);
         newFile.getParentFile().mkdirs();
         newFile.delete();
         Assert.assertTrue(newFile.createNewFile());

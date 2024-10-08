@@ -24,8 +24,7 @@ import com.vaadin.flow.dom.ElementFactory;
  * Native select element for selecting items.
  */
 @Tag("select")
-public class SelectElement
-        extends AbstractSinglePropertyField<SelectElement, String> {
+public class SelectElement extends AbstractSinglePropertyField<SelectElement, String> {
 
     public static final String VALUE_PROPERTY = "value";
 
@@ -38,8 +37,7 @@ public class SelectElement
     public SelectElement(String... options) {
         super(VALUE_PROPERTY, "", false);
         if (options.length == 0) {
-            throw new IllegalArgumentException(
-                    "Select should be given at least one option");
+            throw new IllegalArgumentException("Select should be given at least one option");
         }
 
         for (String selection : options) {

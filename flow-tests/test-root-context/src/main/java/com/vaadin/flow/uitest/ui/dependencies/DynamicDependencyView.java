@@ -32,25 +32,20 @@ public class DynamicDependencyView extends Div {
             add(newComponent);
 
             attachEvent.getUI().getPage()
-                    .addDynamicImport("return new Promise( "
-                            + " function( resolve, reject){ "
-                            + "   var div = document.createElement(\"div\");\n"
-                            + "     div.setAttribute('id','dep');\n"
+                    .addDynamicImport("return new Promise( " + " function( resolve, reject){ "
+                            + "   var div = document.createElement(\"div\");\n" + "     div.setAttribute('id','dep');\n"
                             + "     div.textContent = document.querySelector('#new-component')==null;\n"
-                            + "     document.body.appendChild(div);resolve('');}"
-                            + ");");
+                            + "     document.body.appendChild(div);resolve('');}" + ");");
 
             add(createLoadButton("nopromise", "Load non-promise dependency",
                     "document.querySelector('#new-component').textContent = 'import has been run'"));
-            add(createLoadButton("throw", "Load throwing dependency",
-                    "throw Error('Throw on purpose')"));
+            add(createLoadButton("throw", "Load throwing dependency", "throw Error('Throw on purpose')"));
             add(createLoadButton("reject", "Load rejecting dependency",
                     "return new Promise(function(resolve, reject) { reject(Error('Reject on purpose')); });"));
         }
     }
 
-    private NativeButton createLoadButton(String id, String name,
-            String expression) {
+    private NativeButton createLoadButton(String id, String name, String expression) {
         NativeButton button = new NativeButton(name, event -> {
             UI.getCurrent().getPage().addDynamicImport(expression);
             newComponent.setText("Div updated for " + id);

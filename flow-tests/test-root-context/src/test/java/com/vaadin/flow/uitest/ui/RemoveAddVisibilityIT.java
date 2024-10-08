@@ -29,8 +29,7 @@ public class RemoveAddVisibilityIT extends ChromeBrowserTest {
         open();
 
         WebElement element = findElement(By.tagName("span"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
-                element.getAttribute("hidden"));
+        Assert.assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
 
         findElement(By.id("make-visible")).click();
 

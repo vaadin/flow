@@ -79,34 +79,27 @@ public class NodeTasksExecutionTest {
         commands.clear();
 
         Assert.assertEquals("No commands should be added initially, "
-                + "update mock builder so that we don't automatically add any tasks!",
-                0, commands.size());
+                + "update mock builder so that we don't automatically add any tasks!", 0, commands.size());
     }
 
-    private static List<Class<? extends FallibleCommand>> getCommandOrder(
-            NodeTasks nodeTasks) throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
+    private static List<Class<? extends FallibleCommand>> getCommandOrder(NodeTasks nodeTasks)
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         // get the private list of task execution order
-        final Field commandOrderField = NodeTasks.class
-                .getDeclaredField("commandOrder");
+        final Field commandOrderField = NodeTasks.class.getDeclaredField("commandOrder");
         commandOrderField.setAccessible(true);
-        return (List<Class<? extends FallibleCommand>>) commandOrderField
-                .get(nodeTasks);
+        return (List<Class<? extends FallibleCommand>>) commandOrderField.get(nodeTasks);
     }
 
     private static List<FallibleCommand> getCommands(NodeTasks nodeTasks)
-            throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         // get the private commands list
-        final Field commandsField = NodeTasks.class
-                .getDeclaredField("commands");
+        final Field commandsField = NodeTasks.class.getDeclaredField("commands");
         commandsField.setAccessible(true);
         return (List<FallibleCommand>) commandsField.get(nodeTasks);
     }
 
     private void createFeatureFlagsFile(String contents) throws IOException {
-        Files.writeString(temporaryFolder
-                .newFile(FeatureFlags.PROPERTIES_FILENAME).toPath(), contents);
+        Files.writeString(temporaryFolder.newFile(FeatureFlags.PROPERTIES_FILENAME).toPath(), contents);
     }
 
     @Test
@@ -168,23 +161,20 @@ public class NodeTasksExecutionTest {
         t1.join();
         t2.join();
 
-        Assert.assertEquals(List.of("Start 1", "End 1", "Start 2", "End 2"),
-                result);
+        Assert.assertEquals(List.of("Start 1", "End 1", "Start 2", "End 2"), result);
     }
 
     @Test
-    public void nodeTasks_alwaysExecutedInDefinedOrder()
-            throws ExecutionFailedException {
+    public void nodeTasks_alwaysExecutedInDefinedOrder() throws ExecutionFailedException {
 
         // Assemble the command list with random order
         commands.addAll(commandsMock);
 
         nodeTasks.execute();
 
-        Assert.assertEquals("Amount of tasks executed was more than expected",
-                commandsOrder.size(), executionOrder.size());
-        Assert.assertEquals("Tasks were executed in an unexpected order",
-                commandsOrder, executionOrder);
+        Assert.assertEquals("Amount of tasks executed was more than expected", commandsOrder.size(),
+                executionOrder.size());
+        Assert.assertEquals("Tasks were executed in an unexpected order", commandsOrder, executionOrder);
     }
 
     @Test
@@ -193,8 +183,7 @@ public class NodeTasksExecutionTest {
         commands.add(commandsMock.get(0));
         commands.add(new NewTask());
 
-        Assert.assertThrows(
-                "NodeTasks execution should fail due to unknown task in execution list",
+        Assert.assertThrows("NodeTasks execution should fail due to unknown task in execution list",
                 UnknownTaskException.class, nodeTasks::execute);
     }
 
@@ -204,54 +193,41 @@ public class NodeTasksExecutionTest {
 
         NodeTasks spiedNodeTasks = Mockito.spy(new NodeTasks(options));
         // TaskRemoveOldFrontendGeneratedFiles should be the last executed task
-        Mockito.doAnswer(i -> i.getArgument(
-                0) instanceof TaskRemoveOldFrontendGeneratedFiles ? 1 : 0)
+        Mockito.doAnswer(i -> i.getArgument(0) instanceof TaskRemoveOldFrontendGeneratedFiles ? 1 : 0)
                 .when(spiedNodeTasks).getIndex(ArgumentMatchers.any());
 
-        List<Path> generatedFiles = List.of(Paths.get("file.tsx"),
-                Paths.get("another.js"), Paths.get("sub", "a.tsx"),
+        List<Path> generatedFiles = List.of(Paths.get("file.tsx"), Paths.get("another.js"), Paths.get("sub", "a.tsx"),
                 Paths.get("sub", "nested", "b.js"));
         enqueueCreateGeneratedFilesTasks(spiedNodeTasks, generatedFiles);
         spiedNodeTasks.execute();
         assertOnlyExpectedGeneratedFilesExists(generatedFiles);
 
         // Simulate execution that generates different files
-        generatedFiles = List.of(Paths.get("no-the-same-file.tsx"),
-                Paths.get("another.js"), Paths.get("sub", "a.tsx"),
-                Paths.get("sub", "b.tsx"),
-                Paths.get("sub", "nested-changed", "b.js"));
+        generatedFiles = List.of(Paths.get("no-the-same-file.tsx"), Paths.get("another.js"), Paths.get("sub", "a.tsx"),
+                Paths.get("sub", "b.tsx"), Paths.get("sub", "nested-changed", "b.js"));
         enqueueCreateGeneratedFilesTasks(spiedNodeTasks, generatedFiles);
         spiedNodeTasks.execute();
         assertOnlyExpectedGeneratedFilesExists(generatedFiles);
 
     }
 
-    private void enqueueCreateGeneratedFilesTasks(NodeTasks nodeTasks,
-            List<Path> generatedFiles)
+    private void enqueueCreateGeneratedFilesTasks(NodeTasks nodeTasks, List<Path> generatedFiles)
             throws NoSuchFieldException, IllegalAccessException {
         List<FallibleCommand> commandList = getCommands(nodeTasks);
         commandList.clear();
-        generatedFiles.stream().map(this::createGeneratedFileTask)
-                .forEach(commandList::add);
+        generatedFiles.stream().map(this::createGeneratedFileTask).forEach(commandList::add);
         commandList.add(new TaskRemoveOldFrontendGeneratedFiles(options));
     }
 
-    private void assertOnlyExpectedGeneratedFilesExists(
-            List<Path> expectedFiles) throws IOException {
+    private void assertOnlyExpectedGeneratedFilesExists(List<Path> expectedFiles) throws IOException {
         AccumulatorPathVisitor visitor = new AccumulatorPathVisitor();
-        Files.walkFileTree(options.getFrontendGeneratedFolder().toPath(),
-                visitor);
-        Assert.assertEquals(
-                "Expect exactly currently generated files to exists",
-                Set.copyOf(expectedFiles),
-                Set.copyOf(visitor.relativizeFiles(
-                        options.getFrontendGeneratedFolder().toPath(), false,
-                        null)));
+        Files.walkFileTree(options.getFrontendGeneratedFolder().toPath(), visitor);
+        Assert.assertEquals("Expect exactly currently generated files to exists", Set.copyOf(expectedFiles),
+                Set.copyOf(visitor.relativizeFiles(options.getFrontendGeneratedFolder().toPath(), false, null)));
     }
 
     private FallibleCommand createGeneratedFileTask(Path relativePath) {
-        Path resolved = options.getFrontendGeneratedFolder().toPath()
-                .resolve(relativePath);
+        Path resolved = options.getFrontendGeneratedFolder().toPath().resolve(relativePath);
         return new FileGeneratorTask(resolved.toFile());
     }
 
@@ -287,8 +263,7 @@ public class NodeTasksExecutionTest {
     }
 
     /**
-     * Generate mocks for each command and shuffle the list to simulate random
-     * add order in NodeTasks.
+     * Generate mocks for each command and shuffle the list to simulate random add order in NodeTasks.
      *
      * @param commandsOrder
      *            commands to execute array
@@ -298,10 +273,8 @@ public class NodeTasksExecutionTest {
      * @throws ExecutionFailedException
      *             thrown by actual commands
      */
-    private List<FallibleCommand> mockCommandsRandomOrder(
-            List<Class<? extends FallibleCommand>> commandsOrder,
-            List<Class<? extends FallibleCommand>> executionOrder)
-            throws ExecutionFailedException {
+    private List<FallibleCommand> mockCommandsRandomOrder(List<Class<? extends FallibleCommand>> commandsOrder,
+            List<Class<? extends FallibleCommand>> executionOrder) throws ExecutionFailedException {
 
         List<FallibleCommand> commands = new ArrayList<>(commandsOrder.size());
 

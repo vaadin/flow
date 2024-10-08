@@ -33,11 +33,11 @@ public @interface PageTitle {
     /**
      * Gets the HTML title that should be used.
      * <p>
-     * Empty string will clear any previous page title. In that case the browser
-     * will decide what to show as the title, most likely the url.
+     * Empty string will clear any previous page title. In that case the browser will decide what to show as the title,
+     * most likely the url.
      * <p>
-     * You may dynamically update the title for a view by implementing the
-     * {@link HasDynamicTitle#getPageTitle()} method.
+     * You may dynamically update the title for a view by implementing the {@link HasDynamicTitle#getPageTitle()}
+     * method.
      *
      * @return a page title string
      */

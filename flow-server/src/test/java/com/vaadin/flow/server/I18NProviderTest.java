@@ -47,98 +47,77 @@ public class I18NProviderTest {
     private MockDeploymentConfiguration config = new MockDeploymentConfiguration();
 
     @Test
-    public void no_property_defined_should_leave_with_default_locale()
-            throws ServletException, ServiceException {
+    public void no_property_defined_should_leave_with_default_locale() throws ServletException, ServiceException {
         initServletAndService(config);
 
-        Assert.assertEquals("Locale was not the expected default locale",
-                Locale.getDefault(), VaadinSession.getCurrent().getLocale());
-    }
-
-    @Test
-    public void property_defined_should_init_registry_with_provider()
-            throws ServletException, ServiceException {
-        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
-                TestProvider.class.getName());
-
-        initServletAndService(config);
-
-        Instantiator instantiator = VaadinService.getCurrent()
-                .getInstantiator();
-        Assert.assertEquals("Found wrong registry", TestProvider.class,
-                instantiator.getI18NProvider().getClass());
-    }
-
-    @Test
-    public void with_defined_provider_locale_should_be_the_available_one()
-            throws ServletException, ServiceException {
-        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
-                TestProvider.class.getName());
-
-        initServletAndService(config);
-
-        Instantiator instantiator = VaadinService.getCurrent()
-                .getInstantiator();
-        I18NProvider i18NProvider = instantiator.getI18NProvider();
-        Assert.assertNotNull("No provider for ", i18NProvider);
-
-        Assert.assertEquals("Locale was not the defined locale",
-                i18NProvider.getProvidedLocales().get(0),
+        Assert.assertEquals("Locale was not the expected default locale", Locale.getDefault(),
                 VaadinSession.getCurrent().getLocale());
     }
 
     @Test
-    public void translate_calls_provider()
-            throws ServletException, ServiceException {
-        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
-                TestProvider.class.getName());
+    public void property_defined_should_init_registry_with_provider() throws ServletException, ServiceException {
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER, TestProvider.class.getName());
 
         initServletAndService(config);
 
-        Assert.assertEquals("translate method should return a value",
-                "!foo.bar!", I18NProvider.translate("foo.bar"));
+        Instantiator instantiator = VaadinService.getCurrent().getInstantiator();
+        Assert.assertEquals("Found wrong registry", TestProvider.class, instantiator.getI18NProvider().getClass());
     }
 
     @Test
-    public void translate_withoutVaadinService_throwIllegalStateException()
-            throws ServletException, ServiceException {
-        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
-                TestProvider.class.getName());
+    public void with_defined_provider_locale_should_be_the_available_one() throws ServletException, ServiceException {
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER, TestProvider.class.getName());
+
+        initServletAndService(config);
+
+        Instantiator instantiator = VaadinService.getCurrent().getInstantiator();
+        I18NProvider i18NProvider = instantiator.getI18NProvider();
+        Assert.assertNotNull("No provider for ", i18NProvider);
+
+        Assert.assertEquals("Locale was not the defined locale", i18NProvider.getProvidedLocales().get(0),
+                VaadinSession.getCurrent().getLocale());
+    }
+
+    @Test
+    public void translate_calls_provider() throws ServletException, ServiceException {
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER, TestProvider.class.getName());
+
+        initServletAndService(config);
+
+        Assert.assertEquals("translate method should return a value", "!foo.bar!", I18NProvider.translate("foo.bar"));
+    }
+
+    @Test
+    public void translate_withoutVaadinService_throwIllegalStateException() throws ServletException, ServiceException {
+        config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER, TestProvider.class.getName());
 
         initServletAndService(config);
 
         VaadinService.setCurrent(null);
 
-        Assert.assertThrows(
-                "Should throw exception without active VaadinService",
-                IllegalStateException.class,
+        Assert.assertThrows("Should throw exception without active VaadinService", IllegalStateException.class,
                 () -> I18NProvider.translate("foo.bar"));
     }
 
     @Before
-    public void initState()
-            throws NoSuchFieldException, IllegalAccessException {
+    public void initState() throws NoSuchFieldException, IllegalAccessException {
         clearI18NProviderField();
     }
 
     @After
-    public void clearCurrentInstances()
-            throws NoSuchFieldException, IllegalAccessException {
+    public void clearCurrentInstances() throws NoSuchFieldException, IllegalAccessException {
         CurrentInstance.clearAll();
         clearI18NProviderField();
     }
 
-    public static void clearI18NProviderField()
-            throws NoSuchFieldException, IllegalAccessException {
-        Field field = DefaultInstantiator.class
-                .getDeclaredField("i18nProvider");
+    public static void clearI18NProviderField() throws NoSuchFieldException, IllegalAccessException {
+        Field field = DefaultInstantiator.class.getDeclaredField("i18nProvider");
         field.setAccessible(true);
         ((AtomicReference<I18NProvider>) field.get(null)).set(null);
         field.setAccessible(false);
     }
 
-    private void initServletAndService(DeploymentConfiguration config)
-            throws ServletException, ServiceException {
+    private void initServletAndService(DeploymentConfiguration config) throws ServletException, ServiceException {
         service = new MockVaadinServletService(config) {
             @Override
             public Instantiator getInstantiator() {
@@ -146,11 +125,9 @@ public class I18NProviderTest {
             }
         };
 
-        HttpServletRequest httpServletRequest = Mockito
-                .mock(HttpServletRequest.class);
+        HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
         HttpSession mockHttpSession = Mockito.mock(HttpSession.class);
-        WrappedSession mockWrappedSession = new WrappedHttpSession(
-                mockHttpSession) {
+        WrappedSession mockWrappedSession = new WrappedHttpSession(mockHttpSession) {
             final ReentrantLock lock = new ReentrantLock();
             {
                 lock.lock();
@@ -169,8 +146,7 @@ public class I18NProviderTest {
             }
         };
 
-        VaadinRequest request = new VaadinServletRequest(httpServletRequest,
-                service) {
+        VaadinRequest request = new VaadinServletRequest(httpServletRequest, service) {
             @Override
             public String getParameter(String name) {
                 if (ApplicationConstants.REQUEST_TYPE_PARAMETER.equals(name)) {
@@ -180,8 +156,7 @@ public class I18NProviderTest {
             }
 
             @Override
-            public WrappedSession getWrappedSession(
-                    boolean allowSessionCreation) {
+            public WrappedSession getWrappedSession(boolean allowSessionCreation) {
                 return mockWrappedSession;
             }
         };

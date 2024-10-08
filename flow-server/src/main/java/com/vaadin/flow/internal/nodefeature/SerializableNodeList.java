@@ -22,8 +22,7 @@ import com.vaadin.flow.internal.StateNode;
 /**
  * A list which contains {@link Serializable} values but not {@link StateNode}s.
  * <p>
- * For a {@link NodeList} containing {@link StateNode}s, use
- * {@link StateNodeNodeList}.
+ * For a {@link NodeList} containing {@link StateNode}s, use {@link StateNodeNodeList}.
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -33,8 +32,7 @@ import com.vaadin.flow.internal.StateNode;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class SerializableNodeList<T extends Serializable>
-        extends NodeList<T> {
+public abstract class SerializableNodeList<T extends Serializable> extends NodeList<T> {
 
     /**
      * Creates a new list for the given node.

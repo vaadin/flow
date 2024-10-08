@@ -31,12 +31,10 @@ import com.vaadin.flow.uitest.ui.template.ExceptionsDuringPropertyUpdatesView.Ex
 @Tag("exceptions-property-update")
 @Route(value = "com.vaadin.flow.uitest.ui.template.ExceptionsDuringPropertyUpdatesView", layout = ViewTestLayout.class)
 @JsModule("./ExceptionsDuringPropertyUpdates.js")
-public class ExceptionsDuringPropertyUpdatesView
-        extends PolymerTemplate<ExceptionsDuringPropertyUpdatesModel>
+public class ExceptionsDuringPropertyUpdatesView extends PolymerTemplate<ExceptionsDuringPropertyUpdatesModel>
         implements HasComponents {
 
-    public interface ExceptionsDuringPropertyUpdatesModel
-            extends TemplateModel {
+    public interface ExceptionsDuringPropertyUpdatesModel extends TemplateModel {
         void setText(String text);
 
         @AllowClientUpdates
@@ -62,23 +60,20 @@ public class ExceptionsDuringPropertyUpdatesView
         getModel().setText("a");
 
         getElement().addPropertyChangeListener("text", event -> {
-            throw new RuntimeException(
-                    "Intentional exception in property sync handler for 'text'");
+            throw new RuntimeException("Intentional exception in property sync handler for 'text'");
         });
         getElement().addPropertyChangeListener("title", event -> {
-            throw new IllegalStateException(
-                    "Intentional exception in property sync handler for 'title'");
+            throw new IllegalStateException("Intentional exception in property sync handler for 'title'");
         });
-        getElement().addPropertyChangeListener("name", event -> msg
-                .setText("Name is updated to " + getModel().getName()));
+        getElement().addPropertyChangeListener("name",
+                event -> msg.setText("Name is updated to " + getModel().getName()));
     }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         if (attachEvent.isInitialAttach()) {
             attachEvent.getSession().setErrorHandler(e -> {
-                Div div = new Div(
-                        new Text("An error occurred: " + e.getThrowable()));
+                Div div = new Div(new Text("An error occurred: " + e.getThrowable()));
                 div.addClassName("error");
                 add(div);
             });

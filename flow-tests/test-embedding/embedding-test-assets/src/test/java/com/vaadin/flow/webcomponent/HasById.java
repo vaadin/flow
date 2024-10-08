@@ -25,14 +25,11 @@ public interface HasById {
         return byId(_this, id, childIds);
     }
 
-    default TestBenchElement byId(HasElementQuery elementQuery, String id,
-            String... childIds) {
-        TestBenchElement testBenchElement = elementQuery
-                .$(TestBenchElement.class).id(id);
+    default TestBenchElement byId(HasElementQuery elementQuery, String id, String... childIds) {
+        TestBenchElement testBenchElement = elementQuery.$(TestBenchElement.class).id(id);
         if (testBenchElement != null && childIds.length > 0) {
             for (String childId : childIds) {
-                testBenchElement = testBenchElement.$(TestBenchElement.class)
-                        .id(childId);
+                testBenchElement = testBenchElement.$(TestBenchElement.class).id(childId);
                 if (testBenchElement == null) {
                     return null;
                 }

@@ -29,8 +29,7 @@ import com.vaadin.flow.internal.LocaleUtil;
 public interface I18NProvider extends Serializable {
 
     /**
-     * Get the locales that we have translations for. The first locale should be
-     * the default locale.
+     * Get the locales that we have translations for. The first locale should be the default locale.
      *
      * @return provided locales
      */
@@ -39,8 +38,8 @@ public interface I18NProvider extends Serializable {
     /**
      * Get the translation for key with given locale.
      * <p>
-     * Note! For usability and catching missing translations implementation
-     * should never return a null, but an exception string e.g. '!{key}!'
+     * Note! For usability and catching missing translations implementation should never return a null, but an exception
+     * string e.g. '!{key}!'
      *
      * @param key
      *            translation key
@@ -55,8 +54,8 @@ public interface I18NProvider extends Serializable {
     /**
      * Get the translation for key with given locale.
      * <p>
-     * Note! For usability and catching missing translations implementation
-     * should never return a null, but an exception string e.g. '!{key}!'
+     * Note! For usability and catching missing translations implementation should never return a null, but an exception
+     * string e.g. '!{key}!'
      *
      * @param key
      *            translation key
@@ -71,9 +70,8 @@ public interface I18NProvider extends Serializable {
     }
 
     /**
-     * Get the translation for key via {@link I18NProvider} instance retrieved
-     * from the current VaadinService. Uses the current UI locale, or if not
-     * available, then the default locale.
+     * Get the translation for key via {@link I18NProvider} instance retrieved from the current VaadinService. Uses the
+     * current UI locale, or if not available, then the default locale.
      *
      * @param key
      *            translation key
@@ -88,8 +86,8 @@ public interface I18NProvider extends Serializable {
     }
 
     /**
-     * Get the translation for key with given locale via {@link I18NProvider}
-     * instance retrieved from the current VaadinService.
+     * Get the translation for key with given locale via {@link I18NProvider} instance retrieved from the current
+     * VaadinService.
      *
      * @param locale
      *            locale to use
@@ -102,9 +100,8 @@ public interface I18NProvider extends Serializable {
      *             thrown if no I18NProvider found from the VaadinService
      */
     static String translate(Locale locale, String key, Object... params) {
-        return LocaleUtil.getI18NProvider()
-                .orElseThrow(() -> new IllegalStateException(
-                        "I18NProvider is not available via current VaadinService. VaadinService, Instantiator or I18NProvider is null."))
+        return LocaleUtil.getI18NProvider().orElseThrow(() -> new IllegalStateException(
+                "I18NProvider is not available via current VaadinService. VaadinService, Instantiator or I18NProvider is null."))
                 .getTranslation(key, locale, params);
     }
 }

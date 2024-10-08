@@ -31,8 +31,7 @@ public class MainView extends AppLayout {
     private UserInfo userInfo;
     private AccessAnnotationChecker accessChecker;
 
-    public MainView(SecurityUtils securityUtils,
-            AccessAnnotationChecker accessChecker) {
+    public MainView(SecurityUtils securityUtils, AccessAnnotationChecker accessChecker) {
         setId("main-view");
         this.securityUtils = securityUtils;
         this.accessChecker = accessChecker;
@@ -73,8 +72,7 @@ public class MainView extends AppLayout {
         HorizontalLayout logoLayout = new HorizontalLayout();
         logoLayout.addClassName("logo");
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        logoLayout
-                .add(new Image("public/images/logo.jpg", "Bank of Flow logo"));
+        logoLayout.add(new Image("public/images/logo.jpg", "Bank of Flow logo"));
         logoLayout.add(new H1("Bank of Flow"));
         Div info = new Div();
         info.setText(
@@ -125,8 +123,7 @@ public class MainView extends AppLayout {
         return tabs;
     }
 
-    private static Tab createTab(String text,
-            Class<? extends Component> navigationTarget) {
+    private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
         final Tab tab = new Tab();
         tab.add(new RouterLink(text, navigationTarget));
         ComponentUtil.setData(tab, Class.class, navigationTarget);
@@ -141,15 +138,12 @@ public class MainView extends AppLayout {
     }
 
     private Optional<Tab> getTabForComponent(Component component) {
-        return menu.getChildren()
-                .filter(tab -> ComponentUtil.getData(tab, Class.class)
-                        .equals(component.getClass()))
+        return menu.getChildren().filter(tab -> ComponentUtil.getData(tab, Class.class).equals(component.getClass()))
                 .findFirst().map(Tab.class::cast);
     }
 
     private String getCurrentPageTitle() {
-        PageTitle title = getContent().getClass()
-                .getAnnotation(PageTitle.class);
+        PageTitle title = getContent().getClass().getAnnotation(PageTitle.class);
         return title == null ? "" : title.value();
     }
 }

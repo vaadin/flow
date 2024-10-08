@@ -35,8 +35,7 @@ public class MessageDigestUtil {
     }
 
     /**
-     * Calculates the SHA-256 hash of the UTF-16 representation of the given
-     * string.
+     * Calculates the SHA-256 hash of the UTF-16 representation of the given string.
      *
      * @param string
      *            the string to hash
@@ -48,8 +47,7 @@ public class MessageDigestUtil {
     }
 
     /**
-     * Calculates the SHA-256 hash of the given string representation using the
-     * supplied charset.
+     * Calculates the SHA-256 hash of the given string representation using the supplied charset.
      *
      * @param string
      *            the string to hash
@@ -61,8 +59,7 @@ public class MessageDigestUtil {
     }
 
     /**
-     * Calculates the SHA-256 hash of the given string with the given salt
-     * representation using the supplied charset.
+     * Calculates the SHA-256 hash of the given string with the given salt representation using the supplied charset.
      *
      * @param string
      *            the string to hash
@@ -84,11 +81,9 @@ public class MessageDigestUtil {
             }
             return digest;
         } catch (NoSuchAlgorithmException e) {
-            throw new UnsupportedOperationException(
-                    "Your Java implementation does not support SHA-256, "
-                            + "even though it is required by the Java specification. "
-                            + "Change to an implementation which follows the specification.",
-                    e);
+            throw new UnsupportedOperationException("Your Java implementation does not support SHA-256, "
+                    + "even though it is required by the Java specification. "
+                    + "Change to an implementation which follows the specification.", e);
         }
     }
 

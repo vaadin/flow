@@ -18,8 +18,7 @@ package com.vaadin.flow.internal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
- * An exception thrown when the given JSON value cannot be decoded into a value
- * of the given Java type.
+ * An exception thrown when the given JSON value cannot be decoded into a value of the given Java type.
  *
  * @author Vaadin Ltd
  * @since 24.4

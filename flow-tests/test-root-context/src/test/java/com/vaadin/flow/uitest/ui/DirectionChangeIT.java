@@ -45,8 +45,7 @@ public class DirectionChangeIT extends ChromeBrowserTest {
         open("rtl");
 
         // due to #8028 / 8029 need to wait for JS execution to complete
-        waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                .executeScript(RETURN_DIR_SCRIPT), 2);
+        waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript(RETURN_DIR_SCRIPT), 2);
 
         verifyDirection(Direction.RIGHT_TO_LEFT);
 
@@ -57,8 +56,7 @@ public class DirectionChangeIT extends ChromeBrowserTest {
 
     private void verifyDirection(Direction direction) {
         String dir = getDirection();
-        Assert.assertEquals(direction == null ? "" : direction.getClientName(),
-                dir);
+        Assert.assertEquals(direction == null ? "" : direction.getClientName(), dir);
     }
 
     private String getDirection() {

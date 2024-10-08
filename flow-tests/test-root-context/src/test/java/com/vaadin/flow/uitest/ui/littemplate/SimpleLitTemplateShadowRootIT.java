@@ -44,21 +44,18 @@ public class SimpleLitTemplateShadowRootIT extends ChromeBrowserTest {
     @Test
     public void shadowRoot() {
         Assert.assertEquals(shouldHaveShadowRoot(),
-                (Boolean) executeScript("return !!arguments[0].shadowRoot",
-                        template));
+                (Boolean) executeScript("return !!arguments[0].shadowRoot", template));
     }
 
     @Test
     public void idMappingWorks() {
-        NativeButtonElement mappedButton = template.$(NativeButtonElement.class)
-                .id("mappedButton");
+        NativeButtonElement mappedButton = template.$(NativeButtonElement.class).id("mappedButton");
 
         Assert.assertEquals("Server button", mappedButton.getText());
         mappedButton.click();
 
         DivElement label = template.$(DivElement.class).id("label");
-        Assert.assertEquals("Hello from server component event listener",
-                label.getText());
+        Assert.assertEquals("Hello from server component event listener", label.getText());
 
         DivElement sortDiv = template.$(DivElement.class).id("sort");
 
@@ -67,8 +64,7 @@ public class SimpleLitTemplateShadowRootIT extends ChromeBrowserTest {
 
     @Test
     public void clientPropertyAndCallbackWorks() {
-        NativeButtonElement clientButton = template.$(NativeButtonElement.class)
-                .id("clientButton");
+        NativeButtonElement clientButton = template.$(NativeButtonElement.class).id("clientButton");
 
         Assert.assertEquals("Client button", clientButton.getText());
         clientButton.click();

@@ -16,8 +16,7 @@
 package com.vaadin.flow.component.html;
 
 /**
- * Enum representing <code>target</code> attribute values for an
- * <code>&lt;a&gt;</code> element.
+ * Enum representing <code>target</code> attribute values for an <code>&lt;a&gt;</code> element.
  *
  * @author Vaadin Ltd
  * @since
@@ -36,13 +35,11 @@ public enum AnchorTarget implements AnchorTargetValue {
      */
     BLANK("_blank"),
     /**
-     * Open a link in the parent context, or the current context if there is no
-     * parent context.
+     * Open a link in the parent context, or the current context if there is no parent context.
      */
     PARENT("_parent"),
     /**
-     * Open a link in the top most grandparent context, or the current context
-     * if there is no parent context.
+     * Open a link in the top most grandparent context, or the current context if there is no parent context.
      */
     TOP("_top");
 

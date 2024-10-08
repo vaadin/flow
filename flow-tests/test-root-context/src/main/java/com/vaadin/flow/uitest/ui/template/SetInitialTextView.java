@@ -14,8 +14,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.SetInitialTextView", layout = ViewTestLayout.class)
 @Tag("set-initial-text")
 @JsModule("./SetInitialText.js")
-public class SetInitialTextView extends PolymerTemplate<TemplateModel>
-        implements HasComponents {
+public class SetInitialTextView extends PolymerTemplate<TemplateModel> implements HasComponents {
 
     @Id("child")
     private Div child;
@@ -26,8 +25,7 @@ public class SetInitialTextView extends PolymerTemplate<TemplateModel>
         child.setText("");
         setId("set-initial-text");
 
-        NativeButton button = new NativeButton("Add a new child",
-                event -> addChild());
+        NativeButton button = new NativeButton("Add a new child", event -> addChild());
         button.setId("add-child");
         add(button);
     }

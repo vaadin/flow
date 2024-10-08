@@ -25,8 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * The entry point of the Spring Boot application.
  *
- * Use the @PWA annotation make the application installable on phones, tablets
- * and some desktop browsers.
+ * Use the @PWA annotation make the application installable on phones, tablets and some desktop browsers.
  *
  */
 @SpringBootApplication
@@ -38,8 +37,7 @@ public class Application {
 
     public static void triggerReload() {
         try {
-            String classFile = Application.class.getName().replace(".", "/")
-                    + ".class";
+            String classFile = Application.class.getName().replace(".", "/") + ".class";
             touch(new File("target/classes/" + classFile));
         } catch (IOException ioException) {
             throw new UncheckedIOException(ioException);

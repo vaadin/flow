@@ -22,15 +22,12 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 
-public class TestApplicationServiceInitListener
-        implements VaadinServiceInitListener {
+public class TestApplicationServiceInitListener implements VaadinServiceInitListener {
     private static String getBaseUrl(IndexHtmlResponse indexHtmlResponse) {
-        VaadinServletRequest request = (VaadinServletRequest) indexHtmlResponse
-                .getVaadinRequest();
+        VaadinServletRequest request = (VaadinServletRequest) indexHtmlResponse.getVaadinRequest();
         String scheme = request.getScheme() + "://";
         String serverName = request.getServerName();
-        String serverPort = (request.getServerPort() == 80) ? ""
-                : ":" + request.getServerPort();
+        String serverPort = (request.getServerPort() == 80) ? "" : ":" + request.getServerPort();
         String contextPath = request.getContextPath();
         return scheme + serverName + serverPort + contextPath;
     }
@@ -46,8 +43,7 @@ public class TestApplicationServiceInitListener
         event.addIndexHtmlRequestListener(indexHtmlResponse -> {
             Element meta = new Element("meta");
             meta.attr("name", "og:image");
-            meta.attr("content",
-                    getBaseUrl(indexHtmlResponse) + "/image/my_app.png");
+            meta.attr("content", getBaseUrl(indexHtmlResponse) + "/image/my_app.png");
             indexHtmlResponse.getDocument().head().appendChild(meta);
         });
 

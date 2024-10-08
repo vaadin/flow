@@ -34,13 +34,11 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
 
 /**
- * Delegate for discovering, creating and managing instances of various types
- * used by Flow. Dependency injection frameworks can provide an implementation
- * that manages instances according to the conventions of that framework.
+ * Delegate for discovering, creating and managing instances of various types used by Flow. Dependency injection
+ * frameworks can provide an implementation that manages instances according to the conventions of that framework.
  * <p>
- * {@link VaadinService} will by default use {@link ServiceLoader} for finding
- * an instantiator implementation. If not found {@link DefaultInstantiator} will
- * be used. It is possible to override this mechanism by overriding
+ * {@link VaadinService} will by default use {@link ServiceLoader} for finding an instantiator implementation. If not
+ * found {@link DefaultInstantiator} will be used. It is possible to override this mechanism by overriding
  * {@link VaadinService#createInstantiator}.
  *
  * @author Vaadin Ltd
@@ -49,31 +47,24 @@ import com.vaadin.flow.server.communication.UidlWriter;
 public interface Instantiator extends Serializable {
 
     /**
-     * Gets all service init listeners to use. In addition to listeners defined
-     * in some way native to a specific instantiator, it is also recommended to
-     * support the default {@link ServiceLoader} convention. This can be done by
-     * including the items from
-     * {@link DefaultInstantiator#getServiceInitListeners()} in the returned
-     * stream.
+     * Gets all service init listeners to use. In addition to listeners defined in some way native to a specific
+     * instantiator, it is also recommended to support the default {@link ServiceLoader} convention. This can be done by
+     * including the items from {@link DefaultInstantiator#getServiceInitListeners()} in the returned stream.
      *
      * @return stream of service init listeners, not <code>null</code>
      */
     Stream<VaadinServiceInitListener> getServiceInitListeners();
 
     /**
-     * Processes the available Index HTML request listeners. This method can
-     * supplement the set of Index HTML request listeners provided by
-     * {@link VaadinServiceInitListener} implementations.
+     * Processes the available Index HTML request listeners. This method can supplement the set of Index HTML request
+     * listeners provided by {@link VaadinServiceInitListener} implementations.
      * <p>
-     * The default implementation returns the original listeners without
-     * changes.
+     * The default implementation returns the original listeners without changes.
      *
      * @param indexHtmlRequestListeners
-     *            a stream of Index HTML request listeners provided by service
-     *            init listeners, not <code>null</code>
+     *            a stream of Index HTML request listeners provided by service init listeners, not <code>null</code>
      *
-     * @return a stream of all Index HTML request listeners to use, not
-     *         <code>null</code>
+     * @return a stream of all Index HTML request listeners to use, not <code>null</code>
      */
     default Stream<IndexHtmlRequestListener> getIndexHtmlRequestListeners(
             Stream<IndexHtmlRequestListener> indexHtmlRequestListeners) {
@@ -81,33 +72,28 @@ public interface Instantiator extends Serializable {
     }
 
     /**
-     * Processes the available dependency filters. This method can supplement
-     * the set of dependency filters provided by
+     * Processes the available dependency filters. This method can supplement the set of dependency filters provided by
      * {@link VaadinServiceInitListener} implementations.
      * <p>
      * The default implementation returns the original handlers without changes.
      * <p>
-     * The order of the filters inside the stream defines the order of the
-     * execution of those listeners by the
+     * The order of the filters inside the stream defines the order of the execution of those listeners by the
      * {@link UidlWriter#createUidl(UI, boolean)} method.
      *
      * @param serviceInitFilters
-     *            a stream of dependency filters provided by service init
-     *            listeners, not <code>null</code>
+     *            a stream of dependency filters provided by service init listeners, not <code>null</code>
      *
      * @return a stream of all dependency filters to use, not <code>null</code>
      */
-    default Stream<DependencyFilter> getDependencyFilters(
-            Stream<DependencyFilter> serviceInitFilters) {
+    default Stream<DependencyFilter> getDependencyFilters(Stream<DependencyFilter> serviceInitFilters) {
         return serviceInitFilters;
     }
 
     /**
-     * Provides an instance of any given type, this is an abstraction that
-     * allows to make use of DI-frameworks from add-ons.
+     * Provides an instance of any given type, this is an abstraction that allows to make use of DI-frameworks from
+     * add-ons.
      * <p>
-     * How the object is created and whether it is being cached or not is up to
-     * the implementation.
+     * How the object is created and whether it is being cached or not is up to the implementation.
      *
      * @param type
      *            the instance type to create, not <code>null</code>
@@ -119,9 +105,8 @@ public interface Instantiator extends Serializable {
     <T> T getOrCreate(Class<T> type);
 
     /**
-     * Return the application-defined class for the given instance: usually
-     * simply the class of the given instance, but the original class in case of
-     * a runtime generated subclass.
+     * Return the application-defined class for the given instance: usually simply the class of the given instance, but
+     * the original class in case of a runtime generated subclass.
      *
      * @param instance
      *            the instance to check
@@ -133,9 +118,8 @@ public interface Instantiator extends Serializable {
     }
 
     /**
-     * Return the application-defined class for the given class: usually simply
-     * the given class, but the original class in case of a runtime generated
-     * subclass.
+     * Return the application-defined class for the given class: usually simply the given class, but the original class
+     * in case of a runtime generated subclass.
      *
      * @param clazz
      *            the class to check
@@ -143,30 +127,26 @@ public interface Instantiator extends Serializable {
      */
     default Class<?> getApplicationClass(Class<?> clazz) {
         Class<?> appClass = clazz;
-        while (appClass != null && appClass != Object.class
-                && appClass.isSynthetic()) {
+        while (appClass != null && appClass != Object.class && appClass.isSynthetic()) {
             appClass = appClass.getSuperclass();
         }
         return appClass;
     }
 
     /**
-     * Creates an instance of a navigation target or router layout. This method
-     * is not called in cases when a component instance is reused when
-     * navigating.
+     * Creates an instance of a navigation target or router layout. This method is not called in cases when a component
+     * instance is reused when navigating.
      *
      * @param routeTargetType
      *            the instance type to create, not <code>null</code>
      * @param event
-     *            the navigation event for which the instance is created, not
-     *            <code>null</code>
+     *            the navigation event for which the instance is created, not <code>null</code>
      * @param <T>
      *            the route target type
      *
      * @return the created instance, not <code>null</code>
      */
-    default <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
-            NavigationEvent event) {
+    default <T extends HasElement> T createRouteTarget(Class<T> routeTargetType, NavigationEvent event) {
         return getOrCreate(routeTargetType);
     }
 
@@ -186,8 +166,7 @@ public interface Instantiator extends Serializable {
      * Gets the instantiator to use for the given UI.
      *
      * @param ui
-     *            the attached UI for which to find an instantiator, not
-     *            <code>null</code>
+     *            the attached UI for which to find an instantiator, not <code>null</code>
      * @return the instantiator, not <code>null</code>
      */
     static Instantiator get(UI ui) {

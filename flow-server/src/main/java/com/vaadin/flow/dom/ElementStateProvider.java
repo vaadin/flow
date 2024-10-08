@@ -27,8 +27,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Handles storing and retrieval of the state information for an element using a
- * state node.
+ * Handles storing and retrieval of the state information for an element using a state node.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -40,8 +39,7 @@ public interface ElementStateProvider extends Serializable {
      *
      * @param node
      *            the state node to check
-     * @return true if the element state provider is compatible with the given
-     *         state node, false otherwise
+     * @return true if the element state provider is compatible with the given state node, false otherwise
      */
     boolean supports(StateNode node);
 
@@ -76,8 +74,7 @@ public interface ElementStateProvider extends Serializable {
      * @param resource
      *            the attribute value, not null
      */
-    void setAttribute(StateNode node, String attribute,
-            AbstractStreamResource resource);
+    void setAttribute(StateNode node, String attribute, AbstractStreamResource resource);
 
     /**
      * Gets the value of the given attribute.
@@ -201,8 +198,7 @@ public interface ElementStateProvider extends Serializable {
      *            the listener
      * @return a handle for configuring or removing the listener
      */
-    DomListenerRegistration addEventListener(StateNode node, String eventType,
-            DomEventListener listener);
+    DomListenerRegistration addEventListener(StateNode node, String eventType, DomEventListener listener);
 
     /**
      * Gets the value of the given property.
@@ -211,8 +207,7 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @param name
      *            the property name, not null
-     * @return the property value, or <code>null</code> if the property has not
-     *         been set
+     * @return the property value, or <code>null</code> if the property has not been set
      */
     Serializable getProperty(StateNode node, String name);
 
@@ -228,8 +223,7 @@ public interface ElementStateProvider extends Serializable {
      * @param emitChange
      *            true to create a change event for the client side
      */
-    void setProperty(StateNode node, String name, Serializable value,
-            boolean emitChange);
+    void setProperty(StateNode node, String name, Serializable value, boolean emitChange);
 
     /**
      * Removes the given property if it has been set.
@@ -249,8 +243,7 @@ public interface ElementStateProvider extends Serializable {
      * @param name
      *            the property name, not <code>null</code>
      *
-     * @return <code>true</code> if the property has been set,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the property has been set, <code>false</code> otherwise
      */
     boolean hasProperty(StateNode node, String name);
 
@@ -268,14 +261,12 @@ public interface ElementStateProvider extends Serializable {
      *
      * @param node
      *            the node to check
-     * @return <code>true</code> if the state node represents a text node;
-     *         otherwise <code>false</code>
+     * @return <code>true</code> if the state node represents a text node; otherwise <code>false</code>
      */
     boolean isTextNode(StateNode node);
 
     /**
-     * Gets the text content. This is only valid if
-     * {@link #isTextNode(StateNode)} returns <code>true</code>.
+     * Gets the text content. This is only valid if {@link #isTextNode(StateNode)} returns <code>true</code>.
      *
      * @param node
      *            the node containing the data
@@ -284,8 +275,7 @@ public interface ElementStateProvider extends Serializable {
     String getTextContent(StateNode node);
 
     /**
-     * Sets the text content. This is only valid if
-     * {@link #isTextNode(StateNode)} returns <code>true</code>.
+     * Sets the text content. This is only valid if {@link #isTextNode(StateNode)} returns <code>true</code>.
      *
      * @param node
      *            the node containing the data
@@ -331,8 +321,7 @@ public interface ElementStateProvider extends Serializable {
      *
      * @param node
      *            the node containing the data
-     * @return an optional component, or an empty optional if no component has
-     *         been mapped to this node
+     * @return an optional component, or an empty optional if no component has been mapped to this node
      */
     default Optional<Component> getComponent(StateNode node) {
         assert node != null;
@@ -350,8 +339,7 @@ public interface ElementStateProvider extends Serializable {
      *            listener to get notifications about property value changes
      * @return an event registration handle for removing the listener
      */
-    Registration addPropertyChangeListener(StateNode node, String name,
-            PropertyChangeListener listener);
+    Registration addPropertyChangeListener(StateNode node, String name, PropertyChangeListener listener);
 
     /**
      * Gets shadow root for the {@code node} if it has been attached.
@@ -372,12 +360,11 @@ public interface ElementStateProvider extends Serializable {
     StateNode attachShadow(StateNode node);
 
     /**
-     * Attaches a child element with the given {@code tagName} which is the next
-     * sibling for the {@code previousSibling}.
+     * Attaches a child element with the given {@code tagName} which is the next sibling for the
+     * {@code previousSibling}.
      * <p>
-     * The {@code previousSibling} parameter value can be {@code null} which
-     * means that the very first child with the given {@code tagName} will be
-     * used to attach (if any).
+     * The {@code previousSibling} parameter value can be {@code null} which means that the very first child with the
+     * given {@code tagName} will be used to attach (if any).
      *
      * @param node
      *            the parent node
@@ -386,11 +373,10 @@ public interface ElementStateProvider extends Serializable {
      * @param previousSibling
      *            previous sibling, may be {@code null}
      * @param callback
-     *            the callback which will be invoked with a server side element
-     *            instance or an error will be reported, not {@code null}
+     *            the callback which will be invoked with a server side element instance or an error will be reported,
+     *            not {@code null}
      */
-    void attachExistingElement(StateNode node, String tagName,
-            Element previousSibling, ChildElementConsumer callback);
+    void attachExistingElement(StateNode node, String tagName, Element previousSibling, ChildElementConsumer callback);
 
     /**
      * Append the given element as a virtual child.
@@ -404,12 +390,11 @@ public interface ElementStateProvider extends Serializable {
      * @param payload
      *            the additional payload data
      */
-    void appendVirtualChild(StateNode node, Element child, String type,
-            String payload);
+    void appendVirtualChild(StateNode node, Element child, String type, String payload);
 
     /**
-     * Visit the {@code node} applying {@code visitor} to it and its descendants
-     * based on the return value from the visitor.
+     * Visit the {@code node} applying {@code visitor} to it and its descendants based on the return value from the
+     * visitor.
      *
      * @param node
      *            the node to visit

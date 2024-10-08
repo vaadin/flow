@@ -20,15 +20,12 @@ import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
 
 @Theme(themeClass = VariantTheme.class, variant = VariantTheme.DARK)
-public class ThemedVariantComponentExporter
-        extends WebComponentExporter<ThemedVariantComponent> {
+public class ThemedVariantComponentExporter extends WebComponentExporter<ThemedVariantComponent> {
     public ThemedVariantComponentExporter() {
         super("themed-variant-web-component");
     }
 
     @Override
-    public void configureInstance(
-            WebComponent<ThemedVariantComponent> webComponent,
-            ThemedVariantComponent component) {
+    public void configureInstance(WebComponent<ThemedVariantComponent> webComponent, ThemedVariantComponent component) {
     }
 }

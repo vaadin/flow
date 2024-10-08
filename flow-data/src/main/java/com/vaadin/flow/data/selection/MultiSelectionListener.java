@@ -21,8 +21,7 @@ import java.util.EventListener;
 import com.vaadin.flow.component.Component;
 
 /**
- * A listener for listening for selection changes from a multiselection
- * component.
+ * A listener for listening for selection changes from a multiselection component.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -36,8 +35,7 @@ import com.vaadin.flow.component.Component;
  * @see MultiSelectionEvent
  */
 @FunctionalInterface
-public interface MultiSelectionListener<C extends Component, T>
-        extends Serializable, EventListener {
+public interface MultiSelectionListener<C extends Component, T> extends Serializable, EventListener {
 
     /**
      * Invoked when the selection has changed by the user or programmatically.

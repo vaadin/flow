@@ -29,8 +29,7 @@ import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
  */
 public enum NavigationTrigger {
     /**
-     * Navigation was triggered by the user opening the application or reloading
-     * in the browser.
+     * Navigation was triggered by the user opening the application or reloading in the browser.
      */
     PAGE_LOAD,
 
@@ -42,8 +41,7 @@ public enum NavigationTrigger {
     ROUTER_LINK,
 
     /**
-     * Navigation was triggered by the user going forward or back in the
-     * browser's history.
+     * Navigation was triggered by the user going forward or back in the browser's history.
      */
     HISTORY,
 
@@ -53,8 +51,7 @@ public enum NavigationTrigger {
     PROGRAMMATIC,
 
     /**
-     * Navigation was triggered via
-     * {@link UI#navigate(String, QueryParameters)}. It's for internal use only.
+     * Navigation was triggered via {@link UI#navigate(String, QueryParameters)}. It's for internal use only.
      */
     UI_NAVIGATE,
 

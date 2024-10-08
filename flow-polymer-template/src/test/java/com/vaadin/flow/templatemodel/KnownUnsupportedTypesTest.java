@@ -63,11 +63,9 @@ public class KnownUnsupportedTypesTest extends HasCurrentService {
     }
 
     @Tag("div")
-    public static class EmptyDivTemplate<M extends TemplateModel>
-            extends PolymerTemplate<M> {
+    public static class EmptyDivTemplate<M extends TemplateModel> extends PolymerTemplate<M> {
         public EmptyDivTemplate() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='div'></dom-module>")));
+            super((clazz, tag, service) -> new TemplateData("", Jsoup.parse("<dom-module id='div'></dom-module>")));
         }
 
     }
@@ -95,11 +93,9 @@ public class KnownUnsupportedTypesTest extends HasCurrentService {
     @Override
     protected VaadinService createService() {
         VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
         return service;
     }
 
@@ -135,9 +131,8 @@ public class KnownUnsupportedTypesTest extends HasCurrentService {
 
     private void expectUnsupportedTypeException(Class<?> clazz) {
         exception.expect(InvalidTemplateModelException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString(clazz.getName()),
-                CoreMatchers.containsString("is not supported"), CoreMatchers
-                        .containsString("@" + Encode.class.getSimpleName())));
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString(clazz.getName()),
+                CoreMatchers.containsString("is not supported"),
+                CoreMatchers.containsString("@" + Encode.class.getSimpleName())));
     }
 }

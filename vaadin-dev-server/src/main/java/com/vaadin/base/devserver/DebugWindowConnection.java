@@ -63,20 +63,18 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private final ConcurrentHashMap<WeakReference<AtmosphereResource>, FragmentedMessage> resources = new ConcurrentHashMap<>();
     private Backend backend = null;
 
-    private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
-            Backend.class);
+    private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(Backend.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private List<DevToolsMessageHandler> plugins;
 
     static {
-        IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
-                "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
-        IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT, Collections.singletonList(
-                "org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
-        IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
-                "com.vaadin.flow.spring.SpringServlet",
+        IDENTIFIER_CLASSES.put(Backend.JREBEL,
+                Collections.singletonList("org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
+        IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT,
+                Collections.singletonList("org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
+        IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList("com.vaadin.flow.spring.SpringServlet",
                 "org.springframework.boot.devtools.livereload.LiveReloadServer"));
     }
 
@@ -92,8 +90,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     private void findPlugins() {
-        ServiceLoader<DevToolsMessageHandler> loader = ServiceLoader
-                .load(DevToolsMessageHandler.class, classLoader);
+        ServiceLoader<DevToolsMessageHandler> loader = ServiceLoader.load(DevToolsMessageHandler.class, classLoader);
         this.plugins = new ArrayList<>();
         for (DevToolsMessageHandler s : loader) {
             this.plugins.add(s);
@@ -105,16 +102,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
         if (backend != null) {
             return backend;
         }
-        for (Map.Entry<Backend, List<String>> entry : IDENTIFIER_CLASSES
-                .entrySet()) {
+        for (Map.Entry<Backend, List<String>> entry : IDENTIFIER_CLASSES.entrySet()) {
             Backend backendCandidate = entry.getKey();
             boolean found = true;
             for (String clazz : entry.getValue()) {
                 try {
                     classLoader.loadClass(clazz);
                 } catch (ClassNotFoundException e) { // NOSONAR
-                    getLogger().debug("Class {} not found, excluding {}", clazz,
-                            backendCandidate);
+                    getLogger().debug("Class {} not found, excluding {}", clazz, backendCandidate);
                     found = false;
                     break;
                 }
@@ -138,9 +133,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         private DebugWindowConnection debugWindowConnection;
         private AtmosphereResource resource;
 
-        private DevToolsInterfaceImpl(
-                DebugWindowConnection debugWindowConnection,
-                AtmosphereResource resource) {
+        private DevToolsInterfaceImpl(DebugWindowConnection debugWindowConnection, AtmosphereResource resource) {
             this.debugWindowConnection = debugWindowConnection;
             this.resource = resource;
         }
@@ -165,8 +158,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 return false;
             }
             DevToolsInterfaceImpl that = (DevToolsInterfaceImpl) o;
-            return Objects.equals(debugWindowConnection,
-                    that.debugWindowConnection)
+            return Objects.equals(debugWindowConnection, that.debugWindowConnection)
                     && Objects.equals(resource, that.resource);
         }
 
@@ -176,15 +168,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
     }
 
-    protected DevToolsInterface getDevToolsInterface(
-            AtmosphereResource resource) {
+    protected DevToolsInterface getDevToolsInterface(AtmosphereResource resource) {
         return new DevToolsInterfaceImpl(this, resource);
     }
 
     @Override
     public void onConnect(AtmosphereResource resource) {
-        if (DevToolsToken.getToken()
-                .equals(resource.getRequest().getParameter("token"))) {
+        if (DevToolsToken.getToken().equals(resource.getRequest().getParameter("token"))) {
             handleConnect(resource);
         } else {
             getLogger().debug(
@@ -192,8 +182,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
             try {
                 resource.close();
             } catch (IOException e) {
-                getLogger().debug(
-                        "Error closing the denied websocket connection", e);
+                getLogger().debug("Error closing the denied websocket connection", e);
             }
         }
     }
@@ -201,26 +190,21 @@ public class DebugWindowConnection implements BrowserLiveReload {
     private void handleConnect(AtmosphereResource resource) {
         resource.suspend(-1);
         resources.put(new WeakReference<>(resource), new FragmentedMessage());
-        resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
-                resource);
+        resource.getBroadcaster().broadcast("{\"command\": \"hello\"}", resource);
 
         for (DevToolsMessageHandler plugin : plugins) {
             plugin.handleConnect(getDevToolsInterface(resource));
         }
 
         send(resource, "serverInfo", new ServerInfo());
-        send(resource, "featureFlags", new FeatureFlagMessage(FeatureFlags
-                .get(context).getFeatures().stream()
-                .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
-                .collect(Collectors.toList())));
+        send(resource, "featureFlags", new FeatureFlagMessage(FeatureFlags.get(context).getFeatures().stream()
+                .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE)).collect(Collectors.toList())));
 
     }
 
-    private void send(AtmosphereResource resource, String command,
-            Object data) {
+    private void send(AtmosphereResource resource, String command, Object data) {
         try {
-            send(resource, objectMapper
-                    .writeValueAsString(new DebugWindowMessage(command, data)));
+            send(resource, objectMapper.writeValueAsString(new DebugWindowMessage(command, data)));
         } catch (Exception e) {
             getLogger().error("Error sending message", e);
         }
@@ -236,12 +220,9 @@ public class DebugWindowConnection implements BrowserLiveReload {
         for (DevToolsMessageHandler plugin : plugins) {
             plugin.handleDisconnect(getDevToolsInterface(resource));
         }
-        if (!resources.keySet()
-                .removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
+        if (!resources.keySet().removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
             String uuid = resource.uuid();
-            getLogger().warn(
-                    "Push connection {} is not a live-reload connection or already closed",
-                    uuid);
+            getLogger().warn("Push connection {} is not a live-reload connection or already closed", uuid);
         }
     }
 
@@ -301,8 +282,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         String command = json.getString("command");
         JsonObject data = json.getObject("data");
         if ("setFeature".equals(command)) {
-            FeatureFlags.get(context).setEnabled(data.getString("featureId"),
-                    data.getBoolean("enabled"));
+            FeatureFlags.get(context).setEnabled(data.getString("featureId"), data.getBoolean("enabled"));
         } else if ("reportTelemetry".equals(command)) {
             DevModeUsageStatistics.handleBrowserData(data);
         } else if ("checkLicense".equals(command)) {
@@ -313,11 +293,9 @@ public class DebugWindowConnection implements BrowserLiveReload {
             String errorMessage = "";
 
             try {
-                LicenseChecker.checkLicense(product.getName(),
-                        product.getVersion(), BuildType.DEVELOPMENT, keyUrl -> {
-                            send(resource, "license-check-nokey",
-                                    new ProductAndMessage(product, keyUrl));
-                        });
+                LicenseChecker.checkLicense(product.getName(), product.getVersion(), BuildType.DEVELOPMENT, keyUrl -> {
+                    send(resource, "license-check-nokey", new ProductAndMessage(product, keyUrl));
+                });
                 ok = true;
             } catch (Exception e) {
                 ok = false;
@@ -326,23 +304,19 @@ public class DebugWindowConnection implements BrowserLiveReload {
             if (ok) {
                 send(resource, "license-check-ok", product);
             } else {
-                ProductAndMessage pm = new ProductAndMessage(product,
-                        errorMessage);
+                ProductAndMessage pm = new ProductAndMessage(product, errorMessage);
                 send(resource, "license-check-failed", pm);
             }
         } else {
             boolean handled = false;
             for (DevToolsMessageHandler plugin : plugins) {
-                handled = plugin.handleMessage(command, data,
-                        getDevToolsInterface(resource));
+                handled = plugin.handleMessage(command, data, getDevToolsInterface(resource));
                 if (handled) {
                     break;
                 }
             }
-            if (!handled && command != null
-                    && !command.startsWith("copilot-")) {
-                getLogger()
-                        .info("Unknown command from the browser: " + command);
+            if (!handled && command != null && !command.startsWith("copilot-")) {
+                getLogger().info("Unknown command from the browser: " + command);
             }
         }
     }
@@ -352,30 +326,24 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     @Override
-    public FragmentedMessage getOrCreateFragmentedMessage(
-            AtmosphereResource resource) {
+    public FragmentedMessage getOrCreateFragmentedMessage(AtmosphereResource resource) {
         WeakReference<AtmosphereResource> ref = getRef(resource);
         if (ref == null) {
-            throw new IllegalStateException(
-                    "Tried to create a fragmented message for a non-existing resource");
+            throw new IllegalStateException("Tried to create a fragmented message for a non-existing resource");
         }
         return resources.get(ref);
     }
 
-    private WeakReference<AtmosphereResource> getRef(
-            AtmosphereResource resource) {
-        return resources.keySet().stream()
-                .filter(resourceRef -> resource.equals(resourceRef.get()))
-                .findFirst().orElse(null);
+    private WeakReference<AtmosphereResource> getRef(AtmosphereResource resource) {
+        return resources.keySet().stream().filter(resourceRef -> resource.equals(resourceRef.get())).findFirst()
+                .orElse(null);
     }
 
     @Override
     public void clearFragmentedMessage(AtmosphereResource resource) {
         WeakReference<AtmosphereResource> ref = getRef(resource);
         if (ref == null) {
-            getLogger().debug(
-                    "Tried to clear the fragmented message for a non-existing resource: {}",
-                    resource);
+            getLogger().debug("Tried to clear the fragmented message for a non-existing resource: {}", resource);
             return;
         }
         resources.put(ref, new FragmentedMessage());

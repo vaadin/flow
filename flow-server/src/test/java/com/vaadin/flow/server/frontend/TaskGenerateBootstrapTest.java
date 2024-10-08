@@ -46,8 +46,7 @@ import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
 
 public class TaskGenerateBootstrapTest {
 
-    private static final String DEV_TOOLS_IMPORT = "import '"
-            + FrontendUtils.JAR_RESOURCES_IMPORT
+    private static final String DEV_TOOLS_IMPORT = "import '" + FrontendUtils.JAR_RESOURCES_IMPORT
             + "vaadin-dev-tools/vaadin-dev-tools.js';";
 
     @Rule
@@ -63,35 +62,31 @@ public class TaskGenerateBootstrapTest {
     public void setUp() throws Exception {
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Collections.singleton(this.getClass()));
-        frontDeps = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, false);
+        frontDeps = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory().createScanner(false, finder,
+                false);
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
-        options = new MockOptions(finder, null)
-                .withFrontendDirectory(frontendFolder).withProductionMode(true);
+        options = new MockOptions(finder, null).withFrontendDirectory(frontendFolder).withProductionMode(true);
 
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
     }
 
     @Test
-    public void should_importGeneratedIndexTS()
-            throws ExecutionFailedException {
+    public void should_importGeneratedIndexTS() throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertTrue(content.contains("import './index';"));
     }
 
     @Test
-    public void shouldNot_importDevTools_inProduction()
-            throws ExecutionFailedException {
+    public void shouldNot_importDevTools_inProduction() throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertFalse(content.contains(DEV_TOOLS_IMPORT));
     }
 
     @Test
-    public void should_importDevTools_inDevMode()
-            throws ExecutionFailedException {
+    public void should_importDevTools_inDevMode() throws ExecutionFailedException {
         options.withProductionMode(false);
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps, options);
         taskGenerateBootstrap.execute();
@@ -100,8 +95,7 @@ public class TaskGenerateBootstrapTest {
     }
 
     @Test
-    public void should_importFrontendIndexTS()
-            throws ExecutionFailedException, IOException {
+    public void should_importFrontendIndexTS() throws ExecutionFailedException, IOException {
         new File(frontendFolder, INDEX_TS).createNewFile();
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
@@ -109,8 +103,7 @@ public class TaskGenerateBootstrapTest {
     }
 
     @Test
-    public void should_importFrontendIndexTSX()
-            throws ExecutionFailedException, IOException {
+    public void should_importFrontendIndexTSX() throws ExecutionFailedException, IOException {
         new File(frontendFolder, INDEX_TSX).createNewFile();
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
@@ -121,35 +114,28 @@ public class TaskGenerateBootstrapTest {
     public void should_importFeatureFlagTS() throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains(
-                String.format("import './%s';", FEATURE_FLAGS_FILE_NAME)));
+        Assert.assertTrue(content.contains(String.format("import './%s';", FEATURE_FLAGS_FILE_NAME)));
     }
 
     @Test
-    public void should_load_AppTheme()
-            throws MalformedURLException, ExecutionFailedException {
+    public void should_load_AppTheme() throws MalformedURLException, ExecutionFailedException {
         options.withFrontendDirectory(frontendFolder).withProductionMode(true);
 
-        taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
-                options);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(), options);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
 
         final List<String> expectedContent = Arrays.asList("import './index';",
-                "import { applyTheme } from './theme.js';",
-                "applyTheme(document);");
+                "import { applyTheme } from './theme.js';", "applyTheme(document);");
 
-        expectedContent.forEach(expectedLine -> Assert.assertTrue(
-                String.format(
+        expectedContent
+                .forEach(expectedLine -> Assert.assertTrue(String.format(
                         "Bootstrap 'vaadin.ts' file is supposed to contain "
-                                + "the line: [%s],\nbut actually contains the "
-                                + "following: [%s]",
-                        expectedLine, content),
-                content.contains(expectedLine)));
+                                + "the line: [%s],\nbut actually contains the " + "following: [%s]",
+                        expectedLine, content), content.contains(expectedLine)));
     }
 
-    private FrontendDependencies getThemedDependency()
-            throws MalformedURLException {
+    private FrontendDependencies getThemedDependency() throws MalformedURLException {
         ClassFinder finder = getClassFinder();
         return new FrontendDependencies(finder) {
 
@@ -170,8 +156,7 @@ public class TaskGenerateBootstrapTest {
 
             @Override
             public ThemeDefinition getThemeDefinition() {
-                return new ThemeDefinition(
-                        UpdateThemedImportsTest.MyTheme.class, "", "my-theme");
+                return new ThemeDefinition(UpdateThemedImportsTest.MyTheme.class, "", "my-theme");
             }
         };
     }

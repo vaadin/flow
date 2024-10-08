@@ -26,8 +26,7 @@ import com.vaadin.flow.router.HasErrorParameter;
 public class ErrorComponent implements HasErrorParameter<NullPointerException> {
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<NullPointerException> parameter) {
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NullPointerException> parameter) {
         return 0;
     }
 

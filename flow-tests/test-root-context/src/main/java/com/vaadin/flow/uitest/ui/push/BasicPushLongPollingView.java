@@ -13,8 +13,7 @@ public class BasicPushLongPollingView extends BasicPushView {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        attachEvent.getUI().getPushConfiguration().setParameter(
-                PushConfigurationMap.FALLBACK_TRANSPORT_KEY, "none");
+        attachEvent.getUI().getPushConfiguration().setParameter(PushConfigurationMap.FALLBACK_TRANSPORT_KEY, "none");
     }
 
 }

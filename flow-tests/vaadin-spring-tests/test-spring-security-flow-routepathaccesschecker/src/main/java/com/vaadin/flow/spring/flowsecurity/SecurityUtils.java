@@ -21,8 +21,7 @@ public class SecurityUtils {
     private AuthenticationContext authenticationContext;
 
     public UserInfo getAuthenticatedUserInfo() {
-        Optional<UserDetails> userDetails = authenticationContext
-                .getAuthenticatedUser(UserDetails.class);
+        Optional<UserDetails> userDetails = authenticationContext.getAuthenticatedUser(UserDetails.class);
         if (userDetails.isEmpty()) {
             return null;
         }

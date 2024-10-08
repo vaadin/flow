@@ -39,8 +39,7 @@ public class ThemeView extends Div {
     public static final String SUN_ID = "sun";
 
     public ThemeView() {
-        UI.getCurrent().getPage()
-                .executeJs("document.body.classList.add('bg')");
+        UI.getCurrent().getPage().executeJs("document.body.classList.add('bg')");
         final Span textSpan = new Span("This is the theme test view");
         textSpan.setId(TEST_TEXT_ID);
 
@@ -60,36 +59,28 @@ public class ThemeView extends Div {
         faText.setClassName("fas fa-coffee");
         faText.setId(FONTAWESOME_ID);
 
-        Image snowFlake = new Image(
-                "themes/app-theme/fortawesome/icons/snowflake.svg",
-                "snowflake");
+        Image snowFlake = new Image("themes/app-theme/fortawesome/icons/snowflake.svg", "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
         Span diceImageSpan = new Span();
-        diceImageSpan.getStyle().set("background-image",
-                "url('themes/app-theme/img/dice.jpg')");
+        diceImageSpan.getStyle().set("background-image", "url('themes/app-theme/img/dice.jpg')");
         diceImageSpan.setId(DICE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake,
-                faText, diceImageSpan);
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake, faText, diceImageSpan);
 
-        Div keyboardIconFromParentTheme = new Div(
-                "Keyboard Icon in theme sub folder");
+        Div keyboardIconFromParentTheme = new Div("Keyboard Icon in theme sub folder");
         keyboardIconFromParentTheme.addClassName("icon-keyboard");
         keyboardIconFromParentTheme.setId(KEYBOARD_ID);
 
-        Div lemonIconFromParentTheme = new Div(
-                "Lemon Icon in nested theme subfolder");
+        Div lemonIconFromParentTheme = new Div("Lemon Icon in nested theme subfolder");
         lemonIconFromParentTheme.addClassName("icon-lemon");
         lemonIconFromParentTheme.setId(LEMON_ID);
 
-        Div sunIconFromParentTheme = new Div(
-                "Sun Icon in nested theme subfolder");
+        Div sunIconFromParentTheme = new Div("Sun Icon in nested theme subfolder");
         sunIconFromParentTheme.addClassName("icon-sun");
         sunIconFromParentTheme.setId(SUN_ID);
-        add(keyboardIconFromParentTheme, lemonIconFromParentTheme,
-                sunIconFromParentTheme);
+        add(keyboardIconFromParentTheme, lemonIconFromParentTheme, sunIconFromParentTheme);
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));

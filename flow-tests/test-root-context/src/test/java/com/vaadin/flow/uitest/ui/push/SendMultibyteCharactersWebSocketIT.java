@@ -5,7 +5,6 @@ import org.junit.experimental.categories.Category;
 import com.vaadin.flow.testcategory.IgnoreOSGi;
 
 @Category(IgnoreOSGi.class)
-public class SendMultibyteCharactersWebSocketIT
-        extends SendMultibyteCharactersTest {
+public class SendMultibyteCharactersWebSocketIT extends SendMultibyteCharactersTest {
 
 }

@@ -64,8 +64,7 @@ public class EmailValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testOneLetterTldFails() {
-        assertFails("johannesd@vaadin.f",
-                validator("one-letter tld not allowed"));
+        assertFails("johannesd@vaadin.f", validator("one-letter tld not allowed"));
     }
 
     @Test
@@ -95,9 +94,7 @@ public class EmailValidatorTest extends ValidatorTestBase {
 
     @Test
     public void emptyString_validatorDoesNotAcceptsEmptyValue_validationFails() {
-        assertFails("", new EmailValidator(
-                "explcitily disallowed empty value should not be accepted",
-                false));
+        assertFails("", new EmailValidator("explcitily disallowed empty value should not be accepted", false));
     }
 
     @Test

@@ -30,8 +30,8 @@ import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndenta
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Generate <code>types.d.ts</code> if it is missing in project folder and
- * <code>tsconfig.json</code> exists in project folder.
+ * Generate <code>types.d.ts</code> if it is missing in project folder and <code>tsconfig.json</code> exists in project
+ * folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -67,8 +67,8 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
             """;
     /**
-     * Keeps track of whether a warning update has already been logged. This is
-     * used to avoid spamming the log with the same message.
+     * Keeps track of whether a warning update has already been logged. This is used to avoid spamming the log with the
+     * same message.
      */
     protected static boolean warningEmitted = false;
 
@@ -108,8 +108,8 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     @Override
     protected boolean shouldGenerate() {
         File tsDefinitionsFile = getGeneratedFile();
-        return !tsDefinitionsFile.exists() && new File(options.getNpmFolder(),
-                TaskGenerateTsConfig.TSCONFIG_JSON).exists();
+        return !tsDefinitionsFile.exists()
+                && new File(options.getNpmFolder(), TaskGenerateTsConfig.TSCONFIG_JSON).exists();
     }
 
     private void updateIfContentMissing() throws ExecutionFailedException {
@@ -119,115 +119,86 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
             try {
                 defaultContent = getFileContent();
             } catch (IOException ex) {
-                throw new ExecutionFailedException(
-                        "Cannot read default " + TS_DEFINITIONS + " contents",
-                        ex);
+                throw new ExecutionFailedException("Cannot read default " + TS_DEFINITIONS + " contents", ex);
             }
 
             String content;
             try {
                 content = Files.readString(tsDefinitions.toPath());
             } catch (IOException ex) {
-                throw new ExecutionFailedException(
-                        "Cannot read " + TS_DEFINITIONS + " contents", ex);
+                throw new ExecutionFailedException("Cannot read " + TS_DEFINITIONS + " contents", ex);
             }
 
             String cssModuleContent;
             try {
                 cssModuleContent = removeComments(getTemplateContent(".v2"));
             } catch (IOException ex) {
-                throw new ExecutionFailedException(
-                        "Cannot read " + TS_DEFINITIONS + ".v2 contents", ex);
+                throw new ExecutionFailedException("Cannot read " + TS_DEFINITIONS + ".v2 contents", ex);
             }
 
             String uncommentedDefaultContent = removeComments(defaultContent);
-            String cssTypeModuleContent = uncommentedDefaultContent
-                    .replace(cssModuleContent, "");
-            boolean containsExactCssModule = compareIgnoringIndentationEOLAndWhiteSpace(
-                    content, cssModuleContent, String::equals)
-                    || compareIgnoringIndentationEOLAndWhiteSpace(content,
-                            cssModuleContent, String::contains);
-            boolean containsExactCssTypeModule = compareIgnoringIndentationEOLAndWhiteSpace(
-                    content, cssTypeModuleContent, String::equals)
-                    || compareIgnoringIndentationEOLAndWhiteSpace(content,
-                            cssTypeModuleContent, String::contains);
+            String cssTypeModuleContent = uncommentedDefaultContent.replace(cssModuleContent, "");
+            boolean containsExactCssModule = compareIgnoringIndentationEOLAndWhiteSpace(content, cssModuleContent,
+                    String::equals)
+                    || compareIgnoringIndentationEOLAndWhiteSpace(content, cssModuleContent, String::contains);
+            boolean containsExactCssTypeModule = compareIgnoringIndentationEOLAndWhiteSpace(content,
+                    cssTypeModuleContent, String::equals)
+                    || compareIgnoringIndentationEOLAndWhiteSpace(content, cssTypeModuleContent, String::contains);
             boolean containsCssType = content.contains(DECLARE_CSSTYPE_MODULE);
             boolean containsCssModule = content.contains(DECLARE_CSS_MODULE);
 
-            if (compareIgnoringIndentationEOLAndWhiteSpace(content,
-                    defaultContent, String::equals)
-                    || compareIgnoringIndentationEOLAndWhiteSpace(content,
-                            uncommentedDefaultContent, String::contains)) {
+            if (compareIgnoringIndentationEOLAndWhiteSpace(content, defaultContent, String::equals)
+                    || compareIgnoringIndentationEOLAndWhiteSpace(content, uncommentedDefaultContent,
+                            String::contains)) {
                 log().debug("{} is up-to-date", TS_DEFINITIONS);
             } else if (containsExactCssModule && containsExactCssTypeModule) {
                 log().debug("{} is up-to-date", TS_DEFINITIONS);
             } else if (containsCssModule && !containsExactCssModule) {
-                log().debug(
-                        "Custom {} not updated because it contains '*.css?inline' module declaration",
+                log().debug("Custom {} not updated because it contains '*.css?inline' module declaration",
                         TS_DEFINITIONS);
-                throw new ExecutionFailedException(String.format(
-                        CHECK_CONTENT_MESSAGE, uncommentedDefaultContent));
+                throw new ExecutionFailedException(String.format(CHECK_CONTENT_MESSAGE, uncommentedDefaultContent));
             } else if (containsCssType && !containsExactCssTypeModule) {
-                log().debug(
-                        "Custom {} not updated because it contains 'csstype' module declaration",
-                        TS_DEFINITIONS);
-                throw new ExecutionFailedException(String.format(
-                        CHECK_CONTENT_MESSAGE, uncommentedDefaultContent));
+                log().debug("Custom {} not updated because it contains 'csstype' module declaration", TS_DEFINITIONS);
+                throw new ExecutionFailedException(String.format(CHECK_CONTENT_MESSAGE, uncommentedDefaultContent));
             } else {
                 if (containsExactCssModule) {
-                    log().debug(
-                            "Updating custom {} to add 'csstype' module declaration",
-                            TS_DEFINITIONS);
+                    log().debug("Updating custom {} to add 'csstype' module declaration", TS_DEFINITIONS);
                 } else {
-                    log().debug(
-                            "Updating custom {} to add '*.css?inline' and 'csstype' module declarations",
+                    log().debug("Updating custom {} to add '*.css?inline' and 'csstype' module declarations",
                             TS_DEFINITIONS);
                 }
                 UpdateMode updateMode = computeUpdateMode(content);
                 if (updateMode == UpdateMode.UPDATE_AND_BACKUP) {
                     try {
-                        File backupFile = File.createTempFile(
-                                tsDefinitions.getName() + ".", ".bak",
+                        File backupFile = File.createTempFile(tsDefinitions.getName() + ".", ".bak",
                                 tsDefinitions.getParentFile());
                         writeIfChanged(backupFile, content);
-                        log().debug("Created {} backup copy on {}",
-                                TS_DEFINITIONS, backupFile);
+                        log().debug("Created {} backup copy on {}", TS_DEFINITIONS, backupFile);
                     } catch (IOException ex) {
-                        throw new ExecutionFailedException(
-                                "Cannot create backup copy of " + TS_DEFINITIONS
-                                        + " file",
+                        throw new ExecutionFailedException("Cannot create backup copy of " + TS_DEFINITIONS + " file",
                                 ex);
                     }
                 }
                 try {
                     if (updateMode == UpdateMode.REPLACE) {
-                        Files.writeString(tsDefinitions.toPath(),
-                                defaultContent,
-                                StandardOpenOption.TRUNCATE_EXISTING);
+                        Files.writeString(tsDefinitions.toPath(), defaultContent, StandardOpenOption.TRUNCATE_EXISTING);
                     } else {
                         // If correct css module was found, only add csstype
                         if (containsExactCssModule) {
-                            uncommentedDefaultContent = uncommentedDefaultContent
-                                    .replace(cssModuleContent, "");
+                            uncommentedDefaultContent = uncommentedDefaultContent.replace(cssModuleContent, "");
                         }
                         if (containsExactCssTypeModule) {
-                            uncommentedDefaultContent = uncommentedDefaultContent
-                                    .replace(cssTypeModuleContent, "");
+                            uncommentedDefaultContent = uncommentedDefaultContent.replace(cssTypeModuleContent, "");
                         }
-                        Files.writeString(tsDefinitions.toPath(),
-                                uncommentedDefaultContent,
-                                StandardOpenOption.APPEND);
-                        if (updateMode == UpdateMode.UPDATE_AND_BACKUP
-                                && !warningEmitted) {
+                        Files.writeString(tsDefinitions.toPath(), uncommentedDefaultContent, StandardOpenOption.APPEND);
+                        if (updateMode == UpdateMode.UPDATE_AND_BACKUP && !warningEmitted) {
                             log().warn(UPDATE_MESSAGE);
                             warningEmitted = true;
                         }
                     }
                     track(tsDefinitions);
                 } catch (IOException ex) {
-                    throw new ExecutionFailedException(
-                            "Error updating custom " + TS_DEFINITIONS + " file",
-                            ex);
+                    throw new ExecutionFailedException("Error updating custom " + TS_DEFINITIONS + " file", ex);
                 }
             }
         }
@@ -237,44 +208,35 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
         REPLACE, UPDATE, UPDATE_AND_BACKUP
     }
 
-    private UpdateMode computeUpdateMode(String content)
-            throws ExecutionFailedException {
+    private UpdateMode computeUpdateMode(String content) throws ExecutionFailedException {
         try {
             String templateContent = getTemplateContent(".v1");
-            if (compareIgnoringIndentationEOLAndWhiteSpace(content,
-                    templateContent, String::equals)) {
+            if (compareIgnoringIndentationEOLAndWhiteSpace(content, templateContent, String::equals)) {
                 // Current content has been written by Flow, can be replaced
                 return UpdateMode.REPLACE;
             }
             templateContent = getTemplateContent(".v2");
-            if (compareIgnoringIndentationEOLAndWhiteSpace(content,
-                    templateContent, String::equals)) {
+            if (compareIgnoringIndentationEOLAndWhiteSpace(content, templateContent, String::equals)) {
                 // Current content has been written by Flow, can be replaced
                 return UpdateMode.REPLACE;
             }
         } catch (IOException ex) {
-            throw new ExecutionFailedException(
-                    "Cannot read default " + TS_DEFINITIONS + ".v1 contents",
-                    ex);
+            throw new ExecutionFailedException("Cannot read default " + TS_DEFINITIONS + ".v1 contents", ex);
         }
 
         try {
             String templateContent = getTemplateContent(".hilla.v1");
             String templateV2Content = getTemplateContent(".hilla.v2");
             String uncommentedContent = removeComments(content);
-            if (compareIgnoringIndentationEOLAndWhiteSpace(uncommentedContent,
-                    templateContent, String::equals)
-                    || compareIgnoringIndentationEOLAndWhiteSpace(
-                            uncommentedContent, templateV2Content,
+            if (compareIgnoringIndentationEOLAndWhiteSpace(uncommentedContent, templateContent, String::equals)
+                    || compareIgnoringIndentationEOLAndWhiteSpace(uncommentedContent, templateV2Content,
                             String::equals)) {
                 // Current content is compatible with what we expect to be in a
                 // Hilla application. Flow contents can be appended silently.
                 return UpdateMode.UPDATE;
             }
         } catch (IOException ex) {
-            throw new ExecutionFailedException(
-                    "Cannot read default " + TS_DEFINITIONS + ".hilla contents",
-                    ex);
+            throw new ExecutionFailedException("Cannot read default " + TS_DEFINITIONS + ".hilla contents", ex);
         }
         // types.d.ts has been customized, but does not seem to contain content
         // required by flow. Append what is needed and throw an exception so
@@ -287,8 +249,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     }
 
     private String getTemplateContent(String suffix) throws IOException {
-        try (InputStream tsDefinitionStream = getClass()
-                .getResourceAsStream(TS_DEFINITIONS + suffix)) {
+        try (InputStream tsDefinitionStream = getClass().getResourceAsStream(TS_DEFINITIONS + suffix)) {
             return IOUtils.toString(tsDefinitionStream, UTF_8);
         }
     }

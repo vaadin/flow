@@ -34,16 +34,14 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * @param <V>
  *            the property type
  */
-public abstract class AbstractBeanPropertyDefinition<T, V>
-        implements PropertyDefinition<T, V> {
+public abstract class AbstractBeanPropertyDefinition<T, V> implements PropertyDefinition<T, V> {
 
     private final PropertyDescriptor descriptor;
     private final BeanPropertySet<T> propertySet;
     private final Class<?> propertyHolderType;
 
     /**
-     * Constructor for setting the immutable descriptor, property set and
-     * property holder type used by this instance.
+     * Constructor for setting the immutable descriptor, property set and property holder type used by this instance.
      *
      * @param propertySet
      *            property set this property belongs to
@@ -52,30 +50,26 @@ public abstract class AbstractBeanPropertyDefinition<T, V>
      * @param descriptor
      *            property descriptor
      */
-    public AbstractBeanPropertyDefinition(BeanPropertySet<T> propertySet,
-            Class<?> propertyHolderType, PropertyDescriptor descriptor) {
+    public AbstractBeanPropertyDefinition(BeanPropertySet<T> propertySet, Class<?> propertyHolderType,
+            PropertyDescriptor descriptor) {
         this.propertySet = propertySet;
         this.propertyHolderType = propertyHolderType;
         this.descriptor = descriptor;
         if (descriptor.getReadMethod() == null) {
-            throw new IllegalArgumentException(
-                    "Bean property has no accessible getter: "
-                            + propertySet.getBeanType() + "."
-                            + descriptor.getName());
+            throw new IllegalArgumentException("Bean property has no accessible getter: " + propertySet.getBeanType()
+                    + "." + descriptor.getName());
         }
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Class<V> getType() {
-        return (Class<V>) ReflectTools
-                .convertPrimitiveType(descriptor.getPropertyType());
+        return (Class<V>) ReflectTools.convertPrimitiveType(descriptor.getPropertyType());
     }
 
     @Override
     public boolean isGenericType() {
-        return descriptor.getReadMethod()
-                .getGenericReturnType() instanceof TypeVariable<?>;
+        return descriptor.getReadMethod().getGenericReturnType() instanceof TypeVariable<?>;
     }
 
     @Override

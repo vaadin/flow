@@ -23,8 +23,8 @@ import com.vaadin.client.flow.collection.JsArray;
 import elemental.dom.Node;
 
 /**
- * Binder context which is passed to the {@link BindingStrategy} instances
- * enabling them to delegate the creation of any child nodes.
+ * Binder context which is passed to the {@link BindingStrategy} instances enabling them to delegate the creation of any
+ * child nodes.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -33,12 +33,11 @@ import elemental.dom.Node;
 public interface BinderContext {
 
     /**
-     * Creates and binds a DOM node for the given state node. For state nodes
-     * based on templates, the root element of the template is returned.
+     * Creates and binds a DOM node for the given state node. For state nodes based on templates, the root element of
+     * the template is returned.
      *
      * @param node
-     *            the state node for which to create a DOM node, not
-     *            <code>null</code>
+     *            the state node for which to create a DOM node, not <code>null</code>
      * @return the DOM node, not <code>null</code>
      */
     Node createAndBind(StateNode node);
@@ -54,14 +53,11 @@ public interface BinderContext {
     void bind(StateNode stateNode, Node node);
 
     /**
-     * Gets the strategies with a specific type {@code T} using filtering
-     * {@code predicate}.
+     * Gets the strategies with a specific type {@code T} using filtering {@code predicate}.
      * <p>
-     * Predicate normally should be based on {@code Class<T>#isInstance()} but
-     * this method is not available in GWT so predicate {@code instanceof T}
-     * should be used. It's the developer responsibility to make sure that the
-     * resulting strategies types are correct to avoid
-     * {@link ClassCastException}.
+     * Predicate normally should be based on {@code Class<T>#isInstance()} but this method is not available in GWT so
+     * predicate {@code instanceof T} should be used. It's the developer responsibility to make sure that the resulting
+     * strategies types are correct to avoid {@link ClassCastException}.
      *
      * @param predicate
      *            predicate to filter strategies using type {@code T}.
@@ -70,6 +66,5 @@ public interface BinderContext {
      *
      * @return collection of filtered strategies
      */
-    <T extends BindingStrategy<?>> JsArray<T> getStrategies(
-            Predicate<BindingStrategy<?>> predicate);
+    <T extends BindingStrategy<?>> JsArray<T> getStrategies(Predicate<BindingStrategy<?>> predicate);
 }

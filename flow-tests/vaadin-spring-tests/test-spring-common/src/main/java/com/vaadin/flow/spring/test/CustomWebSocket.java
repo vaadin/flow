@@ -27,20 +27,17 @@ public class CustomWebSocket implements WebSocketConfigurer {
             }
 
             @Override
-            public void handleMessage(WebSocketSession session,
-                    WebSocketMessage<?> message) throws Exception {
+            public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
                 session.sendMessage(new TextMessage(WEBSOCKET_RESPONSE_TEXT));
             }
 
             @Override
-            public void handleTransportError(WebSocketSession session,
-                    Throwable exception) {
+            public void handleTransportError(WebSocketSession session, Throwable exception) {
 
             }
 
             @Override
-            public void afterConnectionClosed(WebSocketSession session,
-                    CloseStatus closeStatus) {
+            public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) {
 
             }
 

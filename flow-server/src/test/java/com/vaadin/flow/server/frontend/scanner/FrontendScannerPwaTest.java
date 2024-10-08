@@ -8,11 +8,9 @@ import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 public class FrontendScannerPwaTest extends AbstractScannerPwaTest {
-    protected PwaConfiguration getPwaConfiguration(Class<?>... classes)
-            throws Exception {
+    protected PwaConfiguration getPwaConfiguration(Class<?>... classes) throws Exception {
         FrontendDependencies frontendDependencies = new FrontendDependencies(
-                new DefaultClassFinder(new HashSet<>(
-                        new ArrayList<>(Arrays.asList(classes)))));
+                new DefaultClassFinder(new HashSet<>(new ArrayList<>(Arrays.asList(classes)))));
         return frontendDependencies.getPwaConfiguration();
     }
 }

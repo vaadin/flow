@@ -31,16 +31,12 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         open();
 
         /*
-         * There are 3 * 4 * 2 * 3 = 72 different combinations in the UI, let's
-         * test all of them just because we can
+         * There are 3 * 4 * 2 * 3 = 72 different combinations in the UI, let's test all of them just because we can
          */
-        for (String method : Arrays.asList("execPage", "execElement",
-                "callElement")) {
-            for (String value : Arrays.asList("string", "number", "null",
-                    "error-value")) {
+        for (String method : Arrays.asList("execPage", "execElement", "callElement")) {
+            for (String value : Arrays.asList("string", "number", "null", "error-value")) {
                 for (String outcome : Arrays.asList("success", "failure")) {
-                    for (String type : Arrays.asList("synchronous",
-                            "resolvedpromise", "timeout")) {
+                    for (String type : Arrays.asList("synchronous", "resolvedpromise", "timeout")) {
                         testCombination(method, value, outcome, type);
                     }
                 }
@@ -48,34 +44,28 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         }
     }
 
-    private void testCombination(String method, String value, String outcome,
-            String type) {
+    private void testCombination(String method, String value, String outcome, String type) {
         String combinationId = String.join(", ", method, value, outcome, type);
         String expectedStatus = getExpectedStatus(value, outcome);
 
-        for (String target : Arrays.asList("clear", method, value, outcome,
-                type, "run")) {
+        for (String target : Arrays.asList("clear", method, value, outcome, type, "run")) {
             findElement(By.id(target)).click();
         }
 
         if ("timeout".equals(type)) {
             try {
-                Assert.assertEquals(
-                        "Result should not be there immediately for "
-                                + combinationId,
-                        "Running...", findElement(By.id("status")).getText());
+                Assert.assertEquals("Result should not be there immediately for " + combinationId, "Running...",
+                        findElement(By.id("status")).getText());
 
-                waitUntil(ExpectedConditions.textToBe(By.id("status"),
-                        expectedStatus), 2);
+                waitUntil(ExpectedConditions.textToBe(By.id("status"), expectedStatus), 2);
             } catch (TimeoutException e) {
-                Assert.fail("Didn't reach expected result for " + combinationId
-                        + ". Expected " + expectedStatus + " but got "
-                        + findElement(By.id("status")).getText());
+                Assert.fail("Didn't reach expected result for " + combinationId + ". Expected " + expectedStatus
+                        + " but got " + findElement(By.id("status")).getText());
                 e.printStackTrace();
             }
         } else {
-            Assert.assertEquals("Unexpected result for " + combinationId,
-                    expectedStatus, findElement(By.id("status")).getText());
+            Assert.assertEquals("Unexpected result for " + combinationId, expectedStatus,
+                    findElement(By.id("status")).getText());
         }
     }
 
@@ -105,8 +95,7 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
             // JreJsonObject.asString()
             return prefix + "[object Object]";
         default:
-            throw new IllegalArgumentException(
-                    "Unsupported value type: " + value);
+            throw new IllegalArgumentException("Unsupported value type: " + value);
         }
     }
 

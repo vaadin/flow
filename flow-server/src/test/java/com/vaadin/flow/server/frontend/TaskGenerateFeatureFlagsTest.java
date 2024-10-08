@@ -45,35 +45,29 @@ public class TaskGenerateFeatureFlagsTest {
     @Before
     public void setUp() throws Exception {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = Mockito.mock(ApplicationConfiguration.class);
         context.setAttribute(ApplicationConfiguration.class, configuration);
 
         File frontendFolder = temporaryFolder.newFolder(FRONTEND);
         featureFlags = FeatureFlags.get(context);
-        Options options = new Options(Mockito.mock(Lookup.class), null)
-                .withFrontendDirectory(frontendFolder)
+        Options options = new Options(Mockito.mock(Lookup.class), null).withFrontendDirectory(frontendFolder)
                 .withFeatureFlags(featureFlags);
         taskGenerateFeatureFlags = new TaskGenerateFeatureFlags(options);
     }
 
     @Test
-    public void should_disableTypeChecksForGlobals()
-            throws ExecutionFailedException {
+    public void should_disableTypeChecksForGlobals() throws ExecutionFailedException {
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
         Assert.assertTrue(content.startsWith("// @ts-nocheck"));
     }
 
     @Test
-    public void should_setupFeatureFlagsGlobal()
-            throws ExecutionFailedException {
+    public void should_setupFeatureFlagsGlobal() throws ExecutionFailedException {
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
-        Assert.assertTrue(
-                content.contains("window.Vaadin = window.Vaadin || {};"));
-        Assert.assertTrue(content.contains(
-                "window.Vaadin.featureFlags = window.Vaadin.featureFlags || {};"));
+        Assert.assertTrue(content.contains("window.Vaadin = window.Vaadin || {};"));
+        Assert.assertTrue(content.contains("window.Vaadin.featureFlags = window.Vaadin.featureFlags || {};"));
     }
 
     @Test
@@ -87,11 +81,9 @@ public class TaskGenerateFeatureFlagsTest {
     }
 
     @Test
-    public void should_defineCorrectEnabledValue()
-            throws ExecutionFailedException {
+    public void should_defineCorrectEnabledValue() throws ExecutionFailedException {
         // Enable example feature
-        featureFlags.getFeatures().stream()
-                .filter(feature -> feature.equals(FeatureFlags.EXAMPLE))
+        featureFlags.getFeatures().stream().filter(feature -> feature.equals(FeatureFlags.EXAMPLE))
                 .forEach(feature -> feature.setEnabled(true));
 
         taskGenerateFeatureFlags.execute();
@@ -107,10 +99,8 @@ public class TaskGenerateFeatureFlagsTest {
         Assert.assertTrue(content.contains("export {};"));
     }
 
-    private static void assertFeatureFlagGlobal(String content, Feature feature,
-            boolean enabled) {
-        Assert.assertTrue(content
-                .contains(String.format("window.Vaadin.featureFlags.%s = %s",
-                        feature.getId(), enabled)));
+    private static void assertFeatureFlagGlobal(String content, Feature feature, boolean enabled) {
+        Assert.assertTrue(
+                content.contains(String.format("window.Vaadin.featureFlags.%s = %s", feature.getId(), enabled)));
     }
 }

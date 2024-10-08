@@ -30,9 +30,8 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Encapsulates all the logic required for a typical field implementation. This
- * reduces the risk of implementing logic changes in {@link AbstractField} but
- * not in {@link AbstractCompositeField}, or vice versa.
+ * Encapsulates all the logic required for a typical field implementation. This reduces the risk of implementing logic
+ * changes in {@link AbstractField} but not in {@link AbstractCompositeField}, or vice versa.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -69,8 +68,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * @param setPresentationValue
      *            a callback for setting presentation values
      */
-    public AbstractFieldSupport(C component, T defaultValue,
-            SerializableBiPredicate<T, T> valueEquals,
+    public AbstractFieldSupport(C component, T defaultValue, SerializableBiPredicate<T, T> valueEquals,
             SerializableConsumer<T> setPresentationValue) {
         this.component = component;
 
@@ -97,14 +95,11 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             ComponentValueChangeEvent<C, T> valueChangeEvent = (ComponentValueChangeEvent<C, T>) event;
             listener.valueChanged(valueChangeEvent);
         };
-        return ComponentUtil.addListener(component,
-                ComponentValueChangeEvent.class, componentListener);
+        return ComponentUtil.addListener(component, ComponentValueChangeEvent.class, componentListener);
     }
 
-    private ComponentValueChangeEvent<C, T> createValueChange(T oldValue,
-            boolean fromClient) {
-        return new ComponentValueChangeEvent<>(component, component, oldValue,
-                fromClient);
+    private ComponentValueChangeEvent<C, T> createValueChange(T oldValue, boolean fromClient) {
+        return new ComponentValueChangeEvent<>(component, component, oldValue, fromClient);
     }
 
     /**
@@ -136,29 +131,25 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
     }
 
     /**
-     * Delegate method corresponding to
-     * {@link AbstractField#valueEquals(Object, Object)}.
+     * Delegate method corresponding to {@link AbstractField#valueEquals(Object, Object)}.
      *
      * @param value1
      *            the first instance
      * @param value2
      *            the second instance
-     * @return <code>true</code> if the instances are equal; otherwise
-     *         <code>false</code>
+     * @return <code>true</code> if the instances are equal; otherwise <code>false</code>
      */
     public boolean valueEquals(T value1, T value2) {
         return Objects.equals(value1, value2);
     }
 
     /**
-     * Delegate method corresponding to
-     * {@link AbstractField#setModelValue(Object, boolean)}.
+     * Delegate method corresponding to {@link AbstractField#setModelValue(Object, boolean)}.
      *
      * @param newModelValue
      *            the new internal value to use
      * @param fromClient
-     *            <code>true</code> if the new value originates from the client;
-     *            otherwise <code>false</code>
+     *            <code>true</code> if the new value originates from the client; otherwise <code>false</code>
      */
     public void setModelValue(T newModelValue, boolean fromClient) {
         if (presentationUpdateInProgress) {
@@ -169,8 +160,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
         setValue(newModelValue, true, fromClient);
     }
 
-    private void setValue(T newValue, boolean fromInternal,
-            boolean fromClient) {
+    private void setValue(T newValue, boolean fromInternal, boolean fromClient) {
         if (fromClient && component.isReadOnly()) {
             applyValue(bufferedValue);
             return;
@@ -194,8 +184,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             }
 
             /*
-             * Regardless of what sonar believes, this will be true in cases
-             * when setPresentationValue calls setModelValue.
+             * Regardless of what sonar believes, this will be true in cases when setPresentationValue calls
+             * setModelValue.
              */
             if (pendingInternalUpdated) {
                 if (valueEquals.test(pendingValueFromPresentation, oldValue)) {
@@ -206,15 +196,13 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             }
         }
 
-        ComponentUtil.fireEvent(component,
-                createValueChange(oldValue, fromClient));
+        ComponentUtil.fireEvent(component, createValueChange(oldValue, fromClient));
     }
 
     private boolean applyValue(T value) {
         presentationUpdateInProgress = true;
         /*
-         * Toggled to true by setModelValue if that method is run while
-         * presentationUpdateInProgress is also true.
+         * Toggled to true by setModelValue if that method is run while presentationUpdateInProgress is also true.
          */
         valueSetFromPresentationUpdate = false;
 

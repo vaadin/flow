@@ -28,8 +28,7 @@ import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.function.ValueProvider;
 
 public class BinderCustomPropertySetTest {
-    public static class MapPropertyDefinition
-            implements PropertyDefinition<Map<String, String>, String> {
+    public static class MapPropertyDefinition implements PropertyDefinition<Map<String, String>, String> {
 
         private MapPropertySet propertySet;
         private String name;
@@ -92,21 +91,18 @@ public class BinderCustomPropertySetTest {
 
     }
 
-    public static class MapPropertySet
-            implements PropertySet<Map<String, String>> {
+    public static class MapPropertySet implements PropertySet<Map<String, String>> {
         @Override
         public Stream<PropertyDefinition<Map<String, String>, ?>> getProperties() {
             return Stream.of("one", "two", "three").map(this::createProperty);
         }
 
         @Override
-        public Optional<PropertyDefinition<Map<String, String>, ?>> getProperty(
-                String name) {
+        public Optional<PropertyDefinition<Map<String, String>, ?>> getProperty(String name) {
             return Optional.of(createProperty(name));
         }
 
-        private PropertyDefinition<Map<String, String>, ?> createProperty(
-                String name) {
+        private PropertyDefinition<Map<String, String>, ?> createProperty(String name) {
             return new MapPropertyDefinition(this, name);
         }
     }
@@ -120,39 +116,31 @@ public class BinderCustomPropertySetTest {
     public void testBindByString() {
         TestTextField field = new TestTextField();
         Map<String, String> map = new HashMap<>();
-        Binder<Map<String, String>> binder = Binder
-                .withPropertySet(new MapPropertySet());
+        Binder<Map<String, String>> binder = Binder.withPropertySet(new MapPropertySet());
 
         binder.bind(field, "key");
         binder.setBean(map);
 
         field.setValue("value");
-        Assert.assertEquals(
-                "Field value should propagate to the corresponding key in the map",
-                "value", map.get("key"));
+        Assert.assertEquals("Field value should propagate to the corresponding key in the map", "value",
+                map.get("key"));
     }
 
     @Test
     public void testBindInstanceFields() {
         Map<String, String> map = new HashMap<>();
-        Binder<Map<String, String>> binder = Binder
-                .withPropertySet(new MapPropertySet());
+        Binder<Map<String, String>> binder = Binder.withPropertySet(new MapPropertySet());
         InstanceFields instanceFields = new InstanceFields();
 
         binder.bindInstanceFields(instanceFields);
 
-        Assert.assertNotNull(
-                "Field corresponding to supported property name should be bound",
-                instanceFields.one);
-        Assert.assertNull(
-                "Field corresponding to unsupported property name should be ignored",
-                instanceFields.another);
+        Assert.assertNotNull("Field corresponding to supported property name should be bound", instanceFields.one);
+        Assert.assertNull("Field corresponding to unsupported property name should be ignored", instanceFields.another);
 
         binder.setBean(map);
 
         instanceFields.one.setValue("value");
-        Assert.assertEquals(
-                "Field value should propagate to the corresponding key in the map",
-                "value", map.get("one"));
+        Assert.assertEquals("Field value should propagate to the corresponding key in the map", "value",
+                map.get("one"));
     }
 }

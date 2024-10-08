@@ -35,18 +35,15 @@ import elemental.json.JsonObject;
 public class DevBundleCssImportIT extends ChromeBrowserTest {
 
     @Test
-    public void cssImportedStyles_hashCalculatedWithNotQuestionMark()
-            throws IOException {
+    public void cssImportedStyles_hashCalculatedWithNotQuestionMark() throws IOException {
         open();
         waitForElementPresent(By.id(DevBundleCssImportView.SPAN_ID));
         WebElement span = findElement(By.id(DevBundleCssImportView.SPAN_ID));
 
-        Assert.assertEquals("3px solid rgb(0, 0, 255)",
-                span.getCssValue("border"));
+        Assert.assertEquals("3px solid rgb(0, 0, 255)", span.getCssValue("border"));
 
         JsonObject frontendHashes = getFrontendHashes();
-        Assert.assertTrue("My-styles.css content hash is expected",
-                frontendHashes.hasKey("styles/my-styles.css"));
+        Assert.assertTrue("My-styles.css content hash is expected", frontendHashes.hasKey("styles/my-styles.css"));
         Assert.assertEquals("Unexpected my-styles.css content hash",
                 "c015998854f963b9169a1bca554c9ee5828feb8d1bc4a800cdf9dd5e9a0e5d87",
                 frontendHashes.getString("styles/my-styles.css"));
@@ -54,8 +51,7 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
         JsonArray bundleImports = getBundleImports();
         boolean found = false;
         for (int i = 0; i < bundleImports.length(); i++) {
-            if (bundleImports.get(i).asString()
-                    .equals("Frontend/styles/my-styles.css")) {
+            if (bundleImports.get(i).asString().equals("Frontend/styles/my-styles.css")) {
                 found = true;
             }
         }
@@ -63,16 +59,13 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void cssImportedStyles_stylesInMetaInfResources_stylesApplied_hashCalculated()
-            throws IOException {
+    public void cssImportedStyles_stylesInMetaInfResources_stylesApplied_hashCalculated() throws IOException {
         open();
 
         waitForElementPresent(By.id(DevBundleCssImportView.MY_COMPONENT_ID));
-        WebElement myComponent = findElement(
-                By.id(DevBundleCssImportView.MY_COMPONENT_ID));
+        WebElement myComponent = findElement(By.id(DevBundleCssImportView.MY_COMPONENT_ID));
 
-        Assert.assertEquals("1px solid rgb(0, 128, 0)",
-                myComponent.getCssValue("border"));
+        Assert.assertEquals("1px solid rgb(0, 128, 0)", myComponent.getCssValue("border"));
 
         JsonObject frontendHashes = getFrontendHashes();
 
@@ -85,8 +78,8 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
         JsonArray bundleImports = getBundleImports();
         boolean found = false;
         for (int i = 0; i < bundleImports.length(); i++) {
-            if (bundleImports.get(i).asString().equals(
-                    "Frontend/generated/jar-resources/addons-styles/add-on-styles.css")) {
+            if (bundleImports.get(i).asString()
+                    .equals("Frontend/generated/jar-resources/addons-styles/add-on-styles.css")) {
                 found = true;
             }
         }
@@ -96,16 +89,14 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
     public static JsonObject getFrontendHashes() throws IOException {
         JsonObject statsJson = getStatsJson();
         JsonObject frontendHashes = statsJson.getObject("frontendHashes");
-        Assert.assertNotNull("Frontend hashes are expected in the stats.json",
-                frontendHashes);
+        Assert.assertNotNull("Frontend hashes are expected in the stats.json", frontendHashes);
         return frontendHashes;
     }
 
     private static JsonArray getBundleImports() throws IOException {
         JsonObject statsJson = getStatsJson();
         JsonArray bundleImports = statsJson.getArray("bundleImports");
-        Assert.assertNotNull("Bundle imports are expected in the stats.json",
-                bundleImports);
+        Assert.assertNotNull("Bundle imports are expected in the stats.json", bundleImports);
         return bundleImports;
     }
 
@@ -114,15 +105,12 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
 
         // should create a dev-bundle
         Assert.assertTrue("New devBundle should be generated",
-                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION)
-                        .exists());
+                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION).exists());
 
-        File statsJson = new File(baseDir, "target/"
-                + Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
+        File statsJson = new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION + "/config/stats.json");
         Assert.assertTrue("Stats.json should exist", statsJson.exists());
 
-        String content = FileUtils.readFileToString(statsJson,
-                StandardCharsets.UTF_8);
+        String content = FileUtils.readFileToString(statsJson, StandardCharsets.UTF_8);
         return Json.parse(content);
     }
 }

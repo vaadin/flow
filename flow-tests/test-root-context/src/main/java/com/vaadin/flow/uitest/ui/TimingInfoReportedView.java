@@ -51,8 +51,7 @@ public class TimingInfoReportedView extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         getElement().executeJs(REPORT_TIMINGS);
         NativeButton button = new NativeButton("test request");
-        button.addClickListener(
-                event -> getElement().executeJs(REPORT_TIMINGS));
+        button.addClickListener(event -> getElement().executeJs(REPORT_TIMINGS));
         add(button);
     }
 

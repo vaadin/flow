@@ -19,8 +19,7 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
- * Utils class, intended to ease working with LitElement related code on client
- * side.
+ * Utils class, intended to ease working with LitElement related code on client side.
  *
  * @author Vaadin Ltd
  */
@@ -34,8 +33,7 @@ public final class LitUtils {
      *
      * @param element
      *            the custom element
-     * @return {@code true} if the element is a Lit element, <code>false</code>
-     *         otherwise
+     * @return {@code true} if the element is a Lit element, <code>false</code> otherwise
      */
     public static native boolean isLitElement(Node element)
     /*-{
@@ -43,8 +41,7 @@ public final class LitUtils {
     }-*/;
 
     /**
-     * Invokes the {@code runnable} when the given Lit element has been rendered
-     * at least once.
+     * Invokes the {@code runnable} when the given Lit element has been rendered at least once.
      *
      * @param element
      *            the Lit element

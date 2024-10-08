@@ -29,8 +29,8 @@ public class BrowserWindowResizeView extends AbstractDivView {
 
         windowSize.setId("size-info");
 
-        getPage().addBrowserWindowResizeListener(event -> windowSize.setText(
-                "%sx%s".formatted(event.getWidth(), event.getHeight())));
+        getPage().addBrowserWindowResizeListener(
+                event -> windowSize.setText("%sx%s".formatted(event.getWidth(), event.getHeight())));
 
         add(windowSize);
 

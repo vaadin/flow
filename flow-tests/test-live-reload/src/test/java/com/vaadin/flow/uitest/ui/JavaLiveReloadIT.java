@@ -36,15 +36,12 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
         devTools.setLiveReload(false);
 
         // when: live reload is triggered
-        WebElement liveReloadTrigger = findElement(
-                By.id(JavaLiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
+        WebElement liveReloadTrigger = findElement(By.id(JavaLiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         liveReloadTrigger.click();
 
         // then: page is not reloaded
         DevToolsElement liveReload2 = $(DevToolsElement.class).waitForFirst();
-        WebElement devTools2 = liveReload2.$("*")
-                .withAttributeContainingWord("class", "dev-tools").first();
-        Assert.assertTrue(
-                devTools2.getAttribute("class").contains("dev-tools"));
+        WebElement devTools2 = liveReload2.$("*").withAttributeContainingWord("class", "dev-tools").first();
+        Assert.assertTrue(devTools2.getAttribute("class").contains("dev-tools"));
     }
 }

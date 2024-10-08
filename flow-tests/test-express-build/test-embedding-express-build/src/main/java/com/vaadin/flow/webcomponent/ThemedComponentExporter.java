@@ -24,15 +24,13 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @Theme("embedded-theme")
 @NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME)
-public class ThemedComponentExporter
-        extends WebComponentExporter<ThemedComponent> {
+public class ThemedComponentExporter extends WebComponentExporter<ThemedComponent> {
     public ThemedComponentExporter() {
         super("themed-component");
     }
 
     @Override
-    public void configureInstance(WebComponent<ThemedComponent> webComponent,
-            ThemedComponent component) {
+    public void configureInstance(WebComponent<ThemedComponent> webComponent, ThemedComponent component) {
 
     }
 }

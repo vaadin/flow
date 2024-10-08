@@ -36,25 +36,21 @@ import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
 
 /**
- * A tool-independent implementation of a {@code convert-polymer} command that
- * converts Polymer-based source files to Lit. The command is supposed to be
- * called by the corresponding Mojo and Gradle tasks.
+ * A tool-independent implementation of a {@code convert-polymer} command that converts Polymer-based source files to
+ * Lit. The command is supposed to be called by the corresponding Mojo and Gradle tasks.
  */
 public class ConvertPolymerCommand implements AutoCloseable {
     private static final String SERVER_GLOB = "**/*.java";
     private static final String FRONTEND_GLOB = "**/*.js";
 
     /**
-     * A reference to the plugin adapter providing access to the environment of
-     * the tool that runs the command.
+     * A reference to the plugin adapter providing access to the environment of the tool that runs the command.
      */
     private PluginAdapterBase adapter;
 
     /**
-     * A path to a specific file or directory that needs to be converted. By
-     * default, the converter scans and tries to convert all {@code *.js} and
-     * {@code *.java} files in the project except for the {@code node_modules}
-     * folder.
+     * A path to a specific file or directory that needs to be converted. By default, the converter scans and tries to
+     * convert all {@code *.js} and {@code *.java} files in the project except for the {@code node_modules} folder.
      */
     private String path;
 
@@ -64,8 +60,7 @@ public class ConvertPolymerCommand implements AutoCloseable {
     private boolean useLit1;
 
     /**
-     * Whether to disable the usage of the JavaScript optional chaining operator
-     * (?.) in the output.
+     * Whether to disable the usage of the JavaScript optional chaining operator (?.) in the output.
      */
     private boolean disableOptionalChaining;
 
@@ -79,16 +74,14 @@ public class ConvertPolymerCommand implements AutoCloseable {
      */
     private FrontendConverter frontendConverter;
 
-    public ConvertPolymerCommand(PluginAdapterBase adapter, String path,
-            boolean useLit1, boolean disableOptionalChaining)
-            throws URISyntaxException, IOException {
+    public ConvertPolymerCommand(PluginAdapterBase adapter, String path, boolean useLit1,
+            boolean disableOptionalChaining) throws URISyntaxException, IOException {
         this.adapter = adapter;
         this.path = path;
         this.useLit1 = useLit1;
         this.disableOptionalChaining = disableOptionalChaining;
         this.serverConverter = new ServerConverter();
-        this.frontendConverter = new FrontendConverter(
-                new FrontendTools(getFrontendToolsSettings()));
+        this.frontendConverter = new FrontendConverter(new FrontendTools(getFrontendToolsSettings()));
     }
 
     @Override
@@ -96,8 +89,7 @@ public class ConvertPolymerCommand implements AutoCloseable {
         this.frontendConverter.close();
     }
 
-    public void execute() throws IOException, InterruptedException,
-            CommandExecutionException {
+    public void execute() throws IOException, InterruptedException, CommandExecutionException {
         Path lookupPath = getLookupPath();
 
         int totalCount = 0;
@@ -113,8 +105,7 @@ public class ConvertPolymerCommand implements AutoCloseable {
                     adapter.logInfo("The file was successfully converted.");
                     convertedCount++;
                 } else {
-                    adapter.logInfo(
-                            "No occurences of PolymerTemplate was found. Skipping.");
+                    adapter.logInfo("No occurences of PolymerTemplate was found. Skipping.");
                     skippedCount++;
                 }
             } catch (Exception e) {
@@ -127,13 +118,11 @@ public class ConvertPolymerCommand implements AutoCloseable {
             try {
                 totalCount++;
                 adapter.logInfo(String.format("Processing %s...", filePath));
-                if (frontendConverter.convertFile(filePath, useLit1,
-                        disableOptionalChaining)) {
+                if (frontendConverter.convertFile(filePath, useLit1, disableOptionalChaining)) {
                     adapter.logInfo("The file was successfully converted.");
                     convertedCount++;
                 } else {
-                    adapter.logInfo(
-                            "No occurences of PolymerElement was found. Skipping.");
+                    adapter.logInfo("No occurences of PolymerElement was found. Skipping.");
                     skippedCount++;
                 }
             } catch (Exception e) {
@@ -142,24 +131,19 @@ public class ConvertPolymerCommand implements AutoCloseable {
             }
         }
 
-        adapter.logInfo(
-                "------------------------------------------------------------------------");
-        adapter.logInfo(String.format(
-                "Total: %d | Converted: %d | Failed: %d | Skipped: %d",
-                totalCount, convertedCount, failedCount, skippedCount));
+        adapter.logInfo("------------------------------------------------------------------------");
+        adapter.logInfo(String.format("Total: %d | Converted: %d | Failed: %d | Skipped: %d", totalCount,
+                convertedCount, failedCount, skippedCount));
     }
 
-    private List<Path> getFilePathsByGlob(Path baseDir, String glob)
-            throws IOException {
-        PathMatcher matcher = FileSystems.getDefault()
-                .getPathMatcher("glob:" + glob);
+    private List<Path> getFilePathsByGlob(Path baseDir, String glob) throws IOException {
+        PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + glob);
 
         List<Path> matchingPaths = new ArrayList<>();
 
         Files.walkFileTree(baseDir, new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult preVisitDirectory(Path dir,
-                    BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 if (dir.toString().contains("node_modules")) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
@@ -168,8 +152,7 @@ public class ConvertPolymerCommand implements AutoCloseable {
             }
 
             @Override
-            public FileVisitResult visitFile(Path file,
-                    BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (matcher.matches(file)) {
                     matchingPaths.add(file);
                 }
@@ -189,10 +172,8 @@ public class ConvertPolymerCommand implements AutoCloseable {
         return adapter.projectBaseDirectory();
     }
 
-    private FrontendToolsSettings getFrontendToolsSettings()
-            throws URISyntaxException {
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                adapter.npmFolder().getAbsolutePath(),
+    private FrontendToolsSettings getFrontendToolsSettings() throws URISyntaxException {
+        FrontendToolsSettings settings = new FrontendToolsSettings(adapter.npmFolder().getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setNodeDownloadRoot(adapter.nodeDownloadRoot());
         settings.setNodeVersion(adapter.nodeVersion());

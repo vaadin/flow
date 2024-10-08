@@ -27,13 +27,10 @@ import static org.junit.Assert.assertThat;
 
 /**
  * A test that ensures correct order of dependencies loaded. Test corresponds to
- * {@link DependenciesLoadingAnnotationsView}, which uses annotations to add
- * dependencies. There is a related pair of classes,
- * {@link DependenciesLoadingPageApiView} and
- * {@link DependenciesLoadingPageApiIT}, designed to test exactly the same
- * dependency loading functionality (hence reusing all methods and constants),
- * but using {@link com.vaadin.flow.component.page.Page} api to add
- * dependencies.
+ * {@link DependenciesLoadingAnnotationsView}, which uses annotations to add dependencies. There is a related pair of
+ * classes, {@link DependenciesLoadingPageApiView} and {@link DependenciesLoadingPageApiIT}, designed to test exactly
+ * the same dependency loading functionality (hence reusing all methods and constants), but using
+ * {@link com.vaadin.flow.component.page.Page} api to add dependencies.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -52,21 +49,16 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     public void dependenciesLoadedAsExpectedWithAnnotationApi() {
         open();
 
-        waitUntil(input -> !input
-                .findElements(By.className("dependenciesTest" + getCssSuffix()))
-                .isEmpty());
+        waitUntil(input -> !input.findElements(By.className("dependenciesTest" + getCssSuffix())).isEmpty());
 
         flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes();
         checkInlinedCss();
 
-        WebElement preloadedDiv = findElement(
-                By.id(PRELOADED_DIV_ID + getCssSuffix()));
-        Assert.assertEquals(
-                "Lazy css should be loaded last: color should be blue",
-                "rgba(0, 0, 255, 1)", preloadedDiv.getCssValue("color"));
+        WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID + getCssSuffix()));
+        Assert.assertEquals("Lazy css should be loaded last: color should be blue", "rgba(0, 0, 255, 1)",
+                preloadedDiv.getCssValue("color"));
 
-        List<String> testMessages = findElements(
-                By.className("dependenciesTest" + getCssSuffix())).stream()
+        List<String> testMessages = findElements(By.className("dependenciesTest" + getCssSuffix())).stream()
                 .map(WebElement::getText).collect(Collectors.toList());
 
         assertThat(
@@ -75,17 +67,13 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
 
         List<String> inlineAndEagerMessages = testMessages.subList(0, 4);
 
-        List<String> eagerMessages = inlineAndEagerMessages.stream()
-                .filter(message -> message.startsWith(EAGER_PREFIX))
+        List<String> eagerMessages = inlineAndEagerMessages.stream().filter(message -> message.startsWith(EAGER_PREFIX))
                 .collect(Collectors.toList());
-        assertThat("2 eager messages should be posted before lazy messages",
-                eagerMessages, hasSize(2));
+        assertThat("2 eager messages should be posted before lazy messages", eagerMessages, hasSize(2));
 
         List<String> inlineMessages = inlineAndEagerMessages.stream()
-                .filter(message -> message.startsWith(INLINE_PREFIX))
-                .collect(Collectors.toList());
-        assertThat("1 inline message should be posted before lazy messages",
-                inlineMessages, hasSize(1));
+                .filter(message -> message.startsWith(INLINE_PREFIX)).collect(Collectors.toList());
+        assertThat("1 inline message should be posted before lazy messages", inlineMessages, hasSize(1));
 
         Assert.assertTrue(
                 "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded, but got "
@@ -93,9 +81,7 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 testMessages.get(3).equals(DOM_CHANGE_TEXT));
 
         String lazyMessage = testMessages.get(testMessages.size() - 1);
-        Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager and inline, but got "
-                        + lazyMessage,
+        Assert.assertTrue("Lazy dependencies should be loaded after eager and inline, but got " + lazyMessage,
                 lazyMessage.startsWith(LAZY_PREFIX));
     }
 
@@ -106,18 +92,14 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     private void checkInlinedCss() {
         Optional<String> inlinedCss = findElements(By.tagName("style")).stream()
                 .map(webElement -> webElement.getAttribute("innerHTML"))
-                .filter(cssContents -> cssContents.contains("inline.css"))
-                .findAny();
-        assertThat(
-                "One of the inlined css should be our dependency containing `inline.css` string inside",
+                .filter(cssContents -> cssContents.contains("inline.css")).findAny();
+        assertThat("One of the inlined css should be our dependency containing `inline.css` string inside",
                 inlinedCss.isPresent(), is(true));
 
         WebElement inlineCssTestDiv = findElement(
-                By.id(DependenciesLoadingBaseView.INLINE_CSS_TEST_DIV_ID
-                        + getCssSuffix()));
-        Assert.assertEquals(
-                "Incorrect color for the div that should be styled with inline.css",
-                "rgba(255, 255, 0, 1)", inlineCssTestDiv.getCssValue("color"));
+                By.id(DependenciesLoadingBaseView.INLINE_CSS_TEST_DIV_ID + getCssSuffix()));
+        Assert.assertEquals("Incorrect color for the div that should be styled with inline.css", "rgba(255, 255, 0, 1)",
+                inlineCssTestDiv.getCssValue("color"));
     }
 
     private void flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes() {
@@ -133,35 +115,26 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 if (userDependencyMinIndex > i) {
                     userDependencyMinIndex = i;
                 }
-                assertThat(
-                        "Expected to have here dependencies added with Flow public api",
-                        jsUrl,
-                        either(containsString("eager"))
-                                .or(containsString("lazy"))
+                assertThat("Expected to have here dependencies added with Flow public api", jsUrl,
+                        either(containsString("eager")).or(containsString("lazy"))
                                 // inline elements do not have the url
-                                .or(isEmptyString())
-                                .or(containsString("dndConnector.js")));
+                                .or(isEmptyString()).or(containsString("dndConnector.js")));
             } else {
                 flowDependencyMaxIndex = i;
-                assertThat(
-                        "Flow dependencies should not contain user dependencies",
-                        jsUrl, both(not(containsString("eager")))
-                                .and(not(containsString("lazy"))));
+                assertThat("Flow dependencies should not contain user dependencies", jsUrl,
+                        both(not(containsString("eager"))).and(not(containsString("lazy"))));
 
-                if (jsUrl.endsWith(".cache.js")
-                        && jsUrl.contains("static/client/client-")) {
+                if (jsUrl.endsWith(".cache.js") && jsUrl.contains("static/client/client-")) {
                     foundClientEngine = true;
                 }
             }
 
             assertThat(String.format(
                     "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
-                    jsImport.getAttribute("src")),
-                    jsImport.getAttribute("async"), is(nullValue()));
+                    jsImport.getAttribute("src")), jsImport.getAttribute("async"), is(nullValue()));
         }
 
-        assertThat(
-                "Flow dependencies should be imported before user dependencies",
-                flowDependencyMaxIndex, is(lessThan(userDependencyMinIndex)));
+        assertThat("Flow dependencies should be imported before user dependencies", flowDependencyMaxIndex,
+                is(lessThan(userDependencyMinIndex)));
     }
 }

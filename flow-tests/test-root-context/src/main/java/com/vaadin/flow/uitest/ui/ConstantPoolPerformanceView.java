@@ -28,8 +28,7 @@ public class ConstantPoolPerformanceView extends AbstractDivView {
     Div notification = new Div();
 
     public ConstantPoolPerformanceView() {
-        NativeButton btn = new NativeButton(
-                "add 2k divs without click listener");
+        NativeButton btn = new NativeButton("add 2k divs without click listener");
         btn.addClickListener(e -> {
             container.removeAll();
             for (int i = 0; i < 2000; i++) {
@@ -40,12 +39,10 @@ public class ConstantPoolPerformanceView extends AbstractDivView {
         btn2.addClickListener(e -> {
             container.removeAll();
             for (int i = 0; i < 2000; i++) {
-                container.add(new NativeButton("With click listener " + i,
-                        e2 -> notification.setText("clicked")));
+                container.add(new NativeButton("With click listener " + i, e2 -> notification.setText("clicked")));
             }
         });
-        final NativeButton clearButtons = new NativeButton("clear buttons",
-                e -> container.removeAll());
+        final NativeButton clearButtons = new NativeButton("clear buttons", e -> container.removeAll());
         add(btn, btn2, clearButtons, notification, container);
     }
 

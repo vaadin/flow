@@ -44,26 +44,22 @@ public abstract class AbstractDnDUnitTest {
 
     @Before
     public void setup() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
+        ApplicationConfiguration appConfig = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
         Mockito.when(appConfig.getBuildFolder()).thenReturn(".");
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(appConfig.getContext()).thenReturn(context);
 
         Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
-        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class),
-                ArgumentMatchers.any(Supplier.class)))
+        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class), ArgumentMatchers.any(Supplier.class)))
                 .then(i -> i.getArgument(1, Supplier.class).get());
 
-        DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
-                appConfig, VaadinServlet.class, new Properties());
+        DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(appConfig,
+                VaadinServlet.class, new Properties());
 
         VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.resolveResource(Mockito.anyString()))
-                .thenReturn("");
+        Mockito.when(service.resolveResource(Mockito.anyString())).thenReturn("");
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
@@ -77,10 +73,8 @@ public abstract class AbstractDnDUnitTest {
         runStaticCreateMethodForExtension(new RouterLink());
 
         Assert.assertTrue("No usage statistics for generic dnd reported",
-                UsageStatistics.getEntries().anyMatch(
-                        entry -> entry.getName().contains("generic-dnd")));
+                UsageStatistics.getEntries().anyMatch(entry -> entry.getName().contains("generic-dnd")));
     }
 
-    protected abstract void runStaticCreateMethodForExtension(
-            Component component);
+    protected abstract void runStaticCreateMethodForExtension(Component component);
 }

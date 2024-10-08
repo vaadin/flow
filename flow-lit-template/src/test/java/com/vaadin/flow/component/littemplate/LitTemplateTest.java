@@ -45,8 +45,7 @@ public class LitTemplateTest {
 
         public TestLitTemplate(VaadinService service) {
             this((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
-                    Jsoup.parse("<foo-bar id='" + tag
-                            + "'><label id='labelId' someattribute .property-binding='foo' "
+                    Jsoup.parse("<foo-bar id='" + tag + "'><label id='labelId' someattribute .property-binding='foo' "
                             + "?attribute-binding='bar' another-binding='${bar}' "
                             + "another-attribute='baz' hidden></foo-bar>")),
                     service);
@@ -66,13 +65,10 @@ public class LitTemplateTest {
 
         public DisabledElementTemplate(VaadinService service) {
             this((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
-                    Jsoup.parse("<foo-bar id='" + tag
-                            + "'><label id='labelId' disabled></foo-bar>")),
-                    service);
+                    Jsoup.parse("<foo-bar id='" + tag + "'><label id='labelId' disabled></foo-bar>")), service);
         }
 
-        DisabledElementTemplate(LitTemplateParser parser,
-                VaadinService service) {
+        DisabledElementTemplate(LitTemplateParser parser, VaadinService service) {
             super(parser, service);
         }
     }
@@ -88,14 +84,12 @@ public class LitTemplateTest {
 
         public ElementWithTextLitTemplate(VaadinService service) {
             this((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
-                    Jsoup.parse("<dom-module id='" + tag
-                            + "'><label id='labelId'>foo bar</label>"
+                    Jsoup.parse("<dom-module id='" + tag + "'><label id='labelId'>foo bar</label>"
                             + "<div id='hasHierarchy'>baz <a>foo</a> bar</div></dom-module>")),
                     service);
         }
 
-        ElementWithTextLitTemplate(LitTemplateParser parser,
-                VaadinService service) {
+        ElementWithTextLitTemplate(LitTemplateParser parser, VaadinService service) {
             super(parser, service);
         }
 
@@ -112,10 +106,8 @@ public class LitTemplateTest {
 
     @Before
     public void setUp() {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
     }
 
     @Test
@@ -127,8 +119,7 @@ public class LitTemplateTest {
 
         Assert.assertTrue(template.label.hasProperty("someattribute"));
         Assert.assertNotNull(template.label.getProperty("someattribute"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
-                template.label.getProperty("someattribute"));
+        Assert.assertEquals(Boolean.TRUE.toString(), template.label.getProperty("someattribute"));
 
         Assert.assertFalse(template.label.hasProperty("property-binding"));
         Assert.assertFalse(template.label.hasProperty("propertyBinding"));
@@ -142,27 +133,23 @@ public class LitTemplateTest {
         Assert.assertFalse(template.label.hasProperty("attributeBinding$"));
 
         Assert.assertTrue(template.label.hasProperty("another-attribute"));
-        Assert.assertEquals("baz",
-                template.label.getProperty("another-attribute"));
+        Assert.assertEquals("baz", template.label.getProperty("another-attribute"));
 
         Assert.assertTrue(template.label.hasAttribute("hidden"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
-                template.label.getAttribute("hidden"));
+        Assert.assertEquals(Boolean.TRUE.toString(), template.label.getAttribute("hidden"));
     }
 
     @Test
     public void attachExistingElementWithDisabledAttributeValue_exceptionIsThrown() {
         expectedEx.expect(IllegalAttributeException.class);
-        expectedEx.expectMessage(
-                Matchers.containsString("element 'label' with id 'labelId'"));
+        expectedEx.expectMessage(Matchers.containsString("element 'label' with id 'labelId'"));
 
         DisabledElementTemplate template = new DisabledElementTemplate(service);
     }
 
     @Test
     public void attachExistingElementWithoutChildrenWithText_elementHasNoText() {
-        ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
-                service);
+        ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(service);
 
         // see #10106
         Assert.assertEquals("", template.label.getText());
@@ -170,8 +157,7 @@ public class LitTemplateTest {
 
     @Test
     public void attachExistingElementWithChildrenWithText_elementHasNoText() {
-        ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
-                service);
+        ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(service);
 
         Assert.assertEquals("", template.div.getText());
     }

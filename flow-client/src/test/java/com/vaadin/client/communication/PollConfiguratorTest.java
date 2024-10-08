@@ -53,8 +53,7 @@ public class PollConfiguratorTest {
 
         Assert.assertEquals(-2, pollerInterval.get());
         Assert.assertEquals(0, pollerSetIntervalCalled.get());
-        MapProperty pollIntervalProperty = stateTree.getRootNode()
-                .getMap(NodeFeatures.POLL_CONFIGURATION)
+        MapProperty pollIntervalProperty = stateTree.getRootNode().getMap(NodeFeatures.POLL_CONFIGURATION)
                 .getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
 
         pollIntervalProperty.setValue(100.0);

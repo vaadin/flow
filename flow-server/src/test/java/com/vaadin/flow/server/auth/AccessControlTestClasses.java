@@ -289,8 +289,7 @@ public class AccessControlTestClasses {
 
     @AnonymousAllowed
     @Route("anon-url-parameter")
-    public static class AnonymousAllowedUrlParameterView extends Component
-            implements HasUrlParameter<String> {
+    public static class AnonymousAllowedUrlParameterView extends Component implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
 
@@ -310,8 +309,7 @@ public class AccessControlTestClasses {
 
     @Tag(Tag.DIV)
     @RoutePrefix("parent")
-    public static class RoutePrefixParent extends Component
-            implements RouterLayout {
+    public static class RoutePrefixParent extends Component implements RouterLayout {
     }
 
     @AnonymousAllowed
@@ -345,13 +343,11 @@ public class AccessControlTestClasses {
     }
 
     @Route("no-annotation-anonymous-by-parent")
-    public static class NoAnnotationAnonymousAllowedByParentView
-            extends AnonymousAllowedParentView {
+    public static class NoAnnotationAnonymousAllowedByParentView extends AnonymousAllowedParentView {
     }
 
     @Route("no-annotation-anonymous-by-grandparent")
-    public static class NoAnnotationAnonymousAllowedByGrandParentView
-            extends NoAnnotationAnonymousAllowedByParentView {
+    public static class NoAnnotationAnonymousAllowedByGrandParentView extends NoAnnotationAnonymousAllowedByParentView {
     }
 
     @PermitAll
@@ -362,8 +358,7 @@ public class AccessControlTestClasses {
     }
 
     @Route("no-annotation-permitall-by-grandparent")
-    public static class NoAnnotationPermitAllByGrandParentView
-            extends PermitAllParentView {
+    public static class NoAnnotationPermitAllByGrandParentView extends PermitAllParentView {
     }
 
     @AccessDeniedErrorRouter(rerouteToError = NotFoundException.class)
@@ -371,26 +366,22 @@ public class AccessControlTestClasses {
     public static class RolesAllowedUserGrandParentView {
     }
 
-    public static class RolesAllowedUserParentView
-            extends RolesAllowedUserGrandParentView {
+    public static class RolesAllowedUserParentView extends RolesAllowedUserGrandParentView {
     }
 
     @Route("no-annotation-roles-allowed-user-by-grandparent")
-    public static class NoAnnotationRolesAllowedUserByGrandParentView
-            extends RolesAllowedUserParentView {
+    public static class NoAnnotationRolesAllowedUserByGrandParentView extends RolesAllowedUserParentView {
     }
 
     @RolesAllowed("admin")
     public static class RolesAllowedAdminGrandParentView {
     }
 
-    public static class RolesAllowedAdminParentView
-            extends RolesAllowedAdminGrandParentView {
+    public static class RolesAllowedAdminParentView extends RolesAllowedAdminGrandParentView {
     }
 
     @Route("no-annotation-roles-allowed-admin-by-grandparent")
-    public static class NoAnnotationRolesAllowedAdminByGrandParentView
-            extends RolesAllowedAdminParentView {
+    public static class NoAnnotationRolesAllowedAdminByGrandParentView extends RolesAllowedAdminParentView {
     }
 
     @DenyAll
@@ -401,8 +392,7 @@ public class AccessControlTestClasses {
     }
 
     @Route("no-annotation-denyall-by-grandparent")
-    public static class NoAnnotationDenyAllByGrandParentView
-            extends DenyAllParentView {
+    public static class NoAnnotationDenyAllByGrandParentView extends DenyAllParentView {
     }
 
     @AnonymousAllowed
@@ -410,34 +400,29 @@ public class AccessControlTestClasses {
     }
 
     @Route("no-annotation-denyall-as-interfaces-ignored")
-    public static class NoAnnotationDenyAllAsInterfacesIgnoredView
-            implements CustomComponent {
+    public static class NoAnnotationDenyAllAsInterfacesIgnoredView implements CustomComponent {
     }
 
     @Route("no-annotation-permitall-from-parent-and-interfaces-ignored")
-    public static class NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView
-            extends PermitAllParentView implements CustomComponent {
+    public static class NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView extends PermitAllParentView
+            implements CustomComponent {
     }
 
     @Tag(Tag.DIV)
     @AnonymousAllowed
-    public static class CustomErrorView
-            implements HasErrorParameter<NotFoundException> {
+    public static class CustomErrorView implements HasErrorParameter<NotFoundException> {
 
         @Override
-        public int setErrorParameter(BeforeEnterEvent event,
-                ErrorParameter<NotFoundException> parameter) {
+        public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NotFoundException> parameter) {
             return 0;
         }
     }
 
     @Tag(Tag.DIV)
-    public static class NotAnnotatedCustomErrorView
-            implements HasErrorParameter<NotFoundException> {
+    public static class NotAnnotatedCustomErrorView implements HasErrorParameter<NotFoundException> {
 
         @Override
-        public int setErrorParameter(BeforeEnterEvent event,
-                ErrorParameter<NotFoundException> parameter) {
+        public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NotFoundException> parameter) {
             return 0;
         }
     }
@@ -450,8 +435,7 @@ public class AccessControlTestClasses {
     @Tag(Tag.DIV)
     @Layout
     @AnonymousAllowed
-    public static class AnonymousAllowedLayout extends Component
-            implements RouterLayout {
+    public static class AnonymousAllowedLayout extends Component implements RouterLayout {
     }
 
 }

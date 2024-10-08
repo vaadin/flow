@@ -24,8 +24,7 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.NodeChange;
 
 /**
- * A node feature represents a group of related values and functionality in a
- * state node.
+ * A node feature represents a group of related values and functionality in a state node.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -63,8 +62,7 @@ public abstract class NodeFeature implements Serializable {
     public abstract void collectChanges(Consumer<NodeChange> collector);
 
     /**
-     * Generates all changes that would be needed to take this node from its
-     * initial empty state to its current state.
+     * Generates all changes that would be needed to take this node from its initial empty state to its current state.
      */
     public abstract void generateChangesFromEmpty();
 
@@ -110,8 +108,8 @@ public abstract class NodeFeature implements Serializable {
      * Called when the state node has been attached to the state tree.
      *
      * @param initialAttach
-     *            <code>true</code> if this is the first time the node is
-     *            attached to a {@link StateTree}, <code>false</code> otherwise
+     *            <code>true</code> if this is the first time the node is attached to a {@link StateTree},
+     *            <code>false</code> otherwise
      */
     public void onAttach(boolean initialAttach) {
         // NOOP by default
@@ -127,18 +125,15 @@ public abstract class NodeFeature implements Serializable {
     /**
      * Returns {@code true} if the underlying node may report its changes.
      * <p>
-     * If its return value is {@code false} then this node should be considered
-     * as "inactive" and should not send any changes to the client side at all
-     * or only changes for features that disallow the changes.
+     * If its return value is {@code false} then this node should be considered as "inactive" and should not send any
+     * changes to the client side at all or only changes for features that disallow the changes.
      * <p>
-     * Normally features don't control the node behavior so the default
-     * implementation returns {@code true}. The feature which wants to control
-     * the node behavior should override this method.
+     * Normally features don't control the node behavior so the default implementation returns {@code true}. The feature
+     * which wants to control the node behavior should override this method.
      *
      * @see StateNode#updateActiveState()
      *
-     * @return {@code true} if the feature allows changes for the node,
-     *         {@code false} otherwise
+     * @return {@code true} if the feature allows changes for the node, {@code false} otherwise
      */
     public boolean allowsChanges() {
         return true;

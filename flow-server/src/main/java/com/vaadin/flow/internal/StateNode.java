@@ -56,9 +56,8 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * A node in the state tree that is synchronized with the client-side. Data
- * stored in nodes is structured into different features to provide isolation.
- * The features available for a node are defined when the node is created.
+ * A node in the state tree that is synchronized with the client-side. Data stored in nodes is structured into different
+ * features to provide isolation. The features available for a node are defined when the node is created.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -71,19 +70,15 @@ public class StateNode implements Serializable {
         private final Set<Class<? extends NodeFeature>> reportedFeatures;
         private final Set<Class<? extends NodeFeature>> nonReportableFeatures;
 
-        public FeatureSetKey(
-                Collection<Class<? extends NodeFeature>> reportableFeatureTypes,
+        public FeatureSetKey(Collection<Class<? extends NodeFeature>> reportableFeatureTypes,
                 Class<? extends NodeFeature>[] additionalFeatureTypes) {
             reportedFeatures = new HashSet<>(reportableFeatureTypes);
             nonReportableFeatures = Stream.of(additionalFeatureTypes)
                     /*
-                     * Should preferably require consistency in whether
-                     * reportable are also included in additional, but this is
-                     * not practical since both alternatives are currently used
-                     * in different implementations.
+                     * Should preferably require consistency in whether reportable are also included in additional, but
+                     * this is not practical since both alternatives are currently used in different implementations.
                      */
-                    .filter(type -> !reportableFeatureTypes.contains(type))
-                    .collect(Collectors.toSet());
+                    .filter(type -> !reportableFeatureTypes.contains(type)).collect(Collectors.toSet());
 
             assert !nonReportableFeatures.removeAll(reportedFeatures)
                     : "No reportable feature should also be non-reportable";
@@ -110,8 +105,7 @@ public class StateNode implements Serializable {
         }
 
         public Stream<Class<? extends NodeFeature>> getAllFeatures() {
-            return Stream.concat(nonReportableFeatures.stream(),
-                    reportedFeatures.stream());
+            return Stream.concat(nonReportableFeatures.stream(), reportedFeatures.stream());
         }
     }
 
@@ -119,19 +113,16 @@ public class StateNode implements Serializable {
         private final Set<Class<? extends NodeFeature>> reportedFeatures;
 
         /**
-         * Maps from a node feature type to its index in the {@link #features}
-         * array. This instance is cached per unique set of used node feature
-         * types in {@link #featureSetCache}.
+         * Maps from a node feature type to its index in the {@link #features} array. This instance is cached per unique
+         * set of used node feature types in {@link #featureSetCache}.
          */
         private final Map<Class<? extends NodeFeature>, Integer> mappings = new HashMap<>();
 
         public FeatureSet(FeatureSetKey featureSetKey) {
             reportedFeatures = featureSetKey.reportedFeatures;
 
-            featureSetKey.getAllFeatures()
-                    .sorted(NodeFeatureRegistry.PRIORITY_COMPARATOR)
-                    .forEach(key -> mappings.put(key,
-                            Integer.valueOf(mappings.size())));
+            featureSetKey.getAllFeatures().sorted(NodeFeatureRegistry.PRIORITY_COMPARATOR)
+                    .forEach(key -> mappings.put(key, Integer.valueOf(mappings.size())));
         }
     }
 
@@ -191,36 +182,30 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Create a new instance using the same features as provided {@code node}
-     * declares.
+     * Create a new instance using the same features as provided {@code node} declares.
      *
      * @param node
      *            the node whose features set will be copied
      */
     @SuppressWarnings("unchecked")
     public StateNode(StateNode node) {
-        this(new ArrayList<>(node.featureSet.reportedFeatures),
-                getNonRepeatebleFeatures(node));
+        this(new ArrayList<>(node.featureSet.reportedFeatures), getNonRepeatebleFeatures(node));
     }
 
     /**
-     * Creates a state node with the given feature types and required features
-     * that are always sent to the client side.
+     * Creates a state node with the given feature types and required features that are always sent to the client side.
      *
      * @param reportableFeatureTypes
-     *            the list of the features that are required on the client side
-     *            (populated even if they are empty)
+     *            the list of the features that are required on the client side (populated even if they are empty)
      * @param additionalFeatureTypes
-     *            a collection of feature classes that the node should support.
-     *            May, but is not required to, also include reportable feature
-     *            types.
+     *            a collection of feature classes that the node should support. May, but is not required to, also
+     *            include reportable feature types.
      */
     @SafeVarargs
     public StateNode(List<Class<? extends NodeFeature>> reportableFeatureTypes,
             Class<? extends NodeFeature>... additionalFeatureTypes) {
-        featureSet = featureSetCache
-                .computeIfAbsent(new FeatureSetKey(reportableFeatureTypes,
-                        additionalFeatureTypes), FeatureSet::new);
+        featureSet = featureSetCache.computeIfAbsent(new FeatureSetKey(reportableFeatureTypes, additionalFeatureTypes),
+                FeatureSet::new);
 
         features = null;
         // Eagerly initialize features that should always be sent
@@ -239,22 +224,19 @@ public class StateNode implements Serializable {
     /**
      * Gets the parent node that this node belongs to.
      *
-     * @return the current parent node; <code>null</code> if the node is not
-     *         attached to a parent node, or if this node is the root of a state
-     *         tree.
+     * @return the current parent node; <code>null</code> if the node is not attached to a parent node, or if this node
+     *         is the root of a state tree.
      */
     public StateNode getParent() {
         return parent;
     }
 
     /**
-     * Sets the parent node that this node belongs to. This node is set to
-     * belong to the node owner of the parent node. The node still retains its
-     * owner when the parent is set to <code>null</code>.
+     * Sets the parent node that this node belongs to. This node is set to belong to the node owner of the parent node.
+     * The node still retains its owner when the parent is set to <code>null</code>.
      *
      * @param parent
-     *            the new parent of this node; or <code>null</code> if this node
-     *            is not attached to another node
+     *            the new parent of this node; or <code>null</code> if this node is not attached to another node
      */
     public void setParent(StateNode parent) {
         if (hasDetached()) {
@@ -265,13 +247,11 @@ public class StateNode implements Serializable {
         boolean attachedAfter = false;
 
         if (parent != null) {
-            assert this.parent == null
-                    : "Node is already attached to a parent: " + this.parent;
+            assert this.parent == null : "Node is already attached to a parent: " + this.parent;
             assert parent.hasChildAssert(this);
 
             if (isAncestorOf(parent)) {
-                throw new IllegalStateException(
-                        "Can't set own child as parent");
+                throw new IllegalStateException("Can't set own child as parent");
             }
 
             attachedAfter = parent.isRegistered();
@@ -325,8 +305,7 @@ public class StateNode implements Serializable {
     // protected only to get the root node attached
     protected void onAttach() {
         List<Pair<StateNode, Boolean>> attachedNodes = new ArrayList<>();
-        visitNodeTreeBottomUp(node -> attachedNodes
-                .add(new Pair<>(node, node.handleOnAttach())));
+        visitNodeTreeBottomUp(node -> attachedNodes.add(new Pair<>(node, node.handleOnAttach())));
         for (Pair<StateNode, Boolean> pair : attachedNodes) {
             final boolean isInitial = pair.getSecond();
             final StateNode node = pair.getFirst();
@@ -399,35 +378,31 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Removes the node from its parent and unlinks the node (and children) from
-     * the state tree.
+     * Removes the node from its parent and unlinks the node (and children) from the state tree.
      */
     public void removeFromTree() {
         removeFromTree(false);
     }
 
     /**
-     * Removes the node from its parent and unlinks the node (and children) from
-     * the state tree.
+     * Removes the node from its parent and unlinks the node (and children) from the state tree.
      *
      * @param sendDetach
      *            if removal should send detach event for the element
      */
     public void removeFromTree(boolean sendDetach) {
         if (getOwner() instanceof StateTree) {
-            ComponentUtil.setData(((StateTree) getOwner()).getUI(),
-                    ReplacedViaPreserveOnRefresh.class, REPLACED_MARKER);
+            ComponentUtil.setData(((StateTree) getOwner()).getUI(), ReplacedViaPreserveOnRefresh.class,
+                    REPLACED_MARKER);
         }
         visitNodeTree(node -> node.reset(sendDetach));
         setParent(null);
     }
 
     /**
-     * Resets the node to the initial state where it is not owned by a state
-     * tree.
+     * Resets the node to the initial state where it is not owned by a state tree.
      * <p>
-     * If the node should detach on the client keep attached state and node id
-     * to send event to client.
+     * If the node should detach on the client keep attached state and node id to send event to client.
      *
      * @param shouldDetach
      *            if true, keep node id and attached state
@@ -443,9 +418,8 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Prepares the tree below this node for resynchronization by detaching all
-     * descendants, setting their internal state to not yet attached, and
-     * calling the attach listeners.
+     * Prepares the tree below this node for resynchronization by detaching all descendants, setting their internal
+     * state to not yet attached, and calling the attach listeners.
      */
     protected void prepareForResync() {
         visitNodeTreeBottomUp(StateNode::fireDetachListeners);
@@ -463,10 +437,9 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Gets the feature of the given type, creating one if necessary. This
-     * method throws {@link IllegalStateException} if this node isn't configured
-     * to use the desired feature. Use {@link #hasFeature(Class)} to check
-     * whether a node is configured to use a specific feature.
+     * Gets the feature of the given type, creating one if necessary. This method throws {@link IllegalStateException}
+     * if this node isn't configured to use the desired feature. Use {@link #hasFeature(Class)} to check whether a node
+     * is configured to use a specific feature.
      *
      * @param <T>
      *            the desired feature type
@@ -478,12 +451,10 @@ public class StateNode implements Serializable {
         int featureIndex = getFeatureIndex(featureType);
 
         /*
-         * To limit memory use, the features array is kept as short as possible
-         * and the size is increased when needed.
+         * To limit memory use, the features array is kept as short as possible and the size is increased when needed.
          *
-         * Furthermore, instead of a one-item array, the single item is stored
-         * as the field value. This further optimizes the case of text nodes and
-         * template model nodes.
+         * Furthermore, instead of a one-item array, the single item is stored as the field value. This further
+         * optimizes the case of text nodes and template model nodes.
          */
         NodeFeature feature;
         if (featureIndex == 0 && features instanceof NodeFeature) {
@@ -527,28 +498,24 @@ public class StateNode implements Serializable {
 
         Integer featureIndex = featureSet.mappings.get(featureType);
         if (featureIndex == null) {
-            throw new IllegalStateException(
-                    "Node does not have the feature " + featureType);
+            throw new IllegalStateException("Node does not have the feature " + featureType);
         }
 
         return featureIndex.intValue();
     }
 
     /**
-     * Gets the feature of the given type if it has been initialized. This
-     * method throws {@link IllegalStateException} if this node isn't configured
-     * to use the desired feature. Use {@link #hasFeature(Class)} to check
-     * whether a node is configured to use a specific feature.
+     * Gets the feature of the given type if it has been initialized. This method throws {@link IllegalStateException}
+     * if this node isn't configured to use the desired feature. Use {@link #hasFeature(Class)} to check whether a node
+     * is configured to use a specific feature.
      *
      * @param <T>
      *            the desired feature type
      * @param featureType
      *            the desired feature type, not <code>null</code>
-     * @return a feature instance, or an empty optional if the feature is not
-     *         yet initialized for this node
+     * @return a feature instance, or an empty optional if the feature is not yet initialized for this node
      */
-    public <T extends NodeFeature> Optional<T> getFeatureIfInitialized(
-            Class<T> featureType) {
+    public <T extends NodeFeature> Optional<T> getFeatureIfInitialized(Class<T> featureType) {
         if (features == null) {
             return Optional.empty();
         }
@@ -568,8 +535,7 @@ public class StateNode implements Serializable {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(featuresArray[featureIndex])
-                .map(featureType::cast);
+        return Optional.ofNullable(featuresArray[featureIndex]).map(featureType::cast);
     }
 
     /**
@@ -577,8 +543,7 @@ public class StateNode implements Serializable {
      *
      * @param featureType
      *            the feature type to check for
-     * @return <code>true</code> if this node contains the feature; otherwise
-     *         <code>false</code>
+     * @return <code>true</code> if this node contains the feature; otherwise <code>false</code>
      */
     public boolean hasFeature(Class<? extends NodeFeature> featureType) {
         assert featureType != null;
@@ -587,9 +552,8 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Gets the id of this node. The id is unique within the state tree that the
-     * node belongs to. The id is 0 if the node does not belong to any state
-     * tree.
+     * Gets the id of this node. The id is unique within the state tree that the node belongs to. The id is 0 if the
+     * node does not belong to any state tree.
      *
      * @see StateTree#getNodeById(int)
      *
@@ -611,8 +575,7 @@ public class StateNode implements Serializable {
     /**
      * Checks whether this node is attached to a state tree.
      *
-     * @return <code>true</code> if this node is attached; <code>false</code> if
-     *         this node is not attached
+     * @return <code>true</code> if this node is attached; <code>false</code> if this node is not attached
      */
     public boolean isAttached() {
         if (getParent() == null) {
@@ -629,26 +592,22 @@ public class StateNode implements Serializable {
     /**
      * Gets whether the client side has been initialized for this node.
      * <p>
-     * This is used internally by the state tree when processing
-     * beforeClientResponse callbacks.
+     * This is used internally by the state tree when processing beforeClientResponse callbacks.
      *
-     * @return <code>true</code> if the node has a initialized client side and
-     *         <code>false</code> if the client side is not initialized yet
+     * @return <code>true</code> if the node has a initialized client side and <code>false</code> if the client side is
+     *         not initialized yet
      */
     boolean isClientSideInitialized() {
         return wasAttached;
     }
 
     /**
-     * Collects all changes made to this node since the last time
-     * {@link #collectChanges(Consumer)} has been called. If the node is
-     * recently attached, then the reported changes will be relative to a newly
-     * created node.
+     * Collects all changes made to this node since the last time {@link #collectChanges(Consumer)} has been called. If
+     * the node is recently attached, then the reported changes will be relative to a newly created node.
      * <p>
-     * <b>WARNING:</b> this is in fact an internal (private method) which is
-     * expected to be called from {@link StateTree#collectChanges(Consumer)}
-     * method only (which is effectively private itself). Don't call this method
-     * from any other place because it will break the expected {@link UI} state.
+     * <b>WARNING:</b> this is in fact an internal (private method) which is expected to be called from
+     * {@link StateTree#collectChanges(Consumer)} method only (which is effectively private itself). Don't call this
+     * method from any other place because it will break the expected {@link UI} state.
      *
      *
      * @param collector
@@ -675,8 +634,7 @@ public class StateNode implements Serializable {
 
         if (isInitialChanges && !isVisible()) {
             if (hasFeature(ElementData.class)) {
-                doCollectChanges(collector,
-                        Stream.of(getFeature(ElementData.class)));
+                doCollectChanges(collector, Stream.of(getFeature(ElementData.class)));
             }
             return;
         }
@@ -684,10 +642,9 @@ public class StateNode implements Serializable {
         if (isInactive()) {
             if (isInitialChanges) {
                 // send only required (reported) features updates
-                Stream<NodeFeature> initialFeatures = Stream
-                        .concat(featureSet.mappings.keySet().stream()
-                                .filter(this::isReportedFeature)
-                                .map(this::getFeature), getDisallowFeatures());
+                Stream<NodeFeature> initialFeatures = Stream.concat(
+                        featureSet.mappings.keySet().stream().filter(this::isReportedFeature).map(this::getFeature),
+                        getDisallowFeatures());
                 doCollectChanges(collector, initialFeatures);
             } else {
                 doCollectChanges(collector, getDisallowFeatures());
@@ -697,8 +654,7 @@ public class StateNode implements Serializable {
         }
     }
 
-    private void doCollectChanges(Consumer<NodeChange> collector,
-            Stream<NodeFeature> features) {
+    private void doCollectChanges(Consumer<NodeChange> collector, Stream<NodeFeature> features) {
         features.filter(this::hasChangeTracker).forEach(feature -> {
             feature.collectChanges(collector);
             changes.remove(feature.getClass());
@@ -714,8 +670,7 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Clears all changes recorded for this node. This method is public only for
-     * testing purposes.
+     * Clears all changes recorded for this node. This method is public only for testing purposes.
      */
     public void clearChanges() {
         changes = null;
@@ -742,8 +697,7 @@ public class StateNode implements Serializable {
     /**
      * Applies the {@code visitor} to this node and all its descendants.
      * <p>
-     * The visitor is recursively applied to the child nodes before it is
-     * applied to this node.
+     * The visitor is recursively applied to the child nodes before it is applied to this node.
      *
      * @param visitor
      *            visitor to apply
@@ -779,26 +733,20 @@ public class StateNode implements Serializable {
         }
 
         if (getOwner() instanceof StateTree) {
-            boolean isOwnerAttached = ((StateTree) getOwner()).getRootNode()
-                    .isAttached();
-            boolean isNotReplaced = ComponentUtil.getData(
-                    ((StateTree) getOwner()).getUI(),
+            boolean isOwnerAttached = ((StateTree) getOwner()).getRootNode().isAttached();
+            boolean isNotReplaced = ComponentUtil.getData(((StateTree) getOwner()).getUI(),
                     ReplacedViaPreserveOnRefresh.class) == null;
             if (isOwnerAttached || isNotReplaced) {
                 // provide a more verbose error message:
                 // https://github.com/vaadin/flow/issues/9376
 
-                throw new IllegalStateException(
-                        "Can't move a node from one state tree to another. "
-                                + "If this is intentional, first remove the "
-                                + "node from its current state tree by calling "
-                                + "removeFromTree. This usually happens when a "
-                                + "component is moved from one UI to another, "
-                                + "which is not recommended. This may be caused "
-                                + "by assigning components to static members or "
-                                + "spring singleton scoped beans and referencing "
-                                + "them from multiple UIs. Offending component: "
-                                + formatOwnerComponentToString());
+                throw new IllegalStateException("Can't move a node from one state tree to another. "
+                        + "If this is intentional, first remove the " + "node from its current state tree by calling "
+                        + "removeFromTree. This usually happens when a " + "component is moved from one UI to another, "
+                        + "which is not recommended. This may be caused "
+                        + "by assigning components to static members or "
+                        + "spring singleton scoped beans and referencing "
+                        + "them from multiple UIs. Offending component: " + formatOwnerComponentToString());
             } else {
                 id = -1;
             }
@@ -820,14 +768,11 @@ public class StateNode implements Serializable {
         if (component == null) {
             return "element " + ownerElement + ", no component";
         }
-        final ComponentTracker.Location createLocation = ComponentTracker
-                .findCreate(component);
-        final ComponentTracker.Location attachLocation = ComponentTracker
-                .findAttach(component);
+        final ComponentTracker.Location createLocation = ComponentTracker.findCreate(component);
+        final ComponentTracker.Location attachLocation = ComponentTracker.findAttach(component);
         if (createLocation != null || attachLocation != null) {
             // the location.toString() includes the component class as well
-            return "created: " + createLocation + ", attached: "
-                    + attachLocation;
+            return "created: " + createLocation + ", attached: " + attachLocation;
         }
         // createLocation is null in production mode. Just return the
         // component's toString() which should provide enough information to the
@@ -847,8 +792,7 @@ public class StateNode implements Serializable {
                 id = newId;
                 initialAttach = true;
             } else if (newId != id) {
-                throw new IllegalStateException(
-                        "Can't change id once it has been assigned");
+                throw new IllegalStateException("Can't change id once it has been assigned");
             }
 
         }
@@ -867,8 +811,7 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Adds a command as an attach listener. It is executed whenever this state
-     * node is attached to the state tree.
+     * Adds a command as an attach listener. It is executed whenever this state node is attached to the state tree.
      *
      * @param attachListener
      *            the attach listener to add
@@ -886,8 +829,7 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Adds a command as a detach listener. It is executed whenever this state
-     * node is detached from the state tree.
+     * Adds a command as a detach listener. It is executed whenever this state node is detached from the state tree.
      *
      * @param detachListener
      *            the detach listener to add
@@ -952,26 +894,22 @@ public class StateNode implements Serializable {
      * @param feature
      *            the feature for which to get a change tracker
      * @param factory
-     *            a factory method used to create a new tracker if there isn't
-     *            already one
+     *            a factory method used to create a new tracker if there isn't already one
      * @return the change tracker to use
      */
     @SuppressWarnings("unchecked")
-    public <T extends Serializable> T getChangeTracker(NodeFeature feature,
-            Supplier<T> factory) {
+    public <T extends Serializable> T getChangeTracker(NodeFeature feature, Supplier<T> factory) {
         if (changes == null) {
             changes = new HashMap<>();
         }
 
-        return (T) changes.computeIfAbsent(feature.getClass(),
-                k -> factory.get());
+        return (T) changes.computeIfAbsent(feature.getClass(), k -> factory.get());
     }
 
     /**
      * Runs the command when the node is attached to a UI.
      * <p>
-     * If the node is already attached when this method is called, the method is
-     * run immediately.
+     * If the node is already attached when this method is called, the method is run immediately.
      *
      * @param command
      *            the command to run immediately or when the node is attached
@@ -992,8 +930,7 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Returns whether the {@code featureType} should be reported to the client
-     * even if it doesn't contain any data.
+     * Returns whether the {@code featureType} should be reported to the client even if it doesn't contain any data.
      *
      * @param featureType
      *            feature type which needs to be populated on the client
@@ -1006,22 +943,18 @@ public class StateNode implements Serializable {
     /**
      * Update "active"/"inactive" state of the node.
      * <p>
-     * The node is considered as inactive if there is at least one feature whose
-     * {@link NodeFeature#allowsChanges()} method returns false or it has
-     * inactive ascendant.
+     * The node is considered as inactive if there is at least one feature whose {@link NodeFeature#allowsChanges()}
+     * method returns false or it has inactive ascendant.
      * <p>
-     * Inactive nodes should restrict their RPC communication with client: only
-     * features that returns {@code false} via their method
-     * <code>allowsChanges()</code> and reported features send their changes
-     * while the node is inactive (the latter features are necessary on the
-     * client side to be able to find a strategy which has to be selected to
+     * Inactive nodes should restrict their RPC communication with client: only features that returns {@code false} via
+     * their method <code>allowsChanges()</code> and reported features send their changes while the node is inactive
+     * (the latter features are necessary on the client side to be able to find a strategy which has to be selected to
      * handle the node).
      *
      * <p>
-     * Implementation Note: this is done as a separate method instead of
-     * calculating the state on the fly (checking all features) because each
-     * node needs to check this status on its own <em>AND</em> on its parents
-     * (may be all parents up to the root).
+     * Implementation Note: this is done as a separate method instead of calculating the state on the fly (checking all
+     * features) because each node needs to check this status on its own <em>AND</em> on its parents (may be all parents
+     * up to the root).
      *
      * @see NodeFeature#allowsChanges()
      */
@@ -1044,8 +977,7 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Checks (recursively towards the parent node) whether the node is
-     * effectively visible.
+     * Checks (recursively towards the parent node) whether the node is effectively visible.
      * <p>
      * Non-visible node should not participate in any RPC communication.
      *
@@ -1063,13 +995,11 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Returns whether or not this state node is inert and it should not receive
-     * any updates from the client side. Inert state is inherited from parent,
-     * unless explicitly set to ignore parent inert state.
+     * Returns whether or not this state node is inert and it should not receive any updates from the client side. Inert
+     * state is inherited from parent, unless explicitly set to ignore parent inert state.
      * <p>
-     * The inert state is only updated when the changes are written to the
-     * client side, but the inert state is not sent to the client side - it is a
-     * server side feature only.
+     * The inert state is only updated when the changes are written to the client side, but the inert state is not sent
+     * to the client side - it is a server side feature only.
      *
      * @return {@code true} if the node is inert, {@code false} if not
      * @see InertData
@@ -1077,8 +1007,7 @@ public class StateNode implements Serializable {
     public boolean isInert() {
         if (hasFeature(InertData.class)) {
             // the node has inert data, it will resolve state properly
-            Optional<InertData> featureIfInitialized = getFeatureIfInitialized(
-                    InertData.class);
+            Optional<InertData> featureIfInitialized = getFeatureIfInitialized(InertData.class);
             if (featureIfInitialized.isPresent()) {
                 return featureIfInitialized.get().isInert();
             }
@@ -1087,8 +1016,7 @@ public class StateNode implements Serializable {
     }
 
     private Stream<NodeFeature> getDisallowFeatures() {
-        return getInitializedFeatures()
-                .filter(feature -> !feature.allowsChanges());
+        return getInitializedFeatures().filter(feature -> !feature.allowsChanges());
     }
 
     private void setInactive(boolean inactive) {
@@ -1098,22 +1026,17 @@ public class StateNode implements Serializable {
             visitNodeTree(child -> {
                 if (!equals(child) && !child.isInactiveSelf) {
                     /*
-                     * We are here if: the child node itself is not inactive but
-                     * it has some ascendant which is inactive.
+                     * We are here if: the child node itself is not inactive but it has some ascendant which is
+                     * inactive.
                      *
-                     * In this case we send only some subset of changes (not
-                     * from all the features). But we should send changes for
-                     * all remaining features. Normally it automatically happens
-                     * if the node becomes "visible". But if it was visible with
-                     * some invisible parent then only the parent becomes dirty
-                     * (when it's set visible) and this child will never
-                     * participate in collection of changes since it's not
-                     * marked as dirty.
+                     * In this case we send only some subset of changes (not from all the features). But we should send
+                     * changes for all remaining features. Normally it automatically happens if the node becomes
+                     * "visible". But if it was visible with some invisible parent then only the parent becomes dirty
+                     * (when it's set visible) and this child will never participate in collection of changes since it's
+                     * not marked as dirty.
                      *
-                     * So here such node (which is active itself but its
-                     * ascendant is inactive) we mark as dirty again to be able
-                     * to collect its changes later on when its ascendant
-                     * becomes active.
+                     * So here such node (which is active itself but its ascendant is inactive) we mark as dirty again
+                     * to be able to collect its changes later on when its ascendant becomes active.
                      */
                     child.markAsDirty();
                 }
@@ -1122,8 +1045,7 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Internal helper for getting the UI instance for a node attached to a
-     * StateTree. Assumes the node is attached.
+     * Internal helper for getting the UI instance for a node attached to a StateTree. Assumes the node is attached.
      *
      * @return the UI this node is attached to
      */
@@ -1137,37 +1059,30 @@ public class StateNode implements Serializable {
     @SuppressWarnings("rawtypes")
     private static Class[] getNonRepeatebleFeatures(StateNode node) {
         if (node.featureSet.reportedFeatures.isEmpty()) {
-            Set<Class<? extends NodeFeature>> set = node.featureSet.mappings
-                    .keySet();
+            Set<Class<? extends NodeFeature>> set = node.featureSet.mappings.keySet();
             return set.toArray(new Class[set.size()]);
         }
-        return node.featureSet.mappings.keySet().stream().filter(
-                clazz -> !node.featureSet.reportedFeatures.contains(clazz))
-                .toArray(Class[]::new);
+        return node.featureSet.mappings.keySet().stream()
+                .filter(clazz -> !node.featureSet.reportedFeatures.contains(clazz)).toArray(Class[]::new);
     }
 
     /**
      * Checks whether there are pending executions for this node.
      *
-     * @see StateTree#beforeClientResponse(StateNode,
-     *      com.vaadin.flow.function.SerializableConsumer)
+     * @see StateTree#beforeClientResponse(StateNode, com.vaadin.flow.function.SerializableConsumer)
      *
-     * @return <code>true</code> if there are pending executions, otherwise
-     *         <code>false</code>
+     * @return <code>true</code> if there are pending executions, otherwise <code>false</code>
      */
     public boolean hasBeforeClientResponseEntries() {
         return beforeClientResponseEntries != null;
     }
 
     /**
-     * Gets the current list of pending execution entries for this node and
-     * clears the current list.
+     * Gets the current list of pending execution entries for this node and clears the current list.
      *
-     * @see StateTree#beforeClientResponse(StateNode,
-     *      com.vaadin.flow.function.SerializableConsumer)
+     * @see StateTree#beforeClientResponse(StateNode, com.vaadin.flow.function.SerializableConsumer)
      *
-     * @return the current list of entries, or and empty list if there are no
-     *         entries
+     * @return the current list of entries, or and empty list if there are no entries
      */
     public List<StateTree.BeforeClientResponseEntry> dumpBeforeClientResponseEntries() {
         ArrayList<BeforeClientResponseEntry> entries = beforeClientResponseEntries;
@@ -1178,18 +1093,15 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Adds an entry to be executed before the next client response for this
-     * node. Entries should always be created through
-     * {@link StateTree#beforeClientResponse(StateNode, com.vaadin.flow.function.SerializableConsumer)}
-     * to ensure proper ordering.
+     * Adds an entry to be executed before the next client response for this node. Entries should always be created
+     * through {@link StateTree#beforeClientResponse(StateNode, com.vaadin.flow.function.SerializableConsumer)} to
+     * ensure proper ordering.
      *
      * @param entry
      *            the entry to add, not <code>null</code>
-     * @return an execution registration that can be used to cancel the
-     *         execution
+     * @return an execution registration that can be used to cancel the execution
      */
-    public ExecutionRegistration addBeforeClientResponseEntry(
-            BeforeClientResponseEntry entry) {
+    public ExecutionRegistration addBeforeClientResponseEntry(BeforeClientResponseEntry entry) {
         assert entry != null;
 
         if (beforeClientResponseEntries == null) {
@@ -1216,13 +1128,11 @@ public class StateNode implements Serializable {
     /**
      * Returns enabled state respecting ascendants state.
      * <p>
-     * The node may be explicitly disabled via its {@link #setEnabled(boolean)}
-     * method (with {@code false} argument value). Also it may be implicitly
-     * disabled if its ascendant is explicitly disabled. The method returns the
-     * state which may be either explicit or implicit.
+     * The node may be explicitly disabled via its {@link #setEnabled(boolean)} method (with {@code false} argument
+     * value). Also it may be implicitly disabled if its ascendant is explicitly disabled. The method returns the state
+     * which may be either explicit or implicit.
      * <p>
-     * The method {@link #isEnabledSelf()} returns only explicit enabled state
-     * of the node.
+     * The method {@link #isEnabledSelf()} returns only explicit enabled state of the node.
      *
      * @see #isEnabledSelf()
      *
@@ -1239,9 +1149,8 @@ public class StateNode implements Serializable {
     /**
      * Returns the enabled state only for this node.
      * <p>
-     * The node may be implicitly or explicitly disabled (see
-     * {@link #isEnabled()} method). This method doesn't respect ascendants
-     * enabled state. It returns the own state for the node only.
+     * The node may be implicitly or explicitly disabled (see {@link #isEnabled()} method). This method doesn't respect
+     * ascendants enabled state. It returns the own state for the node only.
      *
      * @see #isEnabled()
      *
@@ -1252,15 +1161,12 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * This is internal method which may differ from {@link #isAttached()} only
-     * during attach/detach event dispatching (inside listeners) when some node
-     * still has a parent (all the ascendant) but it's already unregistered.
+     * This is internal method which may differ from {@link #isAttached()} only during attach/detach event dispatching
+     * (inside listeners) when some node still has a parent (all the ascendant) but it's already unregistered.
      *
-     * This is intermediate state which may happen only when tree is changed
-     * inside listeners.
+     * This is intermediate state which may happen only when tree is changed inside listeners.
      *
-     * Outside of the listeners this method is effectively the same as
-     * {@link #isAttached()}.
+     * Outside of the listeners this method is effectively the same as {@link #isAttached()}.
      */
     private boolean isRegistered() {
         return isAttached() && getOwner().hasNode(this);

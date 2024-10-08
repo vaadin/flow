@@ -17,8 +17,7 @@ public class BundlesIT extends ChromeBrowserTest {
 
     @Test
     public void bundlesIsNotUsedWhenHasVersionMismatch() {
-        Assert.assertFalse((Boolean) $("testscope-button").first()
-                .getProperty("isFromBundle"));
+        Assert.assertFalse((Boolean) $("testscope-button").first().getProperty("isFromBundle"));
     }
 
     @Test
@@ -28,8 +27,7 @@ public class BundlesIT extends ChromeBrowserTest {
     }
 
     private boolean isExcluded(String dependency) {
-        return (Boolean) executeScript(
-                "return (window.ViteConfigOptimizeDeps.exclude || []).includes(arguments[0]);",
+        return (Boolean) executeScript("return (window.ViteConfigOptimizeDeps.exclude || []).includes(arguments[0]);",
                 dependency);
     }
 

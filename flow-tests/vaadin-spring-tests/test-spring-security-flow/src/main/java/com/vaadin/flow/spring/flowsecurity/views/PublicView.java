@@ -30,23 +30,21 @@ public class PublicView extends FlexLayout {
         Image image = new Image("public/images/bank.jpg", "Bank");
         image.getStyle().setMaxWidth("100%").setMinHeight("0");
         add(image);
-        add(new Paragraph(
-                "We are very great and have great amounts of money."));
+        add(new Paragraph("We are very great and have great amounts of money."));
 
-        Button backgroundNavigation = new Button(
-                "Navigate to admin view in 1 second", e -> {
-                    UI ui = e.getSource().getUI().get();
-                    new Thread(() -> {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e1) {
-                        }
-                        ui.access(() -> {
-                            ui.navigate(AdminView.class);
-                        });
-
-                    }).start();
+        Button backgroundNavigation = new Button("Navigate to admin view in 1 second", e -> {
+            UI ui = e.getSource().getUI().get();
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                }
+                ui.access(() -> {
+                    ui.navigate(AdminView.class);
                 });
+
+            }).start();
+        });
         backgroundNavigation.setId(BACKGROUND_NAVIGATION_ID);
         add(backgroundNavigation);
     }

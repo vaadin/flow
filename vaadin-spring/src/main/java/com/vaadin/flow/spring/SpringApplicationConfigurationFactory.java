@@ -30,20 +30,15 @@ import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
  * @since
  *
  */
-public class SpringApplicationConfigurationFactory
-        extends DefaultApplicationConfigurationFactory {
+public class SpringApplicationConfigurationFactory extends DefaultApplicationConfigurationFactory {
 
     @Override
-    protected ApplicationConfigurationImpl doCreate(VaadinContext context,
-            Map<String, String> properties) {
-        ApplicationContext appContext = SpringLookupInitializer
-                .getApplicationContext(context);
+    protected ApplicationConfigurationImpl doCreate(VaadinContext context, Map<String, String> properties) {
+        ApplicationContext appContext = SpringLookupInitializer.getApplicationContext(context);
         Environment env = appContext.getBean(Environment.class);
         // Collect any vaadin.XZY properties from application.properties
-        SpringServlet.PROPERTY_NAMES.stream()
-                .filter(name -> env.getProperty("vaadin." + name) != null)
-                .forEach(name -> properties.put(name,
-                        env.getProperty("vaadin." + name)));
+        SpringServlet.PROPERTY_NAMES.stream().filter(name -> env.getProperty("vaadin." + name) != null)
+                .forEach(name -> properties.put(name, env.getProperty("vaadin." + name)));
         return super.doCreate(context, properties);
     }
 }

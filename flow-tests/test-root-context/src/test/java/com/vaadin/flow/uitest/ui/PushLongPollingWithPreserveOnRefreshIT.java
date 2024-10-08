@@ -55,14 +55,12 @@ public class PushLongPollingWithPreserveOnRefreshIT extends ChromeBrowserTest {
     }
 
     private void waitPageLoad() {
-        WebElement loadingIndicator = findElement(
-                By.className("v-loading-indicator"));
+        WebElement loadingIndicator = findElement(By.className("v-loading-indicator"));
         waitUntil(driver -> !loadingIndicator.isDisplayed());
     }
 
     private void ensureNoErrorIsDisplayed() {
-        Assert.assertThrows(NoSuchElementException.class,
-                () -> findElement(By.className("v-system-error")));
+        Assert.assertThrows(NoSuchElementException.class, () -> findElement(By.className("v-system-error")));
     }
 
     private void ensureDivIsPresent() {

@@ -24,8 +24,8 @@ import java.util.List;
 import static com.vaadin.flow.server.frontend.FrontendUtils.*;
 
 /**
- * A task for generating the feature flags file
- * {@link FrontendUtils#FEATURE_FLAGS_FILE_NAME} during `package` Maven goal.
+ * A task for generating the feature flags file {@link FrontendUtils#FEATURE_FLAGS_FILE_NAME} during `package` Maven
+ * goal.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -44,13 +44,12 @@ public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
         List<String> lines = new ArrayList<>();
         lines.add("// @ts-nocheck");
         lines.add("window.Vaadin = window.Vaadin || {};");
-        lines.add(
-                "window.Vaadin.featureFlags = window.Vaadin.featureFlags || {};");
+        lines.add("window.Vaadin.featureFlags = window.Vaadin.featureFlags || {};");
 
         FeatureFlags featureFlags = options.getFeatureFlags();
         featureFlags.getFeatures().forEach(feature -> {
-            lines.add(String.format("window.Vaadin.featureFlags.%s = %s;",
-                    feature.getId(), featureFlags.isEnabled(feature)));
+            lines.add(String.format("window.Vaadin.featureFlags.%s = %s;", feature.getId(),
+                    featureFlags.isEnabled(feature)));
         });
 
         // See https://github.com/vaadin/flow/issues/14184
@@ -61,8 +60,7 @@ public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
-        File frontendGeneratedDirectory = new File(
-                options.getFrontendDirectory(), GENERATED);
+        File frontendGeneratedDirectory = new File(options.getFrontendDirectory(), GENERATED);
         return new File(frontendGeneratedDirectory, FEATURE_FLAGS_FILE_NAME);
     }
 

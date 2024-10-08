@@ -12,11 +12,9 @@ import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 
 /**
- * A Spring specific view access checker that falls back to Spring mechanisms
- * when the generic mechanisms do not work.
+ * A Spring specific view access checker that falls back to Spring mechanisms when the generic mechanisms do not work.
  *
- * @deprecated ViewAccessChecker has been replaced by
- *             {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
+ * @deprecated ViewAccessChecker has been replaced by {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
  */
 @Deprecated(forRemoval = true, since = "24.3")
 public class SpringViewAccessChecker extends ViewAccessChecker {
@@ -31,8 +29,7 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
      *
      * @see #enable()
      */
-    public SpringViewAccessChecker(
-            AccessAnnotationChecker accessAnnotationChecker) {
+    public SpringViewAccessChecker(AccessAnnotationChecker accessAnnotationChecker) {
         super(accessAnnotationChecker);
     }
 
@@ -48,21 +45,17 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
     protected Function<String, Boolean> getRolesChecker(VaadinRequest request) {
         if (request == null) {
             return Optional.ofNullable(VaadinService.getCurrent())
-                    .map(service -> service.getContext()
-                            .getAttribute(Lookup.class))
+                    .map(service -> service.getContext().getAttribute(Lookup.class))
                     .map(lookup -> lookup.lookup(VaadinRolePrefixHolder.class))
-                    .map(VaadinRolePrefixHolder::getRolePrefix)
-                    .map(AuthenticationUtil::getSecurityHolderRoleChecker)
-                    .orElseGet(
-                            AuthenticationUtil::getSecurityHolderRoleChecker);
+                    .map(VaadinRolePrefixHolder::getRolePrefix).map(AuthenticationUtil::getSecurityHolderRoleChecker)
+                    .orElseGet(AuthenticationUtil::getSecurityHolderRoleChecker);
         }
 
         // Update active role prefix if it's not set yet.
-        Optional.ofNullable(VaadinService.getCurrent())
-                .map(service -> service.getContext().getAttribute(Lookup.class))
+        Optional.ofNullable(VaadinService.getCurrent()).map(service -> service.getContext().getAttribute(Lookup.class))
                 .map(lookup -> lookup.lookup(VaadinRolePrefixHolder.class))
-                .filter(prefixHolder -> !prefixHolder.isSet()).ifPresent(
-                        prefixHolder -> prefixHolder.resetRolePrefix(request));
+                .filter(prefixHolder -> !prefixHolder.isSet())
+                .ifPresent(prefixHolder -> prefixHolder.resetRolePrefix(request));
 
         return super.getRolesChecker(request);
     }

@@ -51,62 +51,45 @@ public class GenerateNpmBOMMojoTest {
         File projectBase = temporaryFolder.getRoot();
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
         File frontendDirectory = new File(projectBase, DEFAULT_FRONTEND_DIR);
-        resourceOutputDirectory = new File(projectBase,
-                VAADIN_SERVLET_RESOURCES);
-        jarResourcesSource = new File(projectBase,
-                "jar-resources-source/META-INF/frontend");
+        resourceOutputDirectory = new File(projectBase, VAADIN_SERVLET_RESOURCES);
+        jarResourcesSource = new File(projectBase, "jar-resources-source/META-INF/frontend");
         jarResourcesSource.mkdirs();
-        bomFilename = new File(resourceOutputDirectory, "bom-npm.json")
-                .getAbsolutePath();
+        bomFilename = new File(resourceOutputDirectory, "bom-npm.json").getAbsolutePath();
 
         nodeModulesDir = new File(temporaryFolder.getRoot(), "node_modules");
         boolean nodeModulesDirCreated = nodeModulesDir.mkdir();
         Assert.assertTrue(nodeModulesDirCreated);
 
-        String manifestFilePath = new File(projectBase, PACKAGE_JSON)
-                .getAbsolutePath();
+        String manifestFilePath = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         // set Mojo properties
-        ReflectionUtils.setVariableValueInObject(mojo, "ignoreNpmErrors",
-                false);
-        ReflectionUtils.setVariableValueInObject(mojo, "packageLockOnly",
-                false);
+        ReflectionUtils.setVariableValueInObject(mojo, "ignoreNpmErrors", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "packageLockOnly", false);
         ReflectionUtils.setVariableValueInObject(mojo, "omit", "dev");
-        ReflectionUtils.setVariableValueInObject(mojo, "flattenComponents",
-                false);
+        ReflectionUtils.setVariableValueInObject(mojo, "flattenComponents", false);
         ReflectionUtils.setVariableValueInObject(mojo, "shortPURLs", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "outputReproducible",
-                false);
+        ReflectionUtils.setVariableValueInObject(mojo, "outputReproducible", false);
         ReflectionUtils.setVariableValueInObject(mojo, "validate", true);
         ReflectionUtils.setVariableValueInObject(mojo, "mcType", "application");
         ReflectionUtils.setVariableValueInObject(mojo, "outputFormat", "json");
-        ReflectionUtils.setVariableValueInObject(mojo, "outputFilePath",
-                bomFilename);
-        ReflectionUtils.setVariableValueInObject(mojo, "packageManifest",
-                manifestFilePath);
+        ReflectionUtils.setVariableValueInObject(mojo, "outputFilePath", bomFilename);
+        ReflectionUtils.setVariableValueInObject(mojo, "packageManifest", manifestFilePath);
         ReflectionUtils.setVariableValueInObject(mojo, "specVersion", "1.4");
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
-                frontendDirectory);
-        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
-                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir", projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
-                FrontendTools.DEFAULT_NODE_VERSION);
-        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
-                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion", FrontendTools.DEFAULT_NODE_VERSION);
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "productionMode", false);
-        Mockito.when(mojo.getJarFiles()).thenReturn(
-                Set.of(jarResourcesSource.getParentFile().getParentFile()));
+        Mockito.when(mojo.getJarFiles()).thenReturn(Set.of(jarResourcesSource.getParentFile().getParentFile()));
 
-        FileUtils.fileWrite(manifestFilePath, "UTF-8",
-                TestUtils.getInitialPackageJson().toJson());
+        FileUtils.fileWrite(manifestFilePath, "UTF-8", TestUtils.getInitialPackageJson().toJson());
         lookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doAnswer(invocation -> {
-            Mockito.doReturn(invocation.getArguments()[0]).when(lookup)
-                    .lookup(ClassFinder.class);
+            Mockito.doReturn(invocation.getArguments()[0]).when(lookup).lookup(ClassFinder.class);
             return lookup;
         }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
     }
@@ -125,8 +108,7 @@ public class GenerateNpmBOMMojoTest {
     }
 
     @Test
-    public void shouldRunNpmInstallIfNodeModulesIsNotPresent()
-            throws Exception {
+    public void shouldRunNpmInstallIfNodeModulesIsNotPresent() throws Exception {
         Assert.assertTrue(nodeModulesDir.delete());
         Assert.assertFalse(nodeModulesDir.exists());
         mojo.execute();
@@ -135,15 +117,12 @@ public class GenerateNpmBOMMojoTest {
 
     @Test
     public void shouldSkipNpmInstallIfNodeModulesIsPresent() throws Exception {
-        List<String> originalContent = TestUtils
-                .listFilesRecursively(nodeModulesDir);
+        List<String> originalContent = TestUtils.listFilesRecursively(nodeModulesDir);
 
         mojo.execute();
 
-        List<String> newContent = TestUtils
-                .listFilesRecursively(nodeModulesDir);
-        Assert.assertArrayEquals(originalContent.toArray(),
-                newContent.toArray());
+        List<String> newContent = TestUtils.listFilesRecursively(nodeModulesDir);
+        Assert.assertArrayEquals(originalContent.toArray(), newContent.toArray());
     }
 
 }

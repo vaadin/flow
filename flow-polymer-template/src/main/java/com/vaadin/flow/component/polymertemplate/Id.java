@@ -20,8 +20,8 @@ import com.vaadin.flow.dom.Element;
 /**
  * Defines the id of an element to map to inside a {@link PolymerTemplate}.
  * <p>
- * Use this annotation with an identifier of the element which you want to refer
- * to as a value for a field inside your {@link PolymerTemplate} class.
+ * Use this annotation with an identifier of the element which you want to refer to as a value for a field inside your
+ * {@link PolymerTemplate} class.
  * <p>
  * Here is a Java sample:
  *
@@ -54,25 +54,20 @@ import com.vaadin.flow.dom.Element;
  * </code>
  * </pre>
  * <p>
- * It's important to understand that the element's hierarchical structure for
- * the element injected via <code>@Id</code> is not populated and not available
- * on the server side (it's not known). It means that <code>nestedDiv</code>
- * field value which is a <code>Div</code> component doesn't have any child on
- * the server side. Attribute values declared on the client side are reflected
- * to the server side as property values or attribute values.
+ * It's important to understand that the element's hierarchical structure for the element injected via <code>@Id</code>
+ * is not populated and not available on the server side (it's not known). It means that <code>nestedDiv</code> field
+ * value which is a <code>Div</code> component doesn't have any child on the server side. Attribute values declared on
+ * the client side are reflected to the server side as property values or attribute values.
  * <p>
- * You still may use {@link Component}'s or {@link Element}'s mutation methods
- * for the injected element from the server side though. E.g. you may add a
- * child or set attribute/property value. Such children will be available in the
+ * You still may use {@link Component}'s or {@link Element}'s mutation methods for the injected element from the server
+ * side though. E.g. you may add a child or set attribute/property value. Such children will be available in the
  * element's hierarchy in the same way as for a regular element.
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated Use com.vaadin.flow.component.template.Id instead. Polymer
- *             template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Use com.vaadin.flow.component.template.Id instead. Polymer template support is deprecated - we recommend
+ *             you to use {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
@@ -80,8 +75,7 @@ import com.vaadin.flow.dom.Element;
 @Deprecated
 public @interface Id {
     /**
-     * The id of the element to map to. When empty, the name of the field is
-     * used instead.
+     * The id of the element to map to. When empty, the name of the field is used instead.
      *
      * @return the id of the element to map to
      */

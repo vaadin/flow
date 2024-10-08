@@ -22,8 +22,7 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class EmbeddedWebComponentIT extends ChromeBrowserTest
-        implements HasById {
+public class EmbeddedWebComponentIT extends ChromeBrowserTest implements HasById {
 
     @Override
     protected String getTestPath() {
@@ -44,8 +43,7 @@ public class EmbeddedWebComponentIT extends ChromeBrowserTest
         // Selection is visibly changed and event manually dispatched
         // as else the change is not seen.
         getCommandExecutor().executeScript(
-                "arguments[0].value='Peter';"
-                        + "arguments[0].dispatchEvent(new Event('change'));",
+                "arguments[0].value='Peter';" + "arguments[0].dispatchEvent(new Event('change'));",
                 webComponent.$("select").first());
 
         TestBenchElement msg = webComponent.$("span").first();
@@ -53,9 +51,7 @@ public class EmbeddedWebComponentIT extends ChromeBrowserTest
         Assert.assertEquals("Selected: Peter, Parker", msg.getText());
 
         // Check that there is correctly imported custom element
-        TestBenchElement dependencyElement = webComponent.$("dep-element")
-                .first();
-        Assert.assertEquals("Imported element",
-                byId(dependencyElement, "main").getText());
+        TestBenchElement dependencyElement = webComponent.$("dep-element").first();
+        Assert.assertEquals("Imported element", byId(dependencyElement, "main").getText());
     }
 }

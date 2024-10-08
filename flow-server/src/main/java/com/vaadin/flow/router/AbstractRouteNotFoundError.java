@@ -46,25 +46,20 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 public abstract class AbstractRouteNotFoundError extends Component {
 
     /**
-     * Default callback for route not found error executed before rendering the
-     * exception view.
+     * Default callback for route not found error executed before rendering the exception view.
      *
      * @param event
      *            the before navigation event for this request
      * @param parameter
-     *            error parameter containing custom exception and caught
-     *            exception
+     *            error parameter containing custom exception and caught exception
      * @return a valid {@link com.vaadin.flow.server.HttpStatusCode} code
-     * @see HasErrorParameter#setErrorParameter(BeforeEnterEvent,
-     *      ErrorParameter)
+     * @see HasErrorParameter#setErrorParameter(BeforeEnterEvent, ErrorParameter)
      */
     public int setRouteNotFoundErrorParameter(BeforeEnterEvent event,
             ErrorParameter<? extends RuntimeException> parameter) {
         Logger logger = LoggerFactory.getLogger(getClass());
         if (logger.isDebugEnabled()) {
-            logger.debug(
-                    parameter.hasCustomMessage() ? parameter.getCustomMessage()
-                            : "Route is not found",
+            logger.debug(parameter.hasCustomMessage() ? parameter.getCustomMessage() : "Route is not found",
                     parameter.getCaughtException());
         }
         String path = event.getLocation().getPath();
@@ -75,8 +70,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
         path = Jsoup.clean(path, Safelist.none());
         additionalInfo = Jsoup.clean(additionalInfo, Safelist.none());
 
-        boolean productionMode = event.getUI().getSession().getConfiguration()
-                .isProductionMode();
+        boolean productionMode = event.getUI().getSession().getConfiguration().isProductionMode();
         String template;
         String routes = getRoutes(event);
 
@@ -103,12 +97,10 @@ public abstract class AbstractRouteNotFoundError extends Component {
     }
 
     private static String readHtmlFile(String templateName) {
-        try (InputStream stream = RouteNotFoundError.class
-                .getResourceAsStream(templateName)) {
+        try (InputStream stream = RouteNotFoundError.class.getResourceAsStream(templateName)) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            LoggerFactory.getLogger(AbstractRouteNotFoundError.class)
-                    .error("Unable to read " + templateName, e);
+            LoggerFactory.getLogger(AbstractRouteNotFoundError.class).error("Unable to read " + templateName, e);
             // Use a very simple error page if the real one could not be found
             return "Could not navigate to '{{path}}'";
         }
@@ -116,35 +108,28 @@ public abstract class AbstractRouteNotFoundError extends Component {
 
     private String getRoutes(BeforeEnterEvent event) {
         List<Element> routeElements = new ArrayList<>();
-        List<RouteData> routes = event.getSource().getRegistry()
-                .getRegisteredRoutes();
+        List<RouteData> routes = event.getSource().getRegistry().getRegisteredRoutes();
 
         Map<String, Class<? extends Component>> routeTemplates = new TreeMap<>();
 
         for (RouteData route : routes) {
-            routeTemplates.put(route.getTemplate(),
-                    route.getNavigationTarget());
-            route.getRouteAliases().forEach(alias -> routeTemplates
-                    .put(alias.getTemplate(), alias.getNavigationTarget()));
+            routeTemplates.put(route.getTemplate(), route.getNavigationTarget());
+            route.getRouteAliases()
+                    .forEach(alias -> routeTemplates.put(alias.getTemplate(), alias.getNavigationTarget()));
         }
 
-        routeTemplates.forEach(
-                (k, v) -> routeElements.add(routeTemplateToHtml(k, v)));
+        routeTemplates.forEach((k, v) -> routeElements.add(routeTemplateToHtml(k, v)));
 
         routeElements.addAll(getClientRoutes(event));
-        return routeElements.stream().map(Element::outerHtml)
-                .collect(Collectors.joining());
+        return routeElements.stream().map(Element::outerHtml).collect(Collectors.joining());
     }
 
     private List<Element> getClientRoutes(BeforeEnterEvent event) {
-        return FrontendUtils.getClientRoutes().stream()
-                .filter(route -> !route.contains("$layout"))
-                .map(route -> route.replace("$index", ""))
-                .map(this::clientRouteToHtml).toList();
+        return FrontendUtils.getClientRoutes().stream().filter(route -> !route.contains("$layout"))
+                .map(route -> route.replace("$index", "")).map(this::clientRouteToHtml).toList();
     }
 
-    private Element routeTemplateToHtml(String routeTemplate,
-            Class<? extends Component> navigationTarget) {
+    private Element routeTemplateToHtml(String routeTemplate, Class<? extends Component> navigationTarget) {
         String text = routeTemplate;
         if (text == null || text.isEmpty()) {
             text = "<root>";
@@ -153,8 +138,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
         if (!routeTemplate.contains(":")) {
             return elementAsLink(routeTemplate, text);
         } else {
-            if (ParameterDeserializer.isAnnotatedParameter(navigationTarget,
-                    OptionalParameter.class)) {
+            if (ParameterDeserializer.isAnnotatedParameter(navigationTarget, OptionalParameter.class)) {
                 text += " (supports optional parameter)";
             } else {
                 text += " (requires parameter)";
@@ -191,7 +175,6 @@ public abstract class AbstractRouteNotFoundError extends Component {
 
     private static class LazyInit {
 
-        private static final String PRODUCTION_MODE_TEMPLATE = readHtmlFile(
-                "RouteNotFoundError_prod.html");
+        private static final String PRODUCTION_MODE_TEMPLATE = readHtmlFile("RouteNotFoundError_prod.html");
     }
 }

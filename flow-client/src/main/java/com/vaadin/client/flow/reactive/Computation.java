@@ -22,11 +22,9 @@ import com.vaadin.client.flow.collection.JsSet;
 import elemental.events.EventRemover;
 
 /**
- * Automatically reruns {@link #doRecompute()} whenever any reactive value used
- * by it changes. The recompute method is invoked by the next invocation of
- * {@link Reactive#flush()}, unless it has been invoked manually before the
- * global flush. A computation is also scheduled to for an initial
- * "recomputation" when it is created.
+ * Automatically reruns {@link #doRecompute()} whenever any reactive value used by it changes. The recompute method is
+ * invoked by the next invocation of {@link Reactive#flush()}, unless it has been invoked manually before the global
+ * flush. A computation is also scheduled to for an initial "recomputation" when it is created.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -50,21 +48,18 @@ public abstract class Computation implements ReactiveValueChangeListener {
     }
 
     /**
-     * Adds a dependency to a reactive value. This computation is scheduled for
-     * recomputation when any dependency fires a change event. All previous
-     * dependencies are cleared before recomputing.
+     * Adds a dependency to a reactive value. This computation is scheduled for recomputation when any dependency fires
+     * a change event. All previous dependencies are cleared before recomputing.
      * <p>
-     * This method is automatically called when a reactive value is used for
-     * recomputing this computation. The developer is not expected to call this
-     * method himself.
+     * This method is automatically called when a reactive value is used for recomputing this computation. The developer
+     * is not expected to call this method himself.
      *
      * @param dependency
      *            the reactive value to depend on
      */
     public void addDependency(ReactiveValue dependency) {
         if (!stopped) {
-            EventRemover remover = dependency
-                    .addReactiveValueChangeListener(this);
+            EventRemover remover = dependency.addReactiveValueChangeListener(this);
             dependencies.push(remover);
         }
     }
@@ -94,8 +89,7 @@ public abstract class Computation implements ReactiveValueChangeListener {
 
             InvalidateEvent invalidateEvent = new InvalidateEvent(this);
 
-            oldListeners.forEach(
-                    listener -> listener.onInvalidate(invalidateEvent));
+            oldListeners.forEach(listener -> listener.onInvalidate(invalidateEvent));
         }
     }
 
@@ -121,13 +115,11 @@ public abstract class Computation implements ReactiveValueChangeListener {
     }
 
     /**
-     * Checks whether this computation is invalidated. An invalidated
-     * computation will eventually be recomputed (unless it has also been
-     * stopped). Recomputation will happen the next time {@link #recompute()} or
+     * Checks whether this computation is invalidated. An invalidated computation will eventually be recomputed (unless
+     * it has also been stopped). Recomputation will happen the next time {@link #recompute()} or
      * {@link Reactive#flush()} is invoked.
      *
-     * @return <code>true</code> if this computation is invalidated; otherwise
-     *         <code>false</code>
+     * @return <code>true</code> if this computation is invalidated; otherwise <code>false</code>
      */
     public boolean isInvalidated() {
         return invalidated;
@@ -147,14 +139,13 @@ public abstract class Computation implements ReactiveValueChangeListener {
     }
 
     /**
-     * Does the actual recomputation. This method is run in a way that
-     * automatically registers dependencies to any reactive value accessed.
+     * Does the actual recomputation. This method is run in a way that automatically registers dependencies to any
+     * reactive value accessed.
      */
     protected abstract void doRecompute();
 
     /**
-     * Adds an invalidate listener that will be invoked the next time this
-     * computation is invalidated.
+     * Adds an invalidate listener that will be invoked the next time this computation is invalidated.
      *
      * @param listener
      *            the listener to run on the next invalidation

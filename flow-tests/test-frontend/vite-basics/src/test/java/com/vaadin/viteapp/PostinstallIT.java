@@ -12,8 +12,7 @@ public class PostinstallIT extends ViteDevModeIT {
     @Test
     public void postinstallRanForProject() throws IOException {
         waitForDevServer(); // This is what runs the postinstall script
-        Assert.assertEquals("hello", IOUtils.toString(
-                getClass().getClassLoader().getResource("main.postinstall"),
-                StandardCharsets.UTF_8));
+        Assert.assertEquals("hello",
+                IOUtils.toString(getClass().getClassLoader().getResource("main.postinstall"), StandardCharsets.UTF_8));
     }
 }

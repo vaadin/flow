@@ -29,8 +29,7 @@ public class TSIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        DivElement badge = $("ts-component").first().$(DivElement.class)
-                .attribute("theme", "badge").first();
+        DivElement badge = $("ts-component").first().$(DivElement.class).attribute("theme", "badge").first();
         String badgeBackgroundColor = badge.getCssValue("backgroundColor");
         Assert.assertEquals("rgba(51, 139, 255, 0.13)", badgeBackgroundColor);
     }

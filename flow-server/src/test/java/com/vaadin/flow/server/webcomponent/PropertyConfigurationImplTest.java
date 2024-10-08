@@ -29,8 +29,7 @@ public class PropertyConfigurationImplTest {
 
     @Before
     public void init() {
-        intPropertyConf = new PropertyConfigurationImpl<>(MyComponent.class,
-                "int", Integer.class, 1);
+        intPropertyConf = new PropertyConfigurationImpl<>(MyComponent.class, "int", Integer.class, 1);
     }
 
     @Test
@@ -41,9 +40,7 @@ public class PropertyConfigurationImplTest {
 
         intPropertyConf.getOnChangeHandler().accept(myComponent, 5);
 
-        Assert.assertEquals(
-                "onChangeHandler should have been set and value " + "updated",
-                5, myComponent.value);
+        Assert.assertEquals("onChangeHandler should have been set and value " + "updated", 5, myComponent.value);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -59,11 +56,9 @@ public class PropertyConfigurationImplTest {
         PropertyData<Integer> data = intPropertyConf.getPropertyData();
 
         // verify default value for completeness
-        Assert.assertEquals("default value is 1", 1,
-                (int) data.getDefaultValue());
+        Assert.assertEquals("default value is 1", 1, (int) data.getDefaultValue());
 
-        Assert.assertTrue("read-only flag should have been set to true",
-                data.isReadOnly());
+        Assert.assertTrue("read-only flag should have been set to true", data.isReadOnly());
     }
 
     @Tag("for-reasons")

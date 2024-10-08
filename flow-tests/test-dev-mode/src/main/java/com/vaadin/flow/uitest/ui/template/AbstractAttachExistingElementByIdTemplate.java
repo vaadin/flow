@@ -22,8 +22,7 @@ import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-public abstract class AbstractAttachExistingElementByIdTemplate
-        extends PolymerTemplate<TemplateModel> {
+public abstract class AbstractAttachExistingElementByIdTemplate extends PolymerTemplate<TemplateModel> {
 
     @Id("input")
     private Input input;

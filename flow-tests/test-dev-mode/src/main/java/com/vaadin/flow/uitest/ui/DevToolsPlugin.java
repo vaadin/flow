@@ -18,8 +18,7 @@ public class DevToolsPlugin implements DevToolsMessageHandler {
     }
 
     @Override
-    public boolean handleMessage(String command, JsonObject data,
-            DevToolsInterface devToolsInterface) {
+    public boolean handleMessage(String command, JsonObject data, DevToolsInterface devToolsInterface) {
         if (command.equals("plugin-query")) {
             String text = data.getString("text");
 

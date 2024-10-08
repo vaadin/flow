@@ -110,10 +110,8 @@ public class ModelListIT extends ChromeBrowserTest {
 
         for (int i = 0; i < divs.size(); i++) {
             int index = i;
-            boolean clickedState = IntStream.of(clicked)
-                    .anyMatch(x -> x == index);
-            Assert.assertThat(divs.get(index).getText(),
-                    CoreMatchers.startsWith(String.valueOf(clickedState)));
+            boolean clickedState = IntStream.of(clicked).anyMatch(x -> x == index);
+            Assert.assertThat(divs.get(index).getText(), CoreMatchers.startsWith(String.valueOf(clickedState)));
         }
     }
 

@@ -24,9 +24,8 @@ import com.vaadin.flow.server.VaadinResponse;
 import java.util.Optional;
 
 /**
- * This represents the state of a Index HTML response being generated. The Index
- * HTML response contains of the full DOM of the HTML document as well as the
- * HTTP headers that will be included in the corresponding HTTP response.
+ * This represents the state of a Index HTML response being generated. The Index HTML response contains of the full DOM
+ * of the HTML document as well as the HTTP headers that will be included in the corresponding HTTP response.
  *
  */
 public class IndexHtmlResponse {
@@ -47,8 +46,7 @@ public class IndexHtmlResponse {
      * @param ui
      *            the UI for the bootstrap
      */
-    public IndexHtmlResponse(VaadinRequest vaadinRequest,
-            VaadinResponse vaadinResponse, Document document, UI ui) {
+    public IndexHtmlResponse(VaadinRequest vaadinRequest, VaadinResponse vaadinResponse, Document document, UI ui) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;
@@ -64,8 +62,7 @@ public class IndexHtmlResponse {
      * @param document
      *            the {@link Document} object of the response page
      */
-    public IndexHtmlResponse(VaadinRequest vaadinRequest,
-            VaadinResponse vaadinResponse, Document document) {
+    public IndexHtmlResponse(VaadinRequest vaadinRequest, VaadinResponse vaadinResponse, Document document) {
         this.vaadinRequest = vaadinRequest;
         this.vaadinResponse = vaadinResponse;
         this.document = document;
@@ -81,8 +78,7 @@ public class IndexHtmlResponse {
     }
 
     /**
-     * Get the Vaadin response object including all the headers which will be
-     * sent to browser.
+     * Get the Vaadin response object including all the headers which will be sent to browser.
      *
      * @return the Vaadin response
      */
@@ -105,8 +101,7 @@ public class IndexHtmlResponse {
      * @return the UI
      */
     public Optional<UI> getUI() {
-        if (!this.vaadinRequest.getService().getDeploymentConfiguration()
-                .isEagerServerLoad()) {
+        if (!this.vaadinRequest.getService().getDeploymentConfiguration().isEagerServerLoad()) {
             return Optional.empty();
         } else {
             return Optional.ofNullable(UI.getCurrent());

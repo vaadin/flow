@@ -20,7 +20,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 
 @Route("")
-public class RouteInterfaceComponent extends Component
-        implements RouteInterface {
+public class RouteInterfaceComponent extends Component implements RouteInterface {
 
 }

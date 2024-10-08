@@ -33,23 +33,20 @@ public class MainIT extends ChromeDeviceTest {
 
     @Test
     public void appShellIsLoaded() {
-        Assert.assertNotNull("Should load the app shell",
-                findElement(By.id("outlet")));
+        Assert.assertNotNull("Should load the app shell", findElement(By.id("outlet")));
     }
 
     @Test
     public void setOfflineAndReload_customOfflinePageIsLoaded() {
         setOfflineAndReload();
 
-        Assert.assertNotNull("Should load the custom offline.html",
-                findElement(By.id("offline")));
+        Assert.assertNotNull("Should load the custom offline.html", findElement(By.id("offline")));
     }
 
     private void setOfflineAndReload() {
         getDevTools().setOfflineEnabled(true);
         executeScript("window.location.reload()");
-        waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                .executeScript("return document.readyState")
+        waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                 .equals("complete"));
     }
 }

@@ -49,8 +49,7 @@ public class StatisticsStorage {
     /**
      * Sets the active project id.
      * <p>
-     * The project id should be unique enough to avoid collisions and data
-     * overwrites.
+     * The project id should be unique enough to avoid collisions and data overwrites.
      * <p>
      * Used in {@link #update(BiConsumer)}.
      *
@@ -84,27 +83,23 @@ public class StatisticsStorage {
      * Updates the store in a safe way.
      *
      * @param updater
-     *            the update logic which receives a global and a project
-     *            specific container to update
+     *            the update logic which receives a global and a project specific container to update
      */
     void update(BiConsumer<StatisticsContainer, StatisticsContainer> updater) {
         access(() -> {
             ObjectNode fullJson = internalRead();
             ObjectNode projectJson = getProjectData(fullJson, projectId);
 
-            updater.accept(new StatisticsContainer(fullJson),
-                    new StatisticsContainer(projectJson));
+            updater.accept(new StatisticsContainer(fullJson), new StatisticsContainer(projectJson));
             internalWrite(fullJson);
         });
     }
 
-    private static ObjectNode getProjectData(ObjectNode fullJson,
-            String projectId) {
+    private static ObjectNode getProjectData(ObjectNode fullJson, String projectId) {
         if (projectId == null) {
             return null;
         }
-        return JsonHelpers.getOrCreate(projectId,
-                fullJson.get(StatisticsConstants.FIELD_PROJECTS),
+        return JsonHelpers.getOrCreate(projectId, fullJson.get(StatisticsConstants.FIELD_PROJECTS),
                 StatisticsConstants.FIELD_PROJECT_ID, true);
     }
 
@@ -153,8 +148,7 @@ public class StatisticsStorage {
 
         // Empty node if nothing is found
         ObjectNode json = JsonHelpers.getJsonMapper().createObjectNode();
-        json.set(StatisticsConstants.FIELD_PROJECTS,
-                JsonHelpers.getJsonMapper().createArrayNode());
+        json.set(StatisticsConstants.FIELD_PROJECTS, JsonHelpers.getJsonMapper().createArrayNode());
         return json;
     }
 
@@ -166,8 +160,7 @@ public class StatisticsStorage {
     private void internalWrite(ObjectNode json) {
         try {
             getUsageStatisticsFile().getParentFile().mkdirs();
-            JsonHelpers.getJsonMapper().writeValue(getUsageStatisticsFile(),
-                    json);
+            JsonHelpers.getJsonMapper().writeValue(getUsageStatisticsFile(), json);
         } catch (IOException e) {
             getLogger().debug("Failed to write json", e);
         }
@@ -188,8 +181,7 @@ public class StatisticsStorage {
 
     void clearAllProjectData() {
         update((global, project) -> {
-            global.setValue(StatisticsConstants.FIELD_PROJECTS,
-                    JsonHelpers.getJsonMapper().createArrayNode());
+            global.setValue(StatisticsConstants.FIELD_PROJECTS, JsonHelpers.getJsonMapper().createArrayNode());
         });
     }
 

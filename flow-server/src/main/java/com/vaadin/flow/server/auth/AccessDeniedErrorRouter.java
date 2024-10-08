@@ -24,17 +24,16 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.router.AccessDeniedException;
 
 /**
- * Annotation for customizing route specific rerouting of access denied error in
- * {@link AnnotatedViewAccessChecker}. Annotation is to be used together with
- * {@code @Route}, or if present, together with access annotation listed here:
+ * Annotation for customizing route specific rerouting of access denied error in {@link AnnotatedViewAccessChecker}.
+ * Annotation is to be used together with {@code @Route}, or if present, together with access annotation listed here:
  * <ul>
  * <li>{@code @AnonymousAllowed}
  * <li>{@code @PermitAll}
  * <li>{@code @RolesAllowed}
  * <li>{@code @DenyAll}
  * </ul>
- * For example, following TestView and SubView routes would reroute user without
- * "admin" role to CustomAccessDeniedError error page:
+ * For example, following TestView and SubView routes would reroute user without "admin" role to CustomAccessDeniedError
+ * error page:
  *
  * <pre>
  * &#64;AccessDeniedErrorRouter(rerouteToError = CustomAccessDeniedException.class)
@@ -73,14 +72,11 @@ import com.vaadin.flow.router.AccessDeniedException;
 public @interface AccessDeniedErrorRouter {
 
     /**
-     * Reroute access denied error by the given exception. Exception is
-     * {@link AccessDeniedException} by default. It can be changed to other
-     * exception like {@link com.vaadin.flow.router.NotFoundException} or any
-     * other exception mapped to
-     * {@link com.vaadin.flow.router.HasErrorParameter} error view.
+     * Reroute access denied error by the given exception. Exception is {@link AccessDeniedException} by default. It can
+     * be changed to other exception like {@link com.vaadin.flow.router.NotFoundException} or any other exception mapped
+     * to {@link com.vaadin.flow.router.HasErrorParameter} error view.
      *
-     * @return Type of the access denied exception for the access denied error
-     *         view.
+     * @return Type of the access denied exception for the access denied error view.
      */
     Class<? extends RuntimeException> rerouteToError() default AccessDeniedException.class;
 }

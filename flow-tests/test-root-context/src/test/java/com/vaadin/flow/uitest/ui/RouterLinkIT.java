@@ -20,13 +20,11 @@ public class RouterLinkIT extends ChromeBrowserTest {
         testInsideServlet("./foobar", "foobar", "", "foobar");
         testInsideServlet("foo/bar", "foo/bar", "", "foo/bar");
 
-        testInsideServlet("./foobar?what=not", "foobar", "what=not",
-                "foobar?what=not");
+        testInsideServlet("./foobar?what=not", "foobar", "what=not", "foobar?what=not");
 
         testInsideServlet("/view/baz", "baz", "", "baz");
 
-        testInsideServlet("./foobar?what=not#fragment", "foobar", "what=not",
-                "foobar?what=not#fragment");
+        testInsideServlet("./foobar?what=not#fragment", "foobar", "what=not", "foobar?what=not#fragment");
 
         clickLink("empty");
         verifyInsideServletLocation("");
@@ -57,8 +55,7 @@ public class RouterLinkIT extends ChromeBrowserTest {
 
         // Chrome changes url to whatever it can, removing www part, forcing
         // https.
-        Assert.assertTrue("Invalid URL: " + currentUrl,
-                currentUrl.equals("https://example.net/"));
+        Assert.assertTrue("Invalid URL: " + currentUrl, currentUrl.equals("https://example.net/"));
     }
 
     @Test
@@ -75,8 +72,8 @@ public class RouterLinkIT extends ChromeBrowserTest {
         verifyPopStateEvent("image/link");
     }
 
-    private void testInsideServlet(String linkToTest, String popStateLocation,
-            String parametersQuery, String pathAfterServletMapping) {
+    private void testInsideServlet(String linkToTest, String popStateLocation, String parametersQuery,
+            String pathAfterServletMapping) {
         clickLink(linkToTest);
         verifyInsideServletLocation(pathAfterServletMapping);
         verifyParametersQuery(parametersQuery);
@@ -89,19 +86,17 @@ public class RouterLinkIT extends ChromeBrowserTest {
     }
 
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
-        Assert.assertEquals("Invalid URL",
-                getRootURL() + "/view/" + pathAfterServletMapping,
+        Assert.assertEquals("Invalid URL", getRootURL() + "/view/" + pathAfterServletMapping,
                 getDriver().getCurrentUrl());
     }
 
     private void verifyParametersQuery(String parametersQuery) {
-        Assert.assertEquals("Invalid server side event location",
-                parametersQuery, findElement(By.id("queryParams")).getText());
+        Assert.assertEquals("Invalid server side event location", parametersQuery,
+                findElement(By.id("queryParams")).getText());
     }
 
     private void verifyPopStateEvent(String location) {
-        Assert.assertEquals("Invalid server side event location", location,
-                findElement(By.id("location")).getText());
+        Assert.assertEquals("Invalid server side event location", location, findElement(By.id("location")).getText());
     }
 
     private void verifyNotSamePage() {
@@ -109,7 +104,6 @@ public class RouterLinkIT extends ChromeBrowserTest {
     }
 
     private void verifySamePage() {
-        Assert.assertNotNull("Page has changed",
-                findElement(By.id("location")));
+        Assert.assertNotNull("Page has changed", findElement(By.id("location")));
     }
 }

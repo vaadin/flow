@@ -22,8 +22,7 @@ import com.vaadin.flow.component.ComponentTest.TracksAttachDetach;
 
 public class CompositeTextNodeTest extends CompositeTest {
 
-    static class TracksAttachDetachText extends Text
-            implements TracksAttachDetach {
+    static class TracksAttachDetachText extends Text implements TracksAttachDetach {
 
         public TracksAttachDetachText(String text) {
             super(text);

@@ -23,8 +23,7 @@ import com.vaadin.flow.component.Component;
 /**
  * A listener for {@code SelectionEvent}.
  * <p>
- * This is a generic listener for both type of selections, single and
- * multiselect.
+ * This is a generic listener for both type of selections, single and multiselect.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -37,8 +36,7 @@ import com.vaadin.flow.component.Component;
  * @see SelectionEvent
  */
 @FunctionalInterface
-public interface SelectionListener<C extends Component, T>
-        extends Serializable, EventListener {
+public interface SelectionListener<C extends Component, T> extends Serializable, EventListener {
 
     /**
      * Invoked when the selection has changed.

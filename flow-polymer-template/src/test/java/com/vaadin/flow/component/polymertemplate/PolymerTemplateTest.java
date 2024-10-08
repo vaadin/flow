@@ -85,20 +85,17 @@ public class PolymerTemplateTest extends HasCurrentService {
         }
 
         @Override
-        public TemplateData getTemplateContent(
-                Class<? extends PolymerTemplate<?>> clazz, String tag,
+        public TemplateData getTemplateContent(Class<? extends PolymerTemplate<?>> clazz, String tag,
                 VaadinService service) {
             callCount++;
-            return new TemplateData("",
-                    Jsoup.parse(templateProducer.apply(tag)));
+            return new TemplateData("", Jsoup.parse(templateProducer.apply(tag)));
         }
     }
 
     private static class SimpleTemplateParser extends TestTemplateParser {
 
         SimpleTemplateParser() {
-            super(tag -> "<dom-module id='" + tag
-                    + "' someattrtibute></dom-module>");
+            super(tag -> "<dom-module id='" + tag + "' someattrtibute></dom-module>");
         }
 
     }
@@ -124,15 +121,13 @@ public class PolymerTemplateTest extends HasCurrentService {
     public static class CustomComponent extends Component {
 
         public CustomComponent() {
-            getElement().getNode()
-                    .runWhenAttached(ui -> ui.getPage().executeJs("foo"));
+            getElement().getNode().runWhenAttached(ui -> ui.getPage().executeJs("foo"));
         }
 
     }
 
     @Tag(TAG)
-    public static class TestPolymerTemplate
-            extends PolymerTemplate<ModelClass> {
+    public static class TestPolymerTemplate extends PolymerTemplate<ModelClass> {
         public TestPolymerTemplate() {
             super(new SimpleTemplateParser());
         }
@@ -163,8 +158,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag(TAG)
-    private static class IdWithNoValueChildTemplate
-            extends PolymerTemplate<ModelClass> {
+    private static class IdWithNoValueChildTemplate extends PolymerTemplate<ModelClass> {
 
         @Id
         private CustomComponent child;
@@ -172,8 +166,8 @@ public class PolymerTemplateTest extends HasCurrentService {
         private final TestTemplateParser parser;
 
         public IdWithNoValueChildTemplate() {
-            this(new TestTemplateParser(tag -> "<dom-module id='" + tag
-                    + "'><template><div id='child'></template></dom-module>"));
+            this(new TestTemplateParser(
+                    tag -> "<dom-module id='" + tag + "'><template><div id='child'></template></dom-module>"));
         }
 
         IdWithNoValueChildTemplate(TestTemplateParser parser) {
@@ -193,8 +187,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     @Tag("parent-template")
     @Uses(TestPolymerTemplate.class)
     @Uses(TemplateChild.class)
-    private static class TemplateInTemplate
-            extends PolymerTemplate<ModelClass> {
+    private static class TemplateInTemplate extends PolymerTemplate<ModelClass> {
 
         private final TestTemplateParser parser;
 
@@ -213,59 +206,51 @@ public class PolymerTemplateTest extends HasCurrentService {
     @Tag("parent-inject-child")
     @Uses(TestPolymerTemplate.class)
     @Uses(TemplateChild.class)
-    private static class BundledTemplateInTemplate
-            extends PolymerTemplate<ModelClass> {
+    private static class BundledTemplateInTemplate extends PolymerTemplate<ModelClass> {
 
         public BundledTemplateInTemplate() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='child-template'>"
-                            + "<template><ffs></template></dom-module>"
-                            + "<dom-module id='ffs'><template></template></dom-module>"
-                            + "<dom-module id='" + tag
-                            + "'><template><div><ffs someattrtibute></div><span></span><child-template></template></dom-module>")));
+            super((clazz, tag, service) -> new TemplateData("", Jsoup.parse("<dom-module id='child-template'>"
+                    + "<template><ffs></template></dom-module>"
+                    + "<dom-module id='ffs'><template></template></dom-module>" + "<dom-module id='" + tag
+                    + "'><template><div><ffs someattrtibute></div><span></span><child-template></template></dom-module>")));
         }
 
     }
 
     @Tag("parent-inject-child")
-    private static class TemplateInjectTemplate
-            extends PolymerTemplate<ModelClass> {
+    private static class TemplateInjectTemplate extends PolymerTemplate<ModelClass> {
 
         @Id("child")
         private TemplateChild child;
 
         public TemplateInjectTemplate() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='" + tag
-                            + "'><template><child-template id='child'></template></dom-module>")));
+            super((clazz, tag, service) -> new TemplateData("", Jsoup.parse(
+                    "<dom-module id='" + tag + "'><template><child-template id='child'></template></dom-module>")));
         }
 
     }
 
     @Tag("parent-template")
     @Uses(TemplateChild.class)
-    private static class TemplateWithChildInDomRepeat
-            extends PolymerTemplate<ModelClass> {
+    private static class TemplateWithChildInDomRepeat extends PolymerTemplate<ModelClass> {
 
         public TemplateWithChildInDomRepeat() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='" + tag + "'><template><div>"
-                            + "<dom-repeat items='[[messages]]'><template><child-template someattrtibute></template></dom-repeat>"
-                            + "</div></template></dom-module>")));
+            super((clazz, tag, service) -> new TemplateData("", Jsoup.parse("<dom-module id='" + tag
+                    + "'><template><div>"
+                    + "<dom-repeat items='[[messages]]'><template><child-template someattrtibute></template></dom-repeat>"
+                    + "</div></template></dom-module>")));
         }
 
     }
 
     @Tag("parent-template")
     @Uses(TemplateChild.class)
-    private static class TemplateWithDomRepeat
-            extends PolymerTemplate<ModelClass> {
+    private static class TemplateWithDomRepeat extends PolymerTemplate<ModelClass> {
 
         private final TestTemplateParser parser;
 
         public TemplateWithDomRepeat() {
-            this(new TestTemplateParser(tag -> "<dom-module id='" + tag
-                    + "'><template><child-template>"
+            this(new TestTemplateParser(tag -> "<dom-module id='" + tag + "'><template><child-template>"
                     + "<dom-repeat items='[[messages]]'><template><div></template></dom-repeat>"
                     + "</template></dom-module>"));
         }
@@ -279,8 +264,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @Tag(TAG)
     @Uses(TemplateChild.class)
-    private static class TextNodesInHtmlTemplate
-            extends PolymerTemplate<ModelClass> {
+    private static class TextNodesInHtmlTemplate extends PolymerTemplate<ModelClass> {
 
         private final TestTemplateParser parser;
 
@@ -313,10 +297,10 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         public IdElementTemplate() {
             this((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='" + tag
-                            + "'><label id='labelId' someattribute property-binding='[[foo]]' "
-                            + "attribute-binding$='bar' another-binding='{{foo}}'"
-                            + "another-attribute='baz' hidden></dom-module>")));
+                    Jsoup.parse(
+                            "<dom-module id='" + tag + "'><label id='labelId' someattribute property-binding='[[foo]]' "
+                                    + "attribute-binding$='bar' another-binding='{{foo}}'"
+                                    + "another-attribute='baz' hidden></dom-module>")));
         }
 
         IdElementTemplate(TemplateParser parser) {
@@ -326,16 +310,14 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag(TAG)
-    private static class DisabledElementTemplate
-            extends PolymerTemplate<ModelClass> {
+    private static class DisabledElementTemplate extends PolymerTemplate<ModelClass> {
 
         @Id("labelId")
         private com.vaadin.flow.dom.Element label;
 
         public DisabledElementTemplate() {
             this((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='" + tag
-                            + "'><label id='labelId' disabled></dom-module>")));
+                    Jsoup.parse("<dom-module id='" + tag + "'><label id='labelId' disabled></dom-module>")));
         }
 
         DisabledElementTemplate(TemplateParser parser) {
@@ -344,8 +326,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Tag(TAG)
-    private static class ElementWithTextTemplate
-            extends PolymerTemplate<ModelClass> {
+    private static class ElementWithTextTemplate extends PolymerTemplate<ModelClass> {
 
         @Id("labelId")
         private com.vaadin.flow.dom.Element label;
@@ -355,8 +336,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         public ElementWithTextTemplate() {
             this((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='" + tag
-                            + "'><label id='labelId'>foo bar</label>"
+                    Jsoup.parse("<dom-module id='" + tag + "'><label id='labelId'>foo bar</label>"
                             + "<div id='hasHierarchy'>baz <a>foo</a> bar</div></dom-module>")));
         }
 
@@ -370,8 +350,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         public IdWrongElementTemplate() {
             super((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='" + tag
-                            + "'><div id='foo'></dom-module>")));
+                    Jsoup.parse("<dom-module id='" + tag + "'><div id='foo'></dom-module>")));
         }
 
     }
@@ -379,8 +358,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     private static class IdWrongChildTemplate extends IdChildTemplate {
 
         public IdWrongChildTemplate() {
-            super(new TestTemplateParser(tag -> "<dom-module id='" + tag
-                    + "'><div id='foo'></dom-module>"));
+            super(new TestTemplateParser(tag -> "<dom-module id='" + tag + "'><div id='foo'></dom-module>"));
         }
 
     }
@@ -388,14 +366,12 @@ public class PolymerTemplateTest extends HasCurrentService {
     private static class IdWrongTagChildTemplate extends IdChildTemplate {
 
         public IdWrongTagChildTemplate() {
-            super(new TestTemplateParser(tag -> "<dom-module id='" + tag
-                    + "'><label id='child'></dom-module>"));
+            super(new TestTemplateParser(tag -> "<dom-module id='" + tag + "'><label id='child'></dom-module>"));
         }
 
     }
 
-    private static class TemplateWithoutTagAnnotation
-            extends PolymerTemplate<ModelClass> {
+    private static class TemplateWithoutTagAnnotation extends PolymerTemplate<ModelClass> {
     }
 
     @Tag(TAG)
@@ -412,8 +388,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     public static class ExecutionChild extends PolymerTemplate<ModelClass> {
         public ExecutionChild() {
             super(new SimpleTemplateParser());
-            getElement().getNode()
-                    .runWhenAttached(ui -> ui.getPage().executeJs("bar"));
+            getElement().getNode().runWhenAttached(ui -> ui.getPage().executeJs("bar"));
         }
     }
 
@@ -440,8 +415,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     @Tag("template-initialization")
     @Uses(TestPolymerTemplate.class)
     @Uses(TemplateChild.class)
-    public static class TemplateInitialization
-            extends PolymerTemplate<TestModel> {
+    public static class TemplateInitialization extends PolymerTemplate<TestModel> {
 
         @Id("foo")
         private TestPolymerTemplate child;
@@ -454,8 +428,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     @Tag("another-template-initialization")
     @Uses(TestPolymerTemplate.class)
     @Uses(TemplateChild.class)
-    public static class AnotherTemplateInitialization
-            extends PolymerTemplate<TestModel> {
+    public static class AnotherTemplateInitialization extends PolymerTemplate<TestModel> {
 
         @Id("bar")
         private TemplateChild child;
@@ -476,8 +449,7 @@ public class PolymerTemplateTest extends HasCurrentService {
             private Page page = new Page(this) {
 
                 @Override
-                public PendingJavaScriptResult executeJs(String expression,
-                        Serializable... parameters) {
+                public PendingJavaScriptResult executeJs(String expression, Serializable... parameters) {
                     executionOrder.add(expression);
                     executionParams.add(parameters);
                     return null;
@@ -512,16 +484,12 @@ public class PolymerTemplateTest extends HasCurrentService {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
 
         VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
-        TemplateParser.TemplateParserFactory factory = Mockito
-                .mock(TemplateParser.TemplateParserFactory.class);
-        Mockito.when(instantiator.getOrCreate(TemplateParserFactory.class))
-                .thenReturn(factory);
-        Mockito.when(factory.createParser())
-                .thenReturn(NpmTemplateParser.getInstance());
+        TemplateParser.TemplateParserFactory factory = Mockito.mock(TemplateParser.TemplateParserFactory.class);
+        Mockito.when(instantiator.getOrCreate(TemplateParserFactory.class)).thenReturn(factory);
+        Mockito.when(factory.createParser()).thenReturn(NpmTemplateParser.getInstance());
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         return service;
     }
@@ -543,8 +511,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         expectedState.put("title", null);
 
         assertTrue(stateNode.hasFeature(ElementPropertyMap.class));
-        ElementPropertyMap modelMap = stateNode
-                .getFeature(ElementPropertyMap.class);
+        ElementPropertyMap modelMap = stateNode.getFeature(ElementPropertyMap.class);
         modelMap.getPropertyNames().forEach(key -> {
             assertTrue(expectedState.containsKey(key));
             assertEquals(expectedState.get(key), modelMap.getProperty(key));
@@ -567,8 +534,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         expectedState.put("message", message);
         expectedState.put("title", null);
 
-        ElementPropertyMap modelMap = stateNode
-                .getFeature(ElementPropertyMap.class);
+        ElementPropertyMap modelMap = stateNode.getFeature(ElementPropertyMap.class);
         modelMap.getPropertyNames().forEach(key -> {
             assertTrue(expectedState.containsKey(key));
             assertEquals(expectedState.get(key), modelMap.getProperty(key));
@@ -587,8 +553,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     public void parseTemplate_hasIdChild_childIsRegisteredInFeature() {
-        doParseTemplate_hasIdChild_childIsRegisteredInFeature(
-                new IdChildTemplate());
+        doParseTemplate_hasIdChild_childIsRegisteredInFeature(new IdChildTemplate());
     }
 
     @Test
@@ -619,20 +584,16 @@ public class PolymerTemplateTest extends HasCurrentService {
         TemplateParser parser = new TemplateParser() {
 
             @Override
-            public TemplateData getTemplateContent(
-                    Class<? extends PolymerTemplate<?>> clazz, String tag,
+            public TemplateData getTemplateContent(Class<? extends PolymerTemplate<?>> clazz, String tag,
                     VaadinService service) {
                 String content;
                 parserCallCount.incrementAndGet();
                 if (clazz.equals(TemplateInitialization.class)) {
-                    content = "<dom-module id='" + tag + "'><template>"
-                            + "<ffs id='foo' someattrtibute></ffs>"
-                            + "<child-template></child-template>"
-                            + "</template></dom-module>";
+                    content = "<dom-module id='" + tag + "'><template>" + "<ffs id='foo' someattrtibute></ffs>"
+                            + "<child-template></child-template>" + "</template></dom-module>";
                 } else {
                     content = "<dom-module id='" + tag + "'><template>"
-                            + "<child-template id='bar'></child-template> <ffs></ffs>"
-                            + "</template></dom-module>";
+                            + "<child-template id='bar'></child-template> <ffs></ffs>" + "</template></dom-module>";
                 }
                 return new TemplateData("", Jsoup.parse(content));
             }
@@ -656,8 +617,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         // Now initialize another template
 
         // run in the production mode (with caching enabled) for the first time
-        AnotherTemplateInitialization template2 = new AnotherTemplateInitialization(
-                parser);
+        AnotherTemplateInitialization template2 = new AnotherTemplateInitialization(parser);
         assertEquals(1, parserCallCount.get());
 
         assertAnotherTemplateInitialization(template2);
@@ -682,26 +642,22 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     public void parseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
-        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
-                new TemplateInTemplate());
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(new TemplateInTemplate());
     }
 
     @Test
     public void parseBundledTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild() {
-        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
-                new BundledTemplateInTemplate());
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(new BundledTemplateInTemplate());
     }
 
     @Test
     public void parseTemplate_hasChildTemplateAndTemplateHtmlStyle_elementIsCreatedAndSetAsVirtualChild() {
         // Make a new HTML template which contains style on the top
-        TemplateInTemplate template = new TemplateInTemplate(
-                new TestTemplateParser(tag -> "<dom-module id='" + tag
-                        + "'><template><style> a { width:100%; } </style><div><ffs someattrtibute></div><span></span>"
-                        + "<child-template></template></dom-module>"));
+        TemplateInTemplate template = new TemplateInTemplate(new TestTemplateParser(tag -> "<dom-module id='" + tag
+                + "'><template><style> a { width:100%; } </style><div><ffs someattrtibute></div><span></span>"
+                + "<child-template></template></dom-module>"));
         // Nothing should be changed in the logic
-        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
-                template);
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(template);
     }
 
     @Test
@@ -714,22 +670,19 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         assertEquals(1, parser.callCount);
         // check the result for the first run
-        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
-                template);
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(template);
 
         // run in the production mode (with caching enabled) for the second time
         template = new TemplateInTemplate(parser);
         // parser shouldn't be called
         assertEquals(1, parser.callCount);
         // the result should be the same
-        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
-                template);
+        doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(template);
     }
 
     @Test
     public void parseTemplate_hasTextNodesInTemplate_correctRequestIsSent() {
-        doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(
-                new TextNodesInHtmlTemplate());
+        doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(new TextNodesInHtmlTemplate());
     }
 
     @Test
@@ -739,16 +692,14 @@ public class PolymerTemplateTest extends HasCurrentService {
         // run in the production mode (with caching enabled) for the first time
         TextNodesInHtmlTemplate template = new TextNodesInHtmlTemplate();
         TestTemplateParser parser = template.parser;
-        doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(
-                template);
+        doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(template);
 
         // run in the production mode (with caching enabled) for the second time
         template = new TextNodesInHtmlTemplate(parser);
         // parser shouldn't be called
         assertEquals(1, parser.callCount);
         // the result should be the same
-        doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(
-                template);
+        doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(template);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -758,8 +709,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     public void parseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated() {
-        doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
-                new TemplateWithDomRepeat());
+        doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(new TemplateWithDomRepeat());
     }
 
     @Test
@@ -769,16 +719,14 @@ public class PolymerTemplateTest extends HasCurrentService {
         // run in the production mode (with caching enabled) for the first time
         TemplateWithDomRepeat template = new TemplateWithDomRepeat();
         TestTemplateParser parser = template.parser;
-        doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
-                new TemplateWithDomRepeat());
+        doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(new TemplateWithDomRepeat());
 
         // run in the production mode (with caching enabled) for the second time
         template = new TemplateWithDomRepeat(parser);
         // parser shouldn't be called
         assertEquals(1, parser.callCount);
         // the result should be the same
-        doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
-                template);
+        doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(template);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -795,8 +743,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     public void attachExistingElement_elementIsCreatedAndSetAsVirtualChild() {
         IdElementTemplate template = new IdElementTemplate();
 
-        VirtualChildrenList feature = template.getStateNode()
-                .getFeature(VirtualChildrenList.class);
+        VirtualChildrenList feature = template.getStateNode().getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
@@ -821,8 +768,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         Assert.assertTrue(template.label.hasProperty("someattribute"));
         Assert.assertNotNull(template.label.getProperty("someattribute"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
-                template.label.getProperty("someattribute"));
+        Assert.assertEquals(Boolean.TRUE.toString(), template.label.getProperty("someattribute"));
 
         Assert.assertFalse(template.label.hasProperty("property-binding"));
         Assert.assertFalse(template.label.hasProperty("propertyBinding"));
@@ -836,24 +782,19 @@ public class PolymerTemplateTest extends HasCurrentService {
         Assert.assertFalse(template.label.hasProperty("attributeBinding$"));
 
         Assert.assertTrue(template.label.hasProperty("another-attribute"));
-        Assert.assertEquals("baz",
-                template.label.getProperty("another-attribute"));
+        Assert.assertEquals("baz", template.label.getProperty("another-attribute"));
 
         Assert.assertTrue(template.label.hasAttribute("hidden"));
-        Assert.assertEquals(Boolean.TRUE.toString(),
-                template.label.getAttribute("hidden"));
+        Assert.assertEquals(Boolean.TRUE.toString(), template.label.getAttribute("hidden"));
     }
 
     @Test
     public void attachExistingElementWithAttributeValue_elementIsDisabled() {
         DisabledElementTemplate template = new DisabledElementTemplate();
 
-        Assert.assertTrue("Element is missing id",
-                template.label.hasAttribute("id"));
-        Assert.assertTrue("Server side element should be enabled",
-                template.label.isEnabled());
-        Assert.assertTrue("Element should contain 'disabled' property",
-                template.label.hasProperty("disabled"));
+        Assert.assertTrue("Element is missing id", template.label.hasAttribute("id"));
+        Assert.assertTrue("Server side element should be enabled", template.label.isEnabled());
+        Assert.assertTrue("Element should contain 'disabled' property", template.label.hasProperty("disabled"));
     }
 
     @Test
@@ -875,8 +816,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     public void attachExistingElement_injectedByIDdChild_onlyOneElementIsCreated() {
         TemplateInjectTemplate template = new TemplateInjectTemplate();
 
-        VirtualChildrenList feature = template.getStateNode()
-                .getFeature(VirtualChildrenList.class);
+        VirtualChildrenList feature = template.getStateNode().getFeature(VirtualChildrenList.class);
 
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
@@ -901,10 +841,8 @@ public class PolymerTemplateTest extends HasCurrentService {
         attachComponentAndVerifyChild(template, template.child);
     }
 
-    private void attachComponentAndVerifyChild(PolymerTemplate<?> template,
-            CustomComponent templateChild) {
-        VirtualChildrenList feature = template.getStateNode()
-                .getFeature(VirtualChildrenList.class);
+    private void attachComponentAndVerifyChild(PolymerTemplate<?> template, CustomComponent templateChild) {
+        VirtualChildrenList feature = template.getStateNode().getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
@@ -919,11 +857,9 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         assertTrue(templateChild.getElement().getComponent().isPresent());
 
-        assertTrue(templateChild.getElement().getComponent()
-                .get() instanceof CustomComponent);
+        assertTrue(templateChild.getElement().getComponent().get() instanceof CustomComponent);
 
-        assertEquals(templateChild,
-                templateChild.getElement().getComponent().get());
+        assertEquals(templateChild, templateChild.getElement().getComponent().get());
         assertElementData(child, NodeProperties.INJECT_BY_ID, "child");
     }
 
@@ -933,8 +869,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         template.getModel().setMessage("foo");
 
-        ElementPropertyMap map = template.getElement().getNode()
-                .getFeature(ElementPropertyMap.class);
+        ElementPropertyMap map = template.getElement().getNode().getFeature(ElementPropertyMap.class);
 
         // message has been explicitly set
         Assert.assertTrue(map.hasProperty("message"));
@@ -960,8 +895,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         Assert.assertEquals(2, executionOrder.size());
-        Assert.assertEquals("this.populateModelProperties($0, $1)",
-                executionOrder.get(1));
+        Assert.assertEquals("this.populateModelProperties($0, $1)", executionOrder.get(1));
 
         Serializable[] params = executionParams.get(1);
         JsonArray properties = (JsonArray) params[1];
@@ -979,8 +913,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         Assert.assertEquals(2, executionOrder.size());
-        Assert.assertEquals("this.registerUpdatableModelProperties($0, $1)",
-                executionOrder.get(0));
+        Assert.assertEquals("this.registerUpdatableModelProperties($0, $1)", executionOrder.get(0));
 
         Serializable[] params = executionParams.get(0);
         JsonArray properties = (JsonArray) params[1];
@@ -995,29 +928,22 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void licenseCheck_devMode_licenseCheckedOnce()
-            throws NoSuchFieldException, IllegalAccessException {
-        Field licenseChecked = PolymerTemplate.class
-                .getDeclaredField("licenseChecked");
+    public void licenseCheck_devMode_licenseCheckedOnce() throws NoSuchFieldException, IllegalAccessException {
+        Field licenseChecked = PolymerTemplate.class.getDeclaredField("licenseChecked");
         licenseChecked.setAccessible(true);
-        AtomicBoolean licenseCheckedHolder = (AtomicBoolean) licenseChecked
-                .get(null);
+        AtomicBoolean licenseCheckedHolder = (AtomicBoolean) licenseChecked.get(null);
         boolean licenseCheckedInitValue = licenseCheckedHolder.get();
 
-        try (MockedStatic<LicenseChecker> checker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> checker = Mockito.mockStatic(LicenseChecker.class)) {
             AtomicInteger counter = new AtomicInteger(0);
-            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
-                    Mockito.anyString(), Mockito.eq(BuildType.DEVELOPMENT)))
-                    .then(ignore -> counter.incrementAndGet());
+            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(), Mockito.anyString(),
+                    Mockito.eq(BuildType.DEVELOPMENT))).then(ignore -> counter.incrementAndGet());
 
-            DeploymentConfiguration configuration = Mockito
-                    .mock(DeploymentConfiguration.class);
+            DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
             Mockito.when(configuration.isProductionMode()).thenReturn(false);
 
             VaadinService service = Mockito.mock(VaadinService.class);
-            Mockito.when(service.getDeploymentConfiguration())
-                    .thenReturn(configuration);
+            Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
             licenseCheckedHolder.set(false);
             new TestPolymerTemplate(service);
@@ -1031,37 +957,29 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     public void licenseCheck_prodMode_licenseNotChecked() {
-        try (MockedStatic<LicenseChecker> checker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> checker = Mockito.mockStatic(LicenseChecker.class)) {
             AtomicInteger counter = new AtomicInteger(0);
-            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
-                    Mockito.anyString(), Mockito.eq(BuildType.DEVELOPMENT)))
-                    .then(ignore -> counter.incrementAndGet());
+            checker.when(() -> LicenseChecker.checkLicense(Mockito.anyString(), Mockito.anyString(),
+                    Mockito.eq(BuildType.DEVELOPMENT))).then(ignore -> counter.incrementAndGet());
 
-            DeploymentConfiguration configuration = Mockito
-                    .mock(DeploymentConfiguration.class);
+            DeploymentConfiguration configuration = Mockito.mock(DeploymentConfiguration.class);
             Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
             VaadinService service = Mockito.mock(VaadinService.class);
-            Mockito.when(service.getDeploymentConfiguration())
-                    .thenReturn(configuration);
+            Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
             new TestPolymerTemplate(service);
             Assert.assertEquals(0, counter.get());
         }
     }
 
-    private void doParseTemplate_hasIdChild_childIsRegisteredInFeature(
-            IdChildTemplate template) {
-        VirtualChildrenList feature = template.getStateNode()
-                .getFeature(VirtualChildrenList.class);
+    private void doParseTemplate_hasIdChild_childIsRegisteredInFeature(IdChildTemplate template) {
+        VirtualChildrenList feature = template.getStateNode().getFeature(VirtualChildrenList.class);
         assertEquals(1, feature.size());
     }
 
-    private void doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(
-            PolymerTemplate<?> template) {
-        VirtualChildrenList feature = template.getStateNode()
-                .getFeature(VirtualChildrenList.class);
+    private void doParseTemplate_hasChildTemplate_elementIsCreatedAndSetAsVirtualChild(PolymerTemplate<?> template) {
+        VirtualChildrenList feature = template.getStateNode().getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
@@ -1073,20 +991,16 @@ public class PolymerTemplateTest extends HasCurrentService {
             assertEquals("ffs", child2.getFeature(ElementData.class).getTag());
         } else {
             assertEquals("ffs", child1.getFeature(ElementData.class).getTag());
-            assertEquals("child-template",
-                    child2.getFeature(ElementData.class).getTag());
+            assertEquals("child-template", child2.getFeature(ElementData.class).getTag());
         }
         assertTemplateInTempalte(child1);
         assertTemplateInTempalte(child2);
     }
 
-    private void doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(
-            TextNodesInHtmlTemplate template) {
+    private void doParseTemplate_hasTextNodesInTemplate_correctRequestIndicesPath(TextNodesInHtmlTemplate template) {
 
-        VirtualChildrenList feature = template.getStateNode()
-                .getFeature(VirtualChildrenList.class);
-        JsonObject object = (JsonObject) feature.get(0)
-                .getFeature(ElementData.class).getPayload();
+        VirtualChildrenList feature = template.getStateNode().getFeature(VirtualChildrenList.class);
+        JsonObject object = (JsonObject) feature.get(0).getFeature(ElementData.class).getPayload();
         JsonArray path = object.getArray(NodeProperties.PAYLOAD);
 
         // check arrays of indices
@@ -1094,44 +1008,35 @@ public class PolymerTemplateTest extends HasCurrentService {
         assertEquals(1, (int) path.get(0).asNumber());
     }
 
-    private void doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
-            TemplateWithDomRepeat template) {
+    private void doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(TemplateWithDomRepeat template) {
         UI ui = new UI();
         ui.add(template);
 
-        VirtualChildrenList feature = template.getStateNode()
-                .getFeature(VirtualChildrenList.class);
+        VirtualChildrenList feature = template.getStateNode().getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
         assertEquals(1, templateNodes.size());
     }
 
-    private void assertElementData(StateNode node, String type,
-            String payload) {
-        JsonObject object = (JsonObject) node.getFeature(ElementData.class)
-                .getPayload();
+    private void assertElementData(StateNode node, String type, String payload) {
+        JsonObject object = (JsonObject) node.getFeature(ElementData.class).getPayload();
         Assert.assertEquals(type, object.getString(NodeProperties.TYPE));
         Assert.assertEquals(payload, object.getString(NodeProperties.PAYLOAD));
     }
 
     private void assertTemplateInTempalte(StateNode node) {
-        JsonObject object = (JsonObject) node.getFeature(ElementData.class)
-                .getPayload();
-        Assert.assertEquals(NodeProperties.TEMPLATE_IN_TEMPLATE,
-                object.getString(NodeProperties.TYPE));
+        JsonObject object = (JsonObject) node.getFeature(ElementData.class).getPayload();
+        Assert.assertEquals(NodeProperties.TEMPLATE_IN_TEMPLATE, object.getString(NodeProperties.TYPE));
 
-        Assert.assertTrue(
-                object.get(NodeProperties.PAYLOAD) instanceof JsonArray);
+        Assert.assertTrue(object.get(NodeProperties.PAYLOAD) instanceof JsonArray);
     }
 
     private void assertTemplateInitialization(TemplateInitialization template) {
-        VirtualChildrenList feature = template.getStateNode()
-                .getFeature(VirtualChildrenList.class);
+        VirtualChildrenList feature = template.getStateNode().getFeature(VirtualChildrenList.class);
         assertEquals(2, feature.size());
 
-        Optional<Component> child = com.vaadin.flow.dom.Element
-                .get(feature.get(0)).getComponent();
+        Optional<Component> child = com.vaadin.flow.dom.Element.get(feature.get(0)).getComponent();
 
         Assert.assertTrue(child.isPresent());
         Assert.assertEquals(TestPolymerTemplate.class, child.get().getClass());
@@ -1142,14 +1047,11 @@ public class PolymerTemplateTest extends HasCurrentService {
         Assert.assertEquals(TemplateChild.class, child.get().getClass());
     }
 
-    private void assertAnotherTemplateInitialization(
-            AnotherTemplateInitialization template) {
-        VirtualChildrenList feature = template.getStateNode()
-                .getFeature(VirtualChildrenList.class);
+    private void assertAnotherTemplateInitialization(AnotherTemplateInitialization template) {
+        VirtualChildrenList feature = template.getStateNode().getFeature(VirtualChildrenList.class);
         assertEquals(2, feature.size());
 
-        Optional<Component> child = com.vaadin.flow.dom.Element
-                .get(feature.get(0)).getComponent();
+        Optional<Component> child = com.vaadin.flow.dom.Element.get(feature.get(0)).getComponent();
 
         Assert.assertTrue(child.isPresent());
         Assert.assertEquals(TemplateChild.class, child.get().getClass());

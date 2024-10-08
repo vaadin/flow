@@ -40,8 +40,7 @@ public class PreserveOnRefreshReAddIT extends ChromeBrowserTest {
 
         findElement(By.id("set-text")).click();
 
-        checkLogsForErrors(
-                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
+        checkLogsForErrors(msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
         container = findElement(By.id("container"));
         Assert.assertEquals("Text", container.getText());
     }

@@ -25,8 +25,7 @@ import org.junit.Test;
 public class KeyTest {
 
     @Tag("input")
-    public static class InputComponent extends Component
-            implements KeyNotifier {
+    public static class InputComponent extends Component implements KeyNotifier {
 
     }
 
@@ -34,8 +33,7 @@ public class KeyTest {
     public void listenerWithMultipleKeyValues() {
         InputComponent input = new InputComponent();
         AtomicBoolean fired = new AtomicBoolean(false);
-        input.addKeyPressListener(Key.of("foo", "bar"),
-                event -> fired.set(true));
+        input.addKeyPressListener(Key.of("foo", "bar"), event -> fired.set(true));
 
         input.fireEvent(new KeyPressEvent(input, "foo"));
         Assert.assertTrue(fired.get());

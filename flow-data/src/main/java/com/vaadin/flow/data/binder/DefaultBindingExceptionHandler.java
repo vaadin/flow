@@ -28,10 +28,9 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 /**
  * Default implementation of {@link BindingExceptionHandler}.
  * <p>
- * The handler tries to identify the {@link HasElement} field using
- * {@code "label"} and {@code "id"} property values and if they are not
- * available it tries dump all the attributes and properties in dev mode. The
- * exception is not produced if the element has no any attribute or property.
+ * The handler tries to identify the {@link HasElement} field using {@code "label"} and {@code "id"} property values and
+ * if they are not available it tries dump all the attributes and properties in dev mode. The exception is not produced
+ * if the element has no any attribute or property.
  *
  * @author Vaadin Ltd
  * @since
@@ -43,8 +42,7 @@ public class DefaultBindingExceptionHandler implements BindingExceptionHandler {
     private static final String LABEL = "label";
 
     @Override
-    public Optional<BindingException> handleException(HasValue<?, ?> field,
-            Exception exception) {
+    public Optional<BindingException> handleException(HasValue<?, ?> field, Exception exception) {
         if (!(field instanceof HasElement)) {
             return Optional.empty();
         }
@@ -60,28 +58,21 @@ public class DefaultBindingExceptionHandler implements BindingExceptionHandler {
         }
 
         UI ui = getUI(element);
-        if (majorProperties.length() == 0 && ui != null
-                && ui.getSession() != null
-                && !ApplicationConfiguration
-                        .get(ui.getSession().getService().getContext())
-                        .isProductionMode()) {
+        if (majorProperties.length() == 0 && ui != null && ui.getSession() != null
+                && !ApplicationConfiguration.get(ui.getSession().getService().getContext()).isProductionMode()) {
             element.getAttributeNames()
-                    .forEach(attribute -> appendProperty(majorProperties,
-                            attribute, element.getAttribute(attribute)));
+                    .forEach(attribute -> appendProperty(majorProperties, attribute, element.getAttribute(attribute)));
             element.getPropertyNames()
-                    .forEach(property -> appendProperty(majorProperties,
-                            property, element.getProperty(property)));
+                    .forEach(property -> appendProperty(majorProperties, property, element.getProperty(property)));
         }
 
         if (majorProperties.length() > 0) {
-            majorProperties.insert(0,
-                    "An exception has been thrown inside binding logic for the field element [")
+            majorProperties.insert(0, "An exception has been thrown inside binding logic for the field element [")
                     .append("]");
         }
 
         if (majorProperties.length() > 0) {
-            return Optional.of(new BindingException(majorProperties.toString(),
-                    exception));
+            return Optional.of(new BindingException(majorProperties.toString(), exception));
         }
         return Optional.empty();
     }
@@ -98,8 +89,7 @@ public class DefaultBindingExceptionHandler implements BindingExceptionHandler {
         return ui;
     }
 
-    private void appendProperty(StringBuilder builder, String name,
-            String value) {
+    private void appendProperty(StringBuilder builder, String name, String value) {
         if (builder.length() > 0) {
             builder.append(", ");
         }

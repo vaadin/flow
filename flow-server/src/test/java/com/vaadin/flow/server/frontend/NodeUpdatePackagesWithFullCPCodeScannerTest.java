@@ -18,13 +18,11 @@ package com.vaadin.flow.server.frontend;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
-public class NodeUpdatePackagesWithFullCPCodeScannerTest
-        extends AbstractNodeUpdatePackagesTest {
+public class NodeUpdatePackagesWithFullCPCodeScannerTest extends AbstractNodeUpdatePackagesTest {
 
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
-        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(true, finder, true);
+        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory().createScanner(true, finder, true);
     }
 
 }

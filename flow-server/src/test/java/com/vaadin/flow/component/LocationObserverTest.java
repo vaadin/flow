@@ -41,13 +41,11 @@ public class LocationObserverTest {
 
     @Route("")
     @Tag(Tag.DIV)
-    public static class Translations extends Component
-            implements LocaleChangeObserver {
+    public static class Translations extends Component implements LocaleChangeObserver {
 
         @Override
         public void localeChange(LocaleChangeEvent event) {
-            eventCollector.add("Received locale change event for locale: "
-                    + event.getLocale().getDisplayName());
+            eventCollector.add("Received locale change event for locale: " + event.getLocale().getDisplayName());
             Assert.assertNotNull(event.getUI());
         }
     }
@@ -58,8 +56,8 @@ public class LocationObserverTest {
     }
 
     @Before
-    public void init() throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
+    public void init()
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         ui = new MockUI();
         eventCollector.clear();
     }
@@ -70,25 +68,18 @@ public class LocationObserverTest {
         router = new Router(new TestRouteRegistry());
         ui = new MockUI(router);
 
-        RouteConfiguration.forRegistry(router.getRegistry())
-                .setAnnotatedRoute(Translations.class);
+        RouteConfiguration.forRegistry(router.getRegistry()).setAnnotatedRoute(Translations.class);
 
         ui.navigate("");
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals(
-                "Received locale change event for locale: "
-                        + Locale.getDefault().getDisplayName(),
+        Assert.assertEquals("Expected event amount was wrong", 1, eventCollector.size());
+        Assert.assertEquals("Received locale change event for locale: " + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
 
         ui.setLocale(Locale.CANADA);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals(
-                "Received locale change event for locale: "
-                        + Locale.CANADA.getDisplayName(),
+        Assert.assertEquals("Expected event amount was wrong", 2, eventCollector.size());
+        Assert.assertEquals("Received locale change event for locale: " + Locale.CANADA.getDisplayName(),
                 eventCollector.get(1));
     }
 
@@ -96,25 +87,18 @@ public class LocationObserverTest {
     public void location_change_should_only_fire_if_location_actually_changed() {
         ui.add(new Translations());
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals(
-                "Received locale change event for locale: "
-                        + Locale.getDefault().getDisplayName(),
+        Assert.assertEquals("Expected event amount was wrong", 1, eventCollector.size());
+        Assert.assertEquals("Received locale change event for locale: " + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
 
         ui.setLocale(ui.getLocale());
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
+        Assert.assertEquals("Expected event amount was wrong", 1, eventCollector.size());
 
         ui.setLocale(Locale.FRENCH);
 
-        Assert.assertEquals("Expected event amount was wrong", 2,
-                eventCollector.size());
-        Assert.assertEquals(
-                "Received locale change event for locale: "
-                        + Locale.FRENCH.getDisplayName(),
+        Assert.assertEquals("Expected event amount was wrong", 2, eventCollector.size());
+        Assert.assertEquals("Received locale change event for locale: " + Locale.FRENCH.getDisplayName(),
                 eventCollector.get(1));
     }
 
@@ -124,16 +108,12 @@ public class LocationObserverTest {
 
         ui.add(root);
 
-        Assert.assertEquals("Expected event amount was wrong", 0,
-                eventCollector.size());
+        Assert.assertEquals("Expected event amount was wrong", 0, eventCollector.size());
 
         root.getElement().appendChild(new Translations().getElement());
 
-        Assert.assertEquals("Expected event amount was wrong", 1,
-                eventCollector.size());
-        Assert.assertEquals(
-                "Received locale change event for locale: "
-                        + Locale.getDefault().getDisplayName(),
+        Assert.assertEquals("Expected event amount was wrong", 1, eventCollector.size());
+        Assert.assertEquals("Received locale change event for locale: " + Locale.getDefault().getDisplayName(),
                 eventCollector.get(0));
     }
 
@@ -143,24 +123,19 @@ public class LocationObserverTest {
 
         ui.add(root);
 
-        Assert.assertEquals(
-                "No change observers so no events should be gotten.", 0,
-                eventCollector.size());
+        Assert.assertEquals("No change observers so no events should be gotten.", 0, eventCollector.size());
 
         Translations translations = new Translations();
         root.getElement().appendChild(translations.getElement());
 
-        Assert.assertEquals("Observer should have been notified on attach", 1,
-                eventCollector.size());
+        Assert.assertEquals("Observer should have been notified on attach", 1, eventCollector.size());
 
         translations.getElement().removeFromParent();
 
-        Assert.assertEquals("No event should have been gotten for removal", 1,
-                eventCollector.size());
+        Assert.assertEquals("No event should have been gotten for removal", 1, eventCollector.size());
 
         root.getElement().appendChild(translations.getElement());
-        Assert.assertEquals("Reattach should have given an event", 2,
-                eventCollector.size());
+        Assert.assertEquals("Reattach should have given an event", 2, eventCollector.size());
 
     }
 }

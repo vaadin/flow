@@ -26,8 +26,7 @@ import com.vaadin.flow.router.Route;
 public class PreserveOnRefreshShortcutView extends Div {
 
     public PreserveOnRefreshShortcutView() {
-        NativeButton button = new NativeButton(
-                "Press ENTER, reload the page, and press ENTER again",
+        NativeButton button = new NativeButton("Press ENTER, reload the page, and press ENTER again",
                 event -> handleClick());
         button.addClickShortcut(Key.ENTER);
         button.setId("trigger");

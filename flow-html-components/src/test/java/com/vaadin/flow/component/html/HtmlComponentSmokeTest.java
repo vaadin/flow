@@ -55,10 +55,8 @@ public class HtmlComponentSmokeTest {
     // Custom logic for components without a no-args constructor
     private static final Map<Class<? extends HtmlComponent>, Supplier<HtmlComponent>> customConstructors = new HashMap<>();
     static {
-        customConstructors.put(HtmlComponent.class,
-                () -> new HtmlComponent(Tag.DIV));
-        customConstructors.put(HtmlContainer.class,
-                () -> new HtmlContainer(Tag.DIV));
+        customConstructors.put(HtmlComponent.class, () -> new HtmlComponent(Tag.DIV));
+        customConstructors.put(HtmlContainer.class, () -> new HtmlContainer(Tag.DIV));
     }
 
     private static final Map<Class<?>, Object> testValues = new HashMap<>();
@@ -69,8 +67,7 @@ public class HtmlComponentSmokeTest {
         testValues.put(int.class, 42);
         testValues.put(IFrame.ImportanceType.class, IFrame.ImportanceType.HIGH);
         testValues.put(IFrame.SandboxType[].class,
-                new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS,
-                        IFrame.SandboxType.ALLOW_MODALS });
+                new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS });
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
     }
@@ -78,15 +75,14 @@ public class HtmlComponentSmokeTest {
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
     static {
         specialTestValues.put(NativeDetails.class, new HashMap<>());
-        specialTestValues.computeIfPresent(NativeDetails.class,
-                (key, nestedTestValueMap) -> {
-                    nestedTestValueMap.put(boolean.class, true); // special case
-                                                                 // because
-                                                                 // setOpen
-                                                                 // defaults to
-                                                                 // false
-                    return nestedTestValueMap;
-                });
+        specialTestValues.computeIfPresent(NativeDetails.class, (key, nestedTestValueMap) -> {
+            nestedTestValueMap.put(boolean.class, true); // special case
+                                                         // because
+                                                         // setOpen
+                                                         // defaults to
+                                                         // false
+            return nestedTestValueMap;
+        });
     }
 
     // For classes registered here testStringConstructor will be ignored. This
@@ -107,19 +103,15 @@ public class HtmlComponentSmokeTest {
         URL divClassLocationLocation = Div.class.getResource("Div.class");
         Assert.assertEquals(divClassLocationLocation.getProtocol(), "file");
 
-        Path componentClassesLocation = new File(
-                divClassLocationLocation.getPath()).getParentFile().toPath();
+        Path componentClassesLocation = new File(divClassLocationLocation.getPath()).getParentFile().toPath();
 
-        Files.list(componentClassesLocation)
-                .filter(HtmlComponentSmokeTest::isClassFile)
-                .map(HtmlComponentSmokeTest::loadClass)
-                .filter(HtmlComponentSmokeTest::isHtmlComponentSubclass)
+        Files.list(componentClassesLocation).filter(HtmlComponentSmokeTest::isClassFile)
+                .map(HtmlComponentSmokeTest::loadClass).filter(HtmlComponentSmokeTest::isHtmlComponentSubclass)
                 .map(HtmlComponentSmokeTest::asHtmlComponentSubclass)
                 .forEach(HtmlComponentSmokeTest::smokeTestComponent);
     }
 
-    private static void smokeTestComponent(
-            Class<? extends HtmlComponent> clazz) {
+    private static void smokeTestComponent(Class<? extends HtmlComponent> clazz) {
         try {
             // Test that an instance can be created
             HtmlComponent instance = createInstance(clazz);
@@ -136,32 +128,27 @@ public class HtmlComponentSmokeTest {
 
             // Test that all setters produce a result
             testSetters(instance);
-        } catch (InstantiationException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static void testStringConstructor(
-            Class<? extends HtmlComponent> clazz)
-            throws InstantiationException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException {
+    private static void testStringConstructor(Class<? extends HtmlComponent> clazz)
+            throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         try {
             String parameterValue = "Lorem";
 
-            Constructor<? extends HtmlComponent> constructor = clazz
-                    .getConstructor(String.class);
+            Constructor<? extends HtmlComponent> constructor = clazz.getConstructor(String.class);
 
             HtmlComponent instance = constructor.newInstance(parameterValue);
 
             if (clazz.getAnnotation(Tag.class) == null) {
-                Assert.assertEquals(constructor
-                        + " should set the tag for a class without @Tag",
-                        parameterValue, instance.getElement().getTag());
+                Assert.assertEquals(constructor + " should set the tag for a class without @Tag", parameterValue,
+                        instance.getElement().getTag());
             } else {
-                Assert.assertEquals(constructor
-                        + " should set the text content for a class with @Tag",
-                        parameterValue, instance.getElement().getText());
+                Assert.assertEquals(constructor + " should set the text content for a class with @Tag", parameterValue,
+                        instance.getElement().getText());
             }
         } catch (NoSuchMethodException e) {
             // No constructor to test
@@ -170,10 +157,8 @@ public class HtmlComponentSmokeTest {
     }
 
     private static void testSetters(HtmlComponent instance) {
-        Arrays.stream(instance.getClass().getMethods())
-                .filter(HtmlComponentSmokeTest::isSetter)
-                .filter(m -> !isSpecialSetter(m))
-                .forEach(m -> testSetter(instance, m));
+        Arrays.stream(instance.getClass().getMethods()).filter(HtmlComponentSmokeTest::isSetter)
+                .filter(m -> !isSpecialSetter(m)).forEach(m -> testSetter(instance, m));
     }
 
     private static boolean isSetter(Method method) {
@@ -202,28 +187,25 @@ public class HtmlComponentSmokeTest {
 
     private static boolean isSpecialSetter(Method method) {
         // Shorthand for Label.setFor(String)
-        if (method.getDeclaringClass() == Label.class
-                && method.getName().equals("setFor")
+        if (method.getDeclaringClass() == Label.class && method.getName().equals("setFor")
                 && method.getParameterTypes()[0] == Component.class) {
             return true;
         }
-        if (method.getDeclaringClass() == NativeLabel.class
-                && method.getName().equals("setFor")
+        if (method.getDeclaringClass() == NativeLabel.class && method.getName().equals("setFor")
                 && method.getParameterTypes()[0] == Component.class) {
             return true;
         }
 
         // Anchor.setTarget(AnchorTargetValue) -
         // https://github.com/vaadin/flow/issues/8346
-        if (method.getDeclaringClass() == Anchor.class
-                && method.getName().equals("setTarget")
+        if (method.getDeclaringClass() == Anchor.class && method.getName().equals("setTarget")
                 && method.getParameterTypes()[0] == AnchorTargetValue.class) {
             return true;
         }
 
         // setFoo(AbstractStreamResource) for resource URLs
-        if (method.getParameterCount() == 1 && AbstractStreamResource.class
-                .isAssignableFrom(method.getParameters()[0].getType())) {
+        if (method.getParameterCount() == 1
+                && AbstractStreamResource.class.isAssignableFrom(method.getParameters()[0].getType())) {
             return true;
         }
 
@@ -232,19 +214,16 @@ public class HtmlComponentSmokeTest {
         // - NativeDetails allows to setSummary(Component..) but it returns
         // Summary getSummary instead of Component[]
         // NativeDetails::setSummary(Component... components)
-        if (method.getDeclaringClass() == NativeDetails.class
-                && method.getName().startsWith("setSummary")) {
+        if (method.getDeclaringClass() == NativeDetails.class && method.getName().startsWith("setSummary")) {
             return true;
         }
 
         // NativeTable delegates caption text to the nested <caption> element
-        if (method.getDeclaringClass() == NativeTable.class
-                && method.getName().startsWith("setCaptionText")) {
+        if (method.getDeclaringClass() == NativeTable.class && method.getName().startsWith("setCaptionText")) {
             return true;
         }
 
-        if (method.getDeclaringClass() == FieldSet.class
-                && method.getName().startsWith("setContent")) {
+        if (method.getDeclaringClass() == FieldSet.class && method.getName().startsWith("setContent")) {
             return true;
         }
 
@@ -262,25 +241,20 @@ public class HtmlComponentSmokeTest {
         if (isOptional) {
             // setFoo(String) + Optional<String> getFoo() is ok
             Type gen = getter.getGenericReturnType();
-            getterType = (Class<?>) ((ParameterizedType) gen)
-                    .getActualTypeArguments()[0];
+            getterType = (Class<?>) ((ParameterizedType) gen).getActualTypeArguments()[0];
         }
-        Assert.assertEquals(setter + " should have the same type as its getter",
-                propertyType, getterType);
+        Assert.assertEquals(setter + " should have the same type as its getter", propertyType, getterType);
 
-        Map<Class<?>, Object> specialValueMap = specialTestValues
-                .get(instance.getClass());
+        Map<Class<?>, Object> specialValueMap = specialTestValues.get(instance.getClass());
         Object testValue;
-        if (specialValueMap != null
-                && specialValueMap.containsKey(propertyType)) {
+        if (specialValueMap != null && specialValueMap.containsKey(propertyType)) {
             testValue = specialValueMap.get(propertyType);
         } else {
             testValue = testValues.get(propertyType);
         }
 
         if (testValue == null) {
-            throw new UnsupportedOperationException(
-                    "No test value for " + propertyType);
+            throw new UnsupportedOperationException("No test value for " + propertyType);
         }
 
         StateNode elementNode = instance.getElement().getNode();
@@ -291,8 +265,7 @@ public class HtmlComponentSmokeTest {
             try {
                 originalGetterValue = getter.invoke(instance);
                 if (isOptional) {
-                    originalGetterValue = ((Optional<?>) originalGetterValue)
-                            .orElse(null);
+                    originalGetterValue = ((Optional<?>) originalGetterValue).orElse(null);
                 }
             } catch (InvocationTargetException e) {
                 // Unable to retrieve original value, assuming null
@@ -306,9 +279,7 @@ public class HtmlComponentSmokeTest {
 
             // Might have to add a blacklist for this logic at some point
             if (!testValue.equals(originalGetterValue)) {
-                Assert.assertTrue(
-                        setter + " should update the underlying state node",
-                        hasPendingChanges(elementNode));
+                Assert.assertTrue(setter + " should update the underlying state node", hasPendingChanges(elementNode));
             }
 
             Object getterValue = getter.invoke(instance);
@@ -316,11 +287,9 @@ public class HtmlComponentSmokeTest {
                 getterValue = ((Optional<?>) getterValue).get();
             }
 
-            AssertUtils.assertEquals(getter + " should return the set value",
-                    testValue, getterValue);
+            AssertUtils.assertEquals(getter + " should return the set value", testValue, getterValue);
 
-        } catch (IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e) {
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
@@ -338,8 +307,7 @@ public class HtmlComponentSmokeTest {
         String getterName;
 
         Class<?>[] parameterTypes = setter.getParameterTypes();
-        if (parameterTypes.length == 1
-                && boolean.class.equals(parameterTypes[0])) {
+        if (parameterTypes.length == 1 && boolean.class.equals(parameterTypes[0])) {
             getterName = setterName.replaceFirst("set", "is");
         } else {
             getterName = setterName.replaceFirst("set", "get");
@@ -353,8 +321,7 @@ public class HtmlComponentSmokeTest {
         }
     }
 
-    private static HtmlComponent createInstance(
-            Class<? extends HtmlComponent> clazz)
+    private static HtmlComponent createInstance(Class<? extends HtmlComponent> clazz)
             throws InstantiationException, IllegalAccessException {
         Supplier<HtmlComponent> constructor = customConstructors.get(clazz);
         if (constructor != null) {
@@ -365,10 +332,8 @@ public class HtmlComponentSmokeTest {
     }
 
     private static Class<?> loadClass(Path classFile) {
-        String className = classFile.getFileName().toString()
-                .replaceAll("\\.class$", "");
-        String qualifiedName = Div.class.getPackage().getName() + "."
-                + className;
+        String className = classFile.getFileName().toString().replaceAll("\\.class$", "");
+        String qualifiedName = Div.class.getPackage().getName() + "." + className;
 
         try {
             return Class.forName(qualifiedName);
@@ -385,8 +350,7 @@ public class HtmlComponentSmokeTest {
         return HtmlComponent.class.isAssignableFrom(cls);
     }
 
-    private static Class<? extends HtmlComponent> asHtmlComponentSubclass(
-            Class<?> cls) {
+    private static Class<? extends HtmlComponent> asHtmlComponentSubclass(Class<?> cls) {
         return cls.asSubclass(HtmlComponent.class);
     }
 }

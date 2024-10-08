@@ -28,27 +28,22 @@ import com.vaadin.flow.router.Router;
 /**
  * Context information for a navigation request.
  * <p>
- * The navigation context is responsible for providing details about the current
- * navigation, such as the navigation target, the location and the current user,
- * and to allow {@link NavigationAccessChecker} to create a representation of
+ * The navigation context is responsible for providing details about the current navigation, such as the navigation
+ * target, the location and the current user, and to allow {@link NavigationAccessChecker} to create a representation of
  * their decisions.
  * <p>
- * A {@link NavigationAccessChecker} should use {@link #allow()},
- * {@link #neutral()}, {@link #deny(String)} and {@link #reject(String)} methods
- * to create a result in
- * {@link NavigationAccessChecker#check(NavigationContext)} implementation.
+ * A {@link NavigationAccessChecker} should use {@link #allow()}, {@link #neutral()}, {@link #deny(String)} and
+ * {@link #reject(String)} methods to create a result in {@link NavigationAccessChecker#check(NavigationContext)}
+ * implementation.
  *
  * <ul>
- * <li>{@link #allow()} created a result whose meaning is that the access to a
- * view is granted.</li>
- * <li>{@link #neutral()} means that the access checker is not able to determine
- * if the current navigation should be allowed or not.</li>
- * <li>{@link #deny(String)} is used to create a response that will prevent the
- * navigation to the target view. The given reason should provide details that
- * will help to debug access control issues.</li>
- * <li>{@link #reject(String)} denies the access to the target view, but should
- * be used to indicate mistakes in security configuration that do not allow the
- * navigation checker to take a decision; for example, a configuration where the
+ * <li>{@link #allow()} created a result whose meaning is that the access to a view is granted.</li>
+ * <li>{@link #neutral()} means that the access checker is not able to determine if the current navigation should be
+ * allowed or not.</li>
+ * <li>{@link #deny(String)} is used to create a response that will prevent the navigation to the target view. The given
+ * reason should provide details that will help to debug access control issues.</li>
+ * <li>{@link #reject(String)} denies the access to the target view, but should be used to indicate mistakes in security
+ * configuration that do not allow the navigation checker to take a decision; for example, a configuration where the
  * path {@literal /my/view} is public, but {@literal /my/*} is protected.</li>
  * </ul>
  */
@@ -78,29 +73,22 @@ public final class NavigationContext {
      * @param roleChecker
      *            a function that can answer if a user has a given role
      * @param errorHandling
-     *            {@literal true} if the current navigation is related to an
-     *            error handling phase, {@literal false} for a regular
-     *            navigation to a target view
+     *            {@literal true} if the current navigation is related to an error handling phase, {@literal false} for
+     *            a regular navigation to a target view
      */
-    public NavigationContext(Router router, Class<?> navigationTarget,
-            Location location, RouteParameters parameters, Principal principal,
-            Predicate<String> roleChecker, boolean errorHandling) {
+    public NavigationContext(Router router, Class<?> navigationTarget, Location location, RouteParameters parameters,
+            Principal principal, Predicate<String> roleChecker, boolean errorHandling) {
         this.router = Objects.requireNonNull(router, "router must no be null");
-        this.navigationTarget = Objects.requireNonNull(navigationTarget,
-                "navigationTarget must no be null");
-        this.location = Objects.requireNonNull(location,
-                "location must no be null");
-        this.parameters = Objects.requireNonNull(parameters,
-                "parameters must no be null");
-        this.roleChecker = Objects.requireNonNull(roleChecker,
-                "roleChecker must no be null");
+        this.navigationTarget = Objects.requireNonNull(navigationTarget, "navigationTarget must no be null");
+        this.location = Objects.requireNonNull(location, "location must no be null");
+        this.parameters = Objects.requireNonNull(parameters, "parameters must no be null");
+        this.roleChecker = Objects.requireNonNull(roleChecker, "roleChecker must no be null");
         this.principal = principal;
         this.errorHandling = errorHandling;
     }
 
     /**
-     * Create a new navigation context instance based on a
-     * {@link BeforeEnterEvent}.
+     * Create a new navigation context instance based on a {@link BeforeEnterEvent}.
      *
      * @param event
      *            the event created before ongoing navigation happens.
@@ -109,10 +97,8 @@ public final class NavigationContext {
      * @param roleChecker
      *            a function that can answer if a user has a given role
      */
-    public NavigationContext(BeforeEnterEvent event, Principal principal,
-            Predicate<String> roleChecker) {
-        this(event.getSource(), event.getNavigationTarget(),
-                event.getLocation(), event.getRouteParameters(), principal,
+    public NavigationContext(BeforeEnterEvent event, Principal principal, Predicate<String> roleChecker) {
+        this(event.getSource(), event.getNavigationTarget(), event.getLocation(), event.getRouteParameters(), principal,
                 roleChecker, event.isErrorEvent());
     }
 
@@ -128,9 +114,8 @@ public final class NavigationContext {
     /**
      * Gets the navigation target.
      * <p>
-     * In case of error handling, the navigation target refers to the
-     * {@link com.vaadin.flow.router.HasErrorParameter} component responsible to
-     * manage cope with the raised exception.
+     * In case of error handling, the navigation target refers to the {@link com.vaadin.flow.router.HasErrorParameter}
+     * component responsible to manage cope with the raised exception.
      *
      * @return navigation target, not {@code null}
      * @see #isErrorHandling()
@@ -142,8 +127,7 @@ public final class NavigationContext {
     /**
      * Gets the requested location.
      * <p>
-     * Note that in case of error handling the location still references the
-     * initial request.
+     * Note that in case of error handling the location still references the initial request.
      *
      * @return the requested location, not {@code null}
      * @see #isErrorHandling()
@@ -155,8 +139,7 @@ public final class NavigationContext {
     /**
      * Gets the route parameters associated with this event.
      *
-     * @return route parameters retrieved from the navigation url, not
-     *         {@code null}
+     * @return route parameters retrieved from the navigation url, not {@code null}
      */
     public RouteParameters getParameters() {
         return parameters;
@@ -165,20 +148,17 @@ public final class NavigationContext {
     /**
      * Gets the principal for the currently logged in user.
      *
-     * @return a representation of the currently logged in user or {@code null}
-     *         if no user is currently logged in
+     * @return a representation of the currently logged in user or {@code null} if no user is currently logged in
      */
     public Principal getPrincipal() {
         return principal;
     }
 
     /**
-     * Gets if current navigation change is related to error handling or if it
-     * is a regular navigation to a target view.
+     * Gets if current navigation change is related to error handling or if it is a regular navigation to a target view.
      *
-     * @return {@literal true} if the current navigation is related to an error
-     *         handling phase, {@literal false} for a regular navigation to a
-     *         target view
+     * @return {@literal true} if the current navigation is related to an error handling phase, {@literal false} for a
+     *         regular navigation to a target view
      */
     public boolean isErrorHandling() {
         return errorHandling;
@@ -189,16 +169,14 @@ public final class NavigationContext {
      *
      * @param role
      *            a String specifying the name of the role
-     * @return {@literal true} if the current user belongs to the given role,
-     *         {@literal false} otherwise
+     * @return {@literal true} if the current user belongs to the given role, {@literal false} otherwise
      */
     public boolean hasRole(String role) {
         return roleChecker.test(role);
     }
 
     /**
-     * Create a result instance informing that the navigation to the target view
-     * is allowed for the current user.
+     * Create a result instance informing that the navigation to the target view is allowed for the current user.
      *
      * @return a {@link AccessCheckDecision#ALLOW} result instance.
      */
@@ -207,8 +185,8 @@ public final class NavigationContext {
     }
 
     /**
-     * Create a result instance informing that the checker cannot take a
-     * decision based on the given navigation information.
+     * Create a result instance informing that the checker cannot take a decision based on the given navigation
+     * information.
      *
      * @return a {@link AccessCheckDecision#NEUTRAL} result instance.
      */
@@ -217,12 +195,10 @@ public final class NavigationContext {
     }
 
     /**
-     * Create a result instance informing that the navigation to the target view
-     * is denied for the current user.
+     * Create a result instance informing that the navigation to the target view is denied for the current user.
      *
      * @param reason
-     *            a message explaining why the navigation has been denied.
-     *            Useful for debugging purposes.
+     *            a message explaining why the navigation has been denied. Useful for debugging purposes.
      * @return a {@link AccessCheckDecision#DENY} result instance.
      */
     public AccessCheckResult deny(String reason) {
@@ -230,13 +206,12 @@ public final class NavigationContext {
     }
 
     /**
-     * Create a result instance informing that the navigation to the target view
-     * is denied for the current user because of a misconfiguration or a
-     * critical development time error.
+     * Create a result instance informing that the navigation to the target view is denied for the current user because
+     * of a misconfiguration or a critical development time error.
      *
      * @param reason
-     *            a message explaining why the navigation has been denied and
-     *            the critical issue encountered. Useful for debugging purposes.
+     *            a message explaining why the navigation has been denied and the critical issue encountered. Useful for
+     *            debugging purposes.
      * @return a {@link AccessCheckDecision#REJECT} result instance.
      */
     public AccessCheckResult reject(String reason) {

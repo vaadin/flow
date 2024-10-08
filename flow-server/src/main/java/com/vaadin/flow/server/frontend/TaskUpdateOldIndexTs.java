@@ -51,8 +51,7 @@ public class TaskUpdateOldIndexTs implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        Arrays.asList(INDEX_TSX, INDEX_TS, INDEX_JS).stream()
-                .map(type -> new File(frontendDirectory, type))
+        Arrays.asList(INDEX_TSX, INDEX_TS, INDEX_JS).stream().map(type -> new File(frontendDirectory, type))
                 .filter(File::exists).forEach(this::modifyImportsIfNeeded);
     }
 
@@ -60,8 +59,7 @@ public class TaskUpdateOldIndexTs implements FallibleCommand {
         try {
 
             String content = FileUtils.readFileToString(indexFile, UTF_8);
-            String updated = content.replaceFirst(
-                    "(['\"])../target/frontend/generated-flow-imports",
+            String updated = content.replaceFirst("(['\"])../target/frontend/generated-flow-imports",
                     "$1Frontend/generated/flow/generated-flow-imports.js");
             if (!updated.equals(content)) {
                 FileUtils.write(indexFile, updated, UTF_8);

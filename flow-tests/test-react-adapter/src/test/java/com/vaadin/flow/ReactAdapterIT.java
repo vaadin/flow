@@ -16,12 +16,10 @@ public class ReactAdapterIT extends ChromeBrowserTest {
 
         waitForDevServer();
 
-        Assert.assertEquals("initialValue",
-                getReactElement().getPropertyString("value"));
+        Assert.assertEquals("initialValue", getReactElement().getPropertyString("value"));
 
         $(NativeButtonElement.class).id("getValueButton").click();
-        Assert.assertEquals("initialValue",
-                $(SpanElement.class).id("getOutput").getText());
+        Assert.assertEquals("initialValue", $(SpanElement.class).id("getOutput").getText());
     }
 
     @Test
@@ -32,8 +30,7 @@ public class ReactAdapterIT extends ChromeBrowserTest {
 
         $(NativeButtonElement.class).id("setValueButton").click();
 
-        Assert.assertEquals("set value",
-                getReactElement().getPropertyString("value"));
+        Assert.assertEquals("set value", getReactElement().getPropertyString("value"));
     }
 
     @Test
@@ -48,8 +45,7 @@ public class ReactAdapterIT extends ChromeBrowserTest {
 
         $(NativeButtonElement.class).id("getValueButton").click();
 
-        Assert.assertEquals("get value",
-                $(SpanElement.class).id("getOutput").getText());
+        Assert.assertEquals("get value", $(SpanElement.class).id("getOutput").getText());
     }
 
     @Test
@@ -62,8 +58,7 @@ public class ReactAdapterIT extends ChromeBrowserTest {
         getReactElement().focus();
         getReactElement().sendKeys("listener value");
 
-        Assert.assertEquals("listener value",
-                $(SpanElement.class).id("listenerOutput").getText());
+        Assert.assertEquals("listener value", $(SpanElement.class).id("listenerOutput").getText());
     }
 
     private TestBenchElement getAdapterElement() {

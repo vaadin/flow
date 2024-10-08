@@ -47,13 +47,11 @@ public class ShortcutEvent extends EventObject implements Serializable {
      * @param keyModifiers
      *            set of {@link KeyModifier KeyModifiers} of the shortcut
      */
-    public ShortcutEvent(Component source, Component lifecycleOwner, Key key,
-            Set<KeyModifier> keyModifiers) {
+    public ShortcutEvent(Component source, Component lifecycleOwner, Key key, Set<KeyModifier> keyModifiers) {
         super(source);
         this.lifecycleOwner = lifecycleOwner;
         this.key = key;
-        this.keyModifiers = keyModifiers == null ? Collections.emptySet()
-                : Collections.unmodifiableSet(keyModifiers);
+        this.keyModifiers = keyModifiers == null ? Collections.emptySet() : Collections.unmodifiableSet(keyModifiers);
     }
 
     /**
@@ -76,8 +74,7 @@ public class ShortcutEvent extends EventObject implements Serializable {
     }
 
     /**
-     * Primary {@link Key} that triggered the shortcut. Primary key can be
-     * anything that is not a {@link KeyModifier}.
+     * Primary {@link Key} that triggered the shortcut. Primary key can be anything that is not a {@link KeyModifier}.
      *
      * @return primary key
      */
@@ -86,8 +83,7 @@ public class ShortcutEvent extends EventObject implements Serializable {
     }
 
     /**
-     * Set of {@link KeyModifier KeyModifiers} that, in combination with the
-     * primary key, triggered the shortcut.
+     * Set of {@link KeyModifier KeyModifiers} that, in combination with the primary key, triggered the shortcut.
      *
      * @return set of key modifiers
      */
@@ -96,9 +92,8 @@ public class ShortcutEvent extends EventObject implements Serializable {
     }
 
     /**
-     * Checks if the event matches the given {@link Key} and (optional)
-     * {@link KeyModifier KeyModifiers}. If {@code key} is null or a wrong
-     * number of {@code keyModifiers} is given, returns {@code false}.
+     * Checks if the event matches the given {@link Key} and (optional) {@link KeyModifier KeyModifiers}. If {@code key}
+     * is null or a wrong number of {@code keyModifiers} is given, returns {@code false}.
      *
      * @param key
      *            {@code key} to compare
@@ -113,10 +108,8 @@ public class ShortcutEvent extends EventObject implements Serializable {
         if (keyModifiers.length != this.keyModifiers.size()) {
             return false;
         }
-        List<String> keyStrings = Stream.of(keyModifiers)
-                .map(k -> k.getKeys().get(0)).collect(Collectors.toList());
+        List<String> keyStrings = Stream.of(keyModifiers).map(k -> k.getKeys().get(0)).collect(Collectors.toList());
         return key.matches(this.key.getKeys().get(0))
-                && this.keyModifiers.stream().allMatch(
-                        k -> keyStrings.stream().anyMatch(k::matches));
+                && this.keyModifiers.stream().allMatch(k -> keyStrings.stream().anyMatch(k::matches));
     }
 }

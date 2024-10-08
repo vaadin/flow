@@ -11,8 +11,7 @@ import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public abstract class AbstractBasicElementComponentIT
-        extends ChromeBrowserTest {
+public abstract class AbstractBasicElementComponentIT extends ChromeBrowserTest {
 
     @Test
     public void ensureDomUpdatesAndEventsDoSomething() {
@@ -33,9 +32,7 @@ public abstract class AbstractBasicElementComponentIT
 
         String buttonText = getThankYouElements().get(0).getText();
         String expected = "Thank you for clicking \"Click me\" at \\((\\d+),(\\d+)\\)! The field value is abc";
-        Assert.assertTrue(
-                "Expected '" + expected + "', was '" + buttonText + "'",
-                buttonText.matches(expected));
+        Assert.assertTrue("Expected '" + expected + "', was '" + buttonText + "'", buttonText.matches(expected));
 
         // Clicking removes the element
         getThankYouElements().get(0).click();

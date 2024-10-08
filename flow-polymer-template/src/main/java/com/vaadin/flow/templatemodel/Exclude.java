@@ -15,16 +15,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines which properties to exclude when importing a bean into a template
- * model.
+ * Defines which properties to exclude when importing a bean into a template model.
  * <p>
- * Use this annotation on bean setters in your {@link TemplateModel} class to
- * restrict which properties of the beans are imported into the model.
+ * Use this annotation on bean setters in your {@link TemplateModel} class to restrict which properties of the beans are
+ * imported into the model.
  * <p>
- * You can only define exact matches using this filter. If you need more
- * control, you can use
- * {@link TemplateModel#importBean(String, Object, java.util.function.Predicate)}
- * and define a custom filter.
+ * You can only define exact matches using this filter. If you need more control, you can use
+ * {@link TemplateModel#importBean(String, Object, java.util.function.Predicate)} and define a custom filter.
  * <p>
  * Note that <code>@Exclude</code> annotations are not inherited.
  *
@@ -33,10 +30,8 @@ import java.lang.annotation.Target;
  * @author Vaadin Ltd
  * @since 1.0
  *
- * @deprecated Template model and polymer template support is deprecated - we
- *             recommend you to use {@code LitTemplate} instead. Read more
- *             details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ * @deprecated Template model and polymer template support is deprecated - we recommend you to use {@code LitTemplate}
+ *             instead. Read more details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -49,8 +44,7 @@ public @interface Exclude {
      * <p>
      * By default no properties are excluded.
      *
-     * @return the properties to exclude from a bean when importing into a
-     *         template model
+     * @return the properties to exclude from a bean when importing into a template model
      */
     String[] value();
 }

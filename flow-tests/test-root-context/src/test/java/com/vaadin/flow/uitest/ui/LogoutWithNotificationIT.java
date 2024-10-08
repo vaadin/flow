@@ -39,8 +39,7 @@ public class LogoutWithNotificationIT extends ChromeBrowserTest {
         // There can be "Session Expired" message because of heartbeat
         // Strings defined in com.vaadin.flow.server.SystemMessages
         checkLogsForErrors(msg -> msg.contains("Session Expired")
-                || msg.contains("Take note of any unsaved data, and click "
-                        + "here or press ESC key to continue."));
+                || msg.contains("Take note of any unsaved data, and click " + "here or press ESC key to continue."));
 
         // There can't be any error dialog
         Assert.assertFalse(isElementPresent(By.className("v-system-error")));

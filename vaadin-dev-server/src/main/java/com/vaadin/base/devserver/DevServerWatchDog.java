@@ -23,11 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Opens a server socket which is supposed to be opened until dev mode is active
- * inside JVM.
+ * Opens a server socket which is supposed to be opened until dev mode is active inside JVM.
  * <p>
- * If this socket is closed then there is no anymore Java "client" for the dev
- * server and it should be stopped.
+ * If this socket is closed then there is no anymore Java "client" for the dev server and it should be stopped.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -45,8 +43,7 @@ class DevServerWatchDog {
                 server = new ServerSocket(0);
                 server.setSoTimeout(0);
                 if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("Watchdog server has started on port {}",
-                            server.getLocalPort());
+                    getLogger().debug("Watchdog server has started on port {}", server.getLocalPort());
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Could not open a server socket", e);
@@ -60,8 +57,7 @@ class DevServerWatchDog {
                     Socket accept = server.accept();
                     accept.setSoTimeout(0);
                 } catch (IOException e) {
-                    getLogger().debug(
-                            "Error occurred during accept a connection", e);
+                    getLogger().debug("Error occurred during accept a connection", e);
                 }
             }
         }
@@ -71,8 +67,7 @@ class DevServerWatchDog {
                 try {
                     server.close();
                 } catch (IOException e) {
-                    getLogger().debug(
-                            "Error occurred during close the server socket", e);
+                    getLogger().debug("Error occurred during close the server socket", e);
                 }
             }
         }

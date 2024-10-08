@@ -48,8 +48,7 @@ public class ComponentMapping extends ServerSideFeature {
     /**
      * Assigns the given component to this node.
      * <p>
-     * When assigning a component to the node, there must be no previously
-     * assigned component.
+     * When assigning a component to the node, there must be no previously assigned component.
      *
      * @param component
      *            the component to assign to this node, not {@code null}
@@ -61,21 +60,17 @@ public class ComponentMapping extends ServerSideFeature {
         this.component = component;
 
         if (getNode().hasFeature(ClientCallableHandlers.class)) {
-            getNode().getFeature(ClientCallableHandlers.class)
-                    .componentSet(component);
+            getNode().getFeature(ClientCallableHandlers.class).componentSet(component);
         }
-        if (component instanceof DeprecatedPolymerTemplate
-                && getNode().hasFeature(PolymerServerEventHandlers.class)) {
-            getNode().getFeature(PolymerServerEventHandlers.class)
-                    .componentSet((DeprecatedPolymerTemplate) component);
+        if (component instanceof DeprecatedPolymerTemplate && getNode().hasFeature(PolymerServerEventHandlers.class)) {
+            getNode().getFeature(PolymerServerEventHandlers.class).componentSet((DeprecatedPolymerTemplate) component);
         }
     }
 
     /**
      * Gets the component this node has been mapped to, if any.
      *
-     * @return an optional component, or an empty optional if no component has
-     *         been mapped to this node
+     * @return an optional component, or an empty optional if no component has been mapped to this node
      */
     public Optional<Component> getComponent() {
         return Optional.ofNullable(component);
@@ -85,23 +80,19 @@ public class ComponentMapping extends ServerSideFeature {
      * Gets the component mapped to the given state node.
      *
      * @param node
-     *            the state node for which to find a component, not
-     *            <code>null</code>
-     * @return the mapped component, or an empty optional if no component is
-     *         mapped
+     *            the state node for which to find a component, not <code>null</code>
+     * @return the mapped component, or an empty optional if no component is mapped
      */
     public static Optional<Component> getComponent(StateNode node) {
         assert node != null;
         assert node.hasFeature(ComponentMapping.class);
 
-        return node.getFeatureIfInitialized(ComponentMapping.class)
-                .flatMap(ComponentMapping::getComponent);
+        return node.getFeatureIfInitialized(ComponentMapping.class).flatMap(ComponentMapping::getComponent);
     }
 
     @Override
     public void onAttach(boolean initialAttach) {
-        getComponent().ifPresent(
-                c -> ComponentUtil.onComponentAttach(c, initialAttach));
+        getComponent().ifPresent(c -> ComponentUtil.onComponentAttach(c, initialAttach));
     }
 
     @Override

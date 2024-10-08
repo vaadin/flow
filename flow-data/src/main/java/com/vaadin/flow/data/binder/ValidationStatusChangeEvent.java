@@ -21,8 +21,7 @@ import java.io.Serializable;
 
 /**
  * The event to be processed when
- * {@link ValidationStatusChangeListener#validationStatusChanged(ValidationStatusChangeEvent)}
- * invoked.
+ * {@link ValidationStatusChangeListener#validationStatusChanged(ValidationStatusChangeEvent)} invoked.
  *
  * @since 23.2
  *
@@ -34,8 +33,7 @@ public class ValidationStatusChangeEvent<V> implements Serializable {
     private final HasValue<?, V> source;
     private final boolean newStatus;
 
-    public ValidationStatusChangeEvent(HasValue<?, V> source,
-            boolean newStatus) {
+    public ValidationStatusChangeEvent(HasValue<?, V> source, boolean newStatus) {
         this.source = source;
         this.newStatus = newStatus;
     }

@@ -26,8 +26,8 @@ import com.vaadin.flow.uitest.servlet.ViewClassLocator;
 public class ToStringTest {
     @Test
     public void testViewsElementsStringable() throws Exception {
-        Collection<Class<? extends Component>> viewClasses = new ViewClassLocator(
-                getClass().getClassLoader()).getAllViewClasses();
+        Collection<Class<? extends Component>> viewClasses = new ViewClassLocator(getClass().getClassLoader())
+                .getAllViewClasses();
         for (Class<? extends Component> viewClass : viewClasses) {
             Component view = viewClass.newInstance();
             String string = view.getElement().toString();

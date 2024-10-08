@@ -30,19 +30,16 @@ public class NPEHandlerIT extends AbstractSpringTest {
     public void npeIsHandledByComponent() {
         open();
 
-        Assert.assertTrue(
-                "Couldn't find element from the component which represents error for "
-                        + NullPointerException.class.getName(),
-                isElementPresent(By.id("npe-handle")));
+        Assert.assertTrue("Couldn't find element from the component which represents error for "
+                + NullPointerException.class.getName(), isElementPresent(By.id("npe-handle")));
     }
 
     @Test
     public void noRouteIsHandledByExistingFlowComponent() {
         String nonExistingRoutePath = "non-existing-route";
-        getDriver().get(getTestURL(getRootURL(),
-                getContextPath() + '/' + nonExistingRoutePath, new String[0]));
+        getDriver().get(getTestURL(getRootURL(), getContextPath() + '/' + nonExistingRoutePath, new String[0]));
 
-        Assert.assertTrue(getDriver().getPageSource().contains(String
-                .format("Could not navigate to '%s'", nonExistingRoutePath)));
+        Assert.assertTrue(getDriver().getPageSource()
+                .contains(String.format("Could not navigate to '%s'", nonExistingRoutePath)));
     }
 }

@@ -29,11 +29,9 @@ public class DevModeConfigIT extends ChromeBrowserTest {
 
         Assert.assertEquals("productionMode is expected to be false", "false",
                 findElement(By.id("productionMode")).getText());
-        Assert.assertEquals("devModeLiveReloadEnabled is expected to be false",
-                "false",
+        Assert.assertEquals("devModeLiveReloadEnabled is expected to be false", "false",
                 findElement(By.id("devModeLiveReloadEnabled")).getText());
 
-        Assert.assertTrue(
-                findElements(By.id("vaadin-live-reload-indicator")).isEmpty());
+        Assert.assertTrue(findElements(By.id("vaadin-live-reload-indicator")).isEmpty());
     }
 }

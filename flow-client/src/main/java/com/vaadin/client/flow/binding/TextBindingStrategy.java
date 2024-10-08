@@ -39,11 +39,9 @@ import elemental.dom.Text;
 public class TextBindingStrategy implements BindingStrategy<Text> {
 
     /**
-     * This is used as a weak set. Only keys are important so that they are
-     * weakly referenced
+     * This is used as a weak set. Only keys are important so that they are weakly referenced
      */
-    private static final JsWeakMap<StateNode, Boolean> BOUND = JsCollections
-            .weakMap();
+    private static final JsWeakMap<StateNode, Boolean> BOUND = JsCollections.weakMap();
 
     @Override
     public Text create(StateNode node) {
@@ -56,8 +54,7 @@ public class TextBindingStrategy implements BindingStrategy<Text> {
     }
 
     @Override
-    public void bind(StateNode stateNode, Text htmlNode,
-            BinderContext nodeFactory) {
+    public void bind(StateNode stateNode, Text htmlNode, BinderContext nodeFactory) {
         assert stateNode.hasFeature(NodeFeatures.TEXT_NODE);
 
         if (BOUND.has(stateNode)) {
@@ -68,8 +65,8 @@ public class TextBindingStrategy implements BindingStrategy<Text> {
         NodeMap textMap = stateNode.getMap(NodeFeatures.TEXT_NODE);
         MapProperty textProperty = textMap.getProperty(NodeProperties.TEXT);
 
-        Computation computation = Reactive.runWhenDependenciesChange(
-                () -> htmlNode.setData((String) textProperty.getValue()));
+        Computation computation = Reactive
+                .runWhenDependenciesChange(() -> htmlNode.setData((String) textProperty.getValue()));
 
         stateNode.addUnregisterListener(e -> unbind(stateNode, computation));
 

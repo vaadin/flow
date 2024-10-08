@@ -37,8 +37,7 @@ public class FindComponentView extends Div {
             int nodeId = Integer.parseInt(nodeIdInput.getValue());
             VaadinSession session = VaadinSession.getCurrent();
             Element element = session.findElement(uiId, nodeId);
-            result.setText("Found component with id "
-                    + element.getComponent().get().getId().get());
+            result.setText("Found component with id " + element.getComponent().get().getId().get());
         });
         button.setId("check");
 

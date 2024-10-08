@@ -60,8 +60,7 @@ public class WebComponentWrapperTest {
 
         // make component available and bind properties to it
         binding = (WebComponentBinding<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(exporter).createWebComponentBinding(
-                        new MockInstantiator(), element, Json.createObject());
+                .create(exporter).createWebComponentBinding(new MockInstantiator(), element, Json.createObject());
         wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
     }
@@ -70,14 +69,11 @@ public class WebComponentWrapperTest {
     public void wrappedMyComponent_syncSetsCorrectValuesToFields() {
         wrapper.sync(MSG_PROPERTY, Json.create("MyMessage"));
 
-        Assert.assertEquals("Message field should have updated with new value",
-                "MyMessage", component.message);
+        Assert.assertEquals("Message field should have updated with new value", "MyMessage", component.message);
 
         wrapper.sync(INT_PROPERTY, Json.create(10));
 
-        Assert.assertEquals(
-                "IntegerValue field should contain a matching integer value",
-                10, component.integerValue);
+        Assert.assertEquals("IntegerValue field should contain a matching integer value", 10, component.integerValue);
     }
 
     @Test
@@ -88,25 +84,21 @@ public class WebComponentWrapperTest {
         wrapper.sync(INT_PROPERTY, Json.create(4));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three string messages should have come through", 3,
-                component.oldMessages.size());
+        Assert.assertEquals("Three string messages should have come through", 3, component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three integer messages should have come through",
-                3, component.oldIntegers.size());
+        Assert.assertEquals("Three integer messages should have come through", 3, component.oldIntegers.size());
 
-        Assert.assertEquals("String messages arrived in correct order",
-                Arrays.asList("", "one", "three"), component.oldMessages);
+        Assert.assertEquals("String messages arrived in correct order", Arrays.asList("", "one", "three"),
+                component.oldMessages);
 
-        Assert.assertEquals("Integer messages arrived in correct order",
-                Arrays.asList(0, 2, 4), component.oldIntegers);
+        Assert.assertEquals("Integer messages arrived in correct order", Arrays.asList(0, 2, 4), component.oldIntegers);
 
     }
 
     @Test
     public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
-        WebComponentBinding<MyExtension> binding = constructWrapperAndGetBinding(
-                new MyExtensionExporter(), null, null);
+        WebComponentBinding<MyExtension> binding = constructWrapperAndGetBinding(new MyExtensionExporter(), null, null);
 
         MyExtension component = binding.getComponent();
 
@@ -116,25 +108,20 @@ public class WebComponentWrapperTest {
         wrapper.sync(INT_PROPERTY, Json.create(4));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three string messages should have come through", 3,
-                component.oldMessages.size());
+        Assert.assertEquals("Three string messages should have come through", 3, component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three integer messages should have come through",
-                3, component.oldIntegers.size());
+        Assert.assertEquals("Three integer messages should have come through", 3, component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",
-                Arrays.asList("Extended ", "Extended one", "Extended three"),
-                component.oldMessages);
+                Arrays.asList("Extended ", "Extended one", "Extended three"), component.oldMessages);
 
-        Assert.assertEquals("Integer messages arrived in correct order",
-                Arrays.asList(0, 2, 4), component.oldIntegers);
+        Assert.assertEquals("Integer messages arrived in correct order", Arrays.asList(0, 2, 4), component.oldIntegers);
     }
 
     @Test
     public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
-        WebComponentBinding<MyComponent> binding = constructWrapperAndGetBinding(
-                new ExtendedExporter(), null, null);
+        WebComponentBinding<MyComponent> binding = constructWrapperAndGetBinding(new ExtendedExporter(), null, null);
 
         MyComponent component = binding.getComponent();
 
@@ -145,22 +132,17 @@ public class WebComponentWrapperTest {
         wrapper.sync(BOOLEAN_PROPERTY, Json.create(true));
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three string messages should have come through", 3,
-                component.oldMessages.size());
+        Assert.assertEquals("Three string messages should have come through", 3, component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three integer messages should have come through",
-                3, component.oldIntegers.size());
+        Assert.assertEquals("Three integer messages should have come through", 3, component.oldIntegers.size());
 
-        Assert.assertEquals("String messages arrived in correct order",
-                Arrays.asList("Default", "one", "three"),
+        Assert.assertEquals("String messages arrived in correct order", Arrays.asList("Default", "one", "three"),
                 component.oldMessages);
 
-        Assert.assertEquals("Integer messages arrived in correct order",
-                Arrays.asList(0, 2, 4), component.oldIntegers);
+        Assert.assertEquals("Integer messages arrived in correct order", Arrays.asList(0, 2, 4), component.oldIntegers);
 
-        Assert.assertTrue("Boolean property should have been set to true",
-                component.booleanValue);
+        Assert.assertTrue("Boolean property should have been set to true", component.booleanValue);
     }
 
     @Test
@@ -174,15 +156,13 @@ public class WebComponentWrapperTest {
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        Assert.assertTrue("Wrapper should still be connected on the server",
-                wrapper.getParent().isPresent());
+        Assert.assertTrue("Wrapper should still be connected on the server", wrapper.getParent().isPresent());
 
         wrapper.reconnect();
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis() + 1200);
 
-        Assert.assertTrue("Wrapper should stay connected on the server",
-                wrapper.getParent().isPresent());
+        Assert.assertTrue("Wrapper should stay connected on the server", wrapper.getParent().isPresent());
     }
 
     @Test
@@ -196,14 +176,11 @@ public class WebComponentWrapperTest {
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
 
-        Assert.assertTrue("Wrapper should still be connected on the server",
-                wrapper.getParent().isPresent());
+        Assert.assertTrue("Wrapper should still be connected on the server", wrapper.getParent().isPresent());
 
         internals.setLastHeartbeatTimestamp(System.currentTimeMillis() + 1200);
 
-        Assert.assertFalse(
-                "Wrapper should have been disconnected also on the server",
-                wrapper.getParent().isPresent());
+        Assert.assertFalse("Wrapper should have been disconnected also on the server", wrapper.getParent().isPresent());
     }
 
     /**
@@ -217,15 +194,13 @@ public class WebComponentWrapperTest {
      *            type of the exported component
      * @return web component wrapper
      */
-    private <C extends Component> WebComponentBinding<C> constructWrapperAndGetBinding(
-            WebComponentExporter<C> exporter, Element element,
-            WebComponentUI ui) {
+    private <C extends Component> WebComponentBinding<C> constructWrapperAndGetBinding(WebComponentExporter<C> exporter,
+            Element element, WebComponentUI ui) {
         if (element == null) {
             element = new Element("tag");
         }
         WebComponentBinding<C> binding = (WebComponentBinding<C>) new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(exporter).createWebComponentBinding(
-                        new MockInstantiator(), element, Json.createObject());
+                .create(exporter).createWebComponentBinding(new MockInstantiator(), element, Json.createObject());
         wrapper = new WebComponentWrapper(element, binding) {
             @Override
             public Optional<UI> getUI() {
@@ -235,24 +210,21 @@ public class WebComponentWrapperTest {
         return binding;
     }
 
-    private static WebComponentUI constructWebComponentUI(
-            Element wrapperElement) {
+    private static WebComponentUI constructWebComponentUI(Element wrapperElement) {
         WebComponentUI ui = mock(WebComponentUI.class);
         when(ui.getUI()).thenReturn(Optional.of(ui));
         Element body = new Element("body");
         when(ui.getElement()).thenReturn(body);
 
         UIInternals internals = new UIInternals(ui);
-        internals.setSession(
-                new AlwaysLockedVaadinSession(mock(VaadinService.class)));
+        internals.setSession(new AlwaysLockedVaadinSession(mock(VaadinService.class)));
         when(ui.getInternals()).thenReturn(internals);
 
         Component parent = new Parent();
         parent.getElement().appendVirtualChild(wrapperElement);
 
         VaadinSession session = mock(VaadinSession.class);
-        DeploymentConfiguration configuration = mock(
-                DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(DeploymentConfiguration.class);
 
         when(ui.getSession()).thenReturn(session);
         when(session.getConfiguration()).thenReturn(configuration);
@@ -299,8 +271,7 @@ public class WebComponentWrapperTest {
     public static class Parent extends Component {
     }
 
-    public static class MyComponentExporter
-            extends WebComponentExporter<MyComponent> {
+    public static class MyComponentExporter extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {
             this("my-component");
@@ -314,13 +285,11 @@ public class WebComponentWrapperTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
         }
     }
 
-    public static class MyExtensionExporter
-            extends WebComponentExporter<MyExtension> {
+    public static class MyExtensionExporter extends WebComponentExporter<MyExtension> {
 
         public MyExtensionExporter() {
             super("extended-component");
@@ -329,8 +298,7 @@ public class WebComponentWrapperTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyExtension> webComponent,
-                MyExtension component) {
+        public void configureInstance(WebComponent<MyExtension> webComponent, MyExtension component) {
         }
     }
 
@@ -338,16 +306,13 @@ public class WebComponentWrapperTest {
         public ExtendedExporter() {
             super("my-component-extended");
 
-            addProperty(MSG_PROPERTY, "Default")
-                    .onChange(MyComponent::setMessage);
+            addProperty(MSG_PROPERTY, "Default").onChange(MyComponent::setMessage);
 
-            addProperty(BOOLEAN_PROPERTY, false)
-                    .onChange(MyComponent::setBooleanValue);
+            addProperty(BOOLEAN_PROPERTY, false).onChange(MyComponent::setBooleanValue);
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
             super.configureInstance(webComponent, component);
         }
     }

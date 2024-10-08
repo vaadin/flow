@@ -32,21 +32,17 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         newModalBoxButton.ifPresent(NativeButtonElement::click);
 
-        validateBoxCount(initialBoxCount + 1,
-                "Expected no new boxes as the button is now inert.");
+        validateBoxCount(initialBoxCount + 1, "Expected no new boxes as the button is now inert.");
 
-        List<NativeButtonElement> removeButtons = getAll(
-                NativeButtonElement.class, InertComponentView.REMOVE)
+        List<NativeButtonElement> removeButtons = getAll(NativeButtonElement.class, InertComponentView.REMOVE)
                 .collect(Collectors.toList());
         removeButtons.get(removeButtons.size() - 1).click();
 
-        validateBoxCount(initialBoxCount,
-                "Expected the modal box was removed.");
+        validateBoxCount(initialBoxCount, "Expected the modal box was removed.");
 
         newModalBoxButton.ifPresent(NativeButtonElement::click);
 
-        validateBoxCount(initialBoxCount + 1,
-                "Expected a new modal box when button no longer inert.");
+        validateBoxCount(initialBoxCount + 1, "Expected a new modal box when button no longer inert.");
     }
 
     @Test
@@ -63,18 +59,14 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         // Remove the modal box from DOM
         ((JavascriptExecutor) getDriver())
-                .executeScript("document.body.removeChild("
-                        + "((v = document.querySelectorAll('[id^=\""
-                        + InertComponentView.BOX
-                        + "-\"]')) => v[v.length - 1])());");
+                .executeScript("document.body.removeChild(" + "((v = document.querySelectorAll('[id^=\""
+                        + InertComponentView.BOX + "-\"]')) => v[v.length - 1])());");
 
-        validateBoxCount(initialBoxCount,
-                "Expected the modal box was removed from DOM.");
+        validateBoxCount(initialBoxCount, "Expected the modal box was removed from DOM.");
 
         newModalBoxButton.ifPresent(NativeButtonElement::click);
 
-        validateBoxCount(initialBoxCount,
-                "Expected no new box as UI still inert.");
+        validateBoxCount(initialBoxCount, "Expected no new box as UI still inert.");
     }
 
     @Test
@@ -83,8 +75,7 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         final long initialBoxCount = getBoxCount();
 
-        Optional<AnchorElement> linkToAnotherPage = getAll(AnchorElement.class,
-                InertComponentView.LINK).findFirst();
+        Optional<AnchorElement> linkToAnotherPage = getAll(AnchorElement.class, InertComponentView.LINK).findFirst();
 
         Assert.assertTrue(linkToAnotherPage.isPresent());
 
@@ -96,23 +87,19 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         waitForElementPresent(By.id(ModalDialogView.OPEN_MODAL_BUTTON));
 
-        Assert.assertNotNull(
-                findElement(By.id(ModalDialogView.OPEN_MODAL_BUTTON)));
+        Assert.assertNotNull(findElement(By.id(ModalDialogView.OPEN_MODAL_BUTTON)));
     }
 
     private Optional<NativeButtonElement> getNewModalBoxButton() {
-        return getAll(NativeButtonElement.class,
-                InertComponentView.NEW_MODAL_BOX).findFirst();
+        return getAll(NativeButtonElement.class, InertComponentView.NEW_MODAL_BOX).findFirst();
     }
 
     private long getBoxCount() {
         return getAll(DivElement.class, InertComponentView.BOX).count();
     }
 
-    private <T extends TestBenchElement> Stream<T> getAll(Class<T> elementClass,
-            String idPrefix) {
-        return $(elementClass).all().stream()
-                .filter(e -> e.getAttribute("id").startsWith(idPrefix));
+    private <T extends TestBenchElement> Stream<T> getAll(Class<T> elementClass, String idPrefix) {
+        return $(elementClass).all().stream().filter(e -> e.getAttribute("id").startsWith(idPrefix));
     }
 
     private void validateBoxCount(long initialBoxCount, String message) {

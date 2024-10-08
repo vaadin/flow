@@ -78,8 +78,7 @@ public class ElementAttributeMap extends NodeMap {
      *
      * @param attribute
      *            the name of the attribute
-     * @return <code>true</code> if there is a property with the given name;
-     *         <code>false</code> if there is no property
+     * @return <code>true</code> if there is a property with the given name; <code>false</code> if there is no property
      */
     public boolean has(String attribute) {
         return contains(attribute);
@@ -102,8 +101,7 @@ public class ElementAttributeMap extends NodeMap {
      *
      * @param attribute
      *            the name of the property
-     * @return the attribute value or <code>null</code> if the attribute has not
-     *         been set
+     * @return the attribute value or <code>null</code> if the attribute has not been set
      */
     @Override
     public String get(String attribute) {
@@ -148,12 +146,10 @@ public class ElementAttributeMap extends NodeMap {
         }
     }
 
-    private void doSetResource(String attribute,
-            AbstractStreamResource resource) {
+    private void doSetResource(String attribute, AbstractStreamResource resource) {
         final URI targetUri;
         if (VaadinSession.getCurrent() != null) {
-            final StreamResourceRegistry resourceRegistry = VaadinSession
-                    .getCurrent().getResourceRegistry();
+            final StreamResourceRegistry resourceRegistry = VaadinSession.getCurrent().getResourceRegistry();
             targetUri = resourceRegistry.getTargetURI(resource);
         } else {
             targetUri = StreamResourceRegistry.getURI(resource);
@@ -181,8 +177,7 @@ public class ElementAttributeMap extends NodeMap {
         ensureResourceRegistrations();
         ensurePendingRegistrations();
 
-        StreamRegistration registration = resourceRegistrations
-                .remove(attribute);
+        StreamRegistration registration = resourceRegistrations.remove(attribute);
         Registration handle = pendingRegistrations.remove(attribute);
         if (handle != null) {
             handle.remove();
@@ -198,8 +193,7 @@ public class ElementAttributeMap extends NodeMap {
         }
     }
 
-    private void deferRegistration(String attribute,
-            AbstractStreamResource resource) {
+    private void deferRegistration(String attribute, AbstractStreamResource resource) {
         ensurePendingRegistrations();
 
         assert !pendingRegistrations.containsKey(attribute);
@@ -218,14 +212,12 @@ public class ElementAttributeMap extends NodeMap {
         pendingRegistrations.put(attribute, handle);
     }
 
-    private void registerResource(String attribute,
-            AbstractStreamResource resource) {
+    private void registerResource(String attribute, AbstractStreamResource resource) {
         ensureResourceRegistrations();
         ensurePendingRegistrations();
 
         assert !resourceRegistrations.containsKey(attribute);
-        StreamRegistration registration = getSession().getResourceRegistry()
-                .registerResource(resource);
+        StreamRegistration registration = getSession().getResourceRegistry().registerResource(resource);
         resourceRegistrations.put(attribute, registration);
         Registration handle = pendingRegistrations.remove(attribute);
         if (handle != null) {

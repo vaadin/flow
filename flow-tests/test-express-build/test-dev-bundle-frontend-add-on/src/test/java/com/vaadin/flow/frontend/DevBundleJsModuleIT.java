@@ -32,12 +32,9 @@ public class DevBundleJsModuleIT extends ChromeBrowserTest {
         open();
         waitForElementPresent(By.id(DevBundleJsModuleView.SPAN_ID));
         JsonObject frontendHashes = DevBundleCssImportIT.getFrontendHashes();
-        Assert.assertTrue("test.ts content hash is expected",
-                frontendHashes.hasKey("test.ts"));
-        Assert.assertTrue("js/test.js content hash is expected",
-                frontendHashes.hasKey("js/test.js"));
-        Assert.assertFalse("unknownfile.js content hash is not expected",
-                frontendHashes.hasKey("unknownfile.js"));
+        Assert.assertTrue("test.ts content hash is expected", frontendHashes.hasKey("test.ts"));
+        Assert.assertTrue("js/test.js content hash is expected", frontendHashes.hasKey("js/test.js"));
+        Assert.assertFalse("unknownfile.js content hash is not expected", frontendHashes.hasKey("unknownfile.js"));
     }
 
 }

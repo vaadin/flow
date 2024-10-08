@@ -36,13 +36,10 @@ public class FlowInReactComponentView extends Div {
         ReactLayout gridLayout = new ReactLayout();
         add(gridLayout);
 
-        NativeButton addDiv = new NativeButton("Add div",
-                event -> gridLayout.add(new Div("Clicked button")));
+        NativeButton addDiv = new NativeButton("Add div", event -> gridLayout.add(new Div("Clicked button")));
         addDiv.setId(ADD_MAIN);
-        NativeButton removeDiv = new NativeButton("Remove div",
-                event -> gridLayout.getChildren()
-                        .filter(component -> component instanceof Div)
-                        .findFirst().ifPresent(Component::removeFromParent));
+        NativeButton removeDiv = new NativeButton("Remove div", event -> gridLayout.getChildren()
+                .filter(component -> component instanceof Div).findFirst().ifPresent(Component::removeFromParent));
         removeDiv.setId(REMOVE_MAIN);
 
         gridLayout.add(new H3("Flow Admin View"), addDiv, removeDiv);
@@ -50,12 +47,9 @@ public class FlowInReactComponentView extends Div {
         NativeButton addSecondary = new NativeButton("Add div",
                 event -> gridLayout.addSecondary(new Div("Secondary div")));
         addSecondary.setId(ADD_SECONDARY);
-        NativeButton removeSecondary = new NativeButton("Remove div",
-                event -> gridLayout.getSecondaryChildren()
-                        .filter(component -> component instanceof Div)
-                        .findFirst().ifPresent(Component::removeFromParent));
+        NativeButton removeSecondary = new NativeButton("Remove div", event -> gridLayout.getSecondaryChildren()
+                .filter(component -> component instanceof Div).findFirst().ifPresent(Component::removeFromParent));
         removeSecondary.setId(REMOVE_SECONDARY);
-        gridLayout.addSecondary(new H4("Second container"), addSecondary,
-                removeSecondary);
+        gridLayout.addSecondary(new H4("Second container"), addSecondary, removeSecondary);
     }
 }

@@ -32,13 +32,11 @@ public class UsageStatisticsExporterTest {
             return json.toString();
         }).collect(Collectors.joining(","));
 
-        String expected = StringUtil
-                .normaliseWhitespace("window.Vaadin = window.Vaadin || {};\n"
-                        + "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
-                        + "window.Vaadin.registrations.push(" + entries + ");");
+        String expected = StringUtil.normaliseWhitespace("window.Vaadin = window.Vaadin || {};\n"
+                + "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                + "window.Vaadin.registrations.push(" + entries + ");");
 
-        Elements bodyInlineElements = document.body()
-                .getElementsByTag("script");
+        Elements bodyInlineElements = document.body().getElementsByTag("script");
         String htmlContent = bodyInlineElements.get(0).childNode(0).outerHtml();
         htmlContent = htmlContent.replace("\r", "");
         htmlContent = htmlContent.replace("\n", " ");

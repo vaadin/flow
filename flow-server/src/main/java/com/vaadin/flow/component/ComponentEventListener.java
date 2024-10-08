@@ -28,8 +28,7 @@ import java.util.EventListener;
  *            component event type
  */
 @FunctionalInterface
-public interface ComponentEventListener<T extends ComponentEvent<?>>
-        extends EventListener, Serializable {
+public interface ComponentEventListener<T extends ComponentEvent<?>> extends EventListener, Serializable {
 
     /**
      * Invoked when a component event has been fired.

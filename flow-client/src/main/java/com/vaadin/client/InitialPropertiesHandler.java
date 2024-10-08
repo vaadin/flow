@@ -27,15 +27,12 @@ import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 /**
- * Handles server initial property values with the purpose to prevent change
- * their values from the client side.
+ * Handles server initial property values with the purpose to prevent change their values from the client side.
  * <p>
- * Initial property values have to be set from the server side. Client side may
- * have default values which override server side values and those values are
- * sent to the server (overriding server side values). This class prevents this.
- * Only properties that have not been set form the server are sent from the
- * client to the server. Properties that have been set from the server overrides
- * any client side default value.
+ * Initial property values have to be set from the server side. Client side may have default values which override
+ * server side values and those values are sent to the server (overriding server side values). This class prevents this.
+ * Only properties that have not been set form the server are sent from the client to the server. Properties that have
+ * been set from the server overrides any client side default value.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -48,8 +45,7 @@ public class InitialPropertiesHandler {
 
     private final JsSet<Double> newNodeDuringUpdate = JsCollections.set();
 
-    private final JsArray<MapProperty> propertyUpdateQueue = JsCollections
-            .array();
+    private final JsArray<MapProperty> propertyUpdateQueue = JsCollections.array();
 
     /**
      * Creates a new instance connected to the given registry.
@@ -62,17 +58,14 @@ public class InitialPropertiesHandler {
     }
 
     /**
-     * Flushes collected property update queue (requested to be sent from the
-     * client to the server).
+     * Flushes collected property update queue (requested to be sent from the client to the server).
      * <p>
-     * Supposed to be called in the end of {@link TreeChangeProcessor} changes
-     * processing.
+     * Supposed to be called in the end of {@link TreeChangeProcessor} changes processing.
      */
     public void flushPropertyUpdates() {
         if (!getRegistry().getStateTree().isUpdateInProgress()) {
             JsMap<Double, JsMap<String, Object>> map = JsCollections.map();
-            newNodeDuringUpdate
-                    .forEach(node -> collectInitialProperties(node, map));
+            newNodeDuringUpdate.forEach(node -> collectInitialProperties(node, map));
             Reactive.addPostFlushListener(() -> doFlushPropertyUpdates(map));
         }
     }
@@ -80,8 +73,7 @@ public class InitialPropertiesHandler {
     /**
      * Notifies the handler about registered node.
      * <p>
-     * The method is called for the newly created {@code node} which is
-     * registered in the {@code StateTree}.
+     * The method is called for the newly created {@code node} which is registered in the {@code StateTree}.
      *
      * @param node
      *            the registered node
@@ -91,17 +83,14 @@ public class InitialPropertiesHandler {
     }
 
     /**
-     * Handles {@code property} update request before it's sent to the server
-     * via RPC.
+     * Handles {@code property} update request before it's sent to the server via RPC.
      * <p>
-     * The method returns {@code true} for the {@code property} which shouldn't
-     * be sent to the server because it's going to be handled by the handler
-     * (queued and sent later on if allowed).
+     * The method returns {@code true} for the {@code property} which shouldn't be sent to the server because it's going
+     * to be handled by the handler (queued and sent later on if allowed).
      *
      * @param property
      *            property to handle
-     * @return {@code true} if property is handled by the handler, {@code false}
-     *         otherwise
+     * @return {@code true} if property is handled by the handler, {@code false} otherwise
      */
     public boolean handlePropertyUpdate(MapProperty property) {
         if (isNodeNewlyCreated(property.getMap().getNode())) {
@@ -111,12 +100,9 @@ public class InitialPropertiesHandler {
         return false;
     }
 
-    private boolean resetProperty(MapProperty property,
-            JsMap<Double, JsMap<String, Object>> properties) {
-        JsMap<String, Object> ignoreProperties = properties
-                .get(getNodeId(property.getMap().getNode()));
-        if (ignoreProperties != null
-                && ignoreProperties.has(property.getName())) {
+    private boolean resetProperty(MapProperty property, JsMap<Double, JsMap<String, Object>> properties) {
+        JsMap<String, Object> ignoreProperties = properties.get(getNodeId(property.getMap().getNode()));
+        if (ignoreProperties != null && ignoreProperties.has(property.getName())) {
             Object value = ignoreProperties.get(property.getName());
             property.setValue(value);
             return true;
@@ -128,19 +114,16 @@ public class InitialPropertiesHandler {
         return newNodeDuringUpdate.has(getNodeId(node));
     }
 
-    private void doFlushPropertyUpdates(
-            JsMap<Double, JsMap<String, Object>> properties) {
+    private void doFlushPropertyUpdates(JsMap<Double, JsMap<String, Object>> properties) {
         newNodeDuringUpdate.clear();
         while (propertyUpdateQueue.length() > 0) {
             MapProperty property = propertyUpdateQueue.remove(0);
             if (!resetProperty(property, properties)) {
-                getRegistry().getStateTree()
-                        .sendNodePropertySyncToServer(property);
+                getRegistry().getStateTree().sendNodePropertySyncToServer(property);
             }
             /*
-             * Do flush after each property update. There may be several
-             * properties and it looks like a property update may trigger
-             * default values of other properties back.
+             * Do flush after each property update. There may be several properties and it looks like a property update
+             * may trigger default values of other properties back.
              *
              * See https://github.com/vaadin/flow/issues/2304
              */
@@ -156,13 +139,12 @@ public class InitialPropertiesHandler {
         return registry;
     }
 
-    private void collectInitialProperties(Double id,
-            JsMap<Double, JsMap<String, Object>> properties) {
+    private void collectInitialProperties(Double id, JsMap<Double, JsMap<String, Object>> properties) {
         StateNode node = getRegistry().getStateTree().getNode(id.intValue());
         if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
             JsMap<String, Object> map = JsCollections.map();
-            node.getMap(NodeFeatures.ELEMENT_PROPERTIES).forEachProperty(
-                    (property, name) -> map.set(name, property.getValue()));
+            node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                    .forEachProperty((property, name) -> map.set(name, property.getValue()));
             properties.set(id, map);
         }
     }

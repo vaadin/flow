@@ -19,20 +19,16 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
 @Route("com.vaadin.flow.uitest.ui.routing.PushRouteWildcardParameterView")
-public class PushRouteWildcardParameterView extends Div
-        implements HasUrlParameter<String> {
+public class PushRouteWildcardParameterView extends Div implements HasUrlParameter<String> {
 
-    private final ScheduledExecutorService executor = Executors
-            .newScheduledThreadPool(1);
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 
     public static final String LABEL_ID = "label";
     private final Span label = new Span();
 
     public PushRouteWildcardParameterView() {
-        Lookup lookup = VaadinService.getCurrent().getContext()
-                .getAttribute(Lookup.class);
-        PushConfiguration pushConfiguration = UI.getCurrent()
-                .getPushConfiguration();
+        Lookup lookup = VaadinService.getCurrent().getContext().getAttribute(Lookup.class);
+        PushConfiguration pushConfiguration = UI.getCurrent().getPushConfiguration();
         pushConfiguration.setPushMode(PushMode.AUTOMATIC);
         if (lookup.lookup(OSGiMarker.class) == null) {
             pushConfiguration.setTransport(Transport.WEBSOCKET_XHR);
@@ -42,8 +38,7 @@ public class PushRouteWildcardParameterView extends Div
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @WildcardParameter String parameter) {
+    public void setParameter(BeforeEvent event, @WildcardParameter String parameter) {
         UI ui = event.getUI();
         executor.schedule(() -> {
             ui.access(() -> {

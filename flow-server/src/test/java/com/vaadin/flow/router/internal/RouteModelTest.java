@@ -38,19 +38,13 @@ public class RouteModelTest {
         root.addRoute("", routeTarget(Root.class));
         root.addRoute("trunk", routeTarget(Trunk.class));
         root.addRoute("trunk/branch", routeTarget(Branch.class));
-        root.addRoute("trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")",
-                routeTarget(Branch.class));
-        root.addRoute(
-                "trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")/:list*("
-                        + RouteParameterRegex.LONG + ")",
+        root.addRoute("trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")", routeTarget(Branch.class));
+        root.addRoute("trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")/:list*(" + RouteParameterRegex.LONG + ")",
                 routeTarget(BranchChildren.class));
-        root.addRoute("trunk/:name?/:type?/branch/:id?("
-                + RouteParameterRegex.INTEGER + ")/edit",
+        root.addRoute("trunk/:name?/:type?/branch/:id?(" + RouteParameterRegex.INTEGER + ")/edit",
                 routeTarget(BranchEdit.class));
-        root.addRoute("trunk/:name/:type?/branch/:id("
-                + RouteParameterRegex.INTEGER + ")/flower/:open("
-                + RouteParameterRegex.LONG + ")/edit",
-                routeTarget(FlowerEdit.class));
+        root.addRoute("trunk/:name/:type?/branch/:id(" + RouteParameterRegex.INTEGER + ")/flower/:open("
+                + RouteParameterRegex.LONG + ")/edit", routeTarget(FlowerEdit.class));
         root.addRoute("trunk/twig/:leafs*", routeTarget(Twig.class));
         return root;
     }
@@ -62,8 +56,7 @@ public class RouteModelTest {
 
         assertNavigation(root, "trunk/twig", Twig.class, parameters());
 
-        assertNavigation(root, "trunk/twig/a/b/c", Twig.class,
-                parameters("leafs", varargs("a", "b", "c")));
+        assertNavigation(root, "trunk/twig/a/b/c", Twig.class, parameters("leafs", varargs("a", "b", "c")));
 
         assertNavigation(root, "", Root.class, parameters());
 
@@ -71,30 +64,23 @@ public class RouteModelTest {
 
         assertNavigation(root, "trunk/branch", Branch.class, parameters());
 
-        assertNavigation(root, "trunk/branch/12", Branch.class,
-                parameters("id", "12"));
+        assertNavigation(root, "trunk/branch/12", Branch.class, parameters("id", "12"));
 
-        assertNavigation(root, "trunk/branch/12/1/2/3/4/5/6/7",
-                BranchChildren.class, parameters("id", "12", "list",
-                        varargs("1", "2", "3", "4", "5", "6", "7")));
+        assertNavigation(root, "trunk/branch/12/1/2/3/4/5/6/7", BranchChildren.class,
+                parameters("id", "12", "list", varargs("1", "2", "3", "4", "5", "6", "7")));
 
         assertNavigation(root, "trunk/branch/view", null, null);
 
-        assertNavigation(root, "trunk/branch/edit", BranchEdit.class,
-                parameters());
+        assertNavigation(root, "trunk/branch/edit", BranchEdit.class, parameters());
 
-        assertNavigation(root, "trunk/red/branch/12/edit", BranchEdit.class,
-                parameters("id", "12", "name", "red"));
+        assertNavigation(root, "trunk/red/branch/12/edit", BranchEdit.class, parameters("id", "12", "name", "red"));
 
-        assertNavigation(root, "trunk/branch/12/edit", BranchEdit.class,
-                parameters("id", "12"));
+        assertNavigation(root, "trunk/branch/12/edit", BranchEdit.class, parameters("id", "12"));
 
-        assertNavigation(root, "trunk/red/birch/branch/12/edit",
-                BranchEdit.class,
+        assertNavigation(root, "trunk/red/birch/branch/12/edit", BranchEdit.class,
                 parameters("id", "12", "name", "red", "type", "birch"));
 
-        assertNavigation(root, "trunk/red/branch/12/flower/1234567890/edit",
-                FlowerEdit.class,
+        assertNavigation(root, "trunk/red/branch/12/flower/1234567890/edit", FlowerEdit.class,
                 parameters("id", "12", "name", "red", "open", "1234567890"));
 
         assertNavigation(root, "trunk/red/branch/12/flower/edit", null, null);
@@ -107,33 +93,28 @@ public class RouteModelTest {
         try {
             root.addRoute("trunk/:vararg*/edit", routeTarget(Root.class));
 
-            Assert.fail(
-                    "Varargs url parameter accepted in the middle of the path.");
+            Assert.fail("Varargs url parameter accepted in the middle of the path.");
         } catch (IllegalArgumentException e) {
         }
 
         root.addRoute("trunk/edit/:vararg*", routeTarget(Root.class));
 
         String path = "trunk/edit/1/2/3";
-        assertNavigation(root, path, Root.class,
-                parameters("vararg", varargs("1", "2", "3")));
+        assertNavigation(root, path, Root.class, parameters("vararg", varargs("1", "2", "3")));
     }
 
     @Test
     public void remove_route_target_not_found() {
         RouteModel root = getRouteModel();
 
-        assertNavigation(root, "trunk/branch/12", Branch.class,
-                parameters("id", "12"));
+        assertNavigation(root, "trunk/branch/12", Branch.class, parameters("id", "12"));
+
+        root.removeRoute("trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")");
+
+        assertNavigation(root, "trunk/branch/12", BranchChildren.class, parameters("id", "12"));
 
         root.removeRoute(
-                "trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")");
-
-        assertNavigation(root, "trunk/branch/12", BranchChildren.class,
-                parameters("id", "12"));
-
-        root.removeRoute("trunk/branch/:id(" + RouteParameterRegex.INTEGER
-                + ")/:list*(" + RouteParameterRegex.LONG + ")");
+                "trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")/:list*(" + RouteParameterRegex.LONG + ")");
 
         assertNavigation(root, "trunk/branch/12", null, null);
     }
@@ -143,8 +124,7 @@ public class RouteModelTest {
         RouteModel root = getRouteModel();
 
         final String expectedUrl = "trunk/branch/12";
-        final String template = "trunk/branch/:id("
-                + RouteParameterRegex.INTEGER + ")";
+        final String template = "trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")";
         final RouteParameters parameters = parameters("id", "12");
 
         assertUrl(root, expectedUrl, template, parameters);
@@ -162,8 +142,7 @@ public class RouteModelTest {
     public void route_model_provides_route_target() {
         RouteModel root = getRouteModel();
 
-        final String template = "trunk/branch/:id("
-                + RouteParameterRegex.INTEGER + ")";
+        final String template = "trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")";
         final RouteParameters parameters = parameters("id", "12");
 
         assertRoute(root, Branch.class, template, parameters);
@@ -181,57 +160,43 @@ public class RouteModelTest {
     public void route_model_provides_url_template_format() {
         RouteModel root = getRouteModel();
 
-        final String template = "trunk/branch/:id("
-                + RouteParameterRegex.INTEGER + ")/:list*("
+        final String template = "trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")/:list*("
                 + RouteParameterRegex.LONG + ")";
 
-        Assert.assertEquals(template,
-                root.formatTemplate(template,
-                        EnumSet.of(RouteParameterFormatOption.NAME,
-                                RouteParameterFormatOption.REGEX,
-                                RouteParameterFormatOption.MODIFIER)));
+        Assert.assertEquals(template, root.formatTemplate(template, EnumSet.of(RouteParameterFormatOption.NAME,
+                RouteParameterFormatOption.REGEX, RouteParameterFormatOption.MODIFIER)));
 
         Assert.assertEquals("trunk/branch/:id(integer)/:list*(long)",
-                root.formatTemplate(template,
-                        EnumSet.of(RouteParameterFormatOption.NAME,
-                                RouteParameterFormatOption.REGEX_NAME,
-                                RouteParameterFormatOption.MODIFIER)));
+                root.formatTemplate(template, EnumSet.of(RouteParameterFormatOption.NAME,
+                        RouteParameterFormatOption.REGEX_NAME, RouteParameterFormatOption.MODIFIER)));
 
-        Assert.assertEquals("trunk/branch/:id(integer)/:list(long)",
-                root.formatTemplate(template,
-                        EnumSet.of(RouteParameterFormatOption.NAME,
-                                RouteParameterFormatOption.REGEX_NAME)));
+        Assert.assertEquals("trunk/branch/:id(integer)/:list(long)", root.formatTemplate(template,
+                EnumSet.of(RouteParameterFormatOption.NAME, RouteParameterFormatOption.REGEX_NAME)));
 
-        Assert.assertEquals("trunk/branch/:id/:list*",
-                root.formatTemplate(template,
-                        EnumSet.of(RouteParameterFormatOption.NAME,
-                                RouteParameterFormatOption.MODIFIER)));
+        Assert.assertEquals("trunk/branch/:id/:list*", root.formatTemplate(template,
+                EnumSet.of(RouteParameterFormatOption.NAME, RouteParameterFormatOption.MODIFIER)));
 
-        Assert.assertEquals("trunk/branch/:integer/:long", root.formatTemplate(
-                template, EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
+        Assert.assertEquals("trunk/branch/:integer/:long",
+                root.formatTemplate(template, EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
     }
 
     @Test
     public void route_model_provides_parameters() {
         RouteModel root = getRouteModel();
 
-        final String template = "trunk/branch/:id("
-                + RouteParameterRegex.INTEGER + ")/:list*("
+        final String template = "trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")/:list*("
                 + RouteParameterRegex.LONG + ")";
 
-        final Map<String, RouteParameterData> parameters = root
-                .getParameters(template);
+        final Map<String, RouteParameterData> parameters = root.getParameters(template);
 
         Assert.assertEquals("Incorrect parameters size", 2, parameters.size());
 
         Assert.assertTrue("Missing parameter", parameters.containsKey("id"));
         Assert.assertTrue("Missing parameter", parameters.containsKey("list"));
 
-        Assert.assertEquals("Wrong parameter data",
-                ":id(" + RouteParameterRegex.INTEGER + ")",
+        Assert.assertEquals("Wrong parameter data", ":id(" + RouteParameterRegex.INTEGER + ")",
                 parameters.get("id").getTemplate());
-        Assert.assertEquals("Wrong parameter data",
-                ":list*(" + RouteParameterRegex.LONG + ")",
+        Assert.assertEquals("Wrong parameter data", ":list*(" + RouteParameterRegex.LONG + ")",
                 parameters.get("list").getTemplate());
     }
 
@@ -243,12 +208,10 @@ public class RouteModelTest {
 
         Assert.assertEquals("Incorrect routes size", 8, routes.size());
 
-        final String template = "trunk/branch/:id("
-                + RouteParameterRegex.INTEGER + ")/:list*("
+        final String template = "trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")/:list*("
                 + RouteParameterRegex.LONG + ")";
 
-        Assert.assertEquals("Wrong route mapping", BranchChildren.class,
-                routes.get(template).getTarget());
+        Assert.assertEquals("Wrong route mapping", BranchChildren.class, routes.get(template).getTarget());
     }
 
     @Test
@@ -274,14 +237,13 @@ public class RouteModelTest {
         }
     }
 
-    private void assertUrl(RouteModel root, String expectedUrl, String template,
-            RouteParameters parameters) {
+    private void assertUrl(RouteModel root, String expectedUrl, String template, RouteParameters parameters) {
         final String modelUrl = root.getUrl(template, parameters);
         Assert.assertEquals(expectedUrl, modelUrl);
     }
 
-    private void assertNavigation(RouteModel model, String url,
-            Class<? extends Component> target, RouteParameters parameters) {
+    private void assertNavigation(RouteModel model, String url, Class<? extends Component> target,
+            RouteParameters parameters) {
 
         NavigationRouteTarget result = model.getNavigationRouteTarget(url);
 
@@ -291,26 +253,21 @@ public class RouteModelTest {
         assertTarget(target, routeTarget);
 
         if (target != null) {
-            Assert.assertEquals("Invalid url", parameters,
-                    result.getRouteParameters());
+            Assert.assertEquals("Invalid url", parameters, result.getRouteParameters());
         }
     }
 
-    private void assertRoute(RouteModel model,
-            Class<? extends Component> target, String template,
+    private void assertRoute(RouteModel model, Class<? extends Component> target, String template,
             RouteParameters parameters) {
         assertTarget(target, model.getRouteTarget(template, parameters));
     }
 
-    private void assertTarget(Class<? extends Component> target,
-            RouteTarget routeTarget) {
-        Assert.assertTrue("Weird expected target [" + target + "], actual ["
-                + routeTarget + "]", (target == null) == (routeTarget == null));
+    private void assertTarget(Class<? extends Component> target, RouteTarget routeTarget) {
+        Assert.assertTrue("Weird expected target [" + target + "], actual [" + routeTarget + "]",
+                (target == null) == (routeTarget == null));
 
         if (target != null) {
-            Assert.assertTrue(
-                    "Invalid expected target [" + target + "], actual "
-                            + routeTarget.getTarget(),
+            Assert.assertTrue("Invalid expected target [" + target + "], actual " + routeTarget.getTarget(),
                     routeTarget.getTarget().equals(target));
         }
     }
@@ -320,8 +277,8 @@ public class RouteModelTest {
     }
 
     /**
-     * Creates a parameters map where any even index argument is a key (starting
-     * with 0) and any odd index argument is a value (starting with 1)
+     * Creates a parameters map where any even index argument is a key (starting with 0) and any odd index argument is a
+     * value (starting with 1)
      *
      * @param namesAndValues
      *            the keys and values of the map.
@@ -329,18 +286,15 @@ public class RouteModelTest {
      */
     public static RouteParameters parameters(String... namesAndValues) {
         if (namesAndValues.length % 2 == 1) {
-            throw new IllegalArgumentException(
-                    "Input varargs must be of even size.");
+            throw new IllegalArgumentException("Input varargs must be of even size.");
         }
 
-        Map<String, String> paramsMap = new HashMap<>(
-                namesAndValues.length / 2);
+        Map<String, String> paramsMap = new HashMap<>(namesAndValues.length / 2);
 
         for (int i = 0; i < namesAndValues.length; i += 2) {
             final String name = namesAndValues[i];
             if (paramsMap.containsKey(name)) {
-                throw new IllegalArgumentException(
-                        "Parameter " + name + " is specified more than once.");
+                throw new IllegalArgumentException("Parameter " + name + " is specified more than once.");
             }
 
             final String value = namesAndValues[i + 1];

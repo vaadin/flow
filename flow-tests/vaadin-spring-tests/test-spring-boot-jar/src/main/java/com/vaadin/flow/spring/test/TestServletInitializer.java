@@ -36,15 +36,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class TestServletInitializer {
 
     public static void main(String[] args) {
-        ConfigurableApplicationContext applicationContext = SpringApplication
-                .run(TestServletInitializer.class, args);
+        ConfigurableApplicationContext applicationContext = SpringApplication.run(TestServletInitializer.class, args);
         ShutdownHook.registerShutdownHook(applicationContext::close);
     }
 
     /**
-     * Requests to /shutdown will trigger application shutdown. This is needed
-     * e.g. when running executable jar with exec-maven-plugin to stop the
-     * server after ITs are done.
+     * Requests to /shutdown will trigger application shutdown. This is needed e.g. when running executable jar with
+     * exec-maven-plugin to stop the server after ITs are done.
      */
     @Controller
     public static class ShutdownController {
@@ -54,8 +52,7 @@ public class TestServletInitializer {
         public void shutdown() {
             System.out.println("Shutdown request received.");
             CompletableFuture.runAsync(() -> ShutdownHook.shutdownHook.run(),
-                    CompletableFuture.delayedExecutor(50,
-                            TimeUnit.MILLISECONDS));
+                    CompletableFuture.delayedExecutor(50, TimeUnit.MILLISECONDS));
         }
     }
 }

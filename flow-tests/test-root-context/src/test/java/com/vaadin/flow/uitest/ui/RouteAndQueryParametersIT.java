@@ -31,13 +31,11 @@ public class RouteAndQueryParametersIT extends ChromeBrowserTest {
 
         findElement(By.id("both")).click();
 
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("route parameter: 5, query string:foo=bar"));
+        Assert.assertTrue(getDriver().getPageSource().contains("route parameter: 5, query string:foo=bar"));
 
         findElement(By.id("qponly")).click();
 
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("route parameter: null, query string:foo=bar"));
+        Assert.assertTrue(getDriver().getPageSource().contains("route parameter: null, query string:foo=bar"));
 
     }
 

@@ -40,15 +40,12 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 /**
  * Matches request for custom PWA icons and Favicon paths.
  *
- * PWA icon paths are computed by analyzing the {@link PWA} annotation on the
- * {@link AppShellConfigurator} implementor class. The favicon is detected by
- * invoking the {@link AppShellConfigurator#configurePage(AppShellSettings)}
- * method and tracking potential calls to
- * {@link AppShellSettings#addFavIcon(String, String, String)} and
+ * PWA icon paths are computed by analyzing the {@link PWA} annotation on the {@link AppShellConfigurator} implementor
+ * class. The favicon is detected by invoking the {@link AppShellConfigurator#configurePage(AppShellSettings)} method
+ * and tracking potential calls to {@link AppShellSettings#addFavIcon(String, String, String)} and
  * {@link AppShellSettings#addFavIcon(String, String, String)} methods.
  *
- * Default paths ({@link PwaConfiguration#DEFAULT_ICON} and
- * {@literal /favicon.ico}) are not considered.
+ * Default paths ({@link PwaConfiguration#DEFAULT_ICON} and {@literal /favicon.ico}) are not considered.
  */
 public class WebIconsRequestMatcher implements RequestMatcher {
 
@@ -71,25 +68,19 @@ public class WebIconsRequestMatcher implements RequestMatcher {
         return matcher.matches(request);
     }
 
-    private static RequestMatcher initMatchers(VaadinService service,
-            String urlMapping) {
+    private static RequestMatcher initMatchers(VaadinService service, String urlMapping) {
 
-        AppShellRegistry appShellRegistry = AppShellRegistry
-                .getInstance(service.getContext());
-        Class<? extends AppShellConfigurator> appShellClass = appShellRegistry
-                .getShell();
+        AppShellRegistry appShellRegistry = AppShellRegistry.getInstance(service.getContext());
+        Class<? extends AppShellConfigurator> appShellClass = appShellRegistry.getShell();
 
-        UnaryOperator<String> urlMapper = path -> RequestUtil
-                .applyUrlMapping(urlMapping, path);
+        UnaryOperator<String> urlMapper = path -> RequestUtil.applyUrlMapping(urlMapping, path);
         Set<String> paths = new HashSet<>();
         appendFavIconPath(paths, appShellClass, service, urlMapper);
         appendPwaIconPaths(paths, appShellClass, service, urlMapper);
-        return RequestMatchers
-                .anyOf(RequestUtil.antMatchers(paths.toArray(String[]::new)));
+        return RequestMatchers.anyOf(RequestUtil.antMatchers(paths.toArray(String[]::new)));
     }
 
-    private static void appendFavIconPath(Set<String> paths,
-            Class<? extends AppShellConfigurator> appShellClass,
+    private static void appendFavIconPath(Set<String> paths, Class<? extends AppShellConfigurator> appShellClass,
             VaadinService vaadinService, UnaryOperator<String> urlMapper) {
         if (appShellClass != null) {
 
@@ -100,8 +91,7 @@ public class WebIconsRequestMatcher implements RequestMatcher {
                 }
 
                 @Override
-                public void addFavIcon(Inline.Position position, String rel,
-                        String href, String sizes) {
+                public void addFavIcon(Inline.Position position, String rel, String href, String sizes) {
                     registerPath(href);
                 }
 
@@ -113,41 +103,33 @@ public class WebIconsRequestMatcher implements RequestMatcher {
                 }
             };
             try {
-                vaadinService.getInstantiator().getOrCreate(appShellClass)
-                        .configurePage(settings);
+                vaadinService.getInstantiator().getOrCreate(appShellClass).configurePage(settings);
             } catch (Exception ex) {
-                LoggerFactory.getLogger(WebIconsRequestMatcher.class)
-                        .debug("Cannot detect favicon path", ex);
+                LoggerFactory.getLogger(WebIconsRequestMatcher.class).debug("Cannot detect favicon path", ex);
             }
         }
         // Remove default favicon paths
         paths.remove("/favicon.ico");
     }
 
-    private static void appendPwaIconPaths(Set<String> paths,
-            Class<?> appShellClass, VaadinService vaadinService,
+    private static void appendPwaIconPaths(Set<String> paths, Class<?> appShellClass, VaadinService vaadinService,
             UnaryOperator<String> urlMapper) {
         Class<?> pwaAnnotatedClass = appShellClass;
         // Otherwise use the class reported by router
         if (pwaAnnotatedClass == null) {
-            pwaAnnotatedClass = ApplicationRouteRegistry
-                    .getInstance(vaadinService.getContext())
+            pwaAnnotatedClass = ApplicationRouteRegistry.getInstance(vaadinService.getContext())
                     .getPwaConfigurationClass();
         }
         // Initialize PwaRegistry with found PWA settings
-        PWA pwa = pwaAnnotatedClass != null
-                ? pwaAnnotatedClass.getAnnotation(PWA.class)
-                : null;
-        if (pwa != null
-                && !PwaConfiguration.DEFAULT_ICON.equals(pwa.iconPath())) {
+        PWA pwa = pwaAnnotatedClass != null ? pwaAnnotatedClass.getAnnotation(PWA.class) : null;
+        if (pwa != null && !PwaConfiguration.DEFAULT_ICON.equals(pwa.iconPath())) {
 
             // Base icon is not served by PwaHandler, so it is not aware of
             // urlMapping
             String baseIconPrefix = pwa.iconPath().startsWith("/") ? "" : "/";
             paths.add(baseIconPrefix + pwa.iconPath());
 
-            HandlerHelper.getIconVariants(pwa.iconPath()).stream()
-                    .map(urlMapper)
+            HandlerHelper.getIconVariants(pwa.iconPath()).stream().map(urlMapper)
                     .collect(Collectors.toCollection(() -> paths));
         }
 

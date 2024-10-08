@@ -54,8 +54,7 @@ public class NavigationState implements Serializable {
      * @return the navigation target of this state
      */
     public Class<? extends Component> getNavigationTarget() {
-        return navigationTarget != null ? navigationTarget
-                : routeTarget != null ? routeTarget.getTarget() : null;
+        return navigationTarget != null ? navigationTarget : routeTarget != null ? routeTarget.getTarget() : null;
     }
 
     /**
@@ -64,10 +63,8 @@ public class NavigationState implements Serializable {
      * @param navigationTarget
      *            navigation target
      */
-    public void setNavigationTarget(
-            Class<? extends Component> navigationTarget) {
-        Objects.requireNonNull(navigationTarget,
-                "navigationTarget cannot be null");
+    public void setNavigationTarget(Class<? extends Component> navigationTarget) {
+        Objects.requireNonNull(navigationTarget, "navigationTarget cannot be null");
         this.navigationTarget = navigationTarget;
     }
 
@@ -89,8 +86,7 @@ public class NavigationState implements Serializable {
      */
     public RouteTarget getRouteTarget() {
         if (routeTarget == null && navigationTarget != null) {
-            routeTarget = router.getRegistry().getRouteTarget(navigationTarget,
-                    routeParameters);
+            routeTarget = router.getRegistry().getRouteTarget(navigationTarget, routeParameters);
 
             if (routeTarget != null) {
                 assert navigationTarget.equals(routeTarget.getTarget());
@@ -116,9 +112,7 @@ public class NavigationState implements Serializable {
      */
     public String getResolvedPath() {
         if (resolvedPath == null) {
-            resolvedPath = router.getRegistry()
-                    .getTargetUrl(getNavigationTarget(), getRouteParameters())
-                    .orElse(null);
+            resolvedPath = router.getRegistry().getTargetUrl(getNavigationTarget(), getRouteParameters()).orElse(null);
         }
         return resolvedPath;
     }
@@ -145,14 +139,12 @@ public class NavigationState implements Serializable {
     }
 
     /**
-     * Gets the list of strings that correspond to the raw string url
-     * parameters.
+     * Gets the list of strings that correspond to the raw string url parameters.
      *
      * @return the url parameters of this navigation state
      */
     public Optional<List<String>> getUrlParameters() {
-        return Optional.of(
-                HasUrlParameterFormat.getParameterValues(getRouteParameters()));
+        return Optional.of(HasUrlParameterFormat.getParameterValues(getRouteParameters()));
     }
 
 }

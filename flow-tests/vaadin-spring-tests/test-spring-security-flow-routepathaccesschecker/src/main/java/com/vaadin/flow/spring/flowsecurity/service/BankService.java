@@ -32,13 +32,11 @@ public class BankService {
     }
 
     private void applyForLoan(int amount) {
-        Optional<UserDetails> authenticatedUser = authenticationContext
-                .getAuthenticatedUser(UserDetails.class);
+        Optional<UserDetails> authenticatedUser = authenticationContext.getAuthenticatedUser(UserDetails.class);
         if (authenticatedUser.isEmpty()) {
             return;
         }
-        Optional<Account> acc = accountService
-                .findByOwner(authenticatedUser.get().getUsername());
+        Optional<Account> acc = accountService.findByOwner(authenticatedUser.get().getUsername());
         if (acc.isEmpty()) {
             return;
         }
@@ -48,13 +46,11 @@ public class BankService {
     }
 
     public BigDecimal getBalance() {
-        Optional<UserDetails> authenticatedUser = authenticationContext
-                .getAuthenticatedUser(UserDetails.class);
+        Optional<UserDetails> authenticatedUser = authenticationContext.getAuthenticatedUser(UserDetails.class);
         if (authenticatedUser.isEmpty()) {
             return null;
         }
-        return accountService.findByOwner(authenticatedUser.get().getUsername())
-                .map(Account::getBalance).orElse(null);
+        return accountService.findByOwner(authenticatedUser.get().getUsername()).map(Account::getBalance).orElse(null);
     }
 
 }

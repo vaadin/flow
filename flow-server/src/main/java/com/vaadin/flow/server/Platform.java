@@ -30,17 +30,14 @@ import org.slf4j.LoggerFactory;
  */
 public class Platform implements Serializable {
     static final String HILLA_POM_PROPERTIES = "META-INF/maven/com.vaadin/hilla/pom.properties";
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(Platform.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Platform.class);
     /**
-     * Memoized Hilla version. null if not yet calculated, empty string if Hilla
-     * is not present on the classpath.
+     * Memoized Hilla version. null if not yet calculated, empty string if Hilla is not present on the classpath.
      */
     static String hillaVersion = null;
 
     /**
-     * Memoized Vaadin version. null if not yet calculated, empty string if
-     * Vaadin is not present on the classpath.
+     * Memoized Vaadin version. null if not yet calculated, empty string if Vaadin is not present on the classpath.
      */
     static String vaadinVersion = null;
 
@@ -54,9 +51,8 @@ public class Platform implements Serializable {
         // times by concurrent threads. Unsafe-publish is OK since String is
         // immutable and thread-safe.
         if (vaadinVersion == null) {
-            try (final InputStream vaadinPomProperties = Thread.currentThread()
-                    .getContextClassLoader().getResourceAsStream(
-                            "META-INF/maven/com.vaadin/vaadin-core/pom.properties")) {
+            try (final InputStream vaadinPomProperties = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream("META-INF/maven/com.vaadin/vaadin-core/pom.properties")) {
                 if (vaadinPomProperties != null) {
                     final Properties properties = new Properties();
                     properties.load(vaadinPomProperties);
@@ -72,31 +68,27 @@ public class Platform implements Serializable {
             }
         }
 
-        return vaadinVersion.isEmpty() ? Optional.empty()
-                : Optional.of(vaadinVersion);
+        return vaadinVersion.isEmpty() ? Optional.empty() : Optional.of(vaadinVersion);
     }
 
     /**
      * Returns Hilla version.
      *
-     * @return Hilla version if Hilla is on the classpath; empty Optional if
-     *         Hilla is not on the classpath.
+     * @return Hilla version if Hilla is on the classpath; empty Optional if Hilla is not on the classpath.
      */
     public static Optional<String> getHillaVersion() {
         // thread-safe: in the worst case hillaVersion may be computed multiple
         // times by concurrent threads. Unsafe-publish is OK since String is
         // immutable and thread-safe.
         if (hillaVersion == null) {
-            try (final InputStream hillaPomProperties = Thread.currentThread()
-                    .getContextClassLoader()
+            try (final InputStream hillaPomProperties = Thread.currentThread().getContextClassLoader()
                     .getResourceAsStream(HILLA_POM_PROPERTIES)) {
                 if (hillaPomProperties != null) {
                     final Properties properties = new Properties();
                     properties.load(hillaPomProperties);
                     hillaVersion = properties.getProperty("version", "");
                 } else {
-                    LOGGER.info("Unable to determine Hilla version. "
-                            + "No {} found", HILLA_POM_PROPERTIES);
+                    LOGGER.info("Unable to determine Hilla version. " + "No {} found", HILLA_POM_PROPERTIES);
                     hillaVersion = "";
                 }
             } catch (Exception e) {
@@ -104,7 +96,6 @@ public class Platform implements Serializable {
                 hillaVersion = "";
             }
         }
-        return hillaVersion.isEmpty() ? Optional.empty()
-                : Optional.of(hillaVersion);
+        return hillaVersion.isEmpty() ? Optional.empty() : Optional.of(hillaVersion);
     }
 }

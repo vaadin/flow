@@ -23,8 +23,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
 
 /**
- * An error thrown by the framework and handled by an {@link ErrorHandler}.
- * Typically handled by {@link VaadinSession#getErrorHandler()}.
+ * An error thrown by the framework and handled by an {@link ErrorHandler}. Typically handled by
+ * {@link VaadinSession#getErrorHandler()}.
  *
  * @since 1.0
  */
@@ -45,8 +45,7 @@ public class ErrorEvent implements Serializable {
     }
 
     /**
-     * Create an error event which wraps the given throwable and component for
-     * exception.
+     * Create an error event which wraps the given throwable and component for exception.
      *
      * @param throwable
      *            the throwable to wrap
@@ -68,8 +67,7 @@ public class ErrorEvent implements Serializable {
     }
 
     /**
-     * Get the Component that the error was thrown for. If not known returns
-     * empty optional.
+     * Get the Component that the error was thrown for. If not known returns empty optional.
      *
      * @return Component that error happened for if available
      */
@@ -78,8 +76,7 @@ public class ErrorEvent implements Serializable {
     }
 
     /**
-     * Get the Element that the error was thrown for. If not known return empty
-     * optional.
+     * Get the Element that the error was thrown for. If not known return empty optional.
      *
      * @return Element that error happened for if available
      */

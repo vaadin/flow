@@ -20,11 +20,9 @@ import java.io.Serializable;
 import com.vaadin.flow.component.HasValue;
 
 /**
- * Handler for applying effects to {@link HasValue} components in {@link Binder}
- * based on {@link ValidationResult} for the user input. Use
- * {@link Binder#setValidationErrorHandler(BinderValidationErrorHandler)} to
- * register an instance of this class to be able to customize validation error
- * handling.
+ * Handler for applying effects to {@link HasValue} components in {@link Binder} based on {@link ValidationResult} for
+ * the user input. Use {@link Binder#setValidationErrorHandler(BinderValidationErrorHandler)} to register an instance of
+ * this class to be able to customize validation error handling.
  *
  *
  * @see DefaultBinderValidationErrorHandler
@@ -36,8 +34,7 @@ import com.vaadin.flow.component.HasValue;
 public interface BinderValidationErrorHandler extends Serializable {
 
     /**
-     * Handles a validation error emitted when trying to write the value of the
-     * given field.
+     * Handles a validation error emitted when trying to write the value of the given field.
      * <p>
      * See #clearError for clearing the error.
      *
@@ -50,8 +47,7 @@ public interface BinderValidationErrorHandler extends Serializable {
     void handleError(HasValue<?, ?> field, ValidationResult result);
 
     /**
-     * Clears the error condition of the given field, if one has been previously
-     * set with {@link #handleError}.
+     * Clears the error condition of the given field, if one has been previously set with {@link #handleError}.
      *
      * @see #handleError(HasValue, ValidationResult)
      * @param field

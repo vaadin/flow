@@ -41,24 +41,20 @@ public class DependencyView extends AbstractDivView {
 
         NativeButton jsOrder = new NativeButton("Test JS order", e -> {
             getPage().addJavaScript("/test-files/js/set-global-var.js");
-            getPage().addJavaScript("/test-files/js/read-global-var.js",
-                    LoadMode.LAZY);
+            getPage().addJavaScript("/test-files/js/read-global-var.js", LoadMode.LAZY);
         });
         jsOrder.setId("loadJs");
 
-        NativeButton allBlue = new NativeButton(
-                "Load 'everything blue' stylesheet", e -> {
-                    getPage().addStyleSheet(
-                            "/test-files/css/allblueimportant.css");
+        NativeButton allBlue = new NativeButton("Load 'everything blue' stylesheet", e -> {
+            getPage().addStyleSheet("/test-files/css/allblueimportant.css");
 
-                });
+        });
         allBlue.setId("loadBlue");
 
-        NativeButton loadUnavailableResources = new NativeButton(
-                "Load unavailable resources", e -> {
-                    getPage().addStyleSheet("/not-found.css");
-                    getPage().addJavaScript("/not-found.js");
-                });
+        NativeButton loadUnavailableResources = new NativeButton("Load unavailable resources", e -> {
+            getPage().addStyleSheet("/not-found.css");
+            getPage().addJavaScript("/not-found.js");
+        });
         loadUnavailableResources.setId("loadUnavailableResources");
 
         Div log = new Div();
@@ -73,8 +69,7 @@ public class DependencyView extends AbstractDivView {
         UI ui = attachEvent.getUI();
 
         getPage().addStyleSheet("/test-files/css/allred.css");
-        getPage().addJavaScript(
-                "/frontend/test-files/js/body-click-listener.js");
+        getPage().addJavaScript("/frontend/test-files/js/body-click-listener.js");
     }
 
 }

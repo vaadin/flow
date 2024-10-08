@@ -14,13 +14,11 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
 
     private static final int MAX_THROTTLE_ATTEMPTS = 5;
 
-    protected void assertThrottle(WebElement input)
-            throws InterruptedException {
+    protected void assertThrottle(WebElement input) throws InterruptedException {
         runThrottleTest(input, 0);
     }
 
-    protected void assertDebounce(WebElement input)
-            throws InterruptedException {
+    protected void assertDebounce(WebElement input) throws InterruptedException {
         // Should not sync while typing within 1000ms from last time
         for (String keys : Arrays.asList("a", "b", "c")) {
             input.sendKeys(keys);
@@ -34,11 +32,8 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
     }
 
     protected void assertMessages(String... expectedMessages) {
-        Assert.assertArrayEquals(expectedMessages,
-                findElements(By.cssSelector("#messages p")).stream()
-                        .map(WebElement::getText)
-                        .map(text -> text.replaceFirst("Value: ", ""))
-                        .toArray(String[]::new));
+        Assert.assertArrayEquals(expectedMessages, findElements(By.cssSelector("#messages p")).stream()
+                .map(WebElement::getText).map(text -> text.replaceFirst("Value: ", "")).toArray(String[]::new));
     }
 
     protected void assertEager(WebElement input) {
@@ -49,8 +44,7 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
         assertMessages("a", "ab");
     }
 
-    private boolean runThrottleTest(WebElement input, int attempt)
-            throws InterruptedException {
+    private boolean runThrottleTest(WebElement input, int attempt) throws InterruptedException {
         input.sendKeys("a");
         assertMessages("a");
 
@@ -80,12 +74,9 @@ public abstract class AbstractDebounceSynchronizeIT extends ChromeBrowserTest {
     }
 
     private boolean checkMessages(String... expectedMessages) {
-        ArrayList<String> messages = findElements(By.cssSelector("#messages p"))
-                .stream().map(WebElement::getText)
-                .map(text -> text.replaceFirst("Value: ", ""))
-                .collect(Collectors.toCollection(ArrayList::new));
-        return messages
-                .equals(new ArrayList<String>(Arrays.asList(expectedMessages)));
+        ArrayList<String> messages = findElements(By.cssSelector("#messages p")).stream().map(WebElement::getText)
+                .map(text -> text.replaceFirst("Value: ", "")).collect(Collectors.toCollection(ArrayList::new));
+        return messages.equals(new ArrayList<String>(Arrays.asList(expectedMessages)));
     }
 
 }

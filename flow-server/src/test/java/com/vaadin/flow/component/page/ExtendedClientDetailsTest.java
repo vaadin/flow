@@ -33,8 +33,7 @@ public class ExtendedClientDetailsTest {
 
     @Test
     public void initializeWithClientValues_gettersReturnExpectedValues() {
-        final ExtendedClientDetails details = new ExtendBuilder()
-                .buildDetails();
+        final ExtendedClientDetails details = new ExtendBuilder().buildDetails();
 
         Assert.assertEquals(2560, details.getScreenWidth());
         Assert.assertEquals(1450, details.getScreenHeight());
@@ -71,20 +70,17 @@ public class ExtendedClientDetailsTest {
         // See https://github.com/vaadin/flow/issues/14517
         detailsBuilder.setNavigatorPlatform("MacIntel");
         details = detailsBuilder.buildDetails();
-        Assert.assertFalse("MacIntel on non touch device is not an iPad",
-                details.isIPad());
+        Assert.assertFalse("MacIntel on non touch device is not an iPad", details.isIPad());
 
         // See https://github.com/vaadin/flow/issues/14517
         detailsBuilder.setTouchDevice("true");
         details = detailsBuilder.buildDetails();
-        Assert.assertTrue("MacIntel on touch device is an iPad",
-                details.isIPad());
+        Assert.assertTrue("MacIntel on touch device is an iPad", details.isIPad());
     }
 
     @Test
     public void differentNavigatorPlatformDetails_Ipod_isIOSReturnsExpectedValue() {
-        ExtendedClientDetails details = new ExtendBuilder()
-                .setNavigatorPlatform("iPod ..").buildDetails();
+        ExtendedClientDetails details = new ExtendBuilder().setNavigatorPlatform("iPod ..").buildDetails();
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         CurrentInstance.setCurrent(session);
@@ -99,8 +95,7 @@ public class ExtendedClientDetailsTest {
 
     @Test
     public void isIOS_isIPad_returnsTrue() {
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = Mockito.mock(ExtendedClientDetails.class);
         Mockito.doCallRealMethod().when(details).isIOS();
         Mockito.when(details.isIPad()).thenReturn(true);
 
@@ -109,8 +104,7 @@ public class ExtendedClientDetailsTest {
 
     @Test
     public void isIOS_notIPadIsIPhone_returnsTrue() {
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = Mockito.mock(ExtendedClientDetails.class);
         Mockito.doCallRealMethod().when(details).isIOS();
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
@@ -126,8 +120,7 @@ public class ExtendedClientDetailsTest {
 
     @Test
     public void isIOS_notIPad_notIsIPhone_returnsFalse() {
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = Mockito.mock(ExtendedClientDetails.class);
         Mockito.doCallRealMethod().when(details).isIOS();
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
@@ -163,12 +156,9 @@ public class ExtendedClientDetailsTest {
         private String navigatorPlatform = "Linux i686";
 
         public ExtendedClientDetails buildDetails() {
-            return new ExtendedClientDetails(screenWidth, screenHeight,
-                    windowInnerWidth, windowInnerHeight, bodyClientWidth,
-                    bodyClientHeight, timezoneOffset, rawTimezoneOffset,
-                    dstSavings, dstInEffect, timeZoneId, clientServerTimeDelta,
-                    touchDevice, devicePixelRatio, windowName,
-                    navigatorPlatform);
+            return new ExtendedClientDetails(screenWidth, screenHeight, windowInnerWidth, windowInnerHeight,
+                    bodyClientWidth, bodyClientHeight, timezoneOffset, rawTimezoneOffset, dstSavings, dstInEffect,
+                    timeZoneId, clientServerTimeDelta, touchDevice, devicePixelRatio, windowName, navigatorPlatform);
         }
 
         public ExtendBuilder setScreenWidth(String screenWidth) {
@@ -226,8 +216,7 @@ public class ExtendedClientDetailsTest {
             return this;
         }
 
-        public ExtendBuilder setClientServerTimeDelta(
-                String clientServerTimeDelta) {
+        public ExtendBuilder setClientServerTimeDelta(String clientServerTimeDelta) {
             this.clientServerTimeDelta = clientServerTimeDelta;
             return this;
         }

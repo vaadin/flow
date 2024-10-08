@@ -21,8 +21,8 @@ import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
 
 /**
- * HTML5 drag end event, fired when the user stops dragging a drag source either
- * by dropping on top of a valid drop target or by canceling to drop.
+ * HTML5 drag end event, fired when the user stops dragging a drag source either by dropping on top of a valid drop
+ * target or by canceling to drop.
  *
  * @param <T>
  *            Type of the component that was dragged.
@@ -40,32 +40,26 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
      * @param source
      *            Component that was dragged.
      * @param fromClient
-     *            <code>true</code> if the event originated from the client
-     *            side, <code>false</code> otherwise
+     *            <code>true</code> if the event originated from the client side, <code>false</code> otherwise
      * @param dropEffect
      *            Drop effect from {@code DataTransfer.dropEffect} object.
      */
-    public DragEndEvent(T source, boolean fromClient,
-            @EventData("event.dataTransfer.dropEffect") String dropEffect) {
+    public DragEndEvent(T source, boolean fromClient, @EventData("event.dataTransfer.dropEffect") String dropEffect) {
         super(source, fromClient);
         this.dropEffect = DropEffect.fromString(dropEffect);
     }
 
     /**
-     * Get drop effect of the dragend event. The value will be in priority
-     * order: the desired action set by the drop target, {@code effectAllowed}
-     * parameter of the drag source and modifier keys the user presses.
-     * <em>NOTE:</em> there are some browser specific differences to this -
-     * Chrome does not change the drop effect based on modifier keys but only
-     * what the drop target sets.
+     * Get drop effect of the dragend event. The value will be in priority order: the desired action set by the drop
+     * target, {@code effectAllowed} parameter of the drag source and modifier keys the user presses. <em>NOTE:</em>
+     * there are some browser specific differences to this - Chrome does not change the drop effect based on modifier
+     * keys but only what the drop target sets.
      * <p>
      * If the drop is not successful, the value will be {@code NONE}.
      * <p>
-     * In case the desired drop effect is {@code MOVE}, the data being dragged
-     * should be removed from the source.
+     * In case the desired drop effect is {@code MOVE}, the data being dragged should be removed from the source.
      *
-     * @return The {@code DataTransfer.dropEffect} parameter of the client side
-     *         dragend event.
+     * @return The {@code DataTransfer.dropEffect} parameter of the client side dragend event.
      * @see DragSource#setEffectAllowed(EffectAllowed)
      * @see DropTarget#setDropEffect(DropEffect)
      */
@@ -74,13 +68,11 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
     }
 
     /**
-     * Returns whether the drop event succesful or was it cancelled or didn't
-     * succeed. This is a shorthand for {@code dropEffect != NONE}.
-     * <em>NOTE:</em> For Edge, Safari and IE11 this method will <b>always
-     * report <code>false</code></b> due to bugs in the browsers!
+     * Returns whether the drop event succesful or was it cancelled or didn't succeed. This is a shorthand for
+     * {@code dropEffect != NONE}. <em>NOTE:</em> For Edge, Safari and IE11 this method will <b>always report
+     * <code>false</code></b> due to bugs in the browsers!
      *
-     * @return {@code true} if the drop event succeeded, {@code false}
-     *         otherwise.
+     * @return {@code true} if the drop event succeeded, {@code false} otherwise.
      * @since 2.1
      */
     public boolean isSuccessful() {
@@ -97,11 +89,9 @@ public class DragEndEvent<T extends Component> extends ComponentEvent<T> {
     }
 
     /**
-     * Clears the drag data for this drag operation (and the drag source
-     * component).
+     * Clears the drag data for this drag operation (and the drag source component).
      * <p>
-     * This method is a shorthand for calling
-     * {@link DragSource#setDragData(Object)} with {@code null} parameter.
+     * This method is a shorthand for calling {@link DragSource#setDragData(Object)} with {@code null} parameter.
      *
      * @see DragStartEvent#setDragData(Object)
      * @see DragSource#setDragData(Object)

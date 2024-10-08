@@ -59,84 +59,65 @@ class SpringVaadinServletServiceStaticLocationsTest {
     Path staticResources;
 
     @Test
-    void getStaticResource_defaultClasspathStaticLocation_notExistingResource_getsNull()
-            throws ServletException {
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+    void getStaticResource_defaultClasspathStaticLocation_notExistingResource_getsNull() throws ServletException {
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         assertNull(service.getStaticResource("not-existing"));
     }
 
     @Test
     void getStaticResource_defaultClasspathStaticLocation_existingResource_getsURL()
             throws ServletException, URISyntaxException {
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         URL url = service.getStaticResource("dummy.txt");
         assertNotNull(url);
         assertFalse(url.toURI().isOpaque(), "Expected a hierarchical URI");
     }
 
     @Test
-    void getStaticResource_classpathStaticLocation_notExistingResource_getsNull()
-            throws ServletException {
-        webProperties.getResources()
-                .setStaticLocations(new String[] { "classpath:VAADIN/config" });
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+    void getStaticResource_classpathStaticLocation_notExistingResource_getsNull() throws ServletException {
+        webProperties.getResources().setStaticLocations(new String[] { "classpath:VAADIN/config" });
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         assertNull(service.getStaticResource("not-existing"));
     }
 
     @Test
     void getStaticResource_classpathStaticLocation_existingResource_getsURL()
             throws ServletException, URISyntaxException {
-        webProperties.getResources().setStaticLocations(
-                new String[] { "classpath:/META-INF/VAADIN/config" });
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+        webProperties.getResources().setStaticLocations(new String[] { "classpath:/META-INF/VAADIN/config" });
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         URL url = service.getStaticResource("flow-build-info.json");
         assertNotNull(url);
         assertFalse(url.toURI().isOpaque(), "Expected a hierarchical URI");
     }
 
     @Test
-    void getStaticResource_relativeFilesystemStaticLocation_notExistingResource_getsNull()
-            throws ServletException {
-        webProperties.getResources().setStaticLocations(
-                new String[] { "file:src/test/resources/public" });
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+    void getStaticResource_relativeFilesystemStaticLocation_notExistingResource_getsNull() throws ServletException {
+        webProperties.getResources().setStaticLocations(new String[] { "file:src/test/resources/public" });
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         assertNull(service.getStaticResource("not-existing"));
     }
 
     @Test
     void getStaticResource_relativeFilesystemStaticLocation_existingResource_getsURL()
             throws ServletException, IOException, URISyntaxException {
-        webProperties.getResources().setStaticLocations(
-                new String[] { "file:src/test/resources/public" });
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+        webProperties.getResources().setStaticLocations(new String[] { "file:src/test/resources/public" });
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         URL url = service.getStaticResource("dummy.txt");
         assertNotNull(url);
         assertFalse(url.toURI().isOpaque(), "Expected a hierarchical URI");
     }
 
     @Test
-    void getStaticResource_notExistingRelativeFilesystemStaticLocation_getsNull()
-            throws ServletException {
-        webProperties.getResources()
-                .setStaticLocations(new String[] { "file:a/b/c" });
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+    void getStaticResource_notExistingRelativeFilesystemStaticLocation_getsNull() throws ServletException {
+        webProperties.getResources().setStaticLocations(new String[] { "file:a/b/c" });
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         assertNull(service.getStaticResource("not-existing"));
     }
 
     @Test
-    void getStaticResource_absoluteFilesystemStaticLocation_notExistingResource_getsNull()
-            throws ServletException {
-        webProperties.getResources().setStaticLocations(
-                new String[] { "file:" + staticResources.toAbsolutePath() });
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+    void getStaticResource_absoluteFilesystemStaticLocation_notExistingResource_getsNull() throws ServletException {
+        webProperties.getResources().setStaticLocations(new String[] { "file:" + staticResources.toAbsolutePath() });
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         assertNull(service.getStaticResource("not-existing"));
     }
 
@@ -144,10 +125,8 @@ class SpringVaadinServletServiceStaticLocationsTest {
     void getStaticResource_absoluteFilesystemStaticLocation_existingResource_getsURL()
             throws ServletException, IOException, URISyntaxException {
         Files.createFile(staticResources.resolve("dummy.txt"));
-        webProperties.getResources().setStaticLocations(
-                new String[] { "file:" + staticResources.toAbsolutePath() });
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+        webProperties.getResources().setStaticLocations(new String[] { "file:" + staticResources.toAbsolutePath() });
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
         URL url = service.getStaticResource("dummy.txt");
         assertNotNull(url);
         assertFalse(url.toURI().isOpaque(), "Expected a hierarchical URI");

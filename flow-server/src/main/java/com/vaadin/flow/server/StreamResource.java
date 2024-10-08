@@ -33,12 +33,10 @@ import com.vaadin.flow.function.ContentTypeResolver;
 /**
  * Represents dynamically generated data.
  * <p>
- * Resource URI registration is automatically handled by components that
- * explicitly support stream resources and by
- * {@link Element#setAttribute(String, AbstractStreamResource)}. In other cases,
- * the resource must manually be registered using
- * {@link StreamResourceRegistry#registerResource(AbstractStreamResource)} to
- * get a URI from which the browser can load the contents of the resource.
+ * Resource URI registration is automatically handled by components that explicitly support stream resources and by
+ * {@link Element#setAttribute(String, AbstractStreamResource)}. In other cases, the resource must manually be
+ * registered using {@link StreamResourceRegistry#registerResource(AbstractStreamResource)} to get a URI from which the
+ * browser can load the contents of the resource.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -61,8 +59,7 @@ public class StreamResource extends AbstractStreamResource {
 
         @Override
         public String apply(StreamResource resource, ServletContext context) {
-            return Optional.ofNullable(context.getMimeType(resource.getName()))
-                    .orElse(DEFAULT_CONTENT_TYPE);
+            return Optional.ofNullable(context.getMimeType(resource.getName())).orElse(DEFAULT_CONTENT_TYPE);
         }
 
     }
@@ -78,15 +75,13 @@ public class StreamResource extends AbstractStreamResource {
         }
 
         @Override
-        public void accept(OutputStream stream, VaadinSession session)
-                throws IOException {
+        public void accept(OutputStream stream, VaadinSession session) throws IOException {
             try (InputStream input = createInputStream(session)) {
                 copy(session, input, stream);
             } catch (IOException ioe) {
                 if ("Broken pipe".equals(ioe.getMessage())) {
-                    LoggerFactory.getLogger(StreamResource.class).debug(
-                            "The client browser has most likely cancelled the request.",
-                            ioe);
+                    LoggerFactory.getLogger(StreamResource.class)
+                            .debug("The client browser has most likely cancelled the request.", ioe);
                 } else {
                     throw ioe;
                 }
@@ -102,8 +97,7 @@ public class StreamResource extends AbstractStreamResource {
             }
         }
 
-        private void copy(VaadinSession session, InputStream source,
-                OutputStream out) throws IOException {
+        private void copy(VaadinSession session, InputStream source, OutputStream out) throws IOException {
             byte[] buf = new byte[BUFFER_SIZE];
             int n;
             while ((n = read(session, source, buf)) >= 0) {
@@ -111,8 +105,7 @@ public class StreamResource extends AbstractStreamResource {
             }
         }
 
-        private int read(VaadinSession session, InputStream source,
-                byte[] buffer) throws IOException {
+        private int read(VaadinSession session, InputStream source, byte[] buffer) throws IOException {
             if (factory.requiresLock()) {
                 session.lock();
                 try {
@@ -127,15 +120,12 @@ public class StreamResource extends AbstractStreamResource {
     }
 
     /**
-     * Creates {@link StreamResource} instance using mandatory parameters
-     * {@code name} as a resource file name and output stream {@code writer} as
-     * a data producer. {@code writer} should write data in the output stream
-     * provided as an argument to its
-     * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
+     * Creates {@link StreamResource} instance using mandatory parameters {@code name} as a resource file name and
+     * output stream {@code writer} as a data producer. {@code writer} should write data in the output stream provided
+     * as an argument to its {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
      * <p>
-     * {@code name} parameter value will be used in URI (generated when resource
-     * is registered) in a way that the {@code name} is the last segment of the
-     * path. So this is synthetic file name (not real one).
+     * {@code name} parameter value will be used in URI (generated when resource is registered) in a way that the
+     * {@code name} is the last segment of the path. So this is synthetic file name (not real one).
      *
      * @param name
      *            resource file name. May not be null.
@@ -147,21 +137,18 @@ public class StreamResource extends AbstractStreamResource {
         assert writer != null;
 
         if (name.indexOf('/') != -1) {
-            throw new IllegalArgumentException(
-                    "Resource file name parameter contains '/'");
+            throw new IllegalArgumentException("Resource file name parameter contains '/'");
         }
         fileName = name;
         this.writer = writer;
     }
 
     /**
-     * Creates {@link StreamResource} instance using mandatory parameters
-     * {@code name} as a resource file name and input stream {@code factory} as
-     * a factory for data.
+     * Creates {@link StreamResource} instance using mandatory parameters {@code name} as a resource file name and input
+     * stream {@code factory} as a factory for data.
      * <p>
-     * {@code name} parameter value will be used in URI (generated when resource
-     * is registered) in a way that the {@code name} is the last segment of the
-     * path. So this is synthetic file name (not real one).
+     * {@code name} parameter value will be used in URI (generated when resource is registered) in a way that the
+     * {@code name} is the last segment of the path. So this is synthetic file name (not real one).
      *
      * @param name
      *            resource file name. May not be null.
@@ -186,8 +173,7 @@ public class StreamResource extends AbstractStreamResource {
     }
 
     /**
-     * Sets the resolver which is used to lookup the content type of the
-     * resource.
+     * Sets the resolver which is used to lookup the content type of the resource.
      * <p>
      * By default a resolver based on servletContext.getMimeType() is used.
      *
@@ -206,9 +192,8 @@ public class StreamResource extends AbstractStreamResource {
     /**
      * Set content type for the resource.
      * <p>
-     * This is a shorthand for
-     * {@link #setContentTypeResolver(ContentTypeResolver)} with resolver which
-     * always returns {@code contentType}
+     * This is a shorthand for {@link #setContentTypeResolver(ContentTypeResolver)} with resolver which always returns
+     * {@code contentType}
      *
      * @param contentType
      *            resource content type, not <code>null</code>
@@ -223,8 +208,7 @@ public class StreamResource extends AbstractStreamResource {
     }
 
     /**
-     * Gets the resolver which is used to lookup the content type of the
-     * resource.
+     * Gets the resolver which is used to lookup the content type of the resource.
      *
      * @return content type resolver
      */
@@ -233,8 +217,8 @@ public class StreamResource extends AbstractStreamResource {
     }
 
     /**
-     * Sets the value of a generic response header. If the header had already
-     * been set, the new value overwrites the previous one.
+     * Sets the value of a generic response header. If the header had already been set, the new value overwrites the
+     * previous one.
      *
      * @param name
      *            a header name
@@ -255,8 +239,7 @@ public class StreamResource extends AbstractStreamResource {
      *
      * @param name
      *            name of header to get value for
-     * @return an optional with header value, or an empty optional if it has not
-     *         been set
+     * @return an optional with header value, or an empty optional if it has not been set
      */
     public Optional<String> getHeader(String name) {
         if (headers != null) {
@@ -268,8 +251,8 @@ public class StreamResource extends AbstractStreamResource {
     /**
      * Gets the additionally configured headers for the resource.
      * <p>
-     * This method doesn't return headers which are set via explicit setters
-     * like {@link #setContentType(String)} and {@link #setCacheTime(long)}.
+     * This method doesn't return headers which are set via explicit setters like {@link #setContentType(String)} and
+     * {@link #setCacheTime(long)}.
      *
      * @return a map of headers and their values
      */

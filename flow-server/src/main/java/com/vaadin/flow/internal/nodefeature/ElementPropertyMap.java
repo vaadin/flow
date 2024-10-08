@@ -48,12 +48,10 @@ import com.vaadin.flow.shared.Registration;
  */
 public class ElementPropertyMap extends AbstractPropertyMap {
 
-    private static final Set<String> forbiddenProperties = Stream
-            .of("textContent", "classList", "className")
+    private static final Set<String> forbiddenProperties = Stream.of("textContent", "classList", "className")
             .collect(Collectors.toSet());
 
-    private static final Set<String> ALWAYS_GENERATE_CHANGE_PROPERTIES = Collections
-            .singleton("innerHTML");
+    private static final Set<String> ALWAYS_GENERATE_CHANGE_PROPERTIES = Collections.singleton("innerHTML");
 
     private Map<String, List<PropertyChangeListener>> listeners;
 
@@ -74,8 +72,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     /**
-     * Updates a property value from the client and returns a Runnable for
-     * firing the associated PropertyChangeEvent.
+     * Updates a property value from the client and returns a Runnable for firing the associated PropertyChangeEvent.
      *
      * @param key
      *            the key to use
@@ -85,16 +82,13 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @exception PropertyChangeDeniedException
      *                if the property change is disallowed
      */
-    public Runnable deferredUpdateFromClient(String key, Serializable value)
-            throws PropertyChangeDeniedException {
+    public Runnable deferredUpdateFromClient(String key, Serializable value) throws PropertyChangeDeniedException {
         return doDeferredUpdateFromClient(key, value);
     }
 
     @Override
-    public void setProperty(String name, Serializable value,
-            boolean emitChange) {
-        assert !forbiddenProperties.contains(name)
-                : "Forbidden property name: " + name;
+    public void setProperty(String name, Serializable value, boolean emitChange) {
+        assert !forbiddenProperties.contains(name) : "Forbidden property name: " + name;
 
         super.setProperty(name, value, emitChange);
     }
@@ -105,8 +99,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @param name
      *            the property name
      * @param value
-     *            the value, must be a string, a boolean, a double or
-     *            <code>null</code>
+     *            the value, must be a string, a boolean, a double or <code>null</code>
      * @see #setProperty(String, Serializable, boolean)
      */
     public void setProperty(String name, Serializable value) {
@@ -122,8 +115,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *            listener to get notifications about property value changes
      * @return an event registration handle for removing the listener
      */
-    public Registration addPropertyChangeListener(String name,
-            PropertyChangeListener listener) {
+    public Registration addPropertyChangeListener(String name, PropertyChangeListener listener) {
         assert hasElement();
         Objects.requireNonNull(name, "Property name cannot be null");
         Objects.requireNonNull(listener, "Listener cannot be null");
@@ -136,16 +128,14 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             if (listeners.size() == 1 && !(listeners instanceof HashMap)) {
                 listeners = new HashMap<>(listeners);
             }
-            propertyListeners = listeners.computeIfAbsent(name,
-                    key -> new ArrayList<>(1));
+            propertyListeners = listeners.computeIfAbsent(name, key -> new ArrayList<>(1));
         }
 
         return Registration.addAndRemove(propertyListeners, listener);
     }
 
     @Override
-    protected Serializable put(String key, Serializable value,
-            boolean emitChange) {
+    protected Serializable put(String key, Serializable value, boolean emitChange) {
         PutResult result = putWithDeferredChangeEvent(key, value, emitChange);
 
         // Fire event right away (if applicable)
@@ -158,8 +148,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         private final Serializable oldValue;
         private final PropertyChangeEvent eventToFire;
 
-        public PutResult(Serializable oldValue,
-                PropertyChangeEvent eventToFire) {
+        public PutResult(Serializable oldValue, PropertyChangeEvent eventToFire) {
             this.oldValue = oldValue;
             this.eventToFire = eventToFire;
         }
@@ -172,15 +161,13 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         }
     }
 
-    private PutResult putWithDeferredChangeEvent(String key, Serializable value,
-            boolean emitChange) {
+    private PutResult putWithDeferredChangeEvent(String key, Serializable value, boolean emitChange) {
         Serializable oldValue = super.put(key, value, emitChange);
         boolean valueChanged = !Objects.equals(oldValue, value);
 
         PropertyChangeEvent event;
         if (hasElement() && valueChanged) {
-            event = new PropertyChangeEvent(Element.get(getNode()), key,
-                    oldValue, !emitChange);
+            event = new PropertyChangeEvent(Element.get(getNode()), key, oldValue, !emitChange);
         } else {
             event = null;
         }
@@ -192,8 +179,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     protected Serializable remove(String key) {
         Serializable oldValue = super.remove(key);
 
-        fireEvent(new PropertyChangeEvent(Element.get(getNode()), key, oldValue,
-                true));
+        fireEvent(new PropertyChangeEvent(Element.get(getNode()), key, oldValue, true));
 
         return oldValue;
     }
@@ -204,8 +190,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     @Override
-    protected boolean producePutChange(String key, boolean hadValueEarlier,
-            Serializable newValue) {
+    protected boolean producePutChange(String key, boolean hadValueEarlier, Serializable newValue) {
         if (ALWAYS_GENERATE_CHANGE_PROPERTIES.contains(key)) {
             return true;
         }
@@ -227,17 +212,14 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     private boolean isDisallowedByFilter(String key) {
         /*
-         * Ignore updates for properties that are rejected because of model type
-         * definitions. Such changes should preferably not be sent by the client
-         * at all, but additional bookkeeping would be needed to allow the
-         * client to know which properties are actually allowed.
+         * Ignore updates for properties that are rejected because of model type definitions. Such changes should
+         * preferably not be sent by the client at all, but additional bookkeeping would be needed to allow the client
+         * to know which properties are actually allowed.
          */
-        if (AllowUpdate.NO_EXPLICIT_STATUS
-                .equals(isUpdateFromClientAllowedBeforeFilter(key))) {
+        if (AllowUpdate.NO_EXPLICIT_STATUS.equals(isUpdateFromClientAllowedBeforeFilter(key))) {
             // If we are here it means that either there is no filter or the
             // filter disallows the update
-            AllowUpdate allowed = isUpdateFromClientAllowedByFilter(getNode(),
-                    key, true);
+            AllowUpdate allowed = isUpdateFromClientAllowedByFilter(getNode(), key, true);
             if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(allowed)) {
                 // This condition means there is a filter which explicitly
                 // allows or disallows the property
@@ -257,30 +239,25 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         StateNode node = getNode();
 
         if (node.hasFeature(ElementListenerMap.class)
-                && node.getFeature(ElementListenerMap.class)
-                        .getPropertySynchronizationMode(property) != null) {
+                && node.getFeature(ElementListenerMap.class).getPropertySynchronizationMode(property) != null) {
             return AllowUpdate.EXPLICITLY_ALLOW;
         }
         return AllowUpdate.NO_EXPLICIT_STATUS;
     }
 
-    private AllowUpdate isUpdateFromClientAllowedByFilter(StateNode node,
-            String key, boolean log) {
+    private AllowUpdate isUpdateFromClientAllowedByFilter(StateNode node, String key, boolean log) {
         if (node.hasFeature(ElementPropertyMap.class)) {
-            ElementPropertyMap propertyMap = node
-                    .getFeature(ElementPropertyMap.class);
+            ElementPropertyMap propertyMap = node.getFeature(ElementPropertyMap.class);
             if (propertyMap.updateFromClientFilter != null) {
                 //// TODO to be removed with polymer template support removal
                 boolean allow = propertyMap.updateFromClientFilter.test(key);
                 if (!allow && log) {
-                    getLogger().warn("Ignoring model update for {}. "
-                            + "For security reasons, the property must have a "
-                            + "two-way binding in the template, be annotated"
-                            + " with @AllowClientUpdates in the model, or be defined as synchronized.",
-                            key);
+                    getLogger()
+                            .warn("Ignoring model update for {}. " + "For security reasons, the property must have a "
+                                    + "two-way binding in the template, be annotated"
+                                    + " with @AllowClientUpdates in the model, or be defined as synchronized.", key);
                 }
-                return allow ? AllowUpdate.EXPLICITLY_ALLOW
-                        : AllowUpdate.EXPLICITLY_DISALLOW;
+                return allow ? AllowUpdate.EXPLICITLY_ALLOW : AllowUpdate.EXPLICITLY_DISALLOW;
             }
         }
         StateNode parent = node.getParent();
@@ -288,14 +265,11 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             return AllowUpdate.NO_EXPLICIT_STATUS;
         }
         if (parent.hasFeature(ElementPropertyMap.class)) {
-            ElementPropertyMap parentMap = parent
-                    .getFeature(ElementPropertyMap.class);
+            ElementPropertyMap parentMap = parent.getFeature(ElementPropertyMap.class);
             Optional<String> parentProperty = parentMap.getPropertyNames()
-                    .filter(property -> node.equals(parentMap.get(property)))
-                    .findFirst();
+                    .filter(property -> node.equals(parentMap.get(property))).findFirst();
             if (parentProperty.isPresent()) {
-                String property = new StringBuilder(parentProperty.get())
-                        .append('.').append(key).toString();
+                String property = new StringBuilder(parentProperty.get()).append('.').append(key).toString();
                 return isUpdateFromClientAllowedByFilter(parent, property, log);
             }
         }
@@ -309,16 +283,13 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     /**
-     * Sets a filter that will be used by for determining whether a property
-     * maybe updated from the client. The filter is recursively inherited to
-     * child model properties.
+     * Sets a filter that will be used by for determining whether a property maybe updated from the client. The filter
+     * is recursively inherited to child model properties.
      *
      * @param updateFromClientFilter
-     *            the filter to set, or <code>null</code> to remove the current
-     *            filter
+     *            the filter to set, or <code>null</code> to remove the current filter
      */
-    public void setUpdateFromClientFilter(
-            SerializablePredicate<String> updateFromClientFilter) {
+    public void setUpdateFromClientFilter(SerializablePredicate<String> updateFromClientFilter) {
         this.updateFromClientFilter = updateFromClientFilter;
     }
 
@@ -329,14 +300,12 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *
      * @param key
      *            the key to use for the lookup
-     * @return a model map attached to the given key, possibly created in this
-     *         method
+     * @return a model map attached to the given key, possibly created in this method
      */
     private ElementPropertyMap getOrCreateModelMap(String key) {
         Serializable value = getProperty(key);
         if (value == null) {
-            value = new StateNode(
-                    Collections.singletonList(ElementPropertyMap.class));
+            value = new StateNode(Collections.singletonList(ElementPropertyMap.class));
             setProperty(key, value);
         }
 
@@ -352,8 +321,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *
      * @param key
      *            the key to use for the lookup
-     * @return a model list attached to the given key, possibly created in this
-     *         method
+     * @return a model list attached to the given key, possibly created in this method
      */
     private ModelList getOrCreateModelList(String key) {
         Serializable value = getProperty(key);
@@ -370,12 +338,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     /**
      * Resolves the {@link ElementPropertyMap} that the model path refers to.
      * <p>
-     * If the model path contains separate dot separated parts, any non-existing
-     * part will be created during resolving.
+     * If the model path contains separate dot separated parts, any non-existing part will be created during resolving.
      *
      * @param modelPath
-     *            the path to resolve, either a single property name or a dot
-     *            separated path
+     *            the path to resolve, either a single property name or a dot separated path
      * @return the resolved model map
      */
     public ElementPropertyMap resolveModelMap(String modelPath) {
@@ -388,12 +354,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     /**
      * Resolves the {@link ModelList} that the model path refers to.
      * <p>
-     * If the model path contains separate dot separated parts, any non-existing
-     * part will be created during resolving.
+     * If the model path contains separate dot separated parts, any non-existing part will be created during resolving.
      *
      * @param modelPath
-     *            the path to resolve, either a single property name or a dot
-     *            separated path
+     *            the path to resolve, either a single property name or a dot separated path
      * @return the resolved model list
      */
     public ModelList resolveModelList(String modelPath) {
@@ -401,29 +365,23 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     /**
-     * Resolves the {@link ModelList} or {@link ElementPropertyMap} that the
-     * model path refers to.
+     * Resolves the {@link ModelList} or {@link ElementPropertyMap} that the model path refers to.
      * <p>
-     * If the model path contains separate dot separated parts, any non-existing
-     * part will be created during resolving.
+     * If the model path contains separate dot separated parts, any non-existing part will be created during resolving.
      *
      * @param modelPath
-     *            the path to resolve, either a single property name or a dot
-     *            separated path
+     *            the path to resolve, either a single property name or a dot separated path
      * @param leafType
-     *            the type of feature to resolve, {@link ModelList} or
-     *            {@link ElementPropertyMap}
+     *            the type of feature to resolve, {@link ModelList} or {@link ElementPropertyMap}
      * @return the resolved model list or map
      */
     @SuppressWarnings("unchecked")
-    private <T extends NodeFeature> T resolve(String modelPath,
-            Class<T> leafType) {
+    private <T extends NodeFeature> T resolve(String modelPath, Class<T> leafType) {
         assert modelPath != null;
         assert !"".equals(modelPath);
         assert !modelPath.startsWith(".");
         assert !modelPath.endsWith(".");
-        assert leafType == ElementPropertyMap.class
-                || leafType == ModelList.class;
+        assert leafType == ElementPropertyMap.class || leafType == ModelList.class;
 
         int dotLocation = modelPath.indexOf('.');
         if (dotLocation == -1) {
@@ -458,11 +416,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         if (listeners == null) {
             return;
         }
-        List<PropertyChangeListener> propertyListeners = listeners
-                .get(event.getPropertyName());
+        List<PropertyChangeListener> propertyListeners = listeners.get(event.getPropertyName());
         if (propertyListeners != null && !propertyListeners.isEmpty()) {
-            new ArrayList<>(propertyListeners)
-                    .forEach(listener -> listener.propertyChange(event));
+            new ArrayList<>(propertyListeners).forEach(listener -> listener.propertyChange(event));
         }
     }
 
@@ -475,20 +431,18 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     }
 
     /**
-     * The method first checks whether the update from client is allowed using
-     * the method {@link #allowUpdateFromClient(String, Serializable)}. Then if
-     * it's not allowed then it either throws or returns NO OPERATION runnable
-     * in case if {@link #updateFromClientFilter} disallows the update (in this
-     * case it's just an application business logic and we should not throw).
+     * The method first checks whether the update from client is allowed using the method
+     * {@link #allowUpdateFromClient(String, Serializable)}. Then if it's not allowed then it either throws or returns
+     * NO OPERATION runnable in case if {@link #updateFromClientFilter} disallows the update (in this case it's just an
+     * application business logic and we should not throw).
      *
-     * The logic inside the {@link #allowUpdateFromClient(String, Serializable)}
-     * check block repeats its own logic to make sure that:
+     * The logic inside the {@link #allowUpdateFromClient(String, Serializable)} check block repeats its own logic to
+     * make sure that:
      * <ul>
-     * <li>It's in sync with
-     * {@link #allowUpdateFromClient(String, Serializable)} (and
+     * <li>It's in sync with {@link #allowUpdateFromClient(String, Serializable)} (and
      * {@link #mayUpdateFromClient(String, Serializable)}
-     * <li>The update is disallowed by the filter (and not some other checks
-     * that are inside {@link #allowUpdateFromClient(String, Serializable)}
+     * <li>The update is disallowed by the filter (and not some other checks that are inside
+     * {@link #allowUpdateFromClient(String, Serializable)}
      * <ul>
      *
      * Here is the logic flow:
@@ -550,8 +504,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *
      * </pre>
      */
-    private Runnable doDeferredUpdateFromClient(String key, Serializable value)
-            throws PropertyChangeDeniedException {
+    private Runnable doDeferredUpdateFromClient(String key, Serializable value) throws PropertyChangeDeniedException {
         // Use private <code>allowUpdateFromClient</code> method instead of
         // <code>mayUpdateFromClient</code> which may be overridden
         // The logic below

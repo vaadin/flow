@@ -38,8 +38,7 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
-@WebServlet(asyncSupported = true, urlPatterns = {
-        "/router-layout-custom-scope/*" })
+@WebServlet(asyncSupported = true, urlPatterns = { "/router-layout-custom-scope/*" })
 public class RouterLayoutCustomScopeServlet extends VaadinServlet {
 
     public static String NAVIGATE_TO_ANOTHER_ROUTE_INSIDE_MAIN_LAYOUT_BUTTON_ID = "navigate-to-another-route-inside-main-layout-button-id";
@@ -49,23 +48,20 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
     public static String SUB_LAYOUT_ID = "sub-layout-id";
 
     @Override
-    protected VaadinServletService createServletService(
-            DeploymentConfiguration deploymentConfiguration)
+    protected VaadinServletService createServletService(DeploymentConfiguration deploymentConfiguration)
             throws ServiceException {
-        RouterLayoutCustomScopeService routerLayoutCustomScopeService = new RouterLayoutCustomScopeService(
-                this, deploymentConfiguration);
+        RouterLayoutCustomScopeService routerLayoutCustomScopeService = new RouterLayoutCustomScopeService(this,
+                deploymentConfiguration);
         routerLayoutCustomScopeService.init();
         return routerLayoutCustomScopeService;
     }
 
     private static class CustomSessionScopeContext {
-        private static final String uiScopeContextKey = CustomSessionScopeContext.class
-                .getName();
+        private static final String uiScopeContextKey = CustomSessionScopeContext.class.getName();
 
         static CustomUIScopeContext getUIScopeContext() {
             VaadinSession current = VaadinSession.getCurrent();
-            CustomUIScopeContext uiScopeContext = (CustomUIScopeContext) current
-                    .getAttribute(uiScopeContextKey);
+            CustomUIScopeContext uiScopeContext = (CustomUIScopeContext) current.getAttribute(uiScopeContextKey);
             if (uiScopeContext == null) {
                 uiScopeContext = new CustomUIScopeContext();
                 current.setAttribute(uiScopeContextKey, uiScopeContext);
@@ -90,28 +86,23 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
             });
         }
 
-        RouterLayout getRouterLayout(
-                Class<? extends RouterLayout> routerLayoutType,
+        RouterLayout getRouterLayout(Class<? extends RouterLayout> routerLayoutType,
                 SerializableFunction<Class<? extends RouterLayout>, RouterLayout> factory) {
             UI current = UI.getCurrent();
-            assert current != null : "Current UI is supposed to be not empty "
-                    + "when a layout instance is being requested";
-            routerLayouts.get(current.getUIId())
-                    .computeIfAbsent(routerLayoutType, factory);
+            assert current != null
+                    : "Current UI is supposed to be not empty " + "when a layout instance is being requested";
+            routerLayouts.get(current.getUIId()).computeIfAbsent(routerLayoutType, factory);
             return routerLayouts.get(current.getUIId()).get(routerLayoutType);
         }
     }
 
-    private static class RouterLayoutCustomScopeService
-            extends VaadinServletService {
+    private static class RouterLayoutCustomScopeService extends VaadinServletService {
 
-        public RouterLayoutCustomScopeService(VaadinServlet servlet,
-                DeploymentConfiguration deploymentConfiguration) {
+        public RouterLayoutCustomScopeService(VaadinServlet servlet, DeploymentConfiguration deploymentConfiguration) {
             super(servlet, deploymentConfiguration);
             // Create UIScope context upon entering a new UI (browser tab/new
             // test)
-            addUIInitListener(event -> CustomSessionScopeContext
-                    .getUIScopeContext().addUI(event.getUI()));
+            addUIInitListener(event -> CustomSessionScopeContext.getUIScopeContext().addUI(event.getUI()));
         }
 
         @Override
@@ -122,8 +113,7 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
         }
     }
 
-    private static class RouterLayoutCustomScopeInstantiator
-            extends DefaultInstantiator {
+    private static class RouterLayoutCustomScopeInstantiator extends DefaultInstantiator {
 
         public RouterLayoutCustomScopeInstantiator(VaadinService service) {
             super(service);
@@ -136,16 +126,14 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
             // always UI-scoped for the test purposes.
             if (RouterLayout.class.isAssignableFrom(type)) {
                 return (T) CustomSessionScopeContext.getUIScopeContext()
-                        .getRouterLayout((Class<? extends RouterLayout>) type,
-                                super::getOrCreate);
+                        .getRouterLayout((Class<? extends RouterLayout>) type, super::getOrCreate);
             }
             return super.getOrCreate(type);
         }
     }
 
     @Route("main")
-    public static class CustomUIScopeMainLayout extends Div
-            implements RouterLayout {
+    public static class CustomUIScopeMainLayout extends Div implements RouterLayout {
 
         public CustomUIScopeMainLayout() {
             add(new Span("This is a topmost parent router layout"));
@@ -167,15 +155,12 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
                 NativeButton navigateToAnotherViewButton = new NativeButton(
                         "Navigate to another route inside Main Layout",
                         click -> UI.getCurrent().navigate(SecondView.class));
-                navigateToAnotherViewButton.setId(
-                        NAVIGATE_TO_ANOTHER_ROUTE_INSIDE_MAIN_LAYOUT_BUTTON_ID);
+                navigateToAnotherViewButton.setId(NAVIGATE_TO_ANOTHER_ROUTE_INSIDE_MAIN_LAYOUT_BUTTON_ID);
                 add(navigateToAnotherViewButton);
                 NativeButton navigateToAnotherLayoutButton = new NativeButton(
                         "Navigate to another route outside Main Layout",
-                        click -> UI.getCurrent().navigate(
-                                CustomUIScopeAnotherLayout.ThirdView.class));
-                navigateToAnotherLayoutButton.setId(
-                        NAVIGATE_TO_ANOTHER_ROUTE_OUTSIDE_MAIN_LAYOUT_BUTTON_ID);
+                        click -> UI.getCurrent().navigate(CustomUIScopeAnotherLayout.ThirdView.class));
+                navigateToAnotherLayoutButton.setId(NAVIGATE_TO_ANOTHER_ROUTE_OUTSIDE_MAIN_LAYOUT_BUTTON_ID);
                 add(navigateToAnotherLayoutButton);
             }
         }
@@ -185,19 +170,16 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
 
             public SecondView() {
                 add(new Span("This is another route inside Main Layout"));
-                NativeButton navigateToChildView = new NativeButton(
-                        "Navigate to first route",
+                NativeButton navigateToChildView = new NativeButton("Navigate to first route",
                         click -> UI.getCurrent().navigate(FirstView.class));
-                navigateToChildView.setId(
-                        NAVIGATE_BACK_FROM_ANOTHER_ROUTE_OUTSIDE_MAIN_LAYOUT_BUTTON_ID);
+                navigateToChildView.setId(NAVIGATE_BACK_FROM_ANOTHER_ROUTE_OUTSIDE_MAIN_LAYOUT_BUTTON_ID);
                 add(navigateToChildView);
             }
         }
     }
 
     @Route("secondary")
-    public static class CustomUIScopeAnotherLayout extends Div
-            implements RouterLayout {
+    public static class CustomUIScopeAnotherLayout extends Div implements RouterLayout {
 
         public CustomUIScopeAnotherLayout() {
             add(new Span("This is an another topmost parent router layout"));
@@ -208,12 +190,9 @@ public class RouterLayoutCustomScopeServlet extends VaadinServlet {
 
             public ThirdView() {
                 add(new Span("This is another route outside of Main Layout"));
-                NativeButton navigateToChildView = new NativeButton(
-                        "Navigate to first view",
-                        click -> UI.getCurrent().navigate(
-                                CustomUIScopeMainLayout.FirstView.class));
-                navigateToChildView.setId(
-                        NAVIGATE_BACK_FROM_ANOTHER_ROUTE_INSIDE_MAIN_LAYOUT_BUTTON_ID);
+                NativeButton navigateToChildView = new NativeButton("Navigate to first view",
+                        click -> UI.getCurrent().navigate(CustomUIScopeMainLayout.FirstView.class));
+                navigateToChildView.setId(NAVIGATE_BACK_FROM_ANOTHER_ROUTE_INSIDE_MAIN_LAYOUT_BUTTON_ID);
                 add(navigateToChildView);
             }
         }

@@ -31,12 +31,10 @@ public class PreventLeavingView extends Div implements BeforeLeaveObserver {
         Input input = new Input();
         input.setId("preventRouteInput");
         add(input);
-        NativeButton submitPreventRoute = new NativeButton(
-                "Submit prevent route");
+        NativeButton submitPreventRoute = new NativeButton("Submit prevent route");
         submitPreventRoute.addClickListener(event -> {
             preventRoute = input.getValue();
-            String preventedMessage = String
-                    .format("preventing navigation to '%s'", preventRoute);
+            String preventedMessage = String.format("preventing navigation to '%s'", preventRoute);
             Paragraph paragraph = new Paragraph(preventedMessage);
             paragraph.setClassName("prevented-route");
             add(paragraph);
@@ -47,8 +45,7 @@ public class PreventLeavingView extends Div implements BeforeLeaveObserver {
 
     @Override
     public void beforeLeave(BeforeLeaveEvent event) {
-        if (preventRoute != null
-                && event.getLocation().getPath().equals(preventRoute)) {
+        if (preventRoute != null && event.getLocation().getPath().equals(preventRoute)) {
             event.postpone();
         }
     }

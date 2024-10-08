@@ -18,8 +18,8 @@ package com.vaadin.client.flow.collection;
 import jsinterop.annotations.JsType;
 
 /**
- * Native JS WeakMap interface with an alternative implementation for JRE usage.
- * Use {@link JsCollections#weakMap()} to create an appropriate instance.
+ * Native JS WeakMap interface with an alternative implementation for JRE usage. Use {@link JsCollections#weakMap()} to
+ * create an appropriate instance.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -42,14 +42,12 @@ public interface JsWeakMap<K, V> {
     JsWeakMap<K, V> set(K key, V value);
 
     /**
-     * Gets the value mapped for the given key. Returns <code>null</code> if
-     * there is no mapping, if the key is explicitly mapped to <code>null</code>
-     * or if the key has been garbage collected.
+     * Gets the value mapped for the given key. Returns <code>null</code> if there is no mapping, if the key is
+     * explicitly mapped to <code>null</code> or if the key has been garbage collected.
      *
      * @param key
      *            the key to get a value for
-     * @return the value corresponding to the given key; or <code>null</code>
-     *         there is no mapping.
+     * @return the value corresponding to the given key; or <code>null</code> there is no mapping.
      */
     V get(K key);
 
@@ -58,8 +56,7 @@ public interface JsWeakMap<K, V> {
      *
      * @param key
      *            the key to check
-     * @return <code>true</code> if there is a mapping for the key;
-     *         <code>false</code> if there is no mapping
+     * @return <code>true</code> if there is a mapping for the key; <code>false</code> if there is no mapping
      */
     boolean has(K key);
 
@@ -68,9 +65,8 @@ public interface JsWeakMap<K, V> {
      *
      * @param key
      *            the key for which to remove the mapping
-     * @return <code>true</code> if the map contained a mapping for the given
-     *         key prior to calling this method; <code>false</code> if no
-     *         mapping was present
+     * @return <code>true</code> if the map contained a mapping for the given key prior to calling this method;
+     *         <code>false</code> if no mapping was present
      */
     boolean delete(K key);
 }

@@ -24,7 +24,6 @@ import com.vaadin.flow.router.Route;
 public class BackNavFirstView extends Div {
 
     public BackNavFirstView() {
-        add(new NativeButton("Navigate", event -> getUI()
-                .ifPresent(ui -> ui.navigate(BackNavSecondView.class))));
+        add(new NativeButton("Navigate", event -> getUI().ifPresent(ui -> ui.navigate(BackNavSecondView.class))));
     }
 }

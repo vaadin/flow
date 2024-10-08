@@ -82,8 +82,7 @@ public class TaskUpdatePackagesNpmTest {
 
     private ClassFinder finder;
 
-    private Logger logger = Mockito
-            .spy(LoggerFactory.getLogger(NodeUpdater.class));
+    private Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
     private File generatedPath;
 
     private File versionJsonFile;
@@ -107,19 +106,16 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    public void npmIsInUse_platformVersionsJsonHasPinnedVersions_versionsArePinned()
-            throws IOException {
+    public void npmIsInUse_platformVersionsJsonHasPinnedVersions_versionsArePinned() throws IOException {
         runTestWithoutPreexistingPackageJson();
     }
 
     private void runTestWithoutPreexistingPackageJson() throws IOException {
         createBasicVaadinVersionsJson();
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
         Assert.assertTrue("Updates we're not written", task.modified);
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
         verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
@@ -133,19 +129,15 @@ public class TaskUpdatePackagesNpmTest {
         final JsonObject packageJsonJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJsonJson.getObject(DEPENDENCIES);
         dependencies.put(VAADIN_ELEMENT_MIXIN, USER_SPECIFIED_MIXIN_VERSION);
-        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
-                packageJsonJson.toJson(), StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON), packageJsonJson.toJson(),
+                StandardCharsets.UTF_8);
 
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
-        Assert.assertTrue(
-                "User's updates in package.json should have been noticed.",
-                task.modified);
+        Assert.assertTrue("User's updates in package.json should have been noticed.", task.modified);
 
         // versions should be the same, except overridden mixin
-        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
     }
 
     @Test
@@ -157,22 +149,17 @@ public class TaskUpdatePackagesNpmTest {
         // user adds an application/add-on specific version,
         // in practice excludes the vaadin brought in version
         final Map<String, String> applicationDependencies = createApplicationDependencies();
-        applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
-                USER_SPECIFIED_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_ELEMENT_MIXIN, USER_SPECIFIED_MIXIN_VERSION);
         final TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
-        Assert.assertTrue(
-                "User's added application dependency updates should have been noticed",
-                task.modified);
+        Assert.assertTrue("User's added application dependency updates should have been noticed", task.modified);
 
         // versions should be the same, except overridden mixin
-        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PLATFORM_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
     }
 
     @Test
-    public void npmIsInUse_platformVersionIsBumped_versionsAreUpdated()
-            throws IOException {
+    public void npmIsInUse_platformVersionIsBumped_versionsAreUpdated() throws IOException {
         // run the basic test to produce an existing package.json
         runTestWithoutPreexistingPackageJson();
         // write new versions json and scanned deps
@@ -190,28 +177,21 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    public void npmIsInUse_noPlatformVersionJsonPresent_noFailure()
-            throws IOException {
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+    public void npmIsInUse_noPlatformVersionJsonPresent_noFailure() throws IOException {
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON)).thenReturn(null);
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
         Assert.assertTrue("Updates not picked", task.modified);
 
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
-        JsonObject dependencies = getOrCreatePackageJson()
-                .getObject(DEPENDENCIES);
-        Assert.assertEquals(PLATFORM_DIALOG_VERSION,
-                dependencies.get(VAADIN_DIALOG).asString());
+        JsonObject dependencies = getOrCreatePackageJson().getObject(DEPENDENCIES);
+        Assert.assertEquals(PLATFORM_DIALOG_VERSION, dependencies.get(VAADIN_DIALOG).asString());
     }
 
     @Test
-    public void npmIsInUse_platformVersionsJsonAdded_versionsPinned()
-            throws IOException {
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+    public void npmIsInUse_platformVersionsJsonAdded_versionsPinned() throws IOException {
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON)).thenReturn(null);
         createTask(createApplicationDependencies()).execute();
 
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
@@ -230,42 +210,33 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    public void pnpmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
-            throws IOException {
+    public void pnpmIsInUse_platformVersionsJsonAdded_dependenciesAdded() throws IOException {
         verifyPlatformDependenciesAreAdded(true);
     }
 
     @Test
-    public void npmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
-            throws IOException {
+    public void npmIsInUse_platformVersionsJsonAdded_dependenciesAdded() throws IOException {
         verifyPlatformDependenciesAreAdded(false);
     }
 
     @Test
-    public void npmIsInUse_versionJsonHasBadVersion_noFailureNothingAdded()
-            throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, "{{{foobar}}");
+    public void npmIsInUse_versionJsonHasBadVersion_noFailureNothingAdded() throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, "{{{foobar}}");
 
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
         Assert.assertTrue("Updates not picked", task.modified);
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
-                null);
+        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, null);
         verifyVersionLockingWithNpmOverrides(true, true, false);
     }
 
     @Test
-    public void npmIsInUse_executionAfterDependencyRemoved_overlayIsCleanedOfDependency()
-            throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+    public void npmIsInUse_executionAfterDependencyRemoved_overlayIsCleanedOfDependency() throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
-        applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_ELEMENT_MIXIN, PLATFORM_ELEMENT_MIXIN_VERSION);
         applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
         TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
@@ -274,11 +245,9 @@ public class TaskUpdatePackagesNpmTest {
         verifyVersionLockingWithNpmOverrides(true, true, true);
 
         // Remove platform lock for vaadin-element-mixin
-        final JsonObject versions = Json.parse(FileUtils
-                .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
+        final JsonObject versions = Json.parse(FileUtils.readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         versions.getObject("core").remove("vaadin-element-mixin");
-        FileUtils.writeStringToFile(versionJsonFile, versions.toJson(),
-                StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(versionJsonFile, versions.toJson(), StandardCharsets.UTF_8);
 
         // Remove VAADIN_ELEMENT_MIXIN from the application dependencies
         applicationDependencies.remove(VAADIN_ELEMENT_MIXIN);
@@ -292,14 +261,11 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    public void npmIsInUse_dependencyMovedToDevDependencies_overrideNotRemoved()
-            throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+    public void npmIsInUse_dependencyMovedToDevDependencies_overrideNotRemoved() throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
-        applicationDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
+        applicationDependencies.put(VAADIN_ELEMENT_MIXIN, PLATFORM_ELEMENT_MIXIN_VERSION);
         applicationDependencies.put(VAADIN_OVERLAY, PLATFORM_OVERLAY_VERSION);
         TaskUpdatePackages task = createTask(applicationDependencies);
         task.execute();
@@ -308,18 +274,14 @@ public class TaskUpdatePackagesNpmTest {
         verifyVersionLockingWithNpmOverrides(true, true, true);
 
         // Remove platform lock for vaadin-element-mixin
-        final JsonObject versions = Json.parse(FileUtils
-                .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
+        final JsonObject versions = Json.parse(FileUtils.readFileToString(versionJsonFile, StandardCharsets.UTF_8));
         versions.getObject("core").remove("vaadin-element-mixin");
-        FileUtils.writeStringToFile(versionJsonFile, versions.toJson(),
-                StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(versionJsonFile, versions.toJson(), StandardCharsets.UTF_8);
 
         // Move element-mixin to devDependencies
         JsonObject packageJson = getOrCreatePackageJson();
-        packageJson.getObject(DEV_DEPENDENCIES).put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
-        FileUtils.writeStringToFile(this.packageJson, packageJson.toJson(),
-                StandardCharsets.UTF_8);
+        packageJson.getObject(DEV_DEPENDENCIES).put(VAADIN_ELEMENT_MIXIN, PLATFORM_ELEMENT_MIXIN_VERSION);
+        FileUtils.writeStringToFile(this.packageJson, packageJson.toJson(), StandardCharsets.UTF_8);
 
         // Remove VAADIN_ELEMENT_MIXIN from the application dependencies
         applicationDependencies.remove(VAADIN_ELEMENT_MIXIN);
@@ -333,63 +295,50 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    public void npmIsInUse_versionsJsonHasSnapshotVersions_notAddedToPackageJson()
-            throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, "20.0-SNAPSHOT");
+    public void npmIsInUse_versionsJsonHasSnapshotVersions_notAddedToPackageJson() throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, "20.0-SNAPSHOT");
 
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
         Assert.assertTrue("Updates not picked", task.modified);
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
-                null);
+        verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, null);
         verifyVersionLockingWithNpmOverrides(true, true, false);
     }
 
     @Test
-    public void npmIsInUse_packageJsonHasNonNumericVersion_versionNotOverridden()
-            throws IOException {
+    public void npmIsInUse_packageJsonHasNonNumericVersion_versionNotOverridden() throws IOException {
         final JsonObject packageJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         dependencies.put(VAADIN_ELEMENT_MIXIN, "file:../foobar");
-        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
-                packageJson.toJson(), StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON), packageJson.toJson(), StandardCharsets.UTF_8);
 
         createBasicVaadinVersionsJson();
 
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
 
         Assert.assertTrue("Updates not picked", task.modified);
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, "file:../foobar",
-                PLATFORM_OVERLAY_VERSION);
+        verifyVersions(PLATFORM_DIALOG_VERSION, "file:../foobar", PLATFORM_OVERLAY_VERSION);
         verifyVersionLockingWithNpmOverrides(true, false, true);
     }
 
     @Test
-    public void missingTypeInPackageJson_typeModuleIsAdded()
-            throws IOException {
+    public void missingTypeInPackageJson_typeModuleIsAdded() throws IOException {
         JsonObject packageJson = getOrCreatePackageJson();
-        Assert.assertFalse("No type should be available",
-                packageJson.hasKey("type"));
+        Assert.assertFalse("No type should be available", packageJson.hasKey("type"));
 
         createBasicVaadinVersionsJson();
 
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
 
         // get latest package.json file
         packageJson = getOrCreatePackageJson();
 
-        Assert.assertTrue("Type should have been addded.",
-                packageJson.hasKey("type"));
-        Assert.assertEquals("Type should be module", "module",
-                packageJson.getString("type"));
+        Assert.assertTrue("Type should have been addded.", packageJson.hasKey("type"));
+        Assert.assertEquals("Type should be module", "module", packageJson.getString("type"));
     }
 
     @Test
@@ -397,27 +346,22 @@ public class TaskUpdatePackagesNpmTest {
         JsonObject packageJson = getOrCreatePackageJson();
         packageJson.put("type", "commonjs");
 
-        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
-                packageJson.toJson(), StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON), packageJson.toJson(), StandardCharsets.UTF_8);
 
         createBasicVaadinVersionsJson();
 
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
 
         // get latest package.json file
         packageJson = getOrCreatePackageJson();
 
-        Assert.assertTrue("Type should not have been removed",
-                packageJson.hasKey("type"));
-        Assert.assertEquals("Type should have been updated to 'module'",
-                "module", packageJson.getString("type"));
+        Assert.assertTrue("Type should not have been removed", packageJson.hasKey("type"));
+        Assert.assertEquals("Type should have been updated to 'module'", "module", packageJson.getString("type"));
     }
 
     @Test
-    public void npmIsInUse_packageJsonVersionIsUpdated_vaadinSectionIsNotChanged()
-            throws IOException {
+    public void npmIsInUse_packageJsonVersionIsUpdated_vaadinSectionIsNotChanged() throws IOException {
         final JsonObject packageJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         dependencies.put(VAADIN_ELEMENT_MIXIN, "1.2.3");
@@ -425,28 +369,22 @@ public class TaskUpdatePackagesNpmTest {
         JsonObject vaadinDependencies = Json.createObject();
         packageJson.put(VAADIN_DEP_KEY, vaadinSection);
         vaadinSection.put(DEPENDENCIES, vaadinDependencies);
-        vaadinDependencies.put(VAADIN_ELEMENT_MIXIN,
-                PLATFORM_ELEMENT_MIXIN_VERSION);
-        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
-                packageJson.toJson(), StandardCharsets.UTF_8);
+        vaadinDependencies.put(VAADIN_ELEMENT_MIXIN, PLATFORM_ELEMENT_MIXIN_VERSION);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON), packageJson.toJson(), StandardCharsets.UTF_8);
 
         createBasicVaadinVersionsJson();
 
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
 
-        JsonObject newVaadinDeps = getOrCreatePackageJson()
-                .getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
+        JsonObject newVaadinDeps = getOrCreatePackageJson().getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
 
-        Assert.assertEquals(PLATFORM_ELEMENT_MIXIN_VERSION,
-                newVaadinDeps.getString(VAADIN_ELEMENT_MIXIN));
+        Assert.assertEquals(PLATFORM_ELEMENT_MIXIN_VERSION, newVaadinDeps.getString(VAADIN_ELEMENT_MIXIN));
     }
 
     // #11025
     @Test
-    public void npmIsInUse_versionsJsonHasVaadinCoreVersionPinned_vaadinCoreVersionIgnored()
-            throws IOException {
+    public void npmIsInUse_versionsJsonHasVaadinCoreVersionPinned_vaadinCoreVersionIgnored() throws IOException {
         final String expectedElementMixinVersion = "21.0.0-alpha2";
         String versionJsonString = //@formatter:off
                 "{ \"core\": {" + "\"vaadin-element-mixin\": {\n"
@@ -457,28 +395,22 @@ public class TaskUpdatePackagesNpmTest {
                         // broken for npm
                         + "    \"npmName\": \"" + VAADIN_CORE_NPM_PACKAGE
                         + "\"\n" + "},\n" + "}}},\n";//@formatter:on
-        FileUtils.write(versionJsonFile, versionJsonString,
-                StandardCharsets.UTF_8);
+        FileUtils.write(versionJsonFile, versionJsonString, StandardCharsets.UTF_8);
 
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
         Assert.assertTrue("Updates not picked", task.modified);
 
-        verifyVersions(PLATFORM_DIALOG_VERSION, expectedElementMixinVersion,
-                null);
+        verifyVersions(PLATFORM_DIALOG_VERSION, expectedElementMixinVersion, null);
         verifyVersionLockingWithNpmOverrides(true, true, false);
         final JsonObject packageJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
 
-        Assert.assertFalse(
-                VAADIN_CORE_NPM_PACKAGE
-                        + " version should not be written to package.json",
+        Assert.assertFalse(VAADIN_CORE_NPM_PACKAGE + " version should not be written to package.json",
                 dependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
-        final JsonObject vaadinDependencies = packageJson
-                .getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
-        Assert.assertFalse(VAADIN_CORE_NPM_PACKAGE
-                + " version should not be written to vaadin dependencies in package.json",
+        final JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
+        Assert.assertFalse(
+                VAADIN_CORE_NPM_PACKAGE + " version should not be written to vaadin dependencies in package.json",
                 vaadinDependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
     }
 
@@ -503,16 +435,14 @@ public class TaskUpdatePackagesNpmTest {
         packageJson.put("version", "c");
         packageJson.put("type", "module");
 
-        LinkedHashSet<String> mainKeys = new LinkedHashSet<>(
-                Arrays.asList(packageJson.keys()));
+        LinkedHashSet<String> mainKeys = new LinkedHashSet<>(Arrays.asList(packageJson.keys()));
 
         packageJson.put(DEPENDENCIES, dependencies);
 
         // Json object preserve the order of keys
         dependencies.put("foo-pack", "bar");
         dependencies.put("baz-pack", "foobar");
-        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
-                packageJson.toJson(), StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON), packageJson.toJson(), StandardCharsets.UTF_8);
 
         TaskUpdatePackages task = createTask(map);
 
@@ -553,13 +483,9 @@ public class TaskUpdatePackagesNpmTest {
     private void checkOrder(String path, JsonObject object) {
         String[] keys = object.keys();
         if (path.isEmpty()) {
-            Assert.assertTrue("Keys in the package Json are not sorted",
-                    isSorted(keys));
+            Assert.assertTrue("Keys in the package Json are not sorted", isSorted(keys));
         } else {
-            Assert.assertTrue(
-                    "Keys for the object " + path
-                            + " in the package Json are not sorted",
-                    isSorted(keys));
+            Assert.assertTrue("Keys for the object " + path + " in the package Json are not sorted", isSorted(keys));
         }
         for (String key : keys) {
             JsonValue value = object.get(key);
@@ -583,27 +509,22 @@ public class TaskUpdatePackagesNpmTest {
 
     // #11888
     @Test
-    public void npmIsInUse_versionsJsonContainsSameVersions_nothingIsModified()
-            throws IOException {
+    public void npmIsInUse_versionsJsonContainsSameVersions_nothingIsModified() throws IOException {
         String versionJsonString = //@formatter:off
                 "{ \"core\": {" + "\"vaadin-element-mixin\": {\n"
                         + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION
                         + "\",\n" + "    \"npmName\": \"" + VAADIN_DIALOG
                         + "\"\n" + "},\n" + "}}},\n";//@formatter:on
-        FileUtils.write(versionJsonFile, versionJsonString,
-                StandardCharsets.UTF_8);
+        FileUtils.write(versionJsonFile, versionJsonString, StandardCharsets.UTF_8);
 
         TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
-        Assert.assertTrue(
-                "Creation of package.json should be marked with modified",
-                task.modified);
+        Assert.assertTrue("Creation of package.json should be marked with modified", task.modified);
 
         // Rewriting with the same packages should not mark as modified
         task = createTask(createApplicationDependencies());
         task.execute();
-        Assert.assertFalse("PackageJson modified without changes.",
-                task.modified);
+        Assert.assertFalse("PackageJson modified without changes.", task.modified);
     }
 
     @Test
@@ -613,65 +534,53 @@ public class TaskUpdatePackagesNpmTest {
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         dependencies.put("localdep", "./localdeps/localdep");
         File file = new File(npmFolder, PACKAGE_JSON);
-        FileUtils.writeStringToFile(file, packageJson.toJson(),
-                StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(file, packageJson.toJson(), StandardCharsets.UTF_8);
 
-        Assert.assertFalse(packageJson.hasKey("overrides")
-                && packageJson.getObject("overrides").hasKey("localdep"));
+        Assert.assertFalse(packageJson.hasKey("overrides") && packageJson.getObject("overrides").hasKey("localdep"));
 
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
 
         final JsonObject newPackageJson = getOrCreatePackageJson();
 
-        Assert.assertFalse(newPackageJson.hasKey("overrides")
-                && newPackageJson.getObject("overrides").hasKey("localdep"));
+        Assert.assertFalse(
+                newPackageJson.hasKey("overrides") && newPackageJson.getObject("overrides").hasKey("localdep"));
     }
 
     @Test
     public void platformVersion_returnsExpectedVersion() throws IOException {
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
 
         //@formatter:off
         String versionJsonString = "{"
                         + "  \"platform\": \"21.0.0\"\n"
                         + "}\n";
         //@formatter:on
-        FileUtils.write(versionJsonFile, versionJsonString,
-                StandardCharsets.UTF_8);
+        FileUtils.write(versionJsonFile, versionJsonString, StandardCharsets.UTF_8);
 
         Optional<String> vaadinVersion = task.getVaadinVersion(finder);
 
-        Assert.assertTrue("versions.json should have had the platform field",
-                vaadinVersion.isPresent());
-        Assert.assertEquals("Received faulty version", "21.0.0",
-                vaadinVersion.get());
+        Assert.assertTrue("versions.json should have had the platform field", vaadinVersion.isPresent());
+        Assert.assertEquals("Received faulty version", "21.0.0", vaadinVersion.get());
 
         //@formatter:off
         versionJsonString = "{"
                 + "}\n";
         //@formatter:on
-        FileUtils.write(versionJsonFile, versionJsonString,
-                StandardCharsets.UTF_8);
+        FileUtils.write(versionJsonFile, versionJsonString, StandardCharsets.UTF_8);
         vaadinVersion = task.getVaadinVersion(finder);
 
-        Assert.assertFalse("versions.json should not contain platform version",
-                vaadinVersion.isPresent());
+        Assert.assertFalse("versions.json should not contain platform version", vaadinVersion.isPresent());
     }
 
     @Test
     public void noVersionsJson_getVersionsDoesntThrow() {
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON)).thenReturn(null);
+        final TaskUpdatePackages task = createTask(createApplicationDependencies());
 
         Optional<String> vaadinVersion = task.getVaadinVersion(finder);
 
-        Assert.assertFalse("versions.json should not contain platform version",
-                vaadinVersion.isPresent());
+        Assert.assertFalse("versions.json should not contain platform version", vaadinVersion.isPresent());
     }
 
     @Test
@@ -680,8 +589,7 @@ public class TaskUpdatePackagesNpmTest {
         runTestWithoutPreexistingPackageJson();
         // write new versions json and scanned deps
         final String oldPlatformVersion = "1.0.0";
-        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion, oldPlatformVersion);
 
         final Map<String, String> applicationDependencies = createApplicationDependencies();
         final String appDependencyVersion = "1.5.0";
@@ -690,183 +598,129 @@ public class TaskUpdatePackagesNpmTest {
         task.execute();
         Assert.assertTrue("Updates not picked", task.modified);
 
-        verifyVersions(appDependencyVersion, oldPlatformVersion,
-                oldPlatformVersion);
+        verifyVersions(appDependencyVersion, oldPlatformVersion, oldPlatformVersion);
         verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
     @Test
-    public void reactEnabled_scannerDependencies_coreDependenciesNotAdded()
-            throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
-        final FrontendDependencies frontendDependenciesScanner = Mockito
-                .mock(FrontendDependencies.class);
-        Mockito.when(frontendDependenciesScanner.getPackages())
-                .thenReturn(createApplicationDependencies());
-        Options options = new MockOptions(finder, npmFolder)
-                .withBuildDirectory(TARGET).withEnablePnpm(false)
+    public void reactEnabled_scannerDependencies_coreDependenciesNotAdded() throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        final FrontendDependencies frontendDependenciesScanner = Mockito.mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages()).thenReturn(createApplicationDependencies());
+        Options options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(true);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+        final TaskUpdatePackages task = new TaskUpdatePackages(frontendDependenciesScanner, options) {
         };
         task.execute();
         final JsonObject newPackageJson = getOrCreatePackageJson();
 
-        Assert.assertTrue(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(VAADIN_DIALOG));
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(VAADIN_DIALOG));
-        Assert.assertTrue(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(VAADIN_OVERLAY));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(VAADIN_OVERLAY));
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(VAADIN_OVERLAY));
-        Assert.assertTrue(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(REACT_COMPONENTS));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(VAADIN_OVERLAY));
+        Assert.assertTrue(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(REACT_COMPONENTS));
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(REACT_COMPONENTS));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(REACT_COMPONENTS));
     }
 
     @Test
-    public void reactEnabled_scannerDependenciesAndExclusions_excludedDependenciesNotAdded()
-            throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
+    public void reactEnabled_scannerDependenciesAndExclusions_excludedDependenciesNotAdded() throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION,
                 Set.of(VAADIN_DIALOG, VAADIN_OVERLAY));
-        final FrontendDependencies frontendDependenciesScanner = Mockito
-                .mock(FrontendDependencies.class);
-        Mockito.when(frontendDependenciesScanner.getPackages())
-                .thenReturn(createApplicationDependencies());
-        Options options = new MockOptions(finder, npmFolder)
-                .withBuildDirectory(TARGET).withEnablePnpm(false)
+        final FrontendDependencies frontendDependenciesScanner = Mockito.mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages()).thenReturn(createApplicationDependencies());
+        Options options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(true);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+        final TaskUpdatePackages task = new TaskUpdatePackages(frontendDependenciesScanner, options) {
         };
         task.execute();
         final JsonObject newPackageJson = getOrCreatePackageJson();
 
-        Assert.assertFalse(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertFalse(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(VAADIN_DIALOG));
         Assert.assertFalse(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(VAADIN_DIALOG));
-        Assert.assertFalse(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(VAADIN_OVERLAY));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertFalse(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(VAADIN_OVERLAY));
         Assert.assertFalse(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(VAADIN_OVERLAY));
-        Assert.assertTrue(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(REACT_COMPONENTS));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(VAADIN_OVERLAY));
+        Assert.assertTrue(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(REACT_COMPONENTS));
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(REACT_COMPONENTS));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(REACT_COMPONENTS));
     }
 
     @Test
-    public void reactEnabled_noScannerDependencies_coreDependenciesNotAdded()
-            throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
-        final FrontendDependencies frontendDependenciesScanner = Mockito
-                .mock(FrontendDependencies.class);
-        Mockito.when(frontendDependenciesScanner.getPackages())
-                .thenReturn(new HashMap<>());
-        Options options = new MockOptions(finder, npmFolder)
-                .withBuildDirectory(TARGET).withEnablePnpm(false)
+    public void reactEnabled_noScannerDependencies_coreDependenciesNotAdded() throws IOException {
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        final FrontendDependencies frontendDependenciesScanner = Mockito.mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages()).thenReturn(new HashMap<>());
+        Options options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(true);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+        final TaskUpdatePackages task = new TaskUpdatePackages(frontendDependenciesScanner, options) {
         };
         task.execute();
         final JsonObject newPackageJson = getOrCreatePackageJson();
 
-        Assert.assertFalse(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertFalse(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(VAADIN_DIALOG));
         Assert.assertFalse(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(VAADIN_DIALOG));
-        Assert.assertTrue(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(VAADIN_OVERLAY));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(VAADIN_OVERLAY));
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(VAADIN_OVERLAY));
-        Assert.assertTrue(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(REACT_COMPONENTS));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(VAADIN_OVERLAY));
+        Assert.assertTrue(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(REACT_COMPONENTS));
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(REACT_COMPONENTS));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(REACT_COMPONENTS));
     }
 
     @Test
     public void reactDisabled_coreDependenciesAdded() throws IOException {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
-        final FrontendDependencies frontendDependenciesScanner = Mockito
-                .mock(FrontendDependencies.class);
-        Mockito.when(frontendDependenciesScanner.getPackages())
-                .thenReturn(createApplicationDependencies());
-        Options options = new MockOptions(finder, npmFolder)
-                .withBuildDirectory(TARGET).withEnablePnpm(false)
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        final FrontendDependencies frontendDependenciesScanner = Mockito.mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages()).thenReturn(createApplicationDependencies());
+        Options options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET).withEnablePnpm(false)
                 .withBundleBuild(true).withReact(false);
-        final TaskUpdatePackages task = new TaskUpdatePackages(
-                frontendDependenciesScanner, options) {
+        final TaskUpdatePackages task = new TaskUpdatePackages(frontendDependenciesScanner, options) {
         };
         task.execute();
         final JsonObject newPackageJson = getOrCreatePackageJson();
 
-        Assert.assertTrue(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(VAADIN_DIALOG));
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(VAADIN_DIALOG));
-        Assert.assertTrue(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(VAADIN_OVERLAY));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(VAADIN_DIALOG));
+        Assert.assertTrue(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(VAADIN_OVERLAY));
         Assert.assertTrue(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(VAADIN_OVERLAY));
-        Assert.assertFalse(
-                newPackageJson.hasKey("dependencies") && newPackageJson
-                        .getObject("dependencies").hasKey(REACT_COMPONENTS));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(VAADIN_OVERLAY));
+        Assert.assertFalse(newPackageJson.hasKey("dependencies")
+                && newPackageJson.getObject("dependencies").hasKey(REACT_COMPONENTS));
         Assert.assertFalse(newPackageJson.hasKey("vaadin")
-                && newPackageJson.getObject("vaadin").getObject("dependencies")
-                        .hasKey(REACT_COMPONENTS));
+                && newPackageJson.getObject("vaadin").getObject("dependencies").hasKey(REACT_COMPONENTS));
 
     }
 
     private void createBasicVaadinVersionsJson() {
-        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
-                PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
+        createVaadinVersionsJson(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
     }
 
-    private void createVaadinVersionsJson(String dialogVersion,
-            String elementMixinVersion, String overlayVersion) {
-        createVaadinVersionsJson(dialogVersion, elementMixinVersion,
-                overlayVersion, null);
+    private void createVaadinVersionsJson(String dialogVersion, String elementMixinVersion, String overlayVersion) {
+        createVaadinVersionsJson(dialogVersion, elementMixinVersion, overlayVersion, null);
     }
 
-    private void createVaadinVersionsJson(String dialogVersion,
-            String elementMixinVersion, String overlayVersion,
+    private void createVaadinVersionsJson(String dialogVersion, String elementMixinVersion, String overlayVersion,
             Set<String> exclusions) {
         String exclusionsString = exclusions != null
                 ? ",\"exclusions\": ["
-                        + exclusions.stream().map(str -> "\"" + str + "\"")
-                                .collect(Collectors.joining(","))
-                        + "]\n"
+                        + exclusions.stream().map(str -> "\"" + str + "\"").collect(Collectors.joining(",")) + "]\n"
                 : "";
         // testing with exact versions json content instead of mocking parsing
         String versionJsonString = //@formatter:off
@@ -895,8 +749,7 @@ public class TaskUpdatePackagesNpmTest {
                         "        }\n" +
                         "    }}\n";//@formatter:on
         try {
-            FileUtils.write(versionJsonFile, versionJsonString,
-                    StandardCharsets.UTF_8);
+            FileUtils.write(versionJsonFile, versionJsonString, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -904,24 +757,18 @@ public class TaskUpdatePackagesNpmTest {
 
     private Map<String, String> createApplicationDependencies() {
         Map<String, String> applicationScannedDependencies = new HashMap<>();
-        applicationScannedDependencies.put(VAADIN_DIALOG,
-                PLATFORM_DIALOG_VERSION);
+        applicationScannedDependencies.put(VAADIN_DIALOG, PLATFORM_DIALOG_VERSION);
         return applicationScannedDependencies;
     }
 
-    private TaskUpdatePackages createTask(
-            Map<String, String> applicationDependencies) {
+    private TaskUpdatePackages createTask(Map<String, String> applicationDependencies) {
         return createTask(applicationDependencies, false);
     }
 
-    private TaskUpdatePackages createTask(
-            Map<String, String> applicationDependencies, boolean enablePnpm) {
-        final FrontendDependencies frontendDependenciesScanner = Mockito
-                .mock(FrontendDependencies.class);
-        Mockito.when(frontendDependenciesScanner.getPackages())
-                .thenReturn(applicationDependencies);
-        Options options = new MockOptions(finder, npmFolder)
-                .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
+    private TaskUpdatePackages createTask(Map<String, String> applicationDependencies, boolean enablePnpm) {
+        final FrontendDependencies frontendDependenciesScanner = Mockito.mock(FrontendDependencies.class);
+        Mockito.when(frontendDependenciesScanner.getPackages()).thenReturn(applicationDependencies);
+        Options options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
                 .withBundleBuild(true).withReact(false);
 
         return new TaskUpdatePackages(frontendDependenciesScanner, options) {
@@ -930,91 +777,69 @@ public class TaskUpdatePackagesNpmTest {
 
     private JsonObject getOrCreatePackageJson() throws IOException {
         if (packageJson.exists()) {
-            return Json.parse(FileUtils.readFileToString(packageJson,
-                    StandardCharsets.UTF_8));
+            return Json.parse(FileUtils.readFileToString(packageJson, StandardCharsets.UTF_8));
         } else {
             final JsonObject packageJsonJson = Json.createObject();
             packageJsonJson.put(DEPENDENCIES, Json.createObject());
-            FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
-                    packageJsonJson.toJson(), StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON), packageJsonJson.toJson(),
+                    StandardCharsets.UTF_8);
             return packageJsonJson;
         }
     }
 
-    private void verifyVersions(String expectedDialogVersion,
-            String expectedElementMixinVersion, String expectedOverlayVersion)
-            throws IOException {
-        JsonObject dependencies = getOrCreatePackageJson()
-                .getObject(DEPENDENCIES);
+    private void verifyVersions(String expectedDialogVersion, String expectedElementMixinVersion,
+            String expectedOverlayVersion) throws IOException {
+        JsonObject dependencies = getOrCreatePackageJson().getObject(DEPENDENCIES);
         if (expectedDialogVersion == null) {
-            Assert.assertNull("Dependency added when it should not have been",
-                    dependencies.get(VAADIN_DIALOG));
+            Assert.assertNull("Dependency added when it should not have been", dependencies.get(VAADIN_DIALOG));
         } else {
-            Assert.assertEquals(expectedDialogVersion,
-                    dependencies.getString(VAADIN_DIALOG));
+            Assert.assertEquals(expectedDialogVersion, dependencies.getString(VAADIN_DIALOG));
         }
         if (expectedElementMixinVersion == null) {
-            Assert.assertNull("Dependency added when it should not have been",
-                    dependencies.get(VAADIN_ELEMENT_MIXIN));
+            Assert.assertNull("Dependency added when it should not have been", dependencies.get(VAADIN_ELEMENT_MIXIN));
         } else {
-            Assert.assertEquals(expectedElementMixinVersion,
-                    dependencies.getString(VAADIN_ELEMENT_MIXIN));
+            Assert.assertEquals(expectedElementMixinVersion, dependencies.getString(VAADIN_ELEMENT_MIXIN));
         }
         if (expectedOverlayVersion == null) {
-            Assert.assertNull("Dependency added when it should not have been",
-                    dependencies.get(VAADIN_OVERLAY));
+            Assert.assertNull("Dependency added when it should not have been", dependencies.get(VAADIN_OVERLAY));
         } else {
-            Assert.assertEquals(expectedOverlayVersion,
-                    dependencies.getString(VAADIN_OVERLAY));
+            Assert.assertEquals(expectedOverlayVersion, dependencies.getString(VAADIN_OVERLAY));
         }
     }
 
-    private void verifyVersionLockingWithNpmOverrides(boolean hasDialogLocking,
-            boolean hasElementMixinLocking, boolean hasOverlayLocking)
-            throws IOException {
+    private void verifyVersionLockingWithNpmOverrides(boolean hasDialogLocking, boolean hasElementMixinLocking,
+            boolean hasOverlayLocking) throws IOException {
         JsonObject overrides = getOrCreatePackageJson().getObject(OVERRIDES);
 
         if (hasDialogLocking) {
-            Assert.assertTrue("Dialog override was not present",
-                    overrides.hasKey(VAADIN_DIALOG));
-            Assert.assertEquals("$" + VAADIN_DIALOG,
-                    overrides.getString(VAADIN_DIALOG));
+            Assert.assertTrue("Dialog override was not present", overrides.hasKey(VAADIN_DIALOG));
+            Assert.assertEquals("$" + VAADIN_DIALOG, overrides.getString(VAADIN_DIALOG));
         } else {
-            Assert.assertNull("vaadin-dialog dependency should not be present",
-                    overrides.get(VAADIN_DIALOG));
+            Assert.assertNull("vaadin-dialog dependency should not be present", overrides.get(VAADIN_DIALOG));
         }
         if (hasElementMixinLocking) {
-            Assert.assertTrue("Element-Mixin override was not present",
-                    overrides.hasKey(VAADIN_ELEMENT_MIXIN));
-            Assert.assertEquals("$" + VAADIN_ELEMENT_MIXIN,
-                    overrides.getString(VAADIN_ELEMENT_MIXIN));
+            Assert.assertTrue("Element-Mixin override was not present", overrides.hasKey(VAADIN_ELEMENT_MIXIN));
+            Assert.assertEquals("$" + VAADIN_ELEMENT_MIXIN, overrides.getString(VAADIN_ELEMENT_MIXIN));
         } else {
-            Assert.assertNull(
-                    "vaadin-element-mixin dependency should not be present",
+            Assert.assertNull("vaadin-element-mixin dependency should not be present",
                     overrides.get(VAADIN_ELEMENT_MIXIN));
         }
         if (hasOverlayLocking) {
-            Assert.assertTrue("Overlay override was not present",
-                    overrides.hasKey(VAADIN_OVERLAY));
-            Assert.assertEquals("$" + VAADIN_OVERLAY,
-                    overrides.getString(VAADIN_OVERLAY));
+            Assert.assertTrue("Overlay override was not present", overrides.hasKey(VAADIN_OVERLAY));
+            Assert.assertEquals("$" + VAADIN_OVERLAY, overrides.getString(VAADIN_OVERLAY));
         } else {
-            Assert.assertNull("vaadin-overlay dependency should not be present",
-                    overrides.get(VAADIN_OVERLAY));
+            Assert.assertNull("vaadin-overlay dependency should not be present", overrides.get(VAADIN_OVERLAY));
         }
     }
 
-    private void verifyPlatformDependenciesAreAdded(boolean enablePnpm)
-            throws IOException {
+    private void verifyPlatformDependenciesAreAdded(boolean enablePnpm) throws IOException {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
         final String newVersion = "20.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
 
-        final Map<String, String> applicationDependencies = Collections
-                .emptyMap();
-        final TaskUpdatePackages task = createTask(applicationDependencies,
-                enablePnpm);
+        final Map<String, String> applicationDependencies = Collections.emptyMap();
+        final TaskUpdatePackages task = createTask(applicationDependencies, enablePnpm);
 
         verifyVersions(null, null, null);
 

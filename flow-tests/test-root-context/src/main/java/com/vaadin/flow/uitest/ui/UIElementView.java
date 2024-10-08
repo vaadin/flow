@@ -24,8 +24,7 @@ public class UIElementView extends AbstractDivView {
     public UIElementView() {
         getElement().executeJs(getJs());
 
-        NativeButton attachElement = new NativeButton("Attach Element via JS",
-                event -> attachElement());
+        NativeButton attachElement = new NativeButton("Attach Element via JS", event -> attachElement());
         add(attachElement);
     }
 
@@ -34,8 +33,7 @@ public class UIElementView extends AbstractDivView {
     }
 
     private String getJs() {
-        return "var newElement = document.createElement('div');"
-                + "newElement.className='body-child';"
+        return "var newElement = document.createElement('div');" + "newElement.className='body-child';"
                 + "this.appendChild(newElement);";
     }
 }

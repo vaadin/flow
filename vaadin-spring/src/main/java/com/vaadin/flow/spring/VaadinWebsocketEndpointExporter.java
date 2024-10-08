@@ -20,10 +20,9 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
 
 /**
- * Handles registration of JSR-356 websocket endpoints when the Spring Boot
- * application is run in an embedded container. Also triggered when running in a
- * real server but is not necessary in this scenario as
- * JSR356WebsocketInitializer is triggered by the servlet container.
+ * Handles registration of JSR-356 websocket endpoints when the Spring Boot application is run in an embedded container.
+ * Also triggered when running in a real server but is not necessary in this scenario as JSR356WebsocketInitializer is
+ * triggered by the servlet container.
  */
 public class VaadinWebsocketEndpointExporter extends ServerEndpointExporter {
 

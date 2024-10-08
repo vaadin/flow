@@ -33,8 +33,7 @@ public abstract class AbstractNodeFeatureTest<T extends NodeFeature> {
         return createFeature(featureType);
     }
 
-    public static <T extends NodeFeature> T createFeature(
-            Class<T> featureType) {
+    public static <T extends NodeFeature> T createFeature(Class<T> featureType) {
         StateNode node = new StateNode(featureType);
 
         return node.getFeature(featureType);
@@ -42,14 +41,11 @@ public abstract class AbstractNodeFeatureTest<T extends NodeFeature> {
 
     @SuppressWarnings("unchecked")
     private Class<T> findFeatureType() {
-        ParameterizedType genericSuperclass = (ParameterizedType) getClass()
-                .getGenericSuperclass();
+        ParameterizedType genericSuperclass = (ParameterizedType) getClass().getGenericSuperclass();
 
-        Class<?> paramType = (Class<?>) genericSuperclass
-                .getActualTypeArguments()[0];
+        Class<?> paramType = (Class<?>) genericSuperclass.getActualTypeArguments()[0];
 
-        Class<? extends NodeFeature> featureType = paramType
-                .asSubclass(NodeFeature.class);
+        Class<? extends NodeFeature> featureType = paramType.asSubclass(NodeFeature.class);
 
         return (Class<T>) featureType;
     }
@@ -76,22 +72,19 @@ public abstract class AbstractNodeFeatureTest<T extends NodeFeature> {
     }
 
     @SuppressWarnings("rawtypes")
-    protected void assertFeaturesEquals(NodeFeature feature1,
-            NodeFeature feature2) {
+    protected void assertFeaturesEquals(NodeFeature feature1, NodeFeature feature2) {
         Assert.assertEquals(feature1.getClass(), feature2.getClass());
         if (feature1 instanceof NodeMap) {
             assertMapFeatureEquals((NodeMap) feature1, (NodeMap) feature2);
         } else if (feature1 instanceof NodeList) {
             assertListFeatureEquals((NodeList) feature1, (NodeList) feature2);
         } else {
-            Assert.fail(
-                    "Unknown feature type " + feature1.getClass().getName());
+            Assert.fail("Unknown feature type " + feature1.getClass().getName());
         }
     }
 
     @SuppressWarnings("rawtypes")
-    protected void assertListFeatureEquals(NodeList feature1,
-            NodeList feature2) {
+    protected void assertListFeatureEquals(NodeList feature1, NodeList feature2) {
         Assert.assertEquals(feature1.size(), feature2.size());
         for (int i = 0; i < feature1.size(); i++) {
             Assert.assertEquals(feature1.get(i), feature2.get(i));

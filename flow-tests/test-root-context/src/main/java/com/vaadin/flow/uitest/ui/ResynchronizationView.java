@@ -31,8 +31,7 @@ public class ResynchronizationView extends AbstractDivView {
             // add a span to <body> for the test (not to view, since the DOM
             // will be rebuilt on resync)
             final String js = String.format(
-                    "document.getElementById(\"%s\").$server.clientCallable()"
-                            + ".then(_ => {})"
+                    "document.getElementById(\"%s\").$server.clientCallable()" + ".then(_ => {})"
                             + ".catch(_ => { document.body.innerHTML += '<span class=\"%s\">rejected</span>';});",
                     ID, REJECTED_CLASS);
             getUI().get().getPage().executeJs(js);

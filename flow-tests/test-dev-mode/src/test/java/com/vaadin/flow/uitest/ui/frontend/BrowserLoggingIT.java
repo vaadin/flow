@@ -39,26 +39,21 @@ public class BrowserLoggingIT extends ChromeBrowserTest {
 
         findElement(By.id("exception")).click();
 
-        ArrayList<Object> logMessages = (ArrayList<Object>) executeScript(
-                "return window.allLogMessages;");
+        ArrayList<Object> logMessages = (ArrayList<Object>) executeScript("return window.allLogMessages;");
 
-        assertThat(
-                "Flow in development mode should output something into the console",
-                logMessages.size(), greaterThan(0));
+        assertThat("Flow in development mode should output something into the console", logMessages.size(),
+                greaterThan(0));
 
         // Check for "Scheduling heartbeat in" msg (= debug level)
         assertThat("Expected debug message not found in log",
-                logMessages.stream().anyMatch(msg -> String.valueOf(msg)
-                        .contains("Scheduling heartbeat in")));
+                logMessages.stream().anyMatch(msg -> String.valueOf(msg).contains("Scheduling heartbeat in")));
 
         // Check for "Setting heartbeat interval to" msg (= info level)
         assertThat("Expected info message not found in log",
-                logMessages.stream().anyMatch(msg -> String.valueOf(msg)
-                        .contains("Setting heartbeat interval to")));
+                logMessages.stream().anyMatch(msg -> String.valueOf(msg).contains("Setting heartbeat interval to")));
 
         // Check for exception thrown msg (= error level)
-        assertThat("Expected error message not found in log", logMessages
-                .stream().anyMatch(msg -> String.valueOf(msg).contains(
-                        "Exception is thrown during JavaScript execution.")));
+        assertThat("Expected error message not found in log", logMessages.stream()
+                .anyMatch(msg -> String.valueOf(msg).contains("Exception is thrown during JavaScript execution.")));
     }
 }

@@ -47,15 +47,12 @@ public class ValidatorTestBase {
     protected <T> void assertPasses(T value, Validator<? super T> validator) {
         ValidationResult result = validator.apply(value, new ValueContext());
         if (result.isError()) {
-            Assert.fail(value + " should pass " + validator + " but got "
-                    + result.getErrorMessage());
+            Assert.fail(value + " should pass " + validator + " but got " + result.getErrorMessage());
         }
     }
 
-    protected <T> void assertFails(T value, String errorMessage,
-            Validator<? super T> validator) {
-        ValidationResult result = validator.apply(value,
-                new ValueContext(localeContext));
+    protected <T> void assertFails(T value, String errorMessage, Validator<? super T> validator) {
+        ValidationResult result = validator.apply(value, new ValueContext(localeContext));
         Assert.assertTrue(result.isError());
         Assert.assertEquals(errorMessage, result.getErrorMessage());
     }

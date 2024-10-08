@@ -43,23 +43,17 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
         // Selection is visibly changed and event manually dispatched
         // as else the change is not seen.
         getCommandExecutor().executeScript(
-                "arguments[0].value='Peter';"
-                        + "arguments[0].dispatchEvent(new Event('change'));",
-                select);
+                "arguments[0].value='Peter';" + "arguments[0].dispatchEvent(new Event('change'));", select);
 
-        Assert.assertEquals("Selected: Peter, Parker",
-                showMessage.$("span").first().getText());
+        Assert.assertEquals("Selected: Peter, Parker", showMessage.$("span").first().getText());
 
         TestBenchElement noMessage = byId("no-message");
 
         select = noMessage.$("select").first();
         getCommandExecutor().executeScript(
-                "arguments[0].value='Peter';"
-                        + "arguments[0].dispatchEvent(new Event('change'));",
-                select);
+                "arguments[0].value='Peter';" + "arguments[0].dispatchEvent(new Event('change'));", select);
 
-        Assert.assertFalse("Message should not be visible",
-                noMessage.$("span").first().isDisplayed());
+        Assert.assertFalse("Message should not be visible", noMessage.$("span").first().isDisplayed());
     }
 
     @Test
@@ -68,8 +62,7 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
 
         waitForElementVisible(By.id("show-message"));
         TestBenchElement showMessage = byId("show-message");
-        waitUntil(
-                driver -> showMessage.$("*").attribute("id", "link").exists());
+        waitUntil(driver -> showMessage.$("*").attribute("id", "link").exists());
         TestBenchElement link = showMessage.$("a").id("link");
         String href = link.getAttribute("href");
         // self check
@@ -78,8 +71,7 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
         href = href.substring(getRootURL().length());
         // now the URI should starts with "/vaadin" since this is the URI of
         // embedded app
-        Assert.assertThat(href,
-                CoreMatchers.startsWith("/vaadin/VAADIN/dynamic/resource/"));
+        Assert.assertThat(href, CoreMatchers.startsWith("/vaadin/VAADIN/dynamic/resource/"));
     }
 
     @Test
@@ -89,12 +81,10 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
         waitForElementVisible(By.tagName("themed-web-component"));
 
         TestBenchElement webComponent = $("themed-web-component").first();
-        TestBenchElement themedComponent = webComponent.$("themed-component")
-                .first();
+        TestBenchElement themedComponent = webComponent.$("themed-component").first();
 
         TestBenchElement content = themedComponent.$("div").first();
-        Assert.assertNotNull("The component which should use theme doesn't "
-                + "contain elements", content);
+        Assert.assertNotNull("The component which should use theme doesn't " + "contain elements", content);
 
         Assert.assertEquals("rgba(255, 0, 0, 1)", content.getCssValue("color"));
     }

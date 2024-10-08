@@ -46,20 +46,17 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Generate default files for react-router if missing from the frontend folder.
  * <p>
  * </p>
- * The generated files are <code>Flow.tsx</code> and <code>routes.tsx</code>.
- * Where <code>Flow.tsx</code> is for communication between the Flow and the
- * router and contains the server side route target
- * <code>serverSideRoutes</code> to be used in <code>routes.tsx</code>.
+ * The generated files are <code>Flow.tsx</code> and <code>routes.tsx</code>. Where <code>Flow.tsx</code> is for
+ * communication between the Flow and the router and contains the server side route target <code>serverSideRoutes</code>
+ * to be used in <code>routes.tsx</code>.
  * <p>
- * <code>Flow.tsx</code> is always written and thus updates automatically if
- * there are changes.
+ * <code>Flow.tsx</code> is always written and thus updates automatically if there are changes.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 3.0
  */
-public class TaskGenerateReactFiles
-        extends AbstractFileGeneratorFallibleCommand {
+public class TaskGenerateReactFiles extends AbstractFileGeneratorFallibleCommand {
 
     public static final String CLASS_PACKAGE = "com/vaadin/flow/server/frontend/%s";
     private Options options;
@@ -155,51 +152,38 @@ public class TaskGenerateReactFiles
         File frontendDirectory = options.getFrontendDirectory();
         File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
         File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
-        File vaadinReactTsx = new File(frontendGeneratedFolder,
-                VAADIN_REACT_TSX);
-        File reactAdapterTsx = new File(frontendGeneratedFolder,
-                FLOW_REACT_ADAPTER_TSX);
+        File vaadinReactTsx = new File(frontendGeneratedFolder, VAADIN_REACT_TSX);
+        File reactAdapterTsx = new File(frontendGeneratedFolder, FLOW_REACT_ADAPTER_TSX);
         File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
-        File frontendGeneratedFolderRoutesTsx = new File(
-                frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
+        File frontendGeneratedFolderRoutesTsx = new File(frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
         try {
             writeFile(flowTsx, getFileContent(FLOW_TSX));
-            writeFile(vaadinReactTsx,
-                    getVaadinReactTsContent(routesTsx.exists()));
-            writeLayoutsJson(
-                    options.getClassFinder().getAnnotatedClasses(Layout.class));
+            writeFile(vaadinReactTsx, getVaadinReactTsContent(routesTsx.exists()));
+            writeLayoutsJson(options.getClassFinder().getAnnotatedClasses(Layout.class));
             if (fileAvailable(REACT_ADAPTER_TEMPLATE)) {
-                String reactAdapterContent = getFileContent(
-                        REACT_ADAPTER_TEMPLATE);
-                reactAdapterContent = reactAdapterContent.replace(
-                        "{{VAADIN_VERSION}}", Version.getFullVersion());
+                String reactAdapterContent = getFileContent(REACT_ADAPTER_TEMPLATE);
+                reactAdapterContent = reactAdapterContent.replace("{{VAADIN_VERSION}}", Version.getFullVersion());
                 writeFile(reactAdapterTsx, reactAdapterContent);
             }
 
-            boolean isHillaUsed = FrontendUtils.isHillaUsed(frontendDirectory,
-                    options.getClassFinder());
+            boolean isHillaUsed = FrontendUtils.isHillaUsed(frontendDirectory, options.getClassFinder());
             writeFile(frontendGeneratedFolderRoutesTsx,
-                    getFileContent(isHillaUsed ? FrontendUtils.ROUTES_TSX
-                            : FrontendUtils.ROUTES_FLOW_TSX));
+                    getFileContent(isHillaUsed ? FrontendUtils.ROUTES_TSX : FrontendUtils.ROUTES_FLOW_TSX));
 
             if (routesTsx.exists()) {
                 track(routesTsx);
-                String routesContent = FileUtils.readFileToString(routesTsx,
-                        UTF_8);
+                String routesContent = FileUtils.readFileToString(routesTsx, UTF_8);
                 routesContent = StringUtil.removeComments(routesContent);
 
-                if (missingServerRouteImport(routesContent)
-                        && serverRoutesAvailable()) {
-                    throw new ExecutionFailedException(
-                            String.format(NO_IMPORT, routesTsx.getPath()));
+                if (missingServerRouteImport(routesContent) && serverRoutesAvailable()) {
+                    throw new ExecutionFailedException(String.format(NO_IMPORT, routesTsx.getPath()));
                 }
                 if (missingRoutesExport(routesContent)) {
                     throw new ExecutionFailedException(MISSING_ROUTES_EXPORT);
                 }
             }
         } catch (IOException e) {
-            throw new ExecutionFailedException("Failed to read file content",
-                    e);
+            throw new ExecutionFailedException("Failed to read file content", e);
         }
     }
 
@@ -213,8 +197,7 @@ public class TaskGenerateReactFiles
      * @param layoutsClasses
      *            {@link Layout} annotated classes.
      */
-    public static void writeLayouts(Options options,
-            Collection<Class<?>> layoutsClasses) {
+    public static void writeLayouts(Options options, Collection<Class<?>> layoutsClasses) {
         TaskGenerateReactFiles task = new TaskGenerateReactFiles(options);
         try {
             task.writeLayoutsJson(layoutsClasses);
@@ -229,10 +212,8 @@ public class TaskGenerateReactFiles
         }
     }
 
-    private void writeLayoutsJson(Collection<Class<?>> layoutClasses)
-            throws ExecutionFailedException {
-        writeFile(new File(options.getFrontendGeneratedFolder(), LAYOUTS_JSON),
-                layoutsContent(layoutClasses));
+    private void writeLayoutsJson(Collection<Class<?>> layoutClasses) throws ExecutionFailedException {
+        writeFile(new File(options.getFrontendGeneratedFolder(), LAYOUTS_JSON), layoutsContent(layoutClasses));
 
     }
 
@@ -241,8 +222,7 @@ public class TaskGenerateReactFiles
         for (Class<?> layout : layoutClasses) {
             if (layout.isAnnotationPresent(Layout.class)) {
                 JsonObject layoutObject = Json.createObject();
-                layoutObject.put("path",
-                        layout.getAnnotation(Layout.class).value());
+                layoutObject.put("path", layout.getAnnotation(Layout.class).value());
                 availableLayouts.set(availableLayouts.length(), layoutObject);
             }
         }
@@ -254,12 +234,9 @@ public class TaskGenerateReactFiles
             File frontendDirectory = options.getFrontendDirectory();
             File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
             File flowTsx = new File(frontendGeneratedFolder, FLOW_FLOW_TSX);
-            File vaadinReactTsx = new File(frontendGeneratedFolder,
-                    VAADIN_REACT_TSX);
-            File reactAdapterTsx = new File(frontendGeneratedFolder,
-                    FLOW_REACT_ADAPTER_TSX);
-            File frontendGeneratedFolderRoutesTsx = new File(
-                    frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
+            File vaadinReactTsx = new File(frontendGeneratedFolder, VAADIN_REACT_TSX);
+            File reactAdapterTsx = new File(frontendGeneratedFolder, FLOW_REACT_ADAPTER_TSX);
+            File frontendGeneratedFolderRoutesTsx = new File(frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
             File layoutsJson = new File(frontendGeneratedFolder, LAYOUTS_JSON);
             FileUtils.deleteQuietly(flowTsx);
             FileUtils.deleteQuietly(layoutsJson);
@@ -267,51 +244,35 @@ public class TaskGenerateReactFiles
             FileUtils.deleteQuietly(reactAdapterTsx);
             FileUtils.deleteQuietly(frontendGeneratedFolderRoutesTsx);
 
-            File routesTsx = new File(frontendDirectory,
-                    FrontendUtils.ROUTES_TSX);
+            File routesTsx = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
             if (routesTsx.exists()) {
-                String defaultRoutesContent = FileUtils
-                        .readFileToString(routesTsx, UTF_8);
-                if (compareIgnoringIndentationEOLAndWhiteSpace(
-                        defaultRoutesContent,
-                        getFileContent(FrontendUtils.ROUTES_TSX),
-                        String::equals)) {
+                String defaultRoutesContent = FileUtils.readFileToString(routesTsx, UTF_8);
+                if (compareIgnoringIndentationEOLAndWhiteSpace(defaultRoutesContent,
+                        getFileContent(FrontendUtils.ROUTES_TSX), String::equals)) {
                     routesTsx.delete();
-                    log().debug("Default {} file has been removed.",
-                            FrontendUtils.ROUTES_TSX);
+                    log().debug("Default {} file has been removed.", FrontendUtils.ROUTES_TSX);
                 } else {
                     Files.copy(routesTsx.toPath(),
-                            new File(frontendDirectory,
-                                    FrontendUtils.ROUTES_TSX + ".flowBackup")
-                                    .toPath(),
+                            new File(frontendDirectory, FrontendUtils.ROUTES_TSX + ".flowBackup").toPath(),
                             StandardCopyOption.REPLACE_EXISTING);
                     routesTsx.delete();
-                    log().warn(
-                            "Custom {} file has been removed. Backup is created in {}.flowBackup file.",
+                    log().warn("Custom {} file has been removed. Backup is created in {}.flowBackup file.",
                             FrontendUtils.ROUTES_TSX, FrontendUtils.ROUTES_TSX);
                 }
             }
         } catch (IOException e) {
-            throw new ExecutionFailedException("Failed to clean up .tsx files",
-                    e);
+            throw new ExecutionFailedException("Failed to clean up .tsx files", e);
         }
     }
 
-    private String getVaadinReactTsContent(boolean frontendRoutesTsExists)
-            throws IOException {
-        return getFileContent(VAADIN_REACT_TSX).replace(
-                ROUTES_JS_IMPORT_PATH_TOKEN,
-                (frontendRoutesTsExists)
-                        ? FrontendUtils.FRONTEND_FOLDER_ALIAS
-                                + FrontendUtils.ROUTES_JS
-                        : FrontendUtils.FRONTEND_FOLDER_ALIAS
-                                + FrontendUtils.GENERATED
-                                + FrontendUtils.ROUTES_JS);
+    private String getVaadinReactTsContent(boolean frontendRoutesTsExists) throws IOException {
+        return getFileContent(VAADIN_REACT_TSX).replace(ROUTES_JS_IMPORT_PATH_TOKEN,
+                (frontendRoutesTsExists) ? FrontendUtils.FRONTEND_FOLDER_ALIAS + FrontendUtils.ROUTES_JS
+                        : FrontendUtils.FRONTEND_FOLDER_ALIAS + FrontendUtils.GENERATED + FrontendUtils.ROUTES_JS);
     }
 
     private boolean fileAvailable(String fileName) {
-        return options.getClassFinder().getClassLoader()
-                .getResource(CLASS_PACKAGE.formatted(fileName)) != null;
+        return options.getClassFinder().getClassLoader().getResource(CLASS_PACKAGE.formatted(fileName)) != null;
     }
 
     private boolean missingServerRouteImport(String routesContent) {
@@ -320,16 +281,14 @@ public class TaskGenerateReactFiles
     }
 
     private boolean serverRoutesAvailable() {
-        return !options.getClassFinder().getAnnotatedClasses(Route.class)
-                .isEmpty();
+        return !options.getClassFinder().getAnnotatedClasses(Route.class).isEmpty();
     }
 
     private static boolean missingRoutesExport(String routesContent) {
         return !ROUTES_EXPORT_PATTERN.matcher(routesContent).find();
     }
 
-    private void writeFile(File target, String content)
-            throws ExecutionFailedException {
+    private void writeFile(File target, String content) throws ExecutionFailedException {
 
         try {
             writeIfChanged(target, content);
@@ -341,8 +300,7 @@ public class TaskGenerateReactFiles
 
     protected String getFileContent(String fileName) throws IOException {
         String indexTemplate;
-        try (InputStream indexTsStream = options.getClassFinder()
-                .getClassLoader()
+        try (InputStream indexTsStream = options.getClassFinder().getClassLoader()
                 .getResourceAsStream(CLASS_PACKAGE.formatted(fileName))) {
             indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
         }

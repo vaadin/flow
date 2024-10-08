@@ -49,15 +49,12 @@ public class AttachExistingElementRpcHandlerTest {
         Mockito.when(node.getOwner()).thenReturn(tree);
         Mockito.when(tree.getNodeById(requestedId)).thenReturn(requested);
 
-        AttachExistingElementFeature feature = new AttachExistingElementFeature(
-                node);
+        AttachExistingElementFeature feature = new AttachExistingElementFeature(node);
         Node<?> parentNode = Mockito.mock(Node.class);
-        ChildElementConsumer consumer = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer consumer = Mockito.mock(ChildElementConsumer.class);
         Element sibling = Mockito.mock(Element.class);
         feature.register(parentNode, sibling, requested, consumer);
-        Mockito.when(node.getFeature(AttachExistingElementFeature.class))
-                .thenReturn(feature);
+        Mockito.when(node.getFeature(AttachExistingElementFeature.class)).thenReturn(feature);
 
         handler.handleNode(node, object);
 
@@ -86,15 +83,12 @@ public class AttachExistingElementRpcHandlerTest {
 
         Mockito.when(requested.hasFeature(Mockito.any())).thenReturn(true);
 
-        AttachExistingElementFeature feature = new AttachExistingElementFeature(
-                node);
+        AttachExistingElementFeature feature = new AttachExistingElementFeature(node);
         Node<?> parentNode = Mockito.mock(Node.class);
-        ChildElementConsumer consumer = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer consumer = Mockito.mock(ChildElementConsumer.class);
         Element sibling = Mockito.mock(Element.class);
         feature.register(parentNode, sibling, requested, consumer);
-        Mockito.when(node.getFeature(AttachExistingElementFeature.class))
-                .thenReturn(feature);
+        Mockito.when(node.getFeature(AttachExistingElementFeature.class)).thenReturn(feature);
 
         handler.handleNode(node, object);
 
@@ -127,26 +121,21 @@ public class AttachExistingElementRpcHandlerTest {
 
         Mockito.when(assigned.hasFeature(Mockito.any())).thenReturn(true);
 
-        AttachExistingElementFeature feature = new AttachExistingElementFeature(
-                node);
+        AttachExistingElementFeature feature = new AttachExistingElementFeature(node);
         Node<?> parentNode = Mockito.mock(Node.class);
-        ChildElementConsumer consumer = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer consumer = Mockito.mock(ChildElementConsumer.class);
         Element sibling = Mockito.mock(Element.class);
         feature.register(parentNode, sibling, requested, consumer);
-        Mockito.when(node.getFeature(AttachExistingElementFeature.class))
-                .thenReturn(feature);
+        Mockito.when(node.getFeature(AttachExistingElementFeature.class)).thenReturn(feature);
 
         handler.handleNode(node, object);
 
         assertNodeIsUnregistered(node, requested, feature);
-        Mockito.verify(parentNode, Mockito.times(0)).insertChild(index,
-                Element.get(assigned));
+        Mockito.verify(parentNode, Mockito.times(0)).insertChild(index, Element.get(assigned));
         Mockito.verify(consumer).accept(Element.get(assigned));
     }
 
-    private void assertNodeIsUnregistered(StateNode node, StateNode requested,
-            AttachExistingElementFeature feature) {
+    private void assertNodeIsUnregistered(StateNode node, StateNode requested, AttachExistingElementFeature feature) {
         Mockito.verify(requested).setParent(null);
         Assert.assertNull(feature.getParent(requested));
         Assert.assertNull(feature.getCallback(requested));

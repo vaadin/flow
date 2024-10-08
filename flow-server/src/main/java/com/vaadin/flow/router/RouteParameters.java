@@ -26,8 +26,7 @@ import java.util.Set;
 import com.vaadin.flow.router.internal.PathUtil;
 
 /**
- * Immutable container which stores the route parameters extracted from a
- * navigation url received from the client.
+ * Immutable container which stores the route parameters extracted from a navigation url received from the client.
  */
 public final class RouteParameters implements Serializable {
 
@@ -43,12 +42,10 @@ public final class RouteParameters implements Serializable {
      * Creates a RouteParameters container using the given map as argument.
      *
      * @param params
-     *            parameters mapping containing the parameter names mapping
-     *            their values.
+     *            parameters mapping containing the parameter names mapping their values.
      */
     public RouteParameters(Map<String, String> params) {
-        this.params = params != null ? Collections.unmodifiableMap(params)
-                : Collections.emptyMap();
+        this.params = params != null ? Collections.unmodifiableMap(params) : Collections.emptyMap();
     }
 
     /**
@@ -63,12 +60,10 @@ public final class RouteParameters implements Serializable {
         Map<String, String> paramsMap = new HashMap<>(params.length);
 
         for (RouteParam param : params) {
-            final String existingValue = paramsMap.put(param.getName(),
-                    param.getValue());
+            final String existingValue = paramsMap.put(param.getName(), param.getValue());
 
             if (existingValue != null) {
-                throw new IllegalArgumentException("Parameter "
-                        + param.getName() + " is given more than once.");
+                throw new IllegalArgumentException("Parameter " + param.getName() + " is given more than once.");
             }
         }
 
@@ -110,8 +105,8 @@ public final class RouteParameters implements Serializable {
      *
      * @param parameterName
      *            the name of the parameter.
-     * @return an {@link Optional} {@link String} representation of the
-     *         parameter. If the value is missing the {@link Optional} is empty.
+     * @return an {@link Optional} {@link String} representation of the parameter. If the value is missing the
+     *         {@link Optional} is empty.
      */
     public Optional<String> get(String parameterName) {
         return Optional.ofNullable(getValue(parameterName));
@@ -122,8 +117,8 @@ public final class RouteParameters implements Serializable {
      *
      * @param parameterName
      *            the name of the parameter.
-     * @return an {@link Optional} {@link Integer} representation of the
-     *         parameter. If the value is missing the {@link Optional} is empty.
+     * @return an {@link Optional} {@link Integer} representation of the parameter. If the value is missing the
+     *         {@link Optional} is empty.
      * @exception NumberFormatException
      *                if the value cannot be parsed as an Integer.
      */
@@ -136,9 +131,8 @@ public final class RouteParameters implements Serializable {
         try {
             return Optional.of(Integer.valueOf(value));
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(String.format(
-                    "Couldn't parse '%s' parameter value '%s' as integer",
-                    parameterName, value), e);
+            throw new IllegalArgumentException(
+                    String.format("Couldn't parse '%s' parameter value '%s' as integer", parameterName, value), e);
         }
     }
 
@@ -147,8 +141,8 @@ public final class RouteParameters implements Serializable {
      *
      * @param parameterName
      *            the name of the parameter.
-     * @return an {@link Optional} {@link Long} representation of the parameter.
-     *         If the value is missing the {@link Optional} is empty.
+     * @return an {@link Optional} {@link Long} representation of the parameter. If the value is missing the
+     *         {@link Optional} is empty.
      * @exception NumberFormatException
      *                if the value cannot be parsed as a Long.
      */
@@ -161,21 +155,19 @@ public final class RouteParameters implements Serializable {
         try {
             return Optional.of(Long.valueOf(value));
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(String.format(
-                    "Couldn't parse '%s' parameter value '%s' as long",
-                    parameterName, value), e);
+            throw new IllegalArgumentException(
+                    String.format("Couldn't parse '%s' parameter value '%s' as long", parameterName, value), e);
         }
     }
 
     /**
-     * Gets a list representing the wildcard value of a parameter, where each
-     * element in the list is a path segment. In case the value is missing the
-     * result is an empty {@link List}.
+     * Gets a list representing the wildcard value of a parameter, where each element in the list is a path segment. In
+     * case the value is missing the result is an empty {@link List}.
      *
      * @param parameterName
      *            the name of the parameter.
-     * @return a {@link List} representing the wildcard value of a parameter, or
-     *         an empty {@link List} is the value is missing.
+     * @return a {@link List} representing the wildcard value of a parameter, or an empty {@link List} is the value is
+     *         missing.
      */
     public List<String> getWildcard(String parameterName) {
         final String value = getValue(parameterName);

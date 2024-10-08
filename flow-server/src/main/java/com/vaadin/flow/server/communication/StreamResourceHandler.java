@@ -55,24 +55,19 @@ public class StreamResourceHandler implements Serializable {
      * @throws IOException
      *             if an IO error occurred
      */
-    public void handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response, StreamResource streamResource)
-            throws IOException {
+    public void handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response,
+            StreamResource streamResource) throws IOException {
 
         StreamResourceWriter writer;
         session.lock();
         try {
-            ServletContext context = ((VaadinServletRequest) request)
-                    .getServletContext();
-            response.setContentType(streamResource.getContentTypeResolver()
-                    .apply(streamResource, context));
+            ServletContext context = ((VaadinServletRequest) request).getServletContext();
+            response.setContentType(streamResource.getContentTypeResolver().apply(streamResource, context));
             response.setCacheTime(streamResource.getCacheTime());
-            streamResource.getHeaders()
-                    .forEach((name, value) -> response.setHeader(name, value));
+            streamResource.getHeaders().forEach((name, value) -> response.setHeader(name, value));
             writer = streamResource.getWriter();
             if (writer == null) {
-                throw new IOException(
-                        "Stream resource produces null input stream");
+                throw new IOException("Stream resource produces null input stream");
             }
         } catch (Exception exception) {
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
@@ -86,8 +81,7 @@ public class StreamResourceHandler implements Serializable {
                 writer.accept(outputStream, session);
             } catch (Exception exception) {
                 // Set status before output is closed (see #8740)
-                response.setStatus(
-                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
                 throw exception;
             }
         }

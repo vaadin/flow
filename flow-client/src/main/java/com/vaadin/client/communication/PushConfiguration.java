@@ -27,11 +27,9 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 
 /**
- * Provides the push configuration stored in the root node with an easier to use
- * API.
+ * Provides the push configuration stored in the root node with an easier to use API.
  *
- * Additionally tracks when push is enabled/disabled and informs
- * {@link MessageSender}.
+ * Additionally tracks when push is enabled/disabled and informs {@link MessageSender}.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -52,8 +50,7 @@ public class PushConfiguration {
     }
 
     private void setupListener() {
-        getConfigurationMap().getProperty(PushConfigurationMap.PUSHMODE_KEY)
-                .addChangeListener(this::onPushModeChange);
+        getConfigurationMap().getProperty(PushConfigurationMap.PUSHMODE_KEY).addChangeListener(this::onPushModeChange);
     }
 
     /**
@@ -71,49 +68,41 @@ public class PushConfiguration {
 
             // We must wait until all parts of push configuration has been
             // updated
-            Reactive.addFlushListener(
-                    () -> registry.getMessageSender().setPushEnabled(true));
+            Reactive.addFlushListener(() -> registry.getMessageSender().setPushEnabled(true));
         } else if (oldModeEnabled && !newModeEnabled) {
             // Switch push off
             // We must wait until all parts of push configuration has been
             // updated
-            Reactive.addFlushListener(
-                    () -> registry.getMessageSender().setPushEnabled(false));
+            Reactive.addFlushListener(() -> registry.getMessageSender().setPushEnabled(false));
         }
     }
 
     private NodeMap getConfigurationMap() {
-        return registry.getStateTree().getRootNode()
-                .getMap(NodeFeatures.UI_PUSHCONFIGURATION);
+        return registry.getStateTree().getRootNode().getMap(NodeFeatures.UI_PUSHCONFIGURATION);
     }
 
     /**
      * Gets the push servlet mapping configured or determined on the server.
      *
-     * @return the push servlet mapping configured or determined on the server
-     *         or null if none has been configured
+     * @return the push servlet mapping configured or determined on the server or null if none has been configured
      */
     public String getPushServletMapping() {
-        if (getConfigurationMap().hasPropertyValue(
-                PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY)) {
-            return (String) getConfigurationMap()
-                    .getProperty(PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY)
-                    .getValue();
+        if (getConfigurationMap().hasPropertyValue(PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY)) {
+            return (String) getConfigurationMap().getProperty(PushConfigurationMap.PUSH_SERVLET_MAPPING_KEY).getValue();
         }
 
         return null;
     }
 
     /**
-     * Checks if XHR should be used for client -&gt; server messages even though
-     * we are using a bidirectional push transport such as websockets.
+     * Checks if XHR should be used for client -&gt; server messages even though we are using a bidirectional push
+     * transport such as websockets.
      *
      * @return true if XHR should always be used, false otherwise
      */
     public boolean isAlwaysXhrToServer() {
         // The only possible value is "true"
-        return (getConfigurationMap().hasPropertyValue(
-                PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+        return (getConfigurationMap().hasPropertyValue(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
     }
 
     /**
@@ -124,11 +113,9 @@ public class PushConfiguration {
      * @return a map of all parameters configured on the server
      */
     public JsMap<String, String> getParameters() {
-        MapProperty p = getConfigurationMap()
-                .getProperty(PushConfigurationMap.PARAMETERS_KEY);
+        MapProperty p = getConfigurationMap().getProperty(PushConfigurationMap.PARAMETERS_KEY);
         StateNode parametersNode = (StateNode) p.getValue();
-        NodeMap parametersMap = parametersNode
-                .getMap(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
+        NodeMap parametersMap = parametersNode.getMap(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
 
         JsMap<String, String> parameters = JsCollections.map();
         parametersMap.forEachProperty((property, key) -> {
@@ -144,13 +131,11 @@ public class PushConfiguration {
      * @return true if push is enabled, false otherwise
      */
     public boolean isPushEnabled() {
-        return isPushEnabled(getConfigurationMap()
-                .getProperty(PushConfigurationMap.PUSHMODE_KEY).getValue());
+        return isPushEnabled(getConfigurationMap().getProperty(PushConfigurationMap.PUSHMODE_KEY).getValue());
     }
 
     /**
-     * Checks the given propertyValue from the PUSHMODE key to determine if push
-     * is enabled or not.
+     * Checks the given propertyValue from the PUSHMODE key to determine if push is enabled or not.
      *
      * @param propertyValue
      *            the PushMode value

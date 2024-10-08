@@ -13,15 +13,12 @@ public class SelectView extends Div {
 
         Element select = new Element("select");
         for (int i = 1; i < 10; i++) {
-            select.appendChild(
-                    new Element("option").setAttribute("id", "id" + i)
-                            .setAttribute("value", "value" + i)
-                            .setText("Visible text " + i));
+            select.appendChild(new Element("option").setAttribute("id", "id" + i).setAttribute("value", "value" + i)
+                    .setText("Visible text " + i));
         }
         select.setAttribute("id", "input");
         select.addEventListener("change", e -> {
-            log.setText("Value is '"
-                    + e.getEventData().getString("element.value") + "'");
+            log.setText("Value is '" + e.getEventData().getString("element.value") + "'");
         }).synchronizeProperty("element.value");
         add(log);
         getElement().appendChild(select);

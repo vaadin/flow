@@ -22,12 +22,10 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.ParentLayout;
 
 @ParentLayout(NavigationExceptionLayout.class)
-public class NavigationExceptionHandler extends Div
-        implements HasErrorParameter<NavigationException> {
+public class NavigationExceptionHandler extends Div implements HasErrorParameter<NavigationException> {
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<NavigationException> parameter) {
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NavigationException> parameter) {
         return 500;
     }
 }

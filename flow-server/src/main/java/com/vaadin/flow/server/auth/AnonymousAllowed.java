@@ -21,24 +21,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A security annotation, granting anonymous access to the Vaadin endpoint (or
- * its method) it is placed onto.
+ * A security annotation, granting anonymous access to the Vaadin endpoint (or its method) it is placed onto.
  * <p>
- * This means that any user will be able to trigger an endpoint method (if
- * placed on an endpoint class) or the particular endpoint method (if placed on
- * an endpoint method) without providing an authentication token.
+ * This means that any user will be able to trigger an endpoint method (if placed on an endpoint class) or the
+ * particular endpoint method (if placed on an endpoint method) without providing an authentication token.
  * <p>
- * If there are other supported security annotations present on the same class
- * or method:
+ * If there are other supported security annotations present on the same class or method:
  * <ul>
- * <li>{@link AnonymousAllowed} is overridden by
- * {@link jakarta.annotation.security.DenyAll} annotation, disallowing any user
- * from accessing the method</li>
- * <li>{@link AnonymousAllowed} annotation overrides
- * {@link jakarta.annotation.security.PermitAll} and
- * {@link jakarta.annotation.security.RolesAllowed} annotations, allowing all
- * users to access the method (anonymous and authenticated users with any
- * security roles)</li>
+ * <li>{@link AnonymousAllowed} is overridden by {@link jakarta.annotation.security.DenyAll} annotation, disallowing any
+ * user from accessing the method</li>
+ * <li>{@link AnonymousAllowed} annotation overrides {@link jakarta.annotation.security.PermitAll} and
+ * {@link jakarta.annotation.security.RolesAllowed} annotations, allowing all users to access the method (anonymous and
+ * authenticated users with any security roles)</li>
  * </ul>
  *
  * @see AccessAnnotationChecker for security rules check implementation

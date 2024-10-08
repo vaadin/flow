@@ -29,8 +29,7 @@ import jakarta.servlet.http.HttpSession;
  * @see VaadinRequest
  * @see VaadinServletResponse
  */
-public class VaadinServletRequest extends HttpServletRequestWrapper
-        implements VaadinRequest {
+public class VaadinServletRequest extends HttpServletRequestWrapper implements VaadinRequest {
 
     private final VaadinServletService vaadinService;
 
@@ -42,8 +41,7 @@ public class VaadinServletRequest extends HttpServletRequestWrapper
      * @param vaadinService
      *            the associated vaadin service
      */
-    public VaadinServletRequest(HttpServletRequest request,
-            VaadinServletService vaadinService) {
+    public VaadinServletRequest(HttpServletRequest request, VaadinServletService vaadinService) {
         super(request);
         this.vaadinService = vaadinService;
     }
@@ -78,14 +76,12 @@ public class VaadinServletRequest extends HttpServletRequestWrapper
     }
 
     /**
-     * Gets the currently processed Vaadin servlet request. The current request
-     * is automatically defined when the request is started. The current request
-     * can not be used in e.g. background threads because of the way server
+     * Gets the currently processed Vaadin servlet request. The current request is automatically defined when the
+     * request is started. The current request can not be used in e.g. background threads because of the way server
      * implementations reuse request instances.
      *
      *
-     * @return the current Vaadin servlet request instance if available,
-     *         otherwise <code>null</code>
+     * @return the current Vaadin servlet request instance if available, otherwise <code>null</code>
      */
     public static VaadinServletRequest getCurrent() {
         VaadinRequest currentRequest = VaadinRequest.getCurrent();

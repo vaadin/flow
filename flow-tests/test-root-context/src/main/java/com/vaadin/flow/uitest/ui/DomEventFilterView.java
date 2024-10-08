@@ -41,11 +41,8 @@ public class DomEventFilterView extends AbstractDivView {
 
     @Tag("input")
     public static class DebounceComponent extends Component {
-        public Registration addInputListener(
-                ComponentEventListener<InputEvent> listener,
-                int debounceTimeout) {
-            return getEventBus().addListener(InputEvent.class, listener,
-                    domReg -> domReg.debounce(debounceTimeout));
+        public Registration addInputListener(ComponentEventListener<InputEvent> listener, int debounceTimeout) {
+            return getEventBus().addListener(InputEvent.class, listener, domReg -> domReg.debounce(debounceTimeout));
         }
     }
 
@@ -53,8 +50,7 @@ public class DomEventFilterView extends AbstractDivView {
     public static class InputEvent extends ComponentEvent<DebounceComponent> {
         private String value;
 
-        public InputEvent(DebounceComponent source, boolean fromClient,
-                @EventData("element.value") String value) {
+        public InputEvent(DebounceComponent source, boolean fromClient, @EventData("element.value") String value) {
             super(source, fromClient);
             this.value = value;
         }
@@ -70,16 +66,14 @@ public class DomEventFilterView extends AbstractDivView {
         Element space = new Element("input");
         space.setAttribute("id", "space");
 
-        space.addEventListener("keypress",
-                e -> addMessage("Space listener triggered"))
+        space.addEventListener("keypress", e -> addMessage("Space listener triggered"))
                 .setFilter("event.key == ' ' || event.key == 'Spacebar'");
         // The key is called 'Spacebar' on IE11
 
         Element debounce = new Element("input");
         debounce.setAttribute("id", "debounce");
         debounce.addEventListener("input", e -> {
-            addMessage("input:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
+            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
         }).addEventData("element.value").debounce(1000);
         debounce.addEventListener("click", e -> {
             addMessage("click");
@@ -88,23 +82,19 @@ public class DomEventFilterView extends AbstractDivView {
         Element leading = new Element("input");
         leading.setAttribute("id", "leading");
         leading.addEventListener("input", e -> {
-            addMessage("input:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
+            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
         }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING);
 
         Element leadingAndTrailing = new Element("input");
         leadingAndTrailing.setAttribute("id", "leading-trailing");
         leadingAndTrailing.addEventListener("input", e -> {
-            addMessage("input:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
-        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
-                DebouncePhase.TRAILING);
+            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING, DebouncePhase.TRAILING);
 
         Element throttle = new Element("input");
         throttle.setAttribute("id", "throttle");
         throttle.addEventListener("input", e -> {
-            addMessage("input:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
+            addMessage("input:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
         }).addEventData("element.value").throttle(2000); // this is leading +
                                                          // intermediate
         throttle.addEventListener("click", e -> {
@@ -114,12 +104,11 @@ public class DomEventFilterView extends AbstractDivView {
         Element godMode = new Element("input");
         godMode.setAttribute("id", "godMode");
         godMode.addEventListener("input", e -> {
-            addMessage("godmode:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
-        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
-                DebouncePhase.TRAILING, DebouncePhase.INTERMEDIATE); // this is
-                                                                     // leading
-                                                                     // +
+            addMessage("godmode:%s, phase:%s".formatted(e.getEventData().getString("element.value"), e.getPhase()));
+        }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING, DebouncePhase.TRAILING,
+                DebouncePhase.INTERMEDIATE); // this is
+                                             // leading
+                                             // +
 
         Element twoEvents = new Element("input");
         twoEvents.setAttribute("id", "twoEvents");
@@ -140,63 +129,52 @@ public class DomEventFilterView extends AbstractDivView {
                             }
                         });
                 """);
-        DomListenerRegistration keyreg = twoEvents.addEventListener("k-event",
-                e -> {
-                    addMessage(
-                            "k-event " + e.getEventData().getNumber("event.id")
-                                    + " phase: " + e.getPhase());
-                });
+        DomListenerRegistration keyreg = twoEvents.addEventListener("k-event", e -> {
+            addMessage("k-event " + e.getEventData().getNumber("event.id") + " phase: " + e.getPhase());
+        });
         keyreg.addEventData("event.id");
         // lazily listen k-events
         keyreg.debounce(3000);
 
-        DomListenerRegistration greg = twoEvents.addEventListener("g-event",
-                e -> {
-                    addMessage("g-event "
-                            + e.getEventData().getNumber("event.id"));
-                });
+        DomListenerRegistration greg = twoEvents.addEventListener("g-event", e -> {
+            addMessage("g-event " + e.getEventData().getNumber("event.id"));
+        });
         // this are listened eagerly, k-events should still come before
         greg.addEventData("event.id");
 
         DebounceComponent component = new DebounceComponent();
         component.setId("debounce-component");
-        component.addInputListener(
-                e -> addMessage("Component: " + e.getValue()), 2000);
+        component.addInputListener(e -> addMessage("Component: " + e.getValue()), 2000);
 
         messages.setAttribute("id", "messages");
-        getElement().appendChild(space, debounce, leading, leadingAndTrailing,
-                throttle, godMode, twoEvents, component.getElement(), messages);
+        getElement().appendChild(space, debounce, leading, leadingAndTrailing, throttle, godMode, twoEvents,
+                component.getElement(), messages);
 
         // tests for#5090
         final AtomicReference<DomListenerRegistration> atomicReference = new AtomicReference<>();
         final Paragraph resultParagraph = new Paragraph();
         resultParagraph.setId("result-paragraph");
 
-        NativeButton removalButton = new NativeButton("Remove DOM listener",
-                event -> {
-                    resultParagraph.setText("REMOVED");
-                    atomicReference.get().remove();
-                });
+        NativeButton removalButton = new NativeButton("Remove DOM listener", event -> {
+            resultParagraph.setText("REMOVED");
+            atomicReference.get().remove();
+        });
         removalButton.setId("listener-removal-button");
 
         Input listenerInput = new Input(ValueChangeMode.ON_CHANGE);
         listenerInput.setId("listener-input");
 
         /*
-         * The event.preventDefault() is here to make sure that the listener has
-         * been cleaned on the client-side as well. The server-side cleaning is
-         * not really in question.
+         * The event.preventDefault() is here to make sure that the listener has been cleaned on the client-side as
+         * well. The server-side cleaning is not really in question.
          */
-        ComponentUtil.addListener(listenerInput, KeyDownEvent.class,
-                event -> resultParagraph.setText("A"), registration -> {
+        ComponentUtil.addListener(listenerInput, KeyDownEvent.class, event -> resultParagraph.setText("A"),
+                registration -> {
                     atomicReference.set(registration);
-                    registration.setFilter("event.key === 'a' && "
-                            + "(event.preventDefault() || true)");
+                    registration.setFilter("event.key === 'a' && " + "(event.preventDefault() || true)");
                 });
-        ComponentUtil.addListener(listenerInput, KeyDownEvent.class,
-                event -> resultParagraph.setText("B"),
-                registration -> registration.setFilter("event.key === 'b' && "
-                        + "(event.preventDefault() || true)"));
+        ComponentUtil.addListener(listenerInput, KeyDownEvent.class, event -> resultParagraph.setText("B"),
+                registration -> registration.setFilter("event.key === 'b' && " + "(event.preventDefault() || true)"));
 
         add(listenerInput, removalButton, resultParagraph);
     }

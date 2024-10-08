@@ -26,16 +26,13 @@ public class TemplateIT extends ChromeBrowserTest {
     public void testElementIdMapping() {
         final String initialValue = "Default";
 
-        SpanElement litSpan = $(LitComponent.TAG).first().$(SpanElement.class)
-                .first();
+        SpanElement litSpan = $(LitComponent.TAG).first().$(SpanElement.class).first();
         Assert.assertEquals(initialValue, litSpan.getText());
 
-        SpanElement polymerSpan = $(PolymerComponent.TAG).first()
-                .$(SpanElement.class).first();
+        SpanElement polymerSpan = $(PolymerComponent.TAG).first().$(SpanElement.class).first();
         Assert.assertEquals(initialValue, polymerSpan.getText());
 
-        SpanElement addonLitSpan = $(AddonLitComponent.TAG).first()
-                .$(SpanElement.class).first();
+        SpanElement addonLitSpan = $(AddonLitComponent.TAG).first().$(SpanElement.class).first();
         Assert.assertEquals(initialValue, addonLitSpan.getText());
 
         final String newLabel = "New label";

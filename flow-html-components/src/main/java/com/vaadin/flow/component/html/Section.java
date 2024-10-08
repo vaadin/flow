@@ -29,8 +29,7 @@ import com.vaadin.flow.component.Tag;
  * @since 1.0
  */
 @Tag(Tag.SECTION)
-public class Section extends HtmlContainer
-        implements ClickNotifier<Section>, HasOrderedComponents, HasAriaLabel {
+public class Section extends HtmlContainer implements ClickNotifier<Section>, HasOrderedComponents, HasAriaLabel {
 
     /**
      * Creates a new empty section.

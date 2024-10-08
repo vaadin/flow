@@ -27,8 +27,8 @@ import com.vaadin.flow.dom.Element;
 /**
  * Defines the id of a component or an element to map to inside a lit template.
  * <p>
- * Use this annotation with an identifier of the element which you want to refer
- * to as a value for a field inside your {@code LitTemplate} class.
+ * Use this annotation with an identifier of the element which you want to refer to as a value for a field inside your
+ * {@code LitTemplate} class.
  * <p>
  * Here is a Java sample:
  *
@@ -61,22 +61,17 @@ import com.vaadin.flow.dom.Element;
  * </code>
  * </pre>
  * <p>
- * It's important to understand that the element's hierarchical structure for
- * the element injected via <code>@Id</code> is not populated and not available
- * on the server side (it's not known). It means that <code>nestedDiv</code>
- * field value which is a <code>Div</code> component doesn't have any child on
- * the server side. Attribute values declared on the client side are reflected
- * to the server side as property values or attribute values.
+ * It's important to understand that the element's hierarchical structure for the element injected via <code>@Id</code>
+ * is not populated and not available on the server side (it's not known). It means that <code>nestedDiv</code> field
+ * value which is a <code>Div</code> component doesn't have any child on the server side. Attribute values declared on
+ * the client side are reflected to the server side as property values or attribute values.
  * <p>
- * You still may use {@link Component}'s or {@link Element}'s mutation methods
- * for the injected element from the server side though. E.g. you may add a
- * child or set attribute/property value. Such children will be available in the
+ * You still may use {@link Component}'s or {@link Element}'s mutation methods for the injected element from the server
+ * side though. E.g. you may add a child or set attribute/property value. Such children will be available in the
  * element's hierarchy in the same way as for a regular element.
  * <p>
- * An attribute/property value set using server side API methods overrides the
- * values used in the template. If the attribute/property value is not
- * explicitly set on the server side then the template value is used. In this
- * example:
+ * An attribute/property value set using server side API methods overrides the values used in the template. If the
+ * attribute/property value is not explicitly set on the server side then the template value is used. In this example:
  *
  * <pre>
  * <code>
@@ -98,9 +93,8 @@ import com.vaadin.flow.dom.Element;
  * </code>
  * </pre>
  *
- * the {@code container} field has {@code "name"} property value {@code "Joe"}
- * (even though it has another value declared in the template) and it has
- * {@code "version"} value {@code "1.0"} with the following template:
+ * the {@code container} field has {@code "name"} property value {@code "Joe"} (even though it has another value
+ * declared in the template) and it has {@code "version"} value {@code "1.0"} with the following template:
  *
  * <pre>
  * <code>
@@ -120,8 +114,7 @@ import com.vaadin.flow.dom.Element;
 @Documented
 public @interface Id {
     /**
-     * The id of the element to map to. When empty, the name of the field is
-     * used instead.
+     * The id of the element to map to. When empty, the name of the field is used instead.
      *
      * @return the id of the element to map to
      */

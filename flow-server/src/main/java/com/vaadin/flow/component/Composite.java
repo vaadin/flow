@@ -27,20 +27,16 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.ReflectTools;
 
 /**
- * A composite encapsulates a {@link Component} tree to allow creation of new
- * components by composing existing components. By encapsulating the component,
- * its API can be hidden or presented in a different way for the user of the
+ * A composite encapsulates a {@link Component} tree to allow creation of new components by composing existing
+ * components. By encapsulating the component, its API can be hidden or presented in a different way for the user of the
  * composite.
  * <p>
- * The encapsulated component tree is available through {@link #getContent()}.
- * Composite will by default look at the generic type declaration of its
- * subclass to find the content type and create an instance if the type has a
- * no-args constructor. You can also override {@link #initContent()} to manually
- * create the component tree. The encapsulated component itself can contain more
- * components.
+ * The encapsulated component tree is available through {@link #getContent()}. Composite will by default look at the
+ * generic type declaration of its subclass to find the content type and create an instance if the type has a no-args
+ * constructor. You can also override {@link #initContent()} to manually create the component tree. The encapsulated
+ * component itself can contain more components.
  * <p>
- * Composite is a way to hide API on the server side. It does not contribute any
- * element to the {@link Element} tree.
+ * Composite is a way to hide API on the server side. It does not contribute any element to the {@link Element} tree.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -56,35 +52,28 @@ public abstract class Composite<T extends Component> extends Component {
     /**
      * Creates a new composite.
      * <p>
-     * To define your own composite, extend this class and implement
-     * {@link #initContent()}.
+     * To define your own composite, extend this class and implement {@link #initContent()}.
      */
     protected Composite() {
         super(null);
     }
 
     /**
-     * Called when the content of this composite is requested for the first
-     * time.
+     * Called when the content of this composite is requested for the first time.
      * <p>
-     * This method should initialize the component structure for the composite
-     * and return the root component.
+     * This method should initialize the component structure for the composite and return the root component.
      * <p>
-     * By default, this method uses reflection to instantiate the component
-     * based on the generic type of the sub class.
+     * By default, this method uses reflection to instantiate the component based on the generic type of the sub class.
      *
      * @return the root component which this composite wraps, never {@code null}
      */
     @SuppressWarnings("unchecked")
     protected T initContent() {
-        return (T) ReflectTools.createInstance(
-                findContentType((Class<? extends Composite<?>>) getClass()));
+        return (T) ReflectTools.createInstance(findContentType((Class<? extends Composite<?>>) getClass()));
     }
 
-    private static Class<? extends Component> findContentType(
-            Class<? extends Composite<?>> compositeClass) {
-        Type type = GenericTypeReflector.getTypeParameter(
-                compositeClass.getGenericSuperclass(),
+    private static Class<? extends Component> findContentType(Class<? extends Composite<?>> compositeClass) {
+        Type type = GenericTypeReflector.getTypeParameter(compositeClass.getGenericSuperclass(),
                 Composite.class.getTypeParameters()[0]);
         if (type instanceof Class || type instanceof ParameterizedType) {
             return GenericTypeReflector.erase(type).asSubclass(Component.class);
@@ -98,19 +87,15 @@ public abstract class Composite<T extends Component> extends Component {
         }
 
         if (type instanceof TypeVariable) {
-            return String.format(
-                    "Could not determine the composite content type for TypeVariable '%s'. "
-                            + "Either specify exact type or override initContent().",
-                    type.getTypeName());
+            return String.format("Could not determine the composite content type for TypeVariable '%s'. "
+                    + "Either specify exact type or override initContent().", type.getTypeName());
         }
-        return String.format(
-                "Could not determine the composite content type for %s. Override initContent().",
+        return String.format("Could not determine the composite content type for %s. Override initContent().",
                 type.getTypeName());
     }
 
     /**
-     * Gets the content of the composite, i.e. the component the composite is
-     * wrapping.
+     * Gets the content of the composite, i.e. the component the composite is wrapping.
      *
      * @return the content for the composite, never {@code null}
      */
@@ -118,18 +103,15 @@ public abstract class Composite<T extends Component> extends Component {
         if (content == null) {
             try {
                 if (contentIsInitializing) {
-                    throw new IllegalStateException(
-                            "The content is not yet initialized. "
-                                    + "Detected direct or indirect call to 'getContent' from 'initContent'. "
-                                    + "You may not call any framework method on a '"
-                                    + Composite.class.getSimpleName()
-                                    + "' instance before 'initContent' has completed initializing the component.");
+                    throw new IllegalStateException("The content is not yet initialized. "
+                            + "Detected direct or indirect call to 'getContent' from 'initContent'. "
+                            + "You may not call any framework method on a '" + Composite.class.getSimpleName()
+                            + "' instance before 'initContent' has completed initializing the component.");
                 }
                 contentIsInitializing = true;
                 T newContent = initContent();
                 if (newContent == null) {
-                    throw new IllegalStateException(
-                            "initContent returned null instead of a component");
+                    throw new IllegalStateException("initContent returned null instead of a component");
                 }
                 setContent(newContent);
             } finally {
@@ -163,8 +145,7 @@ public abstract class Composite<T extends Component> extends Component {
     /**
      * Gets the root element of this composite.
      * <p>
-     * For a composite, the root element is the same as the root element of the
-     * content of the composite.
+     * For a composite, the root element is the same as the root element of the content of the composite.
      *
      * @return the root element of this component
      */
@@ -176,8 +157,7 @@ public abstract class Composite<T extends Component> extends Component {
     /**
      * Gets the child components of this composite.
      * <p>
-     * A composite always has one child component, returned by
-     * {@link #initContent()}.
+     * A composite always has one child component, returned by {@link #initContent()}.
      *
      * @return the child component of this composite
      */

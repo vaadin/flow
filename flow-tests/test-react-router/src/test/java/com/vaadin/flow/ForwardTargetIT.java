@@ -17,22 +17,17 @@ public class ForwardTargetIT extends ChromeBrowserTest {
         getDriver().get(getTestURL(getRootURL(), FORWARD_TARGET_VIEW, null));
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(FORWARD_TARGET_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(FORWARD_TARGET_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + FORWARD_TARGET_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + FORWARD_TARGET_VIEW);
         }
 
-        getDriver().get(getTestURL(getRootURL(),
-                "/view/com.vaadin.flow.ForwardingView", null));
+        getDriver().get(getTestURL(getRootURL(), "/view/com.vaadin.flow.ForwardingView", null));
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl()
-                    .endsWith(FORWARD_TARGET_VIEW));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith(FORWARD_TARGET_VIEW));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + FORWARD_TARGET_VIEW);
+            Assert.fail("URL wasn't updated to expected one: " + FORWARD_TARGET_VIEW);
         }
 
         Assert.assertTrue("URL was not the expected one after forward call",
@@ -42,20 +37,16 @@ public class ForwardTargetIT extends ChromeBrowserTest {
     // Test for https://github.com/vaadin/flow/issues/19822
     @Test
     public void testSetParameterCalledOnlyOnceAfterForward() {
-        getDriver().get(getTestURL(getRootURL(),
-                "/view/com.vaadin.flow.ForwardingToParametersView", null));
+        getDriver().get(getTestURL(getRootURL(), "/view/com.vaadin.flow.ForwardingToParametersView", null));
 
         try {
-            waitUntil(arg -> driver.getCurrentUrl().endsWith(
-                    "/view/com.vaadin.flow.ForwardTargetWithParametersView"));
+            waitUntil(arg -> driver.getCurrentUrl().endsWith("/view/com.vaadin.flow.ForwardTargetWithParametersView"));
         } catch (TimeoutException e) {
-            Assert.fail("URL wasn't updated to expected one: "
-                    + "/view/com.vaadin.flow.ForwardTargetWithParametersView");
+            Assert.fail(
+                    "URL wasn't updated to expected one: " + "/view/com.vaadin.flow.ForwardTargetWithParametersView");
         }
 
         Assert.assertEquals("setParameter was called more than once", 1,
-                $(SpanElement.class).all().stream()
-                        .filter(span -> span.getText().equals("setParameter"))
-                        .count());
+                $(SpanElement.class).all().stream().filter(span -> span.getText().equals("setParameter")).count());
     }
 }

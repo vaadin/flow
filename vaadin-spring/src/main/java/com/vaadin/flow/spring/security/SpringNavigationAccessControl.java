@@ -16,22 +16,19 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.spring.AuthenticationUtil;
 
 /**
- * A Spring specific navigation access control that falls back to Spring
- * mechanisms for user retrieval and role checking, when the generic mechanisms
- * do not work.
+ * A Spring specific navigation access control that falls back to Spring mechanisms for user retrieval and role
+ * checking, when the generic mechanisms do not work.
  * <p>
  * </p>
- * In Spring Boot application, a {@link SpringNavigationAccessControl} is
- * provided by default, but its behavior can be configured by defining a
- * {@link NavigationAccessControlConfigurer} bean.
+ * In Spring Boot application, a {@link SpringNavigationAccessControl} is provided by default, but its behavior can be
+ * configured by defining a {@link NavigationAccessControlConfigurer} bean.
  *
  * @see NavigationAccessControlConfigurer
  */
 public class SpringNavigationAccessControl extends NavigationAccessControl {
 
     /**
-     * Create a new instance with the default view annotation checker and
-     * decision resolver.
+     * Create a new instance with the default view annotation checker and decision resolver.
      *
      * @see AnnotatedViewAccessChecker
      * @see DefaultAccessCheckDecisionResolver
@@ -47,8 +44,7 @@ public class SpringNavigationAccessControl extends NavigationAccessControl {
      * @param decisionResolver
      *            the decision resolver.
      */
-    public SpringNavigationAccessControl(
-            Collection<NavigationAccessChecker> checkerList,
+    public SpringNavigationAccessControl(Collection<NavigationAccessChecker> checkerList,
             AccessCheckDecisionResolver decisionResolver) {
         super(checkerList, decisionResolver);
     }
@@ -65,21 +61,17 @@ public class SpringNavigationAccessControl extends NavigationAccessControl {
     protected Predicate<String> getRolesChecker(VaadinRequest request) {
         if (request == null) {
             return Optional.ofNullable(VaadinService.getCurrent())
-                    .map(service -> service.getContext()
-                            .getAttribute(Lookup.class))
+                    .map(service -> service.getContext().getAttribute(Lookup.class))
                     .map(lookup -> lookup.lookup(VaadinRolePrefixHolder.class))
-                    .map(VaadinRolePrefixHolder::getRolePrefix)
-                    .map(AuthenticationUtil::getSecurityHolderRoleChecker)
-                    .orElseGet(
-                            AuthenticationUtil::getSecurityHolderRoleChecker)::apply;
+                    .map(VaadinRolePrefixHolder::getRolePrefix).map(AuthenticationUtil::getSecurityHolderRoleChecker)
+                    .orElseGet(AuthenticationUtil::getSecurityHolderRoleChecker)::apply;
         }
 
         // Update active role prefix if it's not set yet.
-        Optional.ofNullable(VaadinService.getCurrent())
-                .map(service -> service.getContext().getAttribute(Lookup.class))
+        Optional.ofNullable(VaadinService.getCurrent()).map(service -> service.getContext().getAttribute(Lookup.class))
                 .map(lookup -> lookup.lookup(VaadinRolePrefixHolder.class))
-                .filter(prefixHolder -> !prefixHolder.isSet()).ifPresent(
-                        prefixHolder -> prefixHolder.resetRolePrefix(request));
+                .filter(prefixHolder -> !prefixHolder.isSet())
+                .ifPresent(prefixHolder -> prefixHolder.resetRolePrefix(request));
 
         return super.getRolesChecker(request);
     }

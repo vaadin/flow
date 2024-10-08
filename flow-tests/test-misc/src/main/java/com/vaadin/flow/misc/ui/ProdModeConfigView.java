@@ -23,18 +23,16 @@ import com.vaadin.flow.server.VaadinService;
 @Route(value = "prod-mode-config-test")
 public class ProdModeConfigView extends Div {
     public ProdModeConfigView() {
-        Paragraph productionMode = new Paragraph(String.valueOf(VaadinService
-                .getCurrent().getDeploymentConfiguration().isProductionMode()));
+        Paragraph productionMode = new Paragraph(
+                String.valueOf(VaadinService.getCurrent().getDeploymentConfiguration().isProductionMode()));
         productionMode.setId("productionMode");
 
-        Paragraph devModeLiveReloadEnabled = new Paragraph(String
-                .valueOf(VaadinService.getCurrent().getDeploymentConfiguration()
-                        .isDevModeLiveReloadEnabled()));
+        Paragraph devModeLiveReloadEnabled = new Paragraph(
+                String.valueOf(VaadinService.getCurrent().getDeploymentConfiguration().isDevModeLiveReloadEnabled()));
         devModeLiveReloadEnabled.setId("devModeLiveReloadEnabled");
 
         Paragraph devToolsEnabled = new Paragraph(
-                String.valueOf(VaadinService.getCurrent()
-                        .getDeploymentConfiguration().isDevToolsEnabled()));
+                String.valueOf(VaadinService.getCurrent().getDeploymentConfiguration().isDevToolsEnabled()));
         devToolsEnabled.setId("devToolsEnabled");
 
         add(productionMode, devModeLiveReloadEnabled, devToolsEnabled);

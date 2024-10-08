@@ -90,29 +90,20 @@ public class WebComponentProviderTest {
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(session.getService()).thenReturn(service);
         Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(
-                context.getAttribute(WebComponentConfigurationRegistry.class))
-                .then(invocationOnMock -> registry);
-        Mockito.when(context.getAttribute(
-                eq(WebComponentConfigurationRegistry.class), any()))
+        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).then(invocationOnMock -> registry);
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), any()))
                 .then(invocationOnMock -> registry);
         Mockito.doAnswer(
-                invocationOnMock -> registry = (WebComponentConfigurationRegistry) invocationOnMock
-                        .getArguments()[0])
-                .when(context)
-                .setAttribute(any(WebComponentConfigurationRegistry.class));
+                invocationOnMock -> registry = (WebComponentConfigurationRegistry) invocationOnMock.getArguments()[0])
+                .when(context).setAttribute(any(WebComponentConfigurationRegistry.class));
         VaadinService.setCurrent(service);
-        Mockito.when(service.getInstantiator())
-                .thenReturn(new MockInstantiator());
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        Mockito.when(service.getInstantiator()).thenReturn(new MockInstantiator());
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         VaadinServletService service = Mockito.mock(VaadinServletService.class);
-        Mockito.doCallRealMethod().when(service)
-                .getContextRootRelativePath(Mockito.any());
+        Mockito.doCallRealMethod().when(service).getContextRootRelativePath(Mockito.any());
 
-        Mockito.doCallRealMethod().when(service)
-                .getContextRootRelativePath(Mockito.any());
+        Mockito.doCallRealMethod().when(service).getContextRootRelativePath(Mockito.any());
 
         provider = new WebComponentProvider();
     }
@@ -125,38 +116,30 @@ public class WebComponentProviderTest {
     @Test
     public void nonHandledPaths_handlerInformsNotHandled() throws IOException {
         Mockito.when(request.getPathInfo()).thenReturn(null);
-        Assert.assertFalse("Provider shouldn't handle null path",
-                provider.canHandleRequest(request));
+        Assert.assertFalse("Provider shouldn't handle null path", provider.canHandleRequest(request));
 
         Mockito.when(request.getPathInfo()).thenReturn("");
-        Assert.assertFalse("Provider shouldn't handle empty path",
-                provider.canHandleRequest(request));
+        Assert.assertFalse("Provider shouldn't handle empty path", provider.canHandleRequest(request));
 
         Mockito.when(request.getPathInfo()).thenReturn("/home");
-        Assert.assertFalse("Provider shouldn't handle non web-component path",
-                provider.canHandleRequest(request));
+        Assert.assertFalse("Provider shouldn't handle non web-component path", provider.canHandleRequest(request));
     }
 
     @Test
     public void faultyTag_handlerInformsNotHandled() throws IOException {
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component" + "/extensionless-component");
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component" + "/extensionless-component");
 
         Assert.assertFalse("Provider shouldn't handle path without extension",
                 provider.synchronizedHandleRequest(session, request, response));
 
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/component.js");
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component/component.js");
 
-        Assert.assertFalse(
-                "Provider shouldn't handle request for non-custom element name",
+        Assert.assertFalse("Provider shouldn't handle request for non-custom element name",
                 provider.synchronizedHandleRequest(session, request, response));
 
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.html");
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component/my-component.html");
 
-        Assert.assertFalse(
-                "Provider shouldn't handle html extensions in npm mode",
+        Assert.assertFalse("Provider shouldn't handle html extensions in npm mode",
                 provider.synchronizedHandleRequest(session, request, response));
     }
 
@@ -166,12 +149,10 @@ public class WebComponentProviderTest {
 
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
 
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.js");
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
                 provider.synchronizedHandleRequest(session, request, response));
-        Mockito.verify(response).sendError(HttpStatusCode.NOT_FOUND.getCode(),
-                "No web component for my-component");
+        Mockito.verify(response).sendError(HttpStatusCode.NOT_FOUND.getCode(), "No web component for my-component");
     }
 
     @Test
@@ -180,52 +161,43 @@ public class WebComponentProviderTest {
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
 
-        DefaultDeploymentConfiguration configuration = Mockito
-                .mock(DefaultDeploymentConfiguration.class);
+        DefaultDeploymentConfiguration configuration = Mockito.mock(DefaultDeploymentConfiguration.class);
 
         Mockito.when(response.getOutputStream()).thenReturn(out);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
 
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.js");
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
                 provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response).getOutputStream();
-        Mockito.verify(out).write(Mockito.any(), Mockito.anyInt(),
-                Mockito.anyInt());
+        Mockito.verify(out).write(Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
 
     }
 
     @Test
-    public void providesDifferentGeneratedHTMLForEachExportedComponent()
-            throws IOException {
+    public void providesDifferentGeneratedHTMLForEachExportedComponent() throws IOException {
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
 
-        registry = setupConfigurations(MyComponentExporter.class,
-                OtherComponentExporter.class);
+        registry = setupConfigurations(MyComponentExporter.class, OtherComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
 
-        DefaultDeploymentConfiguration configuration = Mockito
-                .mock(DefaultDeploymentConfiguration.class);
+        DefaultDeploymentConfiguration configuration = Mockito.mock(DefaultDeploymentConfiguration.class);
 
         Mockito.when(response.getOutputStream()).thenReturn(out);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
 
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.js");
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle first web-component request",
                 provider.synchronizedHandleRequest(session, request, response));
 
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/other-component.js");
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component/other-component.js");
         Assert.assertTrue("Provider should handle second web-component request",
                 provider.synchronizedHandleRequest(session, request, response));
 
         Mockito.verify(response, times(2)).getOutputStream();
-        Mockito.verify(out, times(2)).write(captor.capture(), Mockito.anyInt(),
-                Mockito.anyInt());
+        Mockito.verify(out, times(2)).write(captor.capture(), Mockito.anyInt(), Mockito.anyInt());
 
         byte[] first = captor.getAllValues().get(0);
         byte[] second = captor.getAllValues().get(1);
@@ -235,28 +207,23 @@ public class WebComponentProviderTest {
 
     @Test(expected = IllegalStateException.class)
     public void setExporters_exportersHasVariousPushes_throws() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                ThemedComponentExporter.class,
+        WebComponentConfigurationRegistry registry = setupConfigurations(ThemedComponentExporter.class,
                 AnotherPushComponentExporter.class);
     }
 
     @Test
     public void setExporters_exportersHasOnePush_pushIsSet() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                ThemedComponentExporter.class, MyComponentExporter.class);
-        Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
-                .isPresent());
+        WebComponentConfigurationRegistry registry = setupConfigurations(ThemedComponentExporter.class,
+                MyComponentExporter.class);
+        Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class).isPresent());
     }
 
     @Test
     public void setExporters_exportersHasSamePushDeclarations_pushIsSet() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                ThemedComponentExporter.class,
+        WebComponentConfigurationRegistry registry = setupConfigurations(ThemedComponentExporter.class,
                 SameThemedComponentExporter.class);
-        Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class)
-                .isPresent());
-        Assert.assertEquals(PushMode.AUTOMATIC, registry
-                .getEmbeddedApplicationAnnotation(Push.class).get().value());
+        Assert.assertTrue(registry.getEmbeddedApplicationAnnotation(Push.class).isPresent());
+        Assert.assertEquals(PushMode.AUTOMATIC, registry.getEmbeddedApplicationAnnotation(Push.class).get().value());
     }
 
     @Test
@@ -282,11 +249,9 @@ public class WebComponentProviderTest {
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(service.getContext()).thenReturn(context);
 
-        WebComponentConfigurationRegistry registry = Mockito
-                .mock(WebComponentConfigurationRegistry.class);
-        Mockito.when(context.getAttribute(
-                Mockito.eq(WebComponentConfigurationRegistry.class),
-                Mockito.any())).thenReturn(registry);
+        WebComponentConfigurationRegistry registry = Mockito.mock(WebComponentConfigurationRegistry.class);
+        Mockito.when(context.getAttribute(Mockito.eq(WebComponentConfigurationRegistry.class), Mockito.any()))
+                .thenReturn(registry);
         Mockito.when(registry.hasConfigurations()).thenReturn(hasConfig);
 
         Mockito.when(request.getPathInfo()).thenReturn("/web-component/a-b.js");
@@ -300,15 +265,14 @@ public class WebComponentProviderTest {
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
         WebComponentConfigurationRegistry registry = setUpRegistry();
 
-        final Set<Class<? extends WebComponentExporter<? extends Component>>> set = Stream
-                .of(exporters).collect(Collectors.toSet());
+        final Set<Class<? extends WebComponentExporter<? extends Component>>> set = Stream.of(exporters)
+                .collect(Collectors.toSet());
 
         WebComponentExporter.WebComponentConfigurationFactory factory = new WebComponentExporter.WebComponentConfigurationFactory();
 
         Set<WebComponentConfiguration<? extends Component>> configurations = new HashSet<>();
         for (Class<? extends WebComponentExporter<? extends Component>> exporter : exporters)
-            configurations.add(factory.create(
-                    new DefaultWebComponentExporterFactory(exporter).create()));
+            configurations.add(factory.create(new DefaultWebComponentExporterFactory(exporter).create()));
         registry.setConfigurations(configurations);
 
         return registry;
@@ -323,16 +287,14 @@ public class WebComponentProviderTest {
     public static class MyComponent extends Component {
     }
 
-    public static class MyComponentExporter
-            extends WebComponentExporter<MyComponent> {
+    public static class MyComponentExporter extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {
             super("my-component");
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
 
         }
     }
@@ -341,58 +303,50 @@ public class WebComponentProviderTest {
     public static class OtherComponent extends Component {
     }
 
-    public static class OtherComponentExporter
-            extends WebComponentExporter<OtherComponent> {
+    public static class OtherComponentExporter extends WebComponentExporter<OtherComponent> {
 
         public OtherComponentExporter() {
             super("other-component");
         }
 
         @Override
-        public void configureInstance(WebComponent<OtherComponent> webComponent,
-                OtherComponent component) {
+        public void configureInstance(WebComponent<OtherComponent> webComponent, OtherComponent component) {
 
         }
     }
 
     @Push
-    public static class ThemedComponentExporter
-            extends WebComponentExporter<Component> {
+    public static class ThemedComponentExporter extends WebComponentExporter<Component> {
         public ThemedComponentExporter() {
             super("foo");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        public void configureInstance(WebComponent<Component> webComponent, Component component) {
 
         }
     }
 
     @Push(value = PushMode.AUTOMATIC)
-    public static class SameThemedComponentExporter
-            extends WebComponentExporter<Component> {
+    public static class SameThemedComponentExporter extends WebComponentExporter<Component> {
         public SameThemedComponentExporter() {
             super("foo");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        public void configureInstance(WebComponent<Component> webComponent, Component component) {
 
         }
     }
 
     @Push(value = PushMode.DISABLED)
-    public static class AnotherPushComponentExporter
-            extends WebComponentExporter<Component> {
+    public static class AnotherPushComponentExporter extends WebComponentExporter<Component> {
         public AnotherPushComponentExporter() {
             super("foo-bar");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        public void configureInstance(WebComponent<Component> webComponent, Component component) {
 
         }
     }

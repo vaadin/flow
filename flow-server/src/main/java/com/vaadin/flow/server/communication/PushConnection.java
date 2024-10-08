@@ -21,14 +21,12 @@ import java.io.Serializable;
 import com.vaadin.flow.component.UI;
 
 /**
- * Represents a bidirectional ("push") connection between a single UI and its
- * client-side. A single {@code PushConnection} instance is bound to a UI as
- * long as push is enabled in that UI, even if the actual connection is
- * momentarily dropped either due to a network failure or as a normal part of
- * the transport mechanism.
+ * Represents a bidirectional ("push") connection between a single UI and its client-side. A single
+ * {@code PushConnection} instance is bound to a UI as long as push is enabled in that UI, even if the actual connection
+ * is momentarily dropped either due to a network failure or as a normal part of the transport mechanism.
  * <p>
- * This interface is an internal API, only meant to be used by the framework.
- * May be renamed or removed in a future release.
+ * This interface is an internal API, only meant to be used by the framework. May be renamed or removed in a future
+ * release.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -36,18 +34,16 @@ import com.vaadin.flow.component.UI;
 public interface PushConnection extends Serializable {
 
     /**
-     * Pushes pending state changes and client RPC calls to the client. Can be
-     * called even if {@link #isConnected()} is false; the push will be deferred
-     * until a connection is available. It is NOT safe to invoke this method if
-     * not holding the session lock.
+     * Pushes pending state changes and client RPC calls to the client. Can be called even if {@link #isConnected()} is
+     * false; the push will be deferred until a connection is available. It is NOT safe to invoke this method if not
+     * holding the session lock.
      * <p>
      * This is internal API; please use {@link UI#push()} instead.
      */
     void push();
 
     /**
-     * Closes the connection. Cannot be called if {@link #isConnected()} is
-     * false.
+     * Closes the connection. Cannot be called if {@link #isConnected()} is false.
      */
     void disconnect();
 

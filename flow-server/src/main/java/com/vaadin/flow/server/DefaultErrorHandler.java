@@ -50,12 +50,10 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 /**
  * The default implementation of {@link ErrorHandler}.
  *
- * This implementation logs the exception at ERROR level, unless the exception
- * is in the ignore list.
+ * This implementation logs the exception at ERROR level, unless the exception is in the ignore list.
  *
- * By default, the following exceptions are ignored to prevent logs to be
- * flooded by errors that are usually not raised by application logic, but are
- * caused by external event, such as broken connections or network issues.
+ * By default, the following exceptions are ignored to prevent logs to be flooded by errors that are usually not raised
+ * by application logic, but are caused by external event, such as broken connections or network issues.
  *
  * <ul>
  * <li>java.net.SocketException</li>
@@ -65,8 +63,7 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
  * <li>org.eclipse.jetty.io.EofException</li>
  * </ul>
  *
- * If the handler logger is set to DEBUG level, all exceptions are logged,
- * despite they are in the ignore list.
+ * If the handler logger is set to DEBUG level, all exceptions are logged, despite they are in the ignore list.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -80,10 +77,8 @@ public class DefaultErrorHandler implements ErrorHandler {
     }
 
     public DefaultErrorHandler() {
-        this.ignoredExceptions = Set.of(SocketException.class.getName(),
-                SocketTimeoutException.class.getName(),
-                EOFException.class.getName(),
-                "org.eclipse.jetty.io.EofException",
+        this.ignoredExceptions = Set.of(SocketException.class.getName(), SocketTimeoutException.class.getName(),
+                EOFException.class.getName(), "org.eclipse.jetty.io.EofException",
                 "org.apache.catalina.connector.ClientAbortException");
     }
 
@@ -91,8 +86,7 @@ public class DefaultErrorHandler implements ErrorHandler {
     public void error(ErrorEvent event) {
         Throwable throwable = findRelevantThrowable(event.getThrowable());
         if (shouldHandle(throwable)) {
-            if (ErrorHandlerUtil
-                    .handleErrorByRedirectingToErrorView(throwable)) {
+            if (ErrorHandlerUtil.handleErrorByRedirectingToErrorView(throwable)) {
                 return;
             }
             Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
@@ -108,15 +102,13 @@ public class DefaultErrorHandler implements ErrorHandler {
     }
 
     protected boolean shouldHandle(Throwable t) {
-        return getLogger().isDebugEnabled()
-                || !ignoredExceptions.contains(t.getClass().getName());
+        return getLogger().isDebugEnabled() || !ignoredExceptions.contains(t.getClass().getName());
     }
 
     /**
-     * Vaadin wraps exceptions in its own and due to reflection usage there
-     * might be also other irrelevant exceptions that make no sense for Vaadin
-     * users (~developers using Vaadin). This method tries to choose the
-     * relevant one to be reported.
+     * Vaadin wraps exceptions in its own and due to reflection usage there might be also other irrelevant exceptions
+     * that make no sense for Vaadin users (~developers using Vaadin). This method tries to choose the relevant one to
+     * be reported.
      *
      * @param t
      *            a throwable passed to ErrorHandler

@@ -20,8 +20,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 /**
  * A generic command which may fail.
  * <p>
- * Note that this interface is not serializable and should not be used in a web
- * application.
+ * Note that this interface is not serializable and should not be used in a web application.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -33,8 +32,7 @@ public interface FallibleCommand {
     /**
      * Runs the given command.
      * <p>
-     * If execution fails then the command may throw an exception which may give
-     * a message and a cause of the failure.
+     * If execution fails then the command may throw an exception which may give a message and a cause of the failure.
      *
      * @throws ExecutionFailedException
      *             if there is an execution error
@@ -42,9 +40,8 @@ public interface FallibleCommand {
     void execute() throws ExecutionFailedException;
 
     /**
-     * Accepts {@link GeneratedFilesSupport} utility allows to track generated
-     * files but write them only when the content is changed, preventing
-     * filesystem watchers to be triggered when not required.
+     * Accepts {@link GeneratedFilesSupport} utility allows to track generated files but write them only when the
+     * content is changed, preventing filesystem watchers to be triggered when not required.
      *
      * @param support
      *            the generated file support utility to use.

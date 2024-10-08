@@ -19,8 +19,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 
 /**
- * Listener that gets notified when the {@link VaadinService} to which it has
- * been registered is destroyed.
+ * Listener that gets notified when the {@link VaadinService} to which it has been registered is destroyed.
  *
  * @see VaadinService#addServiceDestroyListener(ServiceDestroyListener)
  *

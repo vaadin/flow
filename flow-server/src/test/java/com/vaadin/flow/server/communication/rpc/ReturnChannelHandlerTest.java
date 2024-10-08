@@ -42,8 +42,7 @@ public class ReturnChannelHandlerTest {
     private AtomicReference<JsonArray> observedArguments = new AtomicReference<>();
     private SerializableConsumer<JsonArray> observingConsumer = arguments -> {
         Assert.assertNotNull("Arguments should not be null", arguments);
-        Assert.assertNull("There should be no previous arguments",
-                observedArguments.getAndSet(arguments));
+        Assert.assertNull("There should be no previous arguments", observedArguments.getAndSet(arguments));
     };
 
     private JsonArray args = Json.createArray();
@@ -54,17 +53,14 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertSame(
-                "Handler should have been invoked with the given arguments.",
-                args, observedArguments.get());
+        Assert.assertSame("Handler should have been invoked with the given arguments.", args, observedArguments.get());
     }
 
     @Test
     public void noReturnChannelMap_invocationIgnored() {
         StateNode nodeWithoutMap = new StateNode();
 
-        ui.getElement().getNode().getFeature(ElementChildrenList.class).add(0,
-                nodeWithoutMap);
+        ui.getElement().getNode().getFeature(ElementChildrenList.class).add(0, nodeWithoutMap);
 
         handleMessage(nodeWithoutMap.getId(), 0);
 
@@ -76,9 +72,7 @@ public class ReturnChannelHandlerTest {
         handleMessage(ui.getElement().getNode().getId(), 0);
 
         Assert.assertFalse("Feature should not be initialized",
-                ui.getElement().getNode()
-                        .getFeatureIfInitialized(ReturnChannelMap.class)
-                        .isPresent());
+                ui.getElement().getNode().getFeatureIfInitialized(ReturnChannelMap.class).isPresent());
     }
 
     @Test
@@ -88,8 +82,7 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNull("Channel handler should not be called",
-                observedArguments.get());
+        Assert.assertNull("Channel handler should not be called", observedArguments.get());
     }
 
     @Test
@@ -100,8 +93,7 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNull("Channel handler should not be called",
-                observedArguments.get());
+        Assert.assertNull("Channel handler should not be called", observedArguments.get());
     }
 
     @Test
@@ -113,8 +105,7 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNotNull("Channel handler should be called",
-                observedArguments.get());
+        Assert.assertNotNull("Channel handler should be called", observedArguments.get());
     }
 
     @Test
@@ -126,8 +117,7 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNotNull("Channel handler should be called",
-                observedArguments.get());
+        Assert.assertNotNull("Channel handler should be called", observedArguments.get());
     }
 
     @Test
@@ -140,18 +130,15 @@ public class ReturnChannelHandlerTest {
 
         handleMessage(registration);
 
-        Assert.assertNull("Channel handler should not be called",
-                observedArguments.get());
+        Assert.assertNull("Channel handler should not be called", observedArguments.get());
     }
 
     private void handleMessage(ReturnChannelRegistration registration) {
-        handleMessage(registration.getStateNodeId(),
-                registration.getChannelId());
+        handleMessage(registration.getStateNodeId(), registration.getChannelId());
     }
 
     private ReturnChannelRegistration registerUiChannel() {
-        ReturnChannelRegistration registration = ui.getElement().getNode()
-                .getFeature(ReturnChannelMap.class)
+        ReturnChannelRegistration registration = ui.getElement().getNode().getFeature(ReturnChannelMap.class)
                 .registerChannel(observingConsumer);
         return registration;
     }

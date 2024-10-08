@@ -14,8 +14,7 @@ import com.vaadin.flow.server.PwaConfiguration;
 public class FullScannerPwaTest extends AbstractScannerPwaTest {
     private ClassFinder finder = Mockito.mock(ClassFinder.class);
 
-    protected PwaConfiguration getPwaConfiguration(Class<?>... classes)
-            throws Exception {
+    protected PwaConfiguration getPwaConfiguration(Class<?>... classes) throws Exception {
         // use this fake/mock class for the loaded class to check that annotated
         // classes are requested for the loaded class and not for the
         // annotationType
@@ -23,12 +22,10 @@ public class FullScannerPwaTest extends AbstractScannerPwaTest {
 
         Mockito.doReturn(clazz).when(finder).loadClass(PWA.class.getName());
 
-        Mockito.doReturn(getPwaAnnotatedClasses(classes)).when(finder)
-                .getAnnotatedClasses(clazz);
+        Mockito.doReturn(getPwaAnnotatedClasses(classes)).when(finder).getAnnotatedClasses(clazz);
 
-        FullDependenciesScanner fullDependenciesScanner = new FullDependenciesScanner(
-                finder, (type, annotation) -> findPwaAnnotations(type), null,
-                true);
+        FullDependenciesScanner fullDependenciesScanner = new FullDependenciesScanner(finder,
+                (type, annotation) -> findPwaAnnotations(type), null, true);
         return fullDependenciesScanner.getPwaConfiguration();
     }
 

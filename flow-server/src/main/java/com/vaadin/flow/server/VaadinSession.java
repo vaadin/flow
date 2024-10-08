@@ -54,18 +54,15 @@ import jakarta.servlet.http.HttpSessionBindingEvent;
 import jakarta.servlet.http.HttpSessionBindingListener;
 
 /**
- * Contains everything that Vaadin needs to store for a specific user. This is
- * typically stored in a {@link HttpSession}, but others storage mechanisms
- * might also be used.
+ * Contains everything that Vaadin needs to store for a specific user. This is typically stored in a
+ * {@link HttpSession}, but others storage mechanisms might also be used.
  * <p>
- * Everything inside a {@link VaadinSession} should be serializable to ensure
- * compatibility with schemes using serialization for persisting the session
- * data.
+ * Everything inside a {@link VaadinSession} should be serializable to ensure compatibility with schemes using
+ * serialization for persisting the session data.
  * <p>
- * Current VaadinSession object which can be accessed by
- * {@link VaadinSession#getCurrent} is not present before {@link VaadinServlet}
- * starts handling the HTTP request. For example, it cannot be used in any
- * implementation of {@link jakarta.servlet.Filter} interface.
+ * Current VaadinSession object which can be accessed by {@link VaadinSession#getCurrent} is not present before
+ * {@link VaadinServlet} starts handling the HTTP request. For example, it cannot be used in any implementation of
+ * {@link jakarta.servlet.Filter} interface.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -73,8 +70,7 @@ import jakarta.servlet.http.HttpSessionBindingListener;
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private static final String SESSION_NOT_LOCKED_MESSAGE = "Cannot access state in VaadinSession or UI without locking the session.";
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(VaadinSession.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(VaadinSession.class.getName());
 
     volatile boolean sessionClosedExplicitly = false;
 
@@ -89,8 +85,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private Locale locale = Locale.getDefault();
 
     /**
-     * Session wide error handler which is used by default if an error is left
-     * unhandled.
+     * Session wide error handler which is used by default if an error is left unhandled.
      */
     private ErrorHandler errorHandler = new DefaultErrorHandler();
     private LinkedList<RequestHandler> requestHandlers = new LinkedList<>();
@@ -117,15 +112,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private SessionLockCheckStrategy sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
 
     /*
-     * Pending tasks can't be serialized and the queue should be empty when the
-     * session is serialized as long as it doesn't happen while some other
-     * thread has the lock.
+     * Pending tasks can't be serialized and the queue should be empty when the session is serialized as long as it
+     * doesn't happen while some other thread has the lock.
      */
     private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
 
     /*
-     * This token should be handled with care since it's used to protect against
-     * cross-site attacks in addition to general identifier duty.
+     * This token should be handled with care since it's used to protect against cross-site attacks in addition to
+     * general identifier duty.
      */
     private final String pushId = UUID.randomUUID().toString();
 
@@ -179,10 +173,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // Be aware that a non-initialized session doesn't have the
         // correct/expected state: it has no lock, service, session, etc.
         if (!isInitialized()) {
-            getLogger().debug(
-                    "A VaadinSession instance not associated to any service is getting unbound. "
-                            + "Session destroy events will not be fired and UIs in the session will not get detached. "
-                            + "This might happen if a session is deserialized but never used before it expires.");
+            getLogger().debug("A VaadinSession instance not associated to any service is getting unbound. "
+                    + "Session destroy events will not be fired and UIs in the session will not get detached. "
+                    + "This might happen if a session is deserialized but never used before it expires.");
             return;
         }
         // If we are going to be unbound from the session, the session must be
@@ -192,8 +185,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             checkHasLock();
             // Ignore if the session is being moved to a different backing
             // session or if GAEVaadinServlet is doing its normal cleanup.
-            if (getAttribute(
-                    VaadinService.PRESERVE_UNBOUND_SESSION_ATTRIBUTE) == Boolean.TRUE) {
+            if (getAttribute(VaadinService.PRESERVE_UNBOUND_SESSION_ATTRIBUTE) == Boolean.TRUE) {
                 return;
             }
 
@@ -241,8 +233,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * @return The total time spent servicing requests in this session, in
-     *         milliseconds.
+     * @return The total time spent servicing requests in this session, in milliseconds.
      */
     public long getCumulativeRequestDuration() {
         checkHasLock();
@@ -250,8 +241,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Sets the time spent servicing the last request in the session and updates
-     * the total time spent servicing requests in this session.
+     * Sets the time spent servicing the last request in the session and updates the total time spent servicing requests
+     * in this session.
      *
      * @param time
      *            The time spent in the last request, in milliseconds.
@@ -263,8 +254,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * @return The time spent servicing the last request in this session, in
-     *         milliseconds.
+     * @return The time spent servicing the last request in this session, in milliseconds.
      */
     public long getLastRequestDuration() {
         checkHasLock();
@@ -275,8 +265,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Sets the time when the last UIDL request was serviced in this session.
      *
      * @param timestamp
-     *            The time when the last request was handled, in milliseconds
-     *            since the epoch.
+     *            The time when the last request was handled, in milliseconds since the epoch.
      */
     public void setLastRequestTimestamp(long timestamp) {
         checkHasLock();
@@ -286,8 +275,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Returns the time when the last request was serviced in this session.
      *
-     * @return The time when the last request was handled, in milliseconds since
-     *         the epoch.
+     * @return The time when the last request was handled, in milliseconds since the epoch.
      */
     public long getLastRequestTimestamp() {
         checkHasLock();
@@ -295,30 +283,26 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the underlying session to which this service session is currently
-     * associated.
+     * Gets the underlying session to which this service session is currently associated.
      *
      * @return the wrapped session for this context
      */
     public WrappedSession getSession() {
         /*
-         * This is used to fetch the underlying session and there is no need for
-         * having a lock when doing this. On the contrary this is sometimes done
-         * to be able to lock the session.
+         * This is used to fetch the underlying session and there is no need for having a lock when doing this. On the
+         * contrary this is sometimes done to be able to lock the session.
          */
         return session;
     }
 
     /**
-     * Retrieves all {@link VaadinSession}s which are stored in the given HTTP
-     * session.
+     * Retrieves all {@link VaadinSession}s which are stored in the given HTTP session.
      *
      * @param httpSession
      *            the HTTP session
      * @return the found VaadinSessions
      */
-    public static Collection<VaadinSession> getAllSessions(
-            HttpSession httpSession) {
+    public static Collection<VaadinSession> getAllSessions(HttpSession httpSession) {
         Set<VaadinSession> sessions = new HashSet<>();
         Enumeration<String> attributeNames = httpSession.getAttributeNames();
 
@@ -352,15 +336,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         checkSetConfiguration();
         this.configuration = configuration;
 
-        sessionLockCheckStrategy = configuration.isProductionMode()
-                ? configuration.getSessionLockCheckStrategy()
+        sessionLockCheckStrategy = configuration.isProductionMode() ? configuration.getSessionLockCheckStrategy()
                 : SessionLockCheckStrategy.THROW;
         assert sessionLockCheckStrategy != null;
     }
 
     protected void checkSetConfiguration() {
-        assert this.configuration == null
-                : "Configuration can only be set once";
+        assert this.configuration == null : "Configuration can only be set once";
     }
 
     /**
@@ -376,19 +358,16 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Gets the locale for this session.
      * <p>
-     * The default locale is determined in different ways depending on whether a
-     * {@link I18NProvider} is available.
+     * The default locale is determined in different ways depending on whether a {@link I18NProvider} is available.
      * <p>
-     * If a i18n provider is available, the locale is determined by selecting
-     * the locale from {@link I18NProvider#getProvidedLocales()} that best
-     * matches the user agent preferences (i.e. the <code>Accept-Language</code>
-     * header). If an exact match is found, then that locale is used. Otherwise,
-     * the matching logic looks for the first provided locale that uses the same
-     * language regardless of the country. If no other match is found, then the
-     * first item from {@link I18NProvider#getProvidedLocales()} is used.
+     * If a i18n provider is available, the locale is determined by selecting the locale from
+     * {@link I18NProvider#getProvidedLocales()} that best matches the user agent preferences (i.e. the
+     * <code>Accept-Language</code> header). If an exact match is found, then that locale is used. Otherwise, the
+     * matching logic looks for the first provided locale that uses the same language regardless of the country. If no
+     * other match is found, then the first item from {@link I18NProvider#getProvidedLocales()} is used.
      * <p>
-     * If no i18n provider is available, then the {@link Locale#getDefault()
-     * default JVM locale} is used as the default locale.
+     * If no i18n provider is available, then the {@link Locale#getDefault() default JVM locale} is used as the default
+     * locale.
      *
      * @return the locale of this session.
      */
@@ -400,8 +379,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Sets the default locale for this session.
      * <p>
-     * Setting the locale of a session will also override any custom locale
-     * configured for all UIs in this session.
+     * Setting the locale of a session will also override any custom locale configured for all UIs in this session.
      *
      * @param locale
      *            the locale to set, not <code>null</code>
@@ -413,8 +391,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         this.locale = locale;
 
         getUIs().forEach(ui -> {
-            Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
-                    .setCurrent(ui);
+            Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance.setCurrent(ui);
             try {
                 ui.setLocale(locale);
             } finally {
@@ -447,12 +424,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Adds a request handler to this session. Request handlers can be added to
-     * provide responses to requests that are not handled by the default
-     * functionality of the framework.
+     * Adds a request handler to this session. Request handlers can be added to provide responses to requests that are
+     * not handled by the default functionality of the framework.
      * <p>
-     * Handlers are called in reverse order of addition, so the most recently
-     * added handler will be called first.
+     * Handlers are called in reverse order of addition, so the most recently added handler will be called first.
      *
      * @param handler
      *            the request handler to add
@@ -475,12 +450,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the request handlers that are registered to the session. The
-     * iteration order of the returned collection is the same as the order in
-     * which the request handlers will be invoked when a request is handled.
+     * Gets the request handlers that are registered to the session. The iteration order of the returned collection is
+     * the same as the order in which the request handlers will be invoked when a request is handled.
      *
-     * @return a collection of request handlers, with the iteration order
-     *         according to the order they would be invoked
+     * @return a collection of request handlers, with the iteration order according to the order they would be invoked
      * @see #addRequestHandler(RequestHandler)
      * @see #removeRequestHandler(RequestHandler)
      */
@@ -490,17 +463,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the currently used session. The current session is automatically
-     * defined when processing requests to the server (see {@link ThreadLocal})
-     * and in {@link VaadinSession#access(Command)} and
-     * {@link UI#access(Command)}. In other cases, (e.g. from background
-     * threads), the current session is not automatically defined.
+     * Gets the currently used session. The current session is automatically defined when processing requests to the
+     * server (see {@link ThreadLocal}) and in {@link VaadinSession#access(Command)} and {@link UI#access(Command)}. In
+     * other cases, (e.g. from background threads), the current session is not automatically defined.
      * <p>
-     * The session is stored using a weak reference to avoid leaking memory in
-     * case it is not explicitly cleared.
+     * The session is stored using a weak reference to avoid leaking memory in case it is not explicitly cleared.
      *
-     * @return the current session instance if available, otherwise
-     *         <code>null</code>
+     * @return the current session instance if available, otherwise <code>null</code>
      * @see #setCurrent(VaadinSession)
      */
     public static VaadinSession getCurrent() {
@@ -508,16 +477,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Sets the thread local for the current session. This method is used by the
-     * framework to set the current session whenever a new request is processed
-     * and it is cleared when the request has been processed.
+     * Sets the thread local for the current session. This method is used by the framework to set the current session
+     * whenever a new request is processed and it is cleared when the request has been processed.
      * <p>
-     * The application developer can also use this method to define the current
-     * session outside the normal request handling and treads started from
-     * request handling threads, e.g. when initiating custom background threads.
+     * The application developer can also use this method to define the current session outside the normal request
+     * handling and treads started from request handling threads, e.g. when initiating custom background threads.
      * <p>
-     * The session is stored using a weak reference to avoid leaking memory in
-     * case it is not explicitly cleared.
+     * The session is stored using a weak reference to avoid leaking memory in case it is not explicitly cleared.
      *
      * @param session
      *            the session to set as current
@@ -529,9 +495,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets all the UIs of this session. This includes UIs that have been
-     * requested but not yet initialized. UIs that receive no heartbeat requests
-     * from the client are eventually removed from the session.
+     * Gets all the UIs of this session. This includes UIs that have been requested but not yet initialized. UIs that
+     * receive no heartbeat requests from the client are eventually removed from the session.
      *
      * @return a collection of UIs belonging to this application
      */
@@ -555,8 +520,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Checks if the current thread has exclusive access to this
-     * <code>VaadinSession</code>.
+     * Checks if the current thread has exclusive access to this <code>VaadinSession</code>.
      *
      * @return true if the thread has exclusive access, false otherwise
      */
@@ -566,46 +530,42 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Potentially checks whether this session is currently locked by the
-     * current thread, and fails with the given message if not.
+     * Potentially checks whether this session is currently locked by the current thread, and fails with the given
+     * message if not.
      * <p>
      * When production mode is enabled, the check is done according to the
-     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY lock
-     * check strategy}. By default, the check is only done if assertions are
-     * also enabled: this is done to avoid the small performance impact of
-     * continuously checking the lock status.
+     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY lock check strategy}. By default, the check
+     * is only done if assertions are also enabled: this is done to avoid the small performance impact of continuously
+     * checking the lock status.
      * <p>
-     * The check is always done when production mode is not enabled, using the
-     * {@link SessionLockCheckStrategy#THROW} strategy.
+     * The check is always done when production mode is not enabled, using the {@link SessionLockCheckStrategy#THROW}
+     * strategy.
      *
      * @param message
-     *            the error message to include when failing if the check is done
-     *            and the session is not locked
+     *            the error message to include when failing if the check is done and the session is not locked
      */
     public void checkHasLock(String message) {
         sessionLockCheckStrategy.checkHasLock(this, message);
     }
 
     /**
-     * Potentially checks whether this session is currently locked by the
-     * current thread, and fails with a standard error message if not.
+     * Potentially checks whether this session is currently locked by the current thread, and fails with a standard
+     * error message if not.
      * <p>
      * When production mode is enabled, the check is done according to the
-     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY lock
-     * check strategy}. By default, the check is only done if assertions are
-     * also enabled: this is done to avoid the small performance impact of
-     * continuously checking the lock status.
+     * {@link InitParameters#SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY lock check strategy}. By default, the check
+     * is only done if assertions are also enabled: this is done to avoid the small performance impact of continuously
+     * checking the lock status.
      * <p>
-     * The check is always done when production mode is not enabled, using the
-     * {@link SessionLockCheckStrategy#THROW} strategy.
+     * The check is always done when production mode is not enabled, using the {@link SessionLockCheckStrategy#THROW}
+     * strategy.
      */
     public void checkHasLock() {
         checkHasLock(SESSION_NOT_LOCKED_MESSAGE);
     }
 
     /**
-     * Checks if the current thread has exclusive access to the given
-     * WrappedSession.
+     * Checks if the current thread has exclusive access to the given WrappedSession.
      *
      * @param service
      *            the service to check
@@ -613,15 +573,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the session to use for checking
      * @return true if this thread has exclusive access, false otherwise
      */
-    protected static boolean hasLock(VaadinService service,
-            WrappedSession session) {
+    protected static boolean hasLock(VaadinService service, WrappedSession session) {
         ReentrantLock l = (ReentrantLock) service.getSessionLock(session);
         return l.isHeldByCurrentThread();
     }
 
     /**
-     * Called by the framework to remove an UI instance from the session because
-     * it has been closed.
+     * Called by the framework to remove an UI instance from the session because it has been closed.
      *
      * @param ui
      *            the UI to remove
@@ -636,19 +594,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the {@link Lock} instance that is used for protecting the data of
-     * this session from concurrent access.
+     * Gets the {@link Lock} instance that is used for protecting the data of this session from concurrent access.
      * <p>
-     * The <code>Lock</code> can be used to gain more control than what is
-     * available only using {@link #lock()} and {@link #unlock()}. The returned
-     * instance is not guaranteed to support any other features of the
-     * <code>Lock</code> interface than {@link Lock#lock()} and
-     * {@link Lock#unlock()}.
+     * The <code>Lock</code> can be used to gain more control than what is available only using {@link #lock()} and
+     * {@link #unlock()}. The returned instance is not guaranteed to support any other features of the <code>Lock</code>
+     * interface than {@link Lock#lock()} and {@link Lock#unlock()}.
      *
-     * @return the <code>Lock</code> that is used for synchronization, it's
-     *         never <code>null</code> for the session which is in use, i.e. if
-     *         {@link #refreshTransients(WrappedSession, VaadinService)} has
-     *         been called for it
+     * @return the <code>Lock</code> that is used for synchronization, it's never <code>null</code> for the session
+     *         which is in use, i.e. if {@link #refreshTransients(WrappedSession, VaadinService)} has been called for it
      * @see #lock()
      * @see Lock
      */
@@ -657,12 +610,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Locks this session to protect its data from concurrent access. Accessing
-     * the UI state from outside the normal request handling should always lock
-     * the session and unlock it when done. The preferred way to ensure locking
-     * is done correctly is to wrap your code using {@link UI#access(Command)}
-     * (or {@link VaadinSession#access(Command)} if you are only touching the
-     * session and not any UI), e.g.:
+     * Locks this session to protect its data from concurrent access. Accessing the UI state from outside the normal
+     * request handling should always lock the session and unlock it when done. The preferred way to ensure locking is
+     * done correctly is to wrap your code using {@link UI#access(Command)} (or {@link VaadinSession#access(Command)} if
+     * you are only touching the session and not any UI), e.g.:
      *
      * <pre>
      * myUI.access(new Command() {
@@ -675,8 +626,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * });
      * </pre>
      *
-     * If you for whatever reason want to do locking manually, you should do it
-     * like:
+     * If you for whatever reason want to do locking manually, you should do it like:
      *
      * <pre>
      * session.lock();
@@ -689,8 +639,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * This method will block until the lock can be retrieved.
      * <p>
-     * {@link #getLockInstance()} can be used if more control over the locking
-     * is required.
+     * {@link #getLockInstance()} can be used if more control over the locking is required.
      *
      * @see #unlock()
      * @see #getLockInstance()
@@ -702,12 +651,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Unlocks this session. This method should always be used in a finally
-     * block after {@link #lock()} to ensure that the lock is always released.
+     * Unlocks this session. This method should always be used in a finally block after {@link #lock()} to ensure that
+     * the lock is always released.
      * <p>
-     * For UIs in this session that have its push mode set to
-     * {@link PushMode#AUTOMATIC automatic}, pending changes will be pushed to
-     * their respective clients.
+     * For UIs in this session that have its push mode set to {@link PushMode#AUTOMATIC automatic}, pending changes will
+     * be pushed to their respective clients.
      *
      * @see #lock()
      * @see UI#push()
@@ -717,18 +665,15 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         boolean ultimateRelease = false;
         try {
             /*
-             * Run pending tasks and push if the reentrant lock will actually be
-             * released by this unlock() invocation.
+             * Run pending tasks and push if the reentrant lock will actually be released by this unlock() invocation.
              */
             if (((ReentrantLock) getLockInstance()).getHoldCount() == 1) {
                 ultimateRelease = true;
                 getService().runPendingAccessTasks(this);
 
                 for (UI ui : getUIs()) {
-                    if (ui.getPushConfiguration()
-                            .getPushMode() == PushMode.AUTOMATIC) {
-                        Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance
-                                .setCurrent(ui);
+                    if (ui.getPushConfiguration().getPushMode() == PushMode.AUTOMATIC) {
+                        Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance.setCurrent(ui);
                         try {
                             ui.push();
                         } finally {
@@ -743,12 +688,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         }
 
         /*
-         * If the session is locked when a new access task is added, it is
-         * assumed that the queue will be purged when the lock is released. This
-         * might however not happen if a task is enqueued between the moment
-         * when unlock() purges the queue and the moment when the lock is
-         * actually released. This means that the queue should be purged again
-         * if it is not empty after unlocking.
+         * If the session is locked when a new access task is added, it is assumed that the queue will be purged when
+         * the lock is released. This might however not happen if a task is enqueued between the moment when unlock()
+         * purges the queue and the moment when the lock is actually released. This means that the queue should be
+         * purged again if it is not empty after unlocking.
          */
         if (ultimateRelease && !getPendingAccessQueue().isEmpty()) {
             getService().ensureAccessQueuePurged(this);
@@ -756,17 +699,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Stores a value in this service session. This can be used to associate
-     * data with the current user so that it can be retrieved at a later point
-     * from some other part of the application. Setting the value to
-     * <code>null</code> clears the stored value.
+     * Stores a value in this service session. This can be used to associate data with the current user so that it can
+     * be retrieved at a later point from some other part of the application. Setting the value to <code>null</code>
+     * clears the stored value.
      *
      * @param name
-     *            the name to associate the value with, can not be
-     *            <code>null</code>
+     *            the name to associate the value with, can not be <code>null</code>
      * @param value
-     *            the value to associate with the name, or <code>null</code> to
-     *            remove a previous association.
+     *            the value to associate with the name, or <code>null</code> to remove a previous association.
      * @see #getAttribute(String)
      */
     public void setAttribute(String name, Object value) {
@@ -775,21 +715,19 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Stores a value in this service session. This can be used to associate
-     * data with the current user so that it can be retrieved at a later point
-     * from some other part of the application. Setting the value to
-     * <code>null</code> clears the stored value.
+     * Stores a value in this service session. This can be used to associate data with the current user so that it can
+     * be retrieved at a later point from some other part of the application. Setting the value to <code>null</code>
+     * clears the stored value.
      * <p>
-     * The fully qualified name of the type is used as the name when storing the
-     * value. The outcome of calling this method is thus the same as if calling
+     * The fully qualified name of the type is used as the name when storing the value. The outcome of calling this
+     * method is thus the same as if calling
      * <p>
      * <code>setAttribute(type.getName(), value);</code>
      *
      * @param type
      *            the type that the stored value represents, can not be null
      * @param value
-     *            the value to associate with the type, or <code>null</code> to
-     *            remove a previous association.
+     *            the value to associate with the type, or <code>null</code> to remove a previous association.
      * @param <T>
      *            the type of the stored value
      * @see #getAttribute(Class)
@@ -801,14 +739,12 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets a stored attribute value. If a value has been stored for the
-     * session, that value is returned. If no value is stored for the name,
-     * <code>null</code> is returned.
+     * Gets a stored attribute value. If a value has been stored for the session, that value is returned. If no value is
+     * stored for the name, <code>null</code> is returned.
      *
      * @param name
      *            the name of the value to get, can not be <code>null</code>.
-     * @return the value, or <code>null</code> if no value has been stored or if
-     *         it has been set to null.
+     * @return the value, or <code>null</code> if no value has been stored or if it has been set to null.
      * @see #setAttribute(String, Object)
      */
     public Object getAttribute(String name) {
@@ -817,13 +753,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets a stored attribute value. If a value has been stored for the
-     * session, that value is returned. If no value is stored for the name,
-     * <code>null</code> is returned.
+     * Gets a stored attribute value. If a value has been stored for the session, that value is returned. If no value is
+     * stored for the name, <code>null</code> is returned.
      * <p>
-     * The fully qualified name of the type is used as the name when getting the
-     * value. The outcome of calling this method is thus the same as if calling
-     * <br>
+     * The fully qualified name of the type is used as the name when getting the value. The outcome of calling this
+     * method is thus the same as if calling <br>
      * <br>
      * <code>getAttribute(type.getName());</code>
      *
@@ -831,8 +765,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *            the type of the value to get, can not be <code>null</code>.
      * @param <T>
      *            the type of the value to get
-     * @return the value, or <code>null</code> if no value has been stored or if
-     *         it has been set to null.
+     * @return the value, or <code>null</code> if no value has been stored or if it has been set to null.
      * @see #setAttribute(Class, Object)
      * @see #getAttribute(String)
      */
@@ -860,12 +793,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public void addUI(UI ui) {
         checkHasLock();
         if (ui.getUIId() == -1) {
-            throw new IllegalArgumentException(
-                    "Can not add an UI that has not been initialized.");
+            throw new IllegalArgumentException("Can not add an UI that has not been initialized.");
         }
         if (ui.getSession() != this) {
-            throw new IllegalArgumentException(
-                    "The UI belongs to a different session");
+            throw new IllegalArgumentException("The UI belongs to a different session");
         }
 
         uIs.put(ui.getUIId(), ui);
@@ -876,24 +807,19 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Sets this session to be closed and all UI state to be discarded at the
-     * end of the current request, or at the end of the next request if there is
-     * no ongoing one.
+     * Sets this session to be closed and all UI state to be discarded at the end of the current request, or at the end
+     * of the next request if there is no ongoing one.
      * <p>
-     * After the session has been discarded, any UIs that have been left open
-     * will give a Session Expired error and a new session will be created for
-     * serving new UIs.
+     * After the session has been discarded, any UIs that have been left open will give a Session Expired error and a
+     * new session will be created for serving new UIs.
      * <p>
-     * Note that this method only closes the {@link VaadinSession} which is not
-     * the same as {@link HttpSession}. To invalidate the underlying HTTP
-     * session {@code getSession().invalidate();} needs to be called.
+     * Note that this method only closes the {@link VaadinSession} which is not the same as {@link HttpSession}. To
+     * invalidate the underlying HTTP session {@code getSession().invalidate();} needs to be called.
      * <p>
-     * The method is usually called to perform logout. If user data is stored
-     * inside HTTP session then {@code getSession().invalidate();} should be
-     * called instead (most common case). It makes sense to call
-     * {@link #close()} only if user data is stored inside a
-     * {@link VaadinSession}. Use the {@link Page#setLocation(String)} method to
-     * navigate to some page after session is closed to avoid session expired
+     * The method is usually called to perform logout. If user data is stored inside HTTP session then
+     * {@code getSession().invalidate();} should be called instead (most common case). It makes sense to call
+     * {@link #close()} only if user data is stored inside a {@link VaadinSession}. Use the
+     * {@link Page#setLocation(String)} method to navigate to some page after session is closed to avoid session expired
      * message.
      *
      * @see SystemMessages#getSessionExpiredCaption()
@@ -914,16 +840,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Sets the lifecycle state of this session. The allowed transitions are
-     * OPEN to CLOSING and CLOSING to CLOSED.
+     * Sets the lifecycle state of this session. The allowed transitions are OPEN to CLOSING and CLOSING to CLOSED.
      *
      * @param state
      *            the new state
      */
     protected void setState(VaadinSessionState state) {
         checkHasLock();
-        assert isValidChange(state)
-                : "Invalid session state change " + this.state + "->" + state;
+        assert isValidChange(state) : "Invalid session state change " + this.state + "->" + state;
 
         this.state = state;
         if (VaadinSessionState.CLOSED.equals(state)) {
@@ -932,10 +856,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     private boolean isValidChange(VaadinSessionState newState) {
-        return (state == VaadinSessionState.OPEN
-                && newState == VaadinSessionState.CLOSING)
-                || (state == VaadinSessionState.CLOSING
-                        && newState == VaadinSessionState.CLOSED);
+        return (state == VaadinSessionState.OPEN && newState == VaadinSessionState.CLOSING)
+                || (state == VaadinSessionState.CLOSING && newState == VaadinSessionState.CLOSED);
     }
 
     Logger getLogger() {
@@ -945,22 +867,18 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Locks this session and runs the provided Command right away.
      * <p>
-     * It is generally recommended to use {@link #access(Command)} instead of
-     * this method for accessing a session from a different thread as
-     * {@link #access(Command)} can be used while holding the lock of another
-     * session. To avoid causing deadlocks, this methods throws an exception if
-     * it is detected than another session is also locked by the current thread.
+     * It is generally recommended to use {@link #access(Command)} instead of this method for accessing a session from a
+     * different thread as {@link #access(Command)} can be used while holding the lock of another session. To avoid
+     * causing deadlocks, this methods throws an exception if it is detected than another session is also locked by the
+     * current thread.
      * <p>
-     * This method behaves differently than {@link #access(Command)} in some
-     * situations:
+     * This method behaves differently than {@link #access(Command)} in some situations:
      * <ul>
-     * <li>If the current thread is currently holding the lock of this session,
-     * {@link #accessSynchronously(Command)} runs the task right away whereas
-     * {@link #access(Command)} defers the task to a later point in time.</li>
-     * <li>If some other thread is currently holding the lock for this session,
-     * {@link #accessSynchronously(Command)} blocks while waiting for the lock
-     * to be available whereas {@link #access(Command)} defers the task to a
-     * later point in time.</li>
+     * <li>If the current thread is currently holding the lock of this session, {@link #accessSynchronously(Command)}
+     * runs the task right away whereas {@link #access(Command)} defers the task to a later point in time.</li>
+     * <li>If some other thread is currently holding the lock for this session, {@link #accessSynchronously(Command)}
+     * blocks while waiting for the lock to be available whereas {@link #access(Command)} defers the task to a later
+     * point in time.</li>
      * </ul>
      *
      * @param command
@@ -990,36 +908,28 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Provides exclusive access to this session from outside a request handling
-     * thread.
+     * Provides exclusive access to this session from outside a request handling thread.
      * <p>
-     * The given command is executed while holding the session lock to ensure
-     * exclusive access to this session. If this session is not locked, the lock
-     * will be acquired and the command is run right away. If this session is
-     * currently locked, the command will be run before that lock is released.
+     * The given command is executed while holding the session lock to ensure exclusive access to this session. If this
+     * session is not locked, the lock will be acquired and the command is run right away. If this session is currently
+     * locked, the command will be run before that lock is released.
      * <p>
-     * RPC handlers for components inside this session do not need to use this
-     * method as the session is automatically locked by the framework during RPC
-     * handling.
+     * RPC handlers for components inside this session do not need to use this method as the session is automatically
+     * locked by the framework during RPC handling.
      * <p>
-     * Please note that the command might be invoked on a different thread or
-     * later on the current thread, which means that custom thread locals might
-     * not have the expected values when the command is executed.
-     * {@link VaadinSession#getCurrent()} and {@link VaadinService#getCurrent()}
-     * are set according to this session before executing the command. Other
-     * standard CurrentInstance values such as
-     * {@link VaadinService#getCurrentRequest()} and
-     * {@link VaadinService#getCurrentResponse()} will not be defined.
+     * Please note that the command might be invoked on a different thread or later on the current thread, which means
+     * that custom thread locals might not have the expected values when the command is executed.
+     * {@link VaadinSession#getCurrent()} and {@link VaadinService#getCurrent()} are set according to this session
+     * before executing the command. Other standard CurrentInstance values such as
+     * {@link VaadinService#getCurrentRequest()} and {@link VaadinService#getCurrentResponse()} will not be defined.
      * <p>
-     * The returned future can be used to check for task completion and to
-     * cancel the task. To help avoiding deadlocks, {@link Future#get()} throws
-     * an exception if it is detected that the current thread holds the lock for
-     * some other session.
+     * The returned future can be used to check for task completion and to cancel the task. To help avoiding deadlocks,
+     * {@link Future#get()} throws an exception if it is detected that the current thread holds the lock for some other
+     * session.
      *
      * @param command
      *            the command which accesses the session
-     * @return a future that can be used to check for task completion and to
-     *         cancel the task
+     * @return a future that can be used to check for task completion and to cancel the task
      * @see #lock()
      * @see #getCurrent()
      * @see #accessSynchronously(Command)
@@ -1030,9 +940,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the queue of tasks submitted using {@link #access(Command)}. It is
-     * safe to call this method and access the returned queue without holding
-     * the {@link #lock() session lock}.
+     * Gets the queue of tasks submitted using {@link #access(Command)}. It is safe to call this method and access the
+     * returned queue without holding the {@link #lock() session lock}.
      *
      * @return the queue of pending access tasks
      */
@@ -1041,8 +950,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the push connection identifier for this session. Used when
-     * establishing a push connection with the client.
+     * Gets the push connection identifier for this session. Used when establishing a push connection with the client.
      *
      * @return the push connection identifier string
      */
@@ -1052,8 +960,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Override default deserialization logic to account for transient
-     * {@link #pendingAccessQueue}.
+     * Override default deserialization logic to account for transient {@link #pendingAccessQueue}.
      *
      * @param stream
      *            the object to read
@@ -1063,8 +970,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *             if the class of the stream object could not be found
      */
     @SuppressWarnings("unchecked")
-    private void readObject(ObjectInputStream stream)
-            throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
         try {
             stream.defaultReadObject();
@@ -1076,18 +982,15 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         }
     }
 
-    private void writeObject(java.io.ObjectOutputStream stream)
-            throws IOException {
+    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
         boolean serializeUIs = true;
 
         // If service is null it has just been deserialized and should be
         // serialized in
         // the same way again
         if (getService() != null) {
-            ApplicationConfiguration appConfiguration = ApplicationConfiguration
-                    .get(getService().getContext());
-            if (!appConfiguration.isProductionMode() && !appConfiguration
-                    .isDevModeSessionSerializationEnabled()) {
+            ApplicationConfiguration appConfiguration = ApplicationConfiguration.get(getService().getContext());
+            if (!appConfiguration.isProductionMode() && !appConfiguration.isDevModeSessionSerializationEnabled()) {
                 serializeUIs = false;
             }
         }
@@ -1103,8 +1006,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Refreshes the transient fields of the session to ensure they are up to
-     * date.
+     * Refreshes the transient fields of the session to ensure they are up to date.
      * <p>
      * Called internally by the framework.
      *
@@ -1113,8 +1015,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @param vaadinService
      *            the service associated with this VaadinSession
      */
-    public void refreshTransients(WrappedSession wrappedSession,
-            VaadinService vaadinService) {
+    public void refreshTransients(WrappedSession wrappedSession, VaadinService vaadinService) {
         session = wrappedSession;
         service = vaadinService;
         refreshLock();
@@ -1134,10 +1035,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Checks whether the session is properly initialized/in use.
      * <p>
-     * The session is initialized if
-     * {@link #refreshTransients(WrappedSession, VaadinService)} has been called
-     * for it. If the session is just created or deserialized but not yet in
-     * real use then it's not initialized and it's state is incomplete.
+     * The session is initialized if {@link #refreshTransients(WrappedSession, VaadinService)} has been called for it.
+     * If the session is just created or deserialized but not yet in real use then it's not initialized and it's state
+     * is incomplete.
      *
      * @return whether the session is initialized
      */
@@ -1149,11 +1049,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the timestamp of the most recent lock operation performed on this
-     * session.
+     * Gets the timestamp of the most recent lock operation performed on this session.
      *
-     * Value is expressed as the difference, measured in milliseconds, between
-     * the current time and midnight, January 1, 1970 UTC.
+     * Value is expressed as the difference, measured in milliseconds, between the current time and midnight, January 1,
+     * 1970 UTC.
      *
      * @return last lock operation timestamp.
      */
@@ -1162,11 +1061,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the timestamp of the most recent unlock operation performed on this
-     * session.
+     * Gets the timestamp of the most recent unlock operation performed on this session.
      *
-     * Value is expressed as the difference, measured in milliseconds, between
-     * the current time and midnight, January 1, 1970 UTC.
+     * Value is expressed as the difference, measured in milliseconds, between the current time and midnight, January 1,
+     * 1970 UTC.
      *
      * @return last unlock operation timestamp.
      */
@@ -1177,9 +1075,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Finds the given element in the session.
      * <p>
-     * The ids are typically acquired in the browser using {@code getUiId()} and
-     * {@code getNodeId(element)} available in the
-     * {@code window.Vaadin.Flow.clients} value.
+     * The ids are typically acquired in the browser using {@code getUiId()} and {@code getNodeId(element)} available in
+     * the {@code window.Vaadin.Flow.clients} value.
      *
      * @param uiId
      *            The UI id
@@ -1189,20 +1086,17 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @throws IllegalArgumentException
      *             if the element was not found
      */
-    public Element findElement(int uiId, int nodeId)
-            throws IllegalArgumentException {
+    public Element findElement(int uiId, int nodeId) throws IllegalArgumentException {
         checkHasLock();
 
         UI ui = getUIById(uiId);
         if (ui == null) {
-            throw new IllegalArgumentException(
-                    "Unable to find the UI for UI id " + uiId);
+            throw new IllegalArgumentException("Unable to find the UI for UI id " + uiId);
         }
         StateNode node = ui.getInternals().getStateTree().getNodeById(nodeId);
         if (node == null) {
             throw new IllegalArgumentException(
-                    "Unable to find the component for node " + nodeId
-                            + " in the UI " + uiId);
+                    "Unable to find the component for node " + nodeId + " in the UI " + uiId);
         }
 
         return Element.get(node);

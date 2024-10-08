@@ -28,14 +28,11 @@ public class AnchorInsideTemplateIT extends ChromeBrowserTest {
     public void hrefInsideAnchorInTempalteIsSet() {
         open();
 
-        TestBenchElement template = $(TestBenchElement.class)
-                .id("template-with-anchor");
-        TestBenchElement anchor = template.$(TestBenchElement.class)
-                .id("anchor");
+        TestBenchElement template = $(TestBenchElement.class).id("template-with-anchor");
+        TestBenchElement anchor = template.$(TestBenchElement.class).id("anchor");
 
         String href = anchor.getAttribute("href");
-        MatcherAssert.assertThat(href,
-                CoreMatchers.containsString("VAADIN/dynamic/resource"));
+        MatcherAssert.assertThat(href, CoreMatchers.containsString("VAADIN/dynamic/resource"));
     }
 
 }

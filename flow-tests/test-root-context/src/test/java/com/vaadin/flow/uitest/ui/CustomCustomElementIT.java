@@ -34,13 +34,11 @@ public class CustomCustomElementIT extends ChromeBrowserTest {
     public void clickOnButton_removeFromLayout() {
         TestBenchElement customElement = $("custom-custom-element").first();
 
-        Assert.assertEquals("initial",
-                customElement.getPropertyString("shadowRoot", "textContent"));
+        Assert.assertEquals("initial", customElement.getPropertyString("shadowRoot", "textContent"));
 
         findElement(By.tagName("button")).click();
 
-        Assert.assertEquals("updated",
-                customElement.getPropertyString("shadowRoot", "textContent"));
+        Assert.assertEquals("updated", customElement.getPropertyString("shadowRoot", "textContent"));
     }
 
 }

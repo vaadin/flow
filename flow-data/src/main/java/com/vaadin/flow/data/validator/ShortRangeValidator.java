@@ -29,9 +29,8 @@ public class ShortRangeValidator extends RangeValidator<Short> {
     /**
      * Creates a validator for checking that an Short is within a given range.
      *
-     * By default the range is inclusive i.e. both minValue and maxValue are
-     * valid values. Use {@link #setMinValueIncluded(boolean)} or
-     * {@link #setMaxValueIncluded(boolean)} to change it.
+     * By default the range is inclusive i.e. both minValue and maxValue are valid values. Use
+     * {@link #setMinValueIncluded(boolean)} or {@link #setMaxValueIncluded(boolean)} to change it.
      *
      *
      * @param errorMessage
@@ -41,8 +40,7 @@ public class ShortRangeValidator extends RangeValidator<Short> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public ShortRangeValidator(String errorMessage, Short minValue,
-            Short maxValue) {
+    public ShortRangeValidator(String errorMessage, Short minValue, Short maxValue) {
         super(errorMessage, Comparator.naturalOrder(), minValue, maxValue);
     }
 

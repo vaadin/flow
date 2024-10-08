@@ -28,8 +28,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 public class LogoutView extends VerticalLayout {
 
     public LogoutView() {
-        Paragraph p = new Paragraph(
-                "You should get here when you manually log out with '/doLogout' anchor");
+        Paragraph p = new Paragraph("You should get here when you manually log out with '/doLogout' anchor");
         p.setId("logout-message");
         add(p);
 

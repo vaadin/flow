@@ -19,8 +19,7 @@ package com.vaadin.flow.server.auth;
 import java.io.Serializable;
 
 /**
- * Interface for controlling access to routes in the application's menu
- * component.
+ * Interface for controlling access to routes in the application's menu component.
  */
 public interface MenuAccessControl extends Serializable {
 
@@ -37,29 +36,24 @@ public interface MenuAccessControl extends Serializable {
          */
         NEVER,
         /**
-         * Populate the menu with server side routes only if client-side menu
-         * exists.
+         * Populate the menu with server side routes only if client-side menu exists.
          */
         AUTOMATIC
     };
 
     /**
-     * Sets whether the Hilla application's main menu should be populated
-     * automatically with server side routes and therefore routes information
-     * sent to the browser. Three possible values:
-     * {@link PopulateClientMenu#ALWAYS}, {@link PopulateClientMenu#NEVER},
-     * {@link PopulateClientMenu#AUTOMATIC}.
+     * Sets whether the Hilla application's main menu should be populated automatically with server side routes and
+     * therefore routes information sent to the browser. Three possible values: {@link PopulateClientMenu#ALWAYS},
+     * {@link PopulateClientMenu#NEVER}, {@link PopulateClientMenu#AUTOMATIC}.
      *
      * @param populateClientSideMenu
-     *            whether the client-side menu should be populated with server
-     *            side routes
+     *            whether the client-side menu should be populated with server side routes
      */
     void setPopulateClientSideMenu(PopulateClientMenu populateClientSideMenu);
 
     /**
-     * Gets whether the Hilla application's main menu should be populated
-     * automatically with server side routes and therefore routes information
-     * sent to the browser.
+     * Gets whether the Hilla application's main menu should be populated automatically with server side routes and
+     * therefore routes information sent to the browser.
      *
      * @return enum of type {@link PopulateClientMenu}
      */

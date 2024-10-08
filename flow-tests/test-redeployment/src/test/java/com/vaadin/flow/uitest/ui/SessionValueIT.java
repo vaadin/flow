@@ -35,16 +35,14 @@ public class SessionValueIT extends AbstractReloadIT {
     public void sessionValuePreservedOnReload() throws InterruptedException {
         open();
         TestBenchElement div = $("div").id("customAttribute");
-        String customAttribute = div.getText()
-                .replace("The custom value in the session is: ", "");
+        String customAttribute = div.getText().replace("The custom value in the session is: ", "");
 
         // trigger reload
         reloadAndWait();
 
         waitForElementPresent(By.id("customAttribute"));
         div = $("div").id("customAttribute");
-        String customAttributeAfterReload = div.getText()
-                .replace("The custom value in the session is: ", "");
+        String customAttributeAfterReload = div.getText().replace("The custom value in the session is: ", "");
         Assert.assertEquals(customAttribute, customAttributeAfterReload);
 
         // trigger reload
@@ -52,8 +50,7 @@ public class SessionValueIT extends AbstractReloadIT {
 
         waitForElementPresent(By.id("customAttribute"));
         div = $("div").id("customAttribute");
-        String customAttributeAfterSecondReload = div.getText()
-                .replace("The custom value in the session is: ", "");
+        String customAttributeAfterSecondReload = div.getText().replace("The custom value in the session is: ", "");
         Assert.assertEquals(customAttribute, customAttributeAfterSecondReload);
 
     }

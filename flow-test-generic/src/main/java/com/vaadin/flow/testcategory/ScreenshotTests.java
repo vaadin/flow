@@ -16,9 +16,8 @@
 package com.vaadin.flow.testcategory;
 
 /**
- * Screenshot tests should be annotated with @
- * {@code Category(ScreenshotTest.class} so they can be optionally excluded from
- * the build when needed.
+ * Screenshot tests should be annotated with @ {@code Category(ScreenshotTest.class} so they can be optionally excluded
+ * from the build when needed.
  *
  * @author Vaadin Ltd
  * @since 1.0

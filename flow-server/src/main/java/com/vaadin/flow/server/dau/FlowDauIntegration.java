@@ -32,23 +32,19 @@ public final class FlowDauIntegration {
     }
 
     /**
-     * Generates a new cookie for counting daily active users within 24 hour
-     * time interval.
+     * Generates a new cookie for counting daily active users within 24 hour time interval.
      * <p>
      * </p>
-     * Cookie value is formatted as {@code  trackingHash$creationTime}, with
-     * {@code creationTime} expressed as number of milliseconds from the epoch
-     * of 1970-01-01T00:00:00Z. The cookie creation time is required on
-     * subsequent requests to detect active users. By default, the cookie
-     * expires after 24 hours.
+     * Cookie value is formatted as {@code  trackingHash$creationTime}, with {@code creationTime} expressed as number of
+     * milliseconds from the epoch of 1970-01-01T00:00:00Z. The cookie creation time is required on subsequent requests
+     * to detect active users. By default, the cookie expires after 24 hours.
      *
      * @param request
      *            http request from browser
      * @return http cookie to be used to count application's end-users daily
      */
     public static Cookie generateNewCookie(VaadinRequest request) {
-        String cookieValue = DauIntegration.newTrackingHash() + '$'
-                + Instant.now().toEpochMilli();
+        String cookieValue = DauIntegration.newTrackingHash() + '$' + Instant.now().toEpochMilli();
         Cookie cookie = new Cookie(DAU_COOKIE_NAME, cookieValue);
         cookie.setHttpOnly(true);
         cookie.setSecure(request.isSecure());
@@ -61,13 +57,12 @@ public final class FlowDauIntegration {
      * Tracks the current user with the given optional identity.
      * <p>
      * </p>
-     * Tracking the user may raise an enforcement exception, that is stored and
-     * applied later by calling
+     * Tracking the user may raise an enforcement exception, that is stored and applied later by calling
      * {@link #applyEnforcement(VaadinRequest, Predicate)} method.
      * <p>
      * </p>
-     * Tracking for UIDL requests is postponed until the message is parsed, to
-     * prevent UI poll events to be considered as user interaction.
+     * Tracking for UIDL requests is postponed until the message is parsed, to prevent UI poll events to be considered
+     * as user interaction.
      *
      * @param request
      *            the Vaadin request.
@@ -76,15 +71,12 @@ public final class FlowDauIntegration {
      * @param userIdentity
      *            user identity, can be {@literal null}.
      */
-    static void trackUser(VaadinRequest request, String trackingHash,
-            String userIdentity) {
-        if (HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.UIDL)) {
+    static void trackUser(VaadinRequest request, String trackingHash, String userIdentity) {
+        if (HandlerHelper.isRequestType(request, HandlerHelper.RequestType.UIDL)) {
             // postpone tracking for UIDL requests to ServerRpcHandler to
             // prevent counting and blocking poll requests, that are not
             // consider active interaction with the application
-            request.setAttribute(TrackingDetails.class.getName(),
-                    new TrackingDetails(trackingHash, userIdentity));
+            request.setAttribute(TrackingDetails.class.getName(), new TrackingDetails(trackingHash, userIdentity));
         } else {
             try {
                 DauIntegration.trackUser(trackingHash, userIdentity);
@@ -98,23 +90,20 @@ public final class FlowDauIntegration {
     }
 
     /**
-     * Tells whether new user, i.e. who just opens the browser, not yet tracked,
-     * not yet counted, should be blocked immediately.
+     * Tells whether new user, i.e. who just opens the browser, not yet tracked, not yet counted, should be blocked
+     * immediately.
      *
-     * @return {@literal true} if the current request/user should be blocked,
-     *         {@literal false} otherwise.
+     * @return {@literal true} if the current request/user should be blocked, {@literal false} otherwise.
      */
     static boolean shouldEnforce() {
         return DauIntegration.shouldEnforce();
     }
 
     /**
-     * Potentially applies enforcement to the current request if DAU limit is
-     * exceeded.
+     * Potentially applies enforcement to the current request if DAU limit is exceeded.
      * <p>
      * </p>
-     * If enforcement has to be applied an {@link EnforcementException} is
-     * thrown.
+     * If enforcement has to be applied an {@link EnforcementException} is thrown.
      *
      * @param request
      *            the Vaadin request
@@ -123,19 +112,15 @@ public final class FlowDauIntegration {
      * @throws DauEnforcementException
      *             if request must be blocked because of DAU limit exceeded.
      */
-    public static void applyEnforcement(VaadinRequest request,
-            Predicate<VaadinRequest> enforceableRequest) {
-        TrackingDetails trackingDetails = (TrackingDetails) request
-                .getAttribute(TrackingDetails.class.getName());
+    public static void applyEnforcement(VaadinRequest request, Predicate<VaadinRequest> enforceableRequest) {
+        TrackingDetails trackingDetails = (TrackingDetails) request.getAttribute(TrackingDetails.class.getName());
         EnforcementException enforcementException = (EnforcementException) request
                 .getAttribute(ENFORCEMENT_EXCEPTION_KEY);
         try {
-            if ((enforcementException != null || trackingDetails != null)
-                    && enforceableRequest.test(request)) {
+            if ((enforcementException != null || trackingDetails != null) && enforceableRequest.test(request)) {
                 if (trackingDetails != null) {
                     try {
-                        DauIntegration.trackUser(trackingDetails.trackingHash(),
-                                trackingDetails.userIdentity());
+                        DauIntegration.trackUser(trackingDetails.trackingHash(), trackingDetails.userIdentity());
                     } catch (EnforcementException ex) {
                         enforcementException = ex;
                     }

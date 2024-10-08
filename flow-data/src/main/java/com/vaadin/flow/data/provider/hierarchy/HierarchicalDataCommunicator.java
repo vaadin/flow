@@ -50,8 +50,8 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Data communicator that handles requesting hierarchical data from
- * {@link HierarchicalDataProvider} and sending it to client side.
+ * Data communicator that handles requesting hierarchical data from {@link HierarchicalDataProvider} and sending it to
+ * client side.
  *
  * @param <T>
  *            the bean type
@@ -69,8 +69,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
 
     /**
-     * Construct a new hierarchical data communicator backed by a
-     * {@link TreeDataProvider}.
+     * Construct a new hierarchical data communicator backed by a {@link TreeDataProvider}.
      *
      * @param dataGenerator
      *            the data generator function
@@ -81,11 +80,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param stateNode
      *            the state node used to communicate for
      * @param uniqueKeyProviderSupplier
-     *            Unique key provider for a row. If null, then using Grid's
-     *            default key generator.
+     *            Unique key provider for a row. If null, then using Grid's default key generator.
      */
-    public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator,
-            HierarchicalArrayUpdater arrayUpdater,
+    public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator, HierarchicalArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
             SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier) {
         super(dataGenerator, arrayUpdater, dataUpdater, stateNode);
@@ -102,22 +99,18 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     private void generateTreeData(T item, JsonObject jsonObject) {
-        Optional.ofNullable(getParentItem(item)).ifPresent(parent -> jsonObject
-                .put("parentUniqueKey", getKeyMapper().key(parent)));
+        Optional.ofNullable(getParentItem(item))
+                .ifPresent(parent -> jsonObject.put("parentUniqueKey", getKeyMapper().key(parent)));
     }
 
     private void requestFlush(HierarchicalUpdate update) {
-        SerializableConsumer<ExecutionContext> flushRequest = context -> update
-                .commit();
-        stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode, flushRequest));
+        SerializableConsumer<ExecutionContext> flushRequest = context -> update.commit();
+        stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree().beforeClientResponse(stateNode, flushRequest));
     }
 
     private void requestFlush(HierarchicalCommunicationController<T> update) {
-        SerializableConsumer<ExecutionContext> flushRequest = context -> update
-                .flush();
-        stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode, flushRequest));
+        SerializableConsumer<ExecutionContext> flushRequest = context -> update.flush();
+        stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree().beforeClientResponse(stateNode, flushRequest));
     }
 
     /**
@@ -130,25 +123,21 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         super.reset();
 
         if (!dataControllers.isEmpty()) {
-            dataControllers.values().forEach(
-                    HierarchicalCommunicationController::unregisterPassivatedKeys);
+            dataControllers.values().forEach(HierarchicalCommunicationController::unregisterPassivatedKeys);
             dataControllers.clear();
         }
 
         if (getHierarchyMapper() != null) {
-            HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(getHierarchyMapper().getRootSize());
+            HierarchicalUpdate update = arrayUpdater.startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.ensureHierarchy");
 
-            Collection<T> expandedItems = getHierarchyMapper()
-                    .getExpandedItems();
+            Collection<T> expandedItems = getHierarchyMapper().getExpandedItems();
             if (!expandedItems.isEmpty()) {
-                update.enqueue("$connector.expandItems", expandedItems.stream()
-                        .map(getKeyMapper()::key).map(key -> {
-                            JsonObject json = Json.createObject();
-                            json.put("key", key);
-                            return json;
-                        }).collect(JsonUtils.asArray()));
+                update.enqueue("$connector.expandItems", expandedItems.stream().map(getKeyMapper()::key).map(key -> {
+                    JsonObject json = Json.createObject();
+                    json.put("key", key);
+                    return json;
+                }).collect(JsonUtils.asArray()));
             }
 
             requestFlush(update);
@@ -156,19 +145,16 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @Override
-    protected void handleDataRefreshEvent(
-            DataChangeEvent.DataRefreshEvent<T> event) {
+    protected void handleDataRefreshEvent(DataChangeEvent.DataRefreshEvent<T> event) {
         if (event.isRefreshChildren()) {
             T item = event.getItem();
             if (isExpanded(item)) {
                 String parentKey = getKeyMapper().key(item);
 
                 if (!dataControllers.containsKey(parentKey)) {
-                    setParentRequestedRange(0, mapper.countChildItems(item),
-                            item);
+                    setParentRequestedRange(0, mapper.countChildItems(item), item);
                 }
-                HierarchicalCommunicationController<T> dataController = dataControllers
-                        .get(parentKey);
+                HierarchicalCommunicationController<T> dataController = dataControllers.get(parentKey);
                 if (dataController != null) {
                     dataController.setResendEntireRange(true);
                     requestFlush(dataController);
@@ -187,17 +173,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     public void setParentRequestedRange(int start, int length, T parentItem) {
         String parentKey = getKeyMapper().key(parentItem);
-        HierarchicalCommunicationController<T> controller = dataControllers
-                .computeIfAbsent(parentKey,
-                        key -> new HierarchicalCommunicationController<>(
-                                parentKey, getKeyMapper(), mapper,
-                                dataGenerator,
-                                size -> arrayUpdater
-                                        .startUpdate(getDataProviderSize()),
-                                (pkey, range) -> mapper.fetchChildItems(
-                                        getKeyMapper().get(pkey), range)));
-        controller.setHasUniqueKeyProviderSupplier(
-                uniqueKeyProviderSupplier.get() != null);
+        HierarchicalCommunicationController<T> controller = dataControllers.computeIfAbsent(parentKey,
+                key -> new HierarchicalCommunicationController<>(parentKey, getKeyMapper(), mapper, dataGenerator,
+                        size -> arrayUpdater.startUpdate(getDataProviderSize()),
+                        (pkey, range) -> mapper.fetchChildItems(getKeyMapper().get(pkey), range)));
+        controller.setHasUniqueKeyProviderSupplier(uniqueKeyProviderSupplier.get() != null);
         Range range = computeRequestedRange(start, length);
         controller.setRequestRange(range.getStart(), range.length());
         requestFlush(controller);
@@ -214,16 +194,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param dataProvider
      *            the data provider to set, not <code>null</code>
      * @param initialFilter
-     *            the initial filter value to use, or <code>null</code> to not
-     *            use any initial filter value
+     *            the initial filter value to use, or <code>null</code> to not use any initial filter value
      *
      * @param <F>
      *            the filter type
      *
      * @return a consumer that accepts a new filter value to use
      */
-    public <F> SerializableConsumer<F> setDataProvider(
-            HierarchicalDataProvider<T, F> dataProvider, F initialFilter) {
+    public <F> SerializableConsumer<F> setDataProvider(HierarchicalDataProvider<T, F> dataProvider, F initialFilter) {
         // Remove old mapper before super.setDataProvider(...) prevents calling
         // reset() before clearing the already expanded items:
         if (mapper != null) {
@@ -231,8 +209,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
         mapper = createHierarchyMapper(dataProvider);
 
-        SerializableConsumer<F> consumer = super.setDataProvider(dataProvider,
-                initialFilter);
+        SerializableConsumer<F> consumer = super.setDataProvider(dataProvider, initialFilter);
 
         // Set up mapper for requests
         mapper.setBackEndSorting(getBackEndSorting());
@@ -243,8 +220,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Create new {@code HierarchyMapper} for the given data provider. May be
-     * overridden in subclasses.
+     * Create new {@code HierarchyMapper} for the given data provider. May be overridden in subclasses.
      *
      * @param dataProvider
      *            the data provider
@@ -252,8 +228,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            Query type
      * @return new {@link HierarchyMapper}
      */
-    protected <F> HierarchyMapper<T, F> createHierarchyMapper(
-            HierarchicalDataProvider<T, F> dataProvider) {
+    protected <F> HierarchyMapper<T, F> createHierarchyMapper(HierarchicalDataProvider<T, F> dataProvider) {
         return new HierarchyMapper<>(dataProvider);
     }
 
@@ -261,11 +236,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * Set the current hierarchical data provider for this communicator.
      *
      * @param dataProvider
-     *            the data provider to set, must extend
-     *            {@link HierarchicalDataProvider}, not <code>null</code>
+     *            the data provider to set, must extend {@link HierarchicalDataProvider}, not <code>null</code>
      * @param initialFilter
-     *            the initial filter value to use, or <code>null</code> to not
-     *            use any initial filter value
+     *            the initial filter value to use, or <code>null</code> to not use any initial filter value
      *
      * @param <F>
      *            the filter type
@@ -273,33 +246,28 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return a consumer that accepts a new filter value to use
      */
     @Override
-    public <F> SerializableConsumer<F> setDataProvider(
-            DataProvider<T, F> dataProvider, F initialFilter) {
+    public <F> SerializableConsumer<F> setDataProvider(DataProvider<T, F> dataProvider, F initialFilter) {
         if (dataProvider instanceof HierarchicalDataProvider) {
-            return setDataProvider(
-                    (HierarchicalDataProvider<T, F>) dataProvider,
-                    initialFilter);
+            return setDataProvider((HierarchicalDataProvider<T, F>) dataProvider, initialFilter);
         }
         throw new IllegalArgumentException(
-                "Only " + HierarchicalDataProvider.class.getName()
-                        + " and subtypes supported.");
+                "Only " + HierarchicalDataProvider.class.getName() + " and subtypes supported.");
     }
 
     public void confirmUpdate(int id, String parentKey) {
-        Optional.ofNullable(dataControllers.get(parentKey))
-                .ifPresent(controller -> {
-                    controller.confirmUpdate(id);
+        Optional.ofNullable(dataControllers.get(parentKey)).ifPresent(controller -> {
+            controller.confirmUpdate(id);
 
-                    // Not absolutely necessary, but doing it right away to
-                    // release
-                    // memory earlier
-                    requestFlush(controller);
-                });
+            // Not absolutely necessary, but doing it right away to
+            // release
+            // memory earlier
+            requestFlush(controller);
+        });
     }
 
     /**
-     * Collapses the given item and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
+     * Collapses the given item and removes its sub-hierarchy. Calling this method will have no effect if the row is
+     * already collapsed.
      * <p>
      * Changes are synchronized to the client.
      *
@@ -311,24 +279,21 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Collapses the given item and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
-     * {@code syncClient} indicates whether the changes should be synchronized
-     * to the client.
+     * Collapses the given item and removes its sub-hierarchy. Calling this method will have no effect if the row is
+     * already collapsed. {@code syncClient} indicates whether the changes should be synchronized to the client.
      *
      * @param item
      *            the item to collapse
      * @param syncClient
-     *            {@code true} if the changes should be synchronized to the
-     *            client, {@code false} otherwise.
+     *            {@code true} if the changes should be synchronized to the client, {@code false} otherwise.
      */
     protected void collapse(T item, boolean syncClient) {
         doCollapse(Arrays.asList(item), syncClient);
     }
 
     /**
-     * Collapses the given items and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
+     * Collapses the given items and removes its sub-hierarchy. Calling this method will have no effect if the row is
+     * already collapsed.
      * <p>
      * Changes are synchronized to the client.
      *
@@ -345,28 +310,24 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         items.forEach(item -> {
             if (mapper.collapse(item)) {
                 collapsedItems.add(item);
-                HierarchicalCommunicationController<T> controller = dataControllers
-                        .remove(getKeyMapper().key(item));
+                HierarchicalCommunicationController<T> controller = dataControllers.remove(getKeyMapper().key(item));
                 if (controller != null) {
                     controller.unregisterPassivatedKeys();
                 }
             }
         });
         if (syncClient && !collapsedItems.isEmpty()) {
-            HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(getHierarchyMapper().getRootSize());
-            update.enqueue("$connector.collapseItems",
-                    collapsedItems.stream()
-                            .map(this::generateJsonForExpandedOrCollapsedItem)
-                            .collect(JsonUtils.asArray()));
+            HierarchicalUpdate update = arrayUpdater.startUpdate(getHierarchyMapper().getRootSize());
+            update.enqueue("$connector.collapseItems", collapsedItems.stream()
+                    .map(this::generateJsonForExpandedOrCollapsedItem).collect(JsonUtils.asArray()));
             requestFlush(update);
         }
         return collapsedItems;
     }
 
     /**
-     * Expands the given item. Calling this method will have no effect if the
-     * item is already expanded or if it has no children.
+     * Expands the given item. Calling this method will have no effect if the item is already expanded or if it has no
+     * children.
      * <p>
      * Changes are synchronized to the client.
      *
@@ -378,8 +339,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Expands the given items. Calling this method will have no effect if the
-     * item is already expanded or if it has no children.
+     * Expands the given items. Calling this method will have no effect if the item is already expanded or if it has no
+     * children.
      * <p>
      * Changes are synchronized to the client.
      *
@@ -392,15 +353,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Expands the given item. Calling this method will have no effect if the
-     * item is already expanded or if it has no children. {@code syncClient}
-     * indicates whether the changes should be synchronized to the client.
+     * Expands the given item. Calling this method will have no effect if the item is already expanded or if it has no
+     * children. {@code syncClient} indicates whether the changes should be synchronized to the client.
      *
      * @param item
      *            the item to expand
      * @param syncClient
-     *            {@code true} if the changes should be synchronized to the
-     *            client, {@code false} otherwise.
+     *            {@code true} if the changes should be synchronized to the client, {@code false} otherwise.
      */
     protected void expand(T item, boolean syncClient) {
         doExpand(Arrays.asList(item), syncClient);
@@ -414,12 +373,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
         });
         if (syncClient && !expandedItems.isEmpty()) {
-            HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(getHierarchyMapper().getRootSize());
-            update.enqueue("$connector.expandItems",
-                    expandedItems.stream()
-                            .map(this::generateJsonForExpandedOrCollapsedItem)
-                            .collect(JsonUtils.asArray()));
+            HierarchicalUpdate update = arrayUpdater.startUpdate(getHierarchyMapper().getRootSize());
+            update.enqueue("$connector.expandItems", expandedItems.stream()
+                    .map(this::generateJsonForExpandedOrCollapsedItem).collect(JsonUtils.asArray()));
             requestFlush(update);
         }
         return expandedItems;
@@ -466,8 +422,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return the index or {@code null} for top-level and non-existing items
      */
     public Integer getIndex(T item) {
-        return Optional.ofNullable(mapper.getIndex(item))
-                .filter(index -> index >= 0).orElse(null);
+        return Optional.ofNullable(mapper.getIndex(item)).filter(index -> index >= 0).orElse(null);
     }
 
     /**
@@ -583,12 +538,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * KeyMapper extension delegating row key creation to the
-     * <code>uniqueKeyProviderSupplier</code> passed to the hierarchical data
-     * communicator constructor from the component.
+     * KeyMapper extension delegating row key creation to the <code>uniqueKeyProviderSupplier</code> passed to the
+     * hierarchical data communicator constructor from the component.
      * <p>
-     * If <code>uniqueKeyProviderSupplier</code> is not present, this class uses
-     * {@link KeyMapper#createKey()} for key creation.
+     * If <code>uniqueKeyProviderSupplier</code> is not present, this class uses {@link KeyMapper#createKey()} for key
+     * creation.
      *
      * @param <V>
      *            the bean type
@@ -609,8 +563,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         @Override
         protected String createKey() {
-            return Optional.ofNullable(uniqueKeyProviderSupplier.get())
-                    .map(provider -> provider.apply(object))
+            return Optional.ofNullable(uniqueKeyProviderSupplier.get()).map(provider -> provider.apply(object))
                     .orElse(super.createKey());
         }
     }
@@ -620,8 +573,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     @Override
     public void setItemCountEstimate(int itemCountEstimate) {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
+        throw new UnsupportedOperationException("Not supported in HierarchicalDataCommunicator");
     }
 
     /**
@@ -629,8 +581,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     @Override
     public int getItemCountEstimate() {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
+        throw new UnsupportedOperationException("Not supported in HierarchicalDataCommunicator");
     }
 
     /**
@@ -638,8 +589,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     @Override
     public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
+        throw new UnsupportedOperationException("Not supported in HierarchicalDataCommunicator");
     }
 
     /**
@@ -647,8 +597,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     @Override
     public int getItemCountEstimateIncrease() {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
+        throw new UnsupportedOperationException("Not supported in HierarchicalDataCommunicator");
     }
 
     /**
@@ -656,13 +605,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     @Override
     public void setDefinedSize(boolean definedSize) {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
+        throw new UnsupportedOperationException("Not supported in HierarchicalDataCommunicator");
     }
 
     /**
-     * Estimates are not supported in HierarchicalDataCommunicator. Therefore
-     * this method will always return {@literal true}
+     * Estimates are not supported in HierarchicalDataCommunicator. Therefore this method will always return
+     * {@literal true}
      */
     @Override
     public boolean isDefinedSize() {

@@ -28,8 +28,7 @@ public class ServerMessageHandlerTest {
     @Test
     public void unwrapValidJson() {
         String payload = "{'foo': 'bar'}";
-        Assert.assertEquals(payload,
-                MessageHandler.stripJSONWrapping("for(;;);[" + payload + "]"));
+        Assert.assertEquals(payload, MessageHandler.stripJSONWrapping("for(;;);[" + payload + "]"));
 
     }
 

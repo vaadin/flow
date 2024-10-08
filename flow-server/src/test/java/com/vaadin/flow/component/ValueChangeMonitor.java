@@ -24,15 +24,13 @@ public class ValueChangeMonitor<T> {
     public ValueChangeMonitor(HasValue<?, T> obserable) {
         obserable.addValueChangeListener(event -> {
             if (capturedEvent != null) {
-                Assert.fail("There is already an event. Old event: "
-                        + capturedEvent + ", new event: " + event);
+                Assert.fail("There is already an event. Old event: " + capturedEvent + ", new event: " + event);
             }
 
             Assert.assertSame(obserable, event.getHasValue());
 
             if (event instanceof ComponentValueChangeEvent<?, ?>) {
-                Assert.assertSame(obserable,
-                        ((ComponentValueChangeEvent<?, ?>) event).getSource());
+                Assert.assertSame(obserable, ((ComponentValueChangeEvent<?, ?>) event).getSource());
             }
 
             capturedEvent = event;
@@ -59,8 +57,7 @@ public class ValueChangeMonitor<T> {
         Assert.assertNull("There should be no event", capturedEvent);
     }
 
-    public static <T> void assertEventValues(ValueChangeEvent<T> event,
-            T oldValue, T newValue) {
+    public static <T> void assertEventValues(ValueChangeEvent<T> event, T oldValue, T newValue) {
         Assert.assertEquals(oldValue, event.getOldValue());
         Assert.assertEquals(newValue, event.getValue());
     }

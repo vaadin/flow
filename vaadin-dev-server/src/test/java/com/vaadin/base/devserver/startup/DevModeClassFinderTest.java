@@ -54,28 +54,21 @@ import org.junit.Test;
 
 public class DevModeClassFinderTest {
 
-    private DevModeClassFinder classFinder = new DevModeClassFinder(
-            Collections.emptySet());
+    private DevModeClassFinder classFinder = new DevModeClassFinder(Collections.emptySet());
 
     @Test
     public void applicableClasses_knownClasses() {
         Collection<Class<?>> classes = getApplicableClasses();
 
-        List<Class<?>> knownClasses = Arrays.asList(Route.class,
-                UIInitListener.class, VaadinServiceInitListener.class,
-                WebComponentExporter.class, WebComponentExporterFactory.class,
-                NpmPackage.class, NpmPackage.Container.class, JsModule.class,
-                JsModule.Container.class, JavaScript.class,
-                JavaScript.Container.class, CssImport.class,
-                CssImport.Container.class, Theme.class, NoTheme.class,
-                HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
-                Template.class, LoadDependenciesOnStartup.class,
-                Component.class, TypeScriptBootstrapModifier.class,
-                Layout.class);
+        List<Class<?>> knownClasses = Arrays.asList(Route.class, UIInitListener.class, VaadinServiceInitListener.class,
+                WebComponentExporter.class, WebComponentExporterFactory.class, NpmPackage.class,
+                NpmPackage.Container.class, JsModule.class, JsModule.Container.class, JavaScript.class,
+                JavaScript.Container.class, CssImport.class, CssImport.Container.class, Theme.class, NoTheme.class,
+                HasErrorParameter.class, PWA.class, AppShellConfigurator.class, Template.class,
+                LoadDependenciesOnStartup.class, Component.class, TypeScriptBootstrapModifier.class, Layout.class);
 
         for (Class<?> clz : classes) {
-            assertTrue("should be a known class " + clz.getName(),
-                    knownClasses.contains(clz));
+            assertTrue("should be a known class " + clz.getName(), knownClasses.contains(clz));
         }
         Assert.assertEquals(knownClasses.size(), classes.size());
     }
@@ -88,24 +81,21 @@ public class DevModeClassFinderTest {
     }
 
     @Test
-    public void callGetSubTypesOfByName_expectedType_doesNotThrow()
-            throws ClassNotFoundException {
+    public void callGetSubTypesOfByName_expectedType_doesNotThrow() throws ClassNotFoundException {
         for (Class<?> clazz : getApplicableClasses()) {
             classFinder.getSubTypesOf(clazz.getName());
         }
     }
 
     @Test
-    public void callGetgetAnnotatedClassesByName_expectedType_doesNotThrow()
-            throws ClassNotFoundException {
+    public void callGetgetAnnotatedClassesByName_expectedType_doesNotThrow() throws ClassNotFoundException {
         for (Class<?> clazz : getApplicableClasses()) {
             classFinder.getAnnotatedClasses(clazz.getName());
         }
     }
 
     @Test
-    public void callGetgetAnnotatedClassesByClass_expectedType_doesNotThrow()
-            throws ClassNotFoundException {
+    public void callGetgetAnnotatedClassesByClass_expectedType_doesNotThrow() throws ClassNotFoundException {
         for (Class<?> clazz : getApplicableClasses()) {
             if (clazz.isAnnotation()) {
                 classFinder.getAnnotatedClasses((Class) clazz);
@@ -119,27 +109,23 @@ public class DevModeClassFinderTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void callGetgetAnnotatedClassesByName_unexpectedType_throw()
-            throws ClassNotFoundException {
+    public void callGetgetAnnotatedClassesByName_unexpectedType_throw() throws ClassNotFoundException {
         classFinder.getAnnotatedClasses(ThemeDefinition.class.getName());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void callGetSubTypesOfByClass_unexpectedType_throw() {
-        DevModeClassFinder classFinder = new DevModeClassFinder(
-                Collections.emptySet());
+        DevModeClassFinder classFinder = new DevModeClassFinder(Collections.emptySet());
         classFinder.getSubTypesOf(Object.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void callGetSubTypesOfByName_unexpectedType_throw()
-            throws ClassNotFoundException {
+    public void callGetSubTypesOfByName_unexpectedType_throw() throws ClassNotFoundException {
         classFinder.getSubTypesOf(SessionInitListener.class.getName());
     }
 
     private Collection<Class<?>> getApplicableClasses() {
-        HandlesTypes handlesTypes = DevModeStartupListener.class
-                .getAnnotation(HandlesTypes.class);
+        HandlesTypes handlesTypes = DevModeStartupListener.class.getAnnotation(HandlesTypes.class);
         return Stream.of(handlesTypes.value()).collect(Collectors.toList());
     }
 }

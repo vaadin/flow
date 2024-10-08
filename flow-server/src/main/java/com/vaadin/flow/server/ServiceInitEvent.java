@@ -24,11 +24,10 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * Event fired to {@link VaadinServiceInitListener} when a {@link VaadinService}
- * is being initialized.
+ * Event fired to {@link VaadinServiceInitListener} when a {@link VaadinService} is being initialized.
  * <p>
- * This event can also be used to add {@link RequestHandler}s that will be used
- * by the {@code VaadinService} for handling all requests.
+ * This event can also be used to add {@link RequestHandler}s that will be used by the {@code VaadinService} for
+ * handling all requests.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -41,8 +40,8 @@ public class ServiceInitEvent extends EventObject {
     private List<VaadinRequestInterceptor> addedVaadinRequestInterceptors = new ArrayList<>();
 
     /**
-     * Creates a new service init event for a given {@link VaadinService} and
-     * the {@link RequestHandler} that will be used by the service.
+     * Creates a new service init event for a given {@link VaadinService} and the {@link RequestHandler} that will be
+     * used by the service.
      *
      * @param service
      *            the Vaadin service of this request
@@ -52,31 +51,27 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Adds a new request handler that will be used by this service. The added
-     * handler will be run before any of the framework's own request handlers,
-     * but the ordering relative to other custom handlers is not guaranteed.
+     * Adds a new request handler that will be used by this service. The added handler will be run before any of the
+     * framework's own request handlers, but the ordering relative to other custom handlers is not guaranteed.
      *
      * @param requestHandler
      *            the request handler to add, not <code>null</code>
      */
     public void addRequestHandler(RequestHandler requestHandler) {
-        Objects.requireNonNull(requestHandler,
-                "Request handler cannot be null");
+        Objects.requireNonNull(requestHandler, "Request handler cannot be null");
 
         addedRequestHandlers.add(requestHandler);
     }
 
     /**
-     * Adds a new Index HTML request listener that will be used by this service.
-     * The ordering of multiple added bootstrap listeners is not guaranteed.
+     * Adds a new Index HTML request listener that will be used by this service. The ordering of multiple added
+     * bootstrap listeners is not guaranteed.
      *
      * @param indexHtmlRequestListener
      *            the Index HTML request listener to be added.
      */
-    public void addIndexHtmlRequestListener(
-            IndexHtmlRequestListener indexHtmlRequestListener) {
-        Objects.requireNonNull(indexHtmlRequestListener,
-                "Index HTML request listener cannot be null");
+    public void addIndexHtmlRequestListener(IndexHtmlRequestListener indexHtmlRequestListener) {
+        Objects.requireNonNull(indexHtmlRequestListener, "Index HTML request listener cannot be null");
         addedIndexHtmlRequestListeners.add(indexHtmlRequestListener);
     }
 
@@ -87,8 +82,7 @@ public class ServiceInitEvent extends EventObject {
      *            the dependency filter to add, not <code>null</code>
      */
     public void addDependencyFilter(DependencyFilter dependencyFilter) {
-        Objects.requireNonNull(dependencyFilter,
-                "Dependency filter cannot be null");
+        Objects.requireNonNull(dependencyFilter, "Dependency filter cannot be null");
 
         addedDependencyFilters.add(dependencyFilter);
     }
@@ -99,17 +93,14 @@ public class ServiceInitEvent extends EventObject {
      * @param vaadinRequestInterceptor
      *            the request interceptor to add, not <code>null</code>
      */
-    public void addVaadinRequestInterceptor(
-            VaadinRequestInterceptor vaadinRequestInterceptor) {
-        Objects.requireNonNull(vaadinRequestInterceptor,
-                "Request Interceptor cannot be null");
+    public void addVaadinRequestInterceptor(VaadinRequestInterceptor vaadinRequestInterceptor) {
+        Objects.requireNonNull(vaadinRequestInterceptor, "Request Interceptor cannot be null");
 
         addedVaadinRequestInterceptors.add(vaadinRequestInterceptor);
     }
 
     /**
-     * Gets a stream of all custom request handlers that have been added for the
-     * service.
+     * Gets a stream of all custom request handlers that have been added for the service.
      *
      * @return the stream of added request handlers
      */
@@ -118,8 +109,7 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Gets a stream of all Index HTML request listeners that have been added
-     * for the service.
+     * Gets a stream of all Index HTML request listeners that have been added for the service.
      *
      * @return the stream of added Index HTML request listeners
      */
@@ -128,8 +118,7 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Gets a stream of all dependency filters that have been added for the
-     * service.
+     * Gets a stream of all dependency filters that have been added for the service.
      *
      * @return the stream of added dependency filters
      */
@@ -138,8 +127,7 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Gets a stream of all Vaadin request interceptors that have been added for
-     * the service.
+     * Gets a stream of all Vaadin request interceptors that have been added for the service.
      *
      * @return the stream of added request interceptors
      */

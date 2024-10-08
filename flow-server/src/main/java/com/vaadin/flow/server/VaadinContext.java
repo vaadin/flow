@@ -22,27 +22,24 @@ import java.util.function.Supplier;
 /**
  * Context in which {@link VaadinService} is running.
  *
- * This is used to store service-scoped attributes and also works as a wrapper
- * for context objects with properties e.g. <code>ServletContext</code> and
- * <code>PortletContext</code>
+ * This is used to store service-scoped attributes and also works as a wrapper for context objects with properties e.g.
+ * <code>ServletContext</code> and <code>PortletContext</code>
  *
  * @since 2.0.0
  */
 public interface VaadinContext extends Serializable {
 
     /**
-     * Returns value of the specified attribute, creating and storing a default
-     * value if attribute not present.
+     * Returns value of the specified attribute, creating and storing a default value if attribute not present.
      * <p>
-     * If attribute is not yet available the {@code defaultValueSupplier} is
-     * used to get the default value which is set as the attribute value and the
-     * value is returned. The operation is executed atomically.
+     * If attribute is not yet available the {@code defaultValueSupplier} is used to get the default value which is set
+     * as the attribute value and the value is returned. The operation is executed atomically.
      *
      * @param type
      *            Type of the attribute.
      * @param defaultValueSupplier
-     *            {@link Supplier} of the default value, called when there is no
-     *            value already present. May be {@code null}.
+     *            {@link Supplier} of the default value, called when there is no value already present. May be
+     *            {@code null}.
      * @return Value of the specified attribute.
      */
     <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier);
@@ -59,24 +56,21 @@ public interface VaadinContext extends Serializable {
     }
 
     /**
-     * Sets the attribute value for the give type, overriding previously
-     * existing one. Values are based on exact type, meaning only one attribute
-     * of given type is possible at any given time.
+     * Sets the attribute value for the give type, overriding previously existing one. Values are based on exact type,
+     * meaning only one attribute of given type is possible at any given time.
      *
      * @param clazz
      *            the type to associate the value with, not <code>null</code>
      *
      * @param value
-     *            the attribute value to set, or <code>null</code> to remove the
-     *            current value
+     *            the attribute value to set, or <code>null</code> to remove the current value
      * @since
      */
     <T> void setAttribute(Class<T> clazz, T value);
 
     /**
-     * Sets the attribute value, overriding previously existing one. Values are
-     * based on exact type, meaning only one attribute of given type is possible
-     * at any given time.
+     * Sets the attribute value, overriding previously existing one. Values are based on exact type, meaning only one
+     * attribute of given type is possible at any given time.
      *
      * @param value
      *            attribute value, not {@code null}.
@@ -91,8 +85,7 @@ public interface VaadinContext extends Serializable {
     }
 
     /**
-     * Removes an attribute identified by the given type. If the attribute does
-     * not exist, no action will be taken.
+     * Removes an attribute identified by the given type. If the attribute does not exist, no action will be taken.
      *
      * @param clazz
      *            Attribute type.
@@ -102,22 +95,19 @@ public interface VaadinContext extends Serializable {
     void removeAttribute(Class<?> clazz);
 
     /**
-     * Returns the names of the initialization parameters as an
-     * <code>Enumeration</code>, or an empty <code>Enumeration</code> if there
-     * are o initialization parameters.
+     * Returns the names of the initialization parameters as an <code>Enumeration</code>, or an empty
+     * <code>Enumeration</code> if there are o initialization parameters.
      *
      * @return initialization parameters as a <code>Enumeration</code>
      */
     Enumeration<String> getContextParameterNames();
 
     /**
-     * Returns the value for the requested parameter, or <code>null</code> if
-     * the parameter does not exist.
+     * Returns the value for the requested parameter, or <code>null</code> if the parameter does not exist.
      *
      * @param name
      *            name of the parameter whose value is requested
-     * @return parameter value as <code>String</code> or <code>null</code> for
-     *         no parameter
+     * @return parameter value as <code>String</code> or <code>null</code> for no parameter
      */
     String getContextParameter(String name);
 }

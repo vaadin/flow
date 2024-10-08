@@ -28,13 +28,12 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.DevModeConfigView", layout = ViewTestLayout.class)
 public class DevModeConfigView extends Div {
     public DevModeConfigView() {
-        Paragraph productionMode = new Paragraph(String.valueOf(VaadinService
-                .getCurrent().getDeploymentConfiguration().isProductionMode()));
+        Paragraph productionMode = new Paragraph(
+                String.valueOf(VaadinService.getCurrent().getDeploymentConfiguration().isProductionMode()));
         productionMode.setId("productionMode");
 
-        Paragraph devModeLiveReloadEnabled = new Paragraph(String
-                .valueOf(VaadinService.getCurrent().getDeploymentConfiguration()
-                        .isDevModeLiveReloadEnabled()));
+        Paragraph devModeLiveReloadEnabled = new Paragraph(
+                String.valueOf(VaadinService.getCurrent().getDeploymentConfiguration().isDevModeLiveReloadEnabled()));
         devModeLiveReloadEnabled.setId("devModeLiveReloadEnabled");
 
         add(productionMode, devModeLiveReloadEnabled);

@@ -55,22 +55,18 @@ public class IdCollector {
      * @param templateClass
      *            the template class, containing the {@code @Id} fields
      * @param templateFile
-     *            The name of the file containing the template or
-     *            <code>null</code> if not available {@code null}
+     *            The name of the file containing the template or <code>null</code> if not available {@code null}
      * @param templateRoot
-     *            The root element of the template or <code>null</code> if not
-     *            available
+     *            The root element of the template or <code>null</code> if not available
      */
-    public IdCollector(Class<?> templateClass, String templateFile,
-            Element templateRoot) {
+    public IdCollector(Class<?> templateClass, String templateFile, Element templateRoot) {
         this.templateClass = templateClass;
         this.templateFile = templateFile;
         this.templateRoot = templateRoot;
     }
 
     /**
-     * Scans the given template class and finds fields mapped using
-     * {@link com.vaadin.flow.component.template.Id @Id}.
+     * Scans the given template class and finds fields mapped using {@link com.vaadin.flow.component.template.Id @Id}.
      *
      * @param notInjectableElementIds
      *            ids which cannot be injected
@@ -79,20 +75,17 @@ public class IdCollector {
         collectInjectedIds(templateClass, notInjectableElementIds);
     }
 
-    private void collectInjectedIds(Class<?> cls,
-            Set<String> notInjectableElementIds) {
+    private void collectInjectedIds(Class<?> cls, Set<String> notInjectableElementIds) {
         if (!Component.class.equals(cls.getSuperclass())) {
             // Parent fields
             collectInjectedIds(cls.getSuperclass(), notInjectableElementIds);
         }
 
         Stream.of(cls.getDeclaredFields()).filter(field -> !field.isSynthetic())
-                .forEach(field -> collectedInjectedId(field,
-                        notInjectableElementIds));
+                .forEach(field -> collectedInjectedId(field, notInjectableElementIds));
     }
 
-    private void collectedInjectedId(Field field,
-            Set<String> notInjectableElementIds) {
+    private void collectedInjectedId(Field field, Set<String> notInjectableElementIds) {
         String id = getId(field).orElse(null);
         if (id == null) {
             return;
@@ -102,10 +95,8 @@ public class IdCollector {
             id = field.getName();
         }
         if (notInjectableElementIds.contains(id)) {
-            throw new IllegalStateException(String.format(
-                    "Class '%s' contains field '%s' annotated with @Id%s. "
-                            + "Corresponding element was found in a sub template, "
-                            + "for which injection is not supported.",
+            throw new IllegalStateException(String.format("Class '%s' contains field '%s' annotated with @Id%s. "
+                    + "Corresponding element was found in a sub template, " + "for which injection is not supported.",
                     templateClass.getName(), field.getName(),
                     emptyValue
                             ? " without value (so the name of the field should match the id of an element in the template)"
@@ -114,24 +105,17 @@ public class IdCollector {
 
         if (!collectElementData(id, field)) {
             throw new IllegalStateException(String.format(
-                    "There is no element with "
-                            + "id='%s' in the template file '%s'. Cannot map it using @%s",
-                    id, templateFile,
-                    com.vaadin.flow.component.template.Id.class
-                            .getSimpleName()));
+                    "There is no element with " + "id='%s' in the template file '%s'. Cannot map it using @%s", id,
+                    templateFile, com.vaadin.flow.component.template.Id.class.getSimpleName()));
         }
     }
 
     private Optional<String> getId(Field field) {
-        Optional<Annotation> deprecatedId = ReflectTools.getAnnotation(field,
-                DEPRECATED_ID);
+        Optional<Annotation> deprecatedId = ReflectTools.getAnnotation(field, DEPRECATED_ID);
         if (deprecatedId.isPresent()) {
-            return Optional.of(ReflectTools
-                    .getAnnotationMethodValue(deprecatedId.get(), "value")
-                    .toString());
+            return Optional.of(ReflectTools.getAnnotationMethodValue(deprecatedId.get(), "value").toString());
         }
-        return AnnotationReader.getAnnotationFor(field, Id.class)
-                .map(com.vaadin.flow.component.template.Id::value);
+        return AnnotationReader.getAnnotationFor(field, Id.class).map(com.vaadin.flow.component.template.Id::value);
     }
 
     /**
@@ -141,18 +125,15 @@ public class IdCollector {
      *            the id value
      * @param field
      *            the Java field
-     * @return <code>false</code> if the mapping did not pass validation,
-     *         <code>true</code> otherwise
+     * @return <code>false</code> if the mapping did not pass validation, <code>true</code> otherwise
      */
     private boolean collectElementData(String id, Field field) {
         idByField.put(field, id);
         if (templateRoot != null) {
             // The template is available for parsing so check up front if the id
             // exists
-            Optional<Element> element = Optional
-                    .ofNullable(templateRoot.getElementById(id));
-            Optional<String> tagName = element
-                    .map(org.jsoup.nodes.Element::tagName);
+            Optional<Element> element = Optional.ofNullable(templateRoot.getElementById(id));
+            Optional<String> tagName = element.map(org.jsoup.nodes.Element::tagName);
             if (element.isPresent()) {
                 Element domElement = element.get();
                 tagById.put(id, tagName.get());
@@ -200,8 +181,7 @@ public class IdCollector {
         attributes.forEach(attr -> setAttributeData(attr, data));
     }
 
-    private void setAttributeData(Attribute attribute,
-            Map<String, String> data) {
+    private void setAttributeData(Attribute attribute, Map<String, String> data) {
         if (isBooleanAttribute(attribute)) {
             data.put(attribute.getKey(), Boolean.TRUE.toString());
         } else {

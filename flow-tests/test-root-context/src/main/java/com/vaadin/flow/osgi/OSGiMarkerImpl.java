@@ -21,9 +21,8 @@ import com.vaadin.flow.di.Lookup;
 
 /**
  *
- * Implementation of {@link OSGiMarker} : presence of {@link OSGiMarker} service
- * in {@link Lookup} means the app is executed in OSGi env because standard
- * Lookup doesn't know anything about {@link OSGiMarker}.
+ * Implementation of {@link OSGiMarker} : presence of {@link OSGiMarker} service in {@link Lookup} means the app is
+ * executed in OSGi env because standard Lookup doesn't know anything about {@link OSGiMarker}.
  */
 @Component(immediate = true)
 public class OSGiMarkerImpl implements OSGiMarker {

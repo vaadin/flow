@@ -29,14 +29,10 @@ public class SpringBootAutoConfigurationConditionalTest {
 
     @Test
     public void customServletRegistrationBean() {
-        new WebApplicationContextRunner()
-                .withConfiguration(AutoConfigurations
-                        .of(SpringBootAutoConfiguration.class))
-                .withUserConfiguration(
-                        ServletRegistrationBeanConfiguration.class)
-                .run(context -> assertThat(context)
-                        .getBean(ServletRegistrationBean.class).isInstanceOf(
-                                ServletRegistrationBeanConfiguration.MockServletRegistrationBean.class));
+        new WebApplicationContextRunner().withConfiguration(AutoConfigurations.of(SpringBootAutoConfiguration.class))
+                .withUserConfiguration(ServletRegistrationBeanConfiguration.class)
+                .run(context -> assertThat(context).getBean(ServletRegistrationBean.class)
+                        .isInstanceOf(ServletRegistrationBeanConfiguration.MockServletRegistrationBean.class));
     }
 
     @Configuration(proxyBeanMethods = false)
@@ -48,11 +44,9 @@ public class SpringBootAutoConfigurationConditionalTest {
             return new MockServletRegistrationBean(webApplicationContext);
         }
 
-        public static class MockServletRegistrationBean
-                extends ServletRegistrationBean<SpringServlet> {
+        public static class MockServletRegistrationBean extends ServletRegistrationBean<SpringServlet> {
 
-            public MockServletRegistrationBean(
-                    final WebApplicationContext webApplicationContext) {
+            public MockServletRegistrationBean(final WebApplicationContext webApplicationContext) {
                 super(new SpringServlet(webApplicationContext, false));
             }
         }

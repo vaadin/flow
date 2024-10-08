@@ -33,41 +33,26 @@ public class GenerateMavenBOMMojoTest {
         MavenProject project = Mockito.mock(MavenProject.class);
         File projectBase = temporaryFolder.getRoot();
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
-        resourceOutputDirectory = new File(projectBase,
-                VAADIN_SERVLET_RESOURCES);
-        bomFilename = new File(resourceOutputDirectory, "bom.json")
-                .getAbsolutePath();
+        resourceOutputDirectory = new File(projectBase, VAADIN_SERVLET_RESOURCES);
+        bomFilename = new File(resourceOutputDirectory, "bom.json").getAbsolutePath();
 
         // set Mojo properties
-        ReflectionUtils.setVariableValueInObject(mojo, "projectType",
-                "application");
+        ReflectionUtils.setVariableValueInObject(mojo, "projectType", "application");
         ReflectionUtils.setVariableValueInObject(mojo, "schemaVersion", "1.4");
-        ReflectionUtils.setVariableValueInObject(mojo, "includeBomSerialNumber",
-                true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeCompileScope",
-                true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeProvidedScope",
-                true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeRuntimeScope",
-                true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeTestScope",
-                false);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeSystemScope",
-                true);
-        ReflectionUtils.setVariableValueInObject(mojo, "includeLicenseText",
-                false);
-        ReflectionUtils.setVariableValueInObject(mojo, "outputReactorProjects",
-                true);
-        ReflectionUtils.setVariableValueInObject(mojo, "excludeTypes",
-                new String[0]);
-        ReflectionUtils.setVariableValueInObject(mojo, "excludeArtifactId",
-                new String[0]);
-        ReflectionUtils.setVariableValueInObject(mojo, "excludeGroupId",
-                new String[0]);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeBomSerialNumber", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeCompileScope", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeProvidedScope", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeRuntimeScope", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeTestScope", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeSystemScope", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "includeLicenseText", false);
+        ReflectionUtils.setVariableValueInObject(mojo, "outputReactorProjects", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "excludeTypes", new String[0]);
+        ReflectionUtils.setVariableValueInObject(mojo, "excludeArtifactId", new String[0]);
+        ReflectionUtils.setVariableValueInObject(mojo, "excludeGroupId", new String[0]);
         ReflectionUtils.setVariableValueInObject(mojo, "outputFormat", "json");
         ReflectionUtils.setVariableValueInObject(mojo, "outputName", "bom");
-        ReflectionUtils.setVariableValueInObject(mojo, "outputDirectory",
-                resourceOutputDirectory.getAbsolutePath());
+        ReflectionUtils.setVariableValueInObject(mojo, "outputDirectory", resourceOutputDirectory.getAbsolutePath());
     }
 
     @Test

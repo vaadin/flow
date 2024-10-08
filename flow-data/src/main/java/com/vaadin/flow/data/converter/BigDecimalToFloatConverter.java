@@ -24,12 +24,10 @@ import java.math.BigDecimal;
 /**
  * A converter that converts from {@link BigDecimal} to {@link Float} and back.
  */
-public class BigDecimalToFloatConverter
-        implements Converter<BigDecimal, Float> {
+public class BigDecimalToFloatConverter implements Converter<BigDecimal, Float> {
 
     @Override
-    public Result<Float> convertToModel(BigDecimal value,
-            ValueContext context) {
+    public Result<Float> convertToModel(BigDecimal value, ValueContext context) {
         if (value == null) {
             return Result.ok(null);
         }

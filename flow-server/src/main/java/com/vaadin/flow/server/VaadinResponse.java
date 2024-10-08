@@ -25,8 +25,7 @@ import jakarta.servlet.http.Cookie;
 import com.vaadin.flow.internal.CurrentInstance;
 
 /**
- * A generic response from the server, wrapping a more specific response type,
- * e.g. HttpServletResponse.
+ * A generic response from the server, wrapping a more specific response type, e.g. HttpServletResponse.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -34,9 +33,8 @@ import com.vaadin.flow.internal.CurrentInstance;
 public interface VaadinResponse {
 
     /**
-     * Sets the (http) status code for the response. If you want to include an
-     * error message along the status code, use {@link #sendError(int, String)}
-     * instead.
+     * Sets the (http) status code for the response. If you want to include an error message along the status code, use
+     * {@link #sendError(int, String)} instead.
      *
      * @param statusCode
      *            the status code to set
@@ -46,9 +44,8 @@ public interface VaadinResponse {
     void setStatus(int statusCode);
 
     /**
-     * Sets the content type of this response. If the content type including a
-     * charset is set before {@link #getWriter()} is invoked, the returned
-     * PrintWriter will automatically use the defined charset.
+     * Sets the content type of this response. If the content type including a charset is set before
+     * {@link #getWriter()} is invoked, the returned PrintWriter will automatically use the defined charset.
      *
      * @param contentType
      *            a string specifying the MIME type of the content
@@ -58,8 +55,8 @@ public interface VaadinResponse {
     void setContentType(String contentType);
 
     /**
-     * Sets the value of a generic response header. If the header had already
-     * been set, the new value overwrites the previous one.
+     * Sets the value of a generic response header. If the header had already been set, the new value overwrites the
+     * previous one.
      *
      * @param name
      *            the name of the header
@@ -71,8 +68,8 @@ public interface VaadinResponse {
     void setHeader(String name, String value);
 
     /**
-     * Properly formats a timestamp as a date header. If the header had already
-     * been set, the new value overwrites the previous one.
+     * Properly formats a timestamp as a date header. If the header had already been set, the new value overwrites the
+     * previous one.
      *
      * @param name
      *            the name of the header
@@ -84,11 +81,9 @@ public interface VaadinResponse {
     void setDateHeader(String name, long timestamp);
 
     /**
-     * Returns a <code>OutputStream</code> for writing binary data in the
-     * response.
+     * Returns a <code>OutputStream</code> for writing binary data in the response.
      * <p>
-     * Either this method or getWriter() may be called to write the response,
-     * not both.
+     * Either this method or getWriter() may be called to write the response, not both.
      *
      * @return a <code>OutputStream</code> for writing binary data
      * @throws IOException
@@ -100,12 +95,10 @@ public interface VaadinResponse {
     OutputStream getOutputStream() throws IOException;
 
     /**
-     * Returns a <code>PrintWriter</code> object that can send character text to
-     * the client. The PrintWriter uses the character encoding defined using
-     * setContentType.
+     * Returns a <code>PrintWriter</code> object that can send character text to the client. The PrintWriter uses the
+     * character encoding defined using setContentType.
      * <p>
-     * Either this method or getOutputStream() may be called to write the
-     * response, not both.
+     * Either this method or getOutputStream() may be called to write the response, not both.
      *
      * @return a <code>PrintWriter</code> for writing character text
      * @throws IOException
@@ -117,8 +110,8 @@ public interface VaadinResponse {
     PrintWriter getWriter() throws IOException;
 
     /**
-     * Sets cache time in milliseconds, -1 means no cache at all. All required
-     * headers related to caching in the response are set based on the time.
+     * Sets cache time in milliseconds, -1 means no cache at all. All required headers related to caching in the
+     * response are set based on the time.
      *
      * @param milliseconds
      *            Cache time in milliseconds
@@ -126,9 +119,8 @@ public interface VaadinResponse {
     void setCacheTime(long milliseconds);
 
     /**
-     * Sends an error response to the client using the specified status code and
-     * clears the buffer. In some configurations, this can cause a predefined
-     * error page to be displayed.
+     * Sends an error response to the client using the specified status code and clears the buffer. In some
+     * configurations, this can cause a predefined error page to be displayed.
      *
      * @param errorCode
      *            the HTTP status code
@@ -151,8 +143,7 @@ public interface VaadinResponse {
     VaadinService getService();
 
     /**
-     * Adds the specified cookie to the response. This method can be called
-     * multiple times to set more than one cookie.
+     * Adds the specified cookie to the response. This method can be called multiple times to set more than one cookie.
      *
      * @param cookie
      *            the Cookie to return to the client
@@ -162,18 +153,16 @@ public interface VaadinResponse {
     void addCookie(Cookie cookie);
 
     /**
-     * Sets the length of the content body in the response In HTTP servlets,
-     * this method sets the HTTP Content-Length header.
+     * Sets the length of the content body in the response In HTTP servlets, this method sets the HTTP Content-Length
+     * header.
      *
      * @param len
-     *            an integer specifying the length of the content being returned
-     *            to the client
+     *            an integer specifying the length of the content being returned to the client
      */
     void setContentLength(int len);
 
     /**
-     * Sets all conceivable headers that might prevent a response from being
-     * stored in any caches.
+     * Sets all conceivable headers that might prevent a response from being stored in any caches.
      *
      */
     default void setNoCacheHeaders() {
@@ -187,13 +176,11 @@ public interface VaadinResponse {
     }
 
     /**
-     * Gets the currently processed Vaadin response. The current response is
-     * automatically defined when the request is started. The current response
-     * can not be used in e.g. background threads because of the way server
+     * Gets the currently processed Vaadin response. The current response is automatically defined when the request is
+     * started. The current response can not be used in e.g. background threads because of the way server
      * implementations reuse response instances.
      *
-     * @return the current Vaadin response instance if available, otherwise
-     *         <code>null</code>
+     * @return the current Vaadin response instance if available, otherwise <code>null</code>
      */
     static VaadinResponse getCurrent() {
         return CurrentInstance.get(VaadinResponse.class);

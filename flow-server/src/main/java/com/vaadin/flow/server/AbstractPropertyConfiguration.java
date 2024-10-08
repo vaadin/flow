@@ -29,8 +29,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
  * @since
  *
  */
-public abstract class AbstractPropertyConfiguration
-        implements AbstractConfiguration {
+public abstract class AbstractPropertyConfiguration implements AbstractConfiguration {
 
     private final Map<String, String> properties;
 
@@ -46,16 +45,14 @@ public abstract class AbstractPropertyConfiguration
 
     @Override
     public String getStringProperty(String name, String defaultValue) {
-        return getApplicationOrSystemProperty(name, defaultValue,
-                Function.identity());
+        return getApplicationOrSystemProperty(name, defaultValue, Function.identity());
     }
 
     @Override
     public boolean getBooleanProperty(String name, boolean defaultValue) {
         /*
-         * Considers {@code ""} to be equal {@code true} in order to treat
-         * params like {@code -Dtest.param} as enabled ({@code test.param ==
-         * true}).
+         * Considers {@code ""} to be equal {@code true} in order to treat params like {@code -Dtest.param} as enabled
+         * ({@code test.param == true}).
          */
         String booleanString = getStringProperty(name, null);
         if (booleanString == null) {
@@ -64,8 +61,7 @@ public abstract class AbstractPropertyConfiguration
             return true;
         } else {
             boolean parsedBoolean = Boolean.parseBoolean(booleanString);
-            if (Boolean.toString(parsedBoolean)
-                    .equalsIgnoreCase(booleanString)) {
+            if (Boolean.toString(parsedBoolean).equalsIgnoreCase(booleanString)) {
                 return parsedBoolean;
             } else {
                 throw new IllegalArgumentException(String.format(
@@ -96,24 +92,21 @@ public abstract class AbstractPropertyConfiguration
     }
 
     /**
-     * Gets a configured property. The properties are typically read from e.g.
-     * web.xml or from system properties of the JVM.
+     * Gets a configured property. The properties are typically read from e.g. web.xml or from system properties of the
+     * JVM.
      *
      * @param propertyName
-     *            The simple of the property, in some contexts, lookup might be
-     *            performed using variations of the provided name.
+     *            The simple of the property, in some contexts, lookup might be performed using variations of the
+     *            provided name.
      * @param defaultValue
-     *            the default value that should be used if no value has been
-     *            defined
+     *            the default value that should be used if no value has been defined
      * @param converter
      *            the way string should be converted into the required property
      * @param <T>
      *            type of a property
-     * @return the property value, or the passed default value if no property
-     *         value is found
+     * @return the property value, or the passed default value if no property value is found
      */
-    public <T> T getApplicationOrSystemProperty(String propertyName,
-            T defaultValue, Function<String, T> converter) {
+    public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue, Function<String, T> converter) {
         // Try system properties
         String val = getSystemProperty(propertyName);
         if (val != null) {
@@ -150,8 +143,7 @@ public abstract class AbstractPropertyConfiguration
      *            the name or the parameter.
      * @return String value or null if not found
      */
-    protected String getApplicationProperty(
-            Function<String, String> valueProvider, String propertyName) {
+    protected String getApplicationProperty(Function<String, String> valueProvider, String propertyName) {
         String val = valueProvider.apply(propertyName);
         if (val != null) {
             return val;

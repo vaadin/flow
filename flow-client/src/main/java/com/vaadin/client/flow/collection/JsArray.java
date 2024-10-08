@@ -26,8 +26,8 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
- * Native JS Array interface with an alternative implementation for JRE usage.
- * Use {@link JsCollections#array()} to create an appropriate instance.
+ * Native JS Array interface with an alternative implementation for JRE usage. Use {@link JsCollections#array()} to
+ * create an appropriate instance.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -38,9 +38,8 @@ import jsinterop.annotations.JsType;
 @SuppressWarnings("deprecation")
 public class JsArray<T> {
     /*
-     * Don't look at this class as an example of how to integrate a JS API with
-     * a JRE-fallback. The use of @JsOverlay means that it must be made in
-     * needlessly complex way. JsMap is a better example.
+     * Don't look at this class as an example of how to integrate a JS API with a JRE-fallback. The use of @JsOverlay
+     * means that it must be made in needlessly complex way. JsMap is a better example.
      */
 
     /**
@@ -51,8 +50,7 @@ public class JsArray<T> {
     }
 
     /**
-     * Gets the item at the given index. This is corresponding to
-     * <code>return array[index]</code> in JavaScript.
+     * Gets the item at the given index. This is corresponding to <code>return array[index]</code> in JavaScript.
      *
      * @param index
      *            the index to get
@@ -68,8 +66,7 @@ public class JsArray<T> {
     }
 
     /**
-     * Sets the item at the given index. This is corresponding to
-     * <code>array[index] = value</code> in JavaScript.
+     * Sets the item at the given index. This is corresponding to <code>array[index] = value</code> in JavaScript.
      *
      * @param index
      *            the index to set
@@ -131,8 +128,7 @@ public class JsArray<T> {
      * @return an array of removed items
      */
     @JsOverlay
-    public final JsArray<T> spliceArray(int index, int remove,
-            JsArray<? extends T> add) {
+    public final JsArray<T> spliceArray(int index, int remove, JsArray<? extends T> add) {
         if (GWT.isScript()) {
             return JsniHelper.spliceArray(this, index, remove, add);
         } else {
@@ -151,8 +147,7 @@ public class JsArray<T> {
      *            new items to add
      * @return an array of removed items
      */
-    public native JsArray<T> splice(int index, int remove,
-            @SuppressWarnings("unchecked") T... add);
+    public native JsArray<T> splice(int index, int remove, @SuppressWarnings("unchecked") T... add);
 
     /**
      * Removes the item at the given index.
@@ -197,8 +192,7 @@ public class JsArray<T> {
      *
      * @param toRemove
      *            the item to remove
-     * @return <code>true</code> if the item was found and removed from the
-     *         array, <code>false</code> otherwise
+     * @return <code>true</code> if the item was found and removed from the array, <code>false</code> otherwise
      */
     @JsOverlay
     public final boolean remove(T toRemove) {
@@ -234,14 +228,12 @@ class JsniHelper {
         // Only static stuff here, should never be instantiated
     }
 
-    static native <T> int pushArray(JsArray<T> array,
-            JsArray<? extends T> values)
+    static native <T> int pushArray(JsArray<T> array, JsArray<? extends T> values)
     /*-{
         return array.push.apply(array, values);
     }-*/;
 
-    static native <T> JsArray<T> spliceArray(JsArray<T> array, int index,
-            int remove, JsArray<? extends T> add)
+    static native <T> JsArray<T> spliceArray(JsArray<T> array, int index, int remove, JsArray<? extends T> add)
     /*-{
         return array.splice.apply(array, [index, remove].concat(add));
     }-*/;

@@ -23,8 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest()
-@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class })
+@ContextConfiguration(classes = { SpringBootAutoConfiguration.class, SpringSecurityAutoConfiguration.class })
 public class VaadinDefaultRequestCacheTest {
 
     @Autowired
@@ -34,8 +33,7 @@ public class VaadinDefaultRequestCacheTest {
 
     @Test
     public void normalRouteRequestSaved() {
-        HttpServletRequest request = RequestUtilTest
-                .createRequest("/hello-world", null);
+        HttpServletRequest request = RequestUtilTest.createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
 
         Assert.assertNull(cache.getRequest(request, response));
@@ -45,8 +43,7 @@ public class VaadinDefaultRequestCacheTest {
 
     @Test
     public void internalRequestsNotSaved() {
-        HttpServletRequest request = RequestUtilTest.createRequest(null,
-                RequestType.INIT);
+        HttpServletRequest request = RequestUtilTest.createRequest(null, RequestType.INIT);
         HttpServletResponse response = createResponse();
         Assert.assertTrue(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
@@ -56,8 +53,7 @@ public class VaadinDefaultRequestCacheTest {
     @Test
     public void serviceWorkerRequestNotSaved() {
         HttpServletRequest request = RequestUtilTest.createRequest("", null,
-                Collections.singletonMap("Referer",
-                        "https://labs.vaadin.com/business/sw.js"));
+                Collections.singletonMap("Referer", "https://labs.vaadin.com/business/sw.js"));
         HttpServletResponse response = createResponse();
         Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
@@ -66,8 +62,7 @@ public class VaadinDefaultRequestCacheTest {
 
     @Test
     public void errorRequestNotSaved() {
-        HttpServletRequest request = RequestUtilTest.createRequest("error",
-                null);
+        HttpServletRequest request = RequestUtilTest.createRequest("error", null);
         HttpServletResponse response = createResponse();
         Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
         cache.saveRequest(request, response);
@@ -76,13 +71,11 @@ public class VaadinDefaultRequestCacheTest {
 
     @Test
     public void getRequest_uses_delegateRequestCache() throws Exception {
-        HttpServletRequest request = RequestUtilTest
-                .createRequest("/hello-world", null);
+        HttpServletRequest request = RequestUtilTest.createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
         SavedRequest expectedSavedRequest = Mockito.mock(SavedRequest.class);
         RequestCache delegateRequestCache = Mockito.mock(RequestCache.class);
-        Mockito.doReturn(expectedSavedRequest).when(delegateRequestCache)
-                .getRequest(request, response);
+        Mockito.doReturn(expectedSavedRequest).when(delegateRequestCache).getRequest(request, response);
         cache.setDelegateRequestCache(delegateRequestCache);
 
         SavedRequest actualSavedRequest = cache.getRequest(request, response);
@@ -93,22 +86,16 @@ public class VaadinDefaultRequestCacheTest {
     }
 
     @Test
-    public void getMatchingRequest_uses_delegateRequestCache()
-            throws Exception {
-        HttpServletRequest request = RequestUtilTest
-                .createRequest("/hello-world", null);
+    public void getMatchingRequest_uses_delegateRequestCache() throws Exception {
+        HttpServletRequest request = RequestUtilTest.createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
-        HttpServletRequest expectedMachingRequest = RequestUtilTest
-                .createRequest("", null);
+        HttpServletRequest expectedMachingRequest = RequestUtilTest.createRequest("", null);
         RequestCache delegateRequestCache = Mockito.mock(RequestCache.class);
-        Mockito.doReturn(expectedMachingRequest).when(delegateRequestCache)
-                .getMatchingRequest(request, response);
+        Mockito.doReturn(expectedMachingRequest).when(delegateRequestCache).getMatchingRequest(request, response);
         cache.setDelegateRequestCache(delegateRequestCache);
 
-        HttpServletRequest actualMatchingRequest = cache
-                .getMatchingRequest(request, response);
-        Mockito.verify(delegateRequestCache).getMatchingRequest(request,
-                response);
+        HttpServletRequest actualMatchingRequest = cache.getMatchingRequest(request, response);
+        Mockito.verify(delegateRequestCache).getMatchingRequest(request, response);
         Assert.assertEquals(expectedMachingRequest, actualMatchingRequest);
 
         cache.setDelegateRequestCache(new HttpSessionRequestCache());
@@ -116,8 +103,7 @@ public class VaadinDefaultRequestCacheTest {
 
     @Test
     public void saveRequest_uses_delegateRequestCache() throws Exception {
-        HttpServletRequest request = RequestUtilTest
-                .createRequest("/hello-world", null);
+        HttpServletRequest request = RequestUtilTest.createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
         RequestCache delegateRequestCache = Mockito.mock(RequestCache.class);
         cache.setDelegateRequestCache(delegateRequestCache);
@@ -130,8 +116,7 @@ public class VaadinDefaultRequestCacheTest {
 
     @Test
     public void removeRequest_uses_delegateRequestCache() throws Exception {
-        HttpServletRequest request = RequestUtilTest
-                .createRequest("/hello-world", null);
+        HttpServletRequest request = RequestUtilTest.createRequest("/hello-world", null);
         HttpServletResponse response = createResponse();
         RequestCache delegateRequestCache = Mockito.mock(RequestCache.class);
         cache.setDelegateRequestCache(delegateRequestCache);

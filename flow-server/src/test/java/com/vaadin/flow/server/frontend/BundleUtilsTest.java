@@ -61,8 +61,7 @@ public class BundleUtilsTest {
         mockStatsJson("Frontend/generated/jar-resources/my/addon.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports
-                .contains("Frontend/generated/jar-resources/my/addon.js"));
+        Assert.assertTrue(bundleImports.contains("Frontend/generated/jar-resources/my/addon.js"));
         Assert.assertTrue(bundleImports.contains("./my/addon.js"));
         Assert.assertTrue(bundleImports.contains("my/addon.js"));
     }
@@ -80,8 +79,7 @@ public class BundleUtilsTest {
         mockStatsJson("@foo/bar/theme/lumo/file.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(
-                bundleImports.contains("@foo/bar/theme/lumo/file.js"));
+        Assert.assertTrue(bundleImports.contains("@foo/bar/theme/lumo/file.js"));
         Assert.assertTrue(bundleImports.contains("@foo/bar/src/file.js"));
     }
 
@@ -91,10 +89,8 @@ public class BundleUtilsTest {
                 "Frontend/generated/jar-resources/theme/material/file.js");
         Set<String> bundleImports = BundleUtils.loadBundleImports();
 
-        Assert.assertTrue(bundleImports.contains(
-                "Frontend/generated/jar-resources/theme/lumo/file.js"));
-        Assert.assertTrue(bundleImports.contains(
-                "Frontend/generated/jar-resources/theme/material/file.js"));
+        Assert.assertTrue(bundleImports.contains("Frontend/generated/jar-resources/theme/lumo/file.js"));
+        Assert.assertTrue(bundleImports.contains("Frontend/generated/jar-resources/theme/material/file.js"));
         Assert.assertTrue(bundleImports.contains("./src/file.js"));
     }
 
@@ -120,18 +116,14 @@ public class BundleUtilsTest {
 
     @Test
     public void packageLockExists_nothingIsCopied() throws IOException {
-        Options options = new Options(Mockito.mock(Lookup.class),
-                temporaryFolder.getRoot()).withBuildDirectory("target");
+        Options options = new Options(Mockito.mock(Lookup.class), temporaryFolder.getRoot())
+                .withBuildDirectory("target");
 
-        File packageLockFile = temporaryFolder
-                .newFile(Constants.PACKAGE_LOCK_JSON);
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
+        File packageLockFile = temporaryFolder.newFile(Constants.PACKAGE_LOCK_JSON);
+        File devBundleFolder = new File(new File(options.getNpmFolder(), options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         devBundleFolder.mkdirs();
-        File devPackageLockJson = new File(devBundleFolder,
-                Constants.PACKAGE_LOCK_JSON);
+        File devPackageLockJson = new File(devBundleFolder, Constants.PACKAGE_LOCK_JSON);
 
         final String existingLockFile = "{ \"existing\" }";
         FileUtils.write(packageLockFile, existingLockFile);
@@ -140,34 +132,26 @@ public class BundleUtilsTest {
 
         BundleUtils.copyPackageLockFromBundle(options);
 
-        final String packageLockContents = FileUtils
-                .readFileToString(packageLockFile, StandardCharsets.UTF_8);
+        final String packageLockContents = FileUtils.readFileToString(packageLockFile, StandardCharsets.UTF_8);
 
-        Assert.assertEquals("Existing file should not be overwritten",
-                existingLockFile, packageLockContents);
+        Assert.assertEquals("Existing file should not be overwritten", existingLockFile, packageLockContents);
     }
 
     @Test
-    public void noPackageLockExists_devBundleLockIsCopied_notJarLock()
-            throws IOException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
-                .withBuildDirectory("target");
+    public void noPackageLockExists_devBundleLockIsCopied_notJarLock() throws IOException {
+        Options options = new MockOptions(temporaryFolder.getRoot()).withBuildDirectory("target");
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(options.getClassFinder()
-                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+        Mockito.when(options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
+        File devBundleFolder = new File(new File(options.getNpmFolder(), options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         devBundleFolder.mkdirs();
-        File devPackageLockJson = new File(devBundleFolder,
-                Constants.PACKAGE_LOCK_JSON);
+        File devPackageLockJson = new File(devBundleFolder, Constants.PACKAGE_LOCK_JSON);
 
         final String packageLockContent = "{ \"bundleFile\"}";
         FileUtils.write(devPackageLockJson, packageLockContent);
@@ -175,56 +159,45 @@ public class BundleUtilsTest {
         BundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
-                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
-                StandardCharsets.UTF_8);
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON), StandardCharsets.UTF_8);
 
-        Assert.assertEquals("dev-bundle file should be used",
-                packageLockContent, packageLockContents);
+        Assert.assertEquals("dev-bundle file should be used", packageLockContent, packageLockContents);
     }
 
     @Test
-    public void noPackageLockExists_jarDevBundleLockIsCopied()
-            throws IOException, ClassNotFoundException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
-                .withBuildDirectory("target");
+    public void noPackageLockExists_jarDevBundleLockIsCopied() throws IOException, ClassNotFoundException {
+        Options options = new MockOptions(temporaryFolder.getRoot()).withBuildDirectory("target");
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        File jarHybridPackageLock = new File(options.getNpmFolder(),
-                "hybrid-temp.json");
+        File jarHybridPackageLock = new File(options.getNpmFolder(), "hybrid-temp.json");
         final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
         FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
 
-        Mockito.doThrow(new ClassNotFoundException("No Hilla"))
-                .when(options.getClassFinder())
+        Mockito.doThrow(new ClassNotFoundException("No Hilla")).when(options.getClassFinder())
                 .loadClass("com.vaadin.hilla.EndpointController");
-        Mockito.when(options.getClassFinder()
-                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+        Mockito.when(options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
-        Mockito.when(options.getClassFinder().getResource(
-                DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
+        Mockito.when(
+                options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarHybridPackageLock.toURI().toURL());
 
         BundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
-                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
-                StandardCharsets.UTF_8);
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON), StandardCharsets.UTF_8);
 
-        Assert.assertEquals("File should be gotten from jar on classpath",
-                jarPackageLockContent, packageLockContents);
+        Assert.assertEquals("File should be gotten from jar on classpath", jarPackageLockContent, packageLockContents);
     }
 
     @Test
     public void noPackageLockExists_hillaUsed_jarHybridDevBundleLockIsCopied()
             throws IOException, ClassNotFoundException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
-                .withBuildDirectory("target");
+        Options options = new MockOptions(temporaryFolder.getRoot()).withBuildDirectory("target");
 
-        Path dummyView = options.getFrontendDirectory().toPath()
-                .resolve(Path.of("views", "dummy.tsx"));
+        Path dummyView = options.getFrontendDirectory().toPath().resolve(Path.of("views", "dummy.tsx"));
         Files.createDirectories(dummyView.getParent());
         Files.writeString(dummyView, "const x = 1;");
 
@@ -232,39 +205,33 @@ public class BundleUtilsTest {
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        File jarHybridPackageLock = new File(options.getNpmFolder(),
-                "hybrid-temp.json");
+        File jarHybridPackageLock = new File(options.getNpmFolder(), "hybrid-temp.json");
         final String jarHybridPackageLockContent = "{ \"hybridJarData\"}";
         FileUtils.write(jarHybridPackageLock, jarHybridPackageLockContent);
 
-        Mockito.when(options.getClassFinder()
-                .loadClass("com.vaadin.hilla.EndpointController"))
+        Mockito.when(options.getClassFinder().loadClass("com.vaadin.hilla.EndpointController"))
                 .thenReturn(Object.class);
-        Mockito.when(options.getClassFinder()
-                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+        Mockito.when(options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
-        Mockito.when(options.getClassFinder().getResource(
-                DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
+        Mockito.when(
+                options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarHybridPackageLock.toURI().toURL());
 
         BundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
-                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
-                StandardCharsets.UTF_8);
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON), StandardCharsets.UTF_8);
 
-        Assert.assertEquals("File should be gotten from jar on classpath",
-                jarHybridPackageLockContent, packageLockContents);
+        Assert.assertEquals("File should be gotten from jar on classpath", jarHybridPackageLockContent,
+                packageLockContents);
     }
 
     @Test
     public void noPackageLockExists_hillaUsed_hybridPackageLockNotPresentInJar_jarDevBundleIsCopied()
             throws IOException, ClassNotFoundException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
-                .withBuildDirectory("target");
+        Options options = new MockOptions(temporaryFolder.getRoot()).withBuildDirectory("target");
 
-        Path dummyView = options.getFrontendDirectory().toPath()
-                .resolve(Path.of("views", "dummy.tsx"));
+        Path dummyView = options.getFrontendDirectory().toPath().resolve(Path.of("views", "dummy.tsx"));
         Files.createDirectories(dummyView.getParent());
         Files.writeString(dummyView, "const x = 1;");
 
@@ -272,49 +239,38 @@ public class BundleUtilsTest {
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(options.getClassFinder()
-                .loadClass("com.vaadin.hilla.EndpointController"))
+        Mockito.when(options.getClassFinder().loadClass("com.vaadin.hilla.EndpointController"))
                 .thenReturn(Object.class);
-        Mockito.when(options.getClassFinder()
-                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
+        Mockito.when(options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarPackageLock.toURI().toURL());
-        Mockito.when(options.getClassFinder().getResource(
-                DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
+        Mockito.when(
+                options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(null);
 
         BundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
-                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
-                StandardCharsets.UTF_8);
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON), StandardCharsets.UTF_8);
 
-        Assert.assertEquals("File should be gotten from jar on classpath",
-                jarPackageLockContent, packageLockContents);
+        Assert.assertEquals("File should be gotten from jar on classpath", jarPackageLockContent, packageLockContents);
     }
 
     @Test
-    public void pnpm_noPackageLockExists_devBundleLockYamlIsCopied_notJarLockOrJson()
-            throws IOException {
-        Options options = new MockOptions(temporaryFolder.getRoot())
-                .withBuildDirectory("target").withEnablePnpm(true);
+    public void pnpm_noPackageLockExists_devBundleLockYamlIsCopied_notJarLockOrJson() throws IOException {
+        Options options = new MockOptions(temporaryFolder.getRoot()).withBuildDirectory("target").withEnablePnpm(true);
 
         File jarPackageLock = new File(options.getNpmFolder(), "temp.json");
         final String jarPackageLockContent = "{ \"jarData\"}";
         FileUtils.write(jarPackageLock, jarPackageLockContent);
 
-        Mockito.when(options.getClassFinder()
-                .getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_YAML))
+        Mockito.when(options.getClassFinder().getResource(DEV_BUNDLE_JAR_PATH + Constants.PACKAGE_LOCK_YAML))
                 .thenReturn(jarPackageLock.toURI().toURL());
 
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
+        File devBundleFolder = new File(new File(options.getNpmFolder(), options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         devBundleFolder.mkdirs();
-        File devPackageLockJson = new File(devBundleFolder,
-                Constants.PACKAGE_LOCK_JSON);
-        File devPackageLock = new File(devBundleFolder,
-                Constants.PACKAGE_LOCK_YAML);
+        File devPackageLockJson = new File(devBundleFolder, Constants.PACKAGE_LOCK_JSON);
+        File devPackageLock = new File(devBundleFolder, Constants.PACKAGE_LOCK_YAML);
 
         final String packageLockContent = "{ \"bundleFile\"}";
         FileUtils.write(devPackageLock, packageLockContent);
@@ -323,28 +279,21 @@ public class BundleUtilsTest {
         BundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
-                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_YAML),
-                StandardCharsets.UTF_8);
+                new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_YAML), StandardCharsets.UTF_8);
 
-        Assert.assertEquals("dev-bundle file should be used",
-                packageLockContent, packageLockContents);
+        Assert.assertEquals("dev-bundle file should be used", packageLockContent, packageLockContents);
     }
 
     @Test
     public void pnpm_packageLockExists_nothingIsCopied() throws IOException {
-        Options options = new Options(Mockito.mock(Lookup.class),
-                temporaryFolder.getRoot()).withBuildDirectory("target")
-                .withEnablePnpm(true);
+        Options options = new Options(Mockito.mock(Lookup.class), temporaryFolder.getRoot())
+                .withBuildDirectory("target").withEnablePnpm(true);
 
-        File packageLockFile = temporaryFolder
-                .newFile(Constants.PACKAGE_LOCK_YAML);
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
+        File packageLockFile = temporaryFolder.newFile(Constants.PACKAGE_LOCK_YAML);
+        File devBundleFolder = new File(new File(options.getNpmFolder(), options.getBuildDirectoryName()),
                 Constants.DEV_BUNDLE_LOCATION);
         devBundleFolder.mkdirs();
-        File devPackageLockJson = new File(devBundleFolder,
-                Constants.PACKAGE_LOCK_YAML);
+        File devPackageLockJson = new File(devBundleFolder, Constants.PACKAGE_LOCK_YAML);
 
         final String existingLockFile = "{ \"existing\" }";
         FileUtils.write(packageLockFile, existingLockFile);
@@ -353,10 +302,8 @@ public class BundleUtilsTest {
 
         BundleUtils.copyPackageLockFromBundle(options);
 
-        final String packageLockContents = FileUtils
-                .readFileToString(packageLockFile, StandardCharsets.UTF_8);
+        final String packageLockContents = FileUtils.readFileToString(packageLockFile, StandardCharsets.UTF_8);
 
-        Assert.assertEquals("Existing file should not be overwritten",
-                existingLockFile, packageLockContents);
+        Assert.assertEquals("Existing file should not be overwritten", existingLockFile, packageLockContents);
     }
 }

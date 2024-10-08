@@ -37,8 +37,7 @@ public class RerouteView extends AbstractDivView {
         NativeButton button = new NativeButton("Navigate to here");
         button.setId("navigate");
         button.addClickListener(e -> {
-            button.getUI().ifPresent(
-                    ui -> ui.navigate("com.vaadin.flow.uitest.ui.RerouteView"));
+            button.getUI().ifPresent(ui -> ui.navigate("com.vaadin.flow.uitest.ui.RerouteView"));
         });
 
         CheckBox checkbox = new CheckBox("RerouteToError");
@@ -57,8 +56,7 @@ public class RerouteView extends AbstractDivView {
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         if (reroute) {
-            event.rerouteToError(NotFoundException.class,
-                    "Rerouting to error view");
+            event.rerouteToError(NotFoundException.class, "Rerouting to error view");
         }
 
         super.beforeEnter(event);
@@ -73,9 +71,8 @@ public class RerouteView extends AbstractDivView {
         public CheckBox() {
             input = new Input();
             input.getElement().setAttribute("type", "checkbox");
-            input.getElement().addPropertyChangeListener("checked", "change",
-                    event -> {
-                    });
+            input.getElement().addPropertyChangeListener("checked", "change", event -> {
+            });
             add(input);
         }
 
@@ -85,14 +82,12 @@ public class RerouteView extends AbstractDivView {
             add(captionLabel);
         }
 
-        public Registration addValueChangeListener(
-                ValueChangeListener<ValueChangeEvent<String>> listener) {
+        public Registration addValueChangeListener(ValueChangeListener<ValueChangeEvent<String>> listener) {
             return input.addValueChangeListener(listener);
         }
 
         public boolean isChecked() {
-            return Boolean
-                    .parseBoolean(input.getElement().getProperty("checked"));
+            return Boolean.parseBoolean(input.getElement().getProperty("checked"));
         }
     }
 

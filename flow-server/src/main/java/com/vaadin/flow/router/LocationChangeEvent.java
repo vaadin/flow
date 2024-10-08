@@ -28,8 +28,7 @@ import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.HttpStatusCode;
 
 /**
- * Event created when the location changes by any of the reasons defined at
- * {@link NavigationTrigger}.
+ * Event created when the location changes by any of the reasons defined at {@link NavigationTrigger}.
  *
  * @since 1.0
  */
@@ -51,15 +50,14 @@ public class LocationChangeEvent extends EventObject {
      * @param ui
      *            the UI in which the view is used, not {@code null}
      * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
+     *            the type of user action that triggered this location change, not <code>null</code>
      * @param routeTargetChain
      *            the route terget chain that will be used, not {@code null}
      * @param location
      *            the new location, not {@code null}
      */
-    public LocationChangeEvent(Router router, UI ui, NavigationTrigger trigger,
-            Location location, List<HasElement> routeTargetChain) {
+    public LocationChangeEvent(Router router, UI ui, NavigationTrigger trigger, Location location,
+            List<HasElement> routeTargetChain) {
         super(router);
 
         assert ui != null;
@@ -82,8 +80,8 @@ public class LocationChangeEvent extends EventObject {
     }
 
     /**
-     * Gets the chain of route targets that will be nested inside the UI,
-     * starting from the most deeply nested component.
+     * Gets the chain of route targets that will be nested inside the UI, starting from the most deeply nested
+     * component.
      *
      * @return the view chain, not {@code null}
      */
@@ -103,16 +101,14 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Gets the type of user action that triggered this location change.
      *
-     * @return the type of user action that triggered this location change, not
-     *         <code>null</code>
+     * @return the type of user action that triggered this location change, not <code>null</code>
      */
     public NavigationTrigger getTrigger() {
         return trigger;
     }
 
     /**
-     * Gets the query parameters used for navigation. If only the first value of
-     * parameter list is important, please use
+     * Gets the query parameters used for navigation. If only the first value of parameter list is important, please use
      * {@link LocationChangeEvent#getQueryParameter(String)}
      *
      * @return the query parameters, not {@code null}
@@ -122,20 +118,18 @@ public class LocationChangeEvent extends EventObject {
     }
 
     /**
-     * Gets first parameter that corresponds to specified {@code parameterName}.
-     * If there are multiple parameters corresponding to the same
-     * {@code parameterName}, the first one will be returned. To access all
-     * parameters, use {@link LocationChangeEvent#getQueryParameters()} method.
+     * Gets first parameter that corresponds to specified {@code parameterName}. If there are multiple parameters
+     * corresponding to the same {@code parameterName}, the first one will be returned. To access all parameters, use
+     * {@link LocationChangeEvent#getQueryParameters()} method.
      *
      * @param parameterName
      *            the name of a parameter to get
-     * @return first corresponding query parameter or {@link Optional#empty()},
-     *         if no parameters found for {@code parameterName} specified
+     * @return first corresponding query parameter or {@link Optional#empty()}, if no parameters found for
+     *         {@code parameterName} specified
      */
     public Optional<String> getQueryParameter(String parameterName) {
-        return location.getQueryParameters().getParameters()
-                .getOrDefault(parameterName, Collections.emptyList()).stream()
-                .findFirst();
+        return location.getQueryParameters().getParameters().getOrDefault(parameterName, Collections.emptyList())
+                .stream().findFirst();
     }
 
     @Override
@@ -144,8 +138,8 @@ public class LocationChangeEvent extends EventObject {
     }
 
     /**
-     * Gets the HTTP status code that will be returned for the client if this
-     * location change is an initial rendering request.
+     * Gets the HTTP status code that will be returned for the client if this location change is an initial rendering
+     * request.
      *
      * @return the http status code
      */
@@ -154,8 +148,8 @@ public class LocationChangeEvent extends EventObject {
     }
 
     /**
-     * Sets the HTTP status code that will be returned for the client if this
-     * location change is an initial rendering request.
+     * Sets the HTTP status code that will be returned for the client if this location change is an initial rendering
+     * request.
      *
      * @param statusCode
      *            the http status code
@@ -165,33 +159,29 @@ public class LocationChangeEvent extends EventObject {
     }
 
     /**
-     * Gets the reroute target to use if the user should be rerouted to some
-     * other view.
+     * Gets the reroute target to use if the user should be rerouted to some other view.
      *
-     * @return and optional navigation handler, or an empty optional if no
-     *         reroute target has been set
+     * @return and optional navigation handler, or an empty optional if no reroute target has been set
      */
     public Optional<NavigationHandler> getRerouteTarget() {
         return Optional.ofNullable(rerouteTarget);
     }
 
     /**
-     * Reroutes the navigation to use the provided navigation handler instead of
-     * the currently used handler.
+     * Reroutes the navigation to use the provided navigation handler instead of the currently used handler.
      * <p>
      * This function doesn't change the browser URL.
      *
      * @param rerouteTarget
-     *            the navigation handler to use, or {@code null} to clear a
-     *            previously set reroute target
+     *            the navigation handler to use, or {@code null} to clear a previously set reroute target
      */
     public void rerouteTo(NavigationHandler rerouteTarget) {
         this.rerouteTarget = rerouteTarget;
     }
 
     /**
-     * Reroutes the navigation to show the given component instead of the
-     * component that is currently about to be displayed.
+     * Reroutes the navigation to show the given component instead of the component that is currently about to be
+     * displayed.
      * <p>
      * This function doesn't change the browser URL.
      *
@@ -199,8 +189,7 @@ public class LocationChangeEvent extends EventObject {
      *            the target navigation state of the rerouting, not {@code null}
      */
     public void rerouteTo(NavigationState rerouteTargetState) {
-        Objects.requireNonNull(rerouteTargetState,
-                "rerouteTargetState cannot be null");
+        Objects.requireNonNull(rerouteTargetState, "rerouteTargetState cannot be null");
         rerouteTo(new NavigationStateRenderer(rerouteTargetState));
     }
 }

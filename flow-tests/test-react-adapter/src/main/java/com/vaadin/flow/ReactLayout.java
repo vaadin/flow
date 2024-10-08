@@ -46,21 +46,18 @@ public class ReactLayout extends ReactAdapterComponent {
 
     @Override
     public Stream<Component> getChildren() {
-        return getContentElement(MAIN_CONTENT).getChildren()
-                .map(Element::getComponent)
+        return getContentElement(MAIN_CONTENT).getChildren().map(Element::getComponent)
                 .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty));
     }
 
     public void addSecondary(Component... components) {
         for (Component component : components) {
-            getContentElement(SECONDARY_CONTENT)
-                    .appendChild(component.getElement());
+            getContentElement(SECONDARY_CONTENT).appendChild(component.getElement());
         }
     }
 
     public Stream<Component> getSecondaryChildren() {
-        return getContentElement(SECONDARY_CONTENT).getChildren()
-                .map(Element::getComponent)
+        return getContentElement(SECONDARY_CONTENT).getChildren().map(Element::getComponent)
                 .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty));
     }
 

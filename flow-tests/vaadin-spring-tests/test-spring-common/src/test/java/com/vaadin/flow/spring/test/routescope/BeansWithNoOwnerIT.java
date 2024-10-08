@@ -48,14 +48,12 @@ public class BeansWithNoOwnerIT extends AbstractSpringTest {
 
         switchContent();
 
-        Assert.assertEquals("Div component is not preserved", divId,
-                findElement(By.id("no-owner-div")).getText());
+        Assert.assertEquals("Div component is not preserved", divId, findElement(By.id("no-owner-div")).getText());
 
         navigateTo("navigate-another");
 
         Assert.assertNotEquals(
-                "Div with RouteScope and no owner is preserved during "
-                        + "navigation but it should not be preserved",
+                "Div with RouteScope and no owner is preserved during " + "navigation but it should not be preserved",
                 divId, findElement(By.id("another-no-owner")).getText());
 
         navigateTo("no-owner-view");

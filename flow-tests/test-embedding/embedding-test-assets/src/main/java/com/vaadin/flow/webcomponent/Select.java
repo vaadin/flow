@@ -39,9 +39,8 @@ public class Select extends AbstractSinglePropertyField<Select, String> {
      */
     public Select() {
         super(VALUE_PROPERTY, "", false);
-        getElement().addPropertyChangeListener(VALUE_PROPERTY, "change",
-                event -> {
-                });
+        getElement().addPropertyChangeListener(VALUE_PROPERTY, "change", event -> {
+        });
     }
 
     public void addItem(Object item, String name) {
@@ -79,9 +78,7 @@ public class Select extends AbstractSinglePropertyField<Select, String> {
     private Optional<Option> getSelectedValue() {
         Element el = getElement();
         String selectedValue = el.getProperty(VALUE_PROPERTY);
-        return items.keySet().stream()
-                .filter(option -> option.getValue().equals(selectedValue))
-                .findFirst();
+        return items.keySet().stream().filter(option -> option.getValue().equals(selectedValue)).findFirst();
     }
 
 }

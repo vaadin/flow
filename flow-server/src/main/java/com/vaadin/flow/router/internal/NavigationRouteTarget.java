@@ -21,12 +21,10 @@ import java.util.Map;
 import com.vaadin.flow.router.RouteParameters;
 
 /**
- * Contains the information resulted from searching a route target using a
- * navigation url as input.
+ * Contains the information resulted from searching a route target using a navigation url as input.
  *
- * The result of the search contains the target itself if found, and the url
- * parameter values extracted from the input path according with the route
- * configuration.
+ * The result of the search contains the target itself if found, and the url parameter values extracted from the input
+ * path according with the route configuration.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -41,8 +39,7 @@ public class NavigationRouteTarget implements Serializable {
     // Parameters found in the path.
     private final RouteParameters parameters;
 
-    public NavigationRouteTarget(String path, RouteTarget routeTarget,
-            Map<String, String> parameters) {
+    public NavigationRouteTarget(String path, RouteTarget routeTarget, Map<String, String> parameters) {
         this.path = path;
         this.routeTarget = routeTarget;
         this.parameters = new RouteParameters(parameters);
@@ -51,8 +48,7 @@ public class NavigationRouteTarget implements Serializable {
     /**
      * Gets whether this search result instance contains a navigation target.
      *
-     * @return true if this search result instance contains a navigation target,
-     *         otherwise false.
+     * @return true if this search result instance contains a navigation target, otherwise false.
      */
     public boolean hasTarget() {
         return routeTarget != null;
@@ -87,8 +83,7 @@ public class NavigationRouteTarget implements Serializable {
 
     @Override
     public String toString() {
-        return "[url: \"" + path + "\", target: "
-                + (routeTarget != null ? routeTarget.getTarget() : null)
+        return "[url: \"" + path + "\", target: " + (routeTarget != null ? routeTarget.getTarget() : null)
                 + ", parameters: " + parameters + "]";
     }
 }

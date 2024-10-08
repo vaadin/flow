@@ -46,17 +46,13 @@ public class HierarchyMapperWithNumerousDataTest {
 
     @BeforeClass
     public static void setupData() {
-        testData = HierarchyMapperWithDataTest.generateTestData(ROOT_COUNT,
-                PARENT_COUNT, 0);
+        testData = HierarchyMapperWithDataTest.generateTestData(ROOT_COUNT, PARENT_COUNT, 0);
 
         // This is super slow (3-5 minutes)
-        roots = testData.stream().filter(item -> item.getParent() == null)
-                .collect(Collectors.toList());
+        roots = testData.stream().filter(item -> item.getParent() == null).collect(Collectors.toList());
 
-        data.addItems(roots,
-                parent -> testData.stream().filter(
-                        item -> Objects.equals(item.getParent(), parent))
-                        .collect(Collectors.toList()));
+        data.addItems(roots, parent -> testData.stream().filter(item -> Objects.equals(item.getParent(), parent))
+                .collect(Collectors.toList()));
     }
 
     @Before
@@ -66,17 +62,14 @@ public class HierarchyMapperWithNumerousDataTest {
     }
 
     /**
-     * Test for non-logarithmic {@code getParentOfItem} implementations 100000
-     * entries and 1 second should be enought to make it run even on slow
-     * machines and weed out linear solutions
+     * Test for non-logarithmic {@code getParentOfItem} implementations 100000 entries and 1 second should be enought to
+     * make it run even on slow machines and weed out linear solutions
      */
     @Test(timeout = 1000)
     public void expandRootNode() {
-        assertEquals("Map size should be equal to root node count", ROOT_COUNT,
-                mapper.getTreeSize());
+        assertEquals("Map size should be equal to root node count", ROOT_COUNT, mapper.getTreeSize());
         expand(testData.get(0));
-        assertEquals("Should be root count + once parent count",
-                ROOT_COUNT + PARENT_COUNT, mapper.getTreeSize());
+        assertEquals("Should be root count + once parent count", ROOT_COUNT + PARENT_COUNT, mapper.getTreeSize());
         checkMapSize();
     }
 
@@ -85,13 +78,11 @@ public class HierarchyMapperWithNumerousDataTest {
     }
 
     public void insertRows(Range range) {
-        assertTrue("Index not in range",
-                0 <= range.getStart() && range.getStart() <= mapSize);
+        assertTrue("Index not in range", 0 <= range.getStart() && range.getStart() <= mapSize);
         mapSize += range.length();
     }
 
     private void checkMapSize() {
-        assertEquals("Map size not properly updated", mapper.getTreeSize(),
-                mapSize);
+        assertEquals("Map size not properly updated", mapper.getTreeSize(), mapSize);
     }
 }

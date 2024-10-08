@@ -68,8 +68,7 @@ public class StateTree implements NodeOwner {
                 super.setParent(null);
                 isRootAttached = false;
             } else {
-                throw new IllegalStateException(
-                        "Can't set the parent of the tree root");
+                throw new IllegalStateException("Can't set the parent of the tree root");
             }
         }
 
@@ -85,17 +84,15 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * A task to be executed before the client response, together with an
-     * execution sequence number and context object.
+     * A task to be executed before the client response, together with an execution sequence number and context object.
      * <p>
-     * While of this class are stored inside individual state nodes, code
-     * outside {@link StateTree} should treat the those as opaque values.
+     * While of this class are stored inside individual state nodes, code outside {@link StateTree} should treat the
+     * those as opaque values.
      *
      * @see StateTree#beforeClientResponse(StateNode, SerializableConsumer)
      * @see StateTree#runExecutionsBeforeClientResponse()
      */
-    public static final class BeforeClientResponseEntry
-            implements Serializable {
+    public static final class BeforeClientResponseEntry implements Serializable {
         private static final Comparator<BeforeClientResponseEntry> COMPARING_INDEX = Comparator
                 .comparingInt(BeforeClientResponseEntry::getIndex);
 
@@ -117,13 +114,11 @@ public class StateTree implements NodeOwner {
         }
 
         /**
-         * Checks whether the entry's execution consumer can be run with the
-         * given {@link UI}.
+         * Checks whether the entry's execution consumer can be run with the given {@link UI}.
          *
          * @param ui
          *            the given to execute the entry with
-         * @return whether the entry may be executed with the given {@code ui}
-         *         instance
+         * @return whether the entry may be executed with the given {@code ui} instance
          */
         private boolean canExecute(UI ui) {
             if (originalOwner instanceof NullOwner) {
@@ -145,8 +140,7 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * A registration object for removing a task registered for execution before
-     * the client response.
+     * A registration object for removing a task registered for execution before the client response.
      */
     @FunctionalInterface
     public interface ExecutionRegistration extends Registration {
@@ -177,8 +171,7 @@ public class StateTree implements NodeOwner {
     private boolean isRootAttached = true;
 
     /**
-     * Creates a new state tree with a set of features defined for the root
-     * node.
+     * Creates a new state tree with a set of features defined for the root node.
      *
      * @param features
      *            the features of the root node
@@ -186,15 +179,13 @@ public class StateTree implements NodeOwner {
      *            the internals for the UI that this tree belongs to
      */
     @SafeVarargs
-    public StateTree(UIInternals uiInternals,
-            Class<? extends NodeFeature>... features) {
+    public StateTree(UIInternals uiInternals, Class<? extends NodeFeature>... features) {
         this.uiInternals = uiInternals;
         rootNode = new RootNode(features);
     }
 
     /**
-     * Gets the root node of this state tree. The root node is created together
-     * with the tree and can't be detached.
+     * Gets the root node of this state tree. The root node is created together with the tree and can't be detached.
      *
      * @return the root node
      */
@@ -262,22 +253,19 @@ public class StateTree implements NodeOwner {
      * @see StateNode#getId()
      * @param id
      *            the node id to look for
-     * @return the node with the given id; <code>null</code> if the id is not
-     *         registered with this tree
+     * @return the node with the given id; <code>null</code> if the id is not registered with this tree
      */
     public StateNode getNodeById(int id) {
         return idToNode.get(id);
     }
 
     /**
-     * Collects all changes made to this tree since the last time
-     * {@link #collectChanges(Consumer)} has been called.
+     * Collects all changes made to this tree since the last time {@link #collectChanges(Consumer)} has been called.
      * <p>
      *
-     * <b>WARNING</b>: This is an internal method which is not intended to be
-     * used outside. The only proper caller of this method is {@link UidlWriter}
-     * class (the {@code UidlWriter::encodeChanges} method). Any call of this
-     * method in any other place will break the expected {@link UI} state.
+     * <b>WARNING</b>: This is an internal method which is not intended to be used outside. The only proper caller of
+     * this method is {@link UidlWriter} class (the {@code UidlWriter::encodeChanges} method). Any call of this method
+     * in any other place will break the expected {@link UI} state.
      *
      * @param collector
      *            a consumer accepting node changes
@@ -317,8 +305,8 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Checks if there are nodes that have been marked as dirty since the last
-     * time {@link #collectDirtyNodes()} was invoked.
+     * Checks if there are nodes that have been marked as dirty since the last time {@link #collectDirtyNodes()} was
+     * invoked.
      *
      * @return true if there are dirty nodes, false otherwise
      */
@@ -336,29 +324,23 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Registers a task to be executed before the response is sent to the
-     * client. The tasks are executed in order of registration. If tasks
-     * register more tasks, they are executed after all already registered tasks
-     * for the moment.
+     * Registers a task to be executed before the response is sent to the client. The tasks are executed in order of
+     * registration. If tasks register more tasks, they are executed after all already registered tasks for the moment.
      * <p>
-     * Example: three tasks are submitted, {@code A}, {@code B} and {@code C},
-     * where {@code B} produces two more tasks during execution, {@code D} and
-     * {@code E}. The resulting execution would be {@code ABCDE}.
+     * Example: three tasks are submitted, {@code A}, {@code B} and {@code C}, where {@code B} produces two more tasks
+     * during execution, {@code D} and {@code E}. The resulting execution would be {@code ABCDE}.
      * <p>
-     * If the {@link StateNode} related to the task is not attached to the
-     * document by the time the task is evaluated, the execution is postponed to
-     * before the next response.
+     * If the {@link StateNode} related to the task is not attached to the document by the time the task is evaluated,
+     * the execution is postponed to before the next response.
      * <p>
-     * The task receives a {@link ExecutionContext} as parameter, which contains
-     * information about the node state before the response.
+     * The task receives a {@link ExecutionContext} as parameter, which contains information about the node state before
+     * the response.
      *
      * @param context
-     *            the StateNode relevant for the execution. Can not be
-     *            <code>null</code>
+     *            the StateNode relevant for the execution. Can not be <code>null</code>
      * @param execution
      *            the task to be executed. Can not be <code>null</code>
-     * @return a registration that can be used to cancel the execution of the
-     *         task
+     * @return a registration that can be used to cancel the execution of the task
      */
     public ExecutionRegistration beforeClientResponse(StateNode context,
             SerializableConsumer<ExecutionContext> execution) {
@@ -370,17 +352,15 @@ public class StateTree implements NodeOwner {
             pendingExecutionNodes.add(context);
         }
 
-        BeforeClientResponseEntry entry = new BeforeClientResponseEntry(
-                nextBeforeClientResponseIndex, context, execution);
+        BeforeClientResponseEntry entry = new BeforeClientResponseEntry(nextBeforeClientResponseIndex, context,
+                execution);
         nextBeforeClientResponseIndex++;
         return context.addBeforeClientResponseEntry(entry);
     }
 
     /**
-     * Called internally by the framework before the response is sent to the
-     * client. All tasks registered at
-     * {@link #beforeClientResponse(StateNode, SerializableConsumer)} are
-     * evaluated and executed if able.
+     * Called internally by the framework before the response is sent to the client. All tasks registered at
+     * {@link #beforeClientResponse(StateNode, SerializableConsumer)} are evaluated and executed if able.
      */
     public void runExecutionsBeforeClientResponse() {
         while (true) {
@@ -388,32 +368,26 @@ public class StateTree implements NodeOwner {
             if (callbacks.isEmpty()) {
                 return;
             }
-            callbacks.stream().filter(entry -> entry.canExecute(getUI()))
-                    .forEach(entry -> {
-                        try {
-                            ExecutionContext context = new ExecutionContext(
-                                    getUI(), entry.getStateNode()
-                                            .isClientSideInitialized());
-                            entry.getExecution().accept(context);
-                        } catch (Exception e) {
-                            if (getErrorHandlerClass()
-                                    .equals(DefaultErrorHandler.class)) {
-                                throw e;
-                            }
-                            getUI().getSession().getErrorHandler().error(
-                                    new ErrorEvent(e, entry.getStateNode()));
-                        }
-                    });
+            callbacks.stream().filter(entry -> entry.canExecute(getUI())).forEach(entry -> {
+                try {
+                    ExecutionContext context = new ExecutionContext(getUI(),
+                            entry.getStateNode().isClientSideInitialized());
+                    entry.getExecution().accept(context);
+                } catch (Exception e) {
+                    if (getErrorHandlerClass().equals(DefaultErrorHandler.class)) {
+                        throw e;
+                    }
+                    getUI().getSession().getErrorHandler().error(new ErrorEvent(e, entry.getStateNode()));
+                }
+            });
         }
     }
 
     private Class<? extends ErrorHandler> getErrorHandlerClass() {
         UI ui = getUI();
         VaadinSession session = ui == null ? null : ui.getSession();
-        ErrorHandler errorHandler = session == null ? null
-                : session.getErrorHandler();
-        return errorHandler == null ? DefaultErrorHandler.class
-                : errorHandler.getClass();
+        ErrorHandler errorHandler = session == null ? null : session.getErrorHandler();
+        return errorHandler == null ? DefaultErrorHandler.class : errorHandler.getClass();
     }
 
     private List<StateTree.BeforeClientResponseEntry> flushCallbacks() {
@@ -422,11 +396,9 @@ public class StateTree implements NodeOwner {
         }
 
         // Collect
-        List<StateTree.BeforeClientResponseEntry> flushed = pendingExecutionNodes
-                .stream().map(StateNode::dumpBeforeClientResponseEntries)
-                .flatMap(List::stream)
-                .sorted(BeforeClientResponseEntry.COMPARING_INDEX)
-                .collect(Collectors.toList());
+        List<StateTree.BeforeClientResponseEntry> flushed = pendingExecutionNodes.stream()
+                .map(StateNode::dumpBeforeClientResponseEntries).flatMap(List::stream)
+                .sorted(BeforeClientResponseEntry.COMPARING_INDEX).collect(Collectors.toList());
 
         // Reset bookeeping for the next round
         pendingExecutionNodes = new HashSet<>();
@@ -441,8 +413,7 @@ public class StateTree implements NodeOwner {
     /**
      * Checks if there are changes waiting to be sent to the client side.
      *
-     * @return <code>true</code> if there are pending changes,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if there are pending changes, <code>false</code> otherwise
      */
     public boolean isDirty() {
         return hasDirtyNodes() || hasCallbacks();
@@ -474,9 +445,8 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Prepares the tree for resynchronization, meaning that the client will
-     * receive the same changes as when the component tree was initially
-     * attached, so that it can build the DOM tree from scratch.
+     * Prepares the tree for resynchronization, meaning that the client will receive the same changes as when the
+     * component tree was initially attached, so that it can build the DOM tree from scratch.
      */
     public void prepareForResync() {
         rootNode.prepareForResync();

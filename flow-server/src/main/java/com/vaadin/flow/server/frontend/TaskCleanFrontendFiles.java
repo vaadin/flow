@@ -32,11 +32,9 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
- * Clean any frontend files generated for creation on a new development or
- * production bundle.
+ * Clean any frontend files generated for creation on a new development or production bundle.
  * <p>
- * For a project containing {@code package.json} or is using Hilla,
- * {@code node_modules} will be retained.
+ * For a project containing {@code package.json} or is using Hilla, {@code node_modules} will be retained.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -48,12 +46,10 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
     private File projectRoot;
 
-    private List<String> generatedFiles = List.of(NODE_MODULES,
-            Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
-            Constants.PACKAGE_LOCK_YAML, Constants.PACKAGE_LOCK_BUN,
-            TaskGenerateTsConfig.TSCONFIG_JSON,
-            TaskGenerateTsDefinitions.TS_DEFINITIONS, ".pnpmfile.cjs", ".npmrc",
-            FrontendUtils.VITE_GENERATED_CONFIG, FrontendUtils.VITE_CONFIG);
+    private List<String> generatedFiles = List.of(NODE_MODULES, Constants.PACKAGE_JSON, Constants.PACKAGE_LOCK_JSON,
+            Constants.PACKAGE_LOCK_YAML, Constants.PACKAGE_LOCK_BUN, TaskGenerateTsConfig.TSCONFIG_JSON,
+            TaskGenerateTsDefinitions.TS_DEFINITIONS, ".pnpmfile.cjs", ".npmrc", FrontendUtils.VITE_GENERATED_CONFIG,
+            FrontendUtils.VITE_CONFIG);
     private Set<File> existingFiles = new HashSet<>();
 
     /**
@@ -64,18 +60,15 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
      * @param frontendDirectory
      *            frontend directory
      */
-    public TaskCleanFrontendFiles(File projectRoot, File frontendDirectory,
-            ClassFinder classFinder) {
+    public TaskCleanFrontendFiles(File projectRoot, File frontendDirectory, ClassFinder classFinder) {
         this.projectRoot = projectRoot;
 
-        Arrays.stream(projectRoot
-                .listFiles(file -> generatedFiles.contains(file.getName())))
+        Arrays.stream(projectRoot.listFiles(file -> generatedFiles.contains(file.getName())))
                 .forEach(existingFiles::add);
 
         // If we have an existing package.json or run Hilla, do not remove
         // node_modules
-        if (existingFiles
-                .contains(new File(projectRoot, Constants.PACKAGE_JSON))
+        if (existingFiles.contains(new File(projectRoot, Constants.PACKAGE_JSON))
                 || FrontendUtils.isHillaUsed(frontendDirectory, classFinder)) {
             existingFiles.add(new File(projectRoot, NODE_MODULES));
         }
@@ -84,9 +77,8 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         final List<File> filesToRemove = Arrays
-                .stream(projectRoot.listFiles(
-                        file -> generatedFiles.contains(file.getName())
-                                && !existingFiles.contains(file)))
+                .stream(projectRoot
+                        .listFiles(file -> generatedFiles.contains(file.getName()) && !existingFiles.contains(file)))
                 .collect(Collectors.toList());
         for (File file : filesToRemove) {
             log().debug("Removing file {}", file);
@@ -97,8 +89,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
                     file.delete();
                 }
             } catch (IOException ioe) {
-                log().warn("Could not delete file {} due to {}", file,
-                        ioe.getMessage());
+                log().warn("Could not delete file {} due to {}", file, ioe.getMessage());
                 log().debug("Failed to remove file", ioe);
             }
         }

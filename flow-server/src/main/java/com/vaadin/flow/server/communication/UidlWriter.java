@@ -69,9 +69,8 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Serializes pending server-side changes to UI state to JSON. This includes
- * shared state, client RPC invocations, connector hierarchy changes, connector
- * type information among others.
+ * Serializes pending server-side changes to UI state to JSON. This includes shared state, client RPC invocations,
+ * connector hierarchy changes, connector type information among others.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -127,8 +126,8 @@ public class UidlWriter implements Serializable {
      * @param ui
      *            The {@link UI} whose changes to write
      * @param async
-     *            True if this message is sent by the server asynchronously,
-     *            false if it is a response to a client message
+     *            True if this message is sent by the server asynchronously, false if it is a response to a client
+     *            message
      * @param resync
      *            True iff the client should be asked to resynchronize
      * @return JSON object containing the UIDL response
@@ -151,16 +150,12 @@ public class UidlWriter implements Serializable {
         if (resync) {
             response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
         }
-        int nextClientToServerMessageId = uiInternals
-                .getLastProcessedClientToServerId() + 1;
-        response.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
-                nextClientToServerMessageId);
+        int nextClientToServerMessageId = uiInternals.getLastProcessedClientToServerId() + 1;
+        response.put(ApplicationConstants.CLIENT_TO_SERVER_ID, nextClientToServerMessageId);
 
-        SystemMessages messages = service.getSystemMessages(ui.getLocale(),
-                null);
+        SystemMessages messages = service.getSystemMessages(ui.getLocale(), null);
 
-        JsonObject meta = new MetadataWriter().createMetadata(ui, false, async,
-                messages);
+        JsonObject meta = new MetadataWriter().createMetadata(ui, false, async, messages);
         if (meta.keys().length > 0) {
             response.put("meta", meta);
         }
@@ -173,18 +168,15 @@ public class UidlWriter implements Serializable {
                 new ResolveContext(service, session.getBrowser()));
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
-            response.put("constants",
-                    uiInternals.getConstantPool().dumpConstants());
+            response.put("constants", uiInternals.getConstantPool().dumpConstants());
         }
         if (stateChanges.length() != 0) {
             response.put("changes", stateChanges);
         }
 
-        List<PendingJavaScriptInvocation> executeJavaScriptList = uiInternals
-                .dumpPendingJavaScriptInvocations();
+        List<PendingJavaScriptInvocation> executeJavaScriptList = uiInternals.dumpPendingJavaScriptInvocations();
         if (!executeJavaScriptList.isEmpty()) {
-            response.put(JsonConstants.UIDL_KEY_EXECUTE,
-                    encodeExecuteJavaScriptList(executeJavaScriptList));
+            response.put(JsonConstants.UIDL_KEY_EXECUTE, encodeExecuteJavaScriptList(executeJavaScriptList));
         }
         if (service.getDeploymentConfiguration().isRequestTiming()) {
             response.put("timings", createPerformanceData(ui));
@@ -193,9 +185,7 @@ public class UidlWriter implements Serializable {
         // Get serverSyncId after all changes has been computed, as push may
         // have been invoked, thus incrementing the counter.
         // This way the client will receive messages in the correct order
-        int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
-                ? uiInternals.getServerSyncId()
-                : -1;
+        int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled() ? uiInternals.getServerSyncId() : -1;
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
         uiInternals.incrementServerId();
         return response;
@@ -207,128 +197,102 @@ public class UidlWriter implements Serializable {
      * @param ui
      *            The {@link UI} whose changes to write
      * @param async
-     *            True if this message is sent by the server asynchronously,
-     *            false if it is a response to a client message.
+     *            True if this message is sent by the server asynchronously, false if it is a response to a client
+     *            message.
      * @return JSON object containing the UIDL response
      */
     public JsonObject createUidl(UI ui, boolean async) {
         return createUidl(ui, async, false);
     }
 
-    private static void populateDependencies(JsonObject response,
-            DependencyList dependencyList, ResolveContext context) {
-        Collection<Dependency> pendingSendToClient = dependencyList
-                .getPendingSendToClient();
+    private static void populateDependencies(JsonObject response, DependencyList dependencyList,
+            ResolveContext context) {
+        Collection<Dependency> pendingSendToClient = dependencyList.getPendingSendToClient();
 
-        for (DependencyFilter filter : context.getService()
-                .getDependencyFilters()) {
-            pendingSendToClient = filter.filter(
-                    new ArrayList<>(pendingSendToClient), context.getService());
+        for (DependencyFilter filter : context.getService().getDependencyFilters()) {
+            pendingSendToClient = filter.filter(new ArrayList<>(pendingSendToClient), context.getService());
         }
 
         if (!pendingSendToClient.isEmpty()) {
             groupDependenciesByLoadMode(pendingSendToClient, context)
-                    .forEach((loadMode, dependencies) -> response
-                            .put(loadMode.name(), dependencies));
+                    .forEach((loadMode, dependencies) -> response.put(loadMode.name(), dependencies));
         }
         dependencyList.clearPendingSendToClient();
     }
 
-    private static Map<LoadMode, JsonArray> groupDependenciesByLoadMode(
-            Collection<Dependency> dependencies, ResolveContext context) {
+    private static Map<LoadMode, JsonArray> groupDependenciesByLoadMode(Collection<Dependency> dependencies,
+            ResolveContext context) {
         Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
-        dependencies
-                .forEach(dependency -> result.merge(dependency.getLoadMode(),
-                        JsonUtils.createArray(
-                                dependencyToJson(dependency, context)),
-                        JsonUtils.asArray().combiner()));
+        dependencies.forEach(dependency -> result.merge(dependency.getLoadMode(),
+                JsonUtils.createArray(dependencyToJson(dependency, context)), JsonUtils.asArray().combiner()));
         return result;
     }
 
-    private static JsonObject dependencyToJson(Dependency dependency,
-            ResolveContext context) {
+    private static JsonObject dependencyToJson(Dependency dependency, ResolveContext context) {
         JsonObject dependencyJson = dependency.toJson();
         if (dependency.getLoadMode() == LoadMode.INLINE) {
-            dependencyJson.put(Dependency.KEY_CONTENTS,
-                    getDependencyContents(dependency.getUrl(), context));
+            dependencyJson.put(Dependency.KEY_CONTENTS, getDependencyContents(dependency.getUrl(), context));
             dependencyJson.remove(Dependency.KEY_URL);
         }
         return dependencyJson;
     }
 
-    private static String getDependencyContents(String url,
-            ResolveContext context) {
-        try (InputStream inlineResourceStream = getInlineResourceStream(url,
-                context)) {
-            return IOUtils.toString(inlineResourceStream,
-                    StandardCharsets.UTF_8);
+    private static String getDependencyContents(String url, ResolveContext context) {
+        try (InputStream inlineResourceStream = getInlineResourceStream(url, context)) {
+            return IOUtils.toString(inlineResourceStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new IllegalStateException(String
-                    .format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
+            throw new IllegalStateException(String.format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
         }
     }
 
-    private static InputStream getInlineResourceStream(String url,
-            ResolveContext context) {
+    private static InputStream getInlineResourceStream(String url, ResolveContext context) {
         VaadinService service = context.getService();
         InputStream stream = service.getResourceAsStream(url);
 
         if (stream == null) {
             String resolvedPath = service.resolveResource(url);
-            getLogger().warn("The path '{}' for inline resource "
-                    + "has been resolved to '{}'. "
-                    + "But resource is not available via the servlet context. "
-                    + "Trying to load '{}' as a URL", url, resolvedPath, url);
+            getLogger().warn("The path '{}' for inline resource " + "has been resolved to '{}'. "
+                    + "But resource is not available via the servlet context. " + "Trying to load '{}' as a URL", url,
+                    resolvedPath, url);
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (MalformedURLException exception) {
                 throw new IllegalStateException(String.format(
-                        "The path '%s' is not a valid URL. "
-                                + "Unable to fetch a resource addressed by it.",
-                        url), exception);
+                        "The path '%s' is not a valid URL. " + "Unable to fetch a resource addressed by it.", url),
+                        exception);
             } catch (IOException e) {
-                throw new IllegalStateException(String.format(
-                        COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
+                throw new IllegalStateException(String.format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else if (getLogger().isDebugEnabled()) {
             String resolvedPath = service.resolveResource(url);
             getLogger().debug(
-                    "The path '{}' for inline resource has been successfully "
-                            + "resolved to resource URL '{}'",
-                    url, resolvedPath);
+                    "The path '{}' for inline resource has been successfully " + "resolved to resource URL '{}'", url,
+                    resolvedPath);
         }
 
         return stream;
     }
 
     // non-private for testing purposes
-    static JsonArray encodeExecuteJavaScriptList(
-            List<PendingJavaScriptInvocation> executeJavaScriptList) {
-        return executeJavaScriptList.stream()
-                .map(UidlWriter::encodeExecuteJavaScript)
-                .collect(JsonUtils.asArray());
+    static JsonArray encodeExecuteJavaScriptList(List<PendingJavaScriptInvocation> executeJavaScriptList) {
+        return executeJavaScriptList.stream().map(UidlWriter::encodeExecuteJavaScript).collect(JsonUtils.asArray());
     }
 
-    private static ReturnChannelRegistration createReturnValueChannel(
-            StateNode owner, List<ReturnChannelRegistration> registrations,
-            SerializableConsumer<JsonValue> action) {
-        ReturnChannelRegistration channel = owner
-                .getFeature(ReturnChannelMap.class)
-                .registerChannel(arguments -> {
-                    registrations.forEach(ReturnChannelRegistration::remove);
+    private static ReturnChannelRegistration createReturnValueChannel(StateNode owner,
+            List<ReturnChannelRegistration> registrations, SerializableConsumer<JsonValue> action) {
+        ReturnChannelRegistration channel = owner.getFeature(ReturnChannelMap.class).registerChannel(arguments -> {
+            registrations.forEach(ReturnChannelRegistration::remove);
 
-                    action.accept(arguments.get(0));
-                });
+            action.accept(arguments.get(0));
+        });
 
         registrations.add(channel);
 
         return channel;
     }
 
-    private static JsonArray encodeExecuteJavaScript(
-            PendingJavaScriptInvocation invocation) {
-        List<Object> parametersList = invocation.getInvocation()
-                .getParameters();
+    private static JsonArray encodeExecuteJavaScript(PendingJavaScriptInvocation invocation) {
+        List<Object> parametersList = invocation.getInvocation().getParameters();
 
         Stream<Object> parameters = parametersList.stream();
         String expression = invocation.getInvocation().getExpression();
@@ -338,23 +302,20 @@ public class UidlWriter implements Serializable {
 
             List<ReturnChannelRegistration> channels = new ArrayList<>();
 
-            ReturnChannelRegistration successChannel = createReturnValueChannel(
-                    owner, channels, invocation::complete);
-            ReturnChannelRegistration errorChannel = createReturnValueChannel(
-                    owner, channels, invocation::completeExceptionally);
+            ReturnChannelRegistration successChannel = createReturnValueChannel(owner, channels, invocation::complete);
+            ReturnChannelRegistration errorChannel = createReturnValueChannel(owner, channels,
+                    invocation::completeExceptionally);
 
             // Inject both channels as new parameters
-            parameters = Stream.concat(parameters,
-                    Stream.of(successChannel, errorChannel));
+            parameters = Stream.concat(parameters, Stream.of(successChannel, errorChannel));
             int successIndex = parametersList.size();
             int errorIndex = successIndex + 1;
 
             /*
-             * Run the original expression wrapped in a function to capture any
-             * return statement. Pass the return value through Promise.resolve
-             * which resolves regular values immediately and waits for thenable
-             * values. Call either of the handlers once the promise completes.
-             * If the expression throws synchronously, run the error handler.
+             * Run the original expression wrapped in a function to capture any return statement. Pass the return value
+             * through Promise.resolve which resolves regular values immediately and waits for thenable values. Call
+             * either of the handlers once the promise completes. If the expression throws synchronously, run the error
+             * handler.
              */
             //@formatter:off
             expression =
@@ -369,15 +330,12 @@ public class UidlWriter implements Serializable {
         }
 
         // [argument1, argument2, ..., script]
-        return Stream
-                .concat(parameters.map(JsonCodec::encodeWithTypeInfo),
-                        Stream.of(Json.create(expression)))
+        return Stream.concat(parameters.map(JsonCodec::encodeWithTypeInfo), Stream.of(Json.create(expression)))
                 .collect(JsonUtils.asArray());
     }
 
     /**
-     * Encodes the state tree changes of the given UI. The executions registered
-     * at
+     * Encodes the state tree changes of the given UI. The executions registered at
      * {@link StateTree#beforeClientResponse(com.vaadin.flow.internal.StateNode, com.vaadin.flow.function.SerializableConsumer)}
      * at evaluated before the changes are encoded.
      *
@@ -397,13 +355,11 @@ public class UidlWriter implements Serializable {
         Consumer<NodeChange> changesCollector = change -> {
             if (attachesComponent(change)) {
                 ComponentMapping.getComponent(change.getNode())
-                        .ifPresent(component -> addComponentHierarchy(ui,
-                                componentsWithDependencies, component));
+                        .ifPresent(component -> addComponentHierarchy(ui, componentsWithDependencies, component));
             }
 
             // Encode the actual change
-            stateChanges.set(stateChanges.length(),
-                    change.toJson(uiInternals.getConstantPool()));
+            stateChanges.set(stateChanges.length(), change.toJson(uiInternals.getConstantPool()));
         };
         // A collectChanges round may add additional changes that needs to be
         // collected.
@@ -420,28 +376,22 @@ public class UidlWriter implements Serializable {
                     + "this should not happen and may cause unexpected PUSH invocation.");
         }
 
-        componentsWithDependencies
-                .forEach(uiInternals::addComponentDependencies);
+        componentsWithDependencies.forEach(uiInternals::addComponentDependencies);
     }
 
     private static boolean attachesComponent(NodeChange change) {
-        return change instanceof NodeAttachChange
-                && change.getNode().hasFeature(ComponentMapping.class);
+        return change instanceof NodeAttachChange && change.getNode().hasFeature(ComponentMapping.class);
     }
 
-    private void addComponentHierarchy(UI ui,
-            Set<Class<? extends Component>> hierarchyStorage,
-            Component component) {
+    private void addComponentHierarchy(UI ui, Set<Class<? extends Component>> hierarchyStorage, Component component) {
         hierarchyStorage.add(component.getClass());
         if (component instanceof Composite) {
-            addComponentHierarchy(ui, hierarchyStorage,
-                    ((Composite<?>) component).getContent());
+            addComponentHierarchy(ui, hierarchyStorage, ((Composite<?>) component).getContent());
         }
     }
 
     /**
-     * Adds the performance timing data (used by TestBench 3) to the UIDL
-     * response.
+     * Adds the performance timing data (used by TestBench 3) to the UIDL response.
      */
     private JsonValue createPerformanceData(UI ui) {
         JsonArray timings = Json.createArray();

@@ -30,27 +30,19 @@ public class CssBundler {
 
     private static final String STRING = "(.*?)";
 
-    private static final String CSS_STRING = "('" + STRING + "'|\"" + STRING
-            + "\"|" + STRING + ")";
-    private static final String QUOTED_CSS_STRING = "('" + STRING + "'|\""
-            + STRING + "\")";
+    private static final String CSS_STRING = "('" + STRING + "'|\"" + STRING + "\"|" + STRING + ")";
+    private static final String QUOTED_CSS_STRING = "('" + STRING + "'|\"" + STRING + "\")";
 
-    private static final String URL = "url" + WHITE_SPACE + "\\(" + WHITE_SPACE
-            + CSS_STRING + WHITE_SPACE + "\\)";
+    private static final String URL = "url" + WHITE_SPACE + "\\(" + WHITE_SPACE + CSS_STRING + WHITE_SPACE + "\\)";
 
-    private static final String URL_OR_STRING = "(" + URL + "|"
-            + QUOTED_CSS_STRING + ")";
+    private static final String URL_OR_STRING = "(" + URL + "|" + QUOTED_CSS_STRING + ")";
 
-    private static final String LAYER = "(layer|layer" + WHITE_SPACE
-            + "\\((.*?)\\))";
+    private static final String LAYER = "(layer|layer" + WHITE_SPACE + "\\((.*?)\\))";
     private static final String MEDIA_QUERY = "(\\s+[a-zA-Z].*)?";
-    private static final String MAYBE_LAYER_OR_MEDIA_QUERY = "(" + LAYER + "|"
-            + MEDIA_QUERY + ")";
+    private static final String MAYBE_LAYER_OR_MEDIA_QUERY = "(" + LAYER + "|" + MEDIA_QUERY + ")";
 
     /**
-     * This regexp is based on
-     * https://developer.mozilla.org/en-US/docs/Web/CSS/@import#formal_syntax
-     * which states
+     * This regexp is based on https://developer.mozilla.org/en-US/docs/Web/CSS/@import#formal_syntax which states
      *
      * <pre>
      * @import = @import [ &lt;url> | &lt;string> ] [ layer | layer( &lt;layer-name> ) ]?
@@ -59,8 +51,7 @@ public class CssBundler {
      *
      */
     private static Pattern importPattern = Pattern
-            .compile("@import" + WHITE_SPACE + URL_OR_STRING
-                    + MAYBE_LAYER_OR_MEDIA_QUERY + WHITE_SPACE + ";");
+            .compile("@import" + WHITE_SPACE + URL_OR_STRING + MAYBE_LAYER_OR_MEDIA_QUERY + WHITE_SPACE + ";");
 
     private static Pattern urlPattern = Pattern.compile(URL);
 
@@ -68,29 +59,25 @@ public class CssBundler {
      * Recurse over CSS import and inlines all ot them into a single CSS block.
      * <p>
      * </p>
-     * Unresolvable imports are put on the top of the resulting code, because
-     * {@code @import} statements must come before any other CSS instruction,
-     * otherwise the import is ignored by the browser.
+     * Unresolvable imports are put on the top of the resulting code, because {@code @import} statements must come
+     * before any other CSS instruction, otherwise the import is ignored by the browser.
      * <p>
      * </p>
-     * Along with import resolution and code inline, URLs
-     * ({@code url('image.png')} referencing theme resources rewritten to be
-     * correctly served by Vaadin at runtime.
+     * Along with import resolution and code inline, URLs ({@code url('image.png')} referencing theme resources
+     * rewritten to be correctly served by Vaadin at runtime.
      *
      * @param themeFolder
      *            location of theme folder on the filesystem.
      * @param cssFile
      *            the CSS file to process.
-     * @return the processed stylesheet content, with inlined imports and
-     *         rewritten URLs.
+     * @return the processed stylesheet content, with inlined imports and rewritten URLs.
      * @throws IOException
      *             if filesystem resources can not be read.
-     * @deprecated this method does not resolve theme assets, use
-     *             {@link #inlineImports(File, File, JsonObject)} instead.
+     * @deprecated this method does not resolve theme assets, use {@link #inlineImports(File, File, JsonObject)}
+     *             instead.
      */
     @Deprecated
-    public static String inlineImports(File themeFolder, File cssFile)
-            throws IOException {
+    public static String inlineImports(File themeFolder, File cssFile) throws IOException {
         return inlineImports(themeFolder, cssFile, Set.of());
     }
 
@@ -98,37 +85,29 @@ public class CssBundler {
      * Recurse over CSS import and inlines all ot them into a single CSS block.
      * <p>
      * </p>
-     * Unresolvable imports are put on the top of the resulting code, because
-     * {@code @import} statements must come before any other CSS instruction,
-     * otherwise the import is ignored by the browser.
+     * Unresolvable imports are put on the top of the resulting code, because {@code @import} statements must come
+     * before any other CSS instruction, otherwise the import is ignored by the browser.
      * <p>
      * </p>
-     * Along with import resolution and code inline, URLs
-     * ({@code url('image.png')} referencing theme resources or assets are
-     * rewritten to be correctly served by Vaadin at runtime.
+     * Along with import resolution and code inline, URLs ({@code url('image.png')} referencing theme resources or
+     * assets are rewritten to be correctly served by Vaadin at runtime.
      *
      * @param themeFolder
      *            location of theme folder on the filesystem.
      * @param cssFile
      *            the CSS file to process.
      * @param themeJson
-     *            the theme configuration, usually stored in
-     *            {@literal theme.json} file.
-     * @return the processed stylesheet content, with inlined imports and
-     *         rewritten URLs.
+     *            the theme configuration, usually stored in {@literal theme.json} file.
+     * @return the processed stylesheet content, with inlined imports and rewritten URLs.
      * @throws IOException
      *             if filesystem resources can not be read.
      */
-    public static String inlineImports(File themeFolder, File cssFile,
-            JsonObject themeJson) throws IOException {
-        return inlineImports(themeFolder, cssFile,
-                getThemeAssetsAliases(themeJson));
+    public static String inlineImports(File themeFolder, File cssFile, JsonObject themeJson) throws IOException {
+        return inlineImports(themeFolder, cssFile, getThemeAssetsAliases(themeJson));
     }
 
-    private static String inlineImports(File themeFolder, File cssFile,
-            Set<String> assetAliases) throws IOException {
-        String content = FileUtils.readFileToString(cssFile,
-                StandardCharsets.UTF_8);
+    private static String inlineImports(File themeFolder, File cssFile, Set<String> assetAliases) throws IOException {
+        String content = FileUtils.readFileToString(cssFile, StandardCharsets.UTF_8);
 
         Matcher urlMatcher = urlPattern.matcher(content);
         content = urlMatcher.replaceAll(result -> {
@@ -149,24 +128,19 @@ public class CssBundler {
                 // Also the imports are relative to the folder containing the
                 // CSS file we are processing, not always relative to the theme
                 // folder
-                String relativePath = themeFolder.getParentFile().toPath()
-                        .relativize(potentialFile.toPath()).toString()
+                String relativePath = themeFolder.getParentFile().toPath().relativize(potentialFile.toPath()).toString()
                         .replaceAll("\\\\", "/");
-                return Matcher.quoteReplacement(
-                        "url('VAADIN/themes/" + relativePath + "')");
-            } else if (isPotentialThemeAsset(themeFolder, assetAliases,
-                    potentialFile)) {
+                return Matcher.quoteReplacement("url('VAADIN/themes/" + relativePath + "')");
+            } else if (isPotentialThemeAsset(themeFolder, assetAliases, potentialFile)) {
                 // a reference to a theme asset, e.g with a theme.json config
                 // { "assets": {
                 // "@some/pkg": { "svgs/regular/**": "my/icons" }
                 // } }
                 // background-image: url("./my/icons/bar.png") should become
                 // url("VAADIN/themes/<theme-name>/my/icons/bar.png
-                String relativePath = themeFolder.getParentFile().toPath()
-                        .relativize(potentialFile.toPath()).toString()
+                String relativePath = themeFolder.getParentFile().toPath().relativize(potentialFile.toPath()).toString()
                         .replaceAll("\\\\", "/");
-                return Matcher.quoteReplacement(
-                        "url('VAADIN/themes/" + relativePath + "')");
+                return Matcher.quoteReplacement("url('VAADIN/themes/" + relativePath + "')");
             }
 
             return Matcher.quoteReplacement(urlMatcher.group());
@@ -179,23 +153,19 @@ public class CssBundler {
             // Group 7,8 are strings with different quotes
             // Group 9 is layer info
             String layerOrMediaQueryInfo = result.group(9);
-            if (layerOrMediaQueryInfo != null
-                    && !layerOrMediaQueryInfo.isBlank()) {
+            if (layerOrMediaQueryInfo != null && !layerOrMediaQueryInfo.isBlank()) {
                 unhandledImports.add(result.group());
                 return "";
             }
             String url = getNonNullGroup(result, 3, 4, 5, 7, 8);
             String sanitizedUrl = sanitizeUrl(url);
             if (sanitizedUrl != null && sanitizedUrl.endsWith(".css")) {
-                File potentialFile = new File(cssFile.getParentFile(),
-                        sanitizedUrl);
+                File potentialFile = new File(cssFile.getParentFile(), sanitizedUrl);
                 if (potentialFile.exists()) {
                     try {
-                        return Matcher.quoteReplacement(inlineImports(
-                                themeFolder, potentialFile, assetAliases));
+                        return Matcher.quoteReplacement(inlineImports(themeFolder, potentialFile, assetAliases));
                     } catch (IOException e) {
-                        getLogger().warn(
-                                "Unable to inline import: " + result.group());
+                        getLogger().warn("Unable to inline import: " + result.group());
                     }
                 }
             }
@@ -207,8 +177,7 @@ public class CssBundler {
         // Prepend unhandled @import statements at the top, as they would be
         // ignored by the browser if they appear after regular CSS rules
         if (!unhandledImports.isEmpty()) {
-            content = String.join("\n", unhandledImports)
-                    + (content.isEmpty() ? "" : "\n" + content);
+            content = String.join("\n", unhandledImports) + (content.isEmpty() ? "" : "\n" + content);
         }
         return content;
     }
@@ -216,24 +185,19 @@ public class CssBundler {
     // A theme asset must:
     // - be relative to the theme folder
     // - have a match in theme.json 'assets'
-    private static boolean isPotentialThemeAsset(File themeFolder,
-            Set<String> assetAliases, File potentialFile) {
+    private static boolean isPotentialThemeAsset(File themeFolder, Set<String> assetAliases, File potentialFile) {
         boolean potentialAsset = false;
         if (!assetAliases.isEmpty()) {
             Path themeFolderPath = themeFolder.toPath().normalize();
-            Path normalized = themeFolderPath.resolve(potentialFile.toPath())
-                    .normalize();
+            Path normalized = themeFolderPath.resolve(potentialFile.toPath()).normalize();
             if (normalized.startsWith(themeFolderPath)) {
                 // path is relative to theme folder, check if it matches an
                 // asset
-                String relativePath = themeFolderPath.relativize(normalized)
-                        .toString().replaceAll("\\\\", "/");
-                potentialAsset = assetAliases.stream()
-                        .anyMatch(relativePath::startsWith);
+                String relativePath = themeFolderPath.relativize(normalized).toString().replaceAll("\\\\", "/");
+                potentialAsset = assetAliases.stream().anyMatch(relativePath::startsWith);
                 if (potentialAsset) {
-                    getLogger().debug(
-                            "Considering '{}' a potential asset of theme '{}'",
-                            relativePath, themeFolder.getName());
+                    getLogger().debug("Considering '{}' a potential asset of theme '{}'", relativePath,
+                            themeFolder.getName());
                 }
             }
         }
@@ -241,9 +205,7 @@ public class CssBundler {
     }
 
     private static Set<String> getThemeAssetsAliases(JsonObject themeJson) {
-        JsonObject assets = themeJson != null && themeJson.hasKey("assets")
-                ? themeJson.getObject("assets")
-                : null;
+        JsonObject assets = themeJson != null && themeJson.hasKey("assets") ? themeJson.getObject("assets") : null;
         Set<String> aliases = new HashSet<>();
         if (assets != null) {
             for (String nmpPackage : assets.keys()) {

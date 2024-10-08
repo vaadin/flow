@@ -31,9 +31,8 @@ public final class FilterUtils {
     }
 
     /**
-     * Combines the configured filter and the filter from the query into one
-     * filter instance that can be passed to the wrapped data provider using the
-     * {@code filterCombiner}.
+     * Combines the configured filter and the filter from the query into one filter instance that can be passed to the
+     * wrapped data provider using the {@code filterCombiner}.
      *
      * @param filterCombiner
      *            a filters combiner
@@ -50,35 +49,28 @@ public final class FilterUtils {
      * @param <C>
      *            the configurable filter type
      */
-    public static <F, Q, C> F combineFilters(
-            SerializableBiFunction<Q, C, F> filterCombiner, Q queryFilter,
+    public static <F, Q, C> F combineFilters(SerializableBiFunction<Q, C, F> filterCombiner, Q queryFilter,
             C configuredFilter) {
         return filterCombiner.apply(queryFilter, configuredFilter);
     }
 
     /**
-     * Gets the filter converted from a query filter by the
-     * {@code filterConverter}.
+     * Gets the filter converted from a query filter by the {@code filterConverter}.
      *
      * @param filterConverter
-     *            callback that converts the filter in the query of the wrapped
-     *            data provider into a filter supported by this data provider.
-     *            Will only be called if the query contains a filter. Not
-     *            <code>null</code>
+     *            callback that converts the filter in the query of the wrapped data provider into a filter supported by
+     *            this data provider. Will only be called if the query contains a filter. Not <code>null</code>
      * @param query
      *            a query with a filter to convert
-     * @return a converted filter, may be {@code null} if the query has no
-     *         filter
+     * @return a converted filter, may be {@code null} if the query has no filter
      * @param <T>
      *            data type
      * @param <C>
-     *            the filter type that the wrapped data provider accepts;
-     *            typically provided by a Component
+     *            the filter type that the wrapped data provider accepts; typically provided by a Component
      * @param <F>
      *            the filter type of data provider
      */
-    public static <T, C, F> F convertFilter(
-            SerializableFunction<C, F> filterConverter, Query<T, C> query) {
+    public static <T, C, F> F convertFilter(SerializableFunction<C, F> filterConverter, Query<T, C> query) {
         return query.getFilter().map(filterConverter).orElse(null);
     }
 }

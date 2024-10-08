@@ -22,8 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
- * View for testing IFrame.reload(), based on
- * https://github.com/vaadin/flow/issues/6808
+ * View for testing IFrame.reload(), based on https://github.com/vaadin/flow/issues/6808
  *
  * @since 14.0
  */
@@ -47,10 +46,9 @@ public class IFrameView extends AbstractDivView {
     public IFrameView() {
         content = "A";
         /*
-         * The test consists of creating a view with an IFrame and a button. The
-         * IFrame contains a span, which contains text "A". Upon pressing the
-         * button, "B" is loaded into the span. The test then verifies that "B"
-         * is visible in the span.
+         * The test consists of creating a view with an IFrame and a button. The IFrame contains a span, which contains
+         * text "A". Upon pressing the button, "B" is loaded into the span. The test then verifies that "B" is visible
+         * in the span.
          */
         frame.setSrc("/view/iframecontent");
         frame.setId("frame1");

@@ -38,8 +38,7 @@ public class DragStartEvent<T extends Component> extends ComponentEvent<T> {
      * @param source
      *            Component that is dragged.
      * @param fromClient
-     *            <code>true</code> if the event originated from the client
-     *            side, <code>false</code> otherwise
+     *            <code>true</code> if the event originated from the client side, <code>false</code> otherwise
      */
     public DragStartEvent(T source, boolean fromClient) {
         super(source, fromClient);
@@ -55,12 +54,10 @@ public class DragStartEvent<T extends Component> extends ComponentEvent<T> {
     }
 
     /**
-     * Set server side drag data for this started drag operation. This data is
-     * available in the drop event and can be used to transfer data between drag
-     * source and {@link DropTarget} if they are in the same UI.
+     * Set server side drag data for this started drag operation. This data is available in the drop event and can be
+     * used to transfer data between drag source and {@link DropTarget} if they are in the same UI.
      * <p>
-     * This method is a shorthand for {@link DragSource#setDragData(Object)} and
-     * overrides any previously set drag data.
+     * This method is a shorthand for {@link DragSource#setDragData(Object)} and overrides any previously set drag data.
      *
      * @param data
      *            Data to transfer to drop event.

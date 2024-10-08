@@ -35,8 +35,7 @@ public class InfiniteRerouteLoopIT extends ChromeBrowserTest {
 
         waitUntil(driver -> isElementPresent(By.tagName("body")));
 
-        Assert.assertTrue(
-                driver.getCurrentUrl().endsWith(NAVIGATION_EXCEPTION));
+        Assert.assertTrue(driver.getCurrentUrl().endsWith(NAVIGATION_EXCEPTION));
     }
 
     @Override

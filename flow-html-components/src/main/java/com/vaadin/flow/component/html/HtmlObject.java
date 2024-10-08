@@ -36,8 +36,8 @@ import com.vaadin.flow.server.StreamResource;
  *
  */
 @Tag(Tag.OBJECT)
-public class HtmlObject extends HtmlContainer implements
-        ClickNotifier<HtmlObject>, HasOrderedComponents, Focusable<HtmlObject> {
+public class HtmlObject extends HtmlContainer
+        implements ClickNotifier<HtmlObject>, HasOrderedComponents, Focusable<HtmlObject> {
 
     private static final PropertyDescriptor<String, String> dataDescriptor = PropertyDescriptors
             .attributeWithDefault("data", "");
@@ -52,8 +52,7 @@ public class HtmlObject extends HtmlContainer implements
     }
 
     /**
-     * Creates a new <code>&lt;object&gt;</code> component with given data and
-     * type attribute values.
+     * Creates a new <code>&lt;object&gt;</code> component with given data and type attribute values.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -70,8 +69,8 @@ public class HtmlObject extends HtmlContainer implements
     }
 
     /**
-     * Creates a new <code>&lt;object&gt;</code> component with given data, type
-     * attribute values and and "param" components.
+     * Creates a new <code>&lt;object&gt;</code> component with given data, type attribute values and and "param"
+     * components.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -92,8 +91,7 @@ public class HtmlObject extends HtmlContainer implements
     }
 
     /**
-     * Creates a new <code>&lt;object&gt;</code> component with given data
-     * resource and type value.
+     * Creates a new <code>&lt;object&gt;</code> component with given data resource and type value.
      *
      * @see #setData(AbstractStreamResource)
      * @see #setType(String)
@@ -109,8 +107,7 @@ public class HtmlObject extends HtmlContainer implements
     }
 
     /**
-     * Creates a new <code>&lt;object&gt;</code> component with given data
-     * resource, type value and "param" components.
+     * Creates a new <code>&lt;object&gt;</code> component with given data resource, type value and "param" components.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -124,16 +121,14 @@ public class HtmlObject extends HtmlContainer implements
      * @param params
      *            parameter components
      */
-    public HtmlObject(AbstractStreamResource data, String type,
-            Param... params) {
+    public HtmlObject(AbstractStreamResource data, String type, Param... params) {
         setData(data);
         setType(type);
         add(params);
     }
 
     /**
-     * Creates a new <code>&lt;object&gt;</code> component with given data and
-     * "param" components.
+     * Creates a new <code>&lt;object&gt;</code> component with given data and "param" components.
      *
      * @see #setData(String)
      * @see #add(Component...)
@@ -150,8 +145,7 @@ public class HtmlObject extends HtmlContainer implements
     }
 
     /**
-     * Creates a new <code>&lt;object&gt;</code> component with given data
-     * resource value.
+     * Creates a new <code>&lt;object&gt;</code> component with given data resource value.
      *
      * @see #setData(AbstractStreamResource)
      *
@@ -163,8 +157,7 @@ public class HtmlObject extends HtmlContainer implements
     }
 
     /**
-     * Creates a new <code>&lt;object&gt;</code> component with given data
-     * resource value and "param" components.
+     * Creates a new <code>&lt;object&gt;</code> component with given data resource value and "param" components.
      *
      * @see #setData(AbstractStreamResource)
      * @see #add(Component...)

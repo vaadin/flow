@@ -28,17 +28,15 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinServletContext;
 
 /**
- * Allows to load the implementation class by one classloader but accepts
- * classes in {@link #onStartup(Set, ServletContext)} method loaded by another
- * classloader.
+ * Allows to load the implementation class by one classloader but accepts classes in
+ * {@link #onStartup(Set, ServletContext)} method loaded by another classloader.
  * <p>
  * Workaround for https://github.com/vaadin/flow/issues/7805.
  *
  * @author Vaadin Ltd
  *
  */
-public interface ClassLoaderAwareServletContainerInitializer
-        extends ServletContainerInitializer {
+public interface ClassLoaderAwareServletContainerInitializer extends ServletContainerInitializer {
 
     /**
      * Overridden to use different classloaders if needed.
@@ -46,16 +44,15 @@ public interface ClassLoaderAwareServletContainerInitializer
      * {@inheritDoc}
      */
     @Override
-    default void onStartup(Set<Class<?>> set, ServletContext context)
-            throws ServletException {
+    default void onStartup(Set<Class<?>> set, ServletContext context) throws ServletException {
         // see DeferredServletContextIntializers
         DeferredServletContextInitializers.Initializer deferredInitializer = ctx -> {
             ClassLoader webClassLoader = ctx.getClassLoader();
             ClassLoader classLoader = getClass().getClassLoader();
 
             /*
-             * Hack is needed to make a workaround for weird behavior of WildFly
-             * with skinnywar See https://github.com/vaadin/flow/issues/7805
+             * Hack is needed to make a workaround for weird behavior of WildFly with skinnywar See
+             * https://github.com/vaadin/flow/issues/7805
              */
             boolean noHack = false;
             while (classLoader != null) {
@@ -64,13 +61,10 @@ public interface ClassLoaderAwareServletContainerInitializer
                     break;
                 } else {
                     /*
-                     * The classloader which has loaded this class ({@code
-                     * classLoader}) should be either the {@code webClassLoader}
-                     * or its child: in this case it knows how to handle the
-                     * classes loaded by the {@code webClassLoader} : it either
-                     * is able to load them itself or delegate to its parent
-                     * (which is the {@code webClassLoader}): in this case hack
-                     * is not needed and the {@link #process(Set,
+                     * The classloader which has loaded this class ({@code classLoader}) should be either the {@code
+                     * webClassLoader} or its child: in this case it knows how to handle the classes loaded by the
+                     * {@code webClassLoader} : it either is able to load them itself or delegate to its parent (which
+                     * is the {@code webClassLoader}): in this case hack is not needed and the {@link #process(Set,
                      * ServletContext)} method can be called directly.
                      */
                     classLoader = classLoader.getParent();
@@ -83,38 +77,27 @@ public interface ClassLoaderAwareServletContainerInitializer
             }
 
             try {
-                Class<?> initializer = ctx.getClassLoader()
-                        .loadClass(getClass().getName());
+                Class<?> initializer = ctx.getClassLoader().loadClass(getClass().getName());
 
                 String processMethodName = Stream
-                        .of(ClassLoaderAwareServletContainerInitializer.class
-                                .getDeclaredMethods())
-                        .filter(method -> !method.isDefault()
-                                && !method.isSynthetic())
-                        .findFirst().get().getName();
-                Method operation = Stream.of(initializer.getMethods()).filter(
-                        method -> method.getName().equals(processMethodName))
-                        .findFirst().get();
-                operation.invoke(initializer.newInstance(),
-                        new Object[] { set, ctx });
-            } catch (ClassNotFoundException | IllegalAccessException
-                    | IllegalArgumentException | InvocationTargetException
-                    | InstantiationException e) {
+                        .of(ClassLoaderAwareServletContainerInitializer.class.getDeclaredMethods())
+                        .filter(method -> !method.isDefault() && !method.isSynthetic()).findFirst().get().getName();
+                Method operation = Stream.of(initializer.getMethods())
+                        .filter(method -> method.getName().equals(processMethodName)).findFirst().get();
+                operation.invoke(initializer.newInstance(), new Object[] { set, ctx });
+            } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | InstantiationException e) {
                 throw new ServletException(e);
             }
         };
 
         if (requiresLookup()) {
-            VaadinServletContext vaadinContext = new VaadinServletContext(
-                    context);
+            VaadinServletContext vaadinContext = new VaadinServletContext(context);
             synchronized (context) {
                 if (vaadinContext.getAttribute(Lookup.class) == null) {
-                    DeferredServletContextInitializers initializers = vaadinContext
-                            .getAttribute(
-                                    DeferredServletContextInitializers.class,
-                                    () -> new DeferredServletContextInitializers());
-                    initializers.addInitializer(
-                            ctx -> deferredInitializer.init(ctx));
+                    DeferredServletContextInitializers initializers = vaadinContext.getAttribute(
+                            DeferredServletContextInitializers.class, () -> new DeferredServletContextInitializers());
+                    initializers.addInitializer(ctx -> deferredInitializer.init(ctx));
                     return;
                 }
             }
@@ -132,27 +115,23 @@ public interface ClassLoaderAwareServletContainerInitializer
     }
 
     /**
-     * Implement this method instead of {@link #onStartup(Set, ServletContext)}
-     * to handle classes accessible by different classloaders.
+     * Implement this method instead of {@link #onStartup(Set, ServletContext)} to handle classes accessible by
+     * different classloaders.
      *
      * @param classSet
-     *            the Set of application classes that extend, implement, or have
-     *            been annotated with the class types specified by the
-     *            {@link jakarta.servlet.annotation.HandlesTypes HandlesTypes}
-     *            annotation, or <code>null</code> if there are no matches, or
-     *            this <code>ServletContainerInitializer</code> has not been
-     *            annotated with <code>HandlesTypes</code>
+     *            the Set of application classes that extend, implement, or have been annotated with the class types
+     *            specified by the {@link jakarta.servlet.annotation.HandlesTypes HandlesTypes} annotation, or
+     *            <code>null</code> if there are no matches, or this <code>ServletContainerInitializer</code> has not
+     *            been annotated with <code>HandlesTypes</code>
      *
      * @param context
-     *            the <code>ServletContext</code> of the web application that is
-     *            being started and in which the classes contained in
-     *            <code>classSet</code> were found
+     *            the <code>ServletContext</code> of the web application that is being started and in which the classes
+     *            contained in <code>classSet</code> were found
      *
      * @throws ServletException
      *             if an error has occurred
      *
      * @see #onStartup(Set, ServletContext)
      */
-    void process(Set<Class<?>> classSet, ServletContext context)
-            throws ServletException;
+    void process(Set<Class<?>> classSet, ServletContext context) throws ServletException;
 }

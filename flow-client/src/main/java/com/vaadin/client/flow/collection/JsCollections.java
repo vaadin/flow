@@ -26,8 +26,7 @@ import com.vaadin.client.flow.collection.jre.JreJsSet;
 import com.vaadin.client.flow.collection.jre.JreJsWeakMap;
 
 /**
- * Factory for JavaScript collection implementations with support for
- * alternative JRE implementations.
+ * Factory for JavaScript collection implementations with support for alternative JRE implementations.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -36,8 +35,7 @@ import com.vaadin.client.flow.collection.jre.JreJsWeakMap;
 public class JsCollections {
 
     /**
-     * Functional interface for iterating all the entries in a {@link JsSet} or
-     * {@link JsArray}.
+     * Functional interface for iterating all the entries in a {@link JsSet} or {@link JsArray}.
      *
      * @param <V>
      *            the value type
@@ -183,8 +181,7 @@ public class JsCollections {
                     "This is not a JUnit compilation even though compiler.stackMode check has the expected value");
         }
 
-        assert !isNativeMapConstructor()
-                : "ES6 collection cannot be created before gwtSetUp has set up the polyfill";
+        assert !isNativeMapConstructor() : "ES6 collection cannot be created before gwtSetUp has set up the polyfill";
     }
 
     private static native boolean isNativeMapConstructor()

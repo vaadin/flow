@@ -76,8 +76,7 @@ public class WebComponentBindingTest {
         obj.put("String", "Value");
 
         binding.updateProperty("json", obj);
-        Assert.assertEquals("{\"String\":\"Value\"}",
-                component.jsonValue.toJson());
+        Assert.assertEquals("{\"String\":\"Value\"}", component.jsonValue.toJson());
     }
 
     @Tag("tag")

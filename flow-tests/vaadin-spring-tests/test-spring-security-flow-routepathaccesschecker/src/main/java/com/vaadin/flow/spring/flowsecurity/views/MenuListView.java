@@ -49,17 +49,13 @@ public class MenuListView extends Div implements AfterNavigationObserver {
     public void afterNavigation(AfterNavigationEvent event) {
         String targetAccessibleMenuRoutes = event.getSource().getRegistry()
                 .getRegisteredAccessibleMenuRoutes(VaadinRequest.getCurrent(),
-                        UI.getCurrent().getInternals()
-                                .getListeners(BeforeEnterHandler.class).stream()
+                        UI.getCurrent().getInternals().getListeners(BeforeEnterHandler.class).stream()
                                 .filter(handler -> handler instanceof BeforeEnterListener)
                                 .map(BeforeEnterListener.class::cast).toList())
                 .stream()
                 .sorted(Comparator.comparing(
-                        routeData -> ((routeData.getMenuData() != null)
-                                ? routeData.getMenuData().getOrder()
-                                : -1)))
-                .map(RouteBaseData::getNavigationTarget)
-                .map(Class::getSimpleName).collect(Collectors.joining(", "));
+                        routeData -> ((routeData.getMenuData() != null) ? routeData.getMenuData().getOrder() : -1)))
+                .map(RouteBaseData::getNavigationTarget).map(Class::getSimpleName).collect(Collectors.joining(", "));
         removeAll();
 
         var span = new Span(targetAccessibleMenuRoutes);

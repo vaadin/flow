@@ -37,36 +37,24 @@ public class ExtendedClientDetailsView extends AbstractDivView {
 
         // the sizing values cannot be set with JS but pixel ratio and touch
         // support can be faked
-        NativeButton setValuesButton = new NativeButton("Set test values",
-                event -> {
-                    getUI().ifPresent(ui -> ui.getPage()
-                            .executeJs("{" + "window.devicePixelRatio = 2.0;"
-                                    + "navigator.msMaxTouchPoints = 1;" + "}"));
-                });
+        NativeButton setValuesButton = new NativeButton("Set test values", event -> {
+            getUI().ifPresent(ui -> ui.getPage()
+                    .executeJs("{" + "window.devicePixelRatio = 2.0;" + "navigator.msMaxTouchPoints = 1;" + "}"));
+        });
         setValuesButton.setId("set-values");
 
-        NativeButton fetchDetailsButton = new NativeButton(
-                "Fetch client details", event -> {
-                    getUI().ifPresent(ui -> ui.getPage()
-                            .retrieveExtendedClientDetails(details -> {
-                                screenWidth
-                                        .setText("" + details.getScreenWidth());
-                                screenHeight.setText(
-                                        "" + details.getScreenHeight());
-                                windowInnerWidth.setText(
-                                        "" + details.getWindowInnerWidth());
-                                windowInnerHeight.setText(
-                                        "" + details.getWindowInnerHeight());
-                                bodyElementWidth.setText(
-                                        "" + details.getBodyClientWidth());
-                                bodyElementHeight.setText(
-                                        "" + details.getBodyClientHeight());
-                                devicePixelRatio.setText(
-                                        "" + details.getDevicePixelRatio());
-                                touchDevice
-                                        .setText("" + details.isTouchDevice());
-                            }));
-                });
+        NativeButton fetchDetailsButton = new NativeButton("Fetch client details", event -> {
+            getUI().ifPresent(ui -> ui.getPage().retrieveExtendedClientDetails(details -> {
+                screenWidth.setText("" + details.getScreenWidth());
+                screenHeight.setText("" + details.getScreenHeight());
+                windowInnerWidth.setText("" + details.getWindowInnerWidth());
+                windowInnerHeight.setText("" + details.getWindowInnerHeight());
+                bodyElementWidth.setText("" + details.getBodyClientWidth());
+                bodyElementHeight.setText("" + details.getBodyClientHeight());
+                devicePixelRatio.setText("" + details.getDevicePixelRatio());
+                touchDevice.setText("" + details.isTouchDevice());
+            }));
+        });
         fetchDetailsButton.setId("fetch-values");
 
         add(setValuesButton, fetchDetailsButton);

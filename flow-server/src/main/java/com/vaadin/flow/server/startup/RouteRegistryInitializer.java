@@ -50,8 +50,7 @@ import com.vaadin.flow.router.Layout;
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         implements VaadinServletContextStartupInitializer {
 
-    private static class PreviouslyStoredRoutesRegistry
-            extends ApplicationRouteRegistry {
+    private static class PreviouslyStoredRoutesRegistry extends ApplicationRouteRegistry {
 
         private PreviouslyStoredRoutesRegistry(VaadinContext context) {
             super(context);
@@ -60,24 +59,18 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
     }
 
     @Override
-    public void initialize(Set<Class<?>> classSet, VaadinContext context)
-            throws VaadinInitializerException {
+    public void initialize(Set<Class<?>> classSet, VaadinContext context) throws VaadinInitializerException {
         try {
-            Set<Class<?>> routesSet = AbstractAnnotationValidator
-                    .removeHandleTypesSelfReferences(classSet, this);
+            Set<Class<?>> routesSet = AbstractAnnotationValidator.removeHandleTypesSelfReferences(classSet, this);
 
-            ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
-                    .getInstance(context);
+            ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry.getInstance(context);
 
             validateLayoutAnnotations(routesSet);
-            routesSet.stream()
-                    .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
+            routesSet.stream().filter(clazz -> clazz.isAnnotationPresent(Layout.class))
                     .filter(clazz -> RouterLayout.class.isAssignableFrom(clazz))
-                    .forEach(clazz -> routeRegistry
-                            .setLayout((Class<? extends RouterLayout>) clazz));
+                    .forEach(clazz -> routeRegistry.setLayout((Class<? extends RouterLayout>) clazz));
 
-            Set<Class<? extends Component>> routes = validateRouteClasses(
-                    context, routesSet.stream());
+            Set<Class<? extends Component>> routes = validateRouteClasses(context, routesSet.stream());
 
             routeRegistry.update(() -> {
                 if (removePreviousRoutes(context, routeRegistry)) {
@@ -86,111 +79,86 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
 
                 configureRoutes(routes, routeRegistry);
             });
-            routeRegistry.setPwaConfigurationClass(validatePwaClass(context,
-                    routes.stream().map(clazz -> clazz)));
+            routeRegistry.setPwaConfigurationClass(validatePwaClass(context, routes.stream().map(clazz -> clazz)));
         } catch (InvalidRouteConfigurationException irce) {
-            throw new VaadinInitializerException(
-                    "Exception while registering Routes on servlet startup",
-                    irce);
+            throw new VaadinInitializerException("Exception while registering Routes on servlet startup", irce);
         }
     }
 
     /**
-     * Validate {@link Layout} annotations that they are not added on classes
-     * that do not extend {@link RouterLayout} as they can not work without the
-     * implementation.
+     * Validate {@link Layout} annotations that they are not added on classes that do not extend {@link RouterLayout} as
+     * they can not work without the implementation.
      *
      * @param routesSet
      *            Routes to check
      * @throws InvalidRouteLayoutConfigurationException
-     *             Thrown if any {@link Layout} annotations are found on non
-     *             {@link RouterLayout} classes
+     *             Thrown if any {@link Layout} annotations are found on non {@link RouterLayout} classes
      */
     public static void validateLayoutAnnotations(Set<Class<?>> routesSet)
             throws InvalidRouteLayoutConfigurationException {
-        List<Class<?>> faultyLayouts = routesSet.stream()
-                .filter(clazz -> clazz.isAnnotationPresent(Layout.class))
-                .filter(clazz -> !RouterLayout.class.isAssignableFrom(clazz))
-                .collect(Collectors.toList());
+        List<Class<?>> faultyLayouts = routesSet.stream().filter(clazz -> clazz.isAnnotationPresent(Layout.class))
+                .filter(clazz -> !RouterLayout.class.isAssignableFrom(clazz)).collect(Collectors.toList());
         if (!faultyLayouts.isEmpty()) {
             String message = "Found @Layout on classes { %s } not implementing RouterLayout.";
-            String faultyLayoutsString = faultyLayouts.stream()
-                    .map(clazz -> clazz.getName())
+            String faultyLayoutsString = faultyLayouts.stream().map(clazz -> clazz.getName())
                     .collect(Collectors.joining(","));
-            throw new InvalidRouteLayoutConfigurationException(
-                    String.format(message, faultyLayoutsString));
+            throw new InvalidRouteLayoutConfigurationException(String.format(message, faultyLayoutsString));
         }
         Map<String, List<Class<?>>> layoutsMap = new HashMap<>();
         for (Class<?> routeClass : routesSet) {
             if (routeClass.isAnnotationPresent(Layout.class)) {
-                String layoutValue = routeClass.getAnnotation(Layout.class)
-                        .value();
-                layoutsMap.computeIfAbsent(layoutValue, k -> new ArrayList<>())
-                        .add(routeClass);
+                String layoutValue = routeClass.getAnnotation(Layout.class).value();
+                layoutsMap.computeIfAbsent(layoutValue, k -> new ArrayList<>()).add(routeClass);
             }
         }
-        Set<List<Class<?>>> collect = layoutsMap.values().stream()
-                .filter(entry -> entry.size() > 1).collect(Collectors.toSet());
+        Set<List<Class<?>>> collect = layoutsMap.values().stream().filter(entry -> entry.size() > 1)
+                .collect(Collectors.toSet());
         if (!collect.isEmpty()) {
-            StringBuilder messageBuilder = new StringBuilder(
-                    "Found duplicate @Layout values in classes:");
+            StringBuilder messageBuilder = new StringBuilder("Found duplicate @Layout values in classes:");
             for (List<Class<?>> classes : collect) {
                 messageBuilder.append("\n").append(" - ")
-                        .append(classes.stream().map(clazz -> clazz.getName())
-                                .collect(Collectors.joining(" - ")));
+                        .append(classes.stream().map(clazz -> clazz.getName()).collect(Collectors.joining(" - ")));
             }
-            throw new InvalidRouteLayoutConfigurationException(
-                    messageBuilder.toString());
+            throw new InvalidRouteLayoutConfigurationException(messageBuilder.toString());
         }
     }
 
-    private void configureStaticRoutesRegistry(VaadinContext context,
-            Set<Class<? extends Component>> routes) {
-        PreviouslyStoredRoutesRegistry registry = new PreviouslyStoredRoutesRegistry(
-                context);
+    private void configureStaticRoutesRegistry(VaadinContext context, Set<Class<? extends Component>> routes) {
+        PreviouslyStoredRoutesRegistry registry = new PreviouslyStoredRoutesRegistry(context);
 
         configureRoutes(routes, registry);
         context.setAttribute(registry);
     }
 
-    private boolean removePreviousRoutes(VaadinContext context,
-            ApplicationRouteRegistry registry) {
+    private boolean removePreviousRoutes(VaadinContext context, ApplicationRouteRegistry registry) {
         Lookup lookup = context.getAttribute(Lookup.class);
 
-        OneTimeInitializerPredicate oneTimeInitializer = lookup
-                .lookup(OneTimeInitializerPredicate.class);
+        OneTimeInitializerPredicate oneTimeInitializer = lookup.lookup(OneTimeInitializerPredicate.class);
 
         if (oneTimeInitializer != null && oneTimeInitializer.runOnce()) {
             return false;
         }
-        PreviouslyStoredRoutesRegistry prevoiusRegistry = context
-                .getAttribute(PreviouslyStoredRoutesRegistry.class);
+        PreviouslyStoredRoutesRegistry prevoiusRegistry = context.getAttribute(PreviouslyStoredRoutesRegistry.class);
         if (prevoiusRegistry != null) {
             prevoiusRegistry.getRegisteredRoutes().forEach(routeData -> {
                 registry.removeRoute(routeData.getTemplate());
-                routeData.getRouteAliases().forEach(
-                        alias -> registry.removeRoute(alias.getTemplate()));
+                routeData.getRouteAliases().forEach(alias -> registry.removeRoute(alias.getTemplate()));
             });
         }
         return true;
     }
 
-    private void configureRoutes(Set<Class<? extends Component>> routes,
-            ApplicationRouteRegistry routeRegistry) {
-        RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(routeRegistry);
-        routeConfiguration
-                .update(() -> setAnnotatedRoutes(routeConfiguration, routes));
+    private void configureRoutes(Set<Class<? extends Component>> routes, ApplicationRouteRegistry routeRegistry) {
+        RouteConfiguration routeConfiguration = RouteConfiguration.forRegistry(routeRegistry);
+        routeConfiguration.update(() -> setAnnotatedRoutes(routeConfiguration, routes));
     }
 
-    private void setAnnotatedRoutes(RouteConfiguration routeConfiguration,
-            Set<Class<? extends Component>> routes) {
+    private void setAnnotatedRoutes(RouteConfiguration routeConfiguration, Set<Class<? extends Component>> routes) {
         for (Class<? extends Component> navigationTarget : routes) {
             try {
                 routeConfiguration.setAnnotatedRoute(navigationTarget);
             } catch (AmbiguousRouteConfigurationException exception) {
-                if (!handleAmbiguousRoute(routeConfiguration,
-                        exception.getConfiguredNavigationTarget(),
+                if (!handleAmbiguousRoute(routeConfiguration, exception.getConfiguredNavigationTarget(),
                         navigationTarget)) {
                     throw exception;
                 }
@@ -199,13 +167,10 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
     }
 
     private boolean handleAmbiguousRoute(RouteConfiguration routeConfiguration,
-            Class<? extends Component> configuredNavigationTarget,
-            Class<? extends Component> navigationTarget) {
-        if (GenericTypeReflector.isSuperType(navigationTarget,
-                configuredNavigationTarget)) {
+            Class<? extends Component> configuredNavigationTarget, Class<? extends Component> navigationTarget) {
+        if (GenericTypeReflector.isSuperType(navigationTarget, configuredNavigationTarget)) {
             return true;
-        } else if (GenericTypeReflector.isSuperType(configuredNavigationTarget,
-                navigationTarget)) {
+        } else if (GenericTypeReflector.isSuperType(configuredNavigationTarget, navigationTarget)) {
             routeConfiguration.removeRoute(configuredNavigationTarget);
             routeConfiguration.setAnnotatedRoute(navigationTarget);
             return true;

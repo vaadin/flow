@@ -74,8 +74,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
     @Override
     public void setTransport(Transport transport) {
         if (transport == Transport.WEBSOCKET_XHR) {
-            getParameters().put(TRANSPORT_KEY,
-                    Transport.WEBSOCKET.getIdentifier());
+            getParameters().put(TRANSPORT_KEY, Transport.WEBSOCKET.getIdentifier());
             put(ALWAYS_USE_XHR_TO_SERVER, true);
         } else {
             getParameters().put(TRANSPORT_KEY, transport.getIdentifier());
@@ -85,12 +84,10 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
 
     private NodeMap getParameters() {
         if (!contains(PARAMETERS_KEY)) {
-            put(PARAMETERS_KEY,
-                    new StateNode(PushConfigurationParametersMap.class));
+            put(PARAMETERS_KEY, new StateNode(PushConfigurationParametersMap.class));
         }
 
-        return ((StateNode) get(PARAMETERS_KEY))
-                .getFeature(PushConfigurationParametersMap.class);
+        return ((StateNode) get(PARAMETERS_KEY)).getFeature(PushConfigurationParametersMap.class);
     }
 
     @Override
@@ -99,8 +96,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
             return null;
         }
 
-        Transport tr = Transport
-                .getByIdentifier(getParameters().get(TRANSPORT_KEY).toString());
+        Transport tr = Transport.getByIdentifier(getParameters().get(TRANSPORT_KEY).toString());
         if (tr == Transport.WEBSOCKET && contains(ALWAYS_USE_XHR_TO_SERVER)) {
             return Transport.WEBSOCKET_XHR;
         } else {
@@ -111,11 +107,9 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
     @Override
     public void setFallbackTransport(Transport fallbackTransport) {
         if (fallbackTransport == Transport.WEBSOCKET_XHR) {
-            throw new IllegalArgumentException(
-                    "WEBSOCKET_XHR can only be used as primary transport");
+            throw new IllegalArgumentException("WEBSOCKET_XHR can only be used as primary transport");
         }
-        getParameters().put(FALLBACK_TRANSPORT_KEY,
-                fallbackTransport.getIdentifier());
+        getParameters().put(FALLBACK_TRANSPORT_KEY, fallbackTransport.getIdentifier());
     }
 
     @Override
@@ -124,8 +118,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
             return null;
         }
 
-        return Transport.getByIdentifier(
-                getParameters().get(FALLBACK_TRANSPORT_KEY).toString());
+        return Transport.getByIdentifier(getParameters().get(FALLBACK_TRANSPORT_KEY).toString());
     }
 
     @Override
@@ -165,7 +158,6 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
 
     @Override
     public void setPushConnectionFactory(PushConnectionFactory factory) {
-        throw new UnsupportedOperationException(
-                "Setting push connection factory is not supported");
+        throw new UnsupportedOperationException("Setting push connection factory is not supported");
     }
 }

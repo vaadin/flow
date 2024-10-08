@@ -56,25 +56,19 @@ public class ThemeIT extends ChromeBrowserTest {
         // This is a TypeScript view and as TestBench cannot wait for
         // the Vaadin router to complete the routing operation (the view
         // is imported dynamically) we need "waitForFirst" here
-        final TestBenchElement helloWorld = $("hello-world-view")
-                .waitForFirst();
+        final TestBenchElement helloWorld = $("hello-world-view").waitForFirst();
 
-        Assert.assertEquals(
-                "CSS was not applied as background color was not as expected.",
-                "rgba(255, 165, 0, 1)",
+        Assert.assertEquals("CSS was not applied as background color was not as expected.", "rgba(255, 165, 0, 1)",
                 helloWorld.getCssValue("background-color"));
     }
 
     @Test
     public void referenceResourcesOnJavaSideForStyling_stylesAreApplied() {
         open();
-        final String resourceUrl = getRootURL()
-                + "/path/themes/app-theme/img/dice.jpg";
+        final String resourceUrl = getRootURL() + "/path/themes/app-theme/img/dice.jpg";
         WebElement diceSpan = findElement(By.id(DICE_ID));
         final String expectedImgUrl = "url(\"" + resourceUrl + "\")";
-        Assert.assertEquals(
-                "Background image has been referenced on java page and "
-                        + "expected to be applied",
+        Assert.assertEquals("Background image has been referenced on java page and " + "expected to be applied",
                 expectedImgUrl, diceSpan.getCssValue("background-image"));
         getDriver().get(resourceUrl);
         Assert.assertFalse("Java-side referenced resource should be served",
@@ -86,9 +80,8 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         WebElement cssNodeSnowflake = findElement(By.id(CSS_SNOWFLAKE));
         String imageUrl = cssNodeSnowflake.getCssValue("background-image");
-        assertImageEquals(Paths.get("target", "classes", "META-INF", "VAADIN",
-                "webapp", "VAADIN", "static", "themes", "app-theme",
-                "fortawesome", "icons", "snowflake.svg"), imageUrl);
+        assertImageEquals(Paths.get("target", "classes", "META-INF", "VAADIN", "webapp", "VAADIN", "static", "themes",
+                "app-theme", "fortawesome", "icons", "snowflake.svg"), imageUrl);
     }
 
     @Test
@@ -99,9 +92,8 @@ public class ThemeIT extends ChromeBrowserTest {
 
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
         String source = driver.getPageSource();
-        Matcher m = Pattern.compile(
-                ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
-                Pattern.DOTALL).matcher(source);
+        Matcher m = Pattern.compile(".*Could not navigate to.*themes/no-copy/no-copy.txt.*", Pattern.DOTALL)
+                .matcher(source);
         Assert.assertTrue("no-copy theme should not be handled", m.matches());
     }
 
@@ -115,18 +107,16 @@ public class ThemeIT extends ChromeBrowserTest {
         // Note themes/app-theme resources are served from VAADIN/build in
         // production mode
         String imageUrl = body.getCssValue("background-image");
-        assertImageEquals(Paths.get(FrontendUtils.DEFAULT_FRONTEND_DIR,
-                "themes", "app-theme", "img", "bg.jpg"), imageUrl);
+        assertImageEquals(Paths.get(FrontendUtils.DEFAULT_FRONTEND_DIR, "themes", "app-theme", "img", "bg.jpg"),
+                imageUrl);
 
-        Assert.assertEquals("body font-family should come from styles.css",
-                "Ostrich", body.getCssValue("font-family"));
+        Assert.assertEquals("body font-family should come from styles.css", "Ostrich", body.getCssValue("font-family"));
 
-        Assert.assertEquals("html color from styles.css should be applied.",
-                "rgba(0, 0, 0, 1)", body.getCssValue("color"));
+        Assert.assertEquals("html color from styles.css should be applied.", "rgba(0, 0, 0, 1)",
+                body.getCssValue("color"));
 
         // Note themes/app-theme gets VAADIN/static from the file-loader
-        getDriver().get(
-                getRootURL() + "/VAADIN/static/themes/app-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/VAADIN/static/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
@@ -136,18 +126,13 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        Assert.assertEquals("Imported FontAwesome css file should be applied.",
-                "\"Font Awesome 5 Free\"", $(SpanElement.class)
-                        .id(FONTAWESOME_ID).getCssValue("font-family"));
+        Assert.assertEquals("Imported FontAwesome css file should be applied.", "\"Font Awesome 5 Free\"",
+                $(SpanElement.class).id(FONTAWESOME_ID).getCssValue("font-family"));
 
-        String iconUnicode = getCssPseudoElementValue(FONTAWESOME_ID,
-                "::before");
-        Assert.assertEquals(
-                "Font-Icon from FontAwesome css file should be applied.",
-                "\"\uf0f4\"", iconUnicode);
+        String iconUnicode = getCssPseudoElementValue(FONTAWESOME_ID, "::before");
+        Assert.assertEquals("Font-Icon from FontAwesome css file should be applied.", "\"\uf0f4\"", iconUnicode);
 
-        getDriver().get(getRootURL()
-                + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
+        getDriver().get(getRootURL() + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
         Assert.assertFalse("Font resource should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -155,24 +140,20 @@ public class ThemeIT extends ChromeBrowserTest {
     @Test
     public void componentThemeIsApplied() {
         open();
-        TestBenchElement myField = $(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
+        TestBenchElement myField = $(TestBenchElement.class).id(MY_COMPONENT_ID);
+        TestBenchElement input = myField.$("vaadin-input-container").attribute("part", "input-field").first();
+        Assert.assertEquals("Polymer text field should have red background", "rgba(255, 0, 0, 1)",
+                input.getCssValue("background-color"));
     }
 
     @Test
-    public void subCssWithRelativePath_imageIsLoadedProperly()
-            throws IOException {
+    public void subCssWithRelativePath_imageIsLoadedProperly() throws IOException {
         open();
         checkLogsForErrors();
 
-        String backgroundUrl = $(SpanElement.class).id(SUB_COMPONENT_ID)
-                .getCssValue("background-image");
-        assertImageEquals(Paths.get(FrontendUtils.DEFAULT_FRONTEND_DIR
-                + "themes/app-theme/icons/archive.png"), backgroundUrl);
+        String backgroundUrl = $(SpanElement.class).id(SUB_COMPONENT_ID).getCssValue("background-image");
+        assertImageEquals(Paths.get(FrontendUtils.DEFAULT_FRONTEND_DIR + "themes/app-theme/icons/archive.png"),
+                backgroundUrl);
     }
 
     @Test
@@ -180,14 +161,11 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        Assert.assertEquals(
-                "Node assets should have been copied to 'themes/app-theme'",
-                getRootURL()
-                        + "/path/themes/app-theme/fortawesome/icons/snowflake.svg",
+        Assert.assertEquals("Node assets should have been copied to 'themes/app-theme'",
+                getRootURL() + "/path/themes/app-theme/fortawesome/icons/snowflake.svg",
                 $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
 
-        open(getRootURL() + "/path/"
-                + $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
+        open(getRootURL() + "/path/" + $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
         Assert.assertFalse("Node static icon should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -198,15 +176,12 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         Assert.assertEquals("Relative non theme url should not be touched",
-                "url(\"" + getRootURL()
-                        + "/path/test/path/monarch-butterfly.jpg\")",
-                $(SpanElement.class).id(BUTTERFLY_ID)
-                        .getCssValue("background-image"));
+                "url(\"" + getRootURL() + "/path/test/path/monarch-butterfly.jpg\")",
+                $(SpanElement.class).id(BUTTERFLY_ID).getCssValue("background-image"));
 
         Assert.assertEquals("Absolute non theme url should not be touched",
                 "url(\"" + getRootURL() + "/octopuss.jpg\")",
-                $(SpanElement.class).id(OCTOPUSS_ID)
-                        .getCssValue("background-image"));
+                $(SpanElement.class).id(OCTOPUSS_ID).getCssValue("background-image"));
 
         getDriver().get(getRootURL() + "/path/test/path/monarch-butterfly.jpg");
         Assert.assertFalse("webapp resource should be served",
@@ -230,11 +205,8 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         TestBenchElement subComponent = $("*").id("sub-component");
-        Assert.assertEquals("Width for sub.css should have been applied",
-                "10px",
-                (String) executeScript(
-                        "return getComputedStyle(arguments[0]).width",
-                        subComponent));
+        Assert.assertEquals("Width for sub.css should have been applied", "10px",
+                (String) executeScript("return getComputedStyle(arguments[0]).width", subComponent));
     }
 
     @Test
@@ -249,25 +221,19 @@ public class ThemeIT extends ChromeBrowserTest {
         // (/VAADIN/static) matches when test runs production mode
         String expectedIconsURL = ".*" + getRootURL()
                 + "/path(/VAADIN/static)?/themes/app-theme/fortawesome/icons/%s.*";
-        String imageUrl = $(DivElement.class).id(KEYBOARD_ID)
-                .getCssValue("background-image");
-        Assert.assertTrue("Expecting relative asset URL to be resolved as "
-                + expectedIconsURL + "/keyboard.svg but was " + imageUrl,
-                imageUrl.matches(
-                        String.format(expectedIconsURL, "keyboard.svg")));
+        String imageUrl = $(DivElement.class).id(KEYBOARD_ID).getCssValue("background-image");
+        Assert.assertTrue("Expecting relative asset URL to be resolved as " + expectedIconsURL
+                + "/keyboard.svg but was " + imageUrl,
+                imageUrl.matches(String.format(expectedIconsURL, "keyboard.svg")));
 
-        imageUrl = $(DivElement.class).id(LEMON_ID)
-                .getCssValue("background-image");
+        imageUrl = $(DivElement.class).id(LEMON_ID).getCssValue("background-image");
         Assert.assertTrue(
-                "Expecting relative asset URL to be resolved as "
-                        + expectedIconsURL + "/lemon.svg but was " + imageUrl,
+                "Expecting relative asset URL to be resolved as " + expectedIconsURL + "/lemon.svg but was " + imageUrl,
                 imageUrl.matches(String.format(expectedIconsURL, "lemon.svg")));
 
-        imageUrl = $(DivElement.class).id(SUN_ID)
-                .getCssValue("background-image");
+        imageUrl = $(DivElement.class).id(SUN_ID).getCssValue("background-image");
         Assert.assertTrue(
-                "Expecting relative asset URL to be resolved as "
-                        + expectedIconsURL + "/sun.svg but was " + imageUrl,
+                "Expecting relative asset URL to be resolved as " + expectedIconsURL + "/sun.svg but was " + imageUrl,
                 imageUrl.matches(String.format(expectedIconsURL, "sun.svg")));
     }
 
@@ -278,10 +244,8 @@ public class ThemeIT extends ChromeBrowserTest {
         return path.replace(view, "path/");
     }
 
-    private String getCssPseudoElementValue(String elementId,
-            String pseudoElement) {
-        String script = "return window.getComputedStyle("
-                + "document.getElementById(arguments[0])"
+    private String getCssPseudoElementValue(String elementId, String pseudoElement) {
+        String script = "return window.getComputedStyle(" + "document.getElementById(arguments[0])"
                 + ", arguments[1]).content";
         JavascriptExecutor js = (JavascriptExecutor) driver;
         return (String) js.executeScript(script, elementId, pseudoElement);

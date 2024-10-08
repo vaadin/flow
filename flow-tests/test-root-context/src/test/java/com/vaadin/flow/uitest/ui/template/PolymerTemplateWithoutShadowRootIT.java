@@ -11,8 +11,7 @@ public class PolymerTemplateWithoutShadowRootIT extends ChromeBrowserTest {
     @Test
     public void componentMappedCorrectly() {
         open();
-        DivElement content = $(DivElement.class).attribute("real", "deal")
-                .first();
+        DivElement content = $(DivElement.class).attribute("real", "deal").first();
         Assert.assertEquals("Hello", content.getText());
         DivElement special = $(DivElement.class).id("special!#id");
         Assert.assertEquals("Special", special.getText());

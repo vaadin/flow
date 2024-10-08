@@ -26,16 +26,14 @@ import java.util.Objects;
  * @author Vaadin Ltd.
  * @since 2.0
  */
-public final class PropertyData<P extends Serializable>
-        implements Serializable {
+public final class PropertyData<P extends Serializable> implements Serializable {
     private final String name;
     private final Class<P> type;
     private final P defaultValue;
     private final boolean readOnly;
 
     /**
-     * Constructs a new {@code PropertyData} instance tied to the type of the
-     * property's value given by {@code type}.
+     * Constructs a new {@code PropertyData} instance tied to the type of the property's value given by {@code type}.
      *
      * @param name
      *            name of the property
@@ -46,8 +44,7 @@ public final class PropertyData<P extends Serializable>
      * @param defaultValue
      *            default value for the property
      */
-    public PropertyData(String name, Class<P> type, boolean readOnly,
-            P defaultValue) {
+    public PropertyData(String name, Class<P> type, boolean readOnly, P defaultValue) {
         Objects.requireNonNull(name, "Parameter 'name' must not be null!");
         Objects.requireNonNull(type, "Parameter 'type' must not be null!");
         this.name = name;
@@ -100,8 +97,7 @@ public final class PropertyData<P extends Serializable>
      * @return copy of {@code this}
      */
     public PropertyData<P> updateReadOnly(boolean readOnly) {
-        return new PropertyData<>(this.name, this.type, readOnly,
-                this.defaultValue);
+        return new PropertyData<>(this.name, this.type, readOnly, this.defaultValue);
     }
 
     @Override

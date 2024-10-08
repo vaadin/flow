@@ -67,16 +67,15 @@ public class AppShellRegistry implements Serializable {
             + "App shells are only intended for page configuration and are instantiated before the UI is created.%n";
 
     // There must be no more than one of the following elements per document
-    private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
-            "meta[name=description]", "title", "base" };
+    private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]", "meta[name=description]", "title",
+            "base" };
 
     private Class<? extends AppShellConfigurator> appShellClass;
 
     private final Lookup lookup;
 
     /**
-     * A wrapper class for storing the {@link AppShellRegistry} instance in the
-     * servlet context.
+     * A wrapper class for storing the {@link AppShellRegistry} instance in the servlet context.
      */
     public static class AppShellRegistryWrapper implements Serializable {
         private final AppShellRegistry registry;
@@ -97,8 +96,7 @@ public class AppShellRegistry implements Serializable {
     }
 
     /**
-     * Returns the instance of the registry, or create a new one if it does not
-     * exist yet.
+     * Returns the instance of the registry, or create a new one if it does not exist yet.
      *
      * @param context
      *            servlet context
@@ -106,11 +104,9 @@ public class AppShellRegistry implements Serializable {
      */
     public static AppShellRegistry getInstance(VaadinContext context) {
         synchronized (context) { // NOSONAR
-            AppShellRegistryWrapper attribute = context
-                    .getAttribute(AppShellRegistryWrapper.class);
+            AppShellRegistryWrapper attribute = context.getAttribute(AppShellRegistryWrapper.class);
             if (attribute == null) {
-                attribute = new AppShellRegistryWrapper(
-                        new AppShellRegistry(context));
+                attribute = new AppShellRegistryWrapper(new AppShellRegistry(context));
                 context.setAttribute(attribute);
             }
             return attribute.registry;
@@ -118,29 +114,26 @@ public class AppShellRegistry implements Serializable {
     }
 
     /**
-     * Reset the registry configuration so as it's possible to perform a new
-     * configuration and validation.
+     * Reset the registry configuration so as it's possible to perform a new configuration and validation.
      */
     public void reset() {
         this.appShellClass = null;
     }
 
     /**
-     * Sets the {@link AppShellConfigurator} class in the application. Pass a
-     * null to reset the previous one when reusing the instance.
+     * Sets the {@link AppShellConfigurator} class in the application. Pass a null to reset the previous one when
+     * reusing the instance.
      *
      * @param shell
      *            the class implementing AppShellConfigurator.
      */
     public void setShell(Class<? extends AppShellConfigurator> shell) {
         if (this.appShellClass != null && shell != null) {
-            throw new InvalidApplicationConfigurationException(
-                    String.format(AppShellRegistry.ERROR_MULTIPLE_SHELL,
-                            this.appShellClass.getName(), shell.getName()));
+            throw new InvalidApplicationConfigurationException(String.format(AppShellRegistry.ERROR_MULTIPLE_SHELL,
+                    this.appShellClass.getName(), shell.getName()));
         }
         if (shell != null && Component.class.isAssignableFrom(shell)) {
-            throw new InvalidApplicationConfigurationException(
-                    String.format(ERROR_EXTENDS_COMPONENT, shell.getName()));
+            throw new InvalidApplicationConfigurationException(String.format(ERROR_EXTENDS_COMPONENT, shell.getName()));
         }
         this.appShellClass = shell;
     }
@@ -155,13 +148,11 @@ public class AppShellRegistry implements Serializable {
     }
 
     /**
-     * Checks whether a class have annotations that should only be in
-     * {@link AppShellConfigurator} classes.
+     * Checks whether a class have annotations that should only be in {@link AppShellConfigurator} classes.
      *
      * @param clz
      *            the class to check.
-     * @return a string with the error lines if the class has offending
-     *         annotations
+     * @return a string with the error lines if the class has offending annotations
      */
     public String validateClass(Class<?> clz) {
         String error = null;
@@ -178,8 +169,7 @@ public class AppShellRegistry implements Serializable {
 
         String offending = getClassAnnotations(clz, validOnlyForAppShell);
         if (!offending.isEmpty()) {
-            error = String.format(AppShellRegistry.ERROR_LINE, offending,
-                    clz.getName());
+            error = String.format(AppShellRegistry.ERROR_LINE, offending, clz.getName());
         }
         return error;
     }
@@ -187,31 +177,26 @@ public class AppShellRegistry implements Serializable {
     private AppShellSettings createSettings() {
         AppShellSettings settings = new AppShellSettings();
 
-        getAnnotations(Meta.class).forEach(
-                meta -> settings.addMetaTag(meta.name(), meta.content()));
+        getAnnotations(Meta.class).forEach(meta -> settings.addMetaTag(meta.name(), meta.content()));
 
         List<Viewport> viewPorts = getAnnotations(Viewport.class);
         if (viewPorts.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
-                            Viewport.class.getSimpleName()));
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, Viewport.class.getSimpleName()));
         } else if (!viewPorts.isEmpty()) {
             settings.setViewport(viewPorts.get(0).value());
         }
         List<BodySize> bodySizes = getAnnotations(BodySize.class);
         if (bodySizes.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
-                            BodySize.class.getSimpleName()));
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, BodySize.class.getSimpleName()));
         } else if (!bodySizes.isEmpty()) {
-            settings.setBodySize(bodySizes.get(0).width(),
-                    bodySizes.get(0).height());
+            settings.setBodySize(bodySizes.get(0).width(), bodySizes.get(0).height());
         }
         List<PageTitle> pageTitles = getAnnotations(PageTitle.class);
         if (pageTitles.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
-                            PageTitle.class.getSimpleName()));
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, PageTitle.class.getSimpleName()));
         } else if (!pageTitles.isEmpty()) {
             settings.setPageTitle(pageTitles.get(0).value());
         }
@@ -220,8 +205,7 @@ public class AppShellRegistry implements Serializable {
     }
 
     /**
-     * Modifies the `index.html` document based on the
-     * {@link AppShellConfigurator} annotations or
+     * Modifies the `index.html` document based on the {@link AppShellConfigurator} annotations or
      * {@link AppShellConfigurator#configurePage(AppShellSettings)} method.
      *
      * @param document
@@ -232,36 +216,24 @@ public class AppShellRegistry implements Serializable {
     public void modifyIndexHtml(Document document, VaadinRequest request) {
         AppShellSettings settings = createSettings();
         if (appShellClass != null) {
-            VaadinService.getCurrent().getInstantiator()
-                    .getOrCreate(appShellClass).configurePage(settings);
+            VaadinService.getCurrent().getInstantiator().getOrCreate(appShellClass).configurePage(settings);
         }
 
-        settings.getHeadElements(Position.PREPEND).forEach(
-                elm -> insertElement(elm, document.head()::prependChild));
-        settings.getHeadElements(Position.APPEND).forEach(
-                elm -> insertElement(elm, document.head()::appendChild));
+        settings.getHeadElements(Position.PREPEND).forEach(elm -> insertElement(elm, document.head()::prependChild));
+        settings.getHeadElements(Position.APPEND).forEach(elm -> insertElement(elm, document.head()::appendChild));
 
-        settings.getInlineElements(request.getService(), TargetElement.HEAD,
-                Position.PREPEND)
-                .forEach(elm -> insertInlineElement(elm,
-                        document.head()::prependChild));
-        settings.getInlineElements(request.getService(), TargetElement.HEAD,
-                Position.APPEND)
-                .forEach(elm -> insertInlineElement(elm,
-                        document.head()::appendChild));
-        settings.getInlineElements(request.getService(), TargetElement.BODY,
-                Position.PREPEND)
-                .forEach(elm -> insertInlineElement(elm,
-                        document.body()::prependChild));
-        settings.getInlineElements(request.getService(), TargetElement.BODY,
-                Position.APPEND)
-                .forEach(elm -> insertInlineElement(elm,
-                        document.body()::appendChild));
+        settings.getInlineElements(request.getService(), TargetElement.HEAD, Position.PREPEND)
+                .forEach(elm -> insertInlineElement(elm, document.head()::prependChild));
+        settings.getInlineElements(request.getService(), TargetElement.HEAD, Position.APPEND)
+                .forEach(elm -> insertInlineElement(elm, document.head()::appendChild));
+        settings.getInlineElements(request.getService(), TargetElement.BODY, Position.PREPEND)
+                .forEach(elm -> insertInlineElement(elm, document.body()::prependChild));
+        settings.getInlineElements(request.getService(), TargetElement.BODY, Position.APPEND)
+                .forEach(elm -> insertInlineElement(elm, document.body()::appendChild));
     }
 
     /**
-     * Modifies PushConfiguration instance based on the {@link Push} annotation
-     * on {@link AppShellConfigurator}.
+     * Modifies PushConfiguration instance based on the {@link Push} annotation on {@link AppShellConfigurator}.
      *
      * @param pushConfiguration
      *            the PushConfigration instance to modify
@@ -270,8 +242,7 @@ public class AppShellRegistry implements Serializable {
         List<Push> pushAnnotations = getAnnotations(Push.class);
         if (pushAnnotations.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
-                            Push.class.getSimpleName()));
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, Push.class.getSimpleName()));
         } else if (!pushAnnotations.isEmpty()) {
             Push push = pushAnnotations.get(0);
             pushConfiguration.setPushMode(push.value());
@@ -294,9 +265,7 @@ public class AppShellRegistry implements Serializable {
 
     private void insertInlineElement(Element elm, Consumer<Element> action) {
         if (elm instanceof Document) {
-            elm.getAllElements().stream()
-                    .filter(item -> !(item instanceof Document)
-                            && elm.equals(item.parent()))
+            elm.getAllElements().stream().filter(item -> !(item instanceof Document) && elm.equals(item.parent()))
                     .forEach(action::accept);
         } else if (elm != null) {
             action.accept(elm);
@@ -305,8 +274,7 @@ public class AppShellRegistry implements Serializable {
 
     @Override
     public String toString() {
-        return "Shell: " + appShellClass + " metas: "
-                + getAnnotations(Meta.class);
+        return "Shell: " + appShellClass + " metas: " + getAnnotations(Meta.class);
     }
 
     private <T extends Annotation> List<T> getAnnotations(Class<T> annotation) {

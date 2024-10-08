@@ -53,15 +53,14 @@ public class JarContentsManager {
      *            jar file to look for file in, not {@code null}
      * @param filePath
      *            file path relative to jar root, not {@code null}
-     * @return {@code true} if path is contained in the jar, {@code false}
-     *         otherwise
+     * @return {@code true} if path is contained in the jar, {@code false} otherwise
      * @throws IllegalArgumentException
      *             if jar file specified is not a file or does not exist
      * @throws NullPointerException
      *             if any of the arguments is null
      * @throws UncheckedIOException
-     *             if {@link IOException} occurs during file search, for
-     *             instance, when jar file specified is not a jar file
+     *             if {@link IOException} occurs during file search, for instance, when jar file specified is not a jar
+     *             file
      */
     public boolean containsPath(File jar, String filePath) {
         requireFileExistence(jar);
@@ -73,22 +72,19 @@ public class JarContentsManager {
             // jar's metadata, and the entry point cannot be found. Thus we
             // scan files just in case
             if (!containsEntry) {
-                containsEntry = jarFile.stream().anyMatch(
-                        entry -> entry.getName().startsWith(filePath));
+                containsEntry = jarFile.stream().anyMatch(entry -> entry.getName().startsWith(filePath));
             }
 
             return containsEntry;
         } catch (IOException e) {
-            throw new UncheckedIOException(
-                    String.format("Failed to retrieve file '%s' from jar '%s'",
-                            filePath, jar),
+            throw new UncheckedIOException(String.format("Failed to retrieve file '%s' from jar '%s'", filePath, jar),
                     e);
         }
     }
 
     /**
-     * Tries to find a file by its path (case sensitive) in jar file. If found,
-     * its contents is returned, {@code null} otherwise.
+     * Tries to find a file by its path (case sensitive) in jar file. If found, its contents is returned, {@code null}
+     * otherwise.
      *
      * @param jar
      *            jar file to look for file in, not {@code null}
@@ -100,8 +96,8 @@ public class JarContentsManager {
      * @throws NullPointerException
      *             if any of the arguments is null
      * @throws UncheckedIOException
-     *             if {@link IOException} occurs during file retrieval, for
-     *             instance, when jar file specified is not a jar file
+     *             if {@link IOException} occurs during file retrieval, for instance, when jar file specified is not a
+     *             jar file
      */
     public byte[] getFileContents(File jar, String filePath) {
         requireFileExistence(jar);
@@ -110,26 +106,21 @@ public class JarContentsManager {
         try (JarFile jarFile = new JarFile(jar, false)) {
             return getJarEntryContents(jarFile, jarFile.getJarEntry(filePath));
         } catch (IOException e) {
-            throw new UncheckedIOException(
-                    String.format("Failed to retrieve file '%s' from jar '%s'",
-                            filePath, jar),
+            throw new UncheckedIOException(String.format("Failed to retrieve file '%s' from jar '%s'", filePath, jar),
                     e);
         }
     }
 
     /**
-     * Finds all files (not directories) in the jar with the name specified and
-     * in the directory specified.
+     * Finds all files (not directories) in the jar with the name specified and in the directory specified.
      *
      * @param jar
      *            jar file to look for file in, not {@code null}
      * @param baseDirectoryName
      *            the directory to search in the jar, not {@code null}
      * @param fileName
-     *            a string that should required files' paths end with, not
-     *            {@code null}
-     * @return list of files from the directory specified with required file
-     *         names
+     *            a string that should required files' paths end with, not {@code null}
+     * @return list of files from the directory specified with required file names
      * @throws IllegalArgumentException
      *             if jar file specified is not a file or does not exist
      * @throws NullPointerException
@@ -137,19 +128,15 @@ public class JarContentsManager {
      * @throws UncheckedIOException
      *             if {@link IOException} occurs during jar file search
      */
-    public List<String> findFiles(File jar, String baseDirectoryName,
-            String fileName) {
+    public List<String> findFiles(File jar, String baseDirectoryName, String fileName) {
         requireFileExistence(jar);
         Objects.requireNonNull(baseDirectoryName);
         Objects.requireNonNull(fileName);
 
         try (JarFile jarFile = new JarFile(jar, false)) {
-            return jarFile.stream().filter(entry -> !entry.isDirectory())
-                    .map(ZipEntry::getName)
+            return jarFile.stream().filter(entry -> !entry.isDirectory()).map(ZipEntry::getName)
                     .filter(path -> path.startsWith(baseDirectoryName))
-                    .filter(path -> path
-                            .endsWith(JAR_PATH_SEPARATOR + fileName))
-                    .collect(Collectors.toList());
+                    .filter(path -> path.endsWith(JAR_PATH_SEPARATOR + fileName)).collect(Collectors.toList());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -157,8 +144,7 @@ public class JarContentsManager {
 
     private void requireFileExistence(File jar) {
         if (!Objects.requireNonNull(jar).isFile()) {
-            throw new IllegalArgumentException(
-                    String.format("Expect '%s' to be an existing file", jar));
+            throw new IllegalArgumentException(String.format("Expect '%s' to be an existing file", jar));
         }
     }
 
@@ -170,9 +156,8 @@ public class JarContentsManager {
         try (InputStream entryStream = jarFile.getInputStream(entry)) {
             return IOUtils.toByteArray(entryStream);
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to get entry '%s' contents from jar file '%s'",
-                    entry, jarFile), e);
+            throw new UncheckedIOException(
+                    String.format("Failed to get entry '%s' contents from jar file '%s'", entry, jarFile), e);
         }
     }
 
@@ -182,111 +167,95 @@ public class JarContentsManager {
      * @param jar
      *            jar file to look for files in, not {@code null}
      * @param jarDirectoryToCopyFrom
-     *            a path relative to jar root, only files from this path will be
-     *            copied, can be {@code null}, which is treated as a root of the
-     *            jar. Files will be copied relative to this path (i.e. only
-     *            path part after this path is preserved in output directory)
+     *            a path relative to jar root, only files from this path will be copied, can be {@code null}, which is
+     *            treated as a root of the jar. Files will be copied relative to this path (i.e. only path part after
+     *            this path is preserved in output directory)
      * @param outputDirectory
      *            the directory to copy files to, not {@code null}
      * @param wildcardPathExclusions
-     *            wildcard exclusions that are used to check each path against
-     *            before copying
-     * @return names of the files that were either copied or already existed in
-     *         the output directory
+     *            wildcard exclusions that are used to check each path against before copying
+     * @return names of the files that were either copied or already existed in the output directory
      * @throws IllegalArgumentException
-     *             if jar file specified is not a file or does not exist or if
-     *             output directory is not a directory or does not exist
+     *             if jar file specified is not a file or does not exist or if output directory is not a directory or
+     *             does not exist
      * @throws NullPointerException
      *             if jar file or output directory is {@code null}
      * @throws UncheckedIOException
-     *             if {@link IOException} occurs during the operation, for
-     *             instance, when jar file specified is not a jar file
+     *             if {@link IOException} occurs during the operation, for instance, when jar file specified is not a
+     *             jar file
      */
-    public Set<String> copyFilesFromJarTrimmingBasePath(File jar,
-            String jarDirectoryToCopyFrom, File outputDirectory,
+    public Set<String> copyFilesFromJarTrimmingBasePath(File jar, String jarDirectoryToCopyFrom, File outputDirectory,
             String... wildcardPathExclusions) {
         requireFileExistence(jar);
 
         if (!Objects.requireNonNull(outputDirectory).isDirectory()) {
             throw new IllegalArgumentException(
-                    String.format("Expect '%s' to be an existing directory",
-                            outputDirectory));
+                    String.format("Expect '%s' to be an existing directory", outputDirectory));
         }
 
         String basePath = normalizeJarBasePath(jarDirectoryToCopyFrom);
 
         try (JarFile jarFile = new JarFile(jar, false)) {
-            Set<String> handledFiles = jarFile.stream()
-                    .filter(file -> !file.isDirectory())
+            Set<String> handledFiles = jarFile.stream().filter(file -> !file.isDirectory())
                     .filter(file -> file.getName().toLowerCase(Locale.ENGLISH)
                             .startsWith(basePath.toLowerCase(Locale.ENGLISH)))
-                    .filter(file -> isFileIncluded(file,
-                            wildcardPathExclusions))
-                    .map(jarEntry -> copyJarEntryTrimmingBasePath(jarFile,
-                            jarEntry, basePath, outputDirectory))
+                    .filter(file -> isFileIncluded(file, wildcardPathExclusions))
+                    .map(jarEntry -> copyJarEntryTrimmingBasePath(jarFile, jarEntry, basePath, outputDirectory))
                     .collect(Collectors.toSet());
             return handledFiles;
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to extract files from jarFile '%s' to directory '%s'",
-                    jar, outputDirectory), e);
+            throw new UncheckedIOException(
+                    String.format("Failed to extract files from jarFile '%s' to directory '%s'", jar, outputDirectory),
+                    e);
         }
     }
 
     /**
-     * Copies files matching the inclusion filters from the jar file to the
-     * output directory.
+     * Copies files matching the inclusion filters from the jar file to the output directory.
      *
      * @param jar
      *            jar file to look for files in, not {@code null}
      * @param jarDirectoryToCopyFrom
-     *            a path relative to jar root, only files from this path will be
-     *            copied, can be {@code null}, which is treated as a root of the
-     *            jar. Files will be copied relative to this path (i.e. only
-     *            path part after this path is preserved in output directory)
+     *            a path relative to jar root, only files from this path will be copied, can be {@code null}, which is
+     *            treated as a root of the jar. Files will be copied relative to this path (i.e. only path part after
+     *            this path is preserved in output directory)
      * @param outputDirectory
      *            the directory to copy files to, not {@code null}
      * @param wildcardPathInclusions
-     *            wildcard inclusions that are used to check each path against
-     *            before copying
-     * @return names of the files that were either copied or already existed in
-     *         the output directory
+     *            wildcard inclusions that are used to check each path against before copying
+     * @return names of the files that were either copied or already existed in the output directory
      * @throws IllegalArgumentException
-     *             if jar file specified is not a file or does not exist or if
-     *             output directory is not a directory or does not exist
+     *             if jar file specified is not a file or does not exist or if output directory is not a directory or
+     *             does not exist
      * @throws NullPointerException
      *             if jar file or output directory is {@code null}
      * @throws UncheckedIOException
-     *             if {@link IOException} occurs during the operation, for
-     *             instance, when jar file specified is not a jar file
+     *             if {@link IOException} occurs during the operation, for instance, when jar file specified is not a
+     *             jar file
      */
-    public Set<String> copyIncludedFilesFromJarTrimmingBasePath(File jar,
-            String jarDirectoryToCopyFrom, File outputDirectory,
-            String... wildcardPathInclusions) {
+    public Set<String> copyIncludedFilesFromJarTrimmingBasePath(File jar, String jarDirectoryToCopyFrom,
+            File outputDirectory, String... wildcardPathInclusions) {
         requireFileExistence(jar);
 
         if (!Objects.requireNonNull(outputDirectory).isDirectory()) {
             throw new IllegalArgumentException(
-                    String.format("Expect '%s' to be an existing directory",
-                            outputDirectory));
+                    String.format("Expect '%s' to be an existing directory", outputDirectory));
         }
 
         String basePath = normalizeJarBasePath(jarDirectoryToCopyFrom);
 
         try (JarFile jarFile = new JarFile(jar, false)) {
-            Set<String> handledFiles = jarFile.stream()
-                    .filter(file -> !file.isDirectory())
+            Set<String> handledFiles = jarFile.stream().filter(file -> !file.isDirectory())
                     .filter(file -> file.getName().toLowerCase(Locale.ENGLISH)
                             .startsWith(basePath.toLowerCase(Locale.ENGLISH)))
                     .filter(file -> includeFile(file, wildcardPathInclusions))
-                    .map(jarEntry -> copyJarEntryTrimmingBasePath(jarFile,
-                            jarEntry, basePath, outputDirectory))
+                    .map(jarEntry -> copyJarEntryTrimmingBasePath(jarFile, jarEntry, basePath, outputDirectory))
                     .collect(Collectors.toSet());
             return handledFiles;
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to extract files from jarFile '%s' to directory '%s'",
-                    jar, outputDirectory), e);
+            throw new UncheckedIOException(
+                    String.format("Failed to extract files from jarFile '%s' to directory '%s'", jar, outputDirectory),
+                    e);
         }
     }
 
@@ -294,50 +263,39 @@ public class JarContentsManager {
         if (rawPath == null || rawPath.isEmpty()) {
             return "";
         }
-        return rawPath.endsWith(JAR_PATH_SEPARATOR) ? rawPath
-                : rawPath + JAR_PATH_SEPARATOR;
+        return rawPath.endsWith(JAR_PATH_SEPARATOR) ? rawPath : rawPath + JAR_PATH_SEPARATOR;
     }
 
     private boolean isFileIncluded(ZipEntry file, String... pathExclusions) {
         String filePath = file.getName();
         return Stream.of(pathExclusions)
-                .noneMatch(exclusionRule -> FilenameUtils
-                        .wildcardMatch(filePath, exclusionRule));
+                .noneMatch(exclusionRule -> FilenameUtils.wildcardMatch(filePath, exclusionRule));
     }
 
     private boolean includeFile(ZipEntry file, String... pathInclusions) {
         String filePath = file.getName();
-        return Stream.of(pathInclusions).anyMatch(inclusionRule -> FilenameUtils
-                .wildcardMatch(filePath, inclusionRule));
+        return Stream.of(pathInclusions)
+                .anyMatch(inclusionRule -> FilenameUtils.wildcardMatch(filePath, inclusionRule));
     }
 
-    private String copyJarEntryTrimmingBasePath(JarFile jarFile,
-            ZipEntry jarEntry, String basePath, File outputDirectory) {
+    private String copyJarEntryTrimmingBasePath(JarFile jarFile, ZipEntry jarEntry, String basePath,
+            File outputDirectory) {
         String fullPath = jarEntry.getName();
-        String relativePath = fullPath
-                .substring(fullPath.toLowerCase(Locale.ENGLISH)
-                        .indexOf(basePath.toLowerCase(Locale.ENGLISH))
-                        + basePath.length());
+        String relativePath = fullPath.substring(
+                fullPath.toLowerCase(Locale.ENGLISH).indexOf(basePath.toLowerCase(Locale.ENGLISH)) + basePath.length());
         File target = new File(outputDirectory, relativePath);
         try {
-            if (!target.exists()
-                    || !hasSameContent(jarFile.getInputStream(jarEntry),
-                            target)) {
-                FileUtils.copyInputStreamToFile(
-                        jarFile.getInputStream(jarEntry), target);
+            if (!target.exists() || !hasSameContent(jarFile.getInputStream(jarEntry), target)) {
+                FileUtils.copyInputStreamToFile(jarFile.getInputStream(jarEntry), target);
             }
             return relativePath;
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to extract jar entry '%s' from jarFile", jarEntry),
-                    e);
+            throw new UncheckedIOException(String.format("Failed to extract jar entry '%s' from jarFile", jarEntry), e);
         }
     }
 
-    private boolean hasSameContent(InputStream jarContent, File existingContent)
-            throws IOException {
-        try (InputStream existingContentStream = new FileInputStream(
-                existingContent)) {
+    private boolean hasSameContent(InputStream jarContent, File existingContent) throws IOException {
+        try (InputStream existingContentStream = new FileInputStream(existingContent)) {
             return IOUtils.contentEquals(jarContent, existingContentStream);
         } finally {
             IOUtils.closeQuietly(jarContent);

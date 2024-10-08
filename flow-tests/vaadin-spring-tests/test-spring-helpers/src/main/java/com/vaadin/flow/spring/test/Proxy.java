@@ -26,12 +26,10 @@ public class Proxy {
         server = new Server(proxyPort);
 
         // Setup proxy servlet
-        ServletContextHandler context = new ServletContextHandler("/",
-                ServletContextHandler.SESSIONS);
+        ServletContextHandler context = new ServletContextHandler("/", ServletContextHandler.SESSIONS);
         server.setHandler(context);
 
-        ServletHolder proxyServlet = new ServletHolder(
-                PathRewritingProxyServlet.class);
+        ServletHolder proxyServlet = new ServletHolder(PathRewritingProxyServlet.class);
         proxyServlet.setInitParameter("proxyTo", "http://localhost:8888/");
         proxyServlet.setInitParameter("prefix", proxyPath);
         context.addServlet(proxyServlet, "/*");

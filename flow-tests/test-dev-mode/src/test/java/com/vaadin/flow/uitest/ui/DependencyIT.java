@@ -38,8 +38,7 @@ public class DependencyIT extends ChromeBrowserTest {
 
         // Inject stylesheet which makes text blue
         findElementById("loadBlue").click();
-        Assert.assertEquals(BLUE,
-                findElementById("hello").getCssValue("color"));
+        Assert.assertEquals(BLUE, findElementById("hello").getCssValue("color"));
     }
 
     @Test
@@ -47,18 +46,14 @@ public class DependencyIT extends ChromeBrowserTest {
         open();
         // Initial JS registers a body click handler
         clickElementWithJs(findElement(By.tagName("body")));
-        String addedBodyText = findElement(By.cssSelector(".body-click-added"))
-                .getText();
-        Assert.assertEquals(
-                "Click on body, reported by JavaScript click handler",
-                addedBodyText);
+        String addedBodyText = findElement(By.cssSelector(".body-click-added")).getText();
+        Assert.assertEquals("Click on body, reported by JavaScript click handler", addedBodyText);
 
         // Inject scripts
         findElementById("loadJs").click();
         waitForElementPresent(By.id("read-global-var-text"));
         String addedJsText = findElementById("read-global-var-text").getText();
-        Assert.assertEquals(
-                "Second script loaded. Global variable (window.globalVar) is: 'Set by set-global-var.js'",
+        Assert.assertEquals("Second script loaded. Global variable (window.globalVar) is: 'Set by set-global-var.js'",
                 addedJsText);
     }
 

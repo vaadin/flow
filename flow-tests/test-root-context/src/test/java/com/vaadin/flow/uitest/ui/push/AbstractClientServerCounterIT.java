@@ -33,8 +33,7 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
     }
 
     public static int getClientCounter(TestBenchTestCase t) {
-        WebElement clientCounterElem = t
-                .findElement(By.id(ClientServerCounter.CLIENT_COUNTER_ID));
+        WebElement clientCounterElem = t.findElement(By.id(ClientServerCounter.CLIENT_COUNTER_ID));
         return Integer.parseInt(clientCounterElem.getText());
     }
 
@@ -50,8 +49,7 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
         WebDriverException lastException = null;
         for (int i = 0; i < 10; i++) {
             try {
-                WebElement serverCounterElem = t.findElement(
-                        By.id(ClientServerCounter.SERVER_COUNTER_ID));
+                WebElement serverCounterElem = t.findElement(By.id(ClientServerCounter.SERVER_COUNTER_ID));
                 return Integer.parseInt(serverCounterElem.getText());
             } catch (WebDriverException e) {
                 lastException = e;
@@ -78,21 +76,19 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
 
             @Override
             public Boolean apply(WebDriver input) {
-                return AbstractClientServerCounterIT.getClientCounter(
-                        AbstractClientServerCounterIT.this) == expectedValue;
+                return AbstractClientServerCounterIT
+                        .getClientCounter(AbstractClientServerCounterIT.this) == expectedValue;
             }
         }, 10);
     }
 
     protected void waitUntilServerCounterChanges() {
-        final int counter = AbstractClientServerCounterIT
-                .getServerCounter(this);
+        final int counter = AbstractClientServerCounterIT.getServerCounter(this);
         waitUntil(new ExpectedCondition<Boolean>() {
 
             @Override
             public Boolean apply(WebDriver input) {
-                return AbstractClientServerCounterIT.getServerCounter(
-                        AbstractClientServerCounterIT.this) > counter;
+                return AbstractClientServerCounterIT.getServerCounter(AbstractClientServerCounterIT.this) > counter;
             }
         }, 10);
     }

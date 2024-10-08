@@ -48,18 +48,14 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.util.ResourceUtils;
 
 /**
- * A {@link PathMatchingResourcePatternResolver} that allows filtering resources
- * by package properties. The resolver reads META-INF/VAADIN/package.properties
- * from JAR files and directories. The properties file can contain a list of the
- * allowed or blocked packages. If it contains both, the allowed packages take
- * precedence. Allowed packages are mapped with the key
- * "vaadin.allowed-packages". Blocked packages are mapped with the key
- * "vaadin.blocked-packages".
+ * A {@link PathMatchingResourcePatternResolver} that allows filtering resources by package properties. The resolver
+ * reads META-INF/VAADIN/package.properties from JAR files and directories. The properties file can contain a list of
+ * the allowed or blocked packages. If it contains both, the allowed packages take precedence. Allowed packages are
+ * mapped with the key "vaadin.allowed-packages". Blocked packages are mapped with the key "vaadin.blocked-packages".
  *
  * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
  */
-public class FilterableResourceResolver
-        extends PathMatchingResourcePatternResolver implements Serializable {
+public class FilterableResourceResolver extends PathMatchingResourcePatternResolver implements Serializable {
 
     private static final String JAR_PROTOCOL = "jar:";
     private static final String JAR_KEY = ".jar!/";
@@ -83,36 +79,25 @@ public class FilterableResourceResolver
     /**
      * Jar filename patterns for excluded jars.
      */
-    private static final List<String> DEFAULT_SCAN_NEVER_JAR = Stream.of(
-            "antlr", "logback-classic", "logback-classic-core",
-            "commons-codec-*.*.*.jar", "commons-fileupload",
-            "commons-io-*.*.*.jar", "commons-logging", "commons-exec",
-            "commons-lang*-*.*.*.jar", "jackson-databind-", "jackson-core-",
-            "jackson-datatype-", "jackson-annotations-", "jackson-module-",
-            "jackson-datatype-", "atmosphere-runtime", "byte-buddy",
-            "commons-compress", "aspectjweaver", "hibernate-core",
-            "hibernate-commons", "hibernate-validator", "jboss-logging",
-            "selenium-", "slf4j-simple-", "slf4j-api-", "spring-*.*.*.jar",
-            "spring-webmvc-*.*.*.jar", "spring-aop-*.*.*.jar",
-            "spring-beans-*.*.*.jar", "spring-context-*.*.*.jar",
-            "spring-core-*.*.*.jar", "spring-jcl-*.*.*.jar",
-            "spring-expression-*.*.*.jar", "spring-websocket-*.*.*.jar",
-            "spring-web-*.*.*.jar", "snakeyaml-*.*.jar", "javax.", "jakarta.",
-            "kotlin-reflect-", "kotlin-stdlib-", "gwt-elemental",
-            "javassist-*.*.*-*.jar", "javaparser-core-*.*.*.jar",
-            "javaparser-symbol", "oshi-core-*.*.*.jar",
-            "micrometer-observation-*.*.*.jar", "micrometer-commons-*.*.*.jar",
-            "nimbus-jose-jwt", "jooq-*.*.*.jar", "jooq-*-*.*.*.jar",
-            "directory-watcher-*.*.*.jar", "classgraph", "jsoup-*.*.*.jar",
-            "throw-if-servlet3", "ph-css-*.*.*.jar", "ph-commons-*.*.*.jar",
-            "gentyref-*.*.*.vaadin1.jar", "asm-*.*.jar", "asm-commons-*.*.jar",
-            "asm-tree-*.*.jar", "jetty-", "tomcat-", "classmate-*.*.*.jar",
-            "reflections-*.*.*.jar", "jna-*.*.*.jar", "jna-platform-*.*.*.jar",
-            "jcip-annotations-*.*.*.jar", "activation-*.*.*.jar",
-            "httpcore5-*.*.*.jar", "httpcore5-h2-*.*.*.jar",
+    private static final List<String> DEFAULT_SCAN_NEVER_JAR = Stream.of("antlr", "logback-classic",
+            "logback-classic-core", "commons-codec-*.*.*.jar", "commons-fileupload", "commons-io-*.*.*.jar",
+            "commons-logging", "commons-exec", "commons-lang*-*.*.*.jar", "jackson-databind-", "jackson-core-",
+            "jackson-datatype-", "jackson-annotations-", "jackson-module-", "jackson-datatype-", "atmosphere-runtime",
+            "byte-buddy", "commons-compress", "aspectjweaver", "hibernate-core", "hibernate-commons",
+            "hibernate-validator", "jboss-logging", "selenium-", "slf4j-simple-", "slf4j-api-", "spring-*.*.*.jar",
+            "spring-webmvc-*.*.*.jar", "spring-aop-*.*.*.jar", "spring-beans-*.*.*.jar", "spring-context-*.*.*.jar",
+            "spring-core-*.*.*.jar", "spring-jcl-*.*.*.jar", "spring-expression-*.*.*.jar",
+            "spring-websocket-*.*.*.jar", "spring-web-*.*.*.jar", "snakeyaml-*.*.jar", "javax.", "jakarta.",
+            "kotlin-reflect-", "kotlin-stdlib-", "gwt-elemental", "javassist-*.*.*-*.jar", "javaparser-core-*.*.*.jar",
+            "javaparser-symbol", "oshi-core-*.*.*.jar", "micrometer-observation-*.*.*.jar",
+            "micrometer-commons-*.*.*.jar", "nimbus-jose-jwt", "jooq-*.*.*.jar", "jooq-*-*.*.*.jar",
+            "directory-watcher-*.*.*.jar", "classgraph", "jsoup-*.*.*.jar", "throw-if-servlet3", "ph-css-*.*.*.jar",
+            "ph-commons-*.*.*.jar", "gentyref-*.*.*.vaadin1.jar", "asm-*.*.jar", "asm-commons-*.*.jar",
+            "asm-tree-*.*.jar", "jetty-", "tomcat-", "classmate-*.*.*.jar", "reflections-*.*.*.jar", "jna-*.*.*.jar",
+            "jna-platform-*.*.*.jar", "jcip-annotations-*.*.*.jar", "activation-*.*.*.jar", "httpcore5-*.*.*.jar",
+            "httpcore5-h2-*.*.*.jar",
 
-            "hilla-engine-core-", "hilla-engine-runtime-", "hilla-parser-jvm-",
-            "hilla-runtime-plugin-").toList();
+            "hilla-engine-core-", "hilla-engine-runtime-", "hilla-parser-jvm-", "hilla-runtime-plugin-").toList();
 
     private final Map<String, PackageInfo> propertiesCache = new HashMap<>();
 
@@ -161,8 +146,7 @@ public class FilterableResourceResolver
         return path.lastIndexOf(JAR_KEY) != -1;
     }
 
-    private Resource doResolveRootDirResource(Resource original)
-            throws IOException {
+    private Resource doResolveRootDirResource(Resource original) throws IOException {
         String rootDirPath = original.getURI().getPath();
         if (rootDirPath == null) {
             rootDirPath = original.getURI().toString();
@@ -170,8 +154,7 @@ public class FilterableResourceResolver
         if (rootDirPath != null) {
             int index = rootDirPath.lastIndexOf(JAR_KEY);
             if (index != -1) {
-                String jarPath = rootDirPath.substring(0,
-                        index + JAR_KEY.length());
+                String jarPath = rootDirPath.substring(0, index + JAR_KEY.length());
                 return new UrlResource(jarPath);
             }
         }
@@ -179,9 +162,8 @@ public class FilterableResourceResolver
     }
 
     /**
-     * Find all resources in jar files that match the given location pattern via
-     * the Ant-style PathMatcher. Supports additional filtering based on allowed
-     * or blocked packages in package.properties.
+     * Find all resources in jar files that match the given location pattern via the Ant-style PathMatcher. Supports
+     * additional filtering based on allowed or blocked packages in package.properties.
      *
      * @param rootDirResource
      *            the root directory as Resource
@@ -194,13 +176,11 @@ public class FilterableResourceResolver
      *             in case of I/O error
      */
     @Override
-    protected Set<Resource> doFindPathMatchingJarResources(
-            Resource rootDirResource, URL rootDirUrl, String subPattern)
+    protected Set<Resource> doFindPathMatchingJarResources(Resource rootDirResource, URL rootDirUrl, String subPattern)
             throws IOException {
         String path = rootDirResource.getURI().toString();
         String jarName = resolveJarName(rootDirResource.getURI());
-        if (jarName != null && blockedJarsList.stream()
-                .anyMatch(pattern -> jarNamePatternMatch(jarName, pattern))) {
+        if (jarName != null && blockedJarsList.stream().anyMatch(pattern -> jarNamePatternMatch(jarName, pattern))) {
             return Set.of();
         }
         String key = cachePackageProperties(path, rootDirResource, rootDirUrl);
@@ -208,37 +188,32 @@ public class FilterableResourceResolver
         if (isBlockedJar(rootDirResource, key)) {
             return Collections.emptySet();
         }
-        return super.doFindPathMatchingJarResources(rootDirResource, rootDirUrl,
-                subPattern);
+        return super.doFindPathMatchingJarResources(rootDirResource, rootDirUrl, subPattern);
     }
 
     /**
-     * Find all class path resources with the given path via the configured
-     * ClassLoader. Called by findAllClassPathResources(String). Supports
-     * additional filtering based on allowed or blocked packages in
+     * Find all class path resources with the given path via the configured ClassLoader. Called by
+     * findAllClassPathResources(String). Supports additional filtering based on allowed or blocked packages in
      * package.properties.
      *
      * @param path
-     *            the absolute path within the class path (never a leading
-     *            slash)
+     *            the absolute path within the class path (never a leading slash)
      * @return a mutable Set of matching Resource instances
      * @throws IOException
      *             in case of I/O errors
      */
     @Override
-    protected Set<Resource> doFindAllClassPathResources(String path)
-            throws IOException {
+    protected Set<Resource> doFindAllClassPathResources(String path) throws IOException {
         var result = super.doFindAllClassPathResources(path);
         result.removeIf(res -> {
             try {
                 String jarName = resolveJarName(res.getURI());
-                if (jarName != null && blockedJarsList.stream().anyMatch(
-                        pattern -> jarNamePatternMatch(jarName, pattern))) {
+                if (jarName != null
+                        && blockedJarsList.stream().anyMatch(pattern -> jarNamePatternMatch(jarName, pattern))) {
                     return true;
                 }
             } catch (IOException e) {
-                getLogger().warn("Failed to resolve path for resource {}", res,
-                        e);
+                getLogger().warn("Failed to resolve path for resource {}", res, e);
             }
             String key = cachePackageProperties(res);
             return isBlockedJar(res, key);
@@ -247,26 +222,22 @@ public class FilterableResourceResolver
     }
 
     /**
-     * Matches given jarName with the pattern. if pattern doesn't contain '*',
-     * then match is based on startsWith(pattern). If pattern has one or more
-     * '*', pattern is split into array and each part is matched with startsWith
-     * for each part in the given jarName. '*' match any character 0-n times
-     * except '-' or content of the part following `*`. <br/>
+     * Matches given jarName with the pattern. if pattern doesn't contain '*', then match is based on
+     * startsWith(pattern). If pattern has one or more '*', pattern is split into array and each part is matched with
+     * startsWith for each part in the given jarName. '*' match any character 0-n times except '-' or content of the
+     * part following `*`. <br/>
      * <br/>
-     * For example, "spring-*.*.*.jar" pattern matches to "spring-1.0.0.jar",
-     * "spring-abc.1.0.jar", "spring-abc.1.0.0.jar" but NOT
-     * "spring-abc-1.0.0.jar" or "spring-1.0.jar". <br/>
+     * For example, "spring-*.*.*.jar" pattern matches to "spring-1.0.0.jar", "spring-abc.1.0.jar",
+     * "spring-abc.1.0.0.jar" but NOT "spring-abc-1.0.0.jar" or "spring-1.0.jar". <br/>
      * <br/>
-     * String operations are handled from left to right, where content of `*` is
-     * substring starting from end of the previous String to beginning of the
-     * first occurrence of the next part in the parts array. <br/>
+     * String operations are handled from left to right, where content of `*` is substring starting from end of the
+     * previous String to beginning of the first occurrence of the next part in the parts array. <br/>
      * <br/>
-     * "spring-*-*.*.*.jar" pattern matches to "spring-foo-1.0.0.jar",
-     * "spring-foo-bar.1.0.jar" but NOT "spring-foo-bar-1.0.0.jar" or
-     * "spring-1.0.0.jar".<br/>
+     * "spring-*-*.*.*.jar" pattern matches to "spring-foo-1.0.0.jar", "spring-foo-bar.1.0.jar" but NOT
+     * "spring-foo-bar-1.0.0.jar" or "spring-1.0.0.jar".<br/>
      * <br/>
-     * "spring-*_*.*.jar" match "spring-abc.1_0.0.jar" due to the order '*' is a
-     * substring part by part from left to right. <br/>
+     * "spring-*_*.*.jar" match "spring-abc.1_0.0.jar" due to the order '*' is a substring part by part from left to
+     * right. <br/>
      * <br/>
      * Method is not using much regex to get optimal performance.
      */
@@ -308,8 +279,7 @@ public class FilterableResourceResolver
         }
         int index = resourcePath.lastIndexOf(JAR_EXTENSION);
         if (index > -1) {
-            String jarName = resourcePath.substring(0,
-                    index + JAR_EXTENSION.length());
+            String jarName = resourcePath.substring(0, index + JAR_EXTENSION.length());
             index = jarName.lastIndexOf("/");
             if (index > -1) {
                 return jarName.substring(index + 1);
@@ -319,25 +289,21 @@ public class FilterableResourceResolver
         return null;
     }
 
-    private String cachePackageProperties(String path, Resource rootDirResource,
-            URL rootDirUrl) throws IOException {
+    private String cachePackageProperties(String path, Resource rootDirResource, URL rootDirUrl) throws IOException {
         String key = path;
         if (isJar(path)) {
             key = pathToKey(path);
             if (!propertiesCache.containsKey(key)) {
-                propertiesCache.put(key, readPackageProperties(rootDirUrl, path,
-                        doResolveRootDirResource(rootDirResource)));
+                propertiesCache.put(key,
+                        readPackageProperties(rootDirUrl, path, doResolveRootDirResource(rootDirResource)));
                 getLogger().trace("Caching package.properties of JAR {}", path);
             }
         } else if (!propertiesCache.containsKey(path)) {
-            Resource resource = doFindPathMatchingFileResources(rootDirResource,
-                    PACKAGE_PROPERTIES_PATH).stream().findFirst().orElse(null);
-            Properties properties = resource != null
-                    ? PropertiesLoaderUtils.loadProperties(resource)
-                    : null;
+            Resource resource = doFindPathMatchingFileResources(rootDirResource, PACKAGE_PROPERTIES_PATH).stream()
+                    .findFirst().orElse(null);
+            Properties properties = resource != null ? PropertiesLoaderUtils.loadProperties(resource) : null;
             propertiesCache.put(path, createPackageInfo(properties));
-            getLogger().trace("Caching package.properties of directory {}",
-                    path);
+            getLogger().trace("Caching package.properties of directory {}", path);
         }
         return key;
     }
@@ -353,40 +319,31 @@ public class FilterableResourceResolver
                 String jarPath = toJarPath(rootDirPath);
                 key = pathToKey(rootPath);
                 if (!propertiesCache.containsKey(key)) {
-                    propertiesCache.put(key, readPackageProperties(null,
-                            jarPath, rootDirResource));
-                    getLogger().trace("Caching package.properties of JAR {}",
-                            rootPath);
+                    propertiesCache.put(key, readPackageProperties(null, jarPath, rootDirResource));
+                    getLogger().trace("Caching package.properties of JAR {}", rootPath);
                 }
             } else if (!propertiesCache.containsKey(rootPath)) {
-                Resource resource = doFindPathMatchingFileResources(
-                        rootDirResource, PACKAGE_PROPERTIES_PATH).stream()
+                Resource resource = doFindPathMatchingFileResources(rootDirResource, PACKAGE_PROPERTIES_PATH).stream()
                         .findFirst().orElse(null);
-                Properties properties = resource != null
-                        ? PropertiesLoaderUtils.loadProperties(resource)
-                        : null;
+                Properties properties = resource != null ? PropertiesLoaderUtils.loadProperties(resource) : null;
                 propertiesCache.put(rootPath, createPackageInfo(properties));
-                getLogger().trace("Caching package.properties of directory {}",
-                        rootPath);
+                getLogger().trace("Caching package.properties of directory {}", rootPath);
             }
 
         } catch (IOException e) {
-            getLogger().warn("Failed to find {} for path {}",
-                    PACKAGE_PROPERTIES_PATH, res, e);
+            getLogger().warn("Failed to find {} for path {}", PACKAGE_PROPERTIES_PATH, res, e);
         }
         return key;
     }
 
     /**
-     * Returns whether the given resource is a blocked jar and shouldn't be
-     * included.
+     * Returns whether the given resource is a blocked jar and shouldn't be included.
      *
      * @param resource
      *            the resource to check
      * @param key
      *            the key for the package info
-     * @return {@code true} if the resource is a blocked jar, {@code false}
-     *         otherwise
+     * @return {@code true} if the resource is a blocked jar, {@code false} otherwise
      */
     protected boolean isBlockedJar(Resource resource, String key) {
         if (resource != null && key != null) {
@@ -397,12 +354,11 @@ public class FilterableResourceResolver
     }
 
     /**
-     * See {@link super#doFindPathMatchingJarResources(Resource, URL, String)}.
-     * This method is slightly adjusted from the origin to just read
-     * META-INF/VAADIN/package.properties and transform it to Properties object.
+     * See {@link super#doFindPathMatchingJarResources(Resource, URL, String)}. This method is slightly adjusted from
+     * the origin to just read META-INF/VAADIN/package.properties and transform it to Properties object.
      */
-    private PackageInfo readPackageProperties(URL jarPathURL, String jarPath,
-            Resource rootDirResource) throws IOException {
+    private PackageInfo readPackageProperties(URL jarPathURL, String jarPath, Resource rootDirResource)
+            throws IOException {
         URLConnection con = null;
         JarFile jarFile;
         String jarFileUrl;
@@ -424,11 +380,9 @@ public class FilterableResourceResolver
             // prefix.
             urlFile = urlFile != null ? urlFile : jarPath;
             try {
-                int separatorIndex = urlFile
-                        .indexOf(ResourceUtils.WAR_URL_SEPARATOR);
+                int separatorIndex = urlFile.indexOf(ResourceUtils.WAR_URL_SEPARATOR);
                 if (separatorIndex == -1) {
-                    separatorIndex = urlFile
-                            .indexOf(ResourceUtils.JAR_URL_SEPARATOR);
+                    separatorIndex = urlFile.indexOf(ResourceUtils.JAR_URL_SEPARATOR);
                 }
                 if (separatorIndex != -1) {
                     jarFileUrl = urlFile.substring(0, separatorIndex);
@@ -439,8 +393,7 @@ public class FilterableResourceResolver
                 closeJarFile = true;
             } catch (ZipException ex) {
                 if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("Skipping invalid jar class path entry ["
-                            + urlFile + "]");
+                    getLogger().debug("Skipping invalid jar class path entry [" + urlFile + "]");
                 }
                 return null;
             }
@@ -448,33 +401,24 @@ public class FilterableResourceResolver
 
         try {
             if (getLogger().isTraceEnabled()) {
-                getLogger().trace("Looking for package.properties in jar file ["
-                        + rootDirResource + "]");
+                getLogger().trace("Looking for package.properties in jar file [" + rootDirResource + "]");
             }
-            for (Enumeration<JarEntry> entries = jarFile.entries(); entries
-                    .hasMoreElements();) {
+            for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
                 JarEntry entry = entries.nextElement();
                 String entryPath = entry.getName();
                 if (entryPath.endsWith(PACKAGE_PROPERTIES_PATH)) {
-                    Resource resource = doFindPathMatchingFileResources(
-                            rootDirResource, PACKAGE_PROPERTIES_PATH).stream()
-                            .findFirst().orElseGet(() -> {
+                    Resource resource = doFindPathMatchingFileResources(rootDirResource, PACKAGE_PROPERTIES_PATH)
+                            .stream().findFirst().orElseGet(() -> {
                                 try {
-                                    return rootDirResource.createRelative(
-                                            PACKAGE_PROPERTIES_PATH);
+                                    return rootDirResource.createRelative(PACKAGE_PROPERTIES_PATH);
                                 } catch (IOException e) {
-                                    getLogger().warn(
-                                            "Could not read package.properties",
-                                            e);
+                                    getLogger().warn("Could not read package.properties", e);
                                     return null;
                                 }
                             });
-                    Properties prop = resource != null
-                            ? PropertiesLoaderUtils.loadProperties(resource)
-                            : null;
+                    Properties prop = resource != null ? PropertiesLoaderUtils.loadProperties(resource) : null;
                     if (getLogger().isTraceEnabled()) {
-                        getLogger().trace("Read package.properties: [{}]",
-                                prop);
+                        getLogger().trace("Read package.properties: [{}]", prop);
                     }
                     return prop != null ? createPackageInfo(prop) : null;
                 }
@@ -496,22 +440,18 @@ public class FilterableResourceResolver
      *            relative path to check
      * @param defaultValue
      *            default value to return if the properties are not found
-     * @return {@code true} if the target path is allowed by the package
-     *         properties,
+     * @return {@code true} if the target path is allowed by the package properties,
      */
-    protected boolean isAllowedByPackageProperties(String rootPath,
-            String targetPath, boolean defaultValue) {
+    protected boolean isAllowedByPackageProperties(String rootPath, String targetPath, boolean defaultValue) {
         PackageInfo packageInfo = propertiesCache.get(rootPath);
         if (packageInfo == null) {
             return defaultValue;
         }
 
         if (!packageInfo.allowedPackages().isEmpty()) {
-            return packageInfo.allowedPackages().stream()
-                    .anyMatch(targetPath::startsWith);
+            return packageInfo.allowedPackages().stream().anyMatch(targetPath::startsWith);
         } else if (!packageInfo.blockedPackages().isEmpty()) {
-            return packageInfo.blockedPackages().stream()
-                    .noneMatch(targetPath::startsWith);
+            return packageInfo.blockedPackages().stream().noneMatch(targetPath::startsWith);
         }
         return defaultValue;
     }
@@ -520,18 +460,13 @@ public class FilterableResourceResolver
         if (properties == null) {
             return null;
         }
-        Set<String> allowedPackages = Stream
-                .of(properties.getProperty(ALLOWED_PACKAGES_PROPERTY, "")
-                        .split(","))
-                .filter(pkg -> !pkg.isBlank()).map(String::trim)
-                .map(pkg -> pkg.replace(".", "/")).collect(Collectors.toSet());
-        Set<String> blockedPackages = Stream
-                .of(properties.getProperty(BLOCKED_PACKAGES_PROPERTY, "")
-                        .split(","))
-                .filter(pkg -> !pkg.isBlank()).map(String::trim)
-                .map(pkg -> pkg.replace(".", "/")).collect(Collectors.toSet());
-        boolean blockedJar = Boolean.parseBoolean(
-                properties.getProperty(BLOCKED_JAR_PROPERTY, "false"));
+        Set<String> allowedPackages = Stream.of(properties.getProperty(ALLOWED_PACKAGES_PROPERTY, "").split(","))
+                .filter(pkg -> !pkg.isBlank()).map(String::trim).map(pkg -> pkg.replace(".", "/"))
+                .collect(Collectors.toSet());
+        Set<String> blockedPackages = Stream.of(properties.getProperty(BLOCKED_PACKAGES_PROPERTY, "").split(","))
+                .filter(pkg -> !pkg.isBlank()).map(String::trim).map(pkg -> pkg.replace(".", "/"))
+                .collect(Collectors.toSet());
+        boolean blockedJar = Boolean.parseBoolean(properties.getProperty(BLOCKED_JAR_PROPERTY, "false"));
         return new PackageInfo(allowedPackages, blockedPackages, blockedJar);
     }
 
@@ -551,8 +486,7 @@ public class FilterableResourceResolver
                 }
             }
         } catch (IOException e) {
-            getLogger().error(
-                    "Failed to read {}. Falling back to default list of blocked jars.",
+            getLogger().error("Failed to read {}. Falling back to default list of blocked jars.",
                     BLOCKED_JARS_LIST_PATH, e);
         }
     }

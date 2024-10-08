@@ -20,19 +20,16 @@ import java.io.Serializable;
 import java.util.Set;
 
 /**
- * A generic session, wrapping a more specific session implementation, e.g.
- * {@link jakarta.servlet.http.HttpSession}.
+ * A generic session, wrapping a more specific session implementation, e.g. {@link jakarta.servlet.http.HttpSession}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public interface WrappedSession extends Serializable {
     /**
-     * Returns the maximum time interval, in seconds, that this session will be
-     * kept open between client accesses.
+     * Returns the maximum time interval, in seconds, that this session will be kept open between client accesses.
      *
-     * @return an integer specifying the number of seconds this session remains
-     *         open between client requests
+     * @return an integer specifying the number of seconds this session remains open between client requests
      *
      * @see jakarta.servlet.http.HttpSession#getMaxInactiveInterval()
      */
@@ -43,8 +40,7 @@ public interface WrappedSession extends Serializable {
      *
      * @param name
      *            the name of the attribute
-     * @return the attribute value, or <code>null</code> if the attribute is not
-     *         defined in the session
+     * @return the attribute value, or <code>null</code> if the attribute is not defined in the session
      *
      * @see jakarta.servlet.http.HttpSession#getAttribute(String)
      */
@@ -88,11 +84,9 @@ public interface WrappedSession extends Serializable {
     String getId();
 
     /**
-     * Returns the time when this session was created, measured in milliseconds
-     * since midnight January 1, 1970 GMT.
+     * Returns the time when this session was created, measured in milliseconds since midnight January 1, 1970 GMT.
      *
-     * @return a long specifying when this session was created, expressed in
-     *         milliseconds since 1/1/1970 GMT
+     * @return a long specifying when this session was created, expressed in milliseconds since 1/1/1970 GMT
      *
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
@@ -101,16 +95,14 @@ public interface WrappedSession extends Serializable {
     long getCreationTime();
 
     /**
-     * Returns the last time the client sent a request associated with this
-     * session, as the number of milliseconds since midnight January 1, 1970
-     * GMT, and marked by the time the container received the request.
+     * Returns the last time the client sent a request associated with this session, as the number of milliseconds since
+     * midnight January 1, 1970 GMT, and marked by the time the container received the request.
      * <p>
-     * Actions that your application takes, such as getting or setting a value
-     * associated with the session, do not affect the access time.
+     * Actions that your application takes, such as getting or setting a value associated with the session, do not
+     * affect the access time.
      *
-     * @return a long representing the last time the client sent a request
-     *         associated with this session, expressed in milliseconds since
-     *         1/1/1970 GMT
+     * @return a long representing the last time the client sent a request associated with this session, expressed in
+     *         milliseconds since 1/1/1970 GMT
      *
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
@@ -120,13 +112,11 @@ public interface WrappedSession extends Serializable {
     long getLastAccessedTime();
 
     /**
-     * Returns true if the client does not yet know about the session or if the
-     * client chooses not to join the session. For example, if the server used
-     * only cookie-based sessions, and the client had disabled the use of
-     * cookies, then a session would be new on each request.
+     * Returns true if the client does not yet know about the session or if the client chooses not to join the session.
+     * For example, if the server used only cookie-based sessions, and the client had disabled the use of cookies, then
+     * a session would be new on each request.
      *
-     * @return true if the server has created a session, but the client has not
-     *         yet joined
+     * @return true if the server has created a session, but the client has not yet joined
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
      * @see jakarta.servlet.http.HttpSession#isNew()
@@ -134,9 +124,8 @@ public interface WrappedSession extends Serializable {
     boolean isNew();
 
     /**
-     * Removes the object bound with the specified name from this session. If
-     * the session does not have an object bound with the specified name, this
-     * method does nothing.
+     * Removes the object bound with the specified name from this session. If the session does not have an object bound
+     * with the specified name, this method does nothing.
      *
      * @param name
      *            the name of the object to remove from this session
@@ -147,9 +136,8 @@ public interface WrappedSession extends Serializable {
     void removeAttribute(String name);
 
     /**
-     * Specifies the time, in seconds, between client requests before the
-     * servlet container will invalidate this session. A negative time indicates
-     * the session should never timeout.
+     * Specifies the time, in seconds, between client requests before the servlet container will invalidate this
+     * session. A negative time indicates the session should never timeout.
      *
      * @param interval
      *            An integer specifying the number of seconds

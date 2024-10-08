@@ -35,8 +35,7 @@ public class ApplicationConstants implements Serializable {
     public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
 
     /**
-     * Protocol used for referencing resources relative the base URI of the
-     * loaded page.
+     * Protocol used for referencing resources relative the base URI of the loaded page.
      */
     public static final String BASE_PROTOCOL_PREFIX = "base://";
 
@@ -61,8 +60,7 @@ public class ApplicationConstants implements Serializable {
     public static final String APP_WC_MODE = "webComponentMode";
 
     /**
-     * Configuration parameter giving the (in some cases relative) URL to the
-     * web application context root.
+     * Configuration parameter giving the (in some cases relative) URL to the web application context root.
      */
     public static final String CONTEXT_ROOT_URL = "contextRootUrl";
 
@@ -73,14 +71,12 @@ public class ApplicationConstants implements Serializable {
     /**
      * The name of the javascript containing push support.
      */
-    public static final String VAADIN_PUSH_JS = VAADIN_STATIC_FILES_PATH
-            + "push/vaadinPush-min.js";
+    public static final String VAADIN_PUSH_JS = VAADIN_STATIC_FILES_PATH + "push/vaadinPush-min.js";
 
     /**
      * The name of the debug version of the javascript containing push support.
      */
-    public static final String VAADIN_PUSH_DEBUG_JS = VAADIN_STATIC_FILES_PATH
-            + "push/vaadinPush.js";
+    public static final String VAADIN_PUSH_DEBUG_JS = VAADIN_STATIC_FILES_PATH + "push/vaadinPush.js";
 
     /**
      * Name of the parameter used to transmit the push connection identifier.
@@ -98,24 +94,21 @@ public class ApplicationConstants implements Serializable {
     public static final String CSRF_TOKEN = "csrfToken";
 
     /**
-     * The name of the parameter used to transmit the sync id. The value can be
-     * set to -1 e.g. when testing with pre-recorded requests to make the
-     * framework ignore the sync id.
+     * The name of the parameter used to transmit the sync id. The value can be set to -1 e.g. when testing with
+     * pre-recorded requests to make the framework ignore the sync id.
      *
      * @see UIInternals#getServerSyncId()
      */
     public static final String SERVER_SYNC_ID = "syncId";
 
     /**
-     * The name of the parameter used to transmit the id of the client to server
-     * messages.
+     * The name of the parameter used to transmit the id of the client to server messages.
      *
      */
     public static final String CLIENT_TO_SERVER_ID = "clientId";
 
     /**
-     * The name of the parameter used to transmit the id of UI used in given
-     * request.
+     * The name of the parameter used to transmit the id of UI used in given request.
      */
     public static final String UI_ID = "uiId";
 
@@ -135,8 +128,7 @@ public class ApplicationConstants implements Serializable {
     public static final String CONTENT_TYPE_TEXT_HTML_UTF_8 = "text/html; charset=utf-8";
 
     /**
-     * Content type to use for text/javascript responses (should always be
-     * UTF-8).
+     * Content type to use for text/javascript responses (should always be UTF-8).
      */
     public static final String CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8 = "text/javascript; charset=utf-8";
 
@@ -148,13 +140,11 @@ public class ApplicationConstants implements Serializable {
     /**
      * Path to the Vaadin client engine folder, relative to the context root.
      */
-    public static final String CLIENT_ENGINE_PATH = VAADIN_STATIC_FILES_PATH
-            + "client";
+    public static final String CLIENT_ENGINE_PATH = VAADIN_STATIC_FILES_PATH + "client";
 
     /**
-     * Parameter for the initial router location when JavaScript bootstrapping.
-     * It is optional when {@link ApplicationConstants#REQUEST_TYPE_PARAMETER}
-     * has the {@link ApplicationConstants#REQUEST_TYPE_INIT} value
+     * Parameter for the initial router location when JavaScript bootstrapping. It is optional when
+     * {@link ApplicationConstants#REQUEST_TYPE_PARAMETER} has the {@link ApplicationConstants#REQUEST_TYPE_INIT} value
      */
     public static final String REQUEST_LOCATION_PARAMETER = "location";
     /**
@@ -188,14 +178,12 @@ public class ApplicationConstants implements Serializable {
     public static final String REQUEST_TYPE_PUSH = "push";
 
     /**
-     * Request type parameter value indicating a WebComponent resynchronization
-     * request.
+     * Request type parameter value indicating a WebComponent resynchronization request.
      */
     public static final String REQUEST_TYPE_WEBCOMPONENT_RESYNC = "webcomponent-resync";
 
     /**
-     * Request type parameter value indicating a translation properties file
-     * request.
+     * Request type parameter value indicating a translation properties file request.
      */
     public static final String REQUEST_TYPE_TRANSLATION_FILE = "i18n";
 
@@ -210,8 +198,7 @@ public class ApplicationConstants implements Serializable {
     public static final String FRONTEND_URL_ES6 = "frontendUrlEs6";
 
     /**
-     * Web socket parameter which identifies connection as live reload
-     * connection.
+     * Web socket parameter which identifies connection as live reload connection.
      */
     public static final String DEBUG_WINDOW_CONNECTION = "debug_window";
 
@@ -221,8 +208,7 @@ public class ApplicationConstants implements Serializable {
     public static final String DEV_TOOLS_ENABLED = "devToolsEnabled";
 
     /**
-     * The name of the parameter used for notifying the server that user closed
-     * the tab/window or navigated away.
+     * The name of the parameter used for notifying the server that user closed the tab/window or navigated away.
      */
     public static final String UNLOAD_BEACON = "UNLOAD";
 

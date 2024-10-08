@@ -5,8 +5,7 @@ import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.RefreshCurrentPreserveOnRefreshRouteView", layout = RefreshCurrentRouteLayout.class)
 @PreserveOnRefresh
-public class RefreshCurrentPreserveOnRefreshRouteView
-        extends RefreshCurrentRouteView {
+public class RefreshCurrentPreserveOnRefreshRouteView extends RefreshCurrentRouteView {
 
     protected String getNavigationTarget() {
         return "com.vaadin.flow.uitest.ui.RefreshCurrentPreserveOnRefreshRouteView";

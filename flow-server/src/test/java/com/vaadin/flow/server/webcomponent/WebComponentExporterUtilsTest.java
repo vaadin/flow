@@ -38,9 +38,8 @@ public class WebComponentExporterUtilsTest {
     public void getFactories_notEligibleExportersAreFiltered_factoriesAreReturned() {
 
         Set<WebComponentExporterFactory> factories = WebComponentExporterUtils
-                .getFactories(new HashSet<>(Arrays.asList(GoodExporter.class,
-                        AbstractExporter.class, PackageLocalExporter.class,
-                        NoPublicCtorExporter.class, ExporterFactory.class)));
+                .getFactories(new HashSet<>(Arrays.asList(GoodExporter.class, AbstractExporter.class,
+                        PackageLocalExporter.class, NoPublicCtorExporter.class, ExporterFactory.class)));
         Assert.assertEquals(2, factories.size());
 
         Iterator<WebComponentExporterFactory> iterator = factories.iterator();
@@ -53,17 +52,13 @@ public class WebComponentExporterUtilsTest {
         }
     }
 
-    private void assertFactories(WebComponentExporterFactory factory,
-            WebComponentExporterFactory anotherFactory) {
-        Assert.assertTrue(
-                anotherFactory instanceof DefaultWebComponentExporterFactory);
+    private void assertFactories(WebComponentExporterFactory factory, WebComponentExporterFactory anotherFactory) {
+        Assert.assertTrue(anotherFactory instanceof DefaultWebComponentExporterFactory);
         WebComponentExporter exporter = anotherFactory.create();
-        MatcherAssert.assertThat(exporter,
-                CoreMatchers.instanceOf(GoodExporter.class));
+        MatcherAssert.assertThat(exporter, CoreMatchers.instanceOf(GoodExporter.class));
 
         exporter = factory.create();
-        MatcherAssert.assertThat(exporter,
-                CoreMatchers.instanceOf(NoDefaultCtorExporter.class));
+        MatcherAssert.assertThat(exporter, CoreMatchers.instanceOf(NoDefaultCtorExporter.class));
     }
 
     public static class GoodExporter extends WebComponentExporter<Component> {
@@ -73,75 +68,65 @@ public class WebComponentExporterUtilsTest {
         }
 
         @Override
-        protected void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        protected void configureInstance(WebComponent<Component> webComponent, Component component) {
 
         }
 
     }
 
-    public static abstract class AbstractExporter
-            extends WebComponentExporter<Component> {
+    public static abstract class AbstractExporter extends WebComponentExporter<Component> {
 
         public AbstractExporter() {
             super("a-b");
         }
 
         @Override
-        protected void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        protected void configureInstance(WebComponent<Component> webComponent, Component component) {
 
         }
 
     }
 
-    static abstract class PackageLocalExporter
-            extends WebComponentExporter<Component> {
+    static abstract class PackageLocalExporter extends WebComponentExporter<Component> {
 
         public PackageLocalExporter() {
             super("a-b");
         }
 
         @Override
-        protected void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        protected void configureInstance(WebComponent<Component> webComponent, Component component) {
 
         }
 
     }
 
-    public static class NoPublicCtorExporter
-            extends WebComponentExporter<Component> {
+    public static class NoPublicCtorExporter extends WebComponentExporter<Component> {
 
         NoPublicCtorExporter() {
             super("a-b");
         }
 
         @Override
-        protected void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        protected void configureInstance(WebComponent<Component> webComponent, Component component) {
 
         }
 
     }
 
-    public static class NoDefaultCtorExporter
-            extends WebComponentExporter<Component> {
+    public static class NoDefaultCtorExporter extends WebComponentExporter<Component> {
 
         public NoDefaultCtorExporter(String tag) {
             super(tag);
         }
 
         @Override
-        protected void configureInstance(WebComponent<Component> webComponent,
-                Component component) {
+        protected void configureInstance(WebComponent<Component> webComponent, Component component) {
 
         }
 
     }
 
-    public static class ExporterFactory
-            implements WebComponentExporterFactory<Component> {
+    public static class ExporterFactory implements WebComponentExporterFactory<Component> {
 
         @Override
         public WebComponentExporter<Component> create() {

@@ -24,8 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.vaadin.flow.component.ComponentEvent;
 
 /**
- * Cache for tracking global information related to {@link ComponentEvent}
- * types.
+ * Cache for tracking global information related to {@link ComponentEvent} types.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -42,11 +41,10 @@ public class EventDataCache implements Serializable {
      *
      * @param eventType
      *            the component event type
-     * @return an optional containing the data expressions or an empty optional
-     *         if no data expressions have been cached for the given event type
+     * @return an optional containing the data expressions or an empty optional if no data expressions have been cached
+     *         for the given event type
      */
-    public Optional<LinkedHashMap<String, Class<?>>> getDataExpressions(
-            Class<? extends ComponentEvent<?>> eventType) {
+    public Optional<LinkedHashMap<String, Class<?>>> getDataExpressions(Class<? extends ComponentEvent<?>> eventType) {
         return Optional.ofNullable(dataExpressions.get(eventType));
     }
 
@@ -59,8 +57,7 @@ public class EventDataCache implements Serializable {
      *            the data expressions to store
      * @return the stored data expressions
      */
-    public LinkedHashMap<String, Class<?>> setDataExpressions(
-            Class<? extends ComponentEvent<?>> eventType,
+    public LinkedHashMap<String, Class<?>> setDataExpressions(Class<? extends ComponentEvent<?>> eventType,
             LinkedHashMap<String, Class<?>> expressions) {
         dataExpressions.put(eventType, expressions);
         return expressions;
@@ -73,20 +70,16 @@ public class EventDataCache implements Serializable {
      *            the component event type
      * @param eventType
      *            the component event type
-     * @return an optional containing the DOM event constructor or an empty
-     *         optional if no DOM event constructor has been cached for the
-     *         given event type
+     * @return an optional containing the DOM event constructor or an empty optional if no DOM event constructor has
+     *         been cached for the given event type
      */
     @SuppressWarnings("unchecked")
-    public <T extends ComponentEvent<?>> Optional<Constructor<T>> getEventConstructor(
-            Class<T> eventType) {
-        return Optional
-                .ofNullable((Constructor<T>) eventConstructors.get(eventType));
+    public <T extends ComponentEvent<?>> Optional<Constructor<T>> getEventConstructor(Class<T> eventType) {
+        return Optional.ofNullable((Constructor<T>) eventConstructors.get(eventType));
     }
 
     /**
-     * Stores the given DOM event constructor for the given event type in the
-     * cache.
+     * Stores the given DOM event constructor for the given event type in the cache.
      *
      * @param eventType
      *            the component event type
@@ -96,8 +89,8 @@ public class EventDataCache implements Serializable {
      *            the event type
      * @return the stored DOM event constructor
      */
-    public <T extends ComponentEvent<?>> Constructor<T> setEventConstructor(
-            Class<T> eventType, Constructor<T> constructor) {
+    public <T extends ComponentEvent<?>> Constructor<T> setEventConstructor(Class<T> eventType,
+            Constructor<T> constructor) {
         eventConstructors.put(eventType, constructor);
         return constructor;
     }

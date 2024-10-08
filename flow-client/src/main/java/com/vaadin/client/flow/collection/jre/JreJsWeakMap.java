@@ -37,24 +37,20 @@ import com.vaadin.client.flow.collection.JsWeakMap;
 @Deprecated
 public class JreJsWeakMap<K, V> implements JsWeakMap<K, V> {
     /*
-     * Using an ordinary HashMap here since WeakHashMap would make the GWT
-     * compiler upset. The difference can't be observed since there are no way
-     * of iterating the contents of a WeakMap or checking its size. Leaking
-     * memory is no issue since the JRE version is only used for testing.
+     * Using an ordinary HashMap here since WeakHashMap would make the GWT compiler upset. The difference can't be
+     * observed since there are no way of iterating the contents of a WeakMap or checking its size. Leaking memory is no
+     * issue since the JRE version is only used for testing.
      */
     private Map<K, V> values = new HashMap<>();
 
     @Override
     public JsWeakMap<K, V> set(K key, V value) {
         /*
-         * The native JavaScript implementation requires the keys to be
-         * "typeof object".
+         * The native JavaScript implementation requires the keys to be "typeof object".
          *
-         * We test for the most common offending types here to help the
-         * developer notice problems as early as possible.
+         * We test for the most common offending types here to help the developer notice problems as early as possible.
          */
-        if (key instanceof String || key instanceof Boolean
-                || key instanceof Double) {
+        if (key instanceof String || key instanceof Boolean || key instanceof Double) {
             throw new IllegalArgumentException("Key must be a JS object type");
         }
 

@@ -31,19 +31,17 @@ import com.vaadin.flow.dom.Element;
 /**
  * Maps a DOM event to a {@link ComponentEvent}.
  * <p>
- * Marking a {@link ComponentEvent} class with @{@link DomEvent} will cause the
- * {@link ComponentEvent} to be fired whenever the DOM event occurs.
+ * Marking a {@link ComponentEvent} class with @{@link DomEvent} will cause the {@link ComponentEvent} to be fired
+ * whenever the DOM event occurs.
  * <p>
- * A {@link ComponentEvent} class mapped with @{@link DomEvent} must have a
- * special constructor which is invoked by the framework when creating and
- * firing a {@link ComponentEvent} based on a DOM event.
+ * A {@link ComponentEvent} class mapped with @{@link DomEvent} must have a special constructor which is invoked by the
+ * framework when creating and firing a {@link ComponentEvent} based on a DOM event.
  * <ul>
  * <li>The first parameter must be the event source, a {@link Component}.
- * <li>The second parameter must be a boolean, indicating whether the event
- * originated from the client (always true when fired based on a DOM event)
- * <li>Any additional parameters must be annotated using @{@link EventData},
- * telling the framework which part of the DOM event data object to map to the
- * parameter.
+ * <li>The second parameter must be a boolean, indicating whether the event originated from the client (always true when
+ * fired based on a DOM event)
+ * <li>Any additional parameters must be annotated using @{@link EventData}, telling the framework which part of the DOM
+ * event data object to map to the parameter.
  * </ul>
  *
  * @see EventData
@@ -57,8 +55,7 @@ import com.vaadin.flow.dom.Element;
 @Inherited
 public @interface DomEvent {
     /**
-     * The name of the DOM event which should fire the annotated component
-     * event.
+     * The name of the DOM event which should fire the annotated component event.
      *
      * @return the name of the DOM event
      */
@@ -74,22 +71,18 @@ public @interface DomEvent {
     DisabledUpdateMode allowUpdates() default DisabledUpdateMode.ONLY_WHEN_ENABLED;
 
     /**
-     * The filter expression to run in the browser to determine whether fired
-     * events should be passed to the server.
+     * The filter expression to run in the browser to determine whether fired events should be passed to the server.
      *
      * @see DomListenerRegistration#setFilter(String)
      *
-     * @return the filter expression to use, or empty string to not use any
-     *         filtering
+     * @return the filter expression to use, or empty string to not use any filtering
      */
     String filter() default "";
 
     /**
-     * The debounce settings to use with this event. By default, debounce is not
-     * used.
+     * The debounce settings to use with this event. By default, debounce is not used.
      *
-     * @see DomListenerRegistration#debounce(int,
-     *      com.vaadin.flow.dom.DebouncePhase,
+     * @see DomListenerRegistration#debounce(int, com.vaadin.flow.dom.DebouncePhase,
      *      com.vaadin.flow.dom.DebouncePhase...)
      *
      * @return the debounce settings

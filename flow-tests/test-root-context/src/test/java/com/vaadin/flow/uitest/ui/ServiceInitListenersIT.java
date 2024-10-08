@@ -39,12 +39,9 @@ public class ServiceInitListenersIT extends ChromeBrowserTest {
         open();
 
         List<WebElement> labels = findElements(By.tagName("label"));
-        Assert.assertNotEquals(labels.get(0).getText(), 0,
-                extractCount(labels.get(0).getText()));
-        Assert.assertNotEquals(labels.get(1).getText(), 0,
-                extractCount(labels.get(1).getText()));
-        Assert.assertNotEquals(labels.get(2).getText(), 0,
-                extractCount(labels.get(2).getText()));
+        Assert.assertNotEquals(labels.get(0).getText(), 0, extractCount(labels.get(0).getText()));
+        Assert.assertNotEquals(labels.get(1).getText(), 0, extractCount(labels.get(1).getText()));
+        Assert.assertNotEquals(labels.get(2).getText(), 0, extractCount(labels.get(2).getText()));
     }
 
     private int extractCount(String logRow) {

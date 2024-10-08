@@ -23,16 +23,13 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.server.HttpStatusCode;
 
-public class NPEHandler extends Div
-        implements HasErrorParameter<NullPointerException> {
+public class NPEHandler extends Div implements HasErrorParameter<NullPointerException> {
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<NullPointerException> parameter) {
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<NullPointerException> parameter) {
         getElement().setText("NPE is thrown");
         setId("npe-handle");
-        LoggerFactory.getLogger(NPEHandler.class).error("NPE is thrown",
-                parameter.getCaughtException());
+        LoggerFactory.getLogger(NPEHandler.class).error("NPE is thrown", parameter.getCaughtException());
         return HttpStatusCode.INTERNAL_SERVER_ERROR.getCode();
     }
 

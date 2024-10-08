@@ -17,24 +17,17 @@ public class PushConfigurationWebSocketIT extends PushConfigurationTest {
 
     @Test
     public void testWebsocket() throws InterruptedException {
-        findElement(By.id("transport"))
-                .findElement(By.id(
-                        Transport.WEBSOCKET.name().toLowerCase(Locale.ENGLISH)))
+        findElement(By.id("transport")).findElement(By.id(Transport.WEBSOCKET.name().toLowerCase(Locale.ENGLISH)))
                 .click();
 
-        findElement(By.id("push-mode"))
-                .findElement(By.id(
-                        PushMode.AUTOMATIC.name().toLowerCase(Locale.ENGLISH)))
+        findElement(By.id("push-mode")).findElement(By.id(PushMode.AUTOMATIC.name().toLowerCase(Locale.ENGLISH)))
                 .click();
 
-        Assert.assertThat(getStatusText(),
-                CoreMatchers.containsString("fallbackTransport: long-polling"));
-        Assert.assertThat(getStatusText(),
-                CoreMatchers.containsString("transport: websocket"));
+        Assert.assertThat(getStatusText(), CoreMatchers.containsString("fallbackTransport: long-polling"));
+        Assert.assertThat(getStatusText(), CoreMatchers.containsString("transport: websocket"));
 
         waitForServerCounterToUpdate();
 
-        Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
-                getTransport());
+        Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(), getTransport());
     }
 }

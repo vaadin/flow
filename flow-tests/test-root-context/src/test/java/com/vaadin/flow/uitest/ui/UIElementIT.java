@@ -30,8 +30,7 @@ public class UIElementIT extends ChromeBrowserTest {
     public void uiElementWorksInJSCalls() {
         open();
 
-        List<WebElement> bodyChildrenAddedViaJs = findElements(
-                By.className("body-child"));
+        List<WebElement> bodyChildrenAddedViaJs = findElements(By.className("body-child"));
         Assert.assertEquals(1, bodyChildrenAddedViaJs.size());
 
         findElement(By.tagName("button")).click();

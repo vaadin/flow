@@ -58,8 +58,7 @@ class FrontendPluginsUtil {
         try {
             final JsonObject jsonFile = getJsonFile("plugins/plugins.json");
             if (jsonFile == null) {
-                throw new IllegalStateException(
-                        "Couldn't locate plugins/plugins.json");
+                throw new IllegalStateException("Couldn't locate plugins/plugins.json");
             }
 
             final JsonArray plugins = jsonFile.getArray("plugins");
@@ -69,8 +68,7 @@ class FrontendPluginsUtil {
             }
             return pluginsToInstall;
         } catch (IOException ioe) {
-            throw new UncheckedIOException("Couldn't load plugins/plugins.json",
-                    ioe);
+            throw new UncheckedIOException("Couldn't load plugins/plugins.json", ioe);
         }
     }
 
@@ -83,8 +81,7 @@ class FrontendPluginsUtil {
      * @throws IOException
      *             thrown for problems reading file
      */
-    protected static JsonObject getJsonFile(String jsonFilePath)
-            throws IOException {
+    protected static JsonObject getJsonFile(String jsonFilePath) throws IOException {
         final URL urlResource = getResourceUrl(jsonFilePath);
         if (urlResource == null) {
             return null;
@@ -92,8 +89,7 @@ class FrontendPluginsUtil {
         File jsonFile = new File(urlResource.getFile());
         String jsonString;
         if (!jsonFile.exists()) {
-            try (InputStream resourceAsStream = getResourceAsStream(
-                    jsonFilePath)) {
+            try (InputStream resourceAsStream = getResourceAsStream(jsonFilePath)) {
                 if (resourceAsStream != null) {
                     jsonString = FrontendUtils.streamToString(resourceAsStream);
                 } else {

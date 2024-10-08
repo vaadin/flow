@@ -16,12 +16,10 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ClearListView", layout = ViewTestLayout.class)
 @Tag("clear-list")
 @JsModule("./ClearList.js")
-public class ClearListView
-        extends PolymerTemplate<ClearListView.ClearListModel> {
+public class ClearListView extends PolymerTemplate<ClearListView.ClearListModel> {
     public ClearListView() {
         setId("template");
-        getModel()
-                .setMessages(Arrays.asList(new Message("1"), new Message("2")));
+        getModel().setMessages(Arrays.asList(new Message("1"), new Message("2")));
     }
 
     @EventHandler

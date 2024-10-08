@@ -75,8 +75,7 @@ public class DnDAttachDetachView extends Div {
 
         // need to set the effect allowed and drop effect for the simulation
         DragSource<Div> dragSource = DragSource.create(div);
-        dragSource.addDragStartListener(
-                event -> add(new Span("Start: " + counter)));
+        dragSource.addDragStartListener(event -> add(new Span("Start: " + counter)));
         dragSource.setEffectAllowed(EffectAllowed.COPY);
 
         DropTarget<Div> dt = DropTarget.create(view1);

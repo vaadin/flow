@@ -41,11 +41,10 @@ import com.vaadin.flow.shared.Registration;
 /**
  * Implementation which handles shadow root nodes.
  * <p>
- * Only the methods implemented in the {@link AbstractNodeStateProvider} are
- * supported (related to the composition).
+ * Only the methods implemented in the {@link AbstractNodeStateProvider} are supported (related to the composition).
  * <p>
- * The data is stored directly in the state node but this should be considered
- * an implementation detail which can change.
+ * The data is stored directly in the state node but this should be considered an implementation detail which can
+ * change.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -58,9 +57,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     private static final ShadowRootStateProvider INSTANCE = new ShadowRootStateProvider();
 
     @SuppressWarnings("unchecked")
-    private static final Class<? extends NodeFeature>[] FEATURES = new Class[] {
-            ElementChildrenList.class, ShadowRootHost.class,
-            AttachExistingElementFeature.class, VirtualChildrenList.class,
+    private static final Class<? extends NodeFeature>[] FEATURES = new Class[] { ElementChildrenList.class,
+            ShadowRootHost.class, AttachExistingElementFeature.class, VirtualChildrenList.class,
             ReturnChannelMap.class };
 
     /**
@@ -96,8 +94,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void setAttribute(StateNode node, String attribute,
-            AbstractStreamResource resource) {
+    public void setAttribute(StateNode node, String attribute, AbstractStreamResource resource) {
         throw new UnsupportedOperationException();
     }
 
@@ -122,8 +119,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public DomListenerRegistration addEventListener(StateNode node,
-            String eventType, DomEventListener listener) {
+    public DomListenerRegistration addEventListener(StateNode node, String eventType, DomEventListener listener) {
         throw new UnsupportedOperationException();
     }
 
@@ -133,8 +129,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void setProperty(StateNode node, String name, Serializable value,
-            boolean emitChange) {
+    public void setProperty(StateNode node, String name, Serializable value, boolean emitChange) {
         throw new UnsupportedOperationException();
     }
 
@@ -179,8 +174,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Registration addPropertyChangeListener(StateNode node, String name,
-            PropertyChangeListener listener) {
+    public Registration addPropertyChangeListener(StateNode node, String name, PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
     }
 

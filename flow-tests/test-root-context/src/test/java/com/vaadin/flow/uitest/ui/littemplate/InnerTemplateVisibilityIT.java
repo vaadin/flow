@@ -16,21 +16,17 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
         open();
 
         // when inner is hidden
-        NativeButtonElement toggleButton = $(NativeButtonElement.class).id(
-                InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
+        NativeButtonElement toggleButton = $(NativeButtonElement.class)
+                .id(InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
         toggleButton.click();
 
         // then: element is not visible, attribute 'hidden' and 'display: none'
         // set
-        TestBenchElement outer = $("*")
-                .id(InnerTemplateVisibilityView.OUTER_ID);
-        TestBenchElement inner = outer.$("*")
-                .id(InnerTemplateVisibilityView.INNER_ID);
+        TestBenchElement outer = $("*").id(InnerTemplateVisibilityView.OUTER_ID);
+        TestBenchElement inner = outer.$("*").id(InnerTemplateVisibilityView.INNER_ID);
         Assert.assertFalse("expected inner to be hidden", inner.isDisplayed());
-        Assert.assertNotNull("expected attribute hidden on inner",
-                inner.getAttribute("hidden"));
-        Assert.assertEquals("expected 'display: none' on inner", "none",
-                inner.getCssValue("display"));
+        Assert.assertNotNull("expected attribute hidden on inner", inner.getAttribute("hidden"));
+        Assert.assertEquals("expected 'display: none' on inner", "none", inner.getCssValue("display"));
     }
 
     @Test
@@ -38,22 +34,18 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
         open();
 
         // when inner is hidden and unhidden
-        NativeButtonElement toggleButton = $(NativeButtonElement.class).id(
-                InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
+        NativeButtonElement toggleButton = $(NativeButtonElement.class)
+                .id(InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
         toggleButton.click();
         toggleButton.click();
 
         // then: element is visible, attribute and 'display: none' are no longer
         // present
-        TestBenchElement outer = $("*")
-                .id(InnerTemplateVisibilityView.OUTER_ID);
-        TestBenchElement inner = outer.$("*")
-                .id(InnerTemplateVisibilityView.INNER_ID);
+        TestBenchElement outer = $("*").id(InnerTemplateVisibilityView.OUTER_ID);
+        TestBenchElement inner = outer.$("*").id(InnerTemplateVisibilityView.INNER_ID);
         Assert.assertTrue("expected inner to be visible", inner.isDisplayed());
-        Assert.assertNull("inner should not have attribute hidden",
-                inner.getAttribute("hidden"));
-        Assert.assertEquals("expected 'display: block' on inner", "block",
-                inner.getCssValue("display"));
+        Assert.assertNull("inner should not have attribute hidden", inner.getAttribute("hidden"));
+        Assert.assertEquals("expected 'display: block' on inner", "block", inner.getCssValue("display"));
     }
 
     @Test
@@ -61,18 +53,15 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
         open();
 
         // when hidden
-        NativeButtonElement toggleButton = $(NativeButtonElement.class).id(
-                InnerTemplateVisibilityView.TOGGLE_OUTER_VISIBILITY_BUTTON_ID);
+        NativeButtonElement toggleButton = $(NativeButtonElement.class)
+                .id(InnerTemplateVisibilityView.TOGGLE_OUTER_VISIBILITY_BUTTON_ID);
         toggleButton.click();
 
         // then: element is not visible, attribute 'hidden' is set but
         // 'display: none' is not set
-        WebElement outer = findElement(
-                By.id(InnerTemplateVisibilityView.OUTER_ID));
+        WebElement outer = findElement(By.id(InnerTemplateVisibilityView.OUTER_ID));
         Assert.assertFalse("expected outer to be hidden", outer.isDisplayed());
-        Assert.assertNotNull("expected attribute hidden on outer",
-                outer.getAttribute("hidden"));
-        Assert.assertEquals("expected no style attribute", "",
-                outer.getAttribute("style"));
+        Assert.assertNotNull("expected attribute hidden on outer", outer.getAttribute("hidden"));
+        Assert.assertEquals("expected no style attribute", "", outer.getAttribute("style"));
     }
 }

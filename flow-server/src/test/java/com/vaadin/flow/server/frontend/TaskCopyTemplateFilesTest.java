@@ -57,48 +57,38 @@ public class TaskCopyTemplateFilesTest {
         // creating non-existing folder to make sure the execute() creates
         // the folder if missing
         projectDirectory = temporaryFolder.newFolder();
-        resourceOutputDirectory = new File(projectDirectory,
-                "target/" + Constants.VAADIN_SERVLET_RESOURCES);
+        resourceOutputDirectory = new File(projectDirectory, "target/" + Constants.VAADIN_SERVLET_RESOURCES);
         finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getSubTypesOf(Template.class))
-                .thenReturn(Collections.singleton(MyLitElementView.class));
+        Mockito.when(finder.getSubTypesOf(Template.class)).thenReturn(Collections.singleton(MyLitElementView.class));
         Class clazz = JsModule.class;
-        Mockito.when(finder.loadClass(JsModule.class.getName()))
-                .thenReturn(clazz);
+        Mockito.when(finder.loadClass(JsModule.class.getName())).thenReturn(clazz);
     }
 
     @Test
-    public void should_copyTemplateFilesFromDefaultFrontendDirectory()
-            throws Exception {
+    public void should_copyTemplateFilesFromDefaultFrontendDirectory() throws Exception {
         executeTaskCopyTemplateFiles(FrontendUtils.FRONTEND);
     }
 
     @Test
-    public void should_copyTemplateFilesFromCustomFrontendDirectory()
-            throws Exception {
+    public void should_copyTemplateFilesFromCustomFrontendDirectory() throws Exception {
         executeTaskCopyTemplateFiles("frontend-custom");
     }
 
-    private void executeTaskCopyTemplateFiles(String frontedDirectoryName)
-            throws Exception {
+    private void executeTaskCopyTemplateFiles(String frontedDirectoryName) throws Exception {
         // prepare frontend resource
-        File frontendDirectory = new File(projectDirectory,
-                frontedDirectoryName);
+        File frontendDirectory = new File(projectDirectory, frontedDirectoryName);
         frontendDirectory.mkdirs();
         new File(frontendDirectory, "my-lit-element-view.js").createNewFile();
 
-        Options options = new Options(Mockito.mock(Lookup.class),
-                projectDirectory)
-                .withBuildResultFolders(frontendDirectory,
-                        resourceOutputDirectory)
+        Options options = new Options(Mockito.mock(Lookup.class), projectDirectory)
+                .withBuildResultFolders(frontendDirectory, resourceOutputDirectory)
                 .withFrontendDirectory(frontendDirectory);
         TaskCopyTemplateFiles task = new TaskCopyTemplateFiles(finder, options);
         task.execute();
 
-        List<String> files = TestUtils
-                .listFilesRecursively(resourceOutputDirectory);
-        Assert.assertTrue("TS resource should have been copied", files.stream()
-                .anyMatch(file -> file.contains("my-lit-element-view.js")));
+        List<String> files = TestUtils.listFilesRecursively(resourceOutputDirectory);
+        Assert.assertTrue("TS resource should have been copied",
+                files.stream().anyMatch(file -> file.contains("my-lit-element-view.js")));
     }
 
 }

@@ -35,21 +35,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * An abstract implementation of an adapter for integrating with React
- * components. To be used together with a React adapter Web Component that
- * subclasses the {@code ReactAdapterElement} JS class. The React adapter Web
- * Component defines the React JSX template to render the React components with
- * the specified props mapping, defines the named state that is synchronised
- * with the server-side Java component, and custom DOM events.
+ * An abstract implementation of an adapter for integrating with React components. To be used together with a React
+ * adapter Web Component that subclasses the {@code ReactAdapterElement} JS class. The React adapter Web Component
+ * defines the React JSX template to render the React components with the specified props mapping, defines the named
+ * state that is synchronised with the server-side Java component, and custom DOM events.
  * <p>
  * The subclasses should specify the following:
  * <ul>
- * <li>A {@link com.vaadin.flow.component.Tag} annotation with the name of the
- * React adapter Web Component.
- * <li>A {@link com.vaadin.flow.component.dependency.JsModule} annotation with
- * the React adapter Web Component implementation.
- * <li>An optional {@link com.vaadin.flow.component.dependency.NpmPackage}
- * annotation for npm dependencies of the React adapter Web Component.
+ * <li>A {@link com.vaadin.flow.component.Tag} annotation with the name of the React adapter Web Component.
+ * <li>A {@link com.vaadin.flow.component.dependency.JsModule} annotation with the React adapter Web Component
+ * implementation.
+ * <li>An optional {@link com.vaadin.flow.component.dependency.NpmPackage} annotation for npm dependencies of the React
+ * adapter Web Component.
  * </ul>
  *
  * @author Vaadin Ltd
@@ -59,8 +56,7 @@ public abstract class ReactAdapterComponent extends Component {
     private Map<String, Element> contentMap;
 
     /**
-     * Adds the specified listener for the state change event in the React
-     * adapter.
+     * Adds the specified listener for the state change event in the React adapter.
      *
      * @param stateName
      *            state name
@@ -72,16 +68,13 @@ public abstract class ReactAdapterComponent extends Component {
      * @param <T>
      *            type of the state value
      */
-    protected <T> DomListenerRegistration addStateChangeListener(
-            String stateName, Class<T> typeClass,
+    protected <T> DomListenerRegistration addStateChangeListener(String stateName, Class<T> typeClass,
             SerializableConsumer<T> listener) {
-        return addJsonReaderStateChangeListener(stateName,
-                (jsonValue -> readFromJson(jsonValue, typeClass)), listener);
+        return addJsonReaderStateChangeListener(stateName, (jsonValue -> readFromJson(jsonValue, typeClass)), listener);
     }
 
     /**
-     * Adds the specified listener for the state change event in the React
-     * adapter.
+     * Adds the specified listener for the state change event in the React adapter.
      *
      * @param stateName
      *            state name
@@ -93,11 +86,9 @@ public abstract class ReactAdapterComponent extends Component {
      * @param <T>
      *            type of the state value
      */
-    protected <T> DomListenerRegistration addStateChangeListener(
-            String stateName, TypeReference<T> typeReference,
+    protected <T> DomListenerRegistration addStateChangeListener(String stateName, TypeReference<T> typeReference,
             SerializableConsumer<T> listener) {
-        return addJsonReaderStateChangeListener(stateName,
-                (jsonValue -> readFromJson(jsonValue, typeReference)),
+        return addJsonReaderStateChangeListener(stateName, (jsonValue -> readFromJson(jsonValue, typeReference)),
                 listener);
     }
 
@@ -154,8 +145,7 @@ public abstract class ReactAdapterComponent extends Component {
      * @param <T>
      *            type of result instance
      */
-    protected static <T> T readFromJson(JsonValue jsonValue,
-            Class<T> typeClass) {
+    protected static <T> T readFromJson(JsonValue jsonValue, Class<T> typeClass) {
         return JsonUtils.readValue(jsonValue, typeClass);
     }
 
@@ -170,8 +160,7 @@ public abstract class ReactAdapterComponent extends Component {
      * @param <T>
      *            type of result instance
      */
-    protected static <T> T readFromJson(JsonValue jsonValue,
-            TypeReference<T> typeReference) {
+    protected static <T> T readFromJson(JsonValue jsonValue, TypeReference<T> typeReference) {
         return JsonUtils.readValue(jsonValue, typeReference);
     }
 
@@ -187,8 +176,7 @@ public abstract class ReactAdapterComponent extends Component {
     }
 
     /**
-     * Get the Flow container element that is set up in React template for given
-     * name attribute.
+     * Get the Flow container element that is set up in React template for given name attribute.
      *
      * @param name
      *            the name attribute for the container element
@@ -201,8 +189,7 @@ public abstract class ReactAdapterComponent extends Component {
         if (!contentMap.containsKey(name)) {
             var element = new Element("flow-content-container");
             contentMap.put(name, element);
-            getElement().getStateProvider().appendVirtualChild(
-                    getElement().getNode(), element,
+            getElement().getStateProvider().appendVirtualChild(getElement().getNode(), element,
                     NodeProperties.INJECT_BY_NAME, name);
             return element;
         }
@@ -227,16 +214,13 @@ public abstract class ReactAdapterComponent extends Component {
         }
     }
 
-    private <T> DomListenerRegistration addJsonReaderStateChangeListener(
-            String stateName, SerializableFunction<JsonValue, T> jsonReader,
-            SerializableConsumer<T> listener) {
-        return getElement().addPropertyChangeListener(stateName,
-                stateName + "-changed", (event -> {
-                    JsonValue newStateJson = JsonCodec
-                            .encodeWithoutTypeInfo(event.getValue());
-                    T newState = jsonReader.apply(newStateJson);
-                    listener.accept(newState);
-                }));
+    private <T> DomListenerRegistration addJsonReaderStateChangeListener(String stateName,
+            SerializableFunction<JsonValue, T> jsonReader, SerializableConsumer<T> listener) {
+        return getElement().addPropertyChangeListener(stateName, stateName + "-changed", (event -> {
+            JsonValue newStateJson = JsonCodec.encodeWithoutTypeInfo(event.getValue());
+            T newState = jsonReader.apply(newStateJson);
+            listener.accept(newState);
+        }));
     }
 
 }

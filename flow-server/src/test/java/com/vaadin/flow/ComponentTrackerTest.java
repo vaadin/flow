@@ -28,11 +28,9 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 /**
- * Note that this is intentionally in the "wrong" package as internal packages
- * are excluded in the tracker.
+ * Note that this is intentionally in the "wrong" package as internal packages are excluded in the tracker.
  *
- * Note that if you reformat this file, the tests will need to be adjusted as
- * they track line numbers.
+ * Note that if you reformat this file, the tests will need to be adjusted as they track line numbers.
  */
 public class ComponentTrackerTest {
 
@@ -131,16 +129,12 @@ public class ComponentTrackerTest {
 
     @Test
     public void memoryIsReleased() throws Exception {
-        Field createLocationField = ComponentTracker.class
-                .getDeclaredField("createLocation");
-        Field attachLocationField = ComponentTracker.class
-                .getDeclaredField("attachLocation");
+        Field createLocationField = ComponentTracker.class.getDeclaredField("createLocation");
+        Field attachLocationField = ComponentTracker.class.getDeclaredField("attachLocation");
         createLocationField.setAccessible(true);
         attachLocationField.setAccessible(true);
-        Map<Component, StackTraceElement> createMap = (Map<Component, StackTraceElement>) createLocationField
-                .get(null);
-        Map<Component, StackTraceElement> attachMap = (Map<Component, StackTraceElement>) attachLocationField
-                .get(null);
+        Map<Component, StackTraceElement> createMap = (Map<Component, StackTraceElement>) createLocationField.get(null);
+        Map<Component, StackTraceElement> attachMap = (Map<Component, StackTraceElement>) attachLocationField.get(null);
         createMap.clear();
         attachMap.clear();
 

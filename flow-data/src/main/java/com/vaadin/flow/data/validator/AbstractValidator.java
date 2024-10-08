@@ -34,16 +34,15 @@ public abstract class AbstractValidator<T> implements Validator<T> {
     private final SerializableFunction<T, String> messageProvider;
 
     /**
-     * Constructs a validator with the given error message. The substring "{0}"
-     * is replaced by the value that failed validation.
+     * Constructs a validator with the given error message. The substring "{0}" is replaced by the value that failed
+     * validation.
      *
      * @param errorMessage
      *            the message to be included in a failed result, not null
      */
     protected AbstractValidator(String errorMessage) {
         Objects.requireNonNull(errorMessage, "error message cannot be null");
-        this.messageProvider = value -> errorMessage.replace("{0}",
-                String.valueOf(value));
+        this.messageProvider = value -> errorMessage.replace("{0}", String.valueOf(value));
     }
 
     /**
@@ -58,13 +57,11 @@ public abstract class AbstractValidator<T> implements Validator<T> {
     }
 
     /**
-     * A helper method for creating a {@code Result} from a value and a validity
-     * flag. If the flag is true, returns {@code Result.ok}, otherwise yields
-     * {@code Result.error} bearing the error message returned by
+     * A helper method for creating a {@code Result} from a value and a validity flag. If the flag is true, returns
+     * {@code Result.ok}, otherwise yields {@code Result.error} bearing the error message returned by
      * {@link #getMessage(Object)}.
      * <p>
-     * For instance, the following {@code apply} method only accepts even
-     * numbers:
+     * For instance, the following {@code apply} method only accepts even numbers:
      *
      * <pre>
      * &#64;Override
@@ -80,7 +77,6 @@ public abstract class AbstractValidator<T> implements Validator<T> {
      * @return the validation result
      */
     protected ValidationResult toResult(T value, boolean isValid) {
-        return isValid ? ValidationResult.ok()
-                : ValidationResult.error(getMessage(value));
+        return isValid ? ValidationResult.ok() : ValidationResult.error(getMessage(value));
     }
 }

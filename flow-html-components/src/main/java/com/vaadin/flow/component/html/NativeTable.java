@@ -30,8 +30,7 @@ import com.vaadin.flow.component.Tag;
  * @since 24.4
  */
 @Tag(Tag.TABLE)
-public class NativeTable extends HtmlContainer
-        implements ClickNotifier<NativeTable> {
+public class NativeTable extends HtmlContainer implements ClickNotifier<NativeTable> {
 
     /**
      * The table's caption.
@@ -71,8 +70,7 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Return the table's caption component. Creates a new instance if no
-     * caption is present.
+     * Return the table's caption component. Creates a new instance if no caption is present.
      *
      * @return the table's caption.
      */
@@ -116,8 +114,7 @@ public class NativeTable extends HtmlContainer
     /**
      * Returns the head of this table.
      *
-     * @return This table's {@code <thead>} element. Creates a new one if no
-     *         element was present.
+     * @return This table's {@code <thead>} element. Creates a new one if no element was present.
      */
     public NativeTableHeader getHead() {
         if (head == null) {
@@ -141,8 +138,7 @@ public class NativeTable extends HtmlContainer
     /**
      * Returns the {@code <tfoot>} element of this table.
      *
-     * @return The {@code <tfoot>} element of this table. Creates a new one if
-     *         none was present.
+     * @return The {@code <tfoot>} element of this table. Creates a new one if none was present.
      */
     public NativeTableFooter getFoot() {
         if (foot == null) {
@@ -172,11 +168,9 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Returns the first body element in this table. Creates one if there's
-     * none.
+     * Returns the first body element in this table. Creates one if there's none.
      *
-     * @return the first {@code <tbody>} element in the table. Creates one if
-     *         there's none.
+     * @return the first {@code <tbody>} element in the table. Creates one if there's none.
      */
     public NativeTableBody getBody() {
         if (bodies.isEmpty()) {
@@ -186,15 +180,12 @@ public class NativeTable extends HtmlContainer
     }
 
     /**
-     * Returns the {@code <tbody>} element at a given position relative to other
-     * {@code <tbody>} elements.
+     * Returns the {@code <tbody>} element at a given position relative to other {@code <tbody>} elements.
      *
      * @param index
-     *            The position of the body element relative to other body
-     *            elements.
-     * @return The table body component at the given position. If the position
-     *         is 0 and there are no body elements present, a new one is created
-     *         and returned.
+     *            The position of the body element relative to other body elements.
+     * @return The table body component at the given position. If the position is 0 and there are no body elements
+     *         present, a new one is created and returned.
      */
     public NativeTableBody getBody(int index) {
         if (index == 0) {

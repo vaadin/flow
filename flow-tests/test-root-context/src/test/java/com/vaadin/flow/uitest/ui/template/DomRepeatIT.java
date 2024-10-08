@@ -35,12 +35,9 @@ public class DomRepeatIT extends ChromeBrowserTest {
         TestBenchElement template = $(TestBenchElement.class).id("template");
 
         for (int i = 0; i < DomRepeatView.NUMBER_OF_EMPLOYEES; i++) {
-            template.$(TestBenchElement.class)
-                    .id(DomRepeatView.TR_ID_PREFIX + i).click();
-            String eventIndex = template.$(TestBenchElement.class)
-                    .id(DomRepeatView.EVENT_INDEX_ID).getText();
-            String repeatIndex = template.$(TestBenchElement.class)
-                    .id(DomRepeatView.REPEAT_INDEX_ID).getText();
+            template.$(TestBenchElement.class).id(DomRepeatView.TR_ID_PREFIX + i).click();
+            String eventIndex = template.$(TestBenchElement.class).id(DomRepeatView.EVENT_INDEX_ID).getText();
+            String repeatIndex = template.$(TestBenchElement.class).id(DomRepeatView.REPEAT_INDEX_ID).getText();
 
             Assert.assertEquals(eventIndex, repeatIndex);
             Assert.assertEquals(i, Integer.parseInt(repeatIndex));

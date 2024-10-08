@@ -54,8 +54,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
  *
  * @since 2.0
  */
-public abstract class FlowModeAbstractMojo extends AbstractMojo
-        implements PluginAdapterBase {
+public abstract class FlowModeAbstractMojo extends AbstractMojo implements PluginAdapterBase {
 
     /**
      * Additionally include compile-time-only dependencies matching the pattern.
@@ -71,8 +70,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html
      */
-    @Parameter(defaultValue = "${vaadin."
-            + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL + "}")
+    @Parameter(defaultValue = "${vaadin." + InitParameters.SERVLET_PARAMETER_INITIAL_UIDL + "}")
     private boolean eagerServerLoad;
 
     /**
@@ -100,9 +98,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private File javaResourceFolder;
 
     /**
-     * Download node.js from this URL. Handy in heavily firewalled corporate
-     * environments where the node.js download can be provided from an intranet
-     * mirror. Defaults to null which will cause the downloader to use
+     * Download node.js from this URL. Handy in heavily firewalled corporate environments where the node.js download can
+     * be provided from an intranet mirror. Defaults to null which will cause the downloader to use
      * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      * <p>
      * </p>
@@ -112,24 +109,20 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private String nodeDownloadRoot;
 
     /**
-     * The node.js version to be used when node.js is installed automatically by
-     * Vaadin, for example `"v16.0.0"`. Defaults to null which uses the
-     * Vaadin-default node version - see {@link FrontendTools} for details.
+     * The node.js version to be used when node.js is installed automatically by Vaadin, for example `"v16.0.0"`.
+     * Defaults to null which uses the Vaadin-default node version - see {@link FrontendTools} for details.
      */
     @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     private String nodeVersion;
 
     /**
-     * Setting defining if the automatically installed node version may be
-     * updated to the default Vaadin node version.
+     * Setting defining if the automatically installed node version may be updated to the default Vaadin node version.
      */
-    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = ""
-            + Constants.DEFAULT_NODE_AUTO_UPDATE)
+    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = "" + Constants.DEFAULT_NODE_AUTO_UPDATE)
     private boolean nodeAutoUpdate;
 
     /**
-     * The folder where `package.json` file is located. Default is project root
-     * dir.
+     * The folder where `package.json` file is located. Default is project root dir.
      */
     @Parameter(defaultValue = "${project.basedir}")
     private File npmFolder;
@@ -150,13 +143,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Instructs to use bun for installing npm frontend resources.
      */
-    @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_BUN, defaultValue = ""
-            + Constants.ENABLE_BUN_DEFAULT)
+    @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_BUN, defaultValue = "" + Constants.ENABLE_BUN_DEFAULT)
     private boolean bunEnable;
 
     /**
-     * Instructs to use globally installed pnpm tool or the default supported
-     * pnpm version.
+     * Instructs to use globally installed pnpm tool or the default supported pnpm version.
      */
     @Parameter(property = InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, defaultValue = ""
             + Constants.GLOBAL_PNPM_DEFAULT)
@@ -172,36 +163,30 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     MavenProject project;
 
     /**
-     * The folder where `package.json` file is located. Default is project root
-     * dir.
+     * The folder where `package.json` file is located. Default is project root dir.
      */
     @Parameter(defaultValue = "${project.basedir}")
     private File projectBasedir;
 
     /**
-     * Whether vaadin home node executable usage is forced. If it's set to
-     * {@code true} then vaadin home 'node' is checked and installed if it's
-     * absent. Then it will be used instead of globally 'node' or locally
-     * installed installed 'node'.
+     * Whether vaadin home node executable usage is forced. If it's set to {@code true} then vaadin home 'node' is
+     * checked and installed if it's absent. Then it will be used instead of globally 'node' or locally installed
+     * installed 'node'.
      */
     @Parameter(property = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = ""
             + Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE)
     private boolean requireHomeNodeExec;
 
     /**
-     * Defines the output directory for generated non-served resources, such as
-     * the token file.
+     * Defines the output directory for generated non-served resources, such as the token file.
      */
-    @Parameter(defaultValue = "${project.build.outputDirectory}/"
-            + VAADIN_SERVLET_RESOURCES)
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + VAADIN_SERVLET_RESOURCES)
     private File resourceOutputDirectory;
 
     /**
-     * The folder where the frontend build tool should output index.js and other
-     * generated files.
+     * The folder where the frontend build tool should output index.js and other generated files.
      */
-    @Parameter(defaultValue = "${project.build.outputDirectory}/"
-            + VAADIN_WEBAPP_RESOURCES)
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + VAADIN_WEBAPP_RESOURCES)
     private File webpackOutputDirectory;
 
     /**
@@ -213,15 +198,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Additional npm packages to run post install scripts for.
      * <p>
-     * Post install is automatically run for internal dependencies which rely on
-     * post install scripts to work, e.g. esbuild.
+     * Post install is automatically run for internal dependencies which rely on post install scripts to work, e.g.
+     * esbuild.
      */
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
 
     /**
-     * Parameter to control if frontend development server should be used in
-     * development mode or not.
+     * Parameter to control if frontend development server should be used in development mode or not.
      * <p>
      * By default, the frontend server is not used.
      */
@@ -245,8 +229,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private ClassFinder classFinder;
 
     /**
-     * Generates a List of ClasspathElements (Run and CompileTime) from a
-     * MavenProject.
+     * Generates a List of ClasspathElements (Run and CompileTime) from a MavenProject.
      *
      * @param project
      *            a given MavenProject
@@ -256,17 +239,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
         try {
             final Stream<String> classpathElements = Stream
-                    .of(project.getRuntimeClasspathElements().stream(),
-                            project.getSystemClasspathElements().stream(),
+                    .of(project.getRuntimeClasspathElements().stream(), project.getSystemClasspathElements().stream(),
                             project.getCompileClasspathElements().stream()
-                                    .filter(s -> s.matches(
-                                            INCLUDE_FROM_COMPILE_DEPS_REGEX)))
+                                    .filter(s -> s.matches(INCLUDE_FROM_COMPILE_DEPS_REGEX)))
                     .flatMap(Function.identity());
             return classpathElements.collect(Collectors.toList());
         } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to retrieve runtime classpath elements from project '%s'",
-                    project), e);
+            throw new IllegalStateException(
+                    String.format("Failed to retrieve runtime classpath elements from project '%s'", project), e);
         }
     }
 
@@ -276,8 +256,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @return true if Hilla is available, false otherwise
      */
     public boolean isHillaAvailable() {
-        return getClassFinder().getResource(
-                "com/vaadin/hilla/EndpointController.class") != null;
+        return getClassFinder().getResource("com/vaadin/hilla/EndpointController.class") != null;
     }
 
     /**
@@ -288,39 +267,33 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @return true if Hilla is available, false otherwise
      */
     public static boolean isHillaAvailable(MavenProject mavenProject) {
-        return createClassFinder(mavenProject).getResource(
-                "com/vaadin/hilla/EndpointController.class") != null;
+        return createClassFinder(mavenProject).getResource("com/vaadin/hilla/EndpointController.class") != null;
     }
 
     /**
-     * Checks if Hilla is available and Hilla views are used in the Maven
-     * project based on what is in routes.ts or routes.tsx file.
+     * Checks if Hilla is available and Hilla views are used in the Maven project based on what is in routes.ts or
+     * routes.tsx file.
      *
      * @param frontendDirectory
      *            Target frontend directory.
-     * @return {@code true} if Hilla is available and Hilla views are used,
-     *         {@code false} otherwise
+     * @return {@code true} if Hilla is available and Hilla views are used, {@code false} otherwise
      */
     public boolean isHillaUsed(File frontendDirectory) {
-        return isHillaAvailable()
-                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
+        return isHillaAvailable() && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
     /**
-     * Checks if Hilla is available and Hilla views are used in the Maven
-     * project based on what is in routes.ts or routes.tsx file.
+     * Checks if Hilla is available and Hilla views are used in the Maven project based on what is in routes.ts or
+     * routes.tsx file.
      *
      * @param mavenProject
      *            Target Maven project
      * @param frontendDirectory
      *            Target frontend directory.
-     * @return {@code true} if Hilla is available and Hilla views are used,
-     *         {@code false} otherwise
+     * @return {@code true} if Hilla is available and Hilla views are used, {@code false} otherwise
      */
-    public static boolean isHillaUsed(MavenProject mavenProject,
-            File frontendDirectory) {
-        return isHillaAvailable(mavenProject)
-                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
+    public static boolean isHillaUsed(MavenProject mavenProject, File frontendDirectory) {
+        return isHillaAvailable(mavenProject) && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
     @Override
@@ -364,8 +337,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public Set<File> getJarFiles() {
 
-        return project.getArtifacts().stream()
-                .filter(artifact -> "jar".equals(artifact.getType()))
+        return project.getArtifacts().stream().filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
 
     }
@@ -444,8 +416,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             return new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
             logError("Failed to parse nodeDownloadRoot uri", e);
-            throw new URISyntaxException(nodeDownloadRoot,
-                    "Failed to parse nodeDownloadRoot uri");
+            throw new URISyntaxException(nodeDownloadRoot, "Failed to parse nodeDownloadRoot uri");
         }
     }
 
@@ -522,8 +493,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public String buildFolder() {
         if (projectBuildDir.startsWith(projectBasedir.toString())) {
-            return projectBaseDirectory().relativize(Paths.get(projectBuildDir))
-                    .toString();
+            return projectBaseDirectory().relativize(Paths.get(projectBuildDir)).toString();
         }
         return projectBuildDir;
     }
@@ -566,8 +536,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (applicationIdentifier != null && !applicationIdentifier.isBlank()) {
             return applicationIdentifier;
         }
-        return "app-" + StringUtil.getHash(
-                project.getGroupId() + ":" + project.getArtifactId(),
-                StandardCharsets.UTF_8);
+        return "app-"
+                + StringUtil.getHash(project.getGroupId() + ":" + project.getArtifactId(), StandardCharsets.UTF_8);
     }
 }

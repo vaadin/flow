@@ -77,9 +77,8 @@ public class Lumo implements AbstractTheme {
             attributes.put("theme", DARK);
             break;
         default:
-            LoggerFactory.getLogger(Lumo.class.getName()).warn(
-                    "Lumo theme variant not recognized: '{}'. Using no variant.",
-                    variant);
+            LoggerFactory.getLogger(Lumo.class.getName())
+                    .warn("Lumo theme variant not recognized: '{}'. Using no variant.", variant);
         }
         return attributes;
     }

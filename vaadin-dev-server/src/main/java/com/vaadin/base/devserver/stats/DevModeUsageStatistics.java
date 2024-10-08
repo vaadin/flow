@@ -31,8 +31,8 @@ import elemental.json.JsonObject;
 /**
  * Singleton for collecting development time usage metrics
  * <p>
- * All statistics gathering methods in this class are static for easy caller
- * code and they immediately update the stored JSON on disk.
+ * All statistics gathering methods in this class are static for easy caller code and they immediately update the stored
+ * JSON on disk.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -55,8 +55,7 @@ public class DevModeUsageStatistics {
      * @param storage
      *            the storage instance to use
      */
-    private DevModeUsageStatistics(File projectFolder,
-            StatisticsStorage storage) {
+    private DevModeUsageStatistics(File projectFolder, StatisticsStorage storage) {
         this.projectFolder = projectFolder;
         this.storage = storage;
     }
@@ -84,8 +83,7 @@ public class DevModeUsageStatistics {
      *
      * @return the created instance or {@code null} if telemetry is not used
      */
-    public static DevModeUsageStatistics init(File projectFolder,
-            StatisticsStorage storage, StatisticsSender sender) {
+    public static DevModeUsageStatistics init(File projectFolder, StatisticsStorage storage, StatisticsSender sender) {
 
         getLogger().debug("Telemetry enabled");
 
@@ -104,34 +102,23 @@ public class DevModeUsageStatistics {
     private void trackGlobalData() {
         storage.update((globalData, projectData) -> {
             // Update the machine / user / source level data
-            globalData.setValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
-                    ServerInfo.fetchOperatingSystem());
-            globalData.setValue(StatisticsConstants.FIELD_JVM,
-                    ServerInfo.fetchJavaVersion());
-            globalData.setValue(StatisticsConstants.FIELD_PROKEY,
-                    ProjectHelpers.getProKey());
-            globalData.setValue(StatisticsConstants.FIELD_USER_KEY,
-                    ProjectHelpers.getUserKey());
+            globalData.setValue(StatisticsConstants.FIELD_OPERATING_SYSTEM, ServerInfo.fetchOperatingSystem());
+            globalData.setValue(StatisticsConstants.FIELD_JVM, ServerInfo.fetchJavaVersion());
+            globalData.setValue(StatisticsConstants.FIELD_PROKEY, ProjectHelpers.getProKey());
+            globalData.setValue(StatisticsConstants.FIELD_USER_KEY, ProjectHelpers.getUserKey());
             try {
-                globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID,
-                        MachineId.get());
+                globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID, MachineId.get());
             } catch (Throwable ex) {
-                globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID,
-                        "ERROR");
+                globalData.setValue(StatisticsConstants.FIELD_MACHINE_ID, "ERROR");
                 getLogger().debug("Cannot get Machine ID", ex);
             }
 
             // Update basic project statistics and save
-            projectData.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
-                    Version.getFullVersion());
-            projectData.setValue(StatisticsConstants.FIELD_VAADIN_VERSION,
-                    ServerInfo.fetchVaadinVersion());
-            projectData.setValue(StatisticsConstants.FIELD_HILLA_VERSION,
-                    ServerInfo.fetchHillaVersion());
-            projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID,
-                    ProjectHelpers.getProjectSource(projectFolder));
-            projectData.increment(
-                    StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
+            projectData.setValue(StatisticsConstants.FIELD_FLOW_VERSION, Version.getFullVersion());
+            projectData.setValue(StatisticsConstants.FIELD_VAADIN_VERSION, ServerInfo.fetchVaadinVersion());
+            projectData.setValue(StatisticsConstants.FIELD_HILLA_VERSION, ServerInfo.fetchHillaVersion());
+            projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID, ProjectHelpers.getProjectSource(projectFolder));
+            projectData.increment(StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
         });
 
     }
@@ -152,11 +139,9 @@ public class DevModeUsageStatistics {
         get().storage.update((global, project) -> {
             try {
                 String json = data.get("browserData").toJson();
-                JsonNode clientData = JsonHelpers.getJsonMapper()
-                        .readTree(json);
+                JsonNode clientData = JsonHelpers.getJsonMapper().readTree(json);
                 if (clientData != null && clientData.isObject()) {
-                    clientData.fields().forEachRemaining(
-                            e -> project.setValue(e.getKey(), e.getValue()));
+                    clientData.fields().forEachRemaining(e -> project.setValue(e.getKey(), e.getValue()));
                 }
             } catch (Exception e) {
                 getLogger().debug("Failed to update client telemetry data", e);
@@ -168,8 +153,7 @@ public class DevModeUsageStatistics {
     /**
      * Checks if usage statistic collection is currently enabled.
      *
-     * @return {@code true} if statistics are collected, {@code false}
-     *         otherwise.
+     * @return {@code true} if statistics are collected, {@code false} otherwise.
      */
     static boolean isStatisticsEnabled() {
         return instance != null;
@@ -196,8 +180,7 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Update a value in usage statistics. Also, automatically aggregates min,
-     * max and average of the value.
+     * Update a value in usage statistics. Also, automatically aggregates min, max and average of the value.
      * <p>
      * Good for logging statistics about chancing values over time.
      *
@@ -211,8 +194,7 @@ public class DevModeUsageStatistics {
             return;
 
         try {
-            get().storage.update(
-                    (global, project) -> project.aggregate(name, value));
+            get().storage.update((global, project) -> project.aggregate(name, value));
         } catch (Exception e) {
             getLogger().debug("Failed to collect event '" + name + "'", e);
         }

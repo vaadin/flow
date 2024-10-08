@@ -20,8 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = { "server.port = 1234" })
-public class DevModeBrowserLauncherNoPropertiesTest
-        extends AbstractDevModeBrowserLauncherTest {
+public class DevModeBrowserLauncherNoPropertiesTest extends AbstractDevModeBrowserLauncherTest {
 
     @Test
     public void getUrl_noProperties_givesUrlWithNoContextPathAndUrlMapping() {

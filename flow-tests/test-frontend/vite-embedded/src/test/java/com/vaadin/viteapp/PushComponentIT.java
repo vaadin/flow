@@ -34,25 +34,19 @@ public class PushComponentIT extends ChromeDeviceTest {
     @Test
     public void componentGetsPushUpdates() {
         int initialCount = getCount();
-        Assert.assertTrue(
-                "The initial count should be less than maximum 50, but it has value "
-                        + initialCount,
+        Assert.assertTrue("The initial count should be less than maximum 50, but it has value " + initialCount,
                 initialCount < 50);
 
         waitUntil(driver -> getCount() > initialCount, 5);
 
         int nextCount = getCount();
-        Assert.assertTrue(
-                "The next count should be less than maximum 50, but it has value "
-                        + nextCount,
+        Assert.assertTrue("The next count should be less than maximum 50, but it has value " + nextCount,
                 nextCount < 50);
 
         waitUntil(driver -> getCount() == 50, 5);
 
         int lastCount = getCount();
-        Assert.assertEquals(
-                "The update count should have reached the maximum 50, but it "
-                        + "has value " + lastCount,
+        Assert.assertEquals("The update count should have reached the maximum 50, but it " + "has value " + lastCount,
                 50, lastCount);
     }
 

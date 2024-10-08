@@ -45,16 +45,14 @@ public class MainLayout extends AppLayout {
         DrawerToggle toggle = new DrawerToggle();
 
         viewTitle = new H2();
-        viewTitle.addClassNames(LumoUtility.FontSize.LARGE,
-                LumoUtility.Margin.NONE);
+        viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
 
         addToNavbar(true, toggle, viewTitle);
     }
 
     private void addDrawerContent() {
         H1 appName = new H1("My Spring App");
-        appName.addClassNames(LumoUtility.FontSize.LARGE,
-                LumoUtility.Margin.NONE);
+        appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
         Header header = new Header(appName);
 
         Scroller scroller = new Scroller(createNavigation());
@@ -64,11 +62,9 @@ public class MainLayout extends AppLayout {
 
     private VerticalLayout createNavigation() {
         VerticalLayout layout = new VerticalLayout();
-        UI.getCurrent().getInternals().getRouter().getRegistry()
-                .getRegisteredRoutes().forEach(route -> {
-                    layout.add(new RouterLink(route.getTemplate(),
-                            route.getNavigationTarget()));
-                });
+        UI.getCurrent().getInternals().getRouter().getRegistry().getRegisteredRoutes().forEach(route -> {
+            layout.add(new RouterLink(route.getTemplate(), route.getNavigationTarget()));
+        });
 
         return layout;
     }
@@ -86,8 +82,7 @@ public class MainLayout extends AppLayout {
     }
 
     private String getCurrentPageTitle() {
-        PageTitle title = getContent().getClass()
-                .getAnnotation(PageTitle.class);
+        PageTitle title = getContent().getClass().getAnnotation(PageTitle.class);
         return title == null ? "" : title.value();
     }
 }

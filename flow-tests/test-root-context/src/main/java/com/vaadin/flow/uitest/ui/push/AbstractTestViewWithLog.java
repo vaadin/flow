@@ -11,16 +11,14 @@ public abstract class AbstractTestViewWithLog extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         /*
-         * Read push settings from the UI instead of the the navigation target /
-         * router layout to preserve the structure of these legacy testing UIs
+         * Read push settings from the UI instead of the the navigation target / router layout to preserve the structure
+         * of these legacy testing UIs
          */
         CustomPush push = getClass().getAnnotation(CustomPush.class);
 
         if (push != null) {
-            attachEvent.getUI().getPushConfiguration()
-                    .setPushMode(push.value());
-            attachEvent.getUI().getPushConfiguration()
-                    .setTransport(push.transport());
+            attachEvent.getUI().getPushConfiguration().setPushMode(push.value());
+            attachEvent.getUI().getPushConfiguration().setTransport(push.transport());
         }
 
         add(log);

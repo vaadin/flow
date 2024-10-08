@@ -37,9 +37,8 @@ import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * SessionRouteRegistry is a mutable route registry that is valid in the scope
- * of VaadinSession. Routes can be added and removed from this registry and any
- * overlap with the registered routes between session and global scope will be
+ * SessionRouteRegistry is a mutable route registry that is valid in the scope of VaadinSession. Routes can be added and
+ * removed from this registry and any overlap with the registered routes between session and global scope will be
  * handled so that session scope paths overrides global paths.
  *
  * @since 1.3
@@ -51,8 +50,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     /**
      * Package protected constructor for the session route registry.
      * <p>
-     * This is only applicable for VaadinSession as no other registry will be
-     * taken into consideration.
+     * This is only applicable for VaadinSession as no other registry will be taken into consideration.
      *
      * @param session
      *            vaadin session that this session registry is
@@ -62,25 +60,22 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     /**
-     * Get the session registry for VaadinSession. If no SessionRegistry exists
-     * then one will be created for given VaadinSession.
+     * Get the session registry for VaadinSession. If no SessionRegistry exists then one will be created for given
+     * VaadinSession.
      *
      * @param session
      *            vaadin session to get registry for
      * @return session registry for given session
      */
     public static RouteRegistry getSessionRegistry(VaadinSession session) {
-        Objects.requireNonNull(session,
-                "Null session is not supported for session route registry");
-        SessionRouteRegistry registry = session
-                .getAttribute(SessionRouteRegistry.class);
+        Objects.requireNonNull(session, "Null session is not supported for session route registry");
+        SessionRouteRegistry registry = session.getAttribute(SessionRouteRegistry.class);
         if (registry == null) {
             registry = new SessionRouteRegistry(session);
             session.setAttribute(SessionRouteRegistry.class, registry);
         }
         if (!registry.session.equals(session)) {
-            throw new IllegalStateException(
-                    "Session has as the attribute a route registered to another session");
+            throw new IllegalStateException("Session has as the attribute a route registered to another session");
         }
         return registry;
     }
@@ -89,14 +84,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     public List<RouteData> getRegisteredRoutes() {
         List<RouteData> routes = new ArrayList<>(super.getRegisteredRoutes());
 
-        List<RouteData> registeredRoutes = getParentRegistry()
-                .getRegisteredRoutes();
+        List<RouteData> registeredRoutes = getParentRegistry().getRegisteredRoutes();
         if (!registeredRoutes.isEmpty()) {
-            Set<String> collect = routes.stream().map(RouteData::getTemplate)
-                    .collect(Collectors.toSet());
-            registeredRoutes.stream()
-                    .filter(data -> !collect.contains(data.getTemplate()))
-                    .forEach(routes::add);
+            Set<String> collect = routes.stream().map(RouteData::getTemplate).collect(Collectors.toSet());
+            registeredRoutes.stream().filter(data -> !collect.contains(data.getTemplate())).forEach(routes::add);
         }
 
         return routes;
@@ -105,39 +96,30 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     /**
      * Adds the given route change listener to the registry.
      * <p>
-     * For the session scoped registry also changes to the application scoped
-     * registry will be delegated to the listener if the added or removed route
-     * was not masked by a registration in the session scope.
+     * For the session scoped registry also changes to the application scoped registry will be delegated to the listener
+     * if the added or removed route was not masked by a registration in the session scope.
      *
      * @param listener
      *            listener to add
      * @return registration to remove the listener
      */
     @Override
-    public Registration addRoutesChangeListener(
-            RoutesChangedListener listener) {
+    public Registration addRoutesChangeListener(RoutesChangedListener listener) {
 
-        final Registration parentRegistration = getParentRegistry()
-                .addRoutesChangeListener(event -> {
-                    ConfiguredRoutes configuration = getConfiguration();
-                    List<RouteBaseData<?>> addedVisible = event.getAddedRoutes()
-                            .stream()
-                            .filter(routeData -> !configuration
-                                    .hasTemplate(routeData.getTemplate()))
-                            .collect(Collectors.toList());
-                    List<RouteBaseData<?>> removedVisible = event
-                            .getRemovedRoutes().stream()
-                            .filter(routeData -> !configuration
-                                    .hasTemplate(routeData.getTemplate()))
-                            .collect(Collectors.toList());
-                    // Only fire an event if we have visible changes.
-                    if (!(addedVisible.isEmpty() && removedVisible.isEmpty())) {
-                        fireEvent(new RoutesChangedEvent(event.getSource(),
-                                addedVisible, removedVisible));
-                    }
-                });
-        final Registration registration = super.addRoutesChangeListener(
-                listener);
+        final Registration parentRegistration = getParentRegistry().addRoutesChangeListener(event -> {
+            ConfiguredRoutes configuration = getConfiguration();
+            List<RouteBaseData<?>> addedVisible = event.getAddedRoutes().stream()
+                    .filter(routeData -> !configuration.hasTemplate(routeData.getTemplate()))
+                    .collect(Collectors.toList());
+            List<RouteBaseData<?>> removedVisible = event.getRemovedRoutes().stream()
+                    .filter(routeData -> !configuration.hasTemplate(routeData.getTemplate()))
+                    .collect(Collectors.toList());
+            // Only fire an event if we have visible changes.
+            if (!(addedVisible.isEmpty() && removedVisible.isEmpty())) {
+                fireEvent(new RoutesChangedEvent(event.getSource(), addedVisible, removedVisible));
+            }
+        });
+        final Registration registration = super.addRoutesChangeListener(listener);
 
         return () -> {
             registration.remove();
@@ -147,8 +129,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public NavigationRouteTarget getNavigationRouteTarget(String url) {
-        final NavigationRouteTarget navigationRouteTarget = getConfiguration()
-                .getNavigationRouteTarget(url);
+        final NavigationRouteTarget navigationRouteTarget = getConfiguration().getNavigationRouteTarget(url);
         if (navigationRouteTarget.hasTarget()) {
             return navigationRouteTarget;
         }
@@ -156,10 +137,8 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public RouteTarget getRouteTarget(Class<? extends Component> target,
-            RouteParameters parameters) {
-        final RouteTarget routeTarget = getConfiguration()
-                .getRouteTarget(target, parameters);
+    public RouteTarget getRouteTarget(Class<? extends Component> target, RouteParameters parameters) {
+        final RouteTarget routeTarget = getConfiguration().getRouteTarget(target, parameters);
         if (routeTarget != null) {
             return routeTarget;
         }
@@ -167,11 +146,9 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String url) {
+    public Optional<Class<? extends Component>> getNavigationTarget(String url) {
         Objects.requireNonNull(url, "pathString must not be null.");
-        final Optional<Class<? extends Component>> target = getConfiguration()
-                .getTarget(url);
+        final Optional<Class<? extends Component>> target = getConfiguration().getTarget(url);
         if (target.isPresent() && !parentContainsExactMatch(url)) {
             return target;
         }
@@ -180,38 +157,33 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     /**
-     * When session registry contains a matching route, check if it is not an
-     * exact match and parent registry contains an exact or closer match.
+     * When session registry contains a matching route, check if it is not an exact match and parent registry contains
+     * an exact or closer match.
      *
      * @param url
      *            url to check for exact match
      * @return true if parent has exact match, but this registry doesn't
      */
     private boolean parentContainsExactMatch(String url) {
-        final List<RouteData> parentRoutes = getParentRegistry()
-                .getRegisteredRoutes();
+        final List<RouteData> parentRoutes = getParentRegistry().getRegisteredRoutes();
         final List<RouteData> registeredRoutes = getRegisteredRoutes();
 
         // Remove any routes coming from parent registry
         registeredRoutes.removeAll(parentRoutes);
 
-        boolean noLocalMatch = registeredRoutes.stream()
-                .noneMatch(data -> data.getTemplate().equals(url));
-        boolean parentMatch = parentRoutes.stream()
-                .anyMatch(data -> data.getTemplate().equals(url));
+        boolean noLocalMatch = registeredRoutes.stream().noneMatch(data -> data.getTemplate().equals(url));
+        boolean parentMatch = parentRoutes.stream().anyMatch(data -> data.getTemplate().equals(url));
 
         final boolean parentExactMatch = noLocalMatch && parentMatch;
         if (!parentExactMatch) {
             final List<String> segments = PathUtil.getSegmentsList(url);
             final int parentHighestMatch = parentRoutes.stream()
-                    .mapToInt(data -> equalParts(segments,
-                            PathUtil.getSegmentsList(data.getTemplate())))
-                    .max().orElse(0);
+                    .mapToInt(data -> equalParts(segments, PathUtil.getSegmentsList(data.getTemplate()))).max()
+                    .orElse(0);
 
             final int registryHighestMatch = registeredRoutes.stream()
-                    .mapToInt(data -> equalParts(segments,
-                            PathUtil.getSegmentsList(data.getTemplate())))
-                    .max().orElse(0);
+                    .mapToInt(data -> equalParts(segments, PathUtil.getSegmentsList(data.getTemplate()))).max()
+                    .orElse(0);
             return parentHighestMatch > registryHighestMatch;
         }
         return parentExactMatch;
@@ -240,8 +212,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(String url,
-            List<String> segments) {
+    public Optional<Class<? extends Component>> getNavigationTarget(String url, List<String> segments) {
         Objects.requireNonNull(url, "url must not be null.");
         final Optional<Class<? extends Component>> target = getConfiguration()
                 .getTarget(PathUtil.getPath(url, segments));
@@ -253,8 +224,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<String> getTargetUrl(
-            Class<? extends Component> navigationTarget) {
+    public Optional<String> getTargetUrl(Class<? extends Component> navigationTarget) {
         Optional<String> targetUrl = super.getTargetUrl(navigationTarget);
         if (targetUrl.isPresent()) {
             return targetUrl;
@@ -263,11 +233,8 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<String> getTargetUrl(
-            Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
-        Optional<String> targetUrl = super.getTargetUrl(navigationTarget,
-                parameters);
+    public Optional<String> getTargetUrl(Class<? extends Component> navigationTarget, RouteParameters parameters) {
+        Optional<String> targetUrl = super.getTargetUrl(navigationTarget, parameters);
         if (targetUrl.isPresent()) {
             return targetUrl;
         }
@@ -276,10 +243,8 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<String> getTemplate(
-            Class<? extends Component> navigationTarget) {
-        final Optional<String> targetRoute = super.getTemplate(
-                navigationTarget);
+    public Optional<String> getTemplate(Class<? extends Component> navigationTarget) {
+        final Optional<String> targetRoute = super.getTemplate(navigationTarget);
         if (targetRoute.isPresent()) {
             return targetRoute;
         }

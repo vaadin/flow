@@ -65,8 +65,7 @@ public class MetadataWriterTest {
 
     @Test
     public void writeRepaintAndAsyncTag() throws Exception {
-        assertMetadataOutput(true, true,
-                "{\"repaintAll\":true,\"async\":true}");
+        assertMetadataOutput(true, true, "{\"repaintAll\":true,\"async\":true}");
     }
 
     @Test
@@ -83,8 +82,7 @@ public class MetadataWriterTest {
 
         disableSessionExpirationMessages(messages);
 
-        assertMetadataOutput(false, false,
-                "{\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}");
+        assertMetadataOutput(false, false, "{\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}");
     }
 
     @Test
@@ -94,8 +92,7 @@ public class MetadataWriterTest {
 
         disableSessionExpirationMessages(messages);
 
-        assertMetadataOutput(false, true,
-                "{\"async\":true,\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}");
+        assertMetadataOutput(false, true, "{\"async\":true,\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}");
     }
 
     @Test
@@ -119,10 +116,8 @@ public class MetadataWriterTest {
         assertMetadataOutput(false, false, "{\"sessionExpired\":true}");
     }
 
-    private void assertMetadataOutput(boolean repaintAll, boolean async,
-            String expectedOutput) {
-        JsonObject meta = new MetadataWriter().createMetadata(ui, repaintAll,
-                async, messages);
+    private void assertMetadataOutput(boolean repaintAll, boolean async, String expectedOutput) {
+        JsonObject meta = new MetadataWriter().createMetadata(ui, repaintAll, async, messages);
         Assert.assertEquals(expectedOutput, meta.toJson());
     }
 

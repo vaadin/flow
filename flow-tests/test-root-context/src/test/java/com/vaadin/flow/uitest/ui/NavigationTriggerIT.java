@@ -37,24 +37,20 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         assertMessageCount(1);
 
         assertLastMessage("/abc", NavigationTrigger.PAGE_LOAD, "abc");
-        Assert.assertEquals("The trailing '/' from the URL should be removed.",
-                url.substring(0, url.length() - 1),
+        Assert.assertEquals("The trailing '/' from the URL should be removed.", url.substring(0, url.length() - 1),
                 getDriver().getCurrentUrl());
 
         findElement(By.id("routerlink")).click();
         assertMessageCount(2);
-        assertLastMessage("/routerlink", NavigationTrigger.ROUTER_LINK,
-                "routerlink");
+        assertLastMessage("/routerlink", NavigationTrigger.ROUTER_LINK, "routerlink");
 
         findElement(By.id("navigate")).click();
         assertMessageCount(3);
-        assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE,
-                "navigate");
+        assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE, "navigate");
 
         getDriver().navigate().back();
         assertMessageCount(4);
-        assertLastMessage("/routerlink", NavigationTrigger.HISTORY,
-                "routerlink");
+        assertLastMessage("/routerlink", NavigationTrigger.HISTORY, "routerlink");
 
         getDriver().navigate().forward();
         assertMessageCount(5);
@@ -62,23 +58,18 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
 
         findElement(By.id("forwardButton")).click();
         assertMessageCount(6);
-        assertLastMessage("/forwarded", NavigationTrigger.PROGRAMMATIC,
-                "forwarded");
+        assertLastMessage("/forwarded", NavigationTrigger.PROGRAMMATIC, "forwarded");
 
         findElement(By.id("rerouteButton")).click();
         assertMessageCount(7);
-        assertLastMessage("/rerouted", NavigationTrigger.PROGRAMMATIC,
-                "rerouted");
+        assertLastMessage("/rerouted", NavigationTrigger.PROGRAMMATIC, "rerouted");
     }
 
-    private void assertLastMessage(String path, NavigationTrigger trigger,
-            String parameter) {
+    private void assertLastMessage(String path, NavigationTrigger trigger, String parameter) {
         List<WebElement> messages = getMessages();
         String lastMessageText = messages.get(messages.size() - 1).getText();
 
-        Assert.assertEquals(
-                NavigationTriggerView.buildMessage(path, trigger, parameter),
-                lastMessageText);
+        Assert.assertEquals(NavigationTriggerView.buildMessage(path, trigger, parameter), lastMessageText);
     }
 
     private void assertMessageCount(int count) {

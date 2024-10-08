@@ -33,8 +33,8 @@ public interface HighlightAction<T> extends Serializable {
      * @param t
      *            the target of the highlight action
      * @param highlight
-     *            true if the target should be highlighted, false to clear the
-     *            highlight state previously set by this action
+     *            true if the target should be highlighted, false to clear the highlight state previously set by this
+     *            action
      */
     void highlight(T t, boolean highlight);
 }

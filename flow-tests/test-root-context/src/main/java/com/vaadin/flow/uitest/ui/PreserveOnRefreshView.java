@@ -47,8 +47,7 @@ public class PreserveOnRefreshView extends Div {
         UI.getCurrent().getElement().insertChild(0, looseElement);
 
         StreamResource resource = new StreamResource("filename",
-                () -> new ByteArrayInputStream(
-                        "foo".getBytes(StandardCharsets.UTF_8)));
+                () -> new ByteArrayInputStream("foo".getBytes(StandardCharsets.UTF_8)));
         Anchor download = new Anchor("", "Download file");
         download.setHref(resource);
         download.setId("link");

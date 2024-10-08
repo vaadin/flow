@@ -47,8 +47,7 @@ public class FrontendConverter implements AutoCloseable {
         this.frontendTools = frontendTools;
         this.tempDirPath = Files.createTempDirectory("converter");
         this.converterTempPath = tempDirPath.resolve("converter.js");
-        Files.copy(getClass().getResourceAsStream(CONVERTER_EXECUTABLE_PATH),
-                converterTempPath);
+        Files.copy(getClass().getResourceAsStream(CONVERTER_EXECUTABLE_PATH), converterTempPath);
     }
 
     @Override
@@ -58,9 +57,8 @@ public class FrontendConverter implements AutoCloseable {
         Files.deleteIfExists(tempDirPath);
     }
 
-    public boolean convertFile(Path filePath, boolean useLit1,
-            boolean disableOptionalChaining) throws IOException,
-            InterruptedException, CommandExecutionException {
+    public boolean convertFile(Path filePath, boolean useLit1, boolean disableOptionalChaining)
+            throws IOException, InterruptedException, CommandExecutionException {
         if (!readFile(filePath).contains("PolymerElement")) {
             return false;
         }

@@ -36,14 +36,12 @@ import com.vaadin.flow.server.VaadinServlet;
 /**
  * Initializer class for JSR 356 websockets.
  * <p>
- * Websocket specification says that initialization of websocket end points
- * should be done in the servlet context initialization phase. Some servers
- * implement this strictly so that end points cannot be registered after the
- * context initialization phase.
+ * Websocket specification says that initialization of websocket end points should be done in the servlet context
+ * initialization phase. Some servers implement this strictly so that end points cannot be registered after the context
+ * initialization phase.
  * <p>
- * Note that {@link WebListener} is Servlet 5.0 API so this will not be run for
- * older servers (unless added to web.xml), but these servers do not support JSR
- * 356 websockets either.
+ * Note that {@link WebListener} is Servlet 5.0 API so this will not be run for older servers (unless added to web.xml),
+ * but these servers do not support JSR 356 websockets either.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -63,8 +61,8 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     }
 
     /**
-     * "ServletConfig" which only provides information from a
-     * {@link ServletRegistration} and its {@link ServletContext}.
+     * "ServletConfig" which only provides information from a {@link ServletRegistration} and its
+     * {@link ServletContext}.
      */
     public static class FakeServletConfig implements ServletConfig {
 
@@ -72,16 +70,14 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
         private ServletContext servletContext;
 
         /**
-         * Creates an instance based on the given servlet registration and
-         * servlet context.
+         * Creates an instance based on the given servlet registration and servlet context.
          *
          * @param servletRegistration
          *            the registration to read from
          * @param servletContext
          *            the context to read from
          */
-        public FakeServletConfig(ServletRegistration servletRegistration,
-                ServletContext servletContext) {
+        public FakeServletConfig(ServletRegistration servletRegistration, ServletContext servletContext) {
             this.servletContext = servletContext;
             this.servletRegistration = servletRegistration;
         }
@@ -103,8 +99,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
 
         @Override
         public Enumeration<String> getInitParameterNames() {
-            return Collections.enumeration(
-                    servletRegistration.getInitParameters().keySet());
+            return Collections.enumeration(servletRegistration.getInitParameters().keySet());
         }
 
     }
@@ -121,11 +116,10 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     }
 
     /**
-     * Initializes Atmosphere for use with Vaadin servlets found in the given
-     * context.
+     * Initializes Atmosphere for use with Vaadin servlets found in the given context.
      * <p>
-     * For JSR 356 websockets to work properly, the initialization must be done
-     * in the servlet context initialization phase.
+     * For JSR 356 websockets to work properly, the initialization must be done in the servlet context initialization
+     * phase.
      *
      * @param servletContext
      *            The servlet context
@@ -136,23 +130,18 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
         }
         getLogger().debug("Atmosphere available, initializing");
 
-        Map<String, ? extends ServletRegistration> regs = servletContext
-                .getServletRegistrations();
-        for (Entry<String, ? extends ServletRegistration> entry : regs
-                .entrySet()) {
+        Map<String, ? extends ServletRegistration> regs = servletContext.getServletRegistrations();
+        for (Entry<String, ? extends ServletRegistration> entry : regs.entrySet()) {
             String servletName = entry.getKey();
             ServletRegistration servletRegistration = entry.getValue();
 
-            getLogger().debug("Checking if {} is a Vaadin Servlet",
-                    servletRegistration.getName());
+            getLogger().debug("Checking if {} is a Vaadin Servlet", servletRegistration.getName());
 
             if (isVaadinServlet(servletRegistration, servletContext)) {
                 try {
-                    initAtmosphereForVaadinServlet(servletRegistration,
-                            servletContext);
+                    initAtmosphereForVaadinServlet(servletRegistration, servletContext);
                 } catch (Exception e) {
-                    getLogger().warn("Failed to initialize Atmosphere for {}",
-                            servletName, e);
+                    getLogger().warn("Failed to initialize Atmosphere for {}", servletName, e);
                 }
             }
         }
@@ -161,19 +150,17 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     /**
      * Initializes Atmosphere for use with the given Vaadin servlet
      * <p>
-     * For JSR 356 websockets to work properly, the initialization must be done
-     * in the servlet context initialization phase.
+     * For JSR 356 websockets to work properly, the initialization must be done in the servlet context initialization
+     * phase.
      *
      * @param servletRegistration
      *            The servlet registration info for the servlet
      * @param servletContext
      *            The servlet context
      */
-    public static void initAtmosphereForVaadinServlet(
-            ServletRegistration servletRegistration,
+    public static void initAtmosphereForVaadinServlet(ServletRegistration servletRegistration,
             ServletContext servletContext) {
-        getLogger().debug("Initializing Atmosphere for Vaadin Servlet: {}",
-                servletRegistration.getName());
+        getLogger().debug("Initializing Atmosphere for Vaadin Servlet: {}", servletRegistration.getName());
         String servletName = servletRegistration.getName();
         String attributeName = getAttributeName(servletName);
 
@@ -183,54 +170,45 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
             return;
         }
         getLogger().debug("Creating AtmosphereFramework for {}", servletName);
-        AtmosphereFramework framework = PushRequestHandler.initAtmosphere(
-                new FakeServletConfig(servletRegistration, servletContext));
+        AtmosphereFramework framework = PushRequestHandler
+                .initAtmosphere(new FakeServletConfig(servletRegistration, servletContext));
         servletContext.setAttribute(attributeName, framework);
         getLogger().debug("Created AtmosphereFramework for {}", servletName);
 
     }
 
     /**
-     * Returns the name of the attribute in the servlet context where the
-     * pre-initialized Atmosphere object is stored.
+     * Returns the name of the attribute in the servlet context where the pre-initialized Atmosphere object is stored.
      *
      * @param servletName
      *            The name of the servlet
-     * @return The attribute name which contains the initialized Atmosphere
-     *         object
+     * @return The attribute name which contains the initialized Atmosphere object
      */
     public static String getAttributeName(String servletName) {
         return JSR356WebsocketInitializer.class.getName() + "." + servletName;
     }
 
     /**
-     * Checks if the given attribute name matches the convention used for
-     * storing AtmosphereFramework references.
+     * Checks if the given attribute name matches the convention used for storing AtmosphereFramework references.
      *
      * @param attributeName
      *            the attribute name to check
-     * @return <code>true</code> if the attribute name matches the convention,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the attribute name matches the convention, <code>false</code> otherwise
      */
-    private static boolean isAtmosphereFrameworkAttribute(
-            String attributeName) {
-        return attributeName
-                .startsWith(JSR356WebsocketInitializer.class.getName() + ".");
+    private static boolean isAtmosphereFrameworkAttribute(String attributeName) {
+        return attributeName.startsWith(JSR356WebsocketInitializer.class.getName() + ".");
     }
 
     /**
-     * Tries to determine if the given servlet registration refers to a Vaadin
-     * servlet.
+     * Tries to determine if the given servlet registration refers to a Vaadin servlet.
      *
      * @param servletRegistration
      *            The servlet registration info for the servlet
      * @param servletContext
      *            the context of the servlet
-     * @return false if the servlet is definitely not a Vaadin servlet, true
-     *         otherwise
+     * @return false if the servlet is definitely not a Vaadin servlet, true otherwise
      */
-    protected boolean isVaadinServlet(ServletRegistration servletRegistration,
-            ServletContext servletContext) {
+    protected boolean isVaadinServlet(ServletRegistration servletRegistration, ServletContext servletContext) {
         try {
             String servletClassName = servletRegistration.getClassName();
             if (servletClassName.equals("com.ibm.ws.wsoc.WsocServlet")) {
@@ -238,8 +216,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
                 // dynamically added
                 return false;
             }
-            if (servletClassName
-                    .equals("com.ibm.websphere.jaxrs.server.IBMRestServlet")) {
+            if (servletClassName.equals("com.ibm.websphere.jaxrs.server.IBMRestServlet")) {
                 // Websphere servlet which implements websocket endpoints,
                 // dynamically added
                 return false;
@@ -247,8 +224,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
 
             // Must use servletContext class loader to load servlet class to
             // work correctly in an OSGi environment (#20024)
-            Class<?> servletClass = servletContext.getClassLoader()
-                    .loadClass(servletClassName);
+            Class<?> servletClass = servletContext.getClassLoader().loadClass(servletClassName);
             return VaadinServlet.class.isAssignableFrom(servletClass);
         } catch (Exception e) {
             // This will fail in OSGi environments, assume everything is a
@@ -258,8 +234,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     }
 
     private static final Logger getLogger() {
-        return LoggerFactory
-                .getLogger(JSR356WebsocketInitializer.class.getName());
+        return LoggerFactory.getLogger(JSR356WebsocketInitializer.class.getName());
     }
 
     @Override
@@ -286,8 +261,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
     /**
      * Checks if Atmosphere is available on the classpath.
      *
-     * @return <code>true</code> if Atmosphere is available, <code>false</code>
-     *         otherwise
+     * @return <code>true</code> if Atmosphere is available, <code>false</code> otherwise
      */
     public static boolean isAtmosphereAvailable() {
         return atmosphereAvailable;

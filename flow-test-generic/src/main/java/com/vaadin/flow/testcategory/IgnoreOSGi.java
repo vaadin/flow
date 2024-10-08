@@ -16,9 +16,8 @@
 package com.vaadin.flow.testcategory;
 
 /**
- * Tests that should not be run inside OSGi container should be annotated with @
- * {@code Category(IgnoreOSGi.class)} so they can be optionally excluded from
- * the build.
+ * Tests that should not be run inside OSGi container should be annotated with @ {@code Category(IgnoreOSGi.class)} so
+ * they can be optionally excluded from the build.
  *
  * @author Vaadin Ltd
  * @since 1.0

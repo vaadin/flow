@@ -22,8 +22,7 @@ import com.vaadin.client.flow.collection.JsMap;
 import elemental.dom.Element;
 
 /**
- * Mapping between a server side node identifier which has been requested to
- * attach existing client side element.
+ * Mapping between a server side node identifier which has been requested to attach existing client side element.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -37,26 +36,22 @@ public class ExistingElementMap {
     private final JsArray<Element> idToElement = JsCollections.array();
 
     /**
-     * Gets the element stored via the {@link #add(int, Element)} method by the
-     * given {@code id}.
+     * Gets the element stored via the {@link #add(int, Element)} method by the given {@code id}.
      *
      * @param id
      *            identifier associated with an element
-     * @return the element associated with the {@code id} or null if it doesn't
-     *         exist
+     * @return the element associated with the {@code id} or null if it doesn't exist
      */
     public Element getElement(int id) {
         return idToElement.get(id);
     }
 
     /**
-     * Gets the id stored via the {@link #add(int, Element)} method by the given
-     * {@code element}.
+     * Gets the id stored via the {@link #add(int, Element)} method by the given {@code element}.
      *
      * @param element
      *            element associated with an identifier
-     * @return the identifier associated with the {@code element} or null if it
-     *         doesn't exist
+     * @return the identifier associated with the {@code element} or null if it doesn't exist
      */
     public Integer getId(Element element) {
         return elementToId.get(element);

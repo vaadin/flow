@@ -26,8 +26,7 @@ import com.vaadin.flow.server.VaadinServletService;
  */
 public class CustomServletService extends VaadinServletService {
 
-    public CustomServletService(VaadinServlet servlet,
-            DeploymentConfiguration deploymentConfiguration) {
+    public CustomServletService(VaadinServlet servlet, DeploymentConfiguration deploymentConfiguration) {
         super(servlet, deploymentConfiguration);
     }
 

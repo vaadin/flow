@@ -38,13 +38,11 @@ public class ShadowRootView extends AbstractDivView implements HasDynamicTitle {
         shadowDiv.setText("Div inside shadow DOM");
         shadowDiv.setAttribute("id", "shadow-div");
         shadowRoot.appendChild(shadowDiv);
-        Element shadowLabel = ElementFactory
-                .createLabel("Label inside shadow DOM");
+        Element shadowLabel = ElementFactory.createLabel("Label inside shadow DOM");
         shadowLabel.setAttribute("id", "shadow-label");
         shadowRoot.appendChild(shadowLabel);
 
-        NativeButton removeChild = createButton(
-                "Remove the last child from the shadow root", "remove",
+        NativeButton removeChild = createButton("Remove the last child from the shadow root", "remove",
                 event -> shadowRoot.removeChild(shadowLabel));
         add(removeChild);
     }

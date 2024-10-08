@@ -23,8 +23,7 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Component representing a <code>&lt;param&gt;</code> element for
- * <code>&lt;param&gt;</code> element.
+ * Component representing a <code>&lt;param&gt;</code> element for <code>&lt;param&gt;</code> element.
  *
  * @see HtmlObject
  *
@@ -48,8 +47,7 @@ public class Param extends HtmlComponent {
     }
 
     /**
-     * Creates a new <code>&lt;param&gt;</code> component with given name and
-     * value.
+     * Creates a new <code>&lt;param&gt;</code> component with given name and value.
      *
      * @see #setName(String)
      * @see #setValue(String)

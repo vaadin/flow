@@ -25,7 +25,7 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 public class ReconnectIntervalConfigurer implements VaadinServiceInitListener {
     @Override
     public void serviceInit(ServiceInitEvent event) {
-        event.getSource().addUIInitListener(uiEvent -> uiEvent.getUI()
-                .getReconnectDialogConfiguration().setReconnectInterval(1000));
+        event.getSource().addUIInitListener(
+                uiEvent -> uiEvent.getUI().getReconnectDialogConfiguration().setReconnectInterval(1000));
     }
 }

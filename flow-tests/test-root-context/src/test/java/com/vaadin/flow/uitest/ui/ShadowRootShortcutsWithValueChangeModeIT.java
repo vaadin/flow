@@ -26,15 +26,13 @@ import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class ShadowRootShortcutsWithValueChangeModeIT
-        extends ChromeBrowserTest {
+public class ShadowRootShortcutsWithValueChangeModeIT extends ChromeBrowserTest {
 
     private String text = "Some text";
 
     @Test
     public void onChangeValueChange_shortcutExecution_valueNotSentToServer() {
-        assertValueCommittedOnShortcutExecution(ValueChangeMode.ON_CHANGE,
-                false);
+        assertValueCommittedOnShortcutExecution(ValueChangeMode.ON_CHANGE, false);
         DivElement div = $(DivElement.class).id("test-element");
 
         // trigger change event and check value
@@ -55,8 +53,7 @@ public class ShadowRootShortcutsWithValueChangeModeIT
         doTriggerShortcut(true, Keys.CONTROL, Keys.ENTER);
     }
 
-    private void assertValueCommittedOnShortcutExecution(ValueChangeMode mode,
-            boolean expectValue) {
+    private void assertValueCommittedOnShortcutExecution(ValueChangeMode mode, boolean expectValue) {
         open(mode.name());
 
         DivElement div = $(DivElement.class).id("test-element");
@@ -75,17 +72,12 @@ public class ShadowRootShortcutsWithValueChangeModeIT
         ShortcutsWithValueChangeModeIT.sendKeys(driver, keys);
 
         DivElement div = $(DivElement.class).id("test-element");
-        String paragraphText = div.$(ParagraphElement.class).id("value")
-                .getText();
+        String paragraphText = div.$(ParagraphElement.class).id("value").getText();
 
         if (expectValue) {
-            Assert.assertEquals(
-                    "Expecting input value to be in sync with server value",
-                    text, paragraphText);
+            Assert.assertEquals("Expecting input value to be in sync with server value", text, paragraphText);
         } else {
-            Assert.assertEquals(
-                    "Expecting input value not to be synced with server", "",
-                    paragraphText);
+            Assert.assertEquals("Expecting input value not to be synced with server", "", paragraphText);
         }
     }
 

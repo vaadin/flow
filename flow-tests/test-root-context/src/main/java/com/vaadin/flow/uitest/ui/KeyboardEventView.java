@@ -25,13 +25,11 @@ public class KeyboardEventView extends Div {
 
         ComponentUtil.addListener(input, KeyDownEvent.class, event -> {
             /*
-             * for each event, sets a string "keyvalue:codevalue;" to the
-             * paragraph. For 'Q' the string would be "Q:KeyQ"
+             * for each event, sets a string "keyvalue:codevalue;" to the paragraph. For 'Q' the string would be
+             * "Q:KeyQ"
              */
             String keyText = String.join(",", event.getKey().getKeys());
-            String codeText = (event.getCode().isPresent()
-                    ? String.join(",", event.getCode().get().getKeys())
-                    : "");
+            String codeText = (event.getCode().isPresent() ? String.join(",", event.getCode().get().getKeys()) : "");
             paragraph.setText(keyText + ":" + codeText);
         });
         add(input, paragraph);
@@ -39,18 +37,16 @@ public class KeyboardEventView extends Div {
         Paragraph keyUpParagraph = new Paragraph();
         keyUpParagraph.setId("keyUpParagraph");
         ComponentUtil.addListener(input, KeyUpEvent.class,
-                event -> keyUpParagraph
-                        .setText(String.join(",", event.getKey().getKeys())));
+                event -> keyUpParagraph.setText(String.join(",", event.getKey().getKeys())));
 
         sendInvalidKeyUp.setId("sendInvalidKeyUp");
         sendInvalidKeyUp.addClickListener(event -> {
-            getUI().ifPresent(ui -> ui.getPage().executeJs(
-                    "$0.dispatchEvent(new KeyboardEvent('keyup', {}))",
+            getUI().ifPresent(ui -> ui.getPage().executeJs("$0.dispatchEvent(new KeyboardEvent('keyup', {}))",
                     input.getElement()));
         });
         add(sendInvalidKeyUp, keyUpParagraph);
-        UI.getCurrent().getSession().setErrorHandler(event -> keyUpParagraph
-                .setText(event.getThrowable().getMessage()));
+        UI.getCurrent().getSession()
+                .setErrorHandler(event -> keyUpParagraph.setText(event.getThrowable().getMessage()));
     }
 
     @Override

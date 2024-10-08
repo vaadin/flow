@@ -54,8 +54,7 @@ public class SpringVaadinServletServiceTest {
 
         @Override
         public Stream<VaadinServiceInitListener> getServiceInitListeners() {
-            return context.getBeansOfType(VaadinServiceInitListener.class)
-                    .values().stream();
+            return context.getBeansOfType(VaadinServiceInitListener.class).values().stream();
         }
 
         @Override
@@ -64,17 +63,14 @@ public class SpringVaadinServletServiceTest {
         }
 
         @Override
-        public <T extends com.vaadin.flow.component.Component> T createComponent(
-                Class<T> componentClass) {
+        public <T extends com.vaadin.flow.component.Component> T createComponent(Class<T> componentClass) {
             return null;
         }
     }
 
     @Test
-    public void getInstantiator_springManagedBean_instantiatorBeanReturned()
-            throws ServletException {
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                null);
+    public void getInstantiator_springManagedBean_instantiatorBeanReturned() throws ServletException {
+        VaadinService service = SpringInstantiatorTest.getService(context, null);
 
         Instantiator instantiator = service.getInstantiator();
 
@@ -84,8 +80,7 @@ public class SpringVaadinServletServiceTest {
     @Test
     public void uiInitListenerAsSpringBean_listenerIsAutoregisteredAsUIInitiLietnerInSpringService()
             throws ServletException, ServiceException {
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties());
+        VaadinService service = SpringInstantiatorTest.getService(context, new Properties());
 
         UI ui = new UI();
         TestUIInitListener listener = context.getBean(TestUIInitListener.class);
@@ -97,28 +92,21 @@ public class SpringVaadinServletServiceTest {
     }
 
     @Test
-    public void requestInterceptorsAreRegisteredOnTheService()
-            throws ServletException, ServiceException {
-        VaadinServletService service = (VaadinServletService) SpringInstantiatorTest
-                .getService(context, new Properties());
-        VaadinServletRequest request = new VaadinServletRequest(
-                new MockHttpServletRequest(), service);
+    public void requestInterceptorsAreRegisteredOnTheService() throws ServletException, ServiceException {
+        VaadinServletService service = (VaadinServletService) SpringInstantiatorTest.getService(context,
+                new Properties());
+        VaadinServletRequest request = new VaadinServletRequest(new MockHttpServletRequest(), service);
 
         try {
-            service.handleRequest(request, new VaadinServletResponse(
-                    new MockHttpServletResponse(), service));
+            service.handleRequest(request, new VaadinServletResponse(new MockHttpServletResponse(), service));
         } catch (Exception e) {
-            Assert.assertTrue(
-                    "Exception must be related to missing frontend folder",
+            Assert.assertTrue("Exception must be related to missing frontend folder",
                     e.getMessage().contains("Unable to find index.html"));
         }
 
-        Assert.assertEquals("Interceptor got called on start", "true",
-                request.getAttribute("started"));
-        Assert.assertEquals("Interceptor got called on error", "true",
-                request.getAttribute("error"));
-        Assert.assertEquals("Interceptor got called on stop", "true",
-                request.getAttribute("stopped"));
+        Assert.assertEquals("Interceptor got called on start", "true", request.getAttribute("started"));
+        Assert.assertEquals("Interceptor got called on error", "true", request.getAttribute("error"));
+        Assert.assertEquals("Interceptor got called on stop", "true", request.getAttribute("stopped"));
     }
 
 }

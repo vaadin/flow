@@ -15,11 +15,8 @@ public class SetParameterForwardToIT extends ChromeBrowserTest {
         waitForDevServer();
 
         waitForElementPresent(By.id(SetParameterForwardToView.LOCATION_ID));
-        final String locationId = findElement(
-                By.id(SetParameterForwardToView.LOCATION_ID)).getText();
-        Assert.assertTrue("should redirect to " + baseLoc + "/two",
-                locationId.endsWith("/two"));
-        Assert.assertTrue("should update the URL",
-                getDriver().getCurrentUrl().endsWith(baseLoc + "/two"));
+        final String locationId = findElement(By.id(SetParameterForwardToView.LOCATION_ID)).getText();
+        Assert.assertTrue("should redirect to " + baseLoc + "/two", locationId.endsWith("/two"));
+        Assert.assertTrue("should update the URL", getDriver().getCurrentUrl().endsWith(baseLoc + "/two"));
     }
 }

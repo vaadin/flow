@@ -53,8 +53,7 @@ public class BasicElementStyle implements Style {
         String trimmedValue = value.trim();
         ElementUtil.validateStylePropertyValue(trimmedValue);
 
-        propertyMap.setProperty(StyleUtil.stylePropertyToAttribute(name),
-                trimmedValue, true);
+        propertyMap.setProperty(StyleUtil.stylePropertyToAttribute(name), trimmedValue, true);
         return this;
     }
 
@@ -76,8 +75,7 @@ public class BasicElementStyle implements Style {
     public String get(String name) {
         ElementUtil.validateStylePropertyName(name);
 
-        return (String) propertyMap
-                .getProperty(StyleUtil.stylePropertyToAttribute(name));
+        return (String) propertyMap.getProperty(StyleUtil.stylePropertyToAttribute(name));
     }
 
     @Override
@@ -87,7 +85,6 @@ public class BasicElementStyle implements Style {
 
     @Override
     public boolean has(String name) {
-        return propertyMap
-                .hasProperty(StyleUtil.stylePropertyToAttribute(name));
+        return propertyMap.hasProperty(StyleUtil.stylePropertyToAttribute(name));
     }
 }

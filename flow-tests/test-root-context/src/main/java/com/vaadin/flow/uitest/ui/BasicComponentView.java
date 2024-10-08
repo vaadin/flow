@@ -45,9 +45,8 @@ public class BasicComponentView extends AbstractDivView {
             greeting.addClassName("thankYou");
             String buttonText = e.getSource().getElement().getText();
 
-            greeting.setText("Thank you for clicking \"" + buttonText
-                    + "\" at (" + e.getClientX() + "," + e.getClientY()
-                    + ")! The field value is " + input.getValue());
+            greeting.setText("Thank you for clicking \"" + buttonText + "\" at (" + e.getClientX() + ","
+                    + e.getClientY() + ")! The field value is " + input.getValue());
 
             greeting.addClickListener(e2 -> remove(greeting));
             add(greeting);

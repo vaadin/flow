@@ -27,8 +27,7 @@ import jsinterop.annotations.JsType;
 @JsType(isNative = true, name = "Object", namespace = JsPackage.GLOBAL)
 public class JsObject {
     /**
-     * A property descriptor that can be passed to
-     * {@link JsObject#defineProperty(Object, String, PropertyDescriptor)}.
+     * A property descriptor that can be passed to {@link JsObject#defineProperty(Object, String, PropertyDescriptor)}.
      */
     @JsType(isNative = true)
     public interface PropertyDescriptor {
@@ -40,13 +39,11 @@ public class JsObject {
      * Adds a property to a JavaScript object.
      *
      * @param object
-     *            the object to which the property should be added, not
-     *            <code>null</code>
+     *            the object to which the property should be added, not <code>null</code>
      * @param name
      *            the name of the property to add, not <code>null</code>
      * @param descriptor
      *            a descriptor for the property, not <code>null</code>
      */
-    public static native void defineProperty(Object object, String name,
-            PropertyDescriptor descriptor);
+    public static native void defineProperty(Object object, String name, PropertyDescriptor descriptor);
 }

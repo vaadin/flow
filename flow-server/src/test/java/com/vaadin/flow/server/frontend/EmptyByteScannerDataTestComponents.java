@@ -53,8 +53,7 @@ public class EmptyByteScannerDataTestComponents {
 
         @Override
         public List<String> getHeaderInlineContents() {
-            return Collections
-                    .singletonList("<custom-style>foo</custom-style>");
+            return Collections.singletonList("<custom-style>foo</custom-style>");
         }
 
     }

@@ -44,23 +44,19 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         devModeInitializerToDevServerUpIsBelowThreshold("Webpack");
     }
 
-    private void devModeInitializerToDevServerUpIsBelowThreshold(
-            String serverName) {
+    private void devModeInitializerToDevServerUpIsBelowThreshold(String serverName) {
         getDriver().get(getRootURL());
         waitForDevServer();
 
         long timeoutTime = System.currentTimeMillis() + 20000;
-        while (System.currentTimeMillis() < timeoutTime
-                && !isElementPresent(By.id("performance-component"))) {
+        while (System.currentTimeMillis() < timeoutTime && !isElementPresent(By.id("performance-component"))) {
             getDriver().navigate().refresh();
         }
 
-        int startupTime = measureLogEntryTimeDistance(
-                "- Starting dev-mode updaters in",
+        int startupTime = measureLogEntryTimeDistance("- Starting dev-mode updaters in",
                 "- (Started|Reusing) " + serverName, true);
 
-        int npmInstallTime = measureLogEntryTimeDistance(
-                "- Running `pnpm install`",
+        int npmInstallTime = measureLogEntryTimeDistance("- Running `pnpm install`",
                 "- Frontend dependencies resolved successfully", false);
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
@@ -71,21 +67,18 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         printTeamcityStats(key, startupTimeWithoutNpmInstallTime);
 
         Assert.assertTrue(
-                String.format("startup time expected <= %d but was %d",
-                        thresholdMs, startupTimeWithoutNpmInstallTime),
+                String.format("startup time expected <= %d but was %d", thresholdMs, startupTimeWithoutNpmInstallTime),
                 startupTimeWithoutNpmInstallTime <= thresholdMs);
     }
 
     private void printTeamcityStats(String key, long value) {
         // ##teamcity[buildStatisticValue key=&#39;&lt;valueTypeKey&gt;&#39;
         // value=&#39;&lt;value&gt;&#39;]
-        System.out.println("##teamcity[buildStatisticValue key='" + key
-                + "' value='" + value + "']");
+        System.out.println("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']");
 
     }
 
-    private int measureLogEntryTimeDistance(String startFragment,
-            String endFragment, boolean failIfNotFound) {
+    private int measureLogEntryTimeDistance(String startFragment, String endFragment, boolean failIfNotFound) {
         Pattern startPattern = createPattern(startFragment);
         Pattern endPattern = createPattern(endFragment);
         AtomicInteger startTime = new AtomicInteger();

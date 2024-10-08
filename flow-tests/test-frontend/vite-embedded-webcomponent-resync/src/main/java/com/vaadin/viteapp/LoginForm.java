@@ -45,8 +45,7 @@ public class LoginForm extends Div {
     }
 
     private void login() {
-        Optional<Object> authToken = UserService.getInstance()
-                .authenticate(userName.getValue(), password.getValue());
+        Optional<Object> authToken = UserService.getInstance().authenticate(userName.getValue(), password.getValue());
         if (authToken.isPresent()) {
             errorMsg.setText("Authentication success");
         } else {

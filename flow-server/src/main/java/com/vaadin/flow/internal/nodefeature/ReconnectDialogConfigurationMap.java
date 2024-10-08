@@ -26,8 +26,7 @@ import com.vaadin.flow.internal.StateNode;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class ReconnectDialogConfigurationMap extends NodeMap
-        implements ReconnectDialogConfiguration {
+public class ReconnectDialogConfigurationMap extends NodeMap implements ReconnectDialogConfiguration {
 
     public static final String DIALOG_TEXT_KEY = "dialogText";
     public static final String DIALOG_TEXT_DEFAULT = "Connection lost, trying to reconnect...";
@@ -61,8 +60,7 @@ public class ReconnectDialogConfigurationMap extends NodeMap
 
     @Override
     public String getDialogTextGaveUp() {
-        return getOrDefault(DIALOG_TEXT_GAVE_UP_KEY,
-                DIALOG_TEXT_GAVE_UP_DEFAULT);
+        return getOrDefault(DIALOG_TEXT_GAVE_UP_KEY, DIALOG_TEXT_GAVE_UP_DEFAULT);
     }
 
     @Override

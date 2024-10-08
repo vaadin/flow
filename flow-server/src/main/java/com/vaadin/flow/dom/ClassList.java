@@ -33,8 +33,7 @@ public interface ClassList extends Set<String>, Serializable {
      *            the class name to set or remove
      * @param set
      *            true to set the class name, false to remove it
-     * @return true if the class list was modified (class name added or
-     *         removed), false otherwise
+     * @return true if the class list was modified (class name added or removed), false otherwise
      */
     default boolean set(String className, boolean set) {
         if (set) {

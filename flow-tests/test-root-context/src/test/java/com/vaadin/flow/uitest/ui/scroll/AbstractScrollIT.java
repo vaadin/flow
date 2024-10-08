@@ -26,10 +26,8 @@ abstract class AbstractScrollIT extends ChromeBrowserTest {
     protected static final int SCROLL_DELTA = 2;
 
     protected void checkPageScroll(int x, int y, int delta) {
-        assertThat("Unexpected x scroll position", (double) getScrollX(),
-                IsCloseTo.closeTo(x, delta));
-        assertThat("Unexpected y scroll position", (double) getScrollY(),
-                IsCloseTo.closeTo(y, delta));
+        assertThat("Unexpected x scroll position", (double) getScrollX(), IsCloseTo.closeTo(x, delta));
+        assertThat("Unexpected y scroll position", (double) getScrollY(), IsCloseTo.closeTo(y, delta));
     }
 
     protected void checkPageScroll(int x, int y) {

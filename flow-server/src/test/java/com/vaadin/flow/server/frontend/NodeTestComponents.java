@@ -43,10 +43,8 @@ import com.vaadin.flow.theme.Theme;
  */
 public class NodeTestComponents extends NodeUpdateTestUtil {
 
-    public static final String BUTTON_COMPONENT_FQN = ButtonComponent.class
-            .getName();
-    public static final String ICON_COMPONENT_FQN = IconComponent.class
-            .getName();
+    public static final String BUTTON_COMPONENT_FQN = ButtonComponent.class.getName();
+    public static final String ICON_COMPONENT_FQN = IconComponent.class.getName();
 
     @LoadDependenciesOnStartup
     public static class AllEager implements AppShellConfigurator {
@@ -185,8 +183,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
         @Override
         public List<String> getHeaderInlineContents() {
             return Collections.singletonList("<custom-style>\n"
-                    + "    <style include=\"lumo-color lumo-typography\"></style>\n"
-                    + "</custom-style>");
+                    + "    <style include=\"lumo-color lumo-typography\"></style>\n" + "</custom-style>");
         }
 
         @Override
@@ -203,9 +200,8 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
                 attributes.put("theme", DARK);
                 break;
             default:
-                LoggerFactory.getLogger(LumoTest.class.getName()).warn(
-                        "Lumo theme variant not recognized: '{}'. Using no variant.",
-                        variant);
+                LoggerFactory.getLogger(LumoTest.class.getName())
+                        .warn("Lumo theme variant not recognized: '{}'. Using no variant.", variant);
             }
             return attributes;
         }

@@ -34,17 +34,13 @@ public interface DetachNotifier extends Serializable {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default Registration addDetachListener(
-            ComponentEventListener<DetachEvent> listener) {
+    default Registration addDetachListener(ComponentEventListener<DetachEvent> listener) {
         if (this instanceof Component) {
-            return ComponentUtil.addListener((Component) this,
-                    DetachEvent.class, listener);
+            return ComponentUtil.addListener((Component) this, DetachEvent.class, listener);
         } else {
             throw new IllegalStateException(String.format(
-                    "The class '%s' doesn't extend '%s'. "
-                            + "Make your implementation for the method '%s'.",
-                    getClass().getName(), Component.class.getSimpleName(),
-                    "addDetachListener"));
+                    "The class '%s' doesn't extend '%s'. " + "Make your implementation for the method '%s'.",
+                    getClass().getName(), Component.class.getSimpleName(), "addDetachListener"));
         }
     }
 }

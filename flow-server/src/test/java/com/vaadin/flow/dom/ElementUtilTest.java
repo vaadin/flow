@@ -108,8 +108,7 @@ public class ElementUtilTest {
 
         Element originalElement = ElementFactory.createDiv();
         originalElement.appendChild(
-                ElementFactory.createParagraph(EXPECTED_TEXT_1).appendChild(
-                        ElementFactory.createDiv(EXPECTED_TEXT_2)));
+                ElementFactory.createParagraph(EXPECTED_TEXT_1).appendChild(ElementFactory.createDiv(EXPECTED_TEXT_2)));
 
         Document jDocument = Document.createShell("http://example.com");
 
@@ -117,24 +116,19 @@ public class ElementUtilTest {
 
         Optional<Element> optionalElement = ElementUtil.fromJsoup(jNode);
 
-        Assert.assertTrue("Element should have been created from jNode",
-                optionalElement.isPresent());
+        Assert.assertTrue("Element should have been created from jNode", optionalElement.isPresent());
 
         Element recreatedElement = optionalElement.get();
 
         // root
-        Assert.assertEquals("Root element should be div", "div",
-                recreatedElement.getTag());
+        Assert.assertEquals("Root element should be div", "div", recreatedElement.getTag());
         // child
-        Assert.assertEquals("Child element should be a paragraph", "p",
-                recreatedElement.getChild(0).getTag());
-        Assert.assertEquals("Child element should have text", EXPECTED_TEXT_1,
-                recreatedElement.getChild(0).getText());
+        Assert.assertEquals("Child element should be a paragraph", "p", recreatedElement.getChild(0).getTag());
+        Assert.assertEquals("Child element should have text", EXPECTED_TEXT_1, recreatedElement.getChild(0).getText());
         // grand-child (#1, since #0 is the text node)
         Assert.assertEquals("Grand-child element should be a div", "div",
                 recreatedElement.getChild(0).getChild(1).getTag());
-        Assert.assertEquals("Grand-child element should have text",
-                EXPECTED_TEXT_2,
+        Assert.assertEquals("Grand-child element should have text", EXPECTED_TEXT_2,
                 recreatedElement.getChild(0).getChild(1).getText());
     }
 
@@ -163,10 +157,8 @@ public class ElementUtilTest {
     public void parentIsInert_childIgnoresParentInert_allThePermutations() {
         setupElementHierarchy();
 
-        Assert.assertFalse("by default parent inert state is not ignored",
-                isIgnoreParentInert(child));
-        Assert.assertFalse("by default element should not be inert",
-                isInert(child));
+        Assert.assertFalse("by default parent inert state is not ignored", isIgnoreParentInert(child));
+        Assert.assertFalse("by default element should not be inert", isInert(child));
 
         ElementUtil.setIgnoreParentInert(child, true);
         Assert.assertFalse(isInert(child));
@@ -271,15 +263,14 @@ public class ElementUtilTest {
         child = ElementFactory.createDiv();
         grandchild = ElementFactory.createDiv();
         parent.appendChild(child.appendChild(grandchild));
-        stateTree = new StateTree(new UI().getInternals(),
-                ElementChildrenList.class, InertData.class);
+        stateTree = new StateTree(new UI().getInternals(), ElementChildrenList.class, InertData.class);
         final StateNode rootNode = stateTree.getRootNode();
         rootNode.getFeature(ElementChildrenList.class).add(0, parent.getNode());
     }
 
     private boolean isIgnoreParentInert(Element element) {
-        return element.getNode().getFeatureIfInitialized(InertData.class)
-                .map(InertData::isIgnoreParentInert).orElse(false);
+        return element.getNode().getFeatureIfInitialized(InertData.class).map(InertData::isIgnoreParentInert)
+                .orElse(false);
     }
 
     private boolean isInert(Element element) {

@@ -22,8 +22,7 @@ import com.vaadin.flow.server.StreamVariable.StreamingStartEvent;
  *
  * @since 1.0
  */
-public final class StreamingStartEventImpl extends AbstractStreamingEvent
-        implements StreamingStartEvent {
+public final class StreamingStartEventImpl extends AbstractStreamingEvent implements StreamingStartEvent {
 
     private boolean disposed;
 
@@ -37,8 +36,7 @@ public final class StreamingStartEventImpl extends AbstractStreamingEvent
      * @param contentLength
      *            content length
      */
-    public StreamingStartEventImpl(final String filename, final String type,
-            long contentLength) {
+    public StreamingStartEventImpl(final String filename, final String type, long contentLength) {
         super(filename, type, contentLength, 0);
     }
 

@@ -31,8 +31,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 
 /**
- * Handles navigation events by rendering a contained NavigationState in the
- * target UI.
+ * Handles navigation events by rendering a contained NavigationState in the target UI.
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -44,8 +43,7 @@ import com.vaadin.flow.router.RouterLayout;
 public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
 
     /**
-     * Constructs a new NavigationStateRenderer that handles the given
-     * navigation state.
+     * Constructs a new NavigationStateRenderer that handles the given navigation state.
      *
      * @param navigationState
      *            the navigation state handled by this instance
@@ -55,46 +53,39 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
     }
 
     @Override
-    protected List<Class<? extends RouterLayout>> getRouterLayoutTypes(
-            Class<? extends Component> targetType, Router router) {
+    protected List<Class<? extends RouterLayout>> getRouterLayoutTypes(Class<? extends Component> targetType,
+            Router router) {
         NavigationState navigationState = getNavigationState();
-        assert targetType == navigationState.getNavigationTarget()
-                : "Trying to get layouts for wrong route target";
+        assert targetType == navigationState.getNavigationTarget() : "Trying to get layouts for wrong route target";
 
-        NavigationRouteTarget target = router.getRegistry()
-                .getNavigationRouteTarget(navigationState.getResolvedPath());
+        NavigationRouteTarget target = router.getRegistry().getNavigationRouteTarget(navigationState.getResolvedPath());
 
         if (target.hasTarget()) {
-            return getTargetParentLayouts(target.getRouteTarget(),
-                    router.getRegistry(), target.getPath());
+            return getTargetParentLayouts(target.getRouteTarget(), router.getRegistry(), target.getPath());
         } else {
             return Collections.emptyList();
         }
     }
 
     @Override
-    protected void notifyNavigationTarget(Component componentInstance,
-            NavigationEvent navigationEvent, BeforeEnterEvent beforeEnterEvent,
-            LocationChangeEvent locationChangeEvent) {
+    protected void notifyNavigationTarget(Component componentInstance, NavigationEvent navigationEvent,
+            BeforeEnterEvent beforeEnterEvent, LocationChangeEvent locationChangeEvent) {
 
         if (!(componentInstance instanceof HasUrlParameter)) {
             return;
         }
 
         NavigationState navigationState = getNavigationState();
-        Class<? extends Component> routeTargetType = navigationState
-                .getNavigationTarget();
+        Class<? extends Component> routeTargetType = navigationState.getNavigationTarget();
 
-        List<String> parameters = navigationState.getUrlParameters()
-                .orElse(null);
+        List<String> parameters = navigationState.getUrlParameters().orElse(null);
 
         Object deserializedParameter = null;
         try {
-            deserializedParameter = ParameterDeserializer
-                    .deserializeRouteParameters(routeTargetType, parameters);
+            deserializedParameter = ParameterDeserializer.deserializeRouteParameters(routeTargetType, parameters);
         } catch (Exception e) {
-            beforeEnterEvent.rerouteToError(NotFoundException.class, String
-                    .format("Failed to parse url parameter, exception: %s", e));
+            beforeEnterEvent.rerouteToError(NotFoundException.class,
+                    String.format("Failed to parse url parameter, exception: %s", e));
             return;
         }
 

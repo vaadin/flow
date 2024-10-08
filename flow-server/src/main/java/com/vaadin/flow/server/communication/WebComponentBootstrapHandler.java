@@ -81,22 +81,18 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static final String REQ_PARAM_URL = "url";
     private static final String PATH_PREFIX = "/web-component/web-component";
-    static final Pattern PATH_PATTERN = Pattern
-            .compile(".*" + PATH_PREFIX + "-(ui|bootstrap)\\.(js|html)$");
+    static final Pattern PATH_PATTERN = Pattern.compile(".*" + PATH_PREFIX + "-(ui|bootstrap)\\.(js|html)$");
 
     private static class WebComponentBootstrapContext extends BootstrapContext {
 
-        private WebComponentBootstrapContext(VaadinRequest request,
-                VaadinResponse response, UI ui,
+        private WebComponentBootstrapContext(VaadinRequest request, VaadinResponse response, UI ui,
                 Function<VaadinRequest, String> callback) {
-            super(request, response, ui.getInternals().getSession(), ui,
-                    callback);
+            super(request, response, ui.getInternals().getSession(), ui, callback);
             setInitTheme(false);
         }
 
         @Override
-        public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(
-                Class<T> annotationType) {
+        public <T extends Annotation> Optional<T> getPageConfigurationAnnotation(Class<T> annotationType) {
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance(getService().getContext());
             return registry.getEmbeddedApplicationAnnotation(annotationType);
@@ -113,19 +109,16 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
 
-    private static class WebComponentBootstrapPageBuilder
-            extends BootstrapPageBuilder {
+    private static class WebComponentBootstrapPageBuilder extends BootstrapPageBuilder {
         @Override
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
 
             try {
-                Document document = Jsoup.parse(
-                        FrontendUtils.getWebComponentHtmlContent(service));
+                Document document = Jsoup.parse(FrontendUtils.getWebComponentHtmlContent(service));
                 Element head = document.head();
 
-                DeploymentConfiguration deploymentConfiguration = service
-                        .getDeploymentConfiguration();
+                DeploymentConfiguration deploymentConfiguration = service.getDeploymentConfiguration();
 
                 if (deploymentConfiguration.isProductionMode()) {
                     // The web-component.html is fetched from the bundle so it
@@ -136,37 +129,32 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     // directly from the frontend folder and the JS
                     // entrypoint(s) need
                     // to be added
-                    addGeneratedIndexContent(document,
-                            getStatsJson(deploymentConfiguration));
+                    addGeneratedIndexContent(document, getStatsJson(deploymentConfiguration));
                 }
 
                 // Specify the application ID for scripts of the
                 // web-component.html
-                head.select("script[src]").attr("data-app-id",
-                        context.getUI().getInternals().getAppId());
+                head.select("script[src]").attr("data-app-id", context.getUI().getInternals().getAppId());
 
                 // Add `crossorigin` to fix basic auth in Safari #6560
-                head.select("script[src], link[href]").attr("crossorigin",
-                        "true");
+                head.select("script[src], link[href]").attr("crossorigin", "true");
 
                 JsonObject initialUIDL = getInitialUidl(context.getUI());
 
-                head.prependChild(createInlineJavaScriptElement(
-                        "window.JSCompiler_renameProperty = function(a) { return a; }"));
+                head.prependChild(
+                        createInlineJavaScriptElement("window.JSCompiler_renameProperty = function(a) { return a; }"));
 
                 head.prependChild(getBootstrapScript(initialUIDL, context));
 
                 if (context.getPushMode().isEnabled()) {
-                    head.prependChild(createJavaScriptModuleElement(
-                            getPushScript(context), true));
+                    head.prependChild(createJavaScriptModuleElement(getPushScript(context), true));
                 }
 
                 setupCss(head, context);
 
                 return document;
             } catch (IOException e) {
-                throw new BootstrapException(
-                        "Unable to read the web-component.html file.", e);
+                throw new BootstrapException("Unable to read the web-component.html file.", e);
             }
         }
 
@@ -180,15 +168,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
 
-    protected static void addGeneratedIndexContent(Document targetDocument,
-            JsonObject statsJson) {
+    protected static void addGeneratedIndexContent(Document targetDocument, JsonObject statsJson) {
         List<String> toAdd = new ArrayList<>();
 
-        Optional<String> webComponentScript = JsonUtils
-                .stream(statsJson.getArray("entryScripts"))
-                .map(value -> value.asString())
-                .filter(script -> script.contains("webcomponenthtml"))
-                .findFirst();
+        Optional<String> webComponentScript = JsonUtils.stream(statsJson.getArray("entryScripts"))
+                .map(value -> value.asString()).filter(script -> script.contains("webcomponenthtml")).findFirst();
 
         if (webComponentScript.isPresent()) {
             Element elm = new Element(SCRIPT_TAG);
@@ -232,8 +216,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     /**
-     * Returns the request's base url to use in constructing and initialising
-     * ui.
+     * Returns the request's base url to use in constructing and initialising ui.
      *
      * @param request
      *            Request to the url for.
@@ -244,28 +227,22 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     @Override
-    protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass,
-            VaadinRequest request, VaadinResponse response,
-            VaadinSession session) {
+    protected BootstrapContext createAndInitUI(Class<? extends UI> uiClass, VaadinRequest request,
+            VaadinResponse response, VaadinSession session) {
 
         if (!canHandleRequest(request)) {
             throw new IllegalStateException(
-                    "Unexpected request URL '" + getRequestUrl(request)
-                            + "' in the bootstrap handler for web "
-                            + "component UI which should handle path "
-                            + PATH_PATTERN.toString());
+                    "Unexpected request URL '" + getRequestUrl(request) + "' in the bootstrap handler for web "
+                            + "component UI which should handle path " + PATH_PATTERN.toString());
         }
 
         final String serviceUrl = getServiceUrl(request, response);
 
-        BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
-                request, response, session);
+        BootstrapContext context = super.createAndInitUI(WebComponentUI.class, request, response, session);
         JsonObject config = context.getApplicationParameters();
 
-        PushConfiguration pushConfiguration = context.getUI()
-                .getPushConfiguration();
-        pushConfiguration.setPushServletMapping(
-                BootstrapHandlerHelper.determinePushServletMapping(session));
+        PushConfiguration pushConfiguration = context.getUI().getPushConfiguration();
+        pushConfiguration.setPushServletMapping(BootstrapHandlerHelper.determinePushServletMapping(session));
 
         assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);
@@ -273,8 +250,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(request.getService().getContext());
 
-        JsonArray tags = registry.getConfigurations().stream()
-                .map(conf -> Json.create(conf.getTag()))
+        JsonArray tags = registry.getConfigurations().stream().map(conf -> Json.create(conf.getTag()))
                 .collect(JsonUtils.asArray());
         config.put("webcomponents", tags);
 
@@ -284,16 +260,14 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     @Override
-    protected BootstrapContext createBootstrapContext(VaadinRequest request,
-            VaadinResponse response, UI ui,
+    protected BootstrapContext createBootstrapContext(VaadinRequest request, VaadinResponse response, UI ui,
             Function<VaadinRequest, String> callback) {
-        return new WebComponentBootstrapContext(request, response, ui,
-                callback);
+        return new WebComponentBootstrapContext(request, response, ui, callback);
     }
 
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean synchronizedHandleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
         if ("HEAD".equals(request.getMethod().toUpperCase(Locale.ROOT))) {
             // Poll request to check if the dev-bundle is ready
             // Prevent the creation of a UI
@@ -302,15 +276,13 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         // Find UI class
         Class<? extends UI> uiClass = getUIClass(request);
 
-        BootstrapContext context = createAndInitUI(uiClass, request, response,
-                session);
+        BootstrapContext context = createAndInitUI(uiClass, request, response, session);
 
         if (handleWebComponentResyncRequest(context, request, response)) {
             return true;
         }
 
-        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
-                response::setDateHeader);
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader, response::setDateHeader);
 
         String serviceUrl = getServiceUrl(request, response);
 
@@ -321,96 +293,77 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     /**
-     * Copies the {@link org.jsoup.nodes.Element Elements} found in the given
-     * {@code head} elements into the head of the embedding website using
-     * JavaScript. Drops {@code <base>} element.
+     * Copies the {@link org.jsoup.nodes.Element Elements} found in the given {@code head} elements into the head of the
+     * embedding website using JavaScript. Drops {@code <base>} element.
      *
      * @param response
-     *            {@link com.vaadin.flow.server.VaadinResponse} into which the
-     *            script is written
+     *            {@link com.vaadin.flow.server.VaadinResponse} into which the script is written
      * @param head
-     *            head element of Vaadin Bootstrap page. The child elements are
-     *            copied into the embedding page's head using JavaScript.
+     *            head element of Vaadin Bootstrap page. The child elements are copied into the embedding page's head
+     *            using JavaScript.
      * @param serviceUrl
      *            base path to use for the head elements' URLs
      * @throws IOException
      *             if writing fails
      */
-    private void writeBootstrapPage(VaadinResponse response, Element head,
-            String serviceUrl) throws IOException {
-        writeBootstrapPage(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8, response, head,
-                serviceUrl);
+    private void writeBootstrapPage(VaadinResponse response, Element head, String serviceUrl) throws IOException {
+        writeBootstrapPage(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8, response, head, serviceUrl);
     }
 
     /**
-     * Copies the {@link org.jsoup.nodes.Element Elements} found in the given
-     * {@code head} elements into the head of the embedding website using
-     * JavaScript. Drops {@code <base>} element.
+     * Copies the {@link org.jsoup.nodes.Element Elements} found in the given {@code head} elements into the head of the
+     * embedding website using JavaScript. Drops {@code <base>} element.
      *
      * @param contentType
      *            Content type of the response.
      * @param response
-     *            {@link com.vaadin.flow.server.VaadinResponse} into which the
-     *            script is written
+     *            {@link com.vaadin.flow.server.VaadinResponse} into which the script is written
      * @param head
-     *            head element of Vaadin Bootstrap page. The child elements are
-     *            copied into the embedding page's head using JavaScript.
+     *            head element of Vaadin Bootstrap page. The child elements are copied into the embedding page's head
+     *            using JavaScript.
      * @param serviceUrl
      *            base path to use for the head elements' URLs
      * @throws IOException
      *             if writing fails
      */
-    protected void writeBootstrapPage(String contentType,
-            VaadinResponse response, Element head, String serviceUrl)
+    protected void writeBootstrapPage(String contentType, VaadinResponse response, Element head, String serviceUrl)
             throws IOException {
         /*
-         * The elements found in the head are reconstructed using JavaScript and
-         * document.createElement(...). Since innerHTML and related methods do
-         * not execute <script> blocks, the contents cannot be copied as pure
-         * string into the head. The each element is created separately and then
-         * attributes are copied and innerHTML set, if the element has
-         * innerHTML. The innerHTMLs are in-lined for easier copying.
+         * The elements found in the head are reconstructed using JavaScript and document.createElement(...). Since
+         * innerHTML and related methods do not execute <script> blocks, the contents cannot be copied as pure string
+         * into the head. The each element is created separately and then attributes are copied and innerHTML set, if
+         * the element has innerHTML. The innerHTMLs are in-lined for easier copying.
          */
         response.setContentType(contentType);
         /*
-         * Collection of Elements that should be transferred to the web
-         * component shadow DOMs rather than the page head
+         * Collection of Elements that should be transferred to the web component shadow DOMs rather than the page head
          */
         ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
-        try (BufferedWriter writer = new BufferedWriter(
-                new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
-            writer.write("(function () {\n"
-                    + "var hasScript = function(src) {\n"
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(response.getOutputStream(), UTF_8))) {
+            writer.write("(function () {\n" + "var hasScript = function(src) {\n"
                     + "  var scriptTags = Array.from(document.head.querySelectorAll('script'));\n"
-                    + "  return scriptTags.some(script => script.src.endsWith(src))\n"
-                    + "};\n");
+                    + "  return scriptTags.some(script => script.src.endsWith(src))\n" + "};\n");
 
             String varName = "headElem"; // generated head element
             writer.append("var ").append(varName).append("=null;");
             for (Element element : head.children()) {
                 if (elementShouldNotBeTransferred(element)) {
-                    getElementForShadowDom(element)
-                            .ifPresent(elementsForShadows::add);
+                    getElementForShadowDom(element).ifPresent(elementsForShadows::add);
                     continue;
                 }
-                String conditionalFilename = getVaadinFilenameIfVaadinScript(
-                        element);
+                String conditionalFilename = getVaadinFilenameIfVaadinScript(element);
                 if (conditionalFilename != null) {
-                    writer.append("if (!hasScript(\"" + conditionalFilename
-                            + "\")) {\n");
+                    writer.append("if (!hasScript(\"" + conditionalFilename + "\")) {\n");
                 }
                 writer.append(varName).append("=");
-                writer.append("document.createElement('")
-                        .append(element.tagName()).append("');");
+                writer.append("document.createElement('").append(element.tagName()).append("');");
                 transferAttribute(writer, varName, element, serviceUrl);
                 // set cleaned html as innerHTML for the element
                 String elementHtml = element.html();
                 if (elementHtml != null && elementHtml.length() > 0) {
-                    writer.append(varName).append(".innerHTML=\"")
-                            .append(inlineHTML(elementHtml)).append("\";");
+                    writer.append(varName).append(".innerHTML=\"").append(inlineHTML(elementHtml)).append("\";");
                 }
-                writer.append("document.head.appendChild(").append(varName)
-                        .append(");");
+                writer.append("document.head.appendChild(").append(varName).append(");");
                 if (conditionalFilename != null) {
                     writer.append("}\n");
                 }
@@ -418,8 +371,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             writer.append("})();");
         }
 
-        DeploymentConfiguration config = response.getService()
-                .getDeploymentConfiguration();
+        DeploymentConfiguration config = response.getService().getDeploymentConfiguration();
         VaadinContext context = response.getService().getContext();
 
         // stylesheet tags are only added in dev mode, because Flow always
@@ -428,18 +380,14 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         if (config.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             // Add styles.css link to the web component shadow DOM
             BootstrapHandler.getStylesheetTags(context, "styles.css")
-                    .forEach(element -> ElementUtil.fromJsoup(element)
-                            .ifPresent(elementsForShadows::add));
+                    .forEach(element -> ElementUtil.fromJsoup(element).ifPresent(elementsForShadows::add));
 
             // Add document.css link to the document
-            BootstrapHandler.getStylesheetLinks(context, "document.css")
-                    .forEach(link -> UI.getCurrent().getPage().executeJs(
-                            BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
-                            link));
+            BootstrapHandler.getStylesheetLinks(context, "document.css").forEach(link -> UI.getCurrent().getPage()
+                    .executeJs(BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG, link));
         }
 
-        WebComponentConfigurationRegistry
-                .getInstance(response.getService().getContext())
+        WebComponentConfigurationRegistry.getInstance(response.getService().getContext())
                 .setShadowDomElements(elementsForShadows);
     }
 
@@ -464,19 +412,16 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         // we skip base href adjustment, since we are in a 3rd party
         // context, also "meta" and "style" affects the page globally and should
         // be skipped
-        if ("base".equals(element.tagName()) || "meta".equals(element.tagName())
-                || "style".equals(element.tagName())) {
+        if ("base".equals(element.tagName()) || "meta".equals(element.tagName()) || "style".equals(element.tagName())) {
             return true;
         } else {
             // embedding context should not provide polyfill, it is left
             // to the end-user
-            return "script".equals(element.tagName())
-                    && element.attr("src").contains("webcomponents-loader.js");
+            return "script".equals(element.tagName()) && element.attr("src").contains("webcomponents-loader.js");
         }
     }
 
-    private static Optional<com.vaadin.flow.dom.Element> getElementForShadowDom(
-            Element element) {
+    private static Optional<com.vaadin.flow.dom.Element> getElementForShadowDom(Element element) {
         if ("style".equals(element.tagName())) {
             return ElementUtil.fromJsoup(element);
         }
@@ -484,10 +429,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     /**
-     * Creates a javascript which copies attributes from the {@code element} to
-     * the created DOM element identified by {@code elementRef}. If {@code
-     * element} contains a {@code src} attribute, its path is prefixed with
-     * {@code basePath}.
+     * Creates a javascript which copies attributes from the {@code element} to the created DOM element identified by
+     * {@code elementRef}. If {@code
+     * element} contains a {@code src} attribute, its path is prefixed with {@code basePath}.
      *
      * @param writer
      *            response writer
@@ -500,11 +444,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @throws IOException
      *             if {@code writer} is unable to write
      */
-    private void transferAttribute(Writer writer, String elementRef,
-            Element element, String basePath) throws IOException {
+    private void transferAttribute(Writer writer, String elementRef, Element element, String basePath)
+            throws IOException {
         for (Attribute attribute : element.attributes()) {
-            writer.append(elementRef).append(".setAttribute('")
-                    .append(attribute.getKey()).append("',");
+            writer.append(elementRef).append(".setAttribute('").append(attribute.getKey()).append("',");
             if (attribute.getValue() == null) {
                 writer.append("''");
             } else {
@@ -520,18 +463,16 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     /**
-     * Create a new address for a resource which is calculated based on the
-     * request base path (servlet path) and the original path for the Vaadin
-     * resource.
+     * Create a new address for a resource which is calculated based on the request base path (servlet path) and the
+     * original path for the Vaadin resource.
      * <p>
-     * If the resource is targeted to context root with VAADIN prefix, the path
-     * part before the VAADIN is chopped of since that has been calculated to be
-     * relative to our context and would target context root instead of the
-     * serving servlet.
+     * If the resource is targeted to context root with VAADIN prefix, the path part before the VAADIN is chopped of
+     * since that has been calculated to be relative to our context and would target context root instead of the serving
+     * servlet.
      *
      * @param basePath
-     *            full servlet path, received as part of the bootstrap request.
-     *            Needs to be the client-side path used, to get around proxies.
+     *            full servlet path, received as part of the bootstrap request. Needs to be the client-side path used,
+     *            to get around proxies.
      * @param path
      *            original resource path
      * @return new resource path, relative to basePath
@@ -550,8 +491,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             return null;
         }
         if (url.contains("\"")) {
-            throw new IllegalStateException(
-                    "URL '" + url + "' may not contain double quotes");
+            throw new IllegalStateException("URL '" + url + "' may not contain double quotes");
         }
         return url;
     }
@@ -572,11 +512,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 // escape quotes
                 .replace("\"", "\\\"")
                 // change CDATA comment style for one-lining
-                .replace("//<![CDATA[", "/*<![CDATA[*/")
-                .replace("//]]>", "/*]]>*/")
+                .replace("//<![CDATA[", "/*<![CDATA[*/").replace("//]]>", "/*]]>*/")
                 // get rid of all the unnecessary white-space
-                .replace("\r", "").replaceAll("\\s{2,}", "").replace("\t", "")
-                .replace("\n", "\\n");
+                .replace("\r", "").replaceAll("\\s{2,}", "").replace("\t", "").replace("\n", "\\n");
     }
 
     /**
@@ -588,8 +526,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      *            the response object
      * @return Service url for the given request.
      */
-    protected String getServiceUrl(VaadinRequest request,
-            VaadinResponse response) {
+    protected String getServiceUrl(VaadinRequest request, VaadinResponse response) {
         // get service url from 'url' parameter
         String url = request.getParameter(REQ_PARAM_URL);
         // if 'url' parameter was not available, use request url
@@ -616,25 +553,21 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      *            the response object
      * @return true if request has been handled, false otherwise
      */
-    protected boolean handleWebComponentResyncRequest(BootstrapContext context,
-            VaadinRequest request, VaadinResponse response) {
+    protected boolean handleWebComponentResyncRequest(BootstrapContext context, VaadinRequest request,
+            VaadinResponse response) {
 
-        if (!HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.WEBCOMPONENT_RESYNC)) {
+        if (!HandlerHelper.isRequestType(request, HandlerHelper.RequestType.WEBCOMPONENT_RESYNC)) {
             return false;
         }
 
-        JsonObject json = new UidlWriter().createUidl(context.getUI(), true,
-                true);
+        JsonObject json = new UidlWriter().createUidl(context.getUI(), true, true);
         json.put(ApplicationConstants.UI_ID, context.getUI().getUIId());
-        json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
-                context.getUI().getCsrfToken());
+        json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, context.getUI().getCsrfToken());
         String responseString = "for(;;);[" + JsonUtil.stringify(json) + "]";
 
         try {
             VaadinService service = request.getService();
-            service.writeUncachedStringResponse(response,
-                    JsonConstants.JSON_CONTENT_TYPE, responseString);
+            service.writeUncachedStringResponse(response, JsonConstants.JSON_CONTENT_TYPE, responseString);
         } catch (IOException e) {
             getLogger().error("Error writing JSON to response", e);
         }
@@ -643,7 +576,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory
-                .getLogger(WebComponentBootstrapHandler.class.getName());
+        return LoggerFactory.getLogger(WebComponentBootstrapHandler.class.getName());
     }
 }

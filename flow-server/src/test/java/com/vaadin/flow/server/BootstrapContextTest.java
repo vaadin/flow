@@ -77,17 +77,13 @@ public class BootstrapContextTest {
 
     @Test
     public void getPushAnnotation_routeTargetPresents_pushFromTheClassDefinitionIsUsed() {
-        ui.getInternals().getRouter().getRegistry().setRoute("foo",
-                MainView.class, Collections.emptyList());
-        Mockito.when(request
-                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
-                .thenReturn("foo");
+        ui.getInternals().getRouter().getRegistry().setRoute("foo", MainView.class, Collections.emptyList());
+        Mockito.when(request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER)).thenReturn("foo");
 
-        BootstrapContext context = new JavaScriptBootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), ui, callback);
+        BootstrapContext context = new JavaScriptBootstrapContext(request, Mockito.mock(VaadinResponse.class), ui,
+                callback);
 
-        Optional<Push> push = context
-                .getPageConfigurationAnnotation(Push.class);
+        Optional<Push> push = context.getPageConfigurationAnnotation(Push.class);
         Assert.assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
         Assert.assertEquals(PushMode.MANUAL, pushAnnotation.value());
@@ -96,17 +92,14 @@ public class BootstrapContextTest {
 
     @Test
     public void getPushAnnotation_routeTargetPresents_pushDefinedOnParentLayout_pushFromTheClassDefinitionIsUsed() {
-        ui.getInternals().getRouter().getRegistry().setRoute("foo",
-                OtherView.class, Collections.singletonList(MainView.class));
-        Mockito.when(request
-                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
-                .thenReturn("foo");
+        ui.getInternals().getRouter().getRegistry().setRoute("foo", OtherView.class,
+                Collections.singletonList(MainView.class));
+        Mockito.when(request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER)).thenReturn("foo");
 
-        BootstrapContext context = new JavaScriptBootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), ui, callback);
+        BootstrapContext context = new JavaScriptBootstrapContext(request, Mockito.mock(VaadinResponse.class), ui,
+                callback);
 
-        Optional<Push> push = context
-                .getPageConfigurationAnnotation(Push.class);
+        Optional<Push> push = context.getPageConfigurationAnnotation(Push.class);
         Assert.assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
         Assert.assertEquals(PushMode.MANUAL, pushAnnotation.value());
@@ -115,20 +108,16 @@ public class BootstrapContextTest {
 
     @Test
     public void getPushAnnotation_routeTargetIsAbsent_pushFromTheErrorNavigationTargetIsUsed() {
-        Mockito.when(request
-                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
-                .thenReturn("bar");
+        Mockito.when(request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER)).thenReturn("bar");
 
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(ui.getSession().getService().getContext());
-        registry.setErrorNavigationTargets(
-                Collections.singleton(CustomRouteNotFound.class));
+        registry.setErrorNavigationTargets(Collections.singleton(CustomRouteNotFound.class));
 
-        BootstrapContext context = new BootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), session, ui, request -> "");
+        BootstrapContext context = new BootstrapContext(request, Mockito.mock(VaadinResponse.class), session, ui,
+                request -> "");
 
-        Optional<Push> push = context
-                .getPageConfigurationAnnotation(Push.class);
+        Optional<Push> push = context.getPageConfigurationAnnotation(Push.class);
         Assert.assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
         Assert.assertEquals(PushMode.AUTOMATIC, pushAnnotation.value());
@@ -137,20 +126,16 @@ public class BootstrapContextTest {
 
     @Test
     public void getPushAnnotation_routeTargetIsAbsent_pushIsDefinedOnParentLayout_pushFromTheErrorNavigationTargetParentLayoutIsUsed() {
-        Mockito.when(request
-                .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER))
-                .thenReturn("bar");
+        Mockito.when(request.getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER)).thenReturn("bar");
 
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(ui.getSession().getService().getContext());
-        registry.setErrorNavigationTargets(
-                Collections.singleton(AnotherCustomRouteNotFound.class));
+        registry.setErrorNavigationTargets(Collections.singleton(AnotherCustomRouteNotFound.class));
 
-        BootstrapContext context = new BootstrapContext(request,
-                Mockito.mock(VaadinResponse.class), session, ui, request -> "");
+        BootstrapContext context = new BootstrapContext(request, Mockito.mock(VaadinResponse.class), session, ui,
+                request -> "");
 
-        Optional<Push> push = context
-                .getPageConfigurationAnnotation(Push.class);
+        Optional<Push> push = context.getPageConfigurationAnnotation(Push.class);
         Assert.assertTrue(push.isPresent());
         Push pushAnnotation = push.get();
         Assert.assertEquals(PushMode.MANUAL, pushAnnotation.value());

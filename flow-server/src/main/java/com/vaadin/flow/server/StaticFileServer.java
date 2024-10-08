@@ -55,23 +55,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Handles sending of resources from the WAR root (web content) or
- * META-INF/resources in the case that {@link VaadinServlet} is mapped using
- * "/*".
+ * Handles sending of resources from the WAR root (web content) or META-INF/resources in the case that
+ * {@link VaadinServlet} is mapped using "/*".
  * <p>
- * This class is primarily meant to be used during developing time. For a
- * production mode site you should consider serving static resources directly
- * from the servlet (using a default servlet if such exists) or through a stand
- * alone static file server.
+ * This class is primarily meant to be used during developing time. For a production mode site you should consider
+ * serving static resources directly from the servlet (using a default servlet if such exists) or through a stand alone
+ * static file server.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
 public class StaticFileServer implements StaticFileHandler {
-    static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX
-            + "fixIncorrectWebjarPaths";
-    private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
-            .compile("^/frontend[-\\w/]*/webjars/");
+    static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX + "fixIncorrectWebjarPaths";
+    private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern.compile("^/frontend[-\\w/]*/webjars/");
 
     private final ResponseWriter responseWriter;
     private final VaadinService vaadinService;
@@ -80,13 +76,11 @@ public class StaticFileServer implements StaticFileHandler {
 
     // Matches paths to theme files referenced from link tags (e.g. styles
     // .css or document.css)
-    private static final Pattern APP_THEME_PATTERN = Pattern
-            .compile("^\\/VAADIN\\/themes\\/([\\s\\S]+?)\\/");
+    private static final Pattern APP_THEME_PATTERN = Pattern.compile("^\\/VAADIN\\/themes\\/([\\s\\S]+?)\\/");
 
     // Matches paths to theme asset files referenced from CSS as an url() or
     // from Java (e.g. new Image("themes/my-theme/...")
-    public static final Pattern APP_THEME_ASSETS_PATTERN = Pattern
-            .compile("^\\/themes\\/([\\s\\S]+?)\\/");
+    public static final Pattern APP_THEME_ASSETS_PATTERN = Pattern.compile("^\\/themes\\/([\\s\\S]+?)\\/");
 
     // Mapped uri is for the jar file
     static final Map<URI, Integer> openFileSystems = new HashMap<>();
@@ -104,8 +98,7 @@ public class StaticFileServer implements StaticFileHandler {
         deploymentConfiguration = vaadinService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
 
-        this.devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(vaadinService).orElse(null);
+        this.devModeHandler = DevModeHandlerManager.getDevModeHandler(vaadinService).orElse(null);
     }
 
     private boolean resourceIsDirectory(URL resource) {
@@ -124,8 +117,7 @@ public class StaticFileServer implements StaticFileHandler {
 
         if ("jar".equals(resource.getProtocol())) {
             // Get the file path in jar
-            final String pathInJar = resource.getPath()
-                    .substring(resource.getPath().indexOf('!') + 1);
+            final String pathInJar = resource.getPath().substring(resource.getPath().indexOf('!') + 1);
             try {
                 FileSystem fileSystem = getFileSystem(resourceURI);
                 // Get the file path inside the jar.
@@ -140,26 +132,21 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         // If not a jar check if a file path directory.
-        return "file".equals(resource.getProtocol())
-                && Files.isDirectory(Paths.get(resourceURI));
+        return "file".equals(resource.getProtocol()) && Files.isDirectory(Paths.get(resourceURI));
     }
 
     /**
-     * Get the file URI for the resource jar file. Returns give URI if
-     * URI.scheme is not of type jar.
+     * Get the file URI for the resource jar file. Returns give URI if URI.scheme is not of type jar.
      *
-     * The URI for a file inside a jar is composed as
-     * 'jar:file://...pathToJar.../jarFile.jar!/pathToFile'
+     * The URI for a file inside a jar is composed as 'jar:file://...pathToJar.../jarFile.jar!/pathToFile'
      *
      * the first step strips away the initial scheme 'jar:' leaving us with
-     * 'file://...pathToJar.../jarFile.jar!/pathToFile' from which we remove the
-     * inside jar path giving the end result
+     * 'file://...pathToJar.../jarFile.jar!/pathToFile' from which we remove the inside jar path giving the end result
      * 'file://...pathToJar.../jarFile.jar'
      *
      * @param resourceURI
      *            resource URI to get file URI for
-     * @return file URI for resource jar or given resource if not a jar schemed
-     *         URI
+     * @return file URI for resource jar or given resource if not a jar schemed URI
      */
     private URI getFileURI(URI resourceURI) {
         if (!"jar".equals(resourceURI.getScheme())) {
@@ -173,8 +160,7 @@ public class StaticFileServer implements StaticFileHandler {
             }
             return new URI(scheme);
         } catch (URISyntaxException syntaxException) {
-            throw new IllegalArgumentException(syntaxException.getMessage(),
-                    syntaxException);
+            throw new IllegalArgumentException(syntaxException.getMessage(), syntaxException);
         }
     }
 
@@ -183,13 +169,11 @@ public class StaticFileServer implements StaticFileHandler {
         synchronized (fileSystemLock) {
             URI fileURI = getFileURI(resourceURI);
             if (!fileURI.getScheme().equals("file")) {
-                throw new IOException("Can not read scheme '"
-                        + fileURI.getScheme() + "' for resource " + resourceURI
+                throw new IOException("Can not read scheme '" + fileURI.getScheme() + "' for resource " + resourceURI
                         + " and will determine this as not a folder");
             }
 
-            if (openFileSystems.computeIfPresent(fileURI,
-                    (key, value) -> value + 1) != null) {
+            if (openFileSystems.computeIfPresent(fileURI, (key, value) -> value + 1) != null) {
                 // Get filesystem is for the file to get the correct provider
                 return FileSystems.getFileSystem(resourceURI);
             }
@@ -200,15 +184,11 @@ public class StaticFileServer implements StaticFileHandler {
         }
     }
 
-    private FileSystem getNewOrExistingFileSystem(URI resourceURI)
-            throws IOException {
+    private FileSystem getNewOrExistingFileSystem(URI resourceURI) throws IOException {
         try {
-            return FileSystems.newFileSystem(resourceURI,
-                    Collections.emptyMap());
+            return FileSystems.newFileSystem(resourceURI, Collections.emptyMap());
         } catch (FileSystemAlreadyExistsException fsaee) {
-            getLogger().trace(
-                    "Tried to get new filesystem, but it already existed for target uri.",
-                    fsaee);
+            getLogger().trace("Tried to get new filesystem, but it already existed for target uri.", fsaee);
             FileSystem fileSystem = FileSystems.getFileSystem(resourceURI);
             URI fileUri = getFileURI(resourceURI);
             if (!openFileSystems.containsKey(fileUri)) {
@@ -223,8 +203,7 @@ public class StaticFileServer implements StaticFileHandler {
         synchronized (fileSystemLock) {
             try {
                 URI fileURI = getFileURI(resourceURI);
-                final Integer locks = openFileSystems.computeIfPresent(fileURI,
-                        (key, value) -> value - 1);
+                final Integer locks = openFileSystems.computeIfPresent(fileURI, (key, value) -> value - 1);
                 if (locks != null && locks == 0) {
                     openFileSystems.remove(fileURI);
                     if (!externalFileSystem.contains(fileURI)) {
@@ -235,16 +214,14 @@ public class StaticFileServer implements StaticFileHandler {
                     externalFileSystem.remove(fileURI);
                 }
             } catch (IOException ioe) {
-                getLogger().error("Failed to close FileSystem for '{}'",
-                        resourceURI);
+                getLogger().error("Failed to close FileSystem for '{}'", resourceURI);
                 getLogger().debug("Exception closing FileSystem", ioe);
             }
         }
     }
 
     @Override
-    public boolean serveStaticResource(HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
+    public boolean serveStaticResource(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
         if (filenameWithPath.endsWith("/")) {
@@ -255,15 +232,13 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         if (HandlerHelper.isPathUnsafe(filenameWithPath)) {
-            getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
-                    filenameWithPath);
+            getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN, filenameWithPath);
             response.setStatus(HttpStatusCode.BAD_REQUEST.getCode());
             return true;
         }
 
         try {
-            if (devModeHandler != null
-                    && !"/index.html".equals(filenameWithPath)
+            if (devModeHandler != null && !"/index.html".equals(filenameWithPath)
                     && devModeHandler.serveDevModeRequest(request, response)) {
                 // We don't know what the dev server can serve, but if it served
                 // something we are happy. There is always an index.html in the
@@ -272,24 +247,18 @@ public class StaticFileServer implements StaticFileHandler {
             }
         } catch (IOException e) {
             if (getLogger().isTraceEnabled()) {
-                getLogger().trace("Unable to load " + filenameWithPath
-                        + " from the frontend dev server", e);
+                getLogger().trace("Unable to load " + filenameWithPath + " from the frontend dev server", e);
             } else {
-                getLogger().error("Unable to load " + filenameWithPath
-                        + " from the frontend dev server: " + e.getMessage());
+                getLogger().error(
+                        "Unable to load " + filenameWithPath + " from the frontend dev server: " + e.getMessage());
             }
             try {
-                response.sendError(
-                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(),
-                        "Unable to load " + filenameWithPath
-                                + " from the frontend dev server: "
-                                + e.getMessage());
+                response.sendError(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(),
+                        "Unable to load " + filenameWithPath + " from the frontend dev server: " + e.getMessage());
             } catch (Exception ee) {
                 // The server might have partly written an output. If so, let's
                 // just go with that
-                getLogger().trace(
-                        "Ignoring exception when writing dev server error response",
-                        ee);
+                getLogger().trace("Ignoring exception when writing dev server error response", ee);
             }
             return true;
         }
@@ -297,47 +266,35 @@ public class StaticFileServer implements StaticFileHandler {
         URL resourceUrl = null;
         if (deploymentConfiguration.getMode() == Mode.DEVELOPMENT_BUNDLE) {
             if (!"/index.html".equals(filenameWithPath)) {
-                resourceUrl = DevBundleUtils.findBundleFile(
-                        deploymentConfiguration.getProjectFolder(),
-                        deploymentConfiguration.getBuildFolder(),
-                        "webapp" + filenameWithPath);
+                resourceUrl = DevBundleUtils.findBundleFile(deploymentConfiguration.getProjectFolder(),
+                        deploymentConfiguration.getBuildFolder(), "webapp" + filenameWithPath);
             }
 
-            if (resourceUrl == null
-                    && (APP_THEME_PATTERN.matcher(filenameWithPath).find()
-                            || APP_THEME_ASSETS_PATTERN
-                                    .matcher(filenameWithPath).find())) {
+            if (resourceUrl == null && (APP_THEME_PATTERN.matcher(filenameWithPath).find()
+                    || APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find())) {
                 // Express mode theme file request
-                resourceUrl = findAssetInFrontendThemesOrDevBundle(
-                        vaadinService,
+                resourceUrl = findAssetInFrontendThemesOrDevBundle(vaadinService,
                         filenameWithPath.replace(VAADIN_MAPPING, ""));
             }
-        } else if (deploymentConfiguration
-                .getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE
+        } else if (deploymentConfiguration.getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE
                 && APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-            resourceUrl = ThemeUtils
-                    .getThemeResourceFromPrecompiledProductionBundle(
-                            filenameWithPath.replace(VAADIN_MAPPING, "")
-                                    .replaceFirst("^/", ""));
+            resourceUrl = ThemeUtils.getThemeResourceFromPrecompiledProductionBundle(
+                    filenameWithPath.replace(VAADIN_MAPPING, "").replaceFirst("^/", ""));
         } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
             resourceUrl = vaadinService.getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
-                            + filenameWithPath.replaceFirst("^/", ""));
+                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/" + filenameWithPath.replaceFirst("^/", ""));
         } else if (!"/index.html".equals(filenameWithPath)) {
             // index.html needs to be handled by IndexHtmlRequestHandler
             resourceUrl = vaadinService.getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES
-                            + filenameWithPath.replaceFirst("^/", ""));
+                    .getResource(VAADIN_WEBAPP_RESOURCES + filenameWithPath.replaceFirst("^/", ""));
         }
 
         if (resourceUrl == null) {
             resourceUrl = getStaticResource(filenameWithPath);
         }
-        if (resourceUrl == null && shouldFixIncorrectWebjarPaths()
-                && isIncorrectWebjarPath(filenameWithPath)) {
+        if (resourceUrl == null && shouldFixIncorrectWebjarPaths() && isIncorrectWebjarPath(filenameWithPath)) {
             // Flow issue #4601
-            resourceUrl = getStaticResource(
-                    fixIncorrectWebjarPath(filenameWithPath));
+            resourceUrl = getStaticResource(fixIncorrectWebjarPath(filenameWithPath));
         }
 
         if (resourceUrl == null) {
@@ -357,35 +314,30 @@ public class StaticFileServer implements StaticFileHandler {
         // Intentionally writing cache headers also for 304 responses
         writeCacheHeaders(filenameWithPath, response);
 
-        long timestamp = writeModificationTimestamp(resourceUrl, request,
-                response);
+        long timestamp = writeModificationTimestamp(resourceUrl, request, response);
         if (browserHasNewestVersion(request, timestamp)) {
             // Browser is up to date, nothing further to do than set the
             // response code
             response.setStatus(HttpStatusCode.NOT_MODIFIED.getCode());
             return true;
         }
-        responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
-                request, response);
+        responseWriter.writeResponseContents(filenameWithPath, resourceUrl, request, response);
         return true;
     }
 
-    private static URL findAssetInFrontendThemesOrDevBundle(
-            VaadinService vaadinService, String assetPath) throws IOException {
-        DeploymentConfiguration deploymentConfiguration = vaadinService
-                .getDeploymentConfiguration();
+    private static URL findAssetInFrontendThemesOrDevBundle(VaadinService vaadinService, String assetPath)
+            throws IOException {
+        DeploymentConfiguration deploymentConfiguration = vaadinService.getDeploymentConfiguration();
         // First, look for the theme assets in the {project.root}/frontend/
         // themes/my-theme folder
-        File frontendFolder = FrontendUtils
-                .getProjectFrontendDir(deploymentConfiguration);
+        File frontendFolder = FrontendUtils.getProjectFrontendDir(deploymentConfiguration);
         File assetInFrontendThemes = new File(frontendFolder, assetPath);
         if (assetInFrontendThemes.exists()) {
             return assetInFrontendThemes.toURI().toURL();
         }
 
         // Also look into jar-resources for a packaged theme
-        File jarResourcesFolder = FrontendUtils
-                .getJarResourcesFolder(frontendFolder);
+        File jarResourcesFolder = FrontendUtils.getJarResourcesFolder(frontendFolder);
         assetInFrontendThemes = new File(jarResourcesFolder, assetPath);
 
         if (assetInFrontendThemes.exists()) {
@@ -395,34 +347,28 @@ public class StaticFileServer implements StaticFileHandler {
         // Second, look into default dev bundle
         Matcher matcher = APP_THEME_ASSETS_PATTERN.matcher(assetPath);
         if (!matcher.find()) {
-            throw new IllegalStateException(
-                    "Asset path should match the theme pattern");
+            throw new IllegalStateException("Asset path should match the theme pattern");
         }
 
         final String themeName = matcher.group(1);
-        String defaultBundleAssetPath = assetPath.replaceFirst(themeName,
-                Constants.DEV_BUNDLE_NAME);
+        String defaultBundleAssetPath = assetPath.replaceFirst(themeName, Constants.DEV_BUNDLE_NAME);
         URL assetInDevBundleUrl = vaadinService.getClassLoader()
-                .getResource(Constants.DEV_BUNDLE_JAR_PATH + Constants.ASSETS
-                        + defaultBundleAssetPath);
+                .getResource(Constants.DEV_BUNDLE_JAR_PATH + Constants.ASSETS + defaultBundleAssetPath);
 
         // Or search in the application dev-bundle (if the assets come from
         // node_modules)
         if (assetInDevBundleUrl == null) {
             String assetInDevBundle = "/" + Constants.ASSETS + "/" + assetPath;
-            assetInDevBundleUrl = DevBundleUtils.findBundleFile(
-                    deploymentConfiguration.getProjectFolder(),
+            assetInDevBundleUrl = DevBundleUtils.findBundleFile(deploymentConfiguration.getProjectFolder(),
                     deploymentConfiguration.getBuildFolder(), assetInDevBundle);
         }
 
         if (assetInDevBundleUrl == null) {
-            String assetName = assetPath.substring(
-                    assetPath.indexOf(themeName) + themeName.length());
+            String assetName = assetPath.substring(assetPath.indexOf(themeName) + themeName.length());
             throw new IllegalStateException(String.format(
                     "Asset '%1$s' is not found in project frontend directory"
                             + ", default development bundle or in the application "
-                            + "bundle '{build}/%2$s/assets/'. \n"
-                            + "Verify that the asset is available in "
+                            + "bundle '{build}/%2$s/assets/'. \n" + "Verify that the asset is available in "
                             + "'frontend/themes/%3$s/' directory and is added into the "
                             + "'assets' block of the 'theme.json' file.",
                     assetName, Constants.DEV_BUNDLE_LOCATION, themeName));
@@ -431,19 +377,16 @@ public class StaticFileServer implements StaticFileHandler {
     }
 
     /**
-     * Returns a URL to the static Web resource at the given URI or null if no
-     * file found.
+     * Returns a URL to the static Web resource at the given URI or null if no file found.
      * <p>
-     * The resource will be exposed via HTTP (available as a static web
-     * resource). The {@code null} return value means that the resource won't be
-     * exposed as a Web resource even if it's a resource available via
+     * The resource will be exposed via HTTP (available as a static web resource). The {@code null} return value means
+     * that the resource won't be exposed as a Web resource even if it's a resource available via
      * {@link ServletContext}.
      *
      * @param path
      *            the path for the resource
-     * @return the resource located at the named path to expose it via Web, or
-     *         {@code null} if there is no resource at that path or it should
-     *         not be exposed
+     * @return the resource located at the named path to expose it via Web, or {@code null} if there is no resource at
+     *         that path or it should not be exposed
      * @see VaadinService#getStaticResource(String)
      */
     protected URL getStaticResource(String path) {
@@ -473,8 +416,7 @@ public class StaticFileServer implements StaticFileHandler {
 
     private boolean shouldFixIncorrectWebjarPaths() {
         return deploymentConfiguration.isProductionMode()
-                && deploymentConfiguration.getBooleanProperty(
-                        PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
+                && deploymentConfiguration.getBooleanProperty(PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
     }
 
     private boolean isIncorrectWebjarPath(String requestFilename) {
@@ -482,8 +424,7 @@ public class StaticFileServer implements StaticFileHandler {
     }
 
     private String fixIncorrectWebjarPath(String requestFilename) {
-        return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename)
-                .replaceAll("/webjars/");
+        return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename).replaceAll("/webjars/");
     }
 
     /**
@@ -497,8 +438,8 @@ public class StaticFileServer implements StaticFileHandler {
      *            the response object
      * @return the written timestamp or -1 if no timestamp was written
      */
-    protected long writeModificationTimestamp(URL resourceUrl,
-            HttpServletRequest request, HttpServletResponse response) {
+    protected long writeModificationTimestamp(URL resourceUrl, HttpServletRequest request,
+            HttpServletResponse response) {
         // Find the modification timestamp
         long lastModifiedTime;
         URLConnection connection = null;
@@ -512,9 +453,7 @@ public class StaticFileServer implements StaticFileHandler {
             response.setDateHeader("Last-Modified", lastModifiedTime);
             return lastModifiedTime;
         } catch (Exception e) {
-            getLogger().trace(
-                    "Failed to find out last modified timestamp. Continuing without it.",
-                    e);
+            getLogger().trace("Failed to find out last modified timestamp. Continuing without it.", e);
         } finally {
             try {
                 // Explicitly close the input stream to prevent it
@@ -541,8 +480,7 @@ public class StaticFileServer implements StaticFileHandler {
      * @param response
      *            the response object
      */
-    protected void writeCacheHeaders(String filenameWithPath,
-            HttpServletResponse response) {
+    protected void writeCacheHeaders(String filenameWithPath, HttpServletResponse response) {
         int resourceCacheTime = getCacheTime(filenameWithPath);
         String cacheControl;
         if (!deploymentConfiguration.isProductionMode()) {
@@ -579,8 +517,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (request.getPathInfo() == null) {
             return request.getServletPath();
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
-                || APP_THEME_ASSETS_PATTERN.matcher(request.getPathInfo())
-                        .find()
+                || APP_THEME_ASSETS_PATTERN.matcher(request.getPathInfo()).find()
                 || request.getPathInfo().startsWith("/sw.js")) {
             return request.getPathInfo();
         }
@@ -590,8 +527,8 @@ public class StaticFileServer implements StaticFileHandler {
     /**
      * Calculates the cache lifetime for the given filename in seconds.
      * <p>
-     * By default filenames containing ".nocache." return 0, filenames
-     * containing ".cache." return one year and all other files return 1 hour.
+     * By default filenames containing ".nocache." return 0, filenames containing ".cache." return one year and all
+     * other files return 1 hour.
      *
      * @param filenameWithPath
      *            the name of the file being sent
@@ -605,8 +542,7 @@ public class StaticFileServer implements StaticFileHandler {
          *
          * - files containing .cache. will be cached for one year.
          *
-         * https://developers.google.com/web-toolkit/doc/latest/
-         * DevGuideCompilingAndDebugging#perfect_caching
+         * https://developers.google.com/web-toolkit/doc/latest/ DevGuideCompilingAndDebugging#perfect_caching
          */
         if (filenameWithPath.contains(".nocache.")) {
             return 0;
@@ -615,26 +551,23 @@ public class StaticFileServer implements StaticFileHandler {
             return 60 * 60 * 24 * 365;
         }
         /*
-         * For all other files, the browser is allowed to cache for 1 hour
-         * without checking if the file has changed.
+         * For all other files, the browser is allowed to cache for 1 hour without checking if the file has changed.
          */
         return 3600;
     }
 
     /**
-     * Checks if the browser has an up to date cached version of requested
-     * resource using the "If-Modified-Since" header.
+     * Checks if the browser has an up to date cached version of requested resource using the "If-Modified-Since"
+     * header.
      *
      * @param request
      *            The HttpServletRequest from the browser.
      * @param resourceLastModifiedTimestamp
-     *            The timestamp when the resource was last modified. -1 if the
-     *            last modification time is unknown.
-     * @return true if the If-Modified-Since header tells the cached version in
-     *         the browser is up to date, false otherwise
+     *            The timestamp when the resource was last modified. -1 if the last modification time is unknown.
+     * @return true if the If-Modified-Since header tells the cached version in the browser is up to date, false
+     *         otherwise
      */
-    protected boolean browserHasNewestVersion(HttpServletRequest request,
-            long resourceLastModifiedTimestamp) {
+    protected boolean browserHasNewestVersion(HttpServletRequest request, long resourceLastModifiedTimestamp) {
         assert resourceLastModifiedTimestamp >= -1L;
 
         if (resourceLastModifiedTimestamp == -1L) {
@@ -643,15 +576,13 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
         /*
-         * The browser can request the resource conditionally using an
-         * If-Modified-Since header. Check this against the last modification
-         * time.
+         * The browser can request the resource conditionally using an If-Modified-Since header. Check this against the
+         * last modification time.
          */
         try {
             // If-Modified-Since represents the timestamp of the version cached
             // in the browser
-            long headerIfModifiedSince = request
-                    .getDateHeader("If-Modified-Since");
+            long headerIfModifiedSince = request.getDateHeader("If-Modified-Since");
 
             if (headerIfModifiedSince >= resourceLastModifiedTimestamp) {
                 // Browser has this an up-to-date version of the resource

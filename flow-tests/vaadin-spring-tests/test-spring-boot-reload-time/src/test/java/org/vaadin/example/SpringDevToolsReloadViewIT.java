@@ -24,23 +24,21 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 
 /**
- * Class for testing reload time of tiny Vaadin app triggered by spring-boot Dev
- * Tool.
+ * Class for testing reload time of tiny Vaadin app triggered by spring-boot Dev Tool.
  */
 public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     @Test
     public void testSpringBootReloadTime_withNativeButton() {
-        String result = SpringDevToolsReloadUtils
-                .runAndCalculateAverageResult(5, () -> {
-                    open("/reload-nativebutton-test");
+        String result = SpringDevToolsReloadUtils.runAndCalculateAverageResult(5, () -> {
+            open("/reload-nativebutton-test");
 
-                    waitForElementPresent(By.id("start-button"));
-                    triggerReload();
-                    waitForElementVisible(By.id("result"));
+            waitForElementPresent(By.id("start-button"));
+            triggerReload();
+            waitForElementVisible(By.id("result"));
 
-                    return assertAndGetReloadTimeResult();
-                });
+            return assertAndGetReloadTimeResult();
+        });
 
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,nativebutton,spring-boot-devtools-reload-time' value='%s']%n",
@@ -51,16 +49,15 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
 
     @Test
     public void testSpringBootReloadTime_withHorizontalLayout() {
-        String result = SpringDevToolsReloadUtils
-                .runAndCalculateAverageResult(5, () -> {
-                    open("/reload-layout-test");
+        String result = SpringDevToolsReloadUtils.runAndCalculateAverageResult(5, () -> {
+            open("/reload-layout-test");
 
-                    waitForElementPresent(By.id("start-button"));
-                    triggerReload();
-                    waitForElementVisible(By.id("result"));
+            waitForElementPresent(By.id("start-button"));
+            triggerReload();
+            waitForElementVisible(By.id("result"));
 
-                    return assertAndGetReloadTimeResult();
-                });
+            return assertAndGetReloadTimeResult();
+        });
 
         System.out.printf(
                 "##teamcity[buildStatisticValue key='%s,orderedlayout,spring-boot-devtools-reload-time' value='%s']%n",
@@ -82,8 +79,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
         String reloadTimeInMsText = findElement(By.id("result")).getText();
         Assert.assertNotNull(reloadTimeInMsText);
 
-        return reloadTimeInMsText.substring(reloadTimeInMsText.indexOf("[") + 1,
-                reloadTimeInMsText.indexOf("]"));
+        return reloadTimeInMsText.substring(reloadTimeInMsText.indexOf("[") + 1, reloadTimeInMsText.indexOf("]"));
     }
 
     private void optionalAssertByReloadThreshold(String reloadTime) {
@@ -91,8 +87,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
             Assert.assertTrue(String.format(
                     "Reload time %sms was above the threshold %sms. It should stay within the threshold set to system property 'vaadin.test.reload-time-assert-threshold'.",
                     reloadTime, getReloadTimeAssertThreshold()),
-                    Double.parseDouble(
-                            reloadTime) <= getReloadTimeAssertThreshold());
+                    Double.parseDouble(reloadTime) <= getReloadTimeAssertThreshold());
         }
     }
 
@@ -101,8 +96,7 @@ public class SpringDevToolsReloadViewIT extends ChromeBrowserTest {
     }
 
     private Double getReloadTimeAssertThreshold() {
-        String value = System
-                .getProperty("vaadin.test.reload-time-assert-threshold", null);
+        String value = System.getProperty("vaadin.test.reload-time-assert-threshold", null);
         if (value != null) {
             return Double.parseDouble(value);
         }

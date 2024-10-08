@@ -21,18 +21,14 @@ import com.vaadin.flow.component.EventData;
  *
  * Can be applied on parameters of {@code int} and {@link Integer} types.
  *
- * This is a shorthand for {@code @EventData("event.model.index")}, for more
- * information, refer to {@link EventData}.
+ * This is a shorthand for {@code @EventData("event.model.index")}, for more information, refer to {@link EventData}.
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated dom-repeat is not support by Lit templates but you may still use
- *             {@code @EventData("some_data")} directly to receive data from the
- *             client side. Polymer template support is deprecated - we
- *             recommend you to use {@code LitTemplate} instead. Read more
- *             details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated dom-repeat is not support by Lit templates but you may still use {@code @EventData("some_data")} directly
+ *             to receive data from the client side. Polymer template support is deprecated - we recommend you to use
+ *             {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 @Retention(RetentionPolicy.RUNTIME)

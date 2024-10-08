@@ -43,8 +43,7 @@ public class IdTestView extends LitTemplate {
     public IdTestView() {
         button.addClickListener(e -> {
             String s = content.getText();
-            Integer val = 1
-                    + Integer.parseInt(s == null || s.isEmpty() ? "0" : s);
+            Integer val = 1 + Integer.parseInt(s == null || s.isEmpty() ? "0" : s);
             content.setText(String.valueOf(val));
         });
     }

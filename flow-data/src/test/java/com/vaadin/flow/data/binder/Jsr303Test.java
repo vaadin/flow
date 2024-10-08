@@ -49,19 +49,15 @@ public class Jsr303Test {
 
         @Override
         public Class<?> loadClass(String name) throws ClassNotFoundException {
-            String vaadinPackagePrefix = VaadinServlet.class.getPackage()
-                    .getName();
-            vaadinPackagePrefix = vaadinPackagePrefix.substring(0,
-                    vaadinPackagePrefix.lastIndexOf('.'));
+            String vaadinPackagePrefix = VaadinServlet.class.getPackage().getName();
+            vaadinPackagePrefix = vaadinPackagePrefix.substring(0, vaadinPackagePrefix.lastIndexOf('.'));
             if (name.equals(UnitTest.class.getName())) {
                 super.loadClass(name);
-            } else if (name
-                    .startsWith(Validation.class.getPackage().getName())) {
+            } else if (name.startsWith(Validation.class.getPackage().getName())) {
                 throw new ClassNotFoundException();
             } else if (name.startsWith(vaadinPackagePrefix)) {
                 String path = name.replace('.', '/').concat(".class");
-                URL resource = Thread.currentThread().getContextClassLoader()
-                        .getResource(path);
+                URL resource = Thread.currentThread().getContextClassLoader().getResource(path);
                 InputStream stream;
                 try {
                     stream = resource.openStream();
@@ -114,10 +110,9 @@ public class Jsr303Test {
     }
 
     @Test
-    public void beanBinderWithoutJsr303() throws ClassNotFoundException,
-            NoSuchMethodException, SecurityException, InstantiationException,
-            IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException, IOException, InterruptedException {
+    public void beanBinderWithoutJsr303() throws ClassNotFoundException, NoSuchMethodException, SecurityException,
+            InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+            IOException, InterruptedException {
         try (URLClassLoader loader = new TestClassLoader()) {
             Class<?> clazz = loader.loadClass(Jsr303UnitTest.class.getName());
             UnitTest test = (UnitTest) clazz.newInstance();

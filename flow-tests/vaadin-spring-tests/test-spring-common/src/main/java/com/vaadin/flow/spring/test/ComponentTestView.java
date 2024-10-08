@@ -9,8 +9,7 @@ import com.vaadin.flow.router.Route;
 public class ComponentTestView extends Div {
 
     public ComponentTestView() {
-        Button button = new Button("Click me",
-                event -> Notification.show("Clicked!"));
+        Button button = new Button("Click me", event -> Notification.show("Clicked!"));
 
         add(button);
     }

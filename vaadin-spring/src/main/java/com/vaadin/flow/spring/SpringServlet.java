@@ -40,12 +40,10 @@ import com.vaadin.flow.shared.util.SharedUtil;
 /**
  * Spring application context aware Vaadin servlet implementation.
  * <p>
- * This class is not intended to be used directly. It's instantiated
- * automatically by the Spring add-on:
+ * This class is not intended to be used directly. It's instantiated automatically by the Spring add-on:
  * <ul>
  * <li>Spring boot does this via {@link SpringBootAutoConfiguration}.
- * <li>In case of using Spring MVC just extends
- * {@link VaadinMVCWebAppInitializer}.
+ * <li>In case of using Spring MVC just extends {@link VaadinMVCWebAppInitializer}.
  * </ul>
  *
  * @author Vaadin Ltd
@@ -56,8 +54,7 @@ public class SpringServlet extends VaadinServlet {
     /**
      * Property names that are read from the application.properties file
      */
-    protected static final List<String> PROPERTY_NAMES = Arrays
-            .stream(InitParameters.class.getDeclaredFields())
+    protected static final List<String> PROPERTY_NAMES = Arrays.stream(InitParameters.class.getDeclaredFields())
             // thanks to java code coverage which adds non-existent
             // initially variables everywhere: we should skip this extra
             // field
@@ -65,8 +62,7 @@ public class SpringServlet extends VaadinServlet {
                 try {
                     return (String) field.get(null);
                 } catch (IllegalAccessException e) {
-                    throw new IllegalStateException("unable to access field",
-                            e);
+                    throw new IllegalStateException("unable to access field", e);
                 }
             }).collect(Collectors.toList());
 
@@ -74,26 +70,21 @@ public class SpringServlet extends VaadinServlet {
     private final boolean rootMapping;
 
     /**
-     * Creates a new Vaadin servlet instance with the application
-     * {@code context} provided.
+     * Creates a new Vaadin servlet instance with the application {@code context} provided.
      * <p>
-     * Use {@code true} as a value for {@code forwardingEnforced} parameter if
-     * your servlet is mapped to the root ({@code "/*"}). In the case of root
-     * mapping a {@link RootMappedCondition} is checked and
-     * {@link VaadinServletConfiguration} is applied conditionally. This
-     * configuration provide a {@link ServletForwardingController} so that other
-     * Spring endpoints may co-exist with Vaadin application (it's required
-     * since root mapping handles any request to the context). This is not
-     * needed if you are using non-root mapping since are you free to use the
-     * mapping which doesn't overlap with any endpoint mapping. In this case use
+     * Use {@code true} as a value for {@code forwardingEnforced} parameter if your servlet is mapped to the root
+     * ({@code "/*"}). In the case of root mapping a {@link RootMappedCondition} is checked and
+     * {@link VaadinServletConfiguration} is applied conditionally. This configuration provide a
+     * {@link ServletForwardingController} so that other Spring endpoints may co-exist with Vaadin application (it's
+     * required since root mapping handles any request to the context). This is not needed if you are using non-root
+     * mapping since are you free to use the mapping which doesn't overlap with any endpoint mapping. In this case use
      * {@code false} for the {@code forwardingEnforced} parameter.
      *
      *
      * @param context
      *            the Spring application context
      * @param rootMapping
-     *            the incoming HttpServletRequest is wrapped in
-     *            ForwardingRequestWrapper if {@code true}
+     *            the incoming HttpServletRequest is wrapped in ForwardingRequestWrapper if {@code true}
      */
     public SpringServlet(ApplicationContext context, boolean rootMapping) {
         this.context = context;
@@ -101,24 +92,21 @@ public class SpringServlet extends VaadinServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest request,
-            HttpServletResponse response) throws ServletException, IOException {
+    protected void service(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         super.service(wrapRequest(request), response);
     }
 
     @Override
-    protected VaadinServletService createServletService(
-            DeploymentConfiguration deploymentConfiguration)
+    protected VaadinServletService createServletService(DeploymentConfiguration deploymentConfiguration)
             throws ServiceException {
-        SpringVaadinServletService service = new SpringVaadinServletService(
-                this, deploymentConfiguration, context);
+        SpringVaadinServletService service = new SpringVaadinServletService(this, deploymentConfiguration, context);
         service.init();
         return service;
     }
 
     @Override
-    protected DeploymentConfiguration createDeploymentConfiguration(
-            Properties initParameters) {
+    protected DeploymentConfiguration createDeploymentConfiguration(Properties initParameters) {
         Properties properties = config(initParameters);
         return super.createDeploymentConfiguration(properties);
     }
@@ -153,8 +141,7 @@ public class SpringServlet extends VaadinServlet {
         setProperty("vaadin." + property, property, properties);
     }
 
-    private void setProperty(String envProperty, String initParam,
-            Properties properties) {
+    private void setProperty(String envProperty, String initParam, Properties properties) {
         Environment env = context.getBean(Environment.class);
         String value = env.getProperty(upperCaseToDashSeparated(envProperty));
         if (value == null) {

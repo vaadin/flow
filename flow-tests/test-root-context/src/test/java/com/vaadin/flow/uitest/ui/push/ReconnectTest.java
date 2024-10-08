@@ -32,8 +32,7 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
     }
 
     @Test
-    public void messageIsNotSentBeforeConnectionIsEstablished()
-            throws IOException, InterruptedException {
+    public void messageIsNotSentBeforeConnectionIsEstablished() throws IOException, InterruptedException {
         disconnectProxy();
 
         waitForNextReconnectionAttempt();
@@ -65,8 +64,7 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
     }
 
     private void waitForNextReconnectionAttempt() {
-        waitUntil(driver -> getBrowserLogs(true).stream()
-                .filter(String.class::isInstance)
+        waitUntil(driver -> getBrowserLogs(true).stream().filter(String.class::isInstance)
                 .anyMatch("Reopening push connection"::equals));
     }
 
@@ -83,8 +81,7 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
         final int counter = BasicPushIT.getServerCounter(this);
         waitUntil(input -> {
             try {
-                return BasicPushIT
-                        .getServerCounter(ReconnectTest.this) > counter;
+                return BasicPushIT.getServerCounter(ReconnectTest.this) > counter;
             } catch (NoSuchElementException e) {
                 return false;
             }
@@ -92,10 +89,7 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
     }
 
     private void waitUntilClientCounterChanges(final int expectedValue) {
-        waitUntil(
-                input -> BasicPushIT
-                        .getClientCounter(ReconnectTest.this) == expectedValue,
-                5);
+        waitUntil(input -> BasicPushIT.getClientCounter(ReconnectTest.this) == expectedValue, 5);
     }
 
     private void startTimer() {

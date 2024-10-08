@@ -36,8 +36,7 @@ public class AttachExistingElementByIdIT extends ChromeBrowserTest {
         assertTemplate(id, "default", "Type here to update label");
     }
 
-    private void assertTemplate(String id, String initialLabelText,
-            String placeholder) {
+    private void assertTemplate(String id, String initialLabelText, String placeholder) {
         TestBenchElement template = $("*").id(id);
         WebElement input = getInput(template);
 
@@ -48,12 +47,10 @@ public class AttachExistingElementByIdIT extends ChromeBrowserTest {
         input.sendKeys("Harley!");
         input.sendKeys(Keys.ENTER);
 
-        Assert.assertEquals("Text from input Harley!",
-                getLabel(template).getText());
+        Assert.assertEquals("Text from input Harley!", getLabel(template).getText());
 
         // Reset values to defaults
-        $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("button")
-                .click();
+        $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("button").click();
 
         Assert.assertEquals("default", getLabel(template).getText());
     }

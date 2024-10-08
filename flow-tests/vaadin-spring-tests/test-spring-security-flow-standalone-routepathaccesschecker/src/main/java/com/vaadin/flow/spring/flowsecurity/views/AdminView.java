@@ -16,13 +16,11 @@ import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 public class AdminView extends VerticalLayout {
 
     public AdminView(SecurityUtils securityUtils) {
-        H1 welcome = new H1("Welcome to the admin page, "
-                + securityUtils.getAuthenticatedUserInfo().getFullName());
+        H1 welcome = new H1("Welcome to the admin page, " + securityUtils.getAuthenticatedUserInfo().getFullName());
         welcome.setId("welcome");
         add(welcome);
         Div div = new Div();
-        div.setText(
-                "This page is full of dangerous controls and secret information");
+        div.setText("This page is full of dangerous controls and secret information");
         add(div);
     }
 }

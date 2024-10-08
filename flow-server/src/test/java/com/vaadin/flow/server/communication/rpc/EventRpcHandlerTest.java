@@ -40,8 +40,7 @@ public class EventRpcHandlerTest {
         ui.add(c);
         AtomicInteger invocations = new AtomicInteger(0);
 
-        element.addEventListener("test-event",
-                e -> invocations.incrementAndGet());
+        element.addEventListener("test-event", e -> invocations.incrementAndGet());
         sendElementEvent(element, ui, "test-event", null);
         Assert.assertEquals(1, invocations.get());
     }
@@ -54,9 +53,8 @@ public class EventRpcHandlerTest {
         ui.add(c);
         AtomicInteger invocationData = new AtomicInteger(0);
 
-        DomListenerRegistration domListenerRegistration = element
-                .addEventListener("test-event", e -> invocationData
-                        .addAndGet((int) e.getEventData().getNumber("nr")));
+        DomListenerRegistration domListenerRegistration = element.addEventListener("test-event",
+                e -> invocationData.addAndGet((int) e.getEventData().getNumber("nr")));
         JsonObject eventData = Json.createObject();
         eventData.put("nr", 123);
         sendElementEvent(element, ui, "test-event", eventData);
@@ -77,8 +75,7 @@ public class EventRpcHandlerTest {
 
     }
 
-    private static JsonObject createElementEventInvocation(Element element,
-            String eventType, JsonObject eventData) {
+    private static JsonObject createElementEventInvocation(Element element, String eventType, JsonObject eventData) {
         StateNode node = element.getNode();
         // Copied from ServerConnector
         JsonObject message = Json.createObject();
@@ -92,9 +89,8 @@ public class EventRpcHandlerTest {
         return message;
     }
 
-    private static void sendElementEvent(Element element, UI ui,
-            String eventType, JsonObject eventData) throws Exception {
-        new EventRpcHandler().handle(ui,
-                createElementEventInvocation(element, eventType, eventData));
+    private static void sendElementEvent(Element element, UI ui, String eventType, JsonObject eventData)
+            throws Exception {
+        new EventRpcHandler().handle(ui, createElementEventInvocation(element, eventType, eventData));
     }
 }

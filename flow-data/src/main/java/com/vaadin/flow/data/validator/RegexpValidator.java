@@ -22,8 +22,8 @@ import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A string validator comparing the string against a Java regular expression.
- * Both complete matches and substring matches are supported.
+ * A string validator comparing the string against a Java regular expression. Both complete matches and substring
+ * matches are supported.
  * <p>
  * For the Java regular expression syntax, see {@link java.util.regex.Pattern}.
  *
@@ -38,8 +38,7 @@ public class RegexpValidator extends AbstractValidator<String> {
     private transient Matcher matcher = null;
 
     /**
-     * Creates a validator for checking that the regular expression matches the
-     * complete string to validate.
+     * Creates a validator for checking that the regular expression matches the complete string to validate.
      *
      * @param errorMessage
      *            the message to display in case the value does not validate.
@@ -51,20 +50,17 @@ public class RegexpValidator extends AbstractValidator<String> {
     }
 
     /**
-     * Creates a validator for checking that the regular expression matches the
-     * string to validate.
+     * Creates a validator for checking that the regular expression matches the string to validate.
      *
      * @param errorMessage
      *            the message to display in case the value does not validate.
      * @param regexp
      *            a Java regular expression
      * @param complete
-     *            true to use check for a complete match, false to look for a
-     *            matching substring
+     *            true to use check for a complete match, false to look for a matching substring
      *
      */
-    public RegexpValidator(String errorMessage, String regexp,
-            boolean complete) {
+    public RegexpValidator(String errorMessage, String regexp, boolean complete) {
         super(errorMessage);
         pattern = Pattern.compile(regexp);
         this.complete = complete;

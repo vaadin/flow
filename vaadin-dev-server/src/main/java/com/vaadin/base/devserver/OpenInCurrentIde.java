@@ -47,11 +47,10 @@ public final class OpenInCurrentIde {
     }
 
     /**
-     * Opens the given file at the given line number in the IDE used to launch
-     * the current Java application.
+     * Opens the given file at the given line number in the IDE used to launch the current Java application.
      * <p>
-     * If you are running the Java application from the command line or from an
-     * unsupported IDE, then this method does nothing.
+     * If you are running the Java application from the command line or from an unsupported IDE, then this method does
+     * nothing.
      *
      * @param file
      *            the file to open
@@ -75,8 +74,7 @@ public final class OpenInCurrentIde {
             return Open.open("vscode://file" + absolutePath + ":" + lineNumber);
         } else if (isIdea(processInfo)) {
             try {
-                run(getBinary(processInfo), "--line", lineNumber + "",
-                        absolutePath);
+                run(getBinary(processInfo), "--line", lineNumber + "", absolutePath);
                 return true;
             } catch (Exception e) {
                 getLogger().error("Unable to launch IntelliJ IDEA", e);
@@ -92,8 +90,7 @@ public final class OpenInCurrentIde {
                 }
             } else {
                 try {
-                    run(getBinary(processInfo),
-                            absolutePath + ":" + lineNumber);
+                    run(getBinary(processInfo), absolutePath + ":" + lineNumber);
                     return true;
                 } catch (Exception e) {
                     getLogger().error("Unable to launch Eclipse", e);
@@ -127,10 +124,8 @@ public final class OpenInCurrentIde {
     private static void printProcessTree(Consumer<String> printer) {
         for (Info info : getProcessTree()) {
             printer.accept("Process tree:");
-            info.command()
-                    .ifPresent(value -> printer.accept("Command: " + value));
-            info.commandLine().ifPresent(
-                    value -> printer.accept("Command line: " + value));
+            info.command().ifPresent(value -> printer.accept("Command: " + value));
+            info.commandLine().ifPresent(value -> printer.accept("Command line: " + value));
             info.arguments().ifPresent(values -> {
                 for (int i = 0; i < values.length; i++) {
                     printer.accept("Arguments[" + i + "]: " + values[i]);
@@ -141,8 +136,7 @@ public final class OpenInCurrentIde {
 
     }
 
-    static void run(String command, String... arguments)
-            throws IOException, InterruptedException {
+    static void run(String command, String... arguments) throws IOException, InterruptedException {
         List<String> cmd = new ArrayList<>();
         cmd.add(command);
         cmd.addAll(Arrays.asList(arguments));
@@ -151,17 +145,14 @@ public final class OpenInCurrentIde {
         Process process = pb.start();
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            String output = IOUtils.toString(process.getInputStream(),
-                    StandardCharsets.UTF_8);
+            String output = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
             throw new IOException(
-                    "Command " + cmd + " terminated with exit code " + exitCode
-                            + ".\nOutput:\n" + output);
+                    "Command " + cmd + " terminated with exit code " + exitCode + ".\nOutput:\n" + output);
         }
     }
 
     private static List<Info> getProcessTree() {
-        return getParentProcesses().stream().map(p -> p.info())
-                .collect(Collectors.toList());
+        return getParentProcesses().stream().map(p -> p.info()).collect(Collectors.toList());
     }
 
     private static Optional<Info> findIdeCommandInfo() {
@@ -197,8 +188,7 @@ public final class OpenInCurrentIde {
             String lowerCmd = cmd.get().toLowerCase(Locale.ENGLISH);
             // Eclipse has a lot of other products like Temurin and Adoptium so
             // we cannot check with "contains"
-            return lowerCmd.endsWith("eclipse")
-                    || lowerCmd.endsWith("eclipse.exe");
+            return lowerCmd.endsWith("eclipse") || lowerCmd.endsWith("eclipse.exe");
         }
 
         return false;
@@ -210,17 +200,13 @@ public final class OpenInCurrentIde {
 
     private static String getIdeaBinary(Info info) {
         String commandAndArguments = getCommandAndArguments(info);
-        if (commandAndArguments != null
-                && commandAndArguments.contains("idea_rt.jar")) {
-            String replaced = commandAndArguments
-                    .replaceFirst(".*[:;]([^:;]*)(idea_rt.jar).*", "$1$2");
+        if (commandAndArguments != null && commandAndArguments.contains("idea_rt.jar")) {
+            String replaced = commandAndArguments.replaceFirst(".*[:;]([^:;]*)(idea_rt.jar).*", "$1$2");
             if (!replaced.equals(commandAndArguments)) {
-                File binFolder = new File(
-                        new File(replaced).getParentFile().getParentFile(),
-                        "bin");
+                File binFolder = new File(new File(replaced).getParentFile().getParentFile(), "bin");
                 Optional<File> bin = Stream.of("idea", "idea.sh", "idea.bat")
-                        .map(binName -> new File(binFolder, binName))
-                        .filter(binaryFile -> binaryFile.exists()).findFirst();
+                        .map(binName -> new File(binFolder, binName)).filter(binaryFile -> binaryFile.exists())
+                        .findFirst();
                 if (bin.isPresent()) {
                     return bin.get().getAbsolutePath();
                 }
@@ -238,8 +224,7 @@ public final class OpenInCurrentIde {
         String cmd = getCommandAndArguments(info);
         if (cmd != null) {
             String cmdLower = cmd.toLowerCase(Locale.ENGLISH);
-            if (cmdLower.contains("vscode") || cmdLower.contains("vs code")
-                    || cmdLower.contains("code helper")
+            if (cmdLower.contains("vscode") || cmdLower.contains("vs code") || cmdLower.contains("code helper")
                     || cmdLower.contains("visual studio code")) {
                 return true;
             }

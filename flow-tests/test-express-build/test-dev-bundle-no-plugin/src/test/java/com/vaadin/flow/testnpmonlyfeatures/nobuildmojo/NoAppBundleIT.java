@@ -30,23 +30,16 @@ public class NoAppBundleIT extends ChromeBrowserTest {
 
         // shouldn't create a dev-bundle
         Assert.assertFalse("No dev-bundle should be created",
-                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION)
-                        .exists());
+                new File(baseDir, "target/" + Constants.DEV_BUNDLE_LOCATION).exists());
 
-        Assert.assertFalse("No node_modules should be created",
-                new File(baseDir, "node_modules").exists());
+        Assert.assertFalse("No node_modules should be created", new File(baseDir, "node_modules").exists());
 
-        Assert.assertFalse("No package.json should be created",
-                new File(baseDir, "package.json").exists());
-        Assert.assertFalse("No vite generated should be created",
-                new File(baseDir, "vite.generated.ts").exists());
-        Assert.assertFalse("No vite config should be created",
-                new File(baseDir, "vite.config.ts").exists());
+        Assert.assertFalse("No package.json should be created", new File(baseDir, "package.json").exists());
+        Assert.assertFalse("No vite generated should be created", new File(baseDir, "vite.generated.ts").exists());
+        Assert.assertFalse("No vite config should be created", new File(baseDir, "vite.config.ts").exists());
 
-        Assert.assertFalse("No types should be created",
-                new File(baseDir, "types.d.ts").exists());
-        Assert.assertFalse("No tsconfig should be created",
-                new File(baseDir, "tsconfig.json").exists());
+        Assert.assertFalse("No types should be created", new File(baseDir, "types.d.ts").exists());
+        Assert.assertFalse("No tsconfig should be created", new File(baseDir, "tsconfig.json").exists());
     }
 
     @Test
@@ -54,8 +47,7 @@ public class NoAppBundleIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/view/sw.js");
         String pageSource = driver.getPageSource();
         Assert.assertFalse("Service Worker is not served properly",
-                pageSource.contains("Error 404 Not Found")
-                        || pageSource.contains("Could not navigate to"));
+                pageSource.contains("Error 404 Not Found") || pageSource.contains("Could not navigate to"));
     }
 
 }

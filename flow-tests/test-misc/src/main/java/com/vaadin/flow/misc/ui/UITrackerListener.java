@@ -49,18 +49,14 @@ public class UITrackerListener implements VaadinServiceInitListener {
         }
 
         private void add(UI ui) {
-            Key key = new Key(
-                    ui.getInternals().getSession().getSession().getId(),
-                    ui.getUIId());
+            Key key = new Key(ui.getInternals().getSession().getSession().getId(), ui.getUIId());
             uiMap.put(key, new WeakReference<>(ui, new ReferenceQueue<>()));
         }
 
         public Set<Integer> getCollectedUIs(VaadinSession vaadinSession) {
             String sessionId = vaadinSession.getSession().getId();
-            return uiMap.entrySet().stream()
-                    .filter(e -> sessionId.equals(e.getKey().sessionId()))
-                    .filter(e -> e.getValue().refersTo(null))
-                    .map(e -> e.getKey().uIid()).collect(Collectors.toSet());
+            return uiMap.entrySet().stream().filter(e -> sessionId.equals(e.getKey().sessionId()))
+                    .filter(e -> e.getValue().refersTo(null)).map(e -> e.getKey().uIid()).collect(Collectors.toSet());
         }
     }
 }

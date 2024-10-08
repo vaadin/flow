@@ -23,8 +23,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.shared.ui.Dependency;
 
 /**
- * Filter for dependencies loaded using {@link StyleSheet @StyleSheet}, and *
- * {@link JavaScript @JavaScript}.
+ * Filter for dependencies loaded using {@link StyleSheet @StyleSheet}, and * {@link JavaScript @JavaScript}.
  *
  * @see ServiceInitEvent#addDependencyFilter(DependencyFilter)
  * @since 1.0
@@ -33,20 +32,17 @@ import com.vaadin.flow.shared.ui.Dependency;
 public interface DependencyFilter extends Serializable {
 
     /**
-     * Filters the list of dependencies and returns a (possibly) updated
-     * version.
+     * Filters the list of dependencies and returns a (possibly) updated version.
      * <p>
-     * Called whenever dependencies are about to be sent to the client side for
-     * loading and when templates are parsed on the server side.
+     * Called whenever dependencies are about to be sent to the client side for loading and when templates are parsed on
+     * the server side.
      *
      * @param dependencies
-     *            the collected dependencies, possibly already modified by other
-     *            filters
+     *            the collected dependencies, possibly already modified by other filters
      * @param service
      *            a Vaadin service
      * @return a list of dependencies to load
      */
-    List<Dependency> filter(List<Dependency> dependencies,
-            VaadinService service);
+    List<Dependency> filter(List<Dependency> dependencies, VaadinService service);
 
 }

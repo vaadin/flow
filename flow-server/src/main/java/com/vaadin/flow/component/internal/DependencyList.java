@@ -30,8 +30,7 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * List for storing dependencies/files (JavaScript, Stylesheets) to be loaded
- * and included on the client side.
+ * List for storing dependencies/files (JavaScript, Stylesheets) to be loaded and included on the client side.
  * <p>
  * Tracks previously sent URLs and doesn't send them again.
  *
@@ -44,8 +43,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
 public class DependencyList implements Serializable {
 
     /**
-     * Contains all added URLs to be able to do fast enough duplication
-     * detection.
+     * Contains all added URLs to be able to do fast enough duplication detection.
      */
     private final Set<String> urlCache = new HashSet<>();
     private final Map<String, Dependency> urlToLoadedDependency = new LinkedHashMap<>();
@@ -65,10 +63,9 @@ public class DependencyList implements Serializable {
      * <p>
      * Does not send any previously sent dependencies again.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * Relative URLs are interpreted as relative to the configured {@code frontend} directory location. You can prefix
+     * the URL with {@code context://} to make it relative to the context path or use an absolute URL to refer to files
+     * outside the frontend directory.
      *
      * @param dependency
      *            the dependency to include on the page
@@ -78,27 +75,23 @@ public class DependencyList implements Serializable {
 
         if (urlCache.contains(dependencyUrl)) {
             Optional.ofNullable(urlToLoadedDependency.get(dependencyUrl))
-                    .ifPresent(currentDependency -> handleDuplicateDependency(
-                            dependency, currentDependency));
+                    .ifPresent(currentDependency -> handleDuplicateDependency(dependency, currentDependency));
         } else {
             urlCache.add(dependencyUrl);
             urlToLoadedDependency.put(dependencyUrl, dependency);
         }
     }
 
-    private void handleDuplicateDependency(Dependency newDependency,
-            Dependency currentDependency) {
+    private void handleDuplicateDependency(Dependency newDependency, Dependency currentDependency) {
         if (newDependency.getLoadMode() != currentDependency.getLoadMode()) {
-            final LoadMode moreEagerLoadMode = LoadMode.values()[Math.min(
-                    newDependency.getLoadMode().ordinal(),
+            final LoadMode moreEagerLoadMode = LoadMode.values()[Math.min(newDependency.getLoadMode().ordinal(),
                     currentDependency.getLoadMode().ordinal())];
             getLogger().warn(
                     "Dependency with url {} was imported with two different loading strategies: {} and {}. The dependency will be loaded as {}.",
-                    newDependency.getUrl(), newDependency.getLoadMode(),
-                    currentDependency.getLoadMode(), moreEagerLoadMode);
+                    newDependency.getUrl(), newDependency.getLoadMode(), currentDependency.getLoadMode(),
+                    moreEagerLoadMode);
             urlToLoadedDependency.replace(newDependency.getUrl(),
-                    new Dependency(newDependency.getType(),
-                            newDependency.getUrl(), moreEagerLoadMode));
+                    new Dependency(newDependency.getType(), newDependency.getUrl(), moreEagerLoadMode));
         }
     }
 

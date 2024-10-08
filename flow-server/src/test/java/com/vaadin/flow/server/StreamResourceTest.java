@@ -31,8 +31,7 @@ public class StreamResourceTest {
 
     @Test
     public void getDefaultContentTypeResolver() {
-        StreamResource resource = new StreamResource("foo",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource("foo", () -> makeEmptyStream());
         ContentTypeResolver resolver = resource.getContentTypeResolver();
 
         Assert.assertNotNull(resolver);
@@ -42,8 +41,7 @@ public class StreamResourceTest {
 
     @Test
     public void setContentTypeResolver() {
-        StreamResource resource = new StreamResource("foo",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource("foo", () -> makeEmptyStream());
         resource.setContentTypeResolver((res, context) -> "bar");
 
         Assert.assertNotNull(resource.getContentTypeResolver());
@@ -53,8 +51,7 @@ public class StreamResourceTest {
 
     @Test
     public void setContentType() {
-        StreamResource resource = new StreamResource("foo",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource("foo", () -> makeEmptyStream());
         resource.setContentType("bar");
 
         Assert.assertNotNull(resource.getContentTypeResolver());
@@ -64,8 +61,7 @@ public class StreamResourceTest {
 
     @Test
     public void setHeader_headerIsInHeadersListAndGetterReturnsTheValue() {
-        StreamResource resource = new StreamResource("foo",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource("foo", () -> makeEmptyStream());
 
         resource.setHeader("foo", "bar");
 
@@ -76,8 +72,7 @@ public class StreamResourceTest {
         Assert.assertEquals("bar", headers.get("foo"));
     }
 
-    private void assertContentType(StreamResource resource,
-            ContentTypeResolver resolver) {
+    private void assertContentType(StreamResource resource, ContentTypeResolver resolver) {
         ServletContext context = Mockito.mock(ServletContext.class);
         Mockito.when(context.getMimeType("foo")).thenReturn("bar");
         String mimeType = resolver.apply(resource, context);

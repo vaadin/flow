@@ -33,8 +33,7 @@ import elemental.events.EventRemover;
 
 public class NodeMapTest {
 
-    private final NodeMap map = new NodeMap(0,
-            new StateNode(0, new StateTree(null)));
+    private final NodeMap map = new NodeMap(0, new StateNode(0, new StateTree(null)));
 
     @Test
     public void testNewMapEmpty() {
@@ -93,9 +92,8 @@ public class NodeMapTest {
 
     @Test
     public void testReactiveInvalidation() {
-        CountingComputation computation = new CountingComputation(
-                () -> map.forEachProperty((a, b) -> {
-                }));
+        CountingComputation computation = new CountingComputation(() -> map.forEachProperty((a, b) -> {
+        }));
 
         Reactive.flush();
 
@@ -148,8 +146,7 @@ public class NodeMapTest {
 
     @Test
     public void getProperty_returnPropertyWhichAlwaysUpdatesTheValue() {
-        NodeMap map = new NodeMap(NodeFeatures.ELEMENT_PROPERTIES,
-                new StateNode(0, new StateTree(null)));
+        NodeMap map = new NodeMap(NodeFeatures.ELEMENT_PROPERTIES, new StateNode(0, new StateTree(null)));
         MapProperty property = map.getProperty("innerHTML");
 
         AtomicReference<MapPropertyChangeEvent> capture = new AtomicReference<>();

@@ -14,8 +14,7 @@ import com.vaadin.flow.router.Route;
 @Push
 @PreserveOnRefresh
 @Route("com.vaadin.flow.uitest.ui.RefreshCloseConnectionView")
-public class RefreshCloseConnectionView extends Div
-        implements BeforeEnterObserver {
+public class RefreshCloseConnectionView extends Div implements BeforeEnterObserver {
 
     private String param = "";
 
@@ -24,19 +23,15 @@ public class RefreshCloseConnectionView extends Div
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         /*
-         * Workaround for "restartApplication" parameter usage: I wasn't able to
-         * get it working properly.
+         * Workaround for "restartApplication" parameter usage: I wasn't able to get it working properly.
          *
-         * This code shows "init" of first load and it logs more messages on
-         * view refresh (even though the view preserves its state in refresh).
+         * This code shows "init" of first load and it logs more messages on view refresh (even though the view
+         * preserves its state in refresh).
          *
-         * It's so complicated because IT should be able to completely "reset"
-         * the state of the view between tests execution. To be able to do that
-         * a parameter is used: if parameter is different then view is
-         * recreated.
+         * It's so complicated because IT should be able to completely "reset" the state of the view between tests
+         * execution. To be able to do that a parameter is used: if parameter is different then view is recreated.
          */
-        Set<String> params = event.getLocation().getQueryParameters()
-                .getParameters().keySet();
+        Set<String> params = event.getLocation().getQueryParameters().getParameters().keySet();
         String newParam = null;
         if (!params.isEmpty()) {
             newParam = params.iterator().next();

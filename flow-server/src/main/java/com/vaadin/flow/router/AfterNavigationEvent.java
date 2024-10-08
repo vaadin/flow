@@ -51,8 +51,7 @@ public class AfterNavigationEvent extends EventObject {
      * @param routeParameters
      *            route parameters, not <code>null</code>
      */
-    public AfterNavigationEvent(LocationChangeEvent event,
-            RouteParameters routeParameters) {
+    public AfterNavigationEvent(LocationChangeEvent event, RouteParameters routeParameters) {
         super(event.getSource());
         this.event = event;
         this.routeParameters = routeParameters;

@@ -30,8 +30,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
 /**
- * Stores the data about element name({@link Tag} annotation name value)
- * relation to all unique classes with corresponding annotation.
+ * Stores the data about element name({@link Tag} annotation name value) relation to all unique classes with
+ * corresponding annotation.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -44,19 +44,16 @@ class CustomElements implements Serializable {
     private static Optional<String> validateComponentClasses(String tagName,
             Set<Class<? extends Component>> componentClasses) {
         if (componentClasses.size() > 1) {
-            return Optional.of(String.format(
-                    "Several components are declared with the same @Tag(\"%s\") annotation: %s. "
+            return Optional
+                    .of(String.format("Several components are declared with the same @Tag(\"%s\") annotation: %s. "
                             + "Only components that form a hierarchy are allowed "
                             + "to have the same @Tag annotation. Otherwise it's not possible "
                             + "to do mapping between a tag name and a template "
                             + "class in order to instantiate the template when it's defined "
-                            + "inside another template",
-                    tagName, componentClasses));
+                            + "inside another template", tagName, componentClasses));
         }
         if (componentClasses.size() < 1) {
-            return Optional.of(String.format(
-                    "Had received tag with name '%s' and no corresponding classes",
-                    tagName));
+            return Optional.of(String.format("Had received tag with name '%s' and no corresponding classes", tagName));
         }
         return Optional.empty();
     }
@@ -64,25 +61,24 @@ class CustomElements implements Serializable {
     private static Class<? extends Component> getComponentClass(
             Map.Entry<String, Set<Class<? extends Component>>> entry) {
         Set<Class<? extends Component>> componentClasses = entry.getValue();
-        validateComponentClasses(entry.getKey(), componentClasses)
-                .ifPresent(exceptionMessage -> {
-                    throw new IllegalStateException(exceptionMessage);
-                });
+        validateComponentClasses(entry.getKey(), componentClasses).ifPresent(exceptionMessage -> {
+            throw new IllegalStateException(exceptionMessage);
+        });
 
         return componentClasses.iterator().next();
     }
 
     /**
-     * Maps each present custom element tag name to exactly one corresponding
-     * class. Throws exception if the operation is not possible.
+     * Maps each present custom element tag name to exactly one corresponding class. Throws exception if the operation
+     * is not possible.
      *
      * @return custom element tag name to corresponding class map
      * @throws IllegalStateException
      *             if
      */
     Map<String, Class<? extends Component>> computeTagToElementRelation() {
-        return elements.entrySet().stream().collect(Collectors
-                .toMap(Map.Entry::getKey, CustomElements::getComponentClass));
+        return elements.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, CustomElements::getComponentClass));
     }
 
     /**
@@ -94,16 +90,13 @@ class CustomElements implements Serializable {
      *            class with corresponding annotation
      */
     void addElement(String elementName, Class<? extends Component> newClass) {
-        elements.put(elementName, elements
-                .computeIfAbsent(elementName,
-                        key -> Collections.singleton(newClass))
-                .stream()
-                .map(oldClass -> extractNonRelatedClasses(oldClass, newClass))
-                .flatMap(Function.identity()).collect(Collectors.toSet()));
+        elements.put(elementName,
+                elements.computeIfAbsent(elementName, key -> Collections.singleton(newClass)).stream()
+                        .map(oldClass -> extractNonRelatedClasses(oldClass, newClass)).flatMap(Function.identity())
+                        .collect(Collectors.toSet()));
     }
 
-    private static Stream<Class<? extends Component>> extractNonRelatedClasses(
-            Class<? extends Component> class1,
+    private static Stream<Class<? extends Component>> extractNonRelatedClasses(Class<? extends Component> class1,
             Class<? extends Component> class2) {
         if (class1.isAssignableFrom(class2)) {
             return Stream.of(class1);

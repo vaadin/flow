@@ -164,8 +164,7 @@ public class JreArrayTest {
                 continue;
             }
 
-            Assert.assertFalse(JreJsArray.class.getSimpleName()
-                    + " must override" + method,
+            Assert.assertFalse(JreJsArray.class.getSimpleName() + " must override" + method,
                     Modifier.isNative(method.getModifiers()));
         }
     }

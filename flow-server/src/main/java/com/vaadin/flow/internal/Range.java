@@ -22,11 +22,10 @@ import java.util.stream.IntStream;
 /**
  * An immutable representation of a range, marked by start and end points.
  * <p>
- * The range is treated as inclusive at the start, and exclusive at the end.
- * I.e. the range [0..1[ has the length 1, and represents one integer: 0.
+ * The range is treated as inclusive at the start, and exclusive at the end. I.e. the range [0..1[ has the length 1, and
+ * represents one integer: 0.
  * <p>
- * The range is considered {@link #isEmpty() empty} if the start is the same as
- * the end.
+ * The range is considered {@link #isEmpty() empty} if the start is the same as the end.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -38,22 +37,20 @@ public final class Range implements Serializable {
     private final int end;
 
     /**
-     * Overlay this range with another one, and partition the ranges according
-     * to how they position relative to each other.
+     * Overlay this range with another one, and partition the ranges according to how they position relative to each
+     * other.
      * <p>
      * The three partitions are returned as a three-element Range array:
      * <ul>
-     * <li>Elements in this range that occur before elements in
-     * <code>other</code>.
+     * <li>Elements in this range that occur before elements in <code>other</code>.
      * <li>Elements that are shared between the two ranges.
-     * <li>Elements in this range that occur after elements in
-     * <code>other</code>.
+     * <li>Elements in this range that occur after elements in <code>other</code>.
      * </ul>
      *
      * @param other
      *            the other range to act as delimiters.
-     * @return a three-element Range array of partitions depicting the elements
-     *         before (index 0), shared/inside (index 1) and after (index 2).
+     * @return a three-element Range array of partitions depicting the elements before (index 0), shared/inside (index
+     *         1) and after (index 2).
      */
     public Range[] partitionWith(final Range other) {
         final Range[] splitBefore = splitAt(other.getStart());
@@ -93,9 +90,8 @@ public final class Range implements Serializable {
     /**
      * Creates a range between two integers.
      * <p>
-     * The range start is <em>inclusive</em> and the end is <em>exclusive</em>.
-     * So, a range "between" 0 and 5 represents the numbers 0, 1, 2, 3 and 4,
-     * but not 5.
+     * The range start is <em>inclusive</em> and the end is <em>exclusive</em>. So, a range "between" 0 and 5 represents
+     * the numbers 0, 1, 2, 3 and 4, but not 5.
      *
      * @param start
      *            the start of the range, inclusive
@@ -105,8 +101,7 @@ public final class Range implements Serializable {
      * @throws IllegalArgumentException
      *             if <code>start &gt; end</code>
      */
-    public static Range between(final int start, final int end)
-            throws IllegalArgumentException {
+    public static Range between(final int start, final int end) throws IllegalArgumentException {
         return new Range(start, end);
     }
 
@@ -117,18 +112,15 @@ public final class Range implements Serializable {
      *            the first integer to include in the range
      * @param length
      *            the length of the resulting range
-     * @return a range starting from <code>start</code>, with
-     *         <code>length</code> number of integers following
+     * @return a range starting from <code>start</code>, with <code>length</code> number of integers following
      * @throws IllegalArgumentException
      *             if length &lt; 0
      */
-    public static Range withLength(final int start, final int length)
-            throws IllegalArgumentException {
+    public static Range withLength(final int start, final int length) throws IllegalArgumentException {
         if (length < 0) {
             /*
-             * The constructor of Range will throw an exception if start >
-             * start+length (i.e. if length is negative). We're throwing the
-             * same exception type, just with a more descriptive message.
+             * The constructor of Range will throw an exception if start > start+length (i.e. if length is negative).
+             * We're throwing the same exception type, just with a more descriptive message.
              */
             throw new IllegalArgumentException("length must not be negative");
         }
@@ -145,11 +137,9 @@ public final class Range implements Serializable {
      * @throws IllegalArgumentException
      *             if <code>start &gt; end</code>
      */
-    private Range(final int start, final int end)
-            throws IllegalArgumentException {
+    private Range(final int start, final int end) throws IllegalArgumentException {
         if (start > end) {
-            throw new IllegalArgumentException(
-                    "start must not be greater than end");
+            throw new IllegalArgumentException("start must not be greater than end");
         }
 
         this.start = start;
@@ -193,8 +183,7 @@ public final class Range implements Serializable {
     }
 
     /**
-     * Checks whether this range and another range are at least partially
-     * covering the same values.
+     * Checks whether this range and another range are at least partially covering the same values.
      *
      * @param other
      *            the other range to check against
@@ -209,8 +198,7 @@ public final class Range implements Serializable {
      *
      * @param integer
      *            an integer to test for presence in this range
-     * @return <code>true</code> if and only if <code>integer</code> is in this
-     *         range
+     * @return <code>true</code> if and only if <code>integer</code> is in this range
      */
     public boolean contains(final int integer) {
         return getStart() <= integer && integer < getEnd();
@@ -221,8 +209,7 @@ public final class Range implements Serializable {
      *
      * @param other
      *            the range to check against of
-     * @return <code>true</code> if and only if <code>other</code> completely
-     *         wraps this range
+     * @return <code>true</code> if and only if <code>other</code> completely wraps this range
      */
     public boolean isSubsetOf(final Range other) {
         if (isEmpty() && other.isEmpty()) {
@@ -234,8 +221,7 @@ public final class Range implements Serializable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [" + getStart() + ".." + getEnd()
-                + "]" + (isEmpty() ? " (empty)" : "");
+        return getClass().getSimpleName() + " [" + getStart() + ".." + getEnd() + "]" + (isEmpty() ? " (empty)" : "");
     }
 
     @Override
@@ -273,8 +259,7 @@ public final class Range implements Serializable {
      *
      * @param other
      *            the other range to compare against
-     * @return <code>true</code> if and only if this range starts before the
-     *         <code>other</code>
+     * @return <code>true</code> if and only if this range starts before the <code>other</code>
      */
     public boolean startsBefore(final Range other) {
         return getStart() < other.getStart();
@@ -285,8 +270,7 @@ public final class Range implements Serializable {
      *
      * @param other
      *            the other range to compare against
-     * @return <code>true</code> if and only if this range ends before the
-     *         <code>other</code>
+     * @return <code>true</code> if and only if this range ends before the <code>other</code>
      */
     public boolean endsBefore(final Range other) {
         return getEnd() <= other.getStart();
@@ -297,8 +281,7 @@ public final class Range implements Serializable {
      *
      * @param other
      *            the other range to compare against
-     * @return <code>true</code> if and only if this range ends after the
-     *         <code>other</code>
+     * @return <code>true</code> if and only if this range ends after the <code>other</code>
      */
     public boolean endsAfter(final Range other) {
         return getEnd() > other.getEnd();
@@ -309,8 +292,7 @@ public final class Range implements Serializable {
      *
      * @param other
      *            the other range to compare against
-     * @return <code>true</code> if and only if this range starts after the
-     *         <code>other</code>
+     * @return <code>true</code> if and only if this range starts after the <code>other</code>
      */
     public boolean startsAfter(final Range other) {
         return getStart() >= other.getEnd();
@@ -323,14 +305,11 @@ public final class Range implements Serializable {
      *
      * @param integer
      *            the integer at which to split the range into two
-     * @return an array of two ranges, with <code>[start..integer[</code> in the
-     *         first element, and <code>[integer..end[</code> in the second
-     *         element.
+     * @return an array of two ranges, with <code>[start..integer[</code> in the first element, and
+     *         <code>[integer..end[</code> in the second element.
      *         <p>
-     *         If {@code integer} is less than {@code start}, [empty,
-     *         {@code this} ] is returned. if <code>integer</code> is equal to
-     *         or greater than {@code end}, [{@code this}, empty] is returned
-     *         instead.
+     *         If {@code integer} is less than {@code start}, [empty, {@code this} ] is returned. if
+     *         <code>integer</code> is equal to or greater than {@code end}, [{@code this}, empty] is returned instead.
      */
     public Range[] splitAt(final int integer) {
         if (integer < start) {
@@ -338,37 +317,32 @@ public final class Range implements Serializable {
         } else if (integer >= end) {
             return new Range[] { this, Range.withLength(end, 0) };
         } else {
-            return new Range[] { new Range(start, integer),
-                    new Range(integer, end) };
+            return new Range[] { new Range(start, integer), new Range(integer, end) };
         }
     }
 
     /**
-     * Split the range into two after a certain number of integers into the
-     * range.
+     * Split the range into two after a certain number of integers into the range.
      * <p>
      * Calling this method is equivalent to calling
      * <code>{@link #splitAt(int) splitAt}({@link #getStart()}+length);</code>
      * <p>
-     * <em>Example:</em>
-     * <code>[5..10[.splitAtFromStart(2) == [5..7[, [7..10[</code>
+     * <em>Example:</em> <code>[5..10[.splitAtFromStart(2) == [5..7[, [7..10[</code>
      *
      * @param length
      *            the length at which to split this range into two
-     * @return an array of two ranges, having the <code>length</code>-first
-     *         elements of this range, and the second range having the rest. If
-     *         <code>length</code> &le; 0, the first element will be empty, and
-     *         the second element will be this range. If <code>length</code>
-     *         &ge; {@link #length()}, the first element will be this range, and
-     *         the second element will be empty.
+     * @return an array of two ranges, having the <code>length</code>-first elements of this range, and the second range
+     *         having the rest. If <code>length</code> &le; 0, the first element will be empty, and the second element
+     *         will be this range. If <code>length</code> &ge; {@link #length()}, the first element will be this range,
+     *         and the second element will be empty.
      */
     public Range[] splitAtFromStart(final int length) {
         return splitAt(getStart() + length);
     }
 
     /**
-     * Combines two ranges to create a range containing all values in both
-     * ranges, provided there are no gaps between the ranges.
+     * Combines two ranges to create a range containing all values in both ranges, provided there are no gaps between
+     * the ranges.
      *
      * @param other
      *            the range to combine with this range
@@ -380,12 +354,10 @@ public final class Range implements Serializable {
      */
     public Range combineWith(Range other) throws IllegalArgumentException {
         if (getStart() > other.getEnd() || other.getStart() > getEnd()) {
-            throw new IllegalArgumentException(
-                    "There is a gap between " + this + " and " + other);
+            throw new IllegalArgumentException("There is a gap between " + this + " and " + other);
         }
 
-        return Range.between(Math.min(getStart(), other.getStart()),
-                Math.max(getEnd(), other.getEnd()));
+        return Range.between(Math.min(getStart(), other.getStart()), Math.max(getEnd(), other.getEnd()));
     }
 
     /**
@@ -401,20 +373,18 @@ public final class Range implements Serializable {
      * @throws IllegalArgumentException
      *             if the new range would have <code>start &gt; end</code>
      */
-    public Range expand(int startDelta, int endDelta)
-            throws IllegalArgumentException {
+    public Range expand(int startDelta, int endDelta) throws IllegalArgumentException {
         return Range.between(getStart() - startDelta, getEnd() + endDelta);
     }
 
     /**
      * Limits this range to be within the bounds of the provided range.
      * <p>
-     * This is basically an optimized way of calculating
-     * <code>{@link #partitionWith(Range)}[1]</code> without the overhead of
-     * defining the parts that do not overlap.
+     * This is basically an optimized way of calculating <code>{@link #partitionWith(Range)}[1]</code> without the
+     * overhead of defining the parts that do not overlap.
      * <p>
-     * If the two ranges do not intersect, an empty range is returned. There are
-     * no guarantees about the position of that range.
+     * If the two ranges do not intersect, an empty range is returned. There are no guarantees about the position of
+     * that range.
      *
      * @param bounds
      *            the bounds that the returned range should be limited to
@@ -423,8 +393,7 @@ public final class Range implements Serializable {
     public Range restrictTo(Range bounds) {
         boolean startWithin = bounds.contains(getStart());
         boolean endWithin = bounds.contains(getEnd());
-        boolean boundsWithin = getStart() < bounds.getStart()
-                && getEnd() >= bounds.getEnd();
+        boolean boundsWithin = getStart() < bounds.getStart() && getEnd() >= bounds.getEnd();
 
         if (startWithin) {
             if (endWithin) {
@@ -446,8 +415,8 @@ public final class Range implements Serializable {
     /**
      * Returns the range as a stream of integers.
      * <p>
-     * The first element of the stream is the {@link #getStart()} return value
-     * and the last one is the {@link #getEnd()} return value.
+     * The first element of the stream is the {@link #getStart()} return value and the last one is the {@link #getEnd()}
+     * return value.
      *
      * @see #getStart()
      * @see #getEnd()

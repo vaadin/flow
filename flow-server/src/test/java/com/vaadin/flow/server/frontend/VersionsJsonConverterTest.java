@@ -63,8 +63,7 @@ public class VersionsJsonConverterTest {
                 + "}";
         // @formatter:on
 
-        VersionsJsonConverter convert = new VersionsJsonConverter(
-                Json.parse(json), false);
+        VersionsJsonConverter convert = new VersionsJsonConverter(Json.parse(json), false);
         JsonObject convertedJson = convert.getConvertedJson();
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -75,12 +74,9 @@ public class VersionsJsonConverterTest {
         Assert.assertFalse(convertedJson.hasKey(VAADIN_CORE_NPM_PACKAGE));
         Assert.assertFalse(convertedJson.hasKey("platform"));
 
-        Assert.assertEquals("1.1.2",
-                convertedJson.getString("@vaadin/vaadin-progress-bar"));
-        Assert.assertEquals("4.2.2",
-                convertedJson.getString("@vaadin/vaadin-upload"));
-        Assert.assertEquals("3.0.2",
-                convertedJson.getString("@polymer/iron-list"));
+        Assert.assertEquals("1.1.2", convertedJson.getString("@vaadin/vaadin-progress-bar"));
+        Assert.assertEquals("4.2.2", convertedJson.getString("@vaadin/vaadin-upload"));
+        Assert.assertEquals("3.0.2", convertedJson.getString("@polymer/iron-list"));
     }
 
     @Test
@@ -126,8 +122,7 @@ public class VersionsJsonConverterTest {
                 }
                 """.formatted(VAADIN_CORE_NPM_PACKAGE);
 
-        VersionsJsonConverter convert = new VersionsJsonConverter(
-                Json.parse(json), true);
+        VersionsJsonConverter convert = new VersionsJsonConverter(Json.parse(json), true);
         JsonObject convertedJson = convert.getConvertedJson();
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -144,16 +139,11 @@ public class VersionsJsonConverterTest {
         Assert.assertFalse(convertedJson.hasKey("react-components"));
         Assert.assertFalse(convertedJson.hasKey("react-components-pro"));
 
-        Assert.assertEquals("1.1.2",
-                convertedJson.getString("@vaadin/vaadin-progress-bar"));
-        Assert.assertEquals("4.2.2",
-                convertedJson.getString("@vaadin/vaadin-upload"));
-        Assert.assertEquals("3.0.2",
-                convertedJson.getString("@polymer/iron-list"));
-        Assert.assertEquals("24.4.0-alpha7",
-                convertedJson.getString("@vaadin/react-components"));
-        Assert.assertEquals("24.4.0-alpha7",
-                convertedJson.getString("@vaadin/react-components-pro"));
+        Assert.assertEquals("1.1.2", convertedJson.getString("@vaadin/vaadin-progress-bar"));
+        Assert.assertEquals("4.2.2", convertedJson.getString("@vaadin/vaadin-upload"));
+        Assert.assertEquals("3.0.2", convertedJson.getString("@polymer/iron-list"));
+        Assert.assertEquals("24.4.0-alpha7", convertedJson.getString("@vaadin/react-components"));
+        Assert.assertEquals("24.4.0-alpha7", convertedJson.getString("@vaadin/react-components-pro"));
     }
 
     @Test
@@ -201,8 +191,7 @@ public class VersionsJsonConverterTest {
                 }
                 """.formatted(VAADIN_CORE_NPM_PACKAGE);
 
-        VersionsJsonConverter convert = new VersionsJsonConverter(
-                Json.parse(json), false);
+        VersionsJsonConverter convert = new VersionsJsonConverter(Json.parse(json), false);
         JsonObject convertedJson = convert.getConvertedJson();
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -212,20 +201,16 @@ public class VersionsJsonConverterTest {
         Assert.assertFalse(convertedJson.hasKey("core"));
         Assert.assertFalse(convertedJson.hasKey(VAADIN_CORE_NPM_PACKAGE));
         Assert.assertFalse(convertedJson.hasKey("platform"));
-        Assert.assertFalse(
-                convertedJson.hasKey("@vaadin/react-components-pro"));
+        Assert.assertFalse(convertedJson.hasKey("@vaadin/react-components-pro"));
         Assert.assertFalse(convertedJson.hasKey("@vaadin/react-components"));
         Assert.assertFalse(convertedJson.hasKey("react"));
         Assert.assertFalse(convertedJson.hasKey("react-pro"));
         Assert.assertFalse(convertedJson.hasKey("react-components"));
         Assert.assertFalse(convertedJson.hasKey("react-components-pro"));
 
-        Assert.assertEquals("1.1.2",
-                convertedJson.getString("@vaadin/vaadin-progress-bar"));
-        Assert.assertEquals("4.2.2",
-                convertedJson.getString("@vaadin/vaadin-upload"));
-        Assert.assertEquals("3.0.2",
-                convertedJson.getString("@polymer/iron-list"));
+        Assert.assertEquals("1.1.2", convertedJson.getString("@vaadin/vaadin-progress-bar"));
+        Assert.assertEquals("4.2.2", convertedJson.getString("@vaadin/vaadin-upload"));
+        Assert.assertEquals("3.0.2", convertedJson.getString("@polymer/iron-list"));
     }
 
     @Test
@@ -277,8 +262,7 @@ public class VersionsJsonConverterTest {
                 """.formatted(VAADIN_CORE_NPM_PACKAGE);
 
         // react enabled
-        VersionsJsonConverter convert = new VersionsJsonConverter(
-                Json.parse(json), true);
+        VersionsJsonConverter convert = new VersionsJsonConverter(Json.parse(json), true);
         JsonObject convertedJson = convert.getConvertedJson();
         Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
@@ -301,8 +285,7 @@ public class VersionsJsonConverterTest {
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
         Assert.assertTrue(convertedJson.hasKey("@polymer/iron-list"));
-        Assert.assertFalse(
-                convertedJson.hasKey("@vaadin/react-components-pro"));
+        Assert.assertFalse(convertedJson.hasKey("@vaadin/react-components-pro"));
         Assert.assertFalse(convertedJson.hasKey("@vaadin/react-components"));
 
         Assert.assertFalse(convertedJson.hasKey("flow"));
@@ -370,14 +353,12 @@ public class VersionsJsonConverterTest {
                 """.formatted(VAADIN_CORE_NPM_PACKAGE);
 
         // react enabled
-        VersionsJsonConverter convert = new VersionsJsonConverter(
-                Json.parse(json), true);
+        VersionsJsonConverter convert = new VersionsJsonConverter(Json.parse(json), true);
         JsonObject convertedJson = convert.getConvertedJson();
         Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-upload"));
         Assert.assertFalse(convertedJson.hasKey("@polymer/iron-list"));
-        Assert.assertFalse(
-                convertedJson.hasKey("@vaadin/react-components-pro"));
+        Assert.assertFalse(convertedJson.hasKey("@vaadin/react-components-pro"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/react-components"));
 
         Assert.assertFalse(convertedJson.hasKey("flow"));
@@ -395,8 +376,7 @@ public class VersionsJsonConverterTest {
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
         Assert.assertTrue(convertedJson.hasKey("@polymer/iron-list"));
-        Assert.assertFalse(
-                convertedJson.hasKey("@vaadin/react-components-pro"));
+        Assert.assertFalse(convertedJson.hasKey("@vaadin/react-components-pro"));
         Assert.assertFalse(convertedJson.hasKey("@vaadin/react-components"));
 
         Assert.assertFalse(convertedJson.hasKey("flow"));

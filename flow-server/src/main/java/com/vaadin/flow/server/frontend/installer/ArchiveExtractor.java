@@ -38,6 +38,5 @@ interface ArchiveExtractor {
      * @throws ArchiveExtractionException
      *             exception thrown for failure during extraction
      */
-    void extract(File archive, File destinationDirectory)
-            throws ArchiveExtractionException;
+    void extract(File archive, File destinationDirectory) throws ArchiveExtractionException;
 }

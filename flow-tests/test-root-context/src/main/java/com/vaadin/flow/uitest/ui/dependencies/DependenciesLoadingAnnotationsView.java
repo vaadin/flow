@@ -20,8 +20,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
 @JavaScript("./dependencies/eager.js")
 @StyleSheet("./dependencies/eager.css")
 @JsModule("./dependencies/eager-module.js")
-public class DependenciesLoadingAnnotationsView
-        extends DependenciesLoadingBaseView {
+public class DependenciesLoadingAnnotationsView extends DependenciesLoadingBaseView {
 
     public DependenciesLoadingAnnotationsView() {
         super("");

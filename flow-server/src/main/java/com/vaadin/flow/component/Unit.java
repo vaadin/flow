@@ -23,8 +23,7 @@ import java.util.stream.Stream;
  */
 public enum Unit {
     /**
-     * Unit code representing in percentage of the containing element defined by
-     * terminal.
+     * Unit code representing in percentage of the containing element defined by terminal.
      */
     PERCENTAGE("%"),
     /**
@@ -136,13 +135,10 @@ public enum Unit {
         if (cssSize == null || cssSize.length() < 1) {
             throw new IllegalArgumentException("The parameter can't be null");
         }
-        Unit unit = getUnits()
-                .filter(value -> cssSize.endsWith(value.toString())).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(String.format(
-                        "The parameter string '%s' does not contain valid unit",
-                        cssSize)));
-        String size = cssSize.substring(0,
-                cssSize.length() - unit.toString().length());
+        Unit unit = getUnits().filter(value -> cssSize.endsWith(value.toString())).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("The parameter string '%s' does not contain valid unit", cssSize)));
+        String size = cssSize.substring(0, cssSize.length() - unit.toString().length());
         if (size.isEmpty()) {
             size = "0";
         }

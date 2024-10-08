@@ -35,22 +35,17 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
         String id = nestedDiv.getAttribute("id");
         // make sure that component which is created from the server side is
         // themed
-        Assert.assertEquals("The server side component is not themed", "themed",
-                id);
+        Assert.assertEquals("The server side component is not themed", "themed", id);
 
-        TestBenchElement nestedClientSideComponent = themedComponent
-                .$("client-side-component").first();
-        List<TestBenchElement> divsInClientSideComponent = nestedClientSideComponent
-                .$("div").all();
+        TestBenchElement nestedClientSideComponent = themedComponent.$("client-side-component").first();
+        List<TestBenchElement> divsInClientSideComponent = nestedClientSideComponent.$("div").all();
         // Fist of all: the client side component is correctly resolved so it
         // has
         // something inside its shadow root
-        Assert.assertTrue(
-                "The client side component inside themed component is not resolved",
+        Assert.assertTrue("The client side component inside themed component is not resolved",
                 divsInClientSideComponent.size() > 0);
 
-        TestBenchElement divInClientSideComponent = divsInClientSideComponent
-                .get(0);
+        TestBenchElement divInClientSideComponent = divsInClientSideComponent.get(0);
         // make sure that the nested client side is themed
         Assert.assertEquals("The server side component is not themed", "themed",
                 divInClientSideComponent.getAttribute("id"));

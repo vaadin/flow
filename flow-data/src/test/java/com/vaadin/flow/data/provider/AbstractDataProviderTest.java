@@ -31,8 +31,7 @@ import com.vaadin.flow.shared.Registration;
  */
 public class AbstractDataProviderTest {
 
-    private static class TestDataProvider
-            extends AbstractDataProvider<Object, Object> {
+    private static class TestDataProvider extends AbstractDataProvider<Object, Object> {
 
         @Override
         public Stream<Object> fetch(Query<Object, Object> t) {
@@ -67,8 +66,7 @@ public class AbstractDataProviderTest {
     public void removeListener_listenerIsNotNotified() {
         TestDataProvider dataProvider = new TestDataProvider();
         AtomicReference<DataChangeEvent<Object>> event = new AtomicReference<>();
-        Registration registration = dataProvider
-                .addDataProviderListener(event::set);
+        Registration registration = dataProvider.addDataProviderListener(event::set);
         registration.remove();
         dataProvider.refreshAll();
         Assert.assertNull(event.get());

@@ -27,13 +27,11 @@ import com.vaadin.flow.internal.StateNode;
 import elemental.json.JsonArray;
 
 /**
- * Server-side node feature that keeps track of the return channels registered
- * for a state node.
+ * Server-side node feature that keeps track of the return channels registered for a state node.
  * <p>
- * Return channels are only tracked on the server. The client doesn't need to
- * know which channels are registered - it only passes the channel id back to
- * the server. The server checks that the received channel id is (still) valid
- * and logs a warning if it isn't.
+ * Return channels are only tracked on the server. The client doesn't need to know which channels are registered - it
+ * only passes the channel id back to the server. The server checks that the received channel id is (still) valid and
+ * logs a warning if it isn't.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -48,8 +46,7 @@ public class ReturnChannelMap extends ServerSideFeature {
 
         private DisabledUpdateMode disabledUpdateMode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
 
-        public ChannelImpl(int channelId,
-                SerializableBiConsumer<JsonArray, ReturnChannelRegistration> handler) {
+        public ChannelImpl(int channelId, SerializableBiConsumer<JsonArray, ReturnChannelRegistration> handler) {
             this.channelId = channelId;
             this.handler = handler;
         }
@@ -80,10 +77,8 @@ public class ReturnChannelMap extends ServerSideFeature {
         }
 
         @Override
-        public ReturnChannelRegistration setDisabledUpdateMode(
-                DisabledUpdateMode disabledUpdateMode) {
-            this.disabledUpdateMode = Objects
-                    .requireNonNull(disabledUpdateMode);
+        public ReturnChannelRegistration setDisabledUpdateMode(DisabledUpdateMode disabledUpdateMode) {
+            this.disabledUpdateMode = Objects.requireNonNull(disabledUpdateMode);
             return this;
         }
     }
@@ -103,37 +98,32 @@ public class ReturnChannelMap extends ServerSideFeature {
     }
 
     /**
-     * Registers a new channel based on a callback that receives the provided
-     * arguments when a message is passed to the channel.
+     * Registers a new channel based on a callback that receives the provided arguments when a message is passed to the
+     * channel.
      * <p>
-     * The returned registration can be passed to the client as a parameter to
-     * various <code>executeJavaScript</code> methods. The client side
-     * representation of the registration will be a function that will send a
-     * message to the provided handler.
+     * The returned registration can be passed to the client as a parameter to various <code>executeJavaScript</code>
+     * methods. The client side representation of the registration will be a function that will send a message to the
+     * provided handler.
      *
      * @param handler
      *            the argument handler, not <code>null</code>
      *
      * @return a return channel registration
      */
-    public ReturnChannelRegistration registerChannel(
-            SerializableConsumer<JsonArray> handler) {
+    public ReturnChannelRegistration registerChannel(SerializableConsumer<JsonArray> handler) {
         assert handler != null;
 
-        return registerChannel(
-                (arguments, channel) -> handler.accept(arguments));
+        return registerChannel((arguments, channel) -> handler.accept(arguments));
     }
 
     /**
-     * Registers a new channel based on a callback that receives the provided
-     * arguments and the channel registration when a message is passed to the
-     * channel. The purpose of passing the registration to the handler is to
-     * allow the channel to unregister itself when it receives a message.
+     * Registers a new channel based on a callback that receives the provided arguments and the channel registration
+     * when a message is passed to the channel. The purpose of passing the registration to the handler is to allow the
+     * channel to unregister itself when it receives a message.
      * <p>
-     * The returned registration can be passed to the client as a parameter to
-     * various <code>executeJavaScript</code> methods. The client side
-     * representation of the registration will be a function that will send a
-     * message to the provided handler.
+     * The returned registration can be passed to the client as a parameter to various <code>executeJavaScript</code>
+     * methods. The client side representation of the registration will be a function that will send a message to the
+     * provided handler.
      *
      * @param handler
      *            the argument and registration handler, not <code>null</code>
@@ -152,13 +142,12 @@ public class ReturnChannelMap extends ServerSideFeature {
     }
 
     /**
-     * Gets the return channel registration registered with the provided id, or
-     * <code>null</code> if no channel is registered with that id.
+     * Gets the return channel registration registered with the provided id, or <code>null</code> if no channel is
+     * registered with that id.
      *
      * @param channelId
      *            the channel id to look for
-     * @return a return channel registration, or <code>null</code> if no
-     *         registration exists for the given id
+     * @return a return channel registration, or <code>null</code> if no registration exists for the given id
      */
     public ReturnChannelRegistration get(int channelId) {
         return channels.get(Integer.valueOf(channelId));

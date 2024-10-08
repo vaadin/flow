@@ -54,19 +54,15 @@ public class ThemeView extends Div {
         faText.setClassName("fas fa-coffee");
         faText.setId(FONTAWESOME_ID);
 
-        Image snowFlake = new Image(
-                "themes/app-theme/fortawesome/icons/snowflake.svg",
-                "snowflake");
+        Image snowFlake = new Image("themes/app-theme/fortawesome/icons/snowflake.svg", "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
         Span diceImageSpan = new Span();
-        diceImageSpan.getStyle().set("background-image",
-                "url('themes/app-theme/img/dice.jpg')");
+        diceImageSpan.getStyle().set("background-image", "url('themes/app-theme/img/dice.jpg')");
         diceImageSpan.setId(DICE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake,
-                faText, diceImageSpan);
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake, faText, diceImageSpan);
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));

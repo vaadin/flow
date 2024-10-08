@@ -39,7 +39,6 @@ public class BackNavSecondView extends Div implements AfterNavigationObserver {
     public void afterNavigation(AfterNavigationEvent event) {
         count++;
         text.setText("Second view: " + count);
-        UI.getCurrent().getPage().getHistory().replaceState(null,
-                "com.vaadin.flow.BackNavSecondView?param");
+        UI.getCurrent().getPage().getHistory().replaceState(null, "com.vaadin.flow.BackNavSecondView?param");
     }
 }

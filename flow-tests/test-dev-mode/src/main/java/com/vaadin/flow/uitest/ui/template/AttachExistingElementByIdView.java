@@ -25,8 +25,7 @@ public class AttachExistingElementByIdView extends AbstractDivView {
 
     @JsModule("./AttachExistingElementById.js")
     @Tag("existing-element")
-    public static class AttachExistingElementByIdTemplate
-            extends AbstractAttachExistingElementByIdTemplate {
+    public static class AttachExistingElementByIdTemplate extends AbstractAttachExistingElementByIdTemplate {
 
         AttachExistingElementByIdTemplate() {
             super("simple-path");

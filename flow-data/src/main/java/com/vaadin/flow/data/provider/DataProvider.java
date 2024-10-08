@@ -32,16 +32,14 @@ import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * A common interface for fetching data from a backend. The {@link DataProvider}
- * interface is used by listing components implementing {@link HasDataProvider}
- * or {@link HasFilterableDataProvider}. The listing component will provide a
- * {@link Query} object with request information, and the data provider uses
- * this information to return a stream containing requested beans.
+ * A common interface for fetching data from a backend. The {@link DataProvider} interface is used by listing components
+ * implementing {@link HasDataProvider} or {@link HasFilterableDataProvider}. The listing component will provide a
+ * {@link Query} object with request information, and the data provider uses this information to return a stream
+ * containing requested beans.
  * <p>
- * Vaadin comes with a ready-made solution for in-memory data, known as
- * {@link ListDataProvider} which can be created using static {@code create}
- * methods in this interface. For custom backends such as SQL, EntityManager,
- * REST APIs or SpringData, use a {@link BackEndDataProvider} or its subclass.
+ * Vaadin comes with a ready-made solution for in-memory data, known as {@link ListDataProvider} which can be created
+ * using static {@code create} methods in this interface. For custom backends such as SQL, EntityManager, REST APIs or
+ * SpringData, use a {@link BackEndDataProvider} or its subclass.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -54,18 +52,15 @@ import com.vaadin.flow.shared.Registration;
  * @see #ofCollection(Collection)
  * @see #ofItems(Object...)
  * @see #fromStream(Stream)
- * @see #fromCallbacks(CallbackDataProvider.FetchCallback,
- *      CallbackDataProvider.CountCallback)
- * @see #fromFilteringCallbacks(CallbackDataProvider.FetchCallback,
- *      CallbackDataProvider.CountCallback)
+ * @see #fromCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)
+ * @see #fromFilteringCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)
  * @see ListDataProvider
  * @see BackEndDataProvider
  */
 public interface DataProvider<T, F> extends Serializable {
 
     /**
-     * Gets whether the DataProvider content all available in memory or does it
-     * use some external backend.
+     * Gets whether the DataProvider content all available in memory or does it use some external backend.
      *
      * @return {@code true} if all data is in memory; {@code false} if not
      */
@@ -85,21 +80,17 @@ public interface DataProvider<T, F> extends Serializable {
      *
      * @param query
      *            given query to request data
-     * @return the result of the query request: a stream of data objects, not
-     *         {@code null}
+     * @return the result of the query request: a stream of data objects, not {@code null}
      */
     Stream<T> fetch(Query<T, F> query);
 
     /**
-     * Refreshes the given item. This method should be used to inform all
-     * {@link DataProviderListener DataProviderListeners} that an item has been
-     * updated or replaced with a new instance.
+     * Refreshes the given item. This method should be used to inform all {@link DataProviderListener
+     * DataProviderListeners} that an item has been updated or replaced with a new instance.
      * <p>
-     * For this to work properly, the item must either implement
-     * {@link Object#equals(Object)} and {@link Object#hashCode()} to consider
-     * both the old and the new item instances to be equal, or alternatively
-     * {@link #getId(Object)} should be implemented to return an appropriate
-     * identifier.
+     * For this to work properly, the item must either implement {@link Object#equals(Object)} and
+     * {@link Object#hashCode()} to consider both the old and the new item instances to be equal, or alternatively
+     * {@link #getId(Object)} should be implemented to return an appropriate identifier.
      *
      * @see #getId(Object)
      *
@@ -113,9 +104,8 @@ public interface DataProvider<T, F> extends Serializable {
      *
      * @see #refreshItem(Object)
      *
-     *      By default it just does a standard refreshItem, in a hierarchical
-     *      DataProvider it is supposed to refresh all of the children as well
-     *      in case 'refreshChildren' is true.
+     *      By default it just does a standard refreshItem, in a hierarchical DataProvider it is supposed to refresh all
+     *      of the children as well in case 'refreshChildren' is true.
      *
      * @param item
      *            the item to refresh
@@ -127,21 +117,19 @@ public interface DataProvider<T, F> extends Serializable {
     }
 
     /**
-     * Refreshes all data based on currently available data in the underlying
-     * provider.
+     * Refreshes all data based on currently available data in the underlying provider.
      */
     void refreshAll();
 
     /**
-     * Gets an identifier for the given item. This identifier is used by the
-     * framework to determine equality between two items.
+     * Gets an identifier for the given item. This identifier is used by the framework to determine equality between two
+     * items.
      * <p>
-     * Default is to use item itself as its own identifier. If the item has
-     * {@link Object#equals(Object)} and {@link Object#hashCode()} implemented
-     * in a way that it can be compared to other items, no changes are required.
+     * Default is to use item itself as its own identifier. If the item has {@link Object#equals(Object)} and
+     * {@link Object#hashCode()} implemented in a way that it can be compared to other items, no changes are required.
      * <p>
-     * <strong>Note:</strong> This method will be called often by the Framework.
-     * It should not do any expensive operations.
+     * <strong>Note:</strong> This method will be called often by the Framework. It should not do any expensive
+     * operations.
      *
      * @param item
      *            the item to get identifier for; not {@code null}
@@ -153,12 +141,10 @@ public interface DataProvider<T, F> extends Serializable {
     }
 
     /**
-     * Adds a data provider listener. The listener is called when some piece of
-     * data is updated.
+     * Adds a data provider listener. The listener is called when some piece of data is updated.
      * <p>
-     * The {@link #refreshAll()} method fires {@link DataChangeEvent} each time
-     * when it's called. It allows to update UI components when user changes
-     * something in the underlying data.
+     * The {@link #refreshAll()} method fires {@link DataChangeEvent} each time when it's called. It allows to update UI
+     * components when user changes something in the underlying data.
      *
      * @see #refreshAll()
      * @param listener
@@ -168,12 +154,10 @@ public interface DataProvider<T, F> extends Serializable {
     Registration addDataProviderListener(DataProviderListener<T> listener);
 
     /**
-     * Wraps this data provider to create a data provider that uses a different
-     * filter type. This can be used for adapting this data provider to a filter
-     * type provided by a Component such as ComboBox.
+     * Wraps this data provider to create a data provider that uses a different filter type. This can be used for
+     * adapting this data provider to a filter type provided by a Component such as ComboBox.
      * <p>
-     * For example receiving a String from ComboBox and making a Predicate based
-     * on it:
+     * For example receiving a String from ComboBox and making a Predicate based on it:
      *
      * <pre>
      * DataProvider&lt;Person, Predicate&lt;Person&gt;&gt; dataProvider;
@@ -188,21 +172,16 @@ public interface DataProvider<T, F> extends Serializable {
      * </pre>
      *
      * @param filterConverter
-     *            callback that converts the filter in the query of the wrapped
-     *            data provider into a filter supported by this data provider.
-     *            Will only be called if the query contains a filter. Not
-     *            <code>null</code>
+     *            callback that converts the filter in the query of the wrapped data provider into a filter supported by
+     *            this data provider. Will only be called if the query contains a filter. Not <code>null</code>
      *
      * @param <C>
-     *            the filter type that the wrapped data provider accepts;
-     *            typically provided by a Component
+     *            the filter type that the wrapped data provider accepts; typically provided by a Component
      *
      * @return wrapped data provider, not <code>null</code>
      */
-    default <C> DataProvider<T, C> withConvertedFilter(
-            SerializableFunction<C, F> filterConverter) {
-        Objects.requireNonNull(filterConverter,
-                "Filter converter can't be null");
+    default <C> DataProvider<T, C> withConvertedFilter(SerializableFunction<C, F> filterConverter) {
+        Objects.requireNonNull(filterConverter, "Filter converter can't be null");
         return new DataProviderWrapper<T, C, F>(this) {
             @Override
             protected F getFilter(Query<T, C> query) {
@@ -212,19 +191,16 @@ public interface DataProvider<T, F> extends Serializable {
     }
 
     /**
-     * Wraps this data provider to create a data provider that supports
-     * programmatically setting a filter that will be combined with a filter
-     * provided through the query.
+     * Wraps this data provider to create a data provider that supports programmatically setting a filter that will be
+     * combined with a filter provided through the query.
      *
      * @see #withConfigurableFilter()
      * @see ConfigurableFilterDataProvider#setFilter(Object)
      *
      * @param filterCombiner
-     *            a callback for combining and the configured filter with the
-     *            filter from the query to get a filter to pass to the wrapped
-     *            provider. Either parameter might be <code>null</code>, but the
-     *            callback will not be invoked at all if both would be
-     *            <code>null</code>. Not <code>null</code>.
+     *            a callback for combining and the configured filter with the filter from the query to get a filter to
+     *            pass to the wrapped provider. Either parameter might be <code>null</code>, but the callback will not
+     *            be invoked at all if both would be <code>null</code>. Not <code>null</code>.
      *
      * @param <Q>
      *            the query filter type
@@ -238,15 +214,14 @@ public interface DataProvider<T, F> extends Serializable {
         return new ConfigurableFilterDataProviderWrapper<T, Q, C, F>(this) {
             @Override
             protected F combineFilters(Q queryFilter, C configuredFilter) {
-                return FilterUtils.combineFilters(filterCombiner, queryFilter,
-                        configuredFilter);
+                return FilterUtils.combineFilters(filterCombiner, queryFilter, configuredFilter);
             }
         };
     }
 
     /**
-     * Wraps this data provider to create a data provider that supports
-     * programmatically setting a filter but no filtering through the query.
+     * Wraps this data provider to create a data provider that supports programmatically setting a filter but no
+     * filtering through the query.
      *
      * @see #withConfigurableFilter(SerializableBiFunction)
      * @see ConfigurableFilterDataProvider#setFilter(Object)
@@ -264,9 +239,8 @@ public interface DataProvider<T, F> extends Serializable {
     /**
      * Creates a new data provider backed by a collection.
      * <p>
-     * The collection is used as-is. Changes in the collection will be visible
-     * via the created data provider. The caller should copy the collection if
-     * necessary.
+     * The collection is used as-is. Changes in the collection will be visible via the created data provider. The caller
+     * should copy the collection if necessary.
      *
      * @param <T>
      *            the data item type
@@ -281,8 +255,8 @@ public interface DataProvider<T, F> extends Serializable {
     /**
      * Creates a new data provider from the given items.
      * <p>
-     * The items are copied into a new backing list, so structural changes to
-     * the provided array will not be visible via the created data provider.
+     * The items are copied into a new backing list, so structural changes to the provided array will not be visible via
+     * the created data provider.
      *
      * @param <T>
      *            the data item type
@@ -296,17 +270,15 @@ public interface DataProvider<T, F> extends Serializable {
     }
 
     /**
-     * Creates a new data provider from the given stream. <b>All items in the
-     * stream are eagerly collected to a list.</b>
+     * Creates a new data provider from the given stream. <b>All items in the stream are eagerly collected to a
+     * list.</b>
      * <p>
-     * This is a shorthand for using {@link #ofCollection(Collection)} after
-     * collecting the items in the stream to a list with e.g.
-     * {@code stream.collect(Collectors.toList));}.
+     * This is a shorthand for using {@link #ofCollection(Collection)} after collecting the items in the stream to a
+     * list with e.g. {@code stream.collect(Collectors.toList));}.
      * <p>
-     * <strong>Using big streams is not recommended, you should instead use a
-     * lazy data provider.</strong> See
-     * {@link #fromCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)}
-     * or {@link BackEndDataProvider} for more info.
+     * <strong>Using big streams is not recommended, you should instead use a lazy data provider.</strong> See
+     * {@link #fromCallbacks(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)} or
+     * {@link BackEndDataProvider} for more info.
      *
      * @param <T>
      *            the data item type
@@ -319,49 +291,40 @@ public interface DataProvider<T, F> extends Serializable {
     }
 
     /**
-     * Creates a new data provider that uses filtering callbacks for fetching
-     * and counting items from any backing store.
+     * Creates a new data provider that uses filtering callbacks for fetching and counting items from any backing store.
      * <p>
-     * The query that is passed to each callback may contain a filter value that
-     * is provided by the component querying for data.
+     * The query that is passed to each callback may contain a filter value that is provided by the component querying
+     * for data.
      *
      * @param fetchCallback
-     *            function that returns a stream of items from the back end for
-     *            a query
+     *            function that returns a stream of items from the back end for a query
      * @param countCallback
-     *            function that returns the number of items in the back end for
-     *            a query
+     *            function that returns the number of items in the back end for a query
      * @param <T>
      *            data provider data type
      * @param <F>
      *            data provider filter type
      * @return a new callback data provider
      */
-    static <T, F> CallbackDataProvider<T, F> fromFilteringCallbacks(
-            FetchCallback<T, F> fetchCallback,
+    static <T, F> CallbackDataProvider<T, F> fromFilteringCallbacks(FetchCallback<T, F> fetchCallback,
             CountCallback<T, F> countCallback) {
         return new CallbackDataProvider<>(fetchCallback, countCallback);
     }
 
     /**
-     * Creates a new data provider that uses callbacks for fetching and counting
-     * items from any backing store.
+     * Creates a new data provider that uses callbacks for fetching and counting items from any backing store.
      * <p>
-     * The query that is passed to each callback will not contain any filter
-     * values.
+     * The query that is passed to each callback will not contain any filter values.
      *
      * @param fetchCallback
-     *            function that returns a stream of items from the back end for
-     *            a query
+     *            function that returns a stream of items from the back end for a query
      * @param countCallback
-     *            function that returns the number of items in the back end for
-     *            a query
+     *            function that returns the number of items in the back end for a query
      * @param <T>
      *            data provider data type
      * @return a new callback data provider
      */
-    static <T> CallbackDataProvider<T, Void> fromCallbacks(
-            FetchCallback<T, Void> fetchCallback,
+    static <T> CallbackDataProvider<T, Void> fromCallbacks(FetchCallback<T, Void> fetchCallback,
             CountCallback<T, Void> countCallback) {
         return fromFilteringCallbacks(fetchCallback, countCallback);
     }

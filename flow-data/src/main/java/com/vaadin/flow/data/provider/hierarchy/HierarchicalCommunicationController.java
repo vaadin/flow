@@ -82,8 +82,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
     private boolean hasUniqueKeyProviderSupplier;
 
     /**
-     * Constructs communication controller with support for hierarchical data
-     * structure.
+     * Constructs communication controller with support for hierarchical data structure.
      *
      * @param parentKey
      *            parent key or null if root
@@ -96,12 +95,10 @@ public class HierarchicalCommunicationController<T> implements Serializable {
      * @param startUpdate
      *            Function for creating a new {@link Update} for client
      * @param fetchItems
-     *            Function for fetching items for target parent and specified
-     *            range
+     *            Function for fetching items for target parent and specified range
      */
-    public HierarchicalCommunicationController(String parentKey,
-            DataKeyMapper<T> keyMapper, HierarchyMapper<T, ?> mapper,
-            DataGenerator<T> dataGenerator,
+    public HierarchicalCommunicationController(String parentKey, DataKeyMapper<T> keyMapper,
+            HierarchyMapper<T, ?> mapper, DataGenerator<T> dataGenerator,
             SerializableFunction<Integer, HierarchicalUpdate> startUpdate,
             SerializableBiFunction<String, Range, Stream<T>> fetchItems) {
         this.parentKey = parentKey;
@@ -117,25 +114,21 @@ public class HierarchicalCommunicationController<T> implements Serializable {
 
         assumedSize = mapper.countChildItems(keyMapper.get(parentKey));
 
-        final Range previousActive = Range.withLength(activeStart,
-                activeKeyOrder.size());
-        final Range effectiveRequested = requestedRange
-                .restrictTo(Range.withLength(0, assumedSize));
+        final Range previousActive = Range.withLength(activeStart, activeKeyOrder.size());
+        final Range effectiveRequested = requestedRange.restrictTo(Range.withLength(0, assumedSize));
 
         resendEntireRange |= !(previousActive.intersects(effectiveRequested)
                 || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
         // Phase 1: Find all items that the client should have
-        List<String> newActiveKeyOrder = collectKeysToFlush(previousActive,
-                effectiveRequested);
+        List<String> newActiveKeyOrder = collectKeysToFlush(previousActive, effectiveRequested);
 
         activeKeyOrder = newActiveKeyOrder;
         activeStart = effectiveRequested.getStart();
 
         // Phase 2: Collect changes to send
         HierarchicalUpdate update = startUpdate.apply(assumedSize);
-        boolean updated = collectChangesToSend(previousActive,
-                effectiveRequested, update);
+        boolean updated = collectChangesToSend(previousActive, effectiveRequested, update);
 
         resendEntireRange = false;
         assumeEmptyClient = false;
@@ -159,55 +152,46 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         resendEntireRange = resend;
     }
 
-    private boolean collectChangesToSend(final Range previousActive,
-            final Range effectiveRequested, HierarchicalUpdate update) {
+    private boolean collectChangesToSend(final Range previousActive, final Range effectiveRequested,
+            HierarchicalUpdate update) {
         boolean updated = false;
         if (assumeEmptyClient || resendEntireRange) {
             if (!assumeEmptyClient) {
                 /*
-                 * TODO: Not necessary to clear something that would be set back
-                 * a few lines later in the code.
+                 * TODO: Not necessary to clear something that would be set back a few lines later in the code.
                  *
-                 * It's not that straightforward because one has to care about
-                 * indexes aligned with pageSize (because of the code on the
-                 * client side).
+                 * It's not that straightforward because one has to care about indexes aligned with pageSize (because of
+                 * the code on the client side).
                  */
-                clear(previousActive.getStart(), previousActive.length(),
-                        update);
+                clear(previousActive.getStart(), previousActive.length(), update);
             }
 
             set(effectiveRequested, update);
             updated = true;
         } else if (!previousActive.equals(effectiveRequested)) {
             /*
-             * There are some parts common between what we have and what we
-             * should have, but the beginning and/or the end has too many or too
-             * few items.
+             * There are some parts common between what we have and what we should have, but the beginning and/or the
+             * end has too many or too few items.
              */
 
             // Clear previously active items missing from requested
-            withMissing(previousActive, effectiveRequested,
-                    range -> clear(range.getStart(), range.length(), update));
+            withMissing(previousActive, effectiveRequested, range -> clear(range.getStart(), range.length(), update));
 
             // Set requested items missing from previously active
-            withMissing(effectiveRequested, previousActive,
-                    range -> set(range, update));
+            withMissing(effectiveRequested, previousActive, range -> set(range, update));
             updated = true;
         }
         return updated;
     }
 
     private void set(Range effectiveRequested, HierarchicalUpdate update) {
-        if (effectiveRequested.isEmpty() || activeKeyOrder.isEmpty()
-                || effectiveRequested.getStart() >= assumedSize) {
+        if (effectiveRequested.isEmpty() || activeKeyOrder.isEmpty() || effectiveRequested.getStart() >= assumedSize) {
             return;
         }
         if (parentKey == null) {
-            update.set(effectiveRequested.getStart(),
-                    getJsonItems(effectiveRequested));
+            update.set(effectiveRequested.getStart(), getJsonItems(effectiveRequested));
         } else {
-            update.set(effectiveRequested.getStart(),
-                    getJsonItems(effectiveRequested), parentKey);
+            update.set(effectiveRequested.getStart(), getJsonItems(effectiveRequested), parentKey);
         }
     }
 
@@ -222,27 +206,23 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         }
     }
 
-    private List<String> collectKeysToFlush(final Range previousActive,
-            final Range effectiveRequested) {
+    private List<String> collectKeysToFlush(final Range previousActive, final Range effectiveRequested) {
         List<String> newActiveKeyOrder;
         /*
-         * Collecting all items even though only some small sub range would
-         * actually be useful can be optimized away once we have some actual
-         * test coverage for the logic here.
+         * Collecting all items even though only some small sub range would actually be useful can be optimized away
+         * once we have some actual test coverage for the logic here.
          */
         if (resendEntireRange) {
             newActiveKeyOrder = activate(effectiveRequested);
         } else {
-            Range[] partitionWith = effectiveRequested
-                    .partitionWith(previousActive);
+            Range[] partitionWith = effectiveRequested.partitionWith(previousActive);
 
             newActiveKeyOrder = new ArrayList<>();
             newActiveKeyOrder.addAll(activate(partitionWith[0]));
 
             // Pick existing items from the current list
             Range overlap = partitionWith[1].offsetBy(-activeStart);
-            newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(),
-                    overlap.getEnd()));
+            newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(), overlap.getEnd()));
 
             newActiveKeyOrder.addAll(activate(partitionWith[2]));
         }
@@ -272,14 +252,11 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         return activeKeys;
     }
 
-    private void passivateInactiveKeys(Set<String> oldActive,
-            List<String> newActiveKeyOrder, HierarchicalUpdate update,
+    private void passivateInactiveKeys(Set<String> oldActive, List<String> newActiveKeyOrder, HierarchicalUpdate update,
             boolean updated) {
         /*
-         * We cannot immediately unregister keys that we have asked the client
-         * to remove, since the client might send a message using that key
-         * before our message about removal arrives at the client and is
-         * applied.
+         * We cannot immediately unregister keys that we have asked the client to remove, since the client might send a
+         * message using that key before our message about removal arrives at the client and is applied.
          */
         if (updated) {
             int updateId = nextUpdateId++;
@@ -292,11 +269,9 @@ public class HierarchicalCommunicationController<T> implements Serializable {
 
             // Finally clear any passivated items that have now been confirmed
             /*
-             * Due to the implementation of AbstractSet#removeAll, if the size
-             * of newActiveKeyOrder is bigger than oldActive's size, then
-             * calling oldActive.removeAll(newActiveKeyOrder) would end up
-             * calling contains method for all of newActiveKeyOrder items which
-             * is a slow operation on lists. The following avoids that:
+             * Due to the implementation of AbstractSet#removeAll, if the size of newActiveKeyOrder is bigger than
+             * oldActive's size, then calling oldActive.removeAll(newActiveKeyOrder) would end up calling contains
+             * method for all of newActiveKeyOrder items which is a slow operation on lists. The following avoids that:
              */
             newActiveKeyOrder.forEach(oldActive::remove);
             if (!oldActive.isEmpty()) {
@@ -307,8 +282,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
 
     public void unregisterPassivatedKeys() {
         /*
-         * Actually unregister anything that was removed in an update that the
-         * client has confirmed that it has applied.
+         * Actually unregister anything that was removed in an update that the client has confirmed that it has applied.
          */
         if (!confirmedUpdates.isEmpty()) {
             confirmedUpdates.forEach(this::doUnregister);
@@ -321,8 +295,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         if (passivated != null) {
             passivated.forEach(key -> {
                 T item = keyMapper.get(key);
-                if (item != null && (hasUniqueKeyProviderSupplier
-                        || !mapper.isExpanded(item))) {
+                if (item != null && (hasUniqueKeyProviderSupplier || !mapper.isExpanded(item))) {
                     dataGenerator.destroyData(item);
                     keyMapper.remove(item);
                 }
@@ -331,10 +304,8 @@ public class HierarchicalCommunicationController<T> implements Serializable {
     }
 
     private List<JsonValue> getJsonItems(Range range) {
-        return range.stream()
-                .mapToObj(index -> activeKeyOrder.get(index - activeStart))
-                .map(keyMapper::get).map(this::generateJson)
-                .collect(Collectors.toList());
+        return range.stream().mapToObj(index -> activeKeyOrder.get(index - activeStart)).map(keyMapper::get)
+                .map(this::generateJson).collect(Collectors.toList());
     }
 
     public JsonValue generateJson(T item) {
@@ -344,21 +315,18 @@ public class HierarchicalCommunicationController<T> implements Serializable {
         return json;
     }
 
-    public void setHasUniqueKeyProviderSupplier(
-            boolean hasUniqueKeyProviderSupplier) {
+    public void setHasUniqueKeyProviderSupplier(boolean hasUniqueKeyProviderSupplier) {
         this.hasUniqueKeyProviderSupplier = hasUniqueKeyProviderSupplier;
     }
 
-    private static final void withMissing(Range expected, Range actual,
-            Consumer<Range> action) {
+    private static final void withMissing(Range expected, Range actual, Consumer<Range> action) {
         Range[] partition = expected.partitionWith(actual);
 
         applyIfNotEmpty(partition[0], action);
         applyIfNotEmpty(partition[2], action);
     }
 
-    private static final void applyIfNotEmpty(Range range,
-            Consumer<Range> action) {
+    private static final void applyIfNotEmpty(Range range, Consumer<Range> action) {
         if (!range.isEmpty()) {
             action.accept(range);
         }

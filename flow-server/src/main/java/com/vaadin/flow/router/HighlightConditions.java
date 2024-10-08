@@ -28,25 +28,21 @@ public final class HighlightConditions {
     }
 
     /**
-     * Highlight if the navigation path is the same as the target
-     * {@link RouterLink}.
+     * Highlight if the navigation path is the same as the target {@link RouterLink}.
      *
      * @return the highlight condition
      */
     public static HighlightCondition<RouterLink> sameLocation() {
-        return (link, event) -> event.getLocation().getPath()
-                .equals(link.getHref());
+        return (link, event) -> event.getLocation().getPath().equals(link.getHref());
     }
 
     /**
-     * Highlight if the navigation path starts with the target
-     * {@link RouterLink} path.
+     * Highlight if the navigation path starts with the target {@link RouterLink} path.
      *
      * @return the highlight condition
      */
     public static HighlightCondition<RouterLink> locationPrefix() {
-        return (link, event) -> link.getHref().isEmpty()
-                ? event.getLocation().getPath().isEmpty()
+        return (link, event) -> link.getHref().isEmpty() ? event.getLocation().getPath().isEmpty()
                 : event.getLocation().getPath().startsWith(link.getHref());
     }
 
@@ -59,10 +55,8 @@ public final class HighlightConditions {
      *            the prefix to match on the location path
      * @return the highlight condition
      */
-    public static <C extends HasElement> HighlightCondition<C> locationPrefix(
-            String prefix) {
-        return (component, event) -> event.getLocation().getPath()
-                .startsWith(prefix);
+    public static <C extends HasElement> HighlightCondition<C> locationPrefix(String prefix) {
+        return (component, event) -> event.getLocation().getPath().startsWith(prefix);
     }
 
     /**

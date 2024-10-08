@@ -44,8 +44,7 @@ public class JsonConstants implements Serializable {
     public static final String CHANGE_TYPE = "type";
 
     /**
-     * Change type for empty change (populate the feature on the client side
-     * only).
+     * Change type for empty change (populate the feature on the client side only).
      */
     public static final String CHANGE_TYPE_NOOP = "empty";
 
@@ -160,8 +159,7 @@ public class JsonConstants implements Serializable {
     public static final String RPC_EVENT_DATA = "data";
 
     /**
-     * Key used for data related to
-     * {@link Page#executeJs(String, Serializable...)} in UIDL messages.
+     * Key used for data related to {@link Page#executeJs(String, Serializable...)} in UIDL messages.
      */
     public static final String UIDL_KEY_EXECUTE = "execute";
 
@@ -196,14 +194,12 @@ public class JsonConstants implements Serializable {
     public static final String RPC_NAVIGATION_ROUTERLINK = "link";
 
     /**
-     * Type value for events sent from the client to an event handler published
-     * on the server.
+     * Type value for events sent from the client to an event handler published on the server.
      */
     public static final String RPC_PUBLISHED_SERVER_EVENT_HANDLER = "publishedEventHandler";
 
     /**
-     * Key used to hold the server side method name in template event messages
-     * sent from the client.
+     * Key used to hold the server side method name in template event messages sent from the client.
      */
     public static final String RPC_TEMPLATE_EVENT_METHOD_NAME = "templateEventMethodName";
 
@@ -221,8 +217,8 @@ public class JsonConstants implements Serializable {
     public static final String RPC_TEMPLATE_EVENT_PROMISE = "promise";
 
     /**
-     * Name of the $server property that is used to track pending promises. The
-     * name is chosen to avoid conflicts with genuine $server method names.
+     * Name of the $server property that is used to track pending promises. The name is chosen to avoid conflicts with
+     * genuine $server method names.
      */
     public static final String RPC_PROMISE_CALLBACK_NAME = "}p";
 
@@ -247,14 +243,12 @@ public class JsonConstants implements Serializable {
     public static final String RPC_ATTACH_EXISTING_ELEMENT_BY_ID = "attachExistingElementById";
 
     /**
-     * Key used to hold requested state node identifier for attach existing
-     * element request.
+     * Key used to hold requested state node identifier for attach existing element request.
      */
     public static final String RPC_ATTACH_REQUESTED_ID = "attachReqId";
 
     /**
-     * Key used to hold assigned state node identifier for attach existing
-     * element request.
+     * Key used to hold assigned state node identifier for attach existing element request.
      */
     public static final String RPC_ATTACH_ASSIGNED_ID = "attachAssignedId";
 
@@ -264,8 +258,7 @@ public class JsonConstants implements Serializable {
     public static final String RPC_ATTACH_TAG_NAME = "attachTagName";
 
     /**
-     * Key used to hold index of server side element for attach existing element
-     * request.
+     * Key used to hold index of server side element for attach existing element request.
      */
     public static final String RPC_ATTACH_INDEX = "attachIndex";
 
@@ -308,22 +301,19 @@ public class JsonConstants implements Serializable {
     public static final String EVENT_PHASE_TRAILING = "trailing";
 
     /**
-     * Token used as an event data expression to represent that properties
-     * should be synchronized. The token is chosen to avoid collisions with
-     * regular event data expressions by using a character that cannot be the
-     * start of a valid JS expression.
+     * Token used as an event data expression to represent that properties should be synchronized. The token is chosen
+     * to avoid collisions with regular event data expressions by using a character that cannot be the start of a valid
+     * JS expression.
      */
     public static final String SYNCHRONIZE_PROPERTY_TOKEN = "}";
 
     /**
-     * Token used as an event data expression or prefix to an event data
-     * expression to represent that the state node ID should be fetched for the
-     * element, or its closest parent, that corresponds to {@code event.target}
-     * or the element returned by the evaluated expression.
+     * Token used as an event data expression or prefix to an event data expression to represent that the state node ID
+     * should be fetched for the element, or its closest parent, that corresponds to {@code event.target} or the element
+     * returned by the evaluated expression.
      * <p>
-     * The token is chosen to avoid collisions with regular event data
-     * expressions by using a character that cannot be the start of a valid JS
-     * expression.
+     * The token is chosen to avoid collisions with regular event data expressions by using a character that cannot be
+     * the start of a valid JS expression.
      *
      * @since 9.0
      */

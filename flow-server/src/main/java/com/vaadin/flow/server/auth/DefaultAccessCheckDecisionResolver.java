@@ -27,9 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Default implementation of {@link AccessCheckDecisionResolver} that allow
- * access only if input results are all ALLOW, or a combination of ALLOW and
- * NEUTRAL. In any other case the access is DENIED.
+ * Default implementation of {@link AccessCheckDecisionResolver} that allow access only if input results are all ALLOW,
+ * or a combination of ALLOW and NEUTRAL. In any other case the access is DENIED.
  * <p>
  *
  * <pre>
@@ -45,59 +44,48 @@ import org.slf4j.LoggerFactory;
  *
  * <p>
  * </p>
- * Almost the same rule applies also if the evaluation happens during error
- * handling phase ({@link NavigationContext#isErrorHandling()} is
- * {@literal true}), with a single exception: in this case, if all the results
- * are {@literal NEUTRAL} the access is granted because the target of the
- * navigation is supposed to be an error handler component and not a view with
- * sensible information.
+ * Almost the same rule applies also if the evaluation happens during error handling phase
+ * ({@link NavigationContext#isErrorHandling()} is {@literal true}), with a single exception: in this case, if all the
+ * results are {@literal NEUTRAL} the access is granted because the target of the navigation is supposed to be an error
+ * handler component and not a view with sensible information.
  * <p>
  * </p>
- * It should be noted that the above situation never occurs if the
- * {@link AnnotatedViewAccessChecker} is enabled because it computes only ALLOW
- * or DENY results.
+ * It should be noted that the above situation never occurs if the {@link AnnotatedViewAccessChecker} is enabled because
+ * it computes only ALLOW or DENY results.
  *
  */
-public class DefaultAccessCheckDecisionResolver
-        implements AccessCheckDecisionResolver {
+public class DefaultAccessCheckDecisionResolver implements AccessCheckDecisionResolver {
 
-    public static final Logger LOGGER = LoggerFactory
-            .getLogger(DefaultAccessCheckDecisionResolver.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(DefaultAccessCheckDecisionResolver.class);
 
     @Override
-    public AccessCheckResult resolve(List<AccessCheckResult> results,
-            NavigationContext context) {
+    public AccessCheckResult resolve(List<AccessCheckResult> results, NavigationContext context) {
         Class<?> navigationTarget = context.getNavigationTarget();
         String path = context.getLocation().getPath();
-        Map<AccessCheckDecision, List<AccessCheckResult>> resultsByDecision = results
-                .stream()
+        Map<AccessCheckDecision, List<AccessCheckResult>> resultsByDecision = results.stream()
                 .collect(Collectors.groupingBy(AccessCheckResult::decision));
-        int neutralVotes = Optional
-                .ofNullable(
-                        resultsByDecision.remove(AccessCheckDecision.NEUTRAL))
+        int neutralVotes = Optional.ofNullable(resultsByDecision.remove(AccessCheckDecision.NEUTRAL))
                 .map(Collection::size).orElse(0);
 
-        String denyReasons = resultsByDecision
-                .getOrDefault(AccessCheckDecision.DENY, List.of()).stream()
+        String denyReasons = resultsByDecision.getOrDefault(AccessCheckDecision.DENY, List.of()).stream()
                 .map(AccessCheckResult::reason).filter(Objects::nonNull)
                 .collect(Collectors.joining(System.lineSeparator()));
 
         if (resultsByDecision.size() == 1) {
             // Unanimous consensus
-            AccessCheckDecision decision = resultsByDecision.keySet().iterator()
-                    .next();
+            AccessCheckDecision decision = resultsByDecision.keySet().iterator().next();
             int votes = resultsByDecision.get(decision).size();
             if (decision == AccessCheckDecision.ALLOW) {
-                LOGGER.debug("Access to view '{}' with path '{}' allowed by "
-                        + "{} out of {} navigation checkers  ({} neutral).",
-                        navigationTarget.getName(), path, votes, results.size(),
-                        neutralVotes);
+                LOGGER.debug(
+                        "Access to view '{}' with path '{}' allowed by "
+                                + "{} out of {} navigation checkers  ({} neutral).",
+                        navigationTarget.getName(), path, votes, results.size(), neutralVotes);
                 return context.allow();
             } else {
-                LOGGER.debug("Access to view '{}' with path '{}' denied by "
-                        + "{} out of {} navigation checkers  ({} neutral).",
-                        navigationTarget.getName(), path, votes, results.size(),
-                        neutralVotes);
+                LOGGER.debug(
+                        "Access to view '{}' with path '{}' denied by "
+                                + "{} out of {} navigation checkers  ({} neutral).",
+                        navigationTarget.getName(), path, votes, results.size(), neutralVotes);
             }
         } else if (resultsByDecision.isEmpty()) {
             // All checkers are neutral
@@ -114,19 +102,17 @@ public class DefaultAccessCheckDecisionResolver
             LOGGER.debug(
                     "Access to view '{}' with path '{}' denied because "
                             + "{} out of {} navigation checkers are neutral.",
-                    navigationTarget.getName(), path, results.size(),
-                    results.size());
+                    navigationTarget.getName(), path, results.size(), results.size());
         } else {
             // Mixed consensus
-            String summary = resultsByDecision.entrySet().stream()
-                    .map(e -> e.getKey() + " = " + e.getValue().size())
+            String summary = resultsByDecision.entrySet().stream().map(e -> e.getKey() + " = " + e.getValue().size())
                     .collect(Collectors.joining(", ", "Votes: ", ""));
             if (neutralVotes > 0) {
-                summary += ", " + AccessCheckDecision.NEUTRAL + " = "
-                        + neutralVotes;
+                summary += ", " + AccessCheckDecision.NEUTRAL + " = " + neutralVotes;
             }
-            LOGGER.warn("Access to view '{}' with path '{}' blocked because "
-                    + "there is no unanimous consensus from the navigation checkers. {}.",
+            LOGGER.warn(
+                    "Access to view '{}' with path '{}' blocked because "
+                            + "there is no unanimous consensus from the navigation checkers. {}.",
                     navigationTarget.getName(), path, summary);
             return context.reject(String.format(
                     "Mixed consensus from navigation checkers for view '%s'"

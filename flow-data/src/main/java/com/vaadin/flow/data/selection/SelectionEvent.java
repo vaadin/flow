@@ -22,9 +22,8 @@ import java.util.Set;
 import com.vaadin.flow.component.Component;
 
 /**
- * A selection event that unifies the way to access to selection event for multi
- * selection and single selection components (in case when only one selected
- * item is required).
+ * A selection event that unifies the way to access to selection event for multi selection and single selection
+ * components (in case when only one selected item is required).
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -38,8 +37,7 @@ public interface SelectionEvent<C extends Component, T> extends Serializable {
     /**
      * Get first selected data item.
      * <p>
-     * This is the same as {@link SingleSelectionEvent#getSelectedItem()} in
-     * case of single selection.
+     * This is the same as {@link SingleSelectionEvent#getSelectedItem()} in case of single selection.
      *
      * @return the first selected item.
      */
@@ -48,8 +46,8 @@ public interface SelectionEvent<C extends Component, T> extends Serializable {
     /**
      * Gets all the currently selected items.
      * <p>
-     * This method applies more to multiselection - for single select it returns
-     * either an empty set or a set containing the only selected item.
+     * This method applies more to multiselection - for single select it returns either an empty set or a set containing
+     * the only selected item.
      *
      * @return return all the selected items, if any, never {@code null}
      */
@@ -65,8 +63,7 @@ public interface SelectionEvent<C extends Component, T> extends Serializable {
     /**
      * Checks if this event originated from the client side.
      *
-     * @return <code>true</code> if the event originated from the client side,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the event originated from the client side, <code>false</code> otherwise
      */
     boolean isFromClient();
 }

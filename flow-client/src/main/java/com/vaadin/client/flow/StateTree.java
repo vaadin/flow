@@ -67,15 +67,12 @@ public class StateTree {
      * Mark this tree as being updated.
      *
      * @param updateInProgress
-     *            <code>true</code> if the tree is being updated,
-     *            <code>false</code> if not
+     *            <code>true</code> if the tree is being updated, <code>false</code> if not
      * @see #isUpdateInProgress()
      */
     public void setUpdateInProgress(boolean updateInProgress) {
-        assert this.updateInProgress != updateInProgress
-                : "Inconsistent state tree updating status, expected "
-                        + (updateInProgress ? "no " : "")
-                        + " updates in progress.";
+        assert this.updateInProgress != updateInProgress : "Inconsistent state tree updating status, expected "
+                + (updateInProgress ? "no " : "") + " updates in progress.";
         this.updateInProgress = updateInProgress;
 
         getRegistry().getInitialPropertiesHandler().flushPropertyUpdates();
@@ -117,8 +114,7 @@ public class StateTree {
     }
 
     /**
-     * Unregisters a node from this tree. Once the node has been unregistered,
-     * it can't be registered again.
+     * Unregisters a node from this tree. Once the node has been unregistered, it can't be registered again.
      *
      * @param node
      *            the node to unregister
@@ -132,20 +128,17 @@ public class StateTree {
     }
 
     /**
-     * Unregisters all nodes except root from this tree, and clears the root's
-     * features. Use to reset the tree in preparation for rebuilding it in in a
-     * resynchronization response.
+     * Unregisters all nodes except root from this tree, and clears the root's features. Use to reset the tree in
+     * preparation for rebuilding it in in a resynchronization response.
      */
     public void prepareForResync() {
-        rootNode.getList(NodeFeatures.VIRTUAL_CHILDREN)
-                .forEach(sn -> clearLists((StateNode) sn));
+        rootNode.getList(NodeFeatures.VIRTUAL_CHILDREN).forEach(sn -> clearLists((StateNode) sn));
         clearLists(rootNode);
 
         idToNode.forEach((node, b) -> {
             if (node != rootNode) {
                 final Node dom = node.getDomNode();
-                if (dom != null
-                        && ServerEventObject.getIfPresent(dom) != null) {
+                if (dom != null && ServerEventObject.getIfPresent(dom) != null) {
                     // reject any promise waiting on this node
                     ServerEventObject.getIfPresent(dom).rejectPromises();
                 }
@@ -176,11 +169,9 @@ public class StateTree {
     }
 
     /**
-     * Returns the state node in the tree for the given dom node or {@code null}
-     * if none found.
+     * Returns the state node in the tree for the given dom node or {@code null} if none found.
      * <p>
-     * Comparison is done with Node.isSameNode() method which is same as
-     * {@code ===} comparison.
+     * Comparison is done with Node.isSameNode() method which is same as {@code ===} comparison.
      *
      * @param domNode
      *            the dom node to find state node for
@@ -213,26 +204,22 @@ public class StateTree {
     }
 
     /**
-     * Verifies that the provided node is not null and properly registered with
-     * this state tree.
+     * Verifies that the provided node is not null and properly registered with this state tree.
      *
      * @param node
      *            the node to test
-     * @return always <code>true</code>, for use with the <code>assert</code>
-     *         keyword
+     * @return always <code>true</code>, for use with the <code>assert</code> keyword
      */
     private boolean assertValidNode(StateNode node) {
         assert node != null : "Node is null";
         assert node.getTree() == this : "Node is not created for this tree";
-        assert node == getNode(node.getId())
-                : "Node id is not registered with this tree";
+        assert node == getNode(node.getId()) : "Node id is not registered with this tree";
 
         return true;
     }
 
     /**
-     * Validates that the provided node is not null and is properly registered
-     * for this state tree.
+     * Validates that the provided node is not null and is properly registered for this state tree.
      * <p>
      * Logs a warning if there was a problem with the node.
      *
@@ -261,8 +248,7 @@ public class StateTree {
      *
      * @param id
      *            the id
-     * @return the node with the given id, or <code>null</code> if no such node
-     *         is registered.
+     * @return the node with the given id, or <code>null</code> if no such node is registered.
      */
     public StateNode getNode(int id) {
         Double key = Double.valueOf(id);
@@ -289,11 +275,9 @@ public class StateTree {
      * @param eventData
      *            extra data associated with the event
      */
-    public void sendEventToServer(StateNode node, String eventType,
-            JsonObject eventData) {
+    public void sendEventToServer(StateNode node, String eventType, JsonObject eventData) {
         if (isValidNode(node)) {
-            registry.getServerConnector().sendEventMessage(node, eventType,
-                    eventData);
+            registry.getServerConnector().sendEventMessage(node, eventType, eventData);
         }
     }
 
@@ -301,8 +285,7 @@ public class StateTree {
      * Sends a map property sync to the server.
      *
      * @param property
-     *            the property that should have its value synced to the server,
-     *            not <code>null</code>
+     *            the property that should have its value synced to the server, not <code>null</code>
      */
     public void sendNodePropertySyncToServer(MapProperty property) {
         assert property != null;
@@ -310,39 +293,33 @@ public class StateTree {
         NodeMap nodeMap = property.getMap();
         StateNode node = nodeMap.getNode();
 
-        if (getRegistry().getInitialPropertiesHandler()
-                .handlePropertyUpdate(property) || !isValidNode(node)) {
+        if (getRegistry().getInitialPropertiesHandler().handlePropertyUpdate(property) || !isValidNode(node)) {
             return;
         }
 
-        registry.getServerConnector().sendNodeSyncMessage(node, nodeMap.getId(),
-                property.getName(), property.getValue());
+        registry.getServerConnector().sendNodeSyncMessage(node, nodeMap.getId(), property.getName(),
+                property.getValue());
     }
 
     /**
-     * Sends a request to call server side method with {@code methodName} using
-     * {@code argsArray} as argument values.
+     * Sends a request to call server side method with {@code methodName} using {@code argsArray} as argument values.
      * <p>
-     * In cases when the state tree has been changed and we receive a delayed or
-     * deferred template event the event is just ignored.
+     * In cases when the state tree has been changed and we receive a delayed or deferred template event the event is
+     * just ignored.
      *
      * @param node
-     *            the node referring to the server side instance containing the
-     *            method
+     *            the node referring to the server side instance containing the method
      * @param methodName
      *            the method name
      * @param argsArray
      *            the arguments array for the method
      * @param promiseId
-     *            the promise id to use for getting the result back, or -1 if no
-     *            result is expected
+     *            the promise id to use for getting the result back, or -1 if no result is expected
      */
-    public void sendTemplateEventToServer(StateNode node, String methodName,
-            JsArray<?> argsArray, int promiseId) {
+    public void sendTemplateEventToServer(StateNode node, String methodName, JsArray<?> argsArray, int promiseId) {
         if (isValidNode(node)) {
             JsonArray array = WidgetUtil.crazyJsCast(argsArray);
-            registry.getServerConnector().sendTemplateEventMessage(node,
-                    methodName, array, promiseId);
+            registry.getServerConnector().sendTemplateEventMessage(node, methodName, array, promiseId);
         }
     }
 
@@ -354,19 +331,18 @@ public class StateTree {
      * @param requestedId
      *            originally requested id of a server side node
      * @param assignedId
-     *            identifier which should be used on the server side for the
-     *            element (instead of requestedId)
+     *            identifier which should be used on the server side for the element (instead of requestedId)
      * @param tagName
      *            the requested tagName
      * @param index
      *            the index of the element on the server side
      */
-    public void sendExistingElementAttachToServer(StateNode parent,
-            int requestedId, int assignedId, String tagName, int index) {
+    public void sendExistingElementAttachToServer(StateNode parent, int requestedId, int assignedId, String tagName,
+            int index) {
         assert assertValidNode(parent);
 
-        registry.getServerConnector().sendExistingElementAttachToServer(parent,
-                requestedId, assignedId, tagName, index);
+        registry.getServerConnector().sendExistingElementAttachToServer(parent, requestedId, assignedId, tagName,
+                index);
     }
 
     /**
@@ -377,17 +353,14 @@ public class StateTree {
      * @param requestedId
      *            originally requested id of a server side node
      * @param assignedId
-     *            identifier which should be used on the server side for the
-     *            element (instead of requestedId)
+     *            identifier which should be used on the server side for the element (instead of requestedId)
      * @param id
      *            id of requested element
      */
-    public void sendExistingElementWithIdAttachToServer(StateNode parent,
-            int requestedId, int assignedId, String id) {
+    public void sendExistingElementWithIdAttachToServer(StateNode parent, int requestedId, int assignedId, String id) {
         assert assertValidNode(parent);
 
-        registry.getServerConnector().sendExistingElementWithIdAttachToServer(
-                parent, requestedId, assignedId, id);
+        registry.getServerConnector().sendExistingElementWithIdAttachToServer(parent, requestedId, assignedId, id);
     }
 
     /**
@@ -411,12 +384,10 @@ public class StateTree {
             return true;
         }
         NodeMap visibilityMap = node.getMap(NodeFeatures.ELEMENT_DATA);
-        Boolean visibility = (Boolean) visibilityMap
-                .getProperty(NodeProperties.VISIBLE).getValue();
+        Boolean visibility = (Boolean) visibilityMap.getProperty(NodeProperties.VISIBLE).getValue();
 
         /*
-         * Absence of value or "true" means that the node should be visible. So
-         * only "false" means "hide".
+         * Absence of value or "true" means that the node should be visible. So only "false" means "hide".
          */
         return !Boolean.FALSE.equals(visibility);
     }
@@ -451,51 +422,28 @@ public class StateTree {
             // GWT does not allow to call Class::getFields method, so we cannot
             // use reflection to fill the map automatically
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_DATA, "elementData");
-            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_PROPERTIES,
-                    "elementProperties");
-            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_CHILDREN,
-                    "elementChildren");
-            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_ATTRIBUTES,
-                    "elementAttributes");
-            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_LISTENERS,
-                    "elementListeners");
-            nodeFeatureDebugName.set(NodeFeatures.UI_PUSHCONFIGURATION,
-                    "pushConfiguration");
-            nodeFeatureDebugName.set(
-                    NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS,
-                    "pushConfigurationParameters");
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_PROPERTIES, "elementProperties");
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_CHILDREN, "elementChildren");
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_ATTRIBUTES, "elementAttributes");
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_LISTENERS, "elementListeners");
+            nodeFeatureDebugName.set(NodeFeatures.UI_PUSHCONFIGURATION, "pushConfiguration");
+            nodeFeatureDebugName.set(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS, "pushConfigurationParameters");
             nodeFeatureDebugName.set(NodeFeatures.TEXT_NODE, "textNode");
-            nodeFeatureDebugName.set(NodeFeatures.POLL_CONFIGURATION,
-                    "pollConfiguration");
-            nodeFeatureDebugName.set(
-                    NodeFeatures.RECONNECT_DIALOG_CONFIGURATION,
-                    "reconnectDialogConfiguration");
-            nodeFeatureDebugName.set(
-                    NodeFeatures.LOADING_INDICATOR_CONFIGURATION,
-                    "loadingIndicatorConfiguration");
+            nodeFeatureDebugName.set(NodeFeatures.POLL_CONFIGURATION, "pollConfiguration");
+            nodeFeatureDebugName.set(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION, "reconnectDialogConfiguration");
+            nodeFeatureDebugName.set(NodeFeatures.LOADING_INDICATOR_CONFIGURATION, "loadingIndicatorConfiguration");
             nodeFeatureDebugName.set(NodeFeatures.CLASS_LIST, "classList");
-            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
-                    "elementStyleProperties");
-            nodeFeatureDebugName.set(NodeFeatures.COMPONENT_MAPPING,
-                    "componentMapping");
-            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELLIST,
-                    "modelList");
-            nodeFeatureDebugName.set(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                    "polymerServerEventHandlers");
-            nodeFeatureDebugName.set(NodeFeatures.POLYMER_EVENT_LISTENERS,
-                    "polymerEventListenerMap");
-            nodeFeatureDebugName.set(NodeFeatures.CLIENT_DELEGATE_HANDLERS,
-                    "clientDelegateHandlers");
-            nodeFeatureDebugName.set(NodeFeatures.SHADOW_ROOT_DATA,
-                    "shadowRootData");
-            nodeFeatureDebugName.set(NodeFeatures.SHADOW_ROOT_HOST,
-                    "shadowRootHost");
-            nodeFeatureDebugName.set(NodeFeatures.ATTACH_EXISTING_ELEMENT,
-                    "attachExistingElementFeature");
-            nodeFeatureDebugName.set(NodeFeatures.VIRTUAL_CHILDREN,
-                    "virtualChildrenList");
-            nodeFeatureDebugName.set(NodeFeatures.BASIC_TYPE_VALUE,
-                    "basicTypeValue");
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES, "elementStyleProperties");
+            nodeFeatureDebugName.set(NodeFeatures.COMPONENT_MAPPING, "componentMapping");
+            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELLIST, "modelList");
+            nodeFeatureDebugName.set(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS, "polymerServerEventHandlers");
+            nodeFeatureDebugName.set(NodeFeatures.POLYMER_EVENT_LISTENERS, "polymerEventListenerMap");
+            nodeFeatureDebugName.set(NodeFeatures.CLIENT_DELEGATE_HANDLERS, "clientDelegateHandlers");
+            nodeFeatureDebugName.set(NodeFeatures.SHADOW_ROOT_DATA, "shadowRootData");
+            nodeFeatureDebugName.set(NodeFeatures.SHADOW_ROOT_HOST, "shadowRootHost");
+            nodeFeatureDebugName.set(NodeFeatures.ATTACH_EXISTING_ELEMENT, "attachExistingElementFeature");
+            nodeFeatureDebugName.set(NodeFeatures.VIRTUAL_CHILDREN, "virtualChildrenList");
+            nodeFeatureDebugName.set(NodeFeatures.BASIC_TYPE_VALUE, "basicTypeValue");
         }
         if (nodeFeatureDebugName.has(id)) {
             return nodeFeatureDebugName.get(id);

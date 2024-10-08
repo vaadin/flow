@@ -15,12 +15,11 @@ public interface FragmentedMessageHolder extends Serializable {
      *            the resource to get the partial message from
      * @return the fragmented message being received or a new empty instance
      */
-    public FragmentedMessage getOrCreateFragmentedMessage(
-            AtmosphereResource resource);
+    public FragmentedMessage getOrCreateFragmentedMessage(AtmosphereResource resource);
 
     /**
-     * Clears the partial message that is currently being received. Should be
-     * called when the whole message has been received.
+     * Clears the partial message that is currently being received. Should be called when the whole message has been
+     * received.
      *
      * @param resource
      *            the related resource

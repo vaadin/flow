@@ -46,8 +46,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
- * An executor that it's run when the servlet context is initialised in dev-mode
- * or when flow-maven-plugin goals are run. It can chain a set of task to run.
+ * An executor that it's run when the servlet context is initialised in dev-mode or when flow-maven-plugin goals are
+ * run. It can chain a set of task to run.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -105,8 +105,7 @@ public class NodeTasks implements FallibleCommand {
     public NodeTasks(Options options) {
         // Lock file is created in the project root folder and not in target/ so
         // that Maven does not remove it
-        lockFile = new File(options.getNpmFolder(), ".vaadin-node-tasks.lock")
-                .toPath();
+        lockFile = new File(options.getNpmFolder(), ".vaadin-node-tasks.lock").toPath();
 
         ClassFinder classFinder = options.getClassFinder();
         FrontendDependenciesScanner frontendDependencies = null;
@@ -117,27 +116,22 @@ public class NodeTasks implements FallibleCommand {
             UsageStatistics.markAsUsed("flow/hotdeploy", null);
         }
 
-        if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate()
-                || options.isEnableConfigUpdate()) {
+        if (options.isEnablePackagesUpdate() || options.isEnableImportsUpdate() || options.isEnableConfigUpdate()) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(options);
 
             if (options.isProductionMode()) {
-                boolean needBuild = BundleValidationUtil.needsBuild(options,
-                        frontendDependencies,
+                boolean needBuild = BundleValidationUtil.needsBuild(options, frontendDependencies,
                         Mode.PRODUCTION_PRECOMPILED_BUNDLE);
                 options.withRunNpmInstall(needBuild);
                 options.withBundleBuild(needBuild);
                 if (!needBuild) {
                     commands.add(new TaskPrepareProdBundle(options));
-                    File prodBundle = ProdBundleUtils
-                            .getProdBundle(options.getNpmFolder());
+                    File prodBundle = ProdBundleUtils.getProdBundle(options.getNpmFolder());
                     if (prodBundle.exists()) {
-                        UsageStatistics.markAsUsed("flow/app-prod-bundle",
-                                null);
+                        UsageStatistics.markAsUsed("flow/app-prod-bundle", null);
                     } else {
-                        UsageStatistics.markAsUsed(
-                                "flow/prod-pre-compiled-bundle", null);
+                        UsageStatistics.markAsUsed("flow/prod-pre-compiled-bundle", null);
                     }
                 } else {
                     BundleUtils.copyPackageLockFromBundle(options);
@@ -148,11 +142,9 @@ public class NodeTasks implements FallibleCommand {
                 // determine if we need a rebuild as the check happens
                 // immediately
                 // and no update tasks are executed before it.
-                if (BundleValidationUtil.needsBuild(options,
-                        frontendDependencies, Mode.DEVELOPMENT_BUNDLE)) {
-                    commands.add(new TaskCleanFrontendFiles(
-                            options.getNpmFolder(),
-                            options.getFrontendDirectory(), classFinder));
+                if (BundleValidationUtil.needsBuild(options, frontendDependencies, Mode.DEVELOPMENT_BUNDLE)) {
+                    commands.add(new TaskCleanFrontendFiles(options.getNpmFolder(), options.getFrontendDirectory(),
+                            classFinder));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
                     BundleUtils.copyPackageLockFromBundle(options);
@@ -160,8 +152,7 @@ public class NodeTasks implements FallibleCommand {
                 } else {
                     // A dev bundle build is not needed after all, skip it
                     options.withBundleBuild(false);
-                    File devBundleFolder = DevBundleUtils.getDevBundleFolder(
-                            options.getNpmFolder(),
+                    File devBundleFolder = DevBundleUtils.getDevBundleFolder(options.getNpmFolder(),
                             options.getBuildDirectoryName());
                     if (devBundleFolder.exists()) {
                         UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
@@ -174,31 +165,24 @@ public class NodeTasks implements FallibleCommand {
             }
 
             if (options.isGenerateEmbeddableWebComponents()) {
-                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
-                        classFinder);
+                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(classFinder);
                 Set<File> webComponents = generator.generateWebComponents(
-                        FrontendUtils.getFlowGeneratedWebComponentsFolder(
-                                options.getFrontendDirectory()),
+                        FrontendUtils.getFlowGeneratedWebComponentsFolder(options.getFrontendDirectory()),
                         frontendDependencies.getThemeDefinition());
 
                 if (webComponents.size() > 0) {
                     commands.add(new TaskGenerateWebComponentHtml(options));
-                    commands.add(
-                            new TaskGenerateWebComponentBootstrap(options));
-                    webComponentTags = webComponents.stream().map(
-                            webComponentPath -> FilenameUtils.removeExtension(
-                                    webComponentPath.getName()))
+                    commands.add(new TaskGenerateWebComponentBootstrap(options));
+                    webComponentTags = webComponents.stream()
+                            .map(webComponentPath -> FilenameUtils.removeExtension(webComponentPath.getName()))
                             .collect(Collectors.toSet());
-                    UsageStatistics.markAsUsed(
-                            Constants.STATISTIC_HAS_EXPORTED_WC, null);
+                    UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_EXPORTED_WC, null);
                 }
             }
 
             TaskUpdatePackages packageUpdater = null;
-            if (options.isEnablePackagesUpdate()
-                    && options.getJarFrontendResourcesFolder() != null) {
-                packageUpdater = new TaskUpdatePackages(frontendDependencies,
-                        options);
+            if (options.isEnablePackagesUpdate() && options.getJarFrontendResourcesFolder() != null) {
+                packageUpdater = new TaskUpdatePackages(frontendDependencies, options);
                 commands.add(packageUpdater);
             }
 
@@ -215,14 +199,12 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (options.isCreateMissingPackageJson()) {
-            TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
-                    options);
+            TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(options);
             commands.add(packageCreator);
         }
 
         if (frontendDependencies != null) {
-            addGenerateServiceWorkerTask(options,
-                    frontendDependencies.getPwaConfiguration());
+            addGenerateServiceWorkerTask(options, frontendDependencies.getPwaConfiguration());
 
             if (options.isFrontendHotdeploy() || options.isBundleBuild()) {
                 addGenerateTsConfigTask(options);
@@ -239,13 +221,11 @@ public class NodeTasks implements FallibleCommand {
 
         commands.add(new TaskGenerateFeatureFlags(options));
 
-        if (options.getJarFiles() != null
-                && options.getJarFrontendResourcesFolder() != null) {
+        if (options.getJarFiles() != null && options.getJarFrontendResourcesFolder() != null) {
             commands.add(new TaskCopyFrontendFiles(options));
         }
 
-        if (options.getLocalResourcesFolder() != null
-                && options.getJarFrontendResourcesFolder() != null) {
+        if (options.getLocalResourcesFolder() != null && options.getJarFrontendResourcesFolder() != null) {
             commands.add(new TaskCopyLocalFrontendFiles(options));
         }
 
@@ -267,8 +247,7 @@ public class NodeTasks implements FallibleCommand {
         if (options.isEnableImportsUpdate()) {
             commands.add(new TaskUpdateImports(frontendDependencies, options));
 
-            commands.add(new TaskUpdateThemeImport(
-                    frontendDependencies.getThemeDefinition(), options));
+            commands.add(new TaskUpdateThemeImport(frontendDependencies.getThemeDefinition(), options));
         }
 
         if (options.isCopyTemplates()) {
@@ -282,8 +261,7 @@ public class NodeTasks implements FallibleCommand {
 
     private void addBootstrapTasks(Options options) {
         commands.add(new TaskGenerateIndexHtml(options));
-        if (options.isProductionMode() || options.isFrontendHotdeploy()
-                || options.isBundleBuild()) {
+        if (options.isProductionMode() || options.isFrontendHotdeploy() || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             commands.add(new TaskGenerateReactFiles(options));
             if (!options.isProductionMode()) {
@@ -294,35 +272,29 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addGenerateTsConfigTask(Options options) {
-        TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
-                options);
+        TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(options);
         commands.add(taskGenerateTsConfig);
 
-        TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
-                options);
+        TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(options);
         commands.add(taskGenerateTsDefinitions);
 
     }
 
-    private void addGenerateServiceWorkerTask(Options options,
-            PwaConfiguration pwaConfiguration) {
+    private void addGenerateServiceWorkerTask(Options options, PwaConfiguration pwaConfiguration) {
         if (pwaConfiguration.isEnabled()) {
             commands.add(new TaskGenerateServiceWorker(options));
         }
     }
 
     private void addEndpointServicesTasks(Options options) {
-        if (!FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
-                options.getClassFinder())) {
+        if (!FrontendUtils.isHillaUsed(options.getFrontendDirectory(), options.getClassFinder())) {
             return;
         }
         Lookup lookup = options.getLookup();
-        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
-                .lookup(EndpointGeneratorTaskFactory.class);
+        EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup.lookup(EndpointGeneratorTaskFactory.class);
 
         if (endpointGeneratorTaskFactory != null) {
-            TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
-                    .createTaskGenerateOpenAPI(options);
+            TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory.createTaskGenerateOpenAPI(options);
             commands.add(taskGenerateOpenAPI);
 
             if (options.getFrontendGeneratedFolder() != null) {
@@ -356,21 +328,17 @@ public class NodeTasks implements FallibleCommand {
             try {
                 lockInfo = readLockFile();
             } catch (Exception e) {
-                getLogger().error("Error waiting for another "
-                        + getClass().getSimpleName() + " process to finish", e);
+                getLogger().error("Error waiting for another " + getClass().getSimpleName() + " process to finish", e);
                 break;
             }
 
             try {
-                Optional<ProcessHandle> processHandle = ProcessHandle
-                        .of(lockInfo.pid());
+                Optional<ProcessHandle> processHandle = ProcessHandle.of(lockInfo.pid());
 
                 if (processHandle.isPresent()
-                        && normalizeCommandLine(processHandle.get().info())
-                                .equals(lockInfo.commandLine())) {
+                        && normalizeCommandLine(processHandle.get().info()).equals(lockInfo.commandLine())) {
                     if (!loggedWaiting) {
-                        getLogger().info("Waiting for a previous instance of "
-                                + getClass().getSimpleName() + " (pid: "
+                        getLogger().info("Waiting for a previous instance of " + getClass().getSimpleName() + " (pid: "
                                 + lockInfo.pid() + ") to finish...");
                         loggedWaiting = true;
                     }
@@ -383,14 +351,10 @@ public class NodeTasks implements FallibleCommand {
                 // Restore interrupted state
                 Thread.currentThread().interrupt();
 
-                throw new RuntimeException(
-                        "Interrupted while waiting for another "
-                                + getClass().getSimpleName() + " process (pid: "
-                                + lockInfo.pid() + ") to finish",
-                        e);
+                throw new RuntimeException("Interrupted while waiting for another " + getClass().getSimpleName()
+                        + " process (pid: " + lockInfo.pid() + ") to finish", e);
             } catch (Exception e) {
-                getLogger().error("Error waiting for another "
-                        + getClass().getSimpleName() + " process (pid: "
+                getLogger().error("Error waiting for another " + getClass().getSimpleName() + " process (pid: "
                         + lockInfo.pid() + ") to finish", e);
             }
         }
@@ -398,30 +362,26 @@ public class NodeTasks implements FallibleCommand {
         try {
             writeLockFile();
         } catch (IOException e) {
-            getLogger().error("Error writing lock file ({})",
-                    lockFile.toFile().getAbsolutePath(), e);
+            getLogger().error("Error writing lock file ({})", lockFile.toFile().getAbsolutePath(), e);
         }
     }
 
     private void releaseLock() {
         if (!lockFile.toFile().exists()) {
-            getLogger().warn("Somebody else has removed the lock file ({})",
-                    lockFile.toFile().getAbsolutePath());
+            getLogger().warn("Somebody else has removed the lock file ({})", lockFile.toFile().getAbsolutePath());
             return;
         }
 
         try {
             long pid = readLockFile().pid();
             if (pid != ProcessHandle.current().pid()) {
-                getLogger().warn(
-                        "Another process ({}) has overwritten the lock file ({})",
-                        pid, lockFile.toFile().getAbsolutePath());
+                getLogger().warn("Another process ({}) has overwritten the lock file ({})", pid,
+                        lockFile.toFile().getAbsolutePath());
                 return;
             }
             lockFile.toFile().delete();
         } catch (Exception e) {
-            getLogger().error("Error releasing lock file ({})",
-                    lockFile.toFile().getAbsolutePath());
+            getLogger().error("Error releasing lock file ({})", lockFile.toFile().getAbsolutePath());
         }
     }
 
@@ -429,17 +389,12 @@ public class NodeTasks implements FallibleCommand {
             String commandLine) implements Serializable {
     }
 
-    private NodeTasksLockInfo readLockFile()
-            throws NumberFormatException, IOException {
-        List<String> lines = Files.readAllLines(lockFile,
-                StandardCharsets.UTF_8);
+    private NodeTasksLockInfo readLockFile() throws NumberFormatException, IOException {
+        List<String> lines = Files.readAllLines(lockFile, StandardCharsets.UTF_8);
         if (lines.size() != 2) {
-            throw new IllegalStateException(
-                    "Invalid lock file. It should contain 2 rows but contains "
-                            + lines);
+            throw new IllegalStateException("Invalid lock file. It should contain 2 rows but contains " + lines);
         }
-        return new NodeTasksLockInfo(Long.parseLong(lines.get(0)),
-                lines.get(1));
+        return new NodeTasksLockInfo(Long.parseLong(lines.get(0)), lines.get(1));
     }
 
     private void writeLockFile() throws IOException {
@@ -451,8 +406,7 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private String normalizeCommandLine(ProcessHandle.Info processInfo) {
-        return processInfo.commandLine()
-                .map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
+        return processInfo.commandLine().map(line -> line.replaceAll("\\r?\\n", " \\\\n")).orElse("");
     }
 
     private Logger getLogger() {

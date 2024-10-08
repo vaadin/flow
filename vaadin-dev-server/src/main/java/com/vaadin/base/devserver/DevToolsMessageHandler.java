@@ -25,12 +25,10 @@ public interface DevToolsMessageHandler {
     /**
      * Called when a browser connects.
      * <p>
-     * This happens on each refresh but also when the application is opened in a
-     * new browser tab or window.
+     * This happens on each refresh but also when the application is opened in a new browser tab or window.
      *
      * @param devToolsInterface
-     *            for interaction with the development tools, e.g. sending a
-     *            message
+     *            for interaction with the development tools, e.g. sending a message
      */
     void handleConnect(DevToolsInterface devToolsInterface);
 
@@ -42,20 +40,16 @@ public interface DevToolsMessageHandler {
      * @param data
      *            the data received
      * @param devToolsInterface
-     *            for interaction with the development tools, e.g. sending a
-     *            message
-     * @return {@code true} if the message was handled and should not be passed
-     *         on to further handlers
+     *            for interaction with the development tools, e.g. sending a message
+     * @return {@code true} if the message was handled and should not be passed on to further handlers
      */
-    boolean handleMessage(String command, JsonObject data,
-            DevToolsInterface devToolsInterface);
+    boolean handleMessage(String command, JsonObject data, DevToolsInterface devToolsInterface);
 
     /**
      * Called when the browser connection disconnects.
      *
      * @param devToolsInterface
-     *            for interaction with the development tools, e.g. sending a
-     *            message
+     *            for interaction with the development tools, e.g. sending a message
      */
     default void handleDisconnect(DevToolsInterface devToolsInterface) {
     }

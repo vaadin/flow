@@ -26,8 +26,7 @@ public class PassThroughView extends Div implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        if ("reroute"
-                .equals(event.getRouteParameters().get("type").orElse(null))) {
+        if ("reroute".equals(event.getRouteParameters().get("type").orElse(null))) {
             event.rerouteTo(AdminView.class);
         } else {
             event.forwardTo(AdminView.class);

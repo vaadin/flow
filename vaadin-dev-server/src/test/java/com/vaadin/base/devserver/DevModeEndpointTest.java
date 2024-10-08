@@ -51,10 +51,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
     public void setup() throws Exception {
         super.setup();
         assertFalse("No DevModeHandler should be available at test start",
-                DevModeHandlerManager
-                        .getDevModeHandler(
-                                new VaadinServletContext(servletContext))
-                        .isPresent());
+                DevModeHandlerManager.getDevModeHandler(new VaadinServletContext(servletContext)).isPresent());
 
         createStubNode(false, true, baseDir);
         createStubViteServer("ready in 500 ms", 500, baseDir, true);
@@ -62,19 +59,15 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
 
-        ServletRegistration vaadinServletRegistration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration vaadinServletRegistration = Mockito.mock(ServletRegistration.class);
 
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(resourceProvider);
+        ResourceProvider resourceProvider = Mockito.mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class)).thenReturn(resourceProvider);
 
-        Mockito.when(vaadinServletRegistration.getClassName())
-                .thenReturn(VaadinServletSubClass.class.getName());
+        Mockito.when(vaadinServletRegistration.getClassName()).thenReturn(VaadinServletSubClass.class.getName());
 
         classes = new HashSet<>();
         classes.add(this.getClass());
@@ -88,12 +81,9 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
         registry.put("extra1", Mockito.mock(ServletRegistration.class));
         registry.put("foo", vaadinServletRegistration);
         registry.put("extra2", Mockito.mock(ServletRegistration.class));
-        Mockito.when(servletContext.getServletRegistrations())
-                .thenReturn(registry);
-        Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(servletContext.getClassLoader())
-                .thenReturn(this.getClass().getClassLoader());
+        Mockito.when(servletContext.getServletRegistrations()).thenReturn(registry);
+        Mockito.when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext.getClassLoader()).thenReturn(this.getClass().getClassLoader());
 
         FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
 
@@ -102,21 +92,16 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
 
     @Test
     public void should_generateOpenApi() throws Exception {
-        File generatedOpenApiJson = Paths
-                .get(baseDir, TARGET, "classes/com/vaadin/hilla/openapi.json")
-                .toFile();
+        File generatedOpenApiJson = Paths.get(baseDir, TARGET, "classes/com/vaadin/hilla/openapi.json").toFile();
 
         Assert.assertFalse(generatedOpenApiJson.exists());
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+        try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(), Mockito.any())).thenReturn(true);
             devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
         }
-        Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
-                generatedOpenApiJson.exists());
+        Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.", generatedOpenApiJson.exists());
     }
 
     @Test
@@ -126,23 +111,17 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
         // Not using `src/test/java` because there are invalid endpoint
         // names
         // in some tests
-        File src = new File(
-                getClass().getClassLoader().getResource("java").getFile());
-        Mockito.when(appConfig.getStringProperty(
-                Mockito.eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN),
-                Mockito.anyString())).thenReturn(src.getAbsolutePath());
+        File src = new File(getClass().getClassLoader().getResource("java").getFile());
+        Mockito.when(appConfig.getStringProperty(Mockito.eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN), Mockito.anyString()))
+                .thenReturn(src.getAbsolutePath());
 
-        File ts1 = new File(baseDir,
-                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "MyEndpoint.ts");
-        File ts2 = new File(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR
-                + "connect-client.default.ts");
+        File ts1 = new File(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "MyEndpoint.ts");
+        File ts2 = new File(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "connect-client.default.ts");
 
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+        try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(), Mockito.any())).thenReturn(true);
             devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();

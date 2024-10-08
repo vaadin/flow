@@ -49,15 +49,12 @@ public class ProjectHelpers {
     }
 
     /**
-     * Generates a unique pseudonymised hash string for the project in folder.
-     * Uses either pom.xml or settings.gradle.
+     * Generates a unique pseudonymised hash string for the project in folder. Uses either pom.xml or settings.gradle.
      *
      * @param projectFolder
-     *            Project root folder. Should contain either pom.xml or
-     *            settings.gradle.
-     * @return Pseudonymised hash id of project or
-     *         <code>DEFAULT_PROJECT_ID</code> if no valid project was found in
-     *         the folder.
+     *            Project root folder. Should contain either pom.xml or settings.gradle.
+     * @return Pseudonymised hash id of project or <code>DEFAULT_PROJECT_ID</code> if no valid project was found in the
+     *         folder.
      */
     static String generateProjectId(File projectFolder) {
         Document pom = MavenUtils.parsePomFileFromFolder(projectFolder);
@@ -73,19 +70,14 @@ public class ProjectHelpers {
         File gradleFile = new File(projectFolder, "settings.gradle");
         if (gradleFile.exists()) {
             try (Stream<String> stream = Files.lines(gradleFile.toPath())) {
-                String projectName = stream
-                        .filter(line -> line.contains("rootProject.name"))
-                        .findFirst()
+                String projectName = stream.filter(line -> line.contains("rootProject.name")).findFirst()
                         .orElse(StatisticsConstants.DEFAULT_PROJECT_ID);
                 if (projectName.contains("=")) {
-                    projectName = projectName
-                            .substring(projectName.indexOf("=") + 1)
-                            .replace('\'', ' ').trim();
+                    projectName = projectName.substring(projectName.indexOf("=") + 1).replace('\'', ' ').trim();
                 }
                 return "gradle" + createHash(projectName);
             } catch (IOException e) {
-                getLogger().debug("Failed to parse gradle project id from "
-                        + gradleFile.getPath(), e);
+                getLogger().debug("Failed to parse gradle project id from " + gradleFile.getPath(), e);
             }
         }
         return createHash(StatisticsConstants.DEFAULT_PROJECT_ID);
@@ -127,14 +119,12 @@ public class ProjectHelpers {
     /**
      * Get the source URL for the project.
      * <p>
-     * Looks for comment in either pom.xml or or settings.gradle that points
-     * back original source or repository of the project.
+     * Looks for comment in either pom.xml or or settings.gradle that points back original source or repository of the
+     * project.
      *
      * @param projectFolder
-     *            Project root folder. Should contain either pom.xml or
-     *            settings.gradle.
-     * @return URL of the project source or <code>MISSING_DATA</code>, if no
-     *         valid URL was found.
+     *            Project root folder. Should contain either pom.xml or settings.gradle.
+     * @return URL of the project source or <code>MISSING_DATA</code>, if no valid URL was found.
      */
     static String getProjectSource(File projectFolder) {
         try {
@@ -147,8 +137,7 @@ public class ProjectHelpers {
                 return projectSource;
             }
         } catch (Exception e) {
-            getLogger().debug("Failed to parse project id from "
-                    + projectFolder.toPath().toAbsolutePath(), e);
+            getLogger().debug("Failed to parse project id from " + projectFolder.toPath().toAbsolutePath(), e);
         }
         return StatisticsConstants.MISSING_DATA;
     }
@@ -178,31 +167,22 @@ public class ProjectHelpers {
             return null;
         }
         if (comment.contains(StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)) {
-            return comment.substring(comment
-                    .indexOf(StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
-                    + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT.length())
-                    .trim();
+            return comment.substring(comment.indexOf(StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
+                    + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT.length()).trim();
         } else if (comment.contains(StatisticsConstants.PROJECT_SOURCE_TEXT)) {
-            return comment
-                    .substring(comment
-                            .indexOf(StatisticsConstants.PROJECT_SOURCE_TEXT)
-                            + StatisticsConstants.PROJECT_SOURCE_TEXT.length())
-                    .trim();
+            return comment.substring(comment.indexOf(StatisticsConstants.PROJECT_SOURCE_TEXT)
+                    + StatisticsConstants.PROJECT_SOURCE_TEXT.length()).trim();
         }
 
         return null;
     }
 
-    private static String getGradleProjectSource(File projectFolder)
-            throws IOException {
+    private static String getGradleProjectSource(File projectFolder) throws IOException {
         File gradleFile = new File(projectFolder, "settings.gradle");
         if (gradleFile.exists()) {
             try (Stream<String> stream = Files.lines(gradleFile.toPath())) {
-                String comment = stream.filter(line -> line.contains(
-                        StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
-                        || line.contains(
-                                StatisticsConstants.PROJECT_SOURCE_TEXT))
-                        .findFirst().orElse(null);
+                String comment = stream.filter(line -> line.contains(StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
+                        || line.contains(StatisticsConstants.PROJECT_SOURCE_TEXT)).findFirst().orElse(null);
                 String projectSource = findProjectSource(comment);
                 if (projectSource != null) {
                     return projectSource;
@@ -216,12 +196,10 @@ public class ProjectHelpers {
     /**
      * Get Vaadin home directory.
      *
-     * @return File instance for Vaadin home folder. Does not check if the
-     *         folder exists.
+     * @return File instance for Vaadin home folder. Does not check if the folder exists.
      */
     public static File resolveVaadinHomeDirectory() {
-        String userHome = System
-                .getProperty(StatisticsConstants.PROPERTY_USER_HOME);
+        String userHome = System.getProperty(StatisticsConstants.PROPERTY_USER_HOME);
         return new File(userHome, StatisticsConstants.VAADIN_FOLDER_NAME);
     }
 
@@ -243,9 +221,7 @@ public class ProjectHelpers {
         if (vaadinHome == null) {
             try {
                 // Create a temp folder for data
-                vaadinHome = File.createTempFile(
-                        StatisticsConstants.VAADIN_FOLDER_NAME,
-                        UUID.randomUUID().toString());
+                vaadinHome = File.createTempFile(StatisticsConstants.VAADIN_FOLDER_NAME, UUID.randomUUID().toString());
                 FileUtils.forceMkdir(vaadinHome);
             } catch (IOException e) {
                 getLogger().debug("Failed to create temp directory ", e);

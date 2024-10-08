@@ -33,8 +33,7 @@ public class AbstractComponentIT extends ChromeBrowserTest {
     protected String getTestPath() {
         TestPath annotation = getClass().getAnnotation(TestPath.class);
         if (annotation == null) {
-            throw new IllegalStateException(
-                    "The test class should be annotated with @TestPath");
+            throw new IllegalStateException("The test class should be annotated with @TestPath");
         }
 
         String path = annotation.value();
@@ -50,8 +49,7 @@ public class AbstractComponentIT extends ChromeBrowserTest {
     }
 
     public String getProperty(WebElement element, String propertyName) {
-        Object result = executeScript(
-                "return arguments[0]." + propertyName + ";", element);
+        Object result = executeScript("return arguments[0]." + propertyName + ";", element);
         return result == null ? null : String.valueOf(result);
     }
 }

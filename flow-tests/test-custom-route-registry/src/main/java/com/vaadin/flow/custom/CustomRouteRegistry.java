@@ -35,13 +35,11 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
- * Custom routeRegistry implementation for use instead of
- * ApplicationRouteRegistry.
+ * Custom routeRegistry implementation for use instead of ApplicationRouteRegistry.
  *
  * Also implements ErrorRouteRegistry for showing error views if registered.
  */
-public class CustomRouteRegistry extends AbstractRouteRegistry
-        implements ErrorRouteRegistry {
+public class CustomRouteRegistry extends AbstractRouteRegistry implements ErrorRouteRegistry {
 
     private final VaadinContext context;
 
@@ -57,17 +55,14 @@ public class CustomRouteRegistry extends AbstractRouteRegistry
             attribute = context.getAttribute(RegistryWrapper.class);
 
             if (attribute == null) {
-                final CustomRouteRegistry registry = new CustomRouteRegistry(
-                        context);
+                final CustomRouteRegistry registry = new CustomRouteRegistry(context);
                 attribute = new RegistryWrapper(registry);
                 context.setAttribute(attribute);
 
                 // Get collected application routes
-                final ApplicationRouteRegistry instance = ApplicationRouteRegistry
-                        .getInstance(context);
+                final ApplicationRouteRegistry instance = ApplicationRouteRegistry.getInstance(context);
                 instance.getRegisteredRoutes().forEach(routeData -> {
-                    registry.setRoute(routeData.getTemplate(),
-                            routeData.getNavigationTarget(),
+                    registry.setRoute(routeData.getTemplate(), routeData.getNavigationTarget(),
                             routeData.getParentLayouts());
                 });
 
@@ -75,8 +70,7 @@ public class CustomRouteRegistry extends AbstractRouteRegistry
                 // views collected
                 Map<Class<? extends Exception>, Class<? extends Component>> map = new HashMap<>();
                 map.put(NotFoundException.class, CustomNotFoundView.class);
-                registry.configure(configuration -> map
-                        .forEach(configuration::setErrorRoute));
+                registry.configure(configuration -> map.forEach(configuration::setErrorRoute));
             }
         }
 
@@ -84,8 +78,7 @@ public class CustomRouteRegistry extends AbstractRouteRegistry
     }
 
     @Override
-    public Optional<ErrorTargetEntry> getErrorNavigationTarget(
-            Exception exception) {
+    public Optional<ErrorTargetEntry> getErrorNavigationTarget(Exception exception) {
         Optional<ErrorTargetEntry> result = searchByCause(exception);
         if (!result.isPresent()) {
             result = searchBySuperType(exception);
@@ -106,11 +99,9 @@ public class CustomRouteRegistry extends AbstractRouteRegistry
     }
 
     @Override
-    public void setRoute(String path,
-            Class<? extends Component> navigationTarget,
+    public void setRoute(String path, Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
-        getLogger().info("Added target '{}' for route '{}'",
-                navigationTarget.getSimpleName(), path);
+        getLogger().info("Added target '{}' for route '{}'", navigationTarget.getSimpleName(), path);
         super.setRoute(path, navigationTarget, parentChain);
     }
 

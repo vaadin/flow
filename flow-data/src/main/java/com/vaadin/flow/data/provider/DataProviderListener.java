@@ -31,13 +31,11 @@ import java.io.Serializable;
 public interface DataProviderListener<T> extends Serializable {
 
     /**
-     * Invoked when this listener receives a data change event from a data
-     * source to which it has been added.
+     * Invoked when this listener receives a data change event from a data source to which it has been added.
      * <p>
-     * This event is fired when something has changed in the underlying data. It
-     * doesn't allow to distinguish different kind of events
-     * (add/remove/update). It means that the method implementation normally
-     * just reloads the whole data to refresh.
+     * This event is fired when something has changed in the underlying data. It doesn't allow to distinguish different
+     * kind of events (add/remove/update). It means that the method implementation normally just reloads the whole data
+     * to refresh.
      *
      * @param event
      *            the received event, not null

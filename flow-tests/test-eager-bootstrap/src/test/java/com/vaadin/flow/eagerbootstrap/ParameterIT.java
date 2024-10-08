@@ -21,12 +21,9 @@ public class ParameterIT extends ChromeBrowserTest {
     @Test
     public void setParameterCalledAsExpected() {
         openWithParameter("foo");
-        Assert.assertEquals("setParameter called with: foo",
-                getParametersText());
+        Assert.assertEquals("setParameter called with: foo", getParametersText());
         $("*").id("barLink").click();
-        Assert.assertEquals(
-                "setParameter called with: foo\nsetParameter called with: bar",
-                getParametersText());
+        Assert.assertEquals("setParameter called with: foo\nsetParameter called with: bar", getParametersText());
     }
 
     private String getParametersText() {
@@ -35,8 +32,7 @@ public class ParameterIT extends ChromeBrowserTest {
 
     private int getInstance() {
         String instanceText = $("*").id("instance").getText();
-        return Integer
-                .parseInt(instanceText.replace("This is view instance ", ""));
+        return Integer.parseInt(instanceText.replace("This is view instance ", ""));
     }
 
 }

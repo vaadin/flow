@@ -94,8 +94,7 @@ public class HTMLTest {
 
     @Test
     public void rootSpecialAttributes() {
-        Html html = new Html(
-                "<span class='foo' style='color: red'>hello</span>");
+        Html html = new Html("<span class='foo' style='color: red'>hello</span>");
         Element element = html.getElement();
         Assert.assertEquals(Tag.SPAN, element.getTag());
 
@@ -107,8 +106,7 @@ public class HTMLTest {
 
     @Test
     public void fromStream() {
-        new Html(new ByteArrayInputStream(
-                "<div><span>contents</span></div>".getBytes()));
+        new Html(new ByteArrayInputStream("<div><span>contents</span></div>".getBytes()));
     }
 
     @Test
@@ -129,8 +127,7 @@ public class HTMLTest {
                 + "";
         Html html = new Html(input);
         Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
-        String expectedInnerHtml = input.replaceAll("^[ ]*<span>", "")
-                .replaceAll("</span>[ ]*$", "");
+        String expectedInnerHtml = input.replaceAll("^[ ]*<span>", "").replaceAll("</span>[ ]*$", "");
         Assert.assertEquals(expectedInnerHtml, html.getInnerHtml());
     }
 
@@ -140,8 +137,7 @@ public class HTMLTest {
 
         Assert.assertEquals("", html.getElement().getAttribute("controls"));
 
-        Assert.assertEquals("<audio controls></audio>",
-                html.getElement().getOuterHTML());
+        Assert.assertEquals("<audio controls></audio>", html.getElement().getOuterHTML());
     }
 
     @Test
@@ -153,8 +149,7 @@ public class HTMLTest {
     @Test
 
     public void styleElementAsStream_elementIsUsed() {
-        Html html = new Html(new ByteArrayInputStream(
-                "<style></style>".getBytes(StandardCharsets.UTF_8)));
+        Html html = new Html(new ByteArrayInputStream("<style></style>".getBytes(StandardCharsets.UTF_8)));
         Assert.assertEquals("style", html.getElement().getTag());
     }
 

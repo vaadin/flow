@@ -40,14 +40,11 @@ import elemental.json.JsonArray;
  *
  * @param <M>
  *            a model class that will be used for template data propagation
- * @deprecated Polymer template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Polymer template support is deprecated - we recommend you to use {@code LitTemplate} instead. Read more
+ *             details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
-public abstract class AbstractTemplate<M extends TemplateModel>
-        extends Component implements DeprecatedPolymerTemplate {
+public abstract class AbstractTemplate<M extends TemplateModel> extends Component implements DeprecatedPolymerTemplate {
     private final StateNode stateNode;
     private transient M model;
 
@@ -63,9 +60,8 @@ public abstract class AbstractTemplate<M extends TemplateModel>
     /**
      * Returns the model of this template.
      * <p>
-     * The type of the model will be the type that this method returns in the
-     * instance it is invoked on - meaning that you should override this method
-     * and return your own model type.
+     * The type of the model will be the type that this method returns in the instance it is invoked on - meaning that
+     * you should override this method and return your own model type.
      *
      * @return the model of this template
      */
@@ -83,8 +79,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     @SuppressWarnings("unchecked")
     protected Class<? extends M> getModelType() {
-        Type type = GenericTypeReflector.getTypeParameter(
-                getClass().getGenericSuperclass(),
+        Type type = GenericTypeReflector.getTypeParameter(getClass().getGenericSuperclass(),
                 AbstractTemplate.class.getTypeParameters()[0]);
         if (type instanceof Class || type instanceof ParameterizedType) {
             return (Class<M>) GenericTypeReflector.erase(type);
@@ -98,13 +93,10 @@ public abstract class AbstractTemplate<M extends TemplateModel>
         }
 
         if (type instanceof TypeVariable) {
-            return String.format(
-                    "Could not determine the composite content type for TypeVariable '%s'. "
-                            + "Either specify exact type or override getModelType().",
-                    type.getTypeName());
+            return String.format("Could not determine the composite content type for TypeVariable '%s'. "
+                    + "Either specify exact type or override getModelType().", type.getTypeName());
         }
-        return String.format(
-                "Could not determine the composite content type for %s. Override getModelType().",
+        return String.format("Could not determine the composite content type for %s. Override getModelType().",
                 type.getTypeName());
     }
 
@@ -125,8 +117,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      * @return True if supported by this PolymerTemplate
      */
     public boolean isSupportedClass(Class<?> type) {
-        List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
-                .getPropertyNames().map(this::getModelType)
+        List<ModelType> modelTypes = ModelDescriptor.get(getModelType()).getPropertyNames().map(this::getModelType)
                 .collect(Collectors.toList());
 
         boolean result = false;
@@ -166,8 +157,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      * @return ModelType for given Type
      */
     public ModelType getModelType(Type type) {
-        List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
-                .getPropertyNames().map(this::getModelType)
+        List<ModelType> modelTypes = ModelDescriptor.get(getModelType()).getPropertyNames().map(this::getModelType)
                 .collect(Collectors.toList());
 
         for (ModelType mtype : modelTypes) {
@@ -180,21 +170,16 @@ public abstract class AbstractTemplate<M extends TemplateModel>
                 }
             }
         }
-        String msg = String.format(
-                "Couldn't find ModelType for requested class %s",
-                type.getTypeName());
+        String msg = String.format("Couldn't find ModelType for requested class %s", type.getTypeName());
         throw new IllegalArgumentException(msg);
     }
 
     private M createTemplateModelInstance() {
-        ModelDescriptor<? extends M> descriptor = ModelDescriptor
-                .get(getModelType());
-        return TemplateModelProxyHandler.createModelProxy(getStateNode(),
-                descriptor);
+        ModelDescriptor<? extends M> descriptor = ModelDescriptor.get(getModelType());
+        return TemplateModelProxyHandler.createModelProxy(getStateNode(), descriptor);
     }
 
-    private static ModelType getModelTypeForListModel(Type type,
-            ModelType mtype) {
+    private static ModelType getModelTypeForListModel(Type type, ModelType mtype) {
         ModelType modelType = mtype;
         while (modelType instanceof ListModelType) {
             if (type.equals(modelType.getJavaType())) {
@@ -214,19 +199,16 @@ public abstract class AbstractTemplate<M extends TemplateModel>
         // Find metadata, fill initial values and create a proxy
         getModel();
 
-        BeanModelType<?> modelType = TemplateModelProxyHandler
-                .getModelTypeForProxy(model);
+        BeanModelType<?> modelType = TemplateModelProxyHandler.getModelTypeForProxy(model);
 
-        Map<String, Boolean> allowedProperties = modelType
-                .getClientUpdateAllowedProperties(twoWayBindingPaths);
+        Map<String, Boolean> allowedProperties = modelType.getClientUpdateAllowedProperties(twoWayBindingPaths);
 
         Set<String> allowedPropertyName = Collections.emptySet();
         if (!allowedProperties.isEmpty()) {
             // copy to avoid referencing a map in the filter below
             allowedPropertyName = new HashSet<>(allowedProperties.keySet());
         }
-        ElementPropertyMap.getModel(getStateNode())
-                .setUpdateFromClientFilter(allowedPropertyName::contains);
+        ElementPropertyMap.getModel(getStateNode()).setUpdateFromClientFilter(allowedPropertyName::contains);
 
         // remove properties whose values are not StateNode from the property
         // map and return their names as a list
@@ -234,35 +216,26 @@ public abstract class AbstractTemplate<M extends TemplateModel>
 
         // This has to be executed BEFORE model population to be able to know
         // which properties needs update to the server
-        getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(getStateNode(),
-                        context -> context.getUI().getPage().executeJs(
-                                "this.registerUpdatableModelProperties($0, $1)",
-                                getElement(),
-                                filterUpdatableProperties(allowedProperties))));
+        getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree().beforeClientResponse(getStateNode(),
+                context -> context.getUI().getPage().executeJs("this.registerUpdatableModelProperties($0, $1)",
+                        getElement(), filterUpdatableProperties(allowedProperties))));
 
         /*
-         * Now populate model properties on the client side. Only explicitly set
-         * by the developer properties are in the map at the moment of execution
-         * since all simple properties have been removed from the map above.
-         * Such properties are excluded from the argument list and won't be
-         * populated on the client side.
+         * Now populate model properties on the client side. Only explicitly set by the developer properties are in the
+         * map at the moment of execution since all simple properties have been removed from the map above. Such
+         * properties are excluded from the argument list and won't be populated on the client side.
          *
-         * All explicitly set model properties will be sent from the server as
-         * usual and will take precedence over the client side values.
+         * All explicitly set model properties will be sent from the server as usual and will take precedence over the
+         * client side values.
          */
-        getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(getStateNode(),
-                        context -> context.getUI().getPage().executeJs(
-                                "this.populateModelProperties($0, $1)",
-                                getElement(),
-                                filterUnsetProperties(propertyNames))));
+        getStateNode().runWhenAttached(ui -> ui.getInternals().getStateTree().beforeClientResponse(getStateNode(),
+                context -> context.getUI().getPage().executeJs("this.populateModelProperties($0, $1)", getElement(),
+                        filterUnsetProperties(propertyNames))));
     }
 
     private JsonArray filterUnsetProperties(List<String> properties) {
         JsonArray array = Json.createArray();
-        ElementPropertyMap map = getStateNode()
-                .getFeature(ElementPropertyMap.class);
+        ElementPropertyMap map = getStateNode().getFeature(ElementPropertyMap.class);
         int i = 0;
         for (String property : properties) {
             if (!map.hasProperty(property)) {
@@ -276,8 +249,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
     /*
      * Keep only properties with getter.
      */
-    private JsonArray filterUpdatableProperties(
-            Map<String, Boolean> allowedProperties) {
+    private JsonArray filterUpdatableProperties(Map<String, Boolean> allowedProperties) {
         JsonArray array = Json.createArray();
         int i = 0;
         for (Entry<String, Boolean> entry : allowedProperties.entrySet()) {
@@ -290,10 +262,8 @@ public abstract class AbstractTemplate<M extends TemplateModel>
     }
 
     private List<String> removeSimpleProperties() {
-        ElementPropertyMap map = getStateNode()
-                .getFeature(ElementPropertyMap.class);
-        List<String> props = map.getPropertyNames()
-                .filter(name -> !(map.getProperty(name) instanceof StateNode))
+        ElementPropertyMap map = getStateNode().getFeature(ElementPropertyMap.class);
+        List<String> props = map.getPropertyNames().filter(name -> !(map.getProperty(name) instanceof StateNode))
                 .collect(Collectors.toList());
         props.forEach(map::removeProperty);
         return props;

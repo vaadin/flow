@@ -40,8 +40,7 @@ public class BigDecimalToFloatConverterTest {
 
     @Test
     public void testConvertToModel() {
-        Result<Float> result = converter
-                .convertToModel(BigDecimal.valueOf(42.0), null);
+        Result<Float> result = converter.convertToModel(BigDecimal.valueOf(42.0), null);
         assertEquals(Result.ok(42.0f), result);
     }
 

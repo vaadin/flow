@@ -25,9 +25,8 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.router.Route;
 
 /**
- * A simple container with the information related to an application entry
- * point, i.e. those classes annotated with the {@link Route} annotation,
- * extending {@link WebComponentExporter} and a bunch of more internal classes.
+ * A simple container with the information related to an application entry point, i.e. those classes annotated with the
+ * {@link Route} annotation, extending {@link WebComponentExporter} and a bunch of more internal classes.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -46,8 +45,7 @@ public final class EntryPointData implements Serializable {
     private LinkedHashSet<String> scriptsDevelopmentOnly = new LinkedHashSet<>();
     private LinkedHashSet<CssData> css = new LinkedHashSet<>();
 
-    EntryPointData(Class<?> clazz, EntryPointType type,
-            List<String> dependencyTriggers, boolean eager) {
+    EntryPointData(Class<?> clazz, EntryPointType type, List<String> dependencyTriggers, boolean eager) {
         this.name = clazz.getName();
         this.type = type;
         this.dependencyTriggers = dependencyTriggers;

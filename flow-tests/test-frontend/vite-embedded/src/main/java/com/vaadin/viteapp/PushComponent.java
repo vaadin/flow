@@ -37,9 +37,7 @@ public class PushComponent extends Div {
         }
 
         @Override
-        protected void configureInstance(
-                WebComponent<PushComponent> webComponent,
-                PushComponent component) {
+        protected void configureInstance(WebComponent<PushComponent> webComponent, PushComponent component) {
         }
     }
 
@@ -48,8 +46,7 @@ public class PushComponent extends Div {
 
     private AtomicInteger count = new AtomicInteger();
 
-    private final ScheduledExecutorService service = Executors
-            .newScheduledThreadPool(1);
+    private final ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
 
     protected void onAttach(AttachEvent attachEvent) {
         update();

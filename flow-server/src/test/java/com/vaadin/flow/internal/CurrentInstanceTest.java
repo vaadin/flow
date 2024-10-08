@@ -56,8 +56,7 @@ public class CurrentInstanceTest {
     @Test
     public void testClearedAfterRemove() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        Assert.assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.set(CurrentInstanceTest.class, null);
 
         assertCleared();
@@ -66,22 +65,19 @@ public class CurrentInstanceTest {
     @Test
     public void testClearedWithClearAll() throws Exception {
         CurrentInstance.set(CurrentInstanceTest.class, this);
-        Assert.assertEquals(this,
-                CurrentInstance.get(CurrentInstanceTest.class));
+        Assert.assertEquals(this, CurrentInstance.get(CurrentInstanceTest.class));
         CurrentInstance.clearAll();
 
         assertCleared();
     }
 
-    private void assertCleared() throws SecurityException, NoSuchFieldException,
-            IllegalAccessException {
+    private void assertCleared() throws SecurityException, NoSuchFieldException, IllegalAccessException {
         Assert.assertNull(getInternalCurrentInstanceVariable().get());
     }
 
     @SuppressWarnings("unchecked")
     private ThreadLocal<Map<Class<?>, CurrentInstance>> getInternalCurrentInstanceVariable()
-            throws SecurityException, NoSuchFieldException,
-            IllegalAccessException {
+            throws SecurityException, NoSuchFieldException, IllegalAccessException {
         Field f = CurrentInstance.class.getDeclaredField("instances");
         f.setAccessible(true);
         return (ThreadLocal<Map<Class<?>, CurrentInstance>>) f.get(null);
@@ -109,8 +105,7 @@ public class CurrentInstanceTest {
         CurrentInstance.clearAll();
 
         // Then store a new UI in there
-        Map<Class<?>, CurrentInstance> old = CurrentInstance
-                .setCurrent(new UIStoredInCurrentInstance());
+        Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(new UIStoredInCurrentInstance());
 
         // Restore the old values and assert that the UI is null again
         CurrentInstance.restoreInstances(old);
@@ -124,8 +119,7 @@ public class CurrentInstanceTest {
 
         // Then store a new session in there
         Map<Class<?>, CurrentInstance> old = CurrentInstance
-                .setCurrent(new SessionStoredInCurrentInstance(
-                        new MockVaadinServletService()));
+                .setCurrent(new SessionStoredInCurrentInstance(new MockVaadinServletService()));
 
         // Restore the old values and assert that the session is null again
         CurrentInstance.restoreInstances(old);
@@ -134,17 +128,14 @@ public class CurrentInstanceTest {
     }
 
     @Test
-    public void testRestoreWithGarbageCollectedValue()
-            throws InterruptedException {
-        VaadinSession session1 = new VaadinSession(
-                new MockVaadinServletService()) {
+    public void testRestoreWithGarbageCollectedValue() throws InterruptedException {
+        VaadinSession session1 = new VaadinSession(new MockVaadinServletService()) {
             @Override
             public String toString() {
                 return "First session";
             }
         };
-        VaadinSession session2 = new VaadinSession(
-                new MockVaadinServletService()) {
+        VaadinSession session2 = new VaadinSession(new MockVaadinServletService()) {
             @Override
             public String toString() {
                 return "Second session";
@@ -152,8 +143,7 @@ public class CurrentInstanceTest {
         };
 
         VaadinSession.setCurrent(session1);
-        Map<Class<?>, CurrentInstance> previous = CurrentInstance
-                .setCurrent(session2);
+        Map<Class<?>, CurrentInstance> previous = CurrentInstance.setCurrent(session2);
 
         // Use weak ref to verify object is collected
         WeakReference<VaadinSession> ref = new WeakReference<>(session1);
@@ -167,8 +157,7 @@ public class CurrentInstanceTest {
     }
 
     @Test
-    public void nonInheritableThreadLocals()
-            throws InterruptedException, ExecutionException {
+    public void nonInheritableThreadLocals() throws InterruptedException, ExecutionException {
         CurrentInstance.clearAll();
         CurrentInstance.set(CurrentInstanceTest.class, this);
 

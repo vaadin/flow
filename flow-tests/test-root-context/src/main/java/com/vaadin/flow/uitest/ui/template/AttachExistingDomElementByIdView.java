@@ -28,8 +28,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.AttachExistingDomElementByIdView", layout = ViewTestLayout.class)
 @JsModule("./AttachExistingDomElementById.js")
 @Tag("existing-dom-element")
-public class AttachExistingDomElementByIdView
-        extends PolymerTemplate<TemplateModel> {
+public class AttachExistingDomElementByIdView extends PolymerTemplate<TemplateModel> {
 
     @Id("input")
     private Element input;

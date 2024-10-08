@@ -64,10 +64,7 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     @Test
     public void switchThemeName_changeThemeNameAndRecompile_themeIsChangedOnFly() {
         open();
-        Assert.assertFalse(
-                OTHER_THEME
-                        + " styles are not expected before switching the theme",
-                isOtherThemeUsed());
+        Assert.assertFalse(OTHER_THEME + " styles are not expected before switching the theme", isOtherThemeUsed());
 
         // Live reload upon theme name switching
         switchThemeName(APP_THEME, OTHER_THEME);
@@ -75,13 +72,10 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilOtherTheme() {
-        waitUntilThemeSwap(
-                String.format(ERROR_MESSAGE, APP_THEME, OTHER_THEME, ATTEMPTS),
-                this::isOtherThemeUsed);
+        waitUntilThemeSwap(String.format(ERROR_MESSAGE, APP_THEME, OTHER_THEME, ATTEMPTS), this::isOtherThemeUsed);
     }
 
-    private void waitUntilThemeSwap(String errMessage,
-            SerializableSupplier<Boolean> themeStylesSupplier) {
+    private void waitUntilThemeSwap(String errMessage, SerializableSupplier<Boolean> themeStylesSupplier) {
         int attempts = 0;
         while (attempts < ATTEMPTS) {
             getDriver().navigate().refresh();
@@ -97,9 +91,7 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void waitUntilAppTheme() {
-        waitUntilThemeSwap(
-                String.format(ERROR_MESSAGE, OTHER_THEME, APP_THEME, ATTEMPTS),
-                () -> !isOtherThemeUsed());
+        waitUntilThemeSwap(String.format(ERROR_MESSAGE, OTHER_THEME, APP_THEME, ATTEMPTS), () -> !isOtherThemeUsed());
     }
 
     private boolean isOtherThemeUsed() {
@@ -113,36 +105,26 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
 
     private void switchThemeName(String oldThemeName, String newThemeName) {
         File baseDir = new File(System.getProperty("user.dir", "."));
-        File sourcePath = Paths
-                .get(baseDir.getPath(), "src", "main", "java", AppShell.class
-                        .getPackage().getName().replace(".", File.separator))
+        File sourcePath = Paths.get(baseDir.getPath(), "src", "main", "java",
+                AppShell.class.getPackage().getName().replace(".", File.separator)).toFile();
+        File appShellClassFile = Paths.get(sourcePath.getPath(), AppShell.class.getSimpleName().concat(".java"))
                 .toFile();
-        File appShellClassFile = Paths
-                .get(sourcePath.getPath(),
-                        AppShell.class.getSimpleName().concat(".java"))
-                .toFile();
-        File outputPath = Paths.get(baseDir.getPath(), "target", "classes")
-                .toFile();
+        File outputPath = Paths.get(baseDir.getPath(), "target", "classes").toFile();
         try {
-            String content = FileUtils.readFileToString(appShellClassFile,
-                    StandardCharsets.UTF_8);
+            String content = FileUtils.readFileToString(appShellClassFile, StandardCharsets.UTF_8);
             if (content.contains(oldThemeName)) {
                 content = content.replace(oldThemeName, newThemeName);
-                FileUtils.writeStringToFile(appShellClassFile, content,
-                        StandardCharsets.UTF_8);
+                FileUtils.writeStringToFile(appShellClassFile, content, StandardCharsets.UTF_8);
                 recompileAppShell(appShellClassFile, sourcePath, outputPath);
             }
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Failed to change theme name in AppShell class", e);
+            throw new RuntimeException("Failed to change theme name in AppShell class", e);
         }
     }
 
-    private void recompileAppShell(File appShellClassFile, File sourcePath,
-            File outputPath) {
+    private void recompileAppShell(File appShellClassFile, File sourcePath, File outputPath) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        int result = compiler.run(null, null, null, "-d", outputPath.getPath(),
-                "-sourcepath", sourcePath.getPath(),
+        int result = compiler.run(null, null, null, "-d", outputPath.getPath(), "-sourcepath", sourcePath.getPath(),
                 appShellClassFile.getPath());
         Assert.assertEquals("Failed to recompile AppShell.java", 0, result);
     }

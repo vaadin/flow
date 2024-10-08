@@ -28,14 +28,10 @@ public class ReturnChannelView extends AbstractDivView {
         button.setAttribute("id", "button");
         button.setText("Send message to channel");
 
-        ReturnChannelRegistration channel = button.getNode()
-                .getFeature(ReturnChannelMap.class)
-                .registerChannel(arguments -> button.setText(
-                        "Click registered: " + arguments.getString(0)));
+        ReturnChannelRegistration channel = button.getNode().getFeature(ReturnChannelMap.class)
+                .registerChannel(arguments -> button.setText("Click registered: " + arguments.getString(0)));
 
-        button.executeJs(
-                "this.addEventListener('click', function() { $0('hello') })",
-                channel);
+        button.executeJs("this.addEventListener('click', function() { $0('hello') })", channel);
 
         getElement().appendChild(button);
     }

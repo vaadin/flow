@@ -38,18 +38,16 @@ public class AbstractDeploymentConfigurationTest {
     @Test
     public void getUIClass_returnsUIParameterPropertyValue() {
         String ui = UUID.randomUUID().toString();
-        DeploymentConfiguration config = getConfig(InitParameters.UI_PARAMETER,
-                ui);
-        Assert.assertEquals("Unexpected UI class configuration option value",
-                ui, config.getUIClassName());
+        DeploymentConfiguration config = getConfig(InitParameters.UI_PARAMETER, ui);
+        Assert.assertEquals("Unexpected UI class configuration option value", ui, config.getUIClassName());
     }
 
     @Test
     public void getClassLoader_returnsClassloaderPropertyValue() {
         String classLoader = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
-        Assert.assertEquals("Unexpected classLoader configuration option value",
-                classLoader, config.getClassLoaderName());
+        Assert.assertEquals("Unexpected classLoader configuration option value", classLoader,
+                config.getClassLoaderName());
     }
 
     private DeploymentConfiguration getConfig(String property, String value) {
@@ -60,8 +58,7 @@ public class AbstractDeploymentConfigurationTest {
         return new DeploymentConfigImpl(props);
     }
 
-    private static class DeploymentConfigImpl
-            extends AbstractDeploymentConfiguration {
+    private static class DeploymentConfigImpl extends AbstractDeploymentConfiguration {
 
         private Properties properties;
 
@@ -121,10 +118,9 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public <T> T getApplicationOrSystemProperty(String propertyName,
-                T defaultValue, Function<String, T> converter) {
-            return Optional.ofNullable(properties.getProperty(propertyName))
-                    .map(converter).orElse(defaultValue);
+        public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
+                Function<String, T> converter) {
+            return Optional.ofNullable(properties.getProperty(propertyName)).map(converter).orElse(defaultValue);
         }
 
         @Override

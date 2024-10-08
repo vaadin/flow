@@ -41,8 +41,7 @@ public class MockLogger implements Logger, Serializable {
 
     private void append(Throwable throwable) {
         if (throwable != null && includeStackTrace) {
-            throwable.printStackTrace(
-                    new PrintWriter(new StringBuilderWriter(logs)));
+            throwable.printStackTrace(new PrintWriter(new StringBuilderWriter(logs)));
         }
     }
 
@@ -67,18 +66,15 @@ public class MockLogger implements Logger, Serializable {
 
     @Override
     public void trace(String s, Object o) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(TRACE).append(s).append("\n");
 
     }
 
     @Override
     public void trace(String s, Object o, Object o1) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
-        s = s.replaceFirst("\\{\\}",
-                o1.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o1.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(TRACE).append(s).append("\n");
 
     }
@@ -87,8 +83,7 @@ public class MockLogger implements Logger, Serializable {
     public void trace(String s, Object... objects) {
         logs.append(TRACE);
         for (Object object : objects) {
-            s = s.replaceFirst("\\{\\}",
-                    object.toString().replaceAll("\\\\", "\\\\\\\\"));
+            s = s.replaceFirst("\\{\\}", object.toString().replaceAll("\\\\", "\\\\\\\\"));
         }
         logs.append(s).append("\n");
     }
@@ -141,17 +136,14 @@ public class MockLogger implements Logger, Serializable {
 
     @Override
     public void debug(String s, Object o) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(DEBUG).append(s).append("\n");
     }
 
     @Override
     public void debug(String s, Object o, Object o1) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
-        s = s.replaceFirst("\\{\\}",
-                o1.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o1.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(DEBUG).append(s).append("\n");
     }
 
@@ -159,8 +151,7 @@ public class MockLogger implements Logger, Serializable {
     public void debug(String s, Object... objects) {
         logs.append(DEBUG);
         for (Object object : objects) {
-            s = s.replaceFirst("\\{\\}",
-                    object.toString().replaceAll("\\\\", "\\\\\\\\"));
+            s = s.replaceFirst("\\{\\}", object.toString().replaceAll("\\\\", "\\\\\\\\"));
         }
         logs.append(s).append("\n");
     }
@@ -213,17 +204,14 @@ public class MockLogger implements Logger, Serializable {
 
     @Override
     public void info(String s, Object o) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(INFO).append(s).append("\n");
     }
 
     @Override
     public void info(String s, Object o, Object o1) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
-        s = s.replaceFirst("\\{\\}",
-                o1.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o1.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(INFO).append(s).append("\n");
     }
 
@@ -231,8 +219,7 @@ public class MockLogger implements Logger, Serializable {
     public void info(String s, Object... objects) {
         logs.append(INFO);
         for (Object object : objects) {
-            s = s.replaceFirst("\\{\\}",
-                    object.toString().replaceAll("\\\\", "\\\\\\\\"));
+            s = s.replaceFirst("\\{\\}", object.toString().replaceAll("\\\\", "\\\\\\\\"));
         }
         logs.append(s).append("\n");
     }
@@ -285,8 +272,7 @@ public class MockLogger implements Logger, Serializable {
 
     @Override
     public void warn(String s, Object o) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(WARN).append(s).append("\n");
     }
 
@@ -294,18 +280,15 @@ public class MockLogger implements Logger, Serializable {
     public void warn(String s, Object... objects) {
         logs.append(WARN);
         for (Object object : objects) {
-            s = s.replaceFirst("\\{\\}",
-                    object.toString().replaceAll("\\\\", "\\\\\\\\"));
+            s = s.replaceFirst("\\{\\}", object.toString().replaceAll("\\\\", "\\\\\\\\"));
         }
         logs.append(s).append("\n");
     }
 
     @Override
     public void warn(String s, Object o, Object o1) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
-        s = s.replaceFirst("\\{\\}",
-                o1.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o1.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(WARN).append(s).append("\n");
     }
 
@@ -357,17 +340,14 @@ public class MockLogger implements Logger, Serializable {
 
     @Override
     public void error(String s, Object o) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(ERROR).append(s).append("\n");
     }
 
     @Override
     public void error(String s, Object o, Object o1) {
-        s = s.replaceFirst("\\{\\}",
-                o.toString().replaceAll("\\\\", "\\\\\\\\"));
-        s = s.replaceFirst("\\{\\}",
-                o1.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o.toString().replaceAll("\\\\", "\\\\\\\\"));
+        s = s.replaceFirst("\\{\\}", o1.toString().replaceAll("\\\\", "\\\\\\\\"));
         logs.append(ERROR).append(s).append("\n");
     }
 
@@ -375,8 +355,7 @@ public class MockLogger implements Logger, Serializable {
     public void error(String s, Object... objects) {
         logs.append(ERROR);
         for (Object object : objects) {
-            s = s.replaceFirst("\\{\\}",
-                    object.toString().replaceAll("\\\\", "\\\\\\\\"));
+            s = s.replaceFirst("\\{\\}", object.toString().replaceAll("\\\\", "\\\\\\\\"));
         }
         logs.append(s).append("\n");
     }

@@ -30,32 +30,19 @@ public class ClientResourceIT extends ChromeBrowserTest {
 
     @Test
     public void clientResourcesAreNotExposed() throws IOException {
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "Flow.js");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "Flow.js.map");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "vaadin-dev-tools.js.map");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "vaadin-dev-tools.d.ts");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "FlowBootstrap.d.ts");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "index.js");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "Flow.d.ts");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "index.js.map");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "index.d.ts");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "FlowClient.d.ts");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "vaadin-dev-tools.js");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "copy-to-clipboard.js");
-        assertResourceIsUnavailable(
-                FrontendUtils.DEFAULT_FRONTEND_DIR + "FlowClient.js");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "Flow.js");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "Flow.js.map");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "vaadin-dev-tools.js.map");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "vaadin-dev-tools.d.ts");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "FlowBootstrap.d.ts");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "index.js");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "Flow.d.ts");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "index.js.map");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "index.d.ts");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "FlowClient.d.ts");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "vaadin-dev-tools.js");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "copy-to-clipboard.js");
+        assertResourceIsUnavailable(FrontendUtils.DEFAULT_FRONTEND_DIR + "FlowClient.js");
     }
 
     private void assertResourceIsUnavailable(String path) throws IOException {

@@ -44,8 +44,7 @@ public class WidgetUtil {
     }
 
     /**
-     * Redirects the browser to the given url or refreshes the page if url is
-     * null
+     * Redirects the browser to the given url or refreshes the page if url is null
      *
      * @param url
      *            The url to redirect to or null to refresh
@@ -60,16 +59,14 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * Resolve a relative URL to an absolute URL based on the current document's
-     * location.
+     * Resolve a relative URL to an absolute URL based on the current document's location.
      *
      * @param url
      *            a string with the relative URL to resolve
      * @return the corresponding absolute URL as a string
      */
     public static String getAbsoluteUrl(String url) {
-        AnchorElement a = (AnchorElement) Browser.getDocument()
-                .createElement("a");
+        AnchorElement a = (AnchorElement) Browser.getDocument().createElement("a");
         a.setHref(url);
         return a.getHref();
     }
@@ -77,13 +74,11 @@ public class WidgetUtil {
     /**
      * Detects if an URL is absolute.
      *
-     * URLs wihtout schema but starting with double slashes (e.g. //myhost/path}
-     * are considered absolute.
+     * URLs wihtout schema but starting with double slashes (e.g. //myhost/path} are considered absolute.
      *
      * @param url
      *            a string with the URL to check
-     * @return {@literal true} if the url is absolute, otherwise
-     *         {@literal false}.
+     * @return {@literal true} if the url is absolute, otherwise {@literal false}.
      */
     public static native boolean isAbsoluteUrl(String url)
     /*-{
@@ -91,8 +86,7 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * Anything in, anything out. It's JavaScript after all. This method just
-     * makes the Java compiler accept the fact.
+     * Anything in, anything out. It's JavaScript after all. This method just makes the Java compiler accept the fact.
      *
      * @param value
      *            anything
@@ -106,9 +100,8 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * Anything in, JSO out. It's JavaScript after all. This method just makes
-     * the Java compiler accept the fact. The regular crazy cast doesn't work
-     * for JSOs since the generics still makes the compiler insert a JSO check.
+     * Anything in, JSO out. It's JavaScript after all. This method just makes the Java compiler accept the fact. The
+     * regular crazy cast doesn't work for JSOs since the generics still makes the compiler insert a JSO check.
      *
      * @param value
      *            anything
@@ -116,8 +109,7 @@ public class WidgetUtil {
      *            the object type
      * @return the same stuff
      */
-    public static native <T extends JavaScriptObject> T crazyJsoCast(
-            Object value)
+    public static native <T extends JavaScriptObject> T crazyJsoCast(Object value)
     /*-{
         return value;
     }-*/;
@@ -140,11 +132,9 @@ public class WidgetUtil {
     }
 
     /**
-     * Updates the {@code attribute} value for the {@code element} to the given
-     * {@code value}.
+     * Updates the {@code attribute} value for the {@code element} to the given {@code value}.
      * <p>
-     * If {@code value} is {@code null} then {@code attribute} is removed,
-     * otherwise {@code value} is set as its value.
+     * If {@code value} is {@code null} then {@code attribute} is removed, otherwise {@code value} is set as its value.
      *
      * @param element
      *            the DOM element owning attribute
@@ -153,8 +143,7 @@ public class WidgetUtil {
      * @param value
      *            the value to update
      */
-    public static void updateAttribute(Element element, String attribute,
-            String value) {
+    public static void updateAttribute(Element element, String attribute, String value) {
         if (value == null) {
             DomApi.wrap(element).removeAttribute(attribute);
         } else {
@@ -185,8 +174,7 @@ public class WidgetUtil {
      * @param value
      *            the property value
      */
-    public static native void setJsProperty(Object object, String name,
-            Object value)
+    public static native void setJsProperty(Object object, String name, Object value)
     /*-{
         object[name] = value;
     }-*/;
@@ -206,8 +194,8 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * Checks whether the provided object itself has a JavaScript property with
-     * the given name. Inherited properties are not taken into account.
+     * Checks whether the provided object itself has a JavaScript property with the given name. Inherited properties are
+     * not taken into account.
      *
      * @see #hasJsProperty(Object, String)
      *
@@ -215,9 +203,8 @@ public class WidgetUtil {
      *            the target object
      * @param name
      *            the name of the property
-     * @return <code>true</code> if the object itself has the named property;
-     *         <code>false</code> if it doesn't have the property of if the
-     *         property is inherited
+     * @return <code>true</code> if the object itself has the named property; <code>false</code> if it doesn't have the
+     *         property of if the property is inherited
      */
     public static native boolean hasOwnJsProperty(Object object, String name)
     /*-{
@@ -225,8 +212,7 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * Checks whether the provided object has or inherits a JavaScript property
-     * with the given name.
+     * Checks whether the provided object has or inherits a JavaScript property with the given name.
      *
      * @see #hasOwnJsProperty(Object, String)
      *
@@ -234,8 +220,7 @@ public class WidgetUtil {
      *            the target object
      * @param name
      *            the name of the property
-     * @return <code>true</code> if the object itself has or inherits the named
-     *         property; <code>false</code> otherwise
+     * @return <code>true</code> if the object itself has or inherits the named property; <code>false</code> otherwise
      */
     public static native boolean hasJsProperty(Object object, String name)
     /*-{
@@ -243,13 +228,11 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * Checks if the given value is explicitly undefined. <code>null</code>
-     * values returns <code>false</code>.
+     * Checks if the given value is explicitly undefined. <code>null</code> values returns <code>false</code>.
      *
      * @param property
      *            the value to be verified
-     * @return <code>true</code> is the value is explicitly undefined,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> is the value is explicitly undefined, <code>false</code> otherwise
      */
     public static native boolean isUndefined(Object property)
     /*-{
@@ -270,9 +253,8 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * Creates a new {@link JsonObject} without any JavaScript prototype at all.
-     * Not having any prototype is only relevant for objects that are displayed
-     * through the browser console.
+     * Creates a new {@link JsonObject} without any JavaScript prototype at all. Not having any prototype is only
+     * relevant for objects that are displayed through the browser console.
      *
      *
      * @return a new json object
@@ -293,13 +275,12 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * Gets the boolean value of the provided value based on JavaScript
-     * semantics.
+     * Gets the boolean value of the provided value based on JavaScript semantics.
      *
      * @param value
      *            the value to check for truthness
-     * @return <code>true</code> if the provided value is trueish according to
-     *         JavaScript semantics, otherwise <code>false</code>
+     * @return <code>true</code> if the provided value is trueish according to JavaScript semantics, otherwise
+     *         <code>false</code>
      */
     public static native boolean isTrueish(Object value)
     /*-{
@@ -307,8 +288,7 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * Gets all JavaScript property names of the given object. This directly
-     * calls <code>Object.keys</code>.
+     * Gets all JavaScript property names of the given object. This directly calls <code>Object.keys</code>.
      *
      * @param value
      *            the value to get keys for
@@ -320,9 +300,8 @@ public class WidgetUtil {
     }-*/;
 
     /**
-     * When serializing the JsonObject we check the values for dom nodes and
-     * throw and exception if one is found as they should not be synced and may
-     * create cyclic dependencies.
+     * When serializing the JsonObject we check the values for dom nodes and throw and exception if one is found as they
+     * should not be synced and may create cyclic dependencies.
      *
      * @param payload
      *            JsonObject to stringify
@@ -339,16 +318,15 @@ public class WidgetUtil {
                                                               }-*/;
 
     /**
-     * Checks whether the objects are equal either as Java objects (considering
-     * types and Java {@link Object#equals(Object)} method) or as JS values.
+     * Checks whether the objects are equal either as Java objects (considering types and Java
+     * {@link Object#equals(Object)} method) or as JS values.
      *
      * @param obj1
      *            an object
      *
      * @param obj2
      *            an object to be compared with {@code a} for deep equality
-     * @return {@code true} if the arguments are equal to each other and
-     *         {@code false} otherwise
+     * @return {@code true} if the arguments are equal to each other and {@code false} otherwise
      *
      * @see #equalsInJS(Object, Object)
      */
@@ -359,16 +337,15 @@ public class WidgetUtil {
     /**
      * Checks whether the objects are equal as JS values.
      * <p>
-     * This check ignores object types and checks the values via JS {@code ==}.
-     * E.g. it means that an empty string equals to {@code 0}.
+     * This check ignores object types and checks the values via JS {@code ==}. E.g. it means that an empty string
+     * equals to {@code 0}.
      *
      * @param obj1
      *            an object
      *
      * @param obj2
      *            an object to be compared with {@code a} for deep equality
-     * @return {@code true} if the arguments are equal via JS {@code ==} to each
-     *         other and {@code false} otherwise
+     * @return {@code true} if the arguments are equal via JS {@code ==} to each other and {@code false} otherwise
      */
     public static native boolean equalsInJS(Object obj1, Object obj2)
     /*-{

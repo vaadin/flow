@@ -24,11 +24,9 @@ import com.vaadin.client.flow.collection.JsSet;
 /**
  * The storage class for set of updatable model properties.
  * <p>
- * This class is stored inside a {@link StateNode} via
- * {@link StateNode#setNodeData(Object)} if there is any data to store at all.
- * Once it's stored in the {@link StateNode} the code which sends updates to the
- * server side when a polymer property is updated uses this data to detect
- * whether server expects the update to be sent(see
+ * This class is stored inside a {@link StateNode} via {@link StateNode#setNodeData(Object)} if there is any data to
+ * store at all. Once it's stored in the {@link StateNode} the code which sends updates to the server side when a
+ * polymer property is updated uses this data to detect whether server expects the update to be sent(see
  * {@link SimpleElementBindingStrategy}).
  *
  * @author Vaadin Ltd
@@ -40,8 +38,7 @@ public class UpdatableModelProperties {
     private final JsSet<String> properties = JsCollections.set();
 
     /**
-     * Creates a new instance of storage class based on given
-     * {@code properties}.
+     * Creates a new instance of storage class based on given {@code properties}.
      *
      * @param properties
      *            updatable properties array

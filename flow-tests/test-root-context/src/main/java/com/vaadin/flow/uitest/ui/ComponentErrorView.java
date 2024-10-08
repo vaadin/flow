@@ -21,8 +21,7 @@ public class ComponentErrorView extends Div {
         add(throwException);
 
         UI.getCurrent().getSession().setErrorHandler(error -> {
-            Span componentPresent = new Span(
-                    "" + error.getComponent().isPresent());
+            Span componentPresent = new Span("" + error.getComponent().isPresent());
             componentPresent.setId("present");
             add(componentPresent);
             error.getComponent().ifPresent(component -> {

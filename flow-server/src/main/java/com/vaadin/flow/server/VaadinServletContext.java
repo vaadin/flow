@@ -54,10 +54,8 @@ public class VaadinServletContext implements VaadinContext {
      * Ensures there is a valid instance of {@link ServletContext}.
      */
     private void ensureServletContext() {
-        if (getContext() == null
-                && VaadinService.getCurrent() instanceof VaadinServletService) {
-            context = ((VaadinServletService) VaadinService.getCurrent())
-                    .getServlet().getServletContext();
+        if (getContext() == null && VaadinService.getCurrent() instanceof VaadinServletService) {
+            context = ((VaadinServletService) VaadinService.getCurrent()).getServlet().getServletContext();
         } else if (getContext() == null) {
             throw new IllegalStateException(
                     "The underlying ServletContext of VaadinServletContext is null and there is no VaadinServletService to obtain it from.");

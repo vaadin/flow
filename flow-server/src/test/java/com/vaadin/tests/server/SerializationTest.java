@@ -30,15 +30,13 @@ import static org.mockito.Mockito.withSettings;
 public class SerializationTest {
 
     @Test
-    public void testSerializeVaadinSession_accessQueueIsRecreated()
-            throws Exception {
+    public void testSerializeVaadinSession_accessQueueIsRecreated() throws Exception {
         VaadinService vaadinService = new MockVaadinService(true);
         VaadinSession session = new VaadinSession(vaadinService);
 
         session = serializeAndDeserialize(session);
 
-        Assert.assertNotNull(
-                "Pending access queue was not recreated after deserialization",
+        Assert.assertNotNull("Pending access queue was not recreated after deserialization",
                 session.getPendingAccessQueue());
     }
 
@@ -47,11 +45,8 @@ public class SerializationTest {
             throws Exception {
         VaadinSession session = serializeAndDeserializeWithUI(false);
 
-        Assert.assertNotNull(
-                "UIs should be available after empty deserialization",
-                session.getUIs());
-        Assert.assertTrue("UIs should be empty after empty deserialization",
-                session.getUIs().isEmpty());
+        Assert.assertNotNull("UIs should be available after empty deserialization", session.getUIs());
+        Assert.assertTrue("UIs should be empty after empty deserialization", session.getUIs().isEmpty());
     }
 
     @Test
@@ -64,16 +59,14 @@ public class SerializationTest {
         // should be called by Flow internally as soon as the session has
         // been created.
         session.refreshTransients(null, vaadinService);
-        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
-                Mockito.withSettings().serializable()));
+        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class, Mockito.withSettings().serializable()));
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42);
         session.addUI(ui);
 
         session.lock();
         final StreamRegistration name = session.getResourceRegistry()
-                .registerResource(new StreamResource("name",
-                        () -> new ByteArrayInputStream(new byte[0])));
+                .registerResource(new StreamResource("name", () -> new ByteArrayInputStream(new byte[0])));
         session.unlock();
 
         session = serializeAndDeserialize(session);
@@ -82,15 +75,10 @@ public class SerializationTest {
         // been retrieved from http session.
         session.refreshTransients(null, vaadinService);
 
-        Assert.assertNotNull(
-                "UIs map should be available after devmode deserialization",
-                session.getUIs());
-        Assert.assertTrue("UIs should be empty after devmode deserialization",
-                session.getUIs().isEmpty());
-        Assert.assertTrue(
-                "StreamResources should be empty after devmode deserialization",
-                session.getResourceRegistry().getResource(name.getResourceUri())
-                        .isEmpty());
+        Assert.assertNotNull("UIs map should be available after devmode deserialization", session.getUIs());
+        Assert.assertTrue("UIs should be empty after devmode deserialization", session.getUIs().isEmpty());
+        Assert.assertTrue("StreamResources should be empty after devmode deserialization",
+                session.getResourceRegistry().getResource(name.getResourceUri()).isEmpty());
     }
 
     @Test
@@ -98,41 +86,33 @@ public class SerializationTest {
             throws Exception {
         VaadinSession session = serializeAndDeserializeWithUI(true);
 
-        Assert.assertNotNull(
-                "UIs should be available after empty deserialization",
-                session.getUIs());
-        Assert.assertEquals(
-                "UIs should contain a UI instance after empty deserialization",
-                1, session.getUIs().size());
+        Assert.assertNotNull("UIs should be available after empty deserialization", session.getUIs());
+        Assert.assertEquals("UIs should contain a UI instance after empty deserialization", 1, session.getUIs().size());
         Assert.assertEquals("Unexpected UI id after empty deserialization", 42,
                 session.getUIs().iterator().next().getUIId());
     }
 
     @Test
-    public void testSerializeVaadinSession_notProductionMode_canSerializeWithoutTransients()
-            throws Exception {
+    public void testSerializeVaadinSession_notProductionMode_canSerializeWithoutTransients() throws Exception {
         VaadinService vaadinService = new MockVaadinService(false, true);
         VaadinSession session = Mockito.spy(new VaadinSession(vaadinService));
 
         Assert.assertEquals(vaadinService, session.getService());
-        VaadinSession serializedAndDeserializedSession = serializeAndDeserialize(
-                session);
+        VaadinSession serializedAndDeserializedSession = serializeAndDeserialize(session);
         Assert.assertNull(serializedAndDeserializedSession.getService());
-        VaadinSession againSerializedAndDeserializedSession = serializeAndDeserialize(
-                serializedAndDeserializedSession);
+        VaadinSession againSerializedAndDeserializedSession = serializeAndDeserialize(serializedAndDeserializedSession);
         Assert.assertNull(againSerializedAndDeserializedSession.getService());
     }
 
-    private static VaadinSession serializeAndDeserializeWithUI(
-            boolean serializeUI) throws IOException, ClassNotFoundException {
+    private static VaadinSession serializeAndDeserializeWithUI(boolean serializeUI)
+            throws IOException, ClassNotFoundException {
         VaadinService vaadinService = new MockVaadinService(false, serializeUI);
         VaadinSession session = new VaadinSession(vaadinService);
         // This is done only for test purpose to init the session lock,
         // should be called by Flow internally as soon as the session has
         // been created.
         session.refreshTransients(null, vaadinService);
-        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
-                withSettings().serializable()));
+        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class, withSettings().serializable()));
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42);
         session.addUI(ui);
@@ -145,16 +125,14 @@ public class SerializationTest {
         return session;
     }
 
-    private static <S extends Serializable> S serializeAndDeserialize(S s)
-            throws IOException, ClassNotFoundException {
+    private static <S extends Serializable> S serializeAndDeserialize(S s) throws IOException, ClassNotFoundException {
         // Serialize and deserialize
 
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
         out.writeObject(s);
         byte[] data = bs.toByteArray();
-        ObjectInputStream in = new ObjectInputStream(
-                new ByteArrayInputStream(data));
+        ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(data));
         @SuppressWarnings("unchecked")
         S s2 = (S) in.readObject();
 
@@ -227,16 +205,10 @@ public class SerializationTest {
 
         @Override
         public VaadinContext getContext() {
-            ApplicationConfiguration applicationConfiguration = Mockito
-                    .mock(ApplicationConfiguration.class);
-            Mockito.when(
-                    vaadinContext.getAttribute(Mockito.any(), Mockito.any()))
-                    .thenReturn(applicationConfiguration);
-            Mockito.when(applicationConfiguration.isProductionMode())
-                    .thenReturn(productionMode);
-            Mockito.when(applicationConfiguration
-                    .isDevModeSessionSerializationEnabled())
-                    .thenReturn(serialize);
+            ApplicationConfiguration applicationConfiguration = Mockito.mock(ApplicationConfiguration.class);
+            Mockito.when(vaadinContext.getAttribute(Mockito.any(), Mockito.any())).thenReturn(applicationConfiguration);
+            Mockito.when(applicationConfiguration.isProductionMode()).thenReturn(productionMode);
+            Mockito.when(applicationConfiguration.isDevModeSessionSerializationEnabled()).thenReturn(serialize);
             return vaadinContext;
         }
 
@@ -246,8 +218,7 @@ public class SerializationTest {
         }
 
         @Override
-        public String getMainDivId(VaadinSession session,
-                VaadinRequest request) {
+        public String getMainDivId(VaadinSession session, VaadinRequest request) {
             return "main-div-id";
         }
     }

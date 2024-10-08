@@ -63,13 +63,11 @@ public class WebComponentUI extends UI {
         super.doInit(request, uiId, appId);
 
         assignThemeVariant();
-        getEventBus().addListener(WebComponentConnectEvent.class,
-                this::connectWebComponent);
+        getEventBus().addListener(WebComponentConnectEvent.class, this::connectWebComponent);
     }
 
     /**
-     * Event used for sending the activation event for an exported web component
-     * from the client to the server.
+     * Event used for sending the activation event for an exported web component from the client to the server.
      */
     @DomEvent("connect-web-component")
     public static class WebComponentConnectEvent extends ComponentEvent<UI> {
@@ -85,25 +83,20 @@ public class WebComponentUI extends UI {
          * @param source
          *            the component that was attached
          * @param fromClient
-         *            <code>true</code> if the event was originally fired on the
-         *            client, <code>false</code> if the event originates from
-         *            server-side logic
+         *            <code>true</code> if the event was originally fired on the client, <code>false</code> if the event
+         *            originates from server-side logic
          * @param tag
          *            the tag of the element to connect
          * @param webComponentElementId
          *            the id of the embedded web component
          * @param userAssignedId
-         *            the id user might have set on the embedding web component
-         *            element
+         *            the id user might have set on the embedding web component element
          * @param attributeValues
-         *            initial attribute values as a JsonObject. If present,
-         *            these will override the default value designated by the
-         *            {@code WebComponentExporter} but only for this instance.
+         *            initial attribute values as a JsonObject. If present, these will override the default value
+         *            designated by the {@code WebComponentExporter} but only for this instance.
          */
-        public WebComponentConnectEvent(UI source, boolean fromClient,
-                @EventData("tag") String tag,
-                @EventData("id") String webComponentElementId,
-                @EventData("userAssignedId") String userAssignedId,
+        public WebComponentConnectEvent(UI source, boolean fromClient, @EventData("tag") String tag,
+                @EventData("id") String webComponentElementId, @EventData("userAssignedId") String userAssignedId,
                 @EventData("attributeValues") JsonObject attributeValues) {
             super(source, true);
             this.tag = tag;
@@ -150,52 +143,45 @@ public class WebComponentUI extends UI {
     }
 
     /**
-     * Connects a client side web component element with a server side
-     * {@link Component} that's added as a virtual child to this UI.
+     * Connects a client side web component element with a server side {@link Component} that's added as a virtual child
+     * to this UI.
      *
      * @param event
-     *            an event describing the tag, element id and initial property
-     *            values of the web component
+     *            an event describing the tag, element id and initial property values of the web component
      */
     private void connectWebComponent(WebComponentConnectEvent event) {
         final Optional<WebComponentConfiguration<? extends Component>> webComponentConfiguration = getConfigurationRegistry()
                 .getConfiguration(event.getTag());
 
         if (!webComponentConfiguration.isPresent()) {
-            LoggerFactory.getLogger(WebComponentUI.class).warn(
-                    "Received connect request for non existing WebComponent '{}'",
-                    event.getTag());
+            LoggerFactory.getLogger(WebComponentUI.class)
+                    .warn("Received connect request for non existing WebComponent '{}'", event.getTag());
             return;
         }
 
-        final boolean shouldBePreserved = isConfigurationAnnotated(
-                webComponentConfiguration.get(), PreserveOnRefresh.class);
+        final boolean shouldBePreserved = isConfigurationAnnotated(webComponentConfiguration.get(),
+                PreserveOnRefresh.class);
 
         if (!shouldBePreserved) {
             attachCreatedWebComponent(webComponentConfiguration.get(), event);
         } else if (getInternals().getExtendedClientDetails() != null) {
-            attachCachedOrCreatedWebComponent(webComponentConfiguration.get(),
-                    event, getComponentHash(event,
-                            getInternals().getExtendedClientDetails()));
+            attachCachedOrCreatedWebComponent(webComponentConfiguration.get(), event,
+                    getComponentHash(event, getInternals().getExtendedClientDetails()));
         } else {
             getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
-                attachCachedOrCreatedWebComponent(
-                        webComponentConfiguration.get(), event,
+                attachCachedOrCreatedWebComponent(webComponentConfiguration.get(), event,
                         getComponentHash(event, extendedClientDetails));
             });
         }
     }
 
-    private void attachCreatedWebComponent(
-            WebComponentConfiguration<? extends Component> configuration,
+    private void attachCreatedWebComponent(WebComponentConfiguration<? extends Component> configuration,
             WebComponentConnectEvent event) {
-        Element elementToAttach = createWebComponentWrapper(configuration,
-                event);
+        Element elementToAttach = createWebComponentWrapper(configuration, event);
         attachComponentToUI(elementToAttach, event.webComponentElementId);
     }
 
-    private void attachCachedOrCreatedWebComponent(
-            WebComponentConfiguration<? extends Component> configuration,
+    private void attachCachedOrCreatedWebComponent(WebComponentConfiguration<? extends Component> configuration,
             WebComponentConnectEvent event, final String hash) {
         Element elementToAttach = null;
 
@@ -213,35 +199,30 @@ public class WebComponentUI extends UI {
         getRegistry().put(hash, elementToAttach);
     }
 
-    private Element createWebComponentWrapper(
-            WebComponentConfiguration<? extends Component> configuration,
+    private Element createWebComponentWrapper(WebComponentConfiguration<? extends Component> configuration,
             WebComponentConnectEvent event) {
 
         Element rootElement = new Element(event.getTag());
-        WebComponentBinding binding = configuration.createWebComponentBinding(
-                Instantiator.get(this), rootElement, event.getAttributeJson());
-        WebComponentWrapper wrapper = new WebComponentWrapper(rootElement,
-                binding, getConfigurationRegistry().getShadowDomElements());
+        WebComponentBinding binding = configuration.createWebComponentBinding(Instantiator.get(this), rootElement,
+                event.getAttributeJson());
+        WebComponentWrapper wrapper = new WebComponentWrapper(rootElement, binding,
+                getConfigurationRegistry().getShadowDomElements());
 
         return wrapper.getElement();
     }
 
     private void attachComponentToUI(Element child, String elementId) {
-        getElement().getStateProvider().appendVirtualChild(
-                getElement().getNode(), child, NodeProperties.INJECT_BY_ID,
+        getElement().getStateProvider().appendVirtualChild(getElement().getNode(), child, NodeProperties.INJECT_BY_ID,
                 elementId);
         child.executeJs("$0.serverConnected()");
     }
 
-    private boolean isConfigurationAnnotated(
-            WebComponentConfiguration<? extends Component> configuration,
+    private boolean isConfigurationAnnotated(WebComponentConfiguration<? extends Component> configuration,
             Class<? extends Annotation> annotationClass) {
-        return AnnotationReader.getAnnotationFor(
-                configuration.getExporterClass(), annotationClass).isPresent();
+        return AnnotationReader.getAnnotationFor(configuration.getExporterClass(), annotationClass).isPresent();
     }
 
-    private String getComponentHash(WebComponentConnectEvent event,
-            ExtendedClientDetails details) {
+    private String getComponentHash(WebComponentConnectEvent event, ExtendedClientDetails details) {
         Objects.requireNonNull(event);
         Objects.requireNonNull(details);
         String id = event.getWebComponentUserAssignedId();
@@ -251,13 +232,11 @@ public class WebComponentUI extends UI {
             // locations, so relying on it can cause state leak
             id = event.getWebComponentElementId();
         }
-        return String.format("%s:%s:%s", details.getWindowName(),
-                event.getTag(), id);
+        return String.format("%s:%s:%s", details.getWindowName(), event.getTag(), id);
     }
 
     private SessionEmbeddedComponentRegistry getRegistry() {
-        return SessionEmbeddedComponentRegistry
-                .getSessionRegistry(VaadinSession.getCurrent());
+        return SessionEmbeddedComponentRegistry.getSessionRegistry(VaadinSession.getCurrent());
     }
 
     @Override
@@ -271,14 +250,13 @@ public class WebComponentUI extends UI {
     }
 
     @Override
-    public <T extends Component> Optional<T> navigate(
-            Class<T> navigationTarget) {
+    public <T extends Component> Optional<T> navigate(Class<T> navigationTarget) {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
     @Override
-    public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
-            Class<? extends C> navigationTarget, T parameter) {
+    public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(Class<? extends C> navigationTarget,
+            T parameter) {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
@@ -289,41 +267,32 @@ public class WebComponentUI extends UI {
 
     private void assignThemeVariant() {
         WebComponentConfigurationRegistry registry = getConfigurationRegistry();
-        Optional<Theme> theme = registry
-                .getEmbeddedApplicationAnnotation(Theme.class);
-        if (!theme.isPresent()
-                || theme.get().themeClass().equals(AbstractTheme.class)) {
+        Optional<Theme> theme = registry.getEmbeddedApplicationAnnotation(Theme.class);
+        if (!theme.isPresent() || theme.get().themeClass().equals(AbstractTheme.class)) {
             return;
         }
-        AbstractTheme themeInstance = Instantiator.get(this)
-                .getOrCreate(theme.get().themeClass());
+        AbstractTheme themeInstance = Instantiator.get(this).getOrCreate(theme.get().themeClass());
         ThemeDefinition definition = new ThemeDefinition(theme.get());
-        Map<String, String> attributes = themeInstance
-                .getHtmlAttributes(definition.getVariant());
+        Map<String, String> attributes = themeInstance.getHtmlAttributes(definition.getVariant());
 
-        registry.getConfigurations()
-                .forEach(config -> addAttributes(config.getTag(), attributes));
+        registry.getConfigurations().forEach(config -> addAttributes(config.getTag(), attributes));
     }
 
     private void addAttributes(String tag, Map<String, String> attributes) {
         final StringBuilder builder = new StringBuilder();
-        builder.append("var elements = document.querySelectorAll('").append(tag)
-                .append("');")
+        builder.append("var elements = document.querySelectorAll('").append(tag).append("');")
                 .append("for (let i = 0; i < elements.length; i++) {");
-        attributes.forEach((attribute, value) -> builder
-                .append("elements[i].setAttribute('").append(attribute)
+        attributes.forEach((attribute, value) -> builder.append("elements[i].setAttribute('").append(attribute)
                 .append("', '").append(value).append("');"));
         builder.append("}");
         getPage().executeJs(builder.toString());
     }
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
-        return WebComponentConfigurationRegistry
-                .getInstance(getSession().getService().getContext());
+        return WebComponentConfigurationRegistry.getInstance(getSession().getService().getContext());
     }
 
-    private static class SessionEmbeddedComponentRegistry
-            implements Serializable {
+    private static class SessionEmbeddedComponentRegistry implements Serializable {
         private final VaadinSession session;
         private ConcurrentHashMap<String, Element> cache = new ConcurrentHashMap<>();
 
@@ -331,23 +300,17 @@ public class WebComponentUI extends UI {
             this.session = session;
         }
 
-        static SessionEmbeddedComponentRegistry getSessionRegistry(
-                VaadinSession session) {
-            Objects.requireNonNull(session,
-                    "Null session is not supported for session route registry");
-            SessionEmbeddedComponentRegistry registry = session
-                    .getAttribute(SessionEmbeddedComponentRegistry.class);
+        static SessionEmbeddedComponentRegistry getSessionRegistry(VaadinSession session) {
+            Objects.requireNonNull(session, "Null session is not supported for session route registry");
+            SessionEmbeddedComponentRegistry registry = session.getAttribute(SessionEmbeddedComponentRegistry.class);
             if (registry == null) {
                 registry = new SessionEmbeddedComponentRegistry(session);
-                session.setAttribute(SessionEmbeddedComponentRegistry.class,
-                        registry);
+                session.setAttribute(SessionEmbeddedComponentRegistry.class, registry);
             }
             if (!registry.session.equals(session)) {
-                throw new IllegalStateException(String.format(
-                        "Session has an attribute for %s registered for "
-                                + "another session!",
-                        SessionEmbeddedComponentRegistry.class
-                                .getSimpleName()));
+                throw new IllegalStateException(
+                        String.format("Session has an attribute for %s registered for " + "another session!",
+                                SessionEmbeddedComponentRegistry.class.getSimpleName()));
             }
             return registry;
         }
@@ -355,8 +318,7 @@ public class WebComponentUI extends UI {
         /**
          * Placed {@code element} uniquely identified by the supplied {@code
          * identifier} into the registry. If an element with the {@code
-         * identifier} exists in the registry, the old value will be kept and
-         * new one will be ignored.
+         * identifier} exists in the registry, the old value will be kept and new one will be ignored.
          * <p>
          * This is an atomic operation.
          *
@@ -373,13 +335,11 @@ public class WebComponentUI extends UI {
         }
 
         /**
-         * Retrieves the {@link com.vaadin.flow.dom.Element} stored in the
-         * registry, identified by {@code identifier}.
+         * Retrieves the {@link com.vaadin.flow.dom.Element} stored in the registry, identified by {@code identifier}.
          *
          * @param identifier
          *            Unique identifier for the {@link Element}
-         * @return an {@link Element}, or {@code null} if nothing is stored for
-         *         the given {@code identifier}
+         * @return an {@link Element}, or {@code null} if nothing is stored for the given {@code identifier}
          */
         Optional<Element> get(String identifier) {
             Objects.requireNonNull(identifier);

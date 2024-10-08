@@ -25,16 +25,14 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 
 /**
- * Handles storing and retrieval of the state information for a text node using
- * a state node.
+ * Handles storing and retrieval of the state information for a text node using a state node.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class BasicTextElementStateProvider
-        extends AbstractTextElementStateProvider {
+public class BasicTextElementStateProvider extends AbstractTextElementStateProvider {
     private static final BasicTextElementStateProvider INSTANCE = new BasicTextElementStateProvider();
 
     private BasicTextElementStateProvider() {
@@ -51,9 +49,8 @@ public class BasicTextElementStateProvider
     public static StateNode createStateNode(String text) {
         assert text != null;
 
-        StateNode node = new StateNode(
-                Collections.singletonList(TextNodeMap.class),
-                ComponentMapping.class, ReturnChannelMap.class);
+        StateNode node = new StateNode(Collections.singletonList(TextNodeMap.class), ComponentMapping.class,
+                ReturnChannelMap.class);
         node.getFeature(TextNodeMap.class).setText(text);
 
         return node;

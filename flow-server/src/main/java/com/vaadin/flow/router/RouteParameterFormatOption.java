@@ -16,9 +16,8 @@
 package com.vaadin.flow.router;
 
 /**
- * Define the route parameters format flags. This is used when retrieving route
- * information, so that the result may contain the parameters definition
- * represented according with the specified flags.
+ * Define the route parameters format flags. This is used when retrieving route information, so that the result may
+ * contain the parameters definition represented according with the specified flags.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -40,8 +39,8 @@ public enum RouteParameterFormatOption {
     MODIFIER,
 
     /**
-     * The named template of the parameter, i.e. <code>int</code>,
-     * <code>long</code>, <code>bool</code>, <code>string</code>.
+     * The named template of the parameter, i.e. <code>int</code>, <code>long</code>, <code>bool</code>,
+     * <code>string</code>.
      */
     REGEX_NAME
 

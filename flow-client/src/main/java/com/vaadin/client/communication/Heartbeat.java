@@ -51,15 +51,12 @@ public class Heartbeat {
      */
     public Heartbeat(Registry registry) {
         this.registry = registry;
-        setInterval(
-                registry.getApplicationConfiguration().getHeartbeatInterval());
+        setInterval(registry.getApplicationConfiguration().getHeartbeatInterval());
 
         uri = registry.getApplicationConfiguration().getServiceUrl();
-        uri = SharedUtil.addGetParameter(uri,
-                ApplicationConstants.REQUEST_TYPE_PARAMETER,
+        uri = SharedUtil.addGetParameter(uri, ApplicationConstants.REQUEST_TYPE_PARAMETER,
                 ApplicationConstants.REQUEST_TYPE_HEARTBEAT);
-        uri = SharedUtil.addGetParameter(uri,
-                ApplicationConstants.UI_ID_PARAMETER,
+        uri = SharedUtil.addGetParameter(uri, ApplicationConstants.UI_ID_PARAMETER,
                 registry.getApplicationConfiguration().getUIId());
 
         registry.getUILifecycle().addHandler(e -> {
@@ -90,11 +87,9 @@ public class Heartbeat {
                 // Handler should stop the application if heartbeat should no
                 // longer be sent
                 if (e == null) {
-                    registry.getConnectionStateHandler()
-                            .heartbeatInvalidStatusCode(xhr);
+                    registry.getConnectionStateHandler().heartbeatInvalidStatusCode(xhr);
                 } else {
-                    registry.getConnectionStateHandler().heartbeatException(xhr,
-                            e);
+                    registry.getConnectionStateHandler().heartbeatException(xhr, e);
                 }
                 schedule();
 
@@ -111,8 +106,7 @@ public class Heartbeat {
     }
 
     /**
-     * Updates the schedule of the heartbeat to match the set interval. A
-     * negative interval disables the heartbeat.
+     * Updates the schedule of the heartbeat to match the set interval. A negative interval disables the heartbeat.
      */
     public void schedule() {
         if (interval > 0) {
@@ -131,8 +125,7 @@ public class Heartbeat {
      *            new interval in seconds.
      */
     public final void setInterval(int heartbeatInterval) {
-        Console.log(
-                "Setting heartbeat interval to " + heartbeatInterval + "sec.");
+        Console.log("Setting heartbeat interval to " + heartbeatInterval + "sec.");
         interval = heartbeatInterval;
         schedule();
     }

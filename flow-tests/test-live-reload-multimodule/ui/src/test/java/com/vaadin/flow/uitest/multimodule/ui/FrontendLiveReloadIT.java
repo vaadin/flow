@@ -48,8 +48,7 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
             try {
                 r.run();
             } catch (Exception e) {
-                LoggerFactory.getLogger(getClass()).error("Error cleaning up",
-                        e);
+                LoggerFactory.getLogger(getClass()).error("Error cleaning up", e);
             }
         }
     }
@@ -57,61 +56,48 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
     @Test
     public void modifyMetaInfFrontendFile() throws IOException {
         open();
-        boolean hotdeploy = $("project-hotdeploy-info").first().getText()
-                .equalsIgnoreCase("true");
+        boolean hotdeploy = $("project-hotdeploy-info").first().getText().equalsIgnoreCase("true");
         // Live reload of frontend files only works when using hotdeploy
         Assume.assumeTrue(hotdeploy);
 
         String uiModuleFolder = $("project-folder-info").first().getText();
-        File libraryFolder = new File(new File(uiModuleFolder).getParentFile(),
-                "library");
-        Path metainfFrontendFolder = Path.of("src", "main", "resources",
-                "META-INF", "frontend", "in-frontend.js");
-        Path metainfFrontendFile = libraryFolder.toPath()
-                .resolve(metainfFrontendFolder);
+        File libraryFolder = new File(new File(uiModuleFolder).getParentFile(), "library");
+        Path metainfFrontendFolder = Path.of("src", "main", "resources", "META-INF", "frontend", "in-frontend.js");
+        Path metainfFrontendFile = libraryFolder.toPath().resolve(metainfFrontendFolder);
 
         revertJsFileIfNeeded(metainfFrontendFile);
         this.cleanup.add(() -> revertJsFileIfNeeded(metainfFrontendFile));
 
-        waitUntilEquals("This is the component from META-INF/frontend",
-                () -> $("in-frontend").first().getText());
+        waitUntilEquals("This is the component from META-INF/frontend", () -> $("in-frontend").first().getText());
 
         modifyJsFile(metainfFrontendFile);
 
-        waitUntilEquals(
-                "This is the component from META-INF/frontend. It was modified",
+        waitUntilEquals("This is the component from META-INF/frontend. It was modified",
                 () -> $("in-frontend").first().getText());
     }
 
     @Test
     public void modifyMetaInfResourcesFrontendFile() throws IOException {
         open();
-        boolean hotdeploy = $("project-hotdeploy-info").first().getText()
-                .equalsIgnoreCase("true");
+        boolean hotdeploy = $("project-hotdeploy-info").first().getText().equalsIgnoreCase("true");
         // Live reload of frontend files only works when using hotdeploy
         Assume.assumeTrue(hotdeploy);
 
         String uiModuleFolder = $("project-folder-info").first().getText();
-        File libraryFolder = new File(new File(uiModuleFolder).getParentFile(),
-                "library");
-        Path metainfResourcesFrontendFolder = Path.of("src", "main",
-                "resources", "META-INF", "resources", "frontend",
+        File libraryFolder = new File(new File(uiModuleFolder).getParentFile(), "library");
+        Path metainfResourcesFrontendFolder = Path.of("src", "main", "resources", "META-INF", "resources", "frontend",
                 "in-resources-frontend.js");
-        Path metainfResourcesFrontendFile = libraryFolder.toPath()
-                .resolve(metainfResourcesFrontendFolder);
+        Path metainfResourcesFrontendFile = libraryFolder.toPath().resolve(metainfResourcesFrontendFolder);
 
         revertJsFileIfNeeded(metainfResourcesFrontendFile);
-        this.cleanup
-                .add(() -> revertJsFileIfNeeded(metainfResourcesFrontendFile));
+        this.cleanup.add(() -> revertJsFileIfNeeded(metainfResourcesFrontendFile));
 
-        waitUntilEquals(
-                "This is the component from META-INF/resources/frontend",
+        waitUntilEquals("This is the component from META-INF/resources/frontend",
                 () -> $("in-resources-frontend").first().getText());
 
         modifyJsFile(metainfResourcesFrontendFile);
 
-        waitUntilEquals(
-                "This is the component from META-INF/resources/frontend. It was modified",
+        waitUntilEquals("This is the component from META-INF/resources/frontend. It was modified",
                 () -> $("in-resources-frontend").first().getText());
     }
 
@@ -119,10 +105,9 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
     public void modifyThemeFile() throws IOException {
         open();
         String uiModuleFolder = $("project-folder-info").first().getText();
-        File themeFolder = new File(new File(uiModuleFolder).getParentFile(),
-                "theme");
-        Path stylesCssPath = Path.of("src", "main", "resources", "META-INF",
-                "resources", "themes", "mytheme", "styles.css");
+        File themeFolder = new File(new File(uiModuleFolder).getParentFile(), "theme");
+        Path stylesCssPath = Path.of("src", "main", "resources", "META-INF", "resources", "themes", "mytheme",
+                "styles.css");
         Path stylesCss = themeFolder.toPath().resolve(stylesCssPath);
 
         revertThemeIfNeeded(stylesCss);
@@ -160,16 +145,13 @@ public class FrontendLiveReloadIT extends ChromeBrowserTest {
         modify(file, "lightblue", "lightgreen", true);
     }
 
-    private void revertThemeIfNeeded(Path stylesCss)
-            throws UncheckedIOException {
+    private void revertThemeIfNeeded(Path stylesCss) throws UncheckedIOException {
         modify(stylesCss.toFile(), "lightgreen", "lightblue", false);
     }
 
-    private void modify(File file, String from, String to,
-            boolean failIfNotModified) throws UncheckedIOException {
+    private void modify(File file, String from, String to, boolean failIfNotModified) throws UncheckedIOException {
         try {
-            String content = FileUtils.readFileToString(file,
-                    StandardCharsets.UTF_8);
+            String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
             String newContent = content.replace(from, to);
             boolean isSameContent = Objects.equals(content, newContent);
             if (failIfNotModified) {

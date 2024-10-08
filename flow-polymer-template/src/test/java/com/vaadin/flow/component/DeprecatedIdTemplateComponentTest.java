@@ -34,20 +34,16 @@ public class DeprecatedIdTemplateComponentTest extends AbstractTemplateTest {
         getUI().add(template);
 
         Assert.assertFalse("Template should be disabled", template.isEnabled());
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertNotNull("Attribute should have been added",
-                template.getElement().getAttribute("disabled"));
+        Assert.assertFalse("NameField should be disabled.", template.getName().isEnabled());
+        Assert.assertNotNull("Attribute should have been added", template.getElement().getAttribute("disabled"));
         Assert.assertNotNull("Attribute should have been added",
                 template.getName().getElement().getAttribute("disabled"));
 
         template.setEnabled(true);
 
         Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertTrue("NameField should be enabled.",
-                template.getName().isEnabled());
-        Assert.assertNull("Attribute should have been removed",
-                template.getElement().getAttribute("disabled"));
+        Assert.assertTrue("NameField should be enabled.", template.getName().isEnabled());
+        Assert.assertNull("Attribute should have been removed", template.getElement().getAttribute("disabled"));
         Assert.assertNull("Attribute should have been removed",
                 template.getName().getElement().getAttribute("disabled"));
     }
@@ -60,31 +56,24 @@ public class DeprecatedIdTemplateComponentTest extends AbstractTemplateTest {
         getUI().add(template);
 
         Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertNull("Attribute should not exist",
-                template.getElement().getAttribute("disabled"));
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertNotNull("Attribute should not exist",
-                template.getName().getElement().getAttribute("disabled"));
+        Assert.assertNull("Attribute should not exist", template.getElement().getAttribute("disabled"));
+        Assert.assertFalse("NameField should be disabled.", template.getName().isEnabled());
+        Assert.assertNotNull("Attribute should not exist", template.getName().getElement().getAttribute("disabled"));
 
         template.setEnabled(false);
 
         Assert.assertFalse("Template should be disabled", template.isEnabled());
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertNotNull("Attribute should have been added",
-                template.getElement().getAttribute("disabled"));
+        Assert.assertFalse("NameField should be disabled.", template.getName().isEnabled());
+        Assert.assertNotNull("Attribute should have been added", template.getElement().getAttribute("disabled"));
         Assert.assertNotNull("Attribute should have been added",
                 template.getName().getElement().getAttribute("disabled"));
 
         template.setEnabled(true);
 
         Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertNull("Attribute should have been removed",
-                template.getElement().getAttribute("disabled"));
+        Assert.assertNull("Attribute should have been removed", template.getElement().getAttribute("disabled"));
 
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
+        Assert.assertFalse("NameField should be disabled.", template.getName().isEnabled());
         Assert.assertNotNull("Attribute should have been added",
                 template.getName().getElement().getAttribute("disabled"));
 
@@ -100,64 +89,48 @@ public class DeprecatedIdTemplateComponentTest extends AbstractTemplateTest {
         getUI().add(template);
 
         Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertTrue("NameField should be enabled.",
-                template.getName().isEnabled());
-        Assert.assertTrue("NameField child should be enabled.",
-                child.isEnabled());
-        Assert.assertNull("Attribute should not exist",
-                template.getElement().getAttribute("disabled"));
-        Assert.assertNull("Attribute should not exist",
-                template.getName().getElement().getAttribute("disabled"));
-        Assert.assertNull("Attribute should not exist",
-                child.getElement().getAttribute("disabled"));
+        Assert.assertTrue("NameField should be enabled.", template.getName().isEnabled());
+        Assert.assertTrue("NameField child should be enabled.", child.isEnabled());
+        Assert.assertNull("Attribute should not exist", template.getElement().getAttribute("disabled"));
+        Assert.assertNull("Attribute should not exist", template.getName().getElement().getAttribute("disabled"));
+        Assert.assertNull("Attribute should not exist", child.getElement().getAttribute("disabled"));
 
         template.setEnabled(false);
 
         Assert.assertFalse("Template should be disabled", template.isEnabled());
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertFalse("NameField child should be disabled.",
-                child.isEnabled());
-        Assert.assertNotNull("Attribute should have been added",
-                template.getElement().getAttribute("disabled"));
+        Assert.assertFalse("NameField should be disabled.", template.getName().isEnabled());
+        Assert.assertFalse("NameField child should be disabled.", child.isEnabled());
+        Assert.assertNotNull("Attribute should have been added", template.getElement().getAttribute("disabled"));
         Assert.assertNotNull("Attribute should have been added",
                 template.getName().getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Attribute should have been added",
-                child.getElement().getAttribute("disabled"));
+        Assert.assertNotNull("Attribute should have been added", child.getElement().getAttribute("disabled"));
 
         template.setEnabled(true);
         template.getName().setEnabled(false);
 
         Assert.assertTrue("Template should be enabled", template.isEnabled());
-        Assert.assertFalse("NameField should be disabled.",
-                template.getName().isEnabled());
-        Assert.assertFalse("NameField child should be disabled.",
-                child.isEnabled());
-        Assert.assertNull("Attribute should have been removed",
-                template.getElement().getAttribute("disabled"));
+        Assert.assertFalse("NameField should be disabled.", template.getName().isEnabled());
+        Assert.assertFalse("NameField child should be disabled.", child.isEnabled());
+        Assert.assertNull("Attribute should have been removed", template.getElement().getAttribute("disabled"));
         Assert.assertNotNull("Attribute should have been added",
                 template.getName().getElement().getAttribute("disabled"));
-        Assert.assertNotNull("Attribute should have been added",
-                child.getElement().getAttribute("disabled"));
+        Assert.assertNotNull("Attribute should have been added", child.getElement().getAttribute("disabled"));
 
     }
 
     static class TestTemplateParser implements TemplateParser {
 
         @Override
-        public TemplateData getTemplateContent(
-                Class<? extends PolymerTemplate<?>> clazz, String tag,
+        public TemplateData getTemplateContent(Class<? extends PolymerTemplate<?>> clazz, String tag,
                 VaadinService service) {
             Document doc = Jsoup.parse(TEMPLATE);
-            return new TemplateData("",
-                    doc.getElementsByTag("template").get(0));
+            return new TemplateData("", doc.getElementsByTag("template").get(0));
         }
 
     }
 
     @Tag("registration-form")
-    private static class Template extends PolymerTemplate<TemplateModel>
-            implements HasEnabled {
+    private static class Template extends PolymerTemplate<TemplateModel> implements HasEnabled {
 
         public Template() {
             super(new TestTemplateParser());

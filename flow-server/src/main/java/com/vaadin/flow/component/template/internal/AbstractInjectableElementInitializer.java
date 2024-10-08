@@ -33,8 +33,7 @@ import com.vaadin.flow.dom.Element;
  * @since
  *
  */
-public abstract class AbstractInjectableElementInitializer
-        implements Consumer<Map<String, String>> {
+public abstract class AbstractInjectableElementInitializer implements Consumer<Map<String, String>> {
 
     private final Element element;
 
@@ -59,15 +58,14 @@ public abstract class AbstractInjectableElementInitializer
     }
 
     /**
-     * Checks whether the attribute declaration is an attribute with a static
-     * value ( so it can be set on the serve side).
+     * Checks whether the attribute declaration is an attribute with a static value ( so it can be set on the serve
+     * side).
      *
      * @param name
      *            the template attribute name
      * @param value
      *            the template attribute value
-     * @return whether the attribute declaration is an attribute with a static
-     *         value
+     * @return whether the attribute declaration is an attribute with a static value
      */
     protected abstract boolean isStaticAttribute(String name, String value);
 
@@ -87,11 +85,9 @@ public abstract class AbstractInjectableElementInitializer
     }
 
     private ElementInitializationStrategy getStrategy(String attributeName) {
-        ElementInitializationStrategy strategy = INIT_STRATEGIES
-                .get(attributeName);
+        ElementInitializationStrategy strategy = INIT_STRATEGIES.get(attributeName);
         if (strategy == null) {
-            for (Entry<Pattern, ElementInitializationStrategy> entry : PATTERN_STRATEGIES
-                    .entrySet()) {
+            for (Entry<Pattern, ElementInitializationStrategy> entry : PATTERN_STRATEGIES.entrySet()) {
                 if (entry.getKey().matcher(attributeName).matches()) {
                     strategy = entry.getValue();
                     break;
@@ -106,8 +102,7 @@ public abstract class AbstractInjectableElementInitializer
 
     private static IdentityHashMap<Pattern, ElementInitializationStrategy> createPatternStrategies() {
         ElementInitializationStrategy attributeStrategy = new AttributeInitializationStrategy();
-        IdentityHashMap<Pattern, ElementInitializationStrategy> map = new IdentityHashMap<>(
-                1);
+        IdentityHashMap<Pattern, ElementInitializationStrategy> map = new IdentityHashMap<>(1);
         map.put(Pattern.compile("data-.*"), attributeStrategy);
         return map;
     }

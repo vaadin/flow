@@ -189,8 +189,7 @@ public class AppViewIT extends AbstractIT {
         loginAdmin();
         String adminResult = getDriver().getPageSource();
         // Assert.assertTrue(adminResult.contains(contents));
-        MatcherAssert.assertThat(adminResult,
-                CoreMatchers.containsString(contents));
+        MatcherAssert.assertThat(adminResult, CoreMatchers.containsString(contents));
         logout();
         openResource(path);
         assertLoginViewShown();
@@ -200,14 +199,12 @@ public class AppViewIT extends AbstractIT {
     public void public_app_resources_available_for_all() {
         openResource("public/public.txt");
         String shouldBeTextFile = getDriver().getPageSource();
-        Assert.assertTrue(
-                shouldBeTextFile.contains("Public document for all users"));
+        Assert.assertTrue(shouldBeTextFile.contains("Public document for all users"));
         open(LOGIN_PATH);
         loginUser();
         openResource("public/public.txt");
         shouldBeTextFile = getDriver().getPageSource();
-        Assert.assertTrue(
-                shouldBeTextFile.contains("Public document for all users"));
+        Assert.assertTrue(shouldBeTextFile.contains("Public document for all users"));
     }
 
     @Test
@@ -216,8 +213,7 @@ public class AppViewIT extends AbstractIT {
         loginUser();
         UploadElement upload = $(UploadElement.class).first();
         File tmpFile = File.createTempFile("security-flow-image", ".png");
-        InputStream imageStream = getClass().getClassLoader()
-                .getResourceAsStream("image.png");
+        InputStream imageStream = getClass().getClassLoader().getResourceAsStream("image.png");
         IOUtils.copyLarge(imageStream, new FileOutputStream(tmpFile));
         tmpFile.deleteOnExit();
         upload.upload(tmpFile);
@@ -225,10 +221,8 @@ public class AppViewIT extends AbstractIT {
         TestBenchElement text = $("p").id("uploadText");
         TestBenchElement img = $("img").id("uploadImage");
 
-        Assert.assertEquals("Loan application uploaded by John the User",
-                text.getText());
-        Assert.assertTrue(img.getPropertyString("src")
-                .contains("/VAADIN/dynamic/resource/"));
+        Assert.assertEquals("Loan application uploaded by John the User", text.getText());
+        Assert.assertTrue(img.getPropertyString("src").contains("/VAADIN/dynamic/resource/"));
     }
 
     @Test
@@ -264,8 +258,7 @@ public class AppViewIT extends AbstractIT {
     @Test
     public void anonymous_linkToPrivatePageWithAlias_loginViewShown() {
         open("");
-        $(TestBenchElement.class).id(PublicView.ANCHOR_ALIAS_NAVIGATION_ID)
-                .click();
+        $(TestBenchElement.class).id(PublicView.ANCHOR_ALIAS_NAVIGATION_ID).click();
         assertLoginViewShown();
     }
 
@@ -295,8 +288,7 @@ public class AppViewIT extends AbstractIT {
     public void loggedInAsUser_linkToAdminPageWithAlias_accessDenied() {
         open(LOGIN_PATH);
         loginUser();
-        $(TestBenchElement.class).id(PublicView.ANCHOR_ALIAS_NAVIGATION_ID)
-                .click();
+        $(TestBenchElement.class).id(PublicView.ANCHOR_ALIAS_NAVIGATION_ID).click();
         assertNotFoundView("alias-for-admin");
     }
 
@@ -341,9 +333,7 @@ public class AppViewIT extends AbstractIT {
     private void assertMenuListContains(String expected) {
         TestBenchElement menuList = waitUntil(driver -> $("*").id("menu-list"));
         String menuListText = menuList.getText();
-        Assert.assertTrue(
-                "Expected " + expected + " but actual is " + menuListText,
-                menuListText.contains(expected));
+        Assert.assertTrue("Expected " + expected + " but actual is " + menuListText, menuListText.contains(expected));
     }
 
     private void navigateToClientMenuList() {
@@ -371,8 +361,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private void assertForbiddenPage() {
-        assertPageContains(
-                "There was an unexpected error (type=Forbidden, status=403).");
+        assertPageContains("There was an unexpected error (type=Forbidden, status=403).");
     }
 
     private void assertNotFoundView(String path) {
@@ -385,8 +374,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private List<MenuItem> getMenuItems() {
-        List<TestBenchElement> anchors = getMainView().$("vaadin-tabs").first()
-                .$("a").all();
+        List<TestBenchElement> anchors = getMainView().$("vaadin-tabs").first().$("a").all();
 
         return anchors.stream().map(anchor -> {
             String href = (String) anchor.callFunction("getAttribute", "href");

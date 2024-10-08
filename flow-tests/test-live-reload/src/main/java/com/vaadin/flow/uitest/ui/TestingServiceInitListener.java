@@ -31,29 +31,23 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
     @Override
     public void serviceInit(ServiceInitEvent event) {
         // just set a fake backend to trigger live-reload client-side
-        BrowserLiveReloadAccessor liveReloadAccess = VaadinService.getCurrent()
-                .getInstantiator().getOrCreate(BrowserLiveReloadAccessor.class);
-        BrowserLiveReload browserLiveReload = liveReloadAccess
-                .getLiveReload(VaadinService.getCurrent());
+        BrowserLiveReloadAccessor liveReloadAccess = VaadinService.getCurrent().getInstantiator()
+                .getOrCreate(BrowserLiveReloadAccessor.class);
+        BrowserLiveReload browserLiveReload = liveReloadAccess.getLiveReload(VaadinService.getCurrent());
         browserLiveReload.setBackend(BrowserLiveReload.Backend.HOTSWAP_AGENT);
 
-        event.addRequestHandler(
-                (RequestHandler) (session, request, response) -> {
-                    if ("/reset_frontend".equals(request.getPathInfo())) {
-                        FrontendLiveReloadView
-                                .resetFrontendFile(session.getService());
-                        return true;
-                    } else if ("/update_frontend"
-                            .equals(request.getPathInfo())) {
-                        String code = IOUtils.toString(request.getInputStream(),
-                                StandardCharsets.UTF_8.name());
-                        FrontendLiveReloadView.replaceFrontendFile(
-                                session.getService(), code);
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
+        event.addRequestHandler((RequestHandler) (session, request, response) -> {
+            if ("/reset_frontend".equals(request.getPathInfo())) {
+                FrontendLiveReloadView.resetFrontendFile(session.getService());
+                return true;
+            } else if ("/update_frontend".equals(request.getPathInfo())) {
+                String code = IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8.name());
+                FrontendLiveReloadView.replaceFrontendFile(session.getService(), code);
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
 }

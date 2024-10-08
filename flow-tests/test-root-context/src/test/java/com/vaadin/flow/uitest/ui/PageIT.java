@@ -56,8 +56,7 @@ public class PageIT extends ChromeBrowserTest {
         try {
             waitUntil(driver -> driver.getTitle().equals(title));
         } catch (TimeoutException te) {
-            Assert.fail("Page title does not match. Expected: " + title
-                    + ", Actual: " + driver.getTitle());
+            Assert.fail("Page title does not match. Expected: " + title + ", Actual: " + driver.getTitle());
         }
     }
 
@@ -84,8 +83,7 @@ public class PageIT extends ChromeBrowserTest {
         open();
 
         findElement(By.id("setLocation")).click();
-        Assert.assertThat(getDriver().getCurrentUrl(),
-                Matchers.endsWith(BaseHrefView.class.getName()));
+        Assert.assertThat(getDriver().getCurrentUrl(), Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
     @Test
@@ -94,10 +92,8 @@ public class PageIT extends ChromeBrowserTest {
         open();
 
         findElement(By.id("open")).click();
-        ArrayList<String> tabs = new ArrayList<>(
-                getDriver().getWindowHandles());
-        Assert.assertThat(
-                getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
+        ArrayList<String> tabs = new ArrayList<>(getDriver().getWindowHandles());
+        Assert.assertThat(getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
                 Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
@@ -110,55 +106,48 @@ public class PageIT extends ChromeBrowserTest {
 
         waitUntil(driver -> !getIframeUrl().equals("about:blank"));
 
-        Assert.assertThat(getIframeUrl(),
-                Matchers.endsWith(BaseHrefView.class.getName()));
+        Assert.assertThat(getIframeUrl(), Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
     @Test
     public void fetchPageDirection_noDirectionSetExplicitly_leftToRightIsPassedToCallback() {
         open();
 
-        Assert.assertEquals("",
-                findElement(By.id("direction-value")).getText());
+        Assert.assertEquals("", findElement(By.id("direction-value")).getText());
 
         findElement(By.id("fetch-direction")).click();
 
-        Assert.assertEquals("LEFT_TO_RIGHT",
-                findElement(By.id("direction-value")).getText());
+        Assert.assertEquals("LEFT_TO_RIGHT", findElement(By.id("direction-value")).getText());
     }
 
     @Test
     public void fetchPageDirection_setRTLDirection_rightToLeftIsPassedToCallback() {
         open();
 
-        Assert.assertEquals("",
-                findElement(By.id("direction-value")).getText());
+        Assert.assertEquals("", findElement(By.id("direction-value")).getText());
 
         findElement(By.id("set-RTL-direction")).click();
 
         findElement(By.id("fetch-direction")).click();
 
-        Assert.assertEquals("RIGHT_TO_LEFT",
-                findElement(By.id("direction-value")).getText());
+        Assert.assertEquals("RIGHT_TO_LEFT", findElement(By.id("direction-value")).getText());
     }
 
     @Test
     public void fetchPageDirection_setLTRDirection_leftToRightIsPassedToCallback() {
         open();
 
-        Assert.assertEquals("",
-                findElement(By.id("direction-value")).getText());
+        Assert.assertEquals("", findElement(By.id("direction-value")).getText());
 
         findElement(By.id("set-LTR-direction")).click();
 
         findElement(By.id("fetch-direction")).click();
 
-        Assert.assertEquals("LEFT_TO_RIGHT",
-                findElement(By.id("direction-value")).getText());
+        Assert.assertEquals("LEFT_TO_RIGHT", findElement(By.id("direction-value")).getText());
     }
 
     private String getIframeUrl() {
-        return (String) ((JavascriptExecutor) driver).executeScript(
-                "return document.getElementById('newWindow').contentWindow.location.href;");
+        return (String) ((JavascriptExecutor) driver)
+                .executeScript("return document.getElementById('newWindow').contentWindow.location.href;");
     }
 }

@@ -49,8 +49,7 @@ public class DomEvent extends EventObject {
      * Creates a new DOM event.
      *
      * @param source
-     *            the element on which the listener has been attached, not
-     *            <code>null</code>
+     *            the element on which the listener has been attached, not <code>null</code>
      * @param eventType
      *            the type of the event, not <code>null</code>
      * @param eventData
@@ -81,14 +80,11 @@ public class DomEvent extends EventObject {
         }
     }
 
-    private static Element extractEventTarget(JsonObject eventData,
-            Element currentTarget) {
-        return extractElement(eventData, currentTarget,
-                JsonConstants.MAP_STATE_NODE_EVENT_DATA, false);
+    private static Element extractEventTarget(JsonObject eventData, Element currentTarget) {
+        return extractElement(eventData, currentTarget, JsonConstants.MAP_STATE_NODE_EVENT_DATA, false);
     }
 
-    static Element extractElement(JsonObject eventData, Element source,
-            String key, boolean lookUnderUI) {
+    static Element extractElement(JsonObject eventData, Element source, String key, boolean lookUnderUI) {
         assert key.startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
         if (!eventData.hasKey(key)) {
             return null;
@@ -147,8 +143,7 @@ public class DomEvent extends EventObject {
     }
 
     /**
-     * Gets additional data related to the event. An empty JSON object is
-     * returned if no event data is available.
+     * Gets additional data related to the event. An empty JSON object is returned if no event data is available.
      *
      * @see DomListenerRegistration#addEventData(String)
      *
@@ -159,10 +154,9 @@ public class DomEvent extends EventObject {
     }
 
     /**
-     * Gets the debounce phase for which this event is fired. This is used
-     * internally to only deliver the event to the appropriate listener in cases
-     * where there are multiple listeners for the same event with different
-     * debounce settings.
+     * Gets the debounce phase for which this event is fired. This is used internally to only deliver the event to the
+     * appropriate listener in cases where there are multiple listeners for the same event with different debounce
+     * settings.
      *
      * @return the debounce phase
      */
@@ -171,20 +165,16 @@ public class DomEvent extends EventObject {
     }
 
     /**
-     * Gets the closest {@link Element} that corresponds to the
-     * {@code event.target} for the DOM event. This is always inside the child
-     * hierarchy of the element returned by {@link #getSource()}.
+     * Gets the closest {@link Element} that corresponds to the {@code event.target} for the DOM event. This is always
+     * inside the child hierarchy of the element returned by {@link #getSource()}.
      * <p>
-     * To get this reported, you need to call
-     * {@link DomListenerRegistration#mapEventTargetElement()} or an empty
+     * To get this reported, you need to call {@link DomListenerRegistration#mapEventTargetElement()} or an empty
      * optional is always returned.
      * <p>
-     * The returned element is the same as {@link #getSource()} <em>only if</em>
-     * the event originated from that element on the browser (and not from its
-     * child).
+     * The returned element is the same as {@link #getSource()} <em>only if</em> the event originated from that element
+     * on the browser (and not from its child).
      *
-     * @return the element that corresponds to {@code event.target} or an empty
-     *         optional
+     * @return the element that corresponds to {@code event.target} or an empty optional
      * @since 9.0
      */
     public Optional<Element> getEventTarget() {
@@ -192,23 +182,17 @@ public class DomEvent extends EventObject {
     }
 
     /**
-     * Gets the closest {@link Element} corresponding to the given event data
-     * expression. <em>NOTE:</em> this only works if you have added the
-     * expression using
-     * {@link DomListenerRegistration#addEventDataElement(String)}.
+     * Gets the closest {@link Element} corresponding to the given event data expression. <em>NOTE:</em> this only works
+     * if you have added the expression using {@link DomListenerRegistration#addEventDataElement(String)}.
      * <p>
-     * If the evaluated JS expression returned an element that is not created or
-     * controlled by the server side, the closest parent element that is
-     * controlled is returned instead. Invisible elements are not reported.
+     * If the evaluated JS expression returned an element that is not created or controlled by the server side, the
+     * closest parent element that is controlled is returned instead. Invisible elements are not reported.
      * <p>
-     * In case you want the {@code event.target} element, use
-     * {@link #getEventTarget()} instead.
+     * In case you want the {@code event.target} element, use {@link #getEventTarget()} instead.
      *
      * @param eventDataExpression
-     *            the expression that was executed on the client to retrieve the
-     *            element, not <code>null</code>
-     * @return the element that corresponds to the given expression or an empty
-     *         optional
+     *            the expression that was executed on the client to retrieve the element, not <code>null</code>
+     * @return the element that corresponds to the given expression or an empty optional
      * @since 9.0
      */
     public Optional<Element> getEventDataElement(String eventDataExpression) {
@@ -217,9 +201,7 @@ public class DomEvent extends EventObject {
             return getEventTarget();
         } else {
             return Optional.ofNullable(extractElement(eventData, getSource(),
-                    JsonConstants.MAP_STATE_NODE_EVENT_DATA
-                            + eventDataExpression,
-                    true));
+                    JsonConstants.MAP_STATE_NODE_EVENT_DATA + eventDataExpression, true));
         }
     }
 }

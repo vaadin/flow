@@ -22,16 +22,12 @@ import com.vaadin.flow.dom.Element;
  *
  * @author Vaadin Ltd
  * @since
- * @deprecated {@code InjectableLitElementInitializer} should be used for Lit
- *             templates since polymer support is deprecated, we recommend you
- *             to use {@code LitTemplate} instead. Read more details from
- *             <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated {@code InjectableLitElementInitializer} should be used for Lit templates since polymer support is
+ *             deprecated, we recommend you to use {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
-public class InjectablePolymerElementInitializer
-        extends AbstractInjectableElementInitializer {
+public class InjectablePolymerElementInitializer extends AbstractInjectableElementInitializer {
 
     private static final String DYNAMIC_ATTRIBUTE_PREFIX = "Template {} contains an attribute {} in element {} whose value";
     private final Class<? extends Component> templateClass;
@@ -44,8 +40,7 @@ public class InjectablePolymerElementInitializer
      * @param templateClass
      *            the class of the template component
      */
-    public InjectablePolymerElementInitializer(Element element,
-            Class<? extends Component> templateClass) {
+    public InjectablePolymerElementInitializer(Element element, Class<? extends Component> templateClass) {
         super(element);
         this.templateClass = templateClass;
     }
@@ -66,32 +61,26 @@ public class InjectablePolymerElementInitializer
         }
         if (value.contains("{{") && value.contains("}}")) {
             // this is a binding, skip it
-            getLogger().debug(
-                    "{} contains two-way binding and it's ignored by initilization",
-                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
-                    name, getElement().getTag());
+            getLogger().debug("{} contains two-way binding and it's ignored by initilization", DYNAMIC_ATTRIBUTE_PREFIX,
+                    templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         if (value.contains("[[") && value.contains("]]")) {
             // this is another binding, skip it
-            getLogger().debug(
-                    "{} contains binding and it's ignored by initilization",
-                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
-                    name, getElement().getTag());
+            getLogger().debug("{} contains binding and it's ignored by initilization", DYNAMIC_ATTRIBUTE_PREFIX,
+                    templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         if (value.contains("${") && value.contains("}")) {
             // this is a dynamic value
-            getLogger().debug("{} is dynamic and it's ignored by initilization",
-                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
-                    name, getElement().getTag());
+            getLogger().debug("{} is dynamic and it's ignored by initilization", DYNAMIC_ATTRIBUTE_PREFIX,
+                    templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         return true;
     }
 
     private static Logger getLogger() {
-        return LoggerFactory
-                .getLogger(InjectablePolymerElementInitializer.class);
+        return LoggerFactory.getLogger(InjectablePolymerElementInitializer.class);
     }
 }

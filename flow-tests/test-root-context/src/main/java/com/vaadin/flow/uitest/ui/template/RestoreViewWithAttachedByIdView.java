@@ -38,8 +38,7 @@ public class RestoreViewWithAttachedByIdView extends AbstractDivView {
 
     @Tag("template-with-injected-id")
     @JsModule("./TemplateWithInjectedId.js")
-    public static class TemplateWithInjectedId
-            extends PolymerTemplate<TemplateModel> {
+    public static class TemplateWithInjectedId extends PolymerTemplate<TemplateModel> {
 
         @Id("ignore")
         private Div ignore;

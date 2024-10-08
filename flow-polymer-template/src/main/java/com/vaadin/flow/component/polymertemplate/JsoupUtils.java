@@ -21,11 +21,9 @@ import org.jsoup.nodes.Node;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @deprecated This class is internal and used only for Polymer templates.
- *             Polymer template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated This class is internal and used only for Polymer templates. Polymer template support is deprecated - we
+ *             recommend you to use {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 final class JsoupUtils {
@@ -56,14 +54,12 @@ final class JsoupUtils {
     /**
      * Finds {@code "dom-module"} element inside the {@code parent}.
      * <p>
-     * If {@code id} is provided then {@code "dom-module"} element is searched
-     * with the given {@code id} value.
+     * If {@code id} is provided then {@code "dom-module"} element is searched with the given {@code id} value.
      *
      * @param parent
      *            the parent element
      * @param id
-     *            optional id attribute value to search {@code "dom-module"}
-     *            element, may be {@code null}
+     *            optional id attribute value to search {@code "dom-module"} element, may be {@code null}
      * @return
      */
     static Optional<Element> getDomModule(Element parent, String id) {

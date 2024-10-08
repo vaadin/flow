@@ -43,7 +43,6 @@ public class IntegerToDoubleConverterTest {
 
     @Test
     public void testConvertToPresentation() {
-        assertEquals(Integer.valueOf(42),
-                converter.convertToPresentation(42.0, null));
+        assertEquals(Integer.valueOf(42), converter.convertToPresentation(42.0, null));
     }
 }

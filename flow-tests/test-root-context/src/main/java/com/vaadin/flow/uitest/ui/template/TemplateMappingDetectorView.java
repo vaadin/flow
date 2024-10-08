@@ -33,8 +33,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class TemplateMappingDetectorView extends AbstractDivView {
 
     @Tag("div")
-    public static class TemplateMappingDetector extends Component
-            implements HasText {
+    public static class TemplateMappingDetector extends Component implements HasText {
 
         public TemplateMappingDetector() {
             setText("Template mapped: " + isTemplateMapped());
@@ -42,14 +41,12 @@ public class TemplateMappingDetectorView extends AbstractDivView {
 
     }
 
-    public static class TemplateMappingDetectorComposite
-            extends Composite<TemplateMappingDetector> {
+    public static class TemplateMappingDetectorComposite extends Composite<TemplateMappingDetector> {
 
         @Override
         protected TemplateMappingDetector initContent() {
             TemplateMappingDetector detector = super.initContent();
-            detector.setText("Composite template mapped: " + isTemplateMapped()
-                    + " " + detector.getText());
+            detector.setText("Composite template mapped: " + isTemplateMapped() + " " + detector.getText());
             return detector;
         }
 
@@ -57,8 +54,7 @@ public class TemplateMappingDetectorView extends AbstractDivView {
 
     @Tag("template-mapping-detector")
     @JsModule("./TemplateMappingDetector.js")
-    public static class TemplateMappingDetectorContainer
-            extends PolymerTemplate<TemplateModel> {
+    public static class TemplateMappingDetectorContainer extends PolymerTemplate<TemplateModel> {
         @Id
         TemplateMappingDetector detector1;
 
@@ -84,14 +80,12 @@ public class TemplateMappingDetectorView extends AbstractDivView {
 
     @Tag("template-mapping-detector-parent")
     @JsModule("./TemplateMappingDetectorParent.js")
-    public static class TemplateMappingDetectorContainerParent
-            extends PolymerTemplate<TemplateModel> {
+    public static class TemplateMappingDetectorContainerParent extends PolymerTemplate<TemplateModel> {
         @Id
         TemplateMappingDetectorContainer detector;
     }
 
-    public static class TemplateMappingDetectorContainerComposite
-            extends Composite<TemplateMappingDetectorContainer> {
+    public static class TemplateMappingDetectorContainerComposite extends Composite<TemplateMappingDetectorContainer> {
     }
 
     @Override

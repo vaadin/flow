@@ -20,8 +20,7 @@ import com.vaadin.client.bootstrap.ErrorMessage;
 /**
  * Application configuration data.
  * <p>
- * This class is effectively immutable although setters exist to assign the
- * values during construction.
+ * This class is effectively immutable although setters exist to assign the values during construction.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -127,10 +126,9 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the UI id of the server-side UI associated with this client-side
-     * instance. The UI id should be included in every request originating from
-     * this instance in order to associate the request with the right UI
-     * instance on the server.
+     * Gets the UI id of the server-side UI associated with this client-side instance. The UI id should be included in
+     * every request originating from this instance in order to associate the request with the right UI instance on the
+     * server.
      *
      * @return the UI id
      */
@@ -139,8 +137,7 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Sets the UI id of the server-side UI associated with this client-side
-     * instance.
+     * Sets the UI id of the server-side UI associated with this client-side instance.
      *
      * @param uiId
      *            the UI id
@@ -152,8 +149,7 @@ public class ApplicationConfiguration {
     /**
      * Gets the interval for heartbeat requests.
      *
-     * @return The interval in seconds between heartbeat requests, or -1 if
-     *         heartbeat is disabled.
+     * @return The interval in seconds between heartbeat requests, or -1 if heartbeat is disabled.
      */
     public int getHeartbeatInterval() {
         return heartbeatInterval;
@@ -163,8 +159,7 @@ public class ApplicationConfiguration {
      * Sets the interval for heartbeat requests.
      *
      * @param heartbeatInterval
-     *            The interval in seconds between heartbeat requests, or -1 if
-     *            heartbeat is disabled.
+     *            The interval in seconds between heartbeat requests, or -1 if heartbeat is disabled.
      */
     public void setHeartbeatInterval(int heartbeatInterval) {
         this.heartbeatInterval = heartbeatInterval;
@@ -173,8 +168,8 @@ public class ApplicationConfiguration {
     /**
      * Gets the maximum message suspension delay.
      *
-     * @return The maximum time, in milliseconds, to suspend out-of-order
-     *         messages waiting for their predecessor before resynchronizing.
+     * @return The maximum time, in milliseconds, to suspend out-of-order messages waiting for their predecessor before
+     *         resynchronizing.
      */
     public int getMaxMessageSuspendTimeout() {
         return maxMessageSuspendTimeout;
@@ -184,8 +179,8 @@ public class ApplicationConfiguration {
      * Sets the maximum message suspension delay.
      *
      * @param maxMessageSuspendTimeout
-     *            The maximum time, in milliseconds, to suspend out-of-order
-     *            messages waiting for their predecessor before resynchronizing.
+     *            The maximum time, in milliseconds, to suspend out-of-order messages waiting for their predecessor
+     *            before resynchronizing.
      */
     public void setMaxMessageSuspendTimeout(int maxMessageSuspendTimeout) {
         this.maxMessageSuspendTimeout = maxMessageSuspendTimeout;
@@ -270,13 +265,11 @@ public class ApplicationConfiguration {
     /**
      * Checks if we are running in production mode.
      * <p>
-     * With production mode disabled, a lot more information is logged to the
-     * browser console. In production you should always enable production mode,
-     * because logging and other debug features can have a significant
-     * performance impact.
+     * With production mode disabled, a lot more information is logged to the browser console. In production you should
+     * always enable production mode, because logging and other debug features can have a significant performance
+     * impact.
      *
-     * @return {@code true} if production mode is enabled, {@code false}
-     *         otherwise
+     * @return {@code true} if production mode is enabled, {@code false} otherwise
      */
     public boolean isProductionMode() {
         return productionMode;
@@ -285,8 +278,7 @@ public class ApplicationConfiguration {
     /**
      * Checks if request timing info should be made available.
      *
-     * @return {@code true} if request timing info should be made availble,
-     *         {@code false} otherwise
+     * @return {@code true} if request timing info should be made availble, {@code false} otherwise
      */
     public boolean isRequestTiming() {
         return requestTiming;
@@ -295,14 +287,12 @@ public class ApplicationConfiguration {
     /**
      * Sets whether we are running in production mode.
      * <p>
-     * With production mode disabled, a lot more information is logged to the
-     * browser console. In production you should always enable production mode,
-     * because logging and other debug features can have a significant
-     * performance impact.
+     * With production mode disabled, a lot more information is logged to the browser console. In production you should
+     * always enable production mode, because logging and other debug features can have a significant performance
+     * impact.
      *
      * @param productionMode
-     *            {@code true} if production mode is enabled, {@code false}
-     *            otherwise
+     *            {@code true} if production mode is enabled, {@code false} otherwise
      */
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
@@ -313,8 +303,7 @@ public class ApplicationConfiguration {
      * Sets whether request timing info should be made available.
      *
      * @param requestTiming
-     *            {@code true} if request timing info should be made available,
-     *            {@code false} otherwise
+     *            {@code true} if request timing info should be made available, {@code false} otherwise
      */
     public void setRequestTiming(boolean requestTiming) {
         this.requestTiming = requestTiming;

@@ -24,10 +24,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * A view for testing for CSS priority computing on browser, make sure that the
- * same selectors (with same priority) from different sources (i.e. Application
- * Theme, @CssImport, @StyleSheet, Page.addStyleSheet) are overridden in a
- * correct order.
+ * A view for testing for CSS priority computing on browser, make sure that the same selectors (with same priority) from
+ * different sources (i.e. Application Theme, @CssImport, @StyleSheet, Page.addStyleSheet) are overridden in a correct
+ * order.
  * <p>
  * See {@code OrderedDependencyIT} for testing dependency loading order.
  *
@@ -39,24 +38,19 @@ import com.vaadin.flow.shared.ui.LoadMode;
 public class CssLoadingView extends Div {
 
     public CssLoadingView() {
-        UI.getCurrent().getPage().addStyleSheet("/styles/page-stylesheet.css",
-                LoadMode.INLINE);
+        UI.getCurrent().getPage().addStyleSheet("/styles/page-stylesheet.css", LoadMode.INLINE);
 
-        Paragraph p1 = new Paragraph(
-                "Having @CssImport and Page.addStylesheet()");
+        Paragraph p1 = new Paragraph("Having @CssImport and Page.addStylesheet()");
         p1.setId("p1");
         p1.addClassNames("css-import", "page-add-stylesheet");
 
-        Paragraph p2 = new Paragraph(
-                "@CssImport, Page.addStylesheet() and @Stylesheet");
+        Paragraph p2 = new Paragraph("@CssImport, Page.addStylesheet() and @Stylesheet");
         p2.setId("p2");
         p2.addClassNames("css-import", "page-add-stylesheet", "stylesheet");
 
-        Paragraph p3 = new Paragraph(
-                "Having App Theme, @CssImport, Page.addStylesheet() and @Stylesheet");
+        Paragraph p3 = new Paragraph("Having App Theme, @CssImport, Page.addStylesheet() and @Stylesheet");
         p3.setId("p3");
-        p3.addClassNames("css-import", "page-add-stylesheet", "stylesheet",
-                "global");
+        p3.addClassNames("css-import", "page-add-stylesheet", "stylesheet", "global");
 
         add(p1, p2, p3);
         setId("styled-components");

@@ -58,55 +58,46 @@ public class VaadinServletService extends VaadinService {
     private final ServiceContextUriResolver contextResolver = new ServiceContextUriResolver();
 
     /**
-     * Creates an instance connected to the given servlet and using the given
-     * configuration.
+     * Creates an instance connected to the given servlet and using the given configuration.
      *
      * @param servlet
      *            the servlet which receives requests
      * @param deploymentConfiguration
      *            the configuration to use
      */
-    public VaadinServletService(VaadinServlet servlet,
-            DeploymentConfiguration deploymentConfiguration) {
+    public VaadinServletService(VaadinServlet servlet, DeploymentConfiguration deploymentConfiguration) {
         super(deploymentConfiguration);
         this.servlet = servlet;
     }
 
     /**
-     * Creates a servlet service. This method is for use by dependency injection
-     * frameworks etc. {@link #getServlet()} and {@link #getContext()} should be
-     * overridden (or otherwise intercepted) to not return <code>null</code>.
+     * Creates a servlet service. This method is for use by dependency injection frameworks etc. {@link #getServlet()}
+     * and {@link #getContext()} should be overridden (or otherwise intercepted) to not return <code>null</code>.
      */
     protected VaadinServletService() {
         servlet = null;
     }
 
     @Override
-    protected List<RequestHandler> createRequestHandlers()
-            throws ServiceException {
+    protected List<RequestHandler> createRequestHandlers() throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
 
         Mode mode = getDeploymentConfiguration().getMode();
-        if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
-                || mode == Mode.DEVELOPMENT_BUNDLE) {
-            Optional<DevModeHandler> handlerManager = DevModeHandlerManager
-                    .getDevModeHandler(this);
+        if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD || mode == Mode.DEVELOPMENT_BUNDLE) {
+            Optional<DevModeHandler> handlerManager = DevModeHandlerManager.getDevModeHandler(this);
             if (handlerManager.isPresent()) {
                 DevModeHandler devModeHandler = handlerManager.get();
                 // WebComponentProvider handler should run before DevModeHandler
                 // to avoid responding with html contents when dev bundle is
                 // not ready (e.g. dev-mode-not-ready.html)
-                handlers.stream().filter(WebComponentProvider.class::isInstance)
-                        .findFirst().map(handlers::indexOf)
+                handlers.stream().filter(WebComponentProvider.class::isInstance).findFirst().map(handlers::indexOf)
                         .ifPresentOrElse(idx -> {
                             handlers.add(idx, devModeHandler);
                         }, () -> handlers.add(devModeHandler));
             } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
-                getLogger()
-                        .warn("no DevModeHandlerManager implementation found "
-                                + "but dev server enabled. Include the "
-                                + "com.vaadin.vaadin-dev-server dependency.");
+                getLogger().warn("no DevModeHandlerManager implementation found "
+                        + "but dev server enabled. Include the " + "com.vaadin.vaadin-dev-server dependency.");
             }
         }
 
@@ -120,9 +111,7 @@ public class VaadinServletService extends VaadinService {
                 // Atmosphere init failed. Push won't work but we don't throw a
                 // service exception as we don't want to prevent non-push
                 // applications from working
-                getLogger().warn(
-                        "Error initializing Atmosphere. Push will not work.",
-                        e);
+                getLogger().warn("Error initializing Atmosphere. Push will not work.", e);
             }
         }
 
@@ -132,14 +121,12 @@ public class VaadinServletService extends VaadinService {
 
     private void addBootstrapHandler(List<RequestHandler> handlers) {
         handlers.add(0, new IndexHtmlRequestHandler());
-        getLogger().debug("Using '{}' in client mode bootstrapping",
-                IndexHtmlRequestHandler.class.getName());
+        getLogger().debug("Using '{}' in client mode bootstrapping", IndexHtmlRequestHandler.class.getName());
     }
 
     /**
-     * Retrieves a reference to the servlet associated with this service. Should
-     * be overridden (or otherwise intercepted) if the no-arg constructor is
-     * used to prevent NPEs.
+     * Retrieves a reference to the servlet associated with this service. Should be overridden (or otherwise
+     * intercepted) if the no-arg constructor is used to prevent NPEs.
      *
      * @return A reference to the VaadinServlet this service is using
      */
@@ -165,12 +152,9 @@ public class VaadinServletService extends VaadinService {
     }
 
     private boolean isOtherRequest(VaadinRequest request) {
-        String type = request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
-        return type == null
-                || ApplicationConstants.REQUEST_TYPE_INIT.equals(type)
-                || ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC
-                        .equals(type);
+        String type = request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        return type == null || ApplicationConstants.REQUEST_TYPE_INIT.equals(type)
+                || ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC.equals(type);
     }
 
     public static HttpServletRequest getCurrentServletRequest() {
@@ -190,8 +174,7 @@ public class VaadinServletService extends VaadinService {
     public String getMainDivId(VaadinSession session, VaadinRequest request) {
         String appId = null;
         try {
-            URL appUrl = VaadinServlet
-                    .getApplicationUrl((VaadinServletRequest) request);
+            URL appUrl = VaadinServlet.getApplicationUrl((VaadinServletRequest) request);
             appId = appUrl.getPath();
         } catch (MalformedURLException e) {
             // Just ignore problem here
@@ -228,8 +211,7 @@ public class VaadinServletService extends VaadinService {
                 // is not yet initialized or has been destroyed
                 // It may happen for example during Spring hot deploy restarts
                 // and in this case getServletContext will throw an NPE
-                .filter(s -> s.getServletConfig() != null)
-                .map(GenericServlet::getServletContext)
+                .filter(s -> s.getServletConfig() != null).map(GenericServlet::getServletContext)
                 .map(PwaRegistry::getInstance).orElse(null);
     }
 
@@ -265,8 +247,7 @@ public class VaadinServletService extends VaadinService {
      *
      * @param path
      *            the path inside servlet context
-     * @return a URL for the resource or <code>null</code> if no resource was
-     *         found
+     * @return a URL for the resource or <code>null</code> if no resource was found
      */
     public URL getResourceInServletContext(String path) {
         ServletContext servletContext = getServlet().getServletContext();
@@ -279,14 +260,11 @@ public class VaadinServletService extends VaadinService {
     }
 
     /**
-     * Opens a stream for the given resource found in the servlet context or in
-     * a webjar.
+     * Opens a stream for the given resource found in the servlet context or in a webjar.
      *
      * @param path
-     *            the path inside servlet context, automatically translated as
-     *            needed for webjars
-     * @return a URL for the resource or <code>null</code> if no resource was
-     *         found
+     *            the path inside servlet context, automatically translated as needed for webjars
+     * @return a URL for the resource or <code>null</code> if no resource was found
      */
     private InputStream getResourceInServletContextAsStream(String path) {
         ServletContext servletContext = getServlet().getServletContext();
@@ -320,11 +298,9 @@ public class VaadinServletService extends VaadinService {
         setClassLoader(getServlet().getServletContext().getClassLoader());
     }
 
-    static URL getStaticResource(ServletContext servletContext, String path)
-            throws MalformedURLException {
+    static URL getStaticResource(ServletContext servletContext, String path) throws MalformedURLException {
         URL url = servletContext.getResource(path);
-        if (url != null && Optional.ofNullable(servletContext.getServerInfo())
-                .orElse("").contains("jetty/12.")) {
+        if (url != null && Optional.ofNullable(servletContext.getServerInfo()).orElse("").contains("jetty/12.")) {
             // Making sure that resource exists before returning it. Jetty
             // 12 may return URL for non-existing resource.
             try {

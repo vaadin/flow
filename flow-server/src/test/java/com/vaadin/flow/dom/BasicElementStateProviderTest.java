@@ -51,8 +51,7 @@ public class BasicElementStateProviderTest {
     @Test
     public void getParent_parentNodeIsNull_parentIsNull() {
         Element div = ElementFactory.createDiv();
-        Assert.assertNull(
-                BasicElementStateProvider.get().getParent(div.getNode()));
+        Assert.assertNull(BasicElementStateProvider.get().getParent(div.getNode()));
     }
 
     @Test
@@ -60,8 +59,7 @@ public class BasicElementStateProviderTest {
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
-        Assert.assertEquals(parent,
-                BasicElementStateProvider.get().getParent(child.getNode()));
+        Assert.assertEquals(parent, BasicElementStateProvider.get().getParent(child.getNode()));
     }
 
     @Test
@@ -69,8 +67,7 @@ public class BasicElementStateProviderTest {
         ShadowRoot parent = ElementFactory.createDiv().attachShadow();
         Element child = ElementFactory.createDiv();
         parent.appendChild(child);
-        Assert.assertEquals(parent,
-                BasicElementStateProvider.get().getParent(child.getNode()));
+        Assert.assertEquals(parent, BasicElementStateProvider.get().getParent(child.getNode()));
     }
 
     @Test
@@ -90,10 +87,8 @@ public class BasicElementStateProviderTest {
         BasicElementStateProvider.get().visit(subject.getNode(), visitor);
 
         Assert.assertEquals(1, visitor.getVisited().size());
-        Assert.assertEquals(subject,
-                visitor.getVisited().keySet().iterator().next());
-        Assert.assertEquals(ElementType.REGULAR,
-                visitor.getVisited().values().iterator().next());
+        Assert.assertEquals(subject, visitor.getVisited().keySet().iterator().next());
+        Assert.assertEquals(ElementType.REGULAR, visitor.getVisited().values().iterator().next());
     }
 
     @Test
@@ -108,9 +103,7 @@ public class BasicElementStateProviderTest {
 
         Assert.assertTrue(map.size() > 1);
 
-        Assert.assertEquals(
-                "The collected descendants doesn't match expected descendatns",
-                map, visitor.getVisited());
+        Assert.assertEquals("The collected descendants doesn't match expected descendatns", map, visitor.getVisited());
     }
 
     @Test
@@ -127,8 +120,7 @@ public class BasicElementStateProviderTest {
     public static void assertNoChildFeatures(Element element) {
         Assert.assertFalse("Node should not have a children list feature",
                 isFeatureInitialized(element, ElementChildrenList.class));
-        Assert.assertFalse(
-                "Node should not have a virtual children list feature",
+        Assert.assertFalse("Node should not have a virtual children list feature",
                 isFeatureInitialized(element, VirtualChildrenList.class));
         Assert.assertFalse("Node should not have a shadow root feature",
                 isFeatureInitialized(element, ShadowRootData.class));
@@ -138,25 +130,20 @@ public class BasicElementStateProviderTest {
     public void setVisible() {
         Element element = ElementFactory.createDiv();
 
-        Assert.assertTrue(
-                element.getNode().getFeature(ElementData.class).isVisible());
+        Assert.assertTrue(element.getNode().getFeature(ElementData.class).isVisible());
 
         BasicElementStateProvider.get().setVisible(element.getNode(), true);
 
-        Assert.assertTrue(
-                element.getNode().getFeature(ElementData.class).isVisible());
+        Assert.assertTrue(element.getNode().getFeature(ElementData.class).isVisible());
 
         BasicElementStateProvider.get().setVisible(element.getNode(), false);
 
-        Assert.assertFalse(
-                element.getNode().getFeature(ElementData.class).isVisible());
+        Assert.assertFalse(element.getNode().getFeature(ElementData.class).isVisible());
 
     }
 
-    private static boolean isFeatureInitialized(Element element,
-            Class<? extends NodeFeature> featureType) {
-        return element.getNode().getFeatureIfInitialized(featureType)
-                .isPresent();
+    private static boolean isFeatureInitialized(Element element, Class<? extends NodeFeature> featureType) {
+        return element.getNode().getFeatureIfInitialized(featureType).isPresent();
     }
 
     private Element createHierarchy(Map<Node<?>, ElementType> map) {
@@ -190,8 +177,8 @@ public class BasicElementStateProviderTest {
 
         Element virtualGrandChild = ElementFactory.createDiv();
 
-        child.getStateProvider().appendVirtualChild(child.getNode(),
-                virtualGrandChild, NodeProperties.INJECT_BY_ID, "id");
+        child.getStateProvider().appendVirtualChild(child.getNode(), virtualGrandChild, NodeProperties.INJECT_BY_ID,
+                "id");
 
         map.put(virtualGrandChild, ElementType.VIRTUAL_ATTACHED);
 

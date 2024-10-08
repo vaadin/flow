@@ -16,8 +16,7 @@
 package com.vaadin.flow.server.webpush;
 
 /**
- * Checked exception which is thrown when Web Push initialisation or sending a
- * Web Push notification fails.
+ * Checked exception which is thrown when Web Push initialisation or sending a Web Push notification fails.
  *
  * @author Vaadin Ltd
  * @since 24.2
@@ -40,8 +39,7 @@ public class WebPushException extends RuntimeException {
         super(cause);
     }
 
-    public WebPushException(String message, Throwable cause,
-            boolean enableSuppression, boolean writableStackTrace) {
+    public WebPushException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

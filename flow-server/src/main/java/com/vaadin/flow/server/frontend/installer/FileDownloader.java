@@ -39,11 +39,9 @@ public interface FileDownloader {
          * @param totalBytes
          *            the total bytes if known, otherwise -1
          * @param progress
-         *            the progress (0.0 - 1.0) if the total bytes is known,
-         *            otherwise -1
+         *            the progress (0.0 - 1.0) if the total bytes is known, otherwise -1
          */
-        void onProgress(long bytesTransferred, long totalBytes,
-                double progress);
+        void onProgress(long bytesTransferred, long totalBytes, double progress);
     }
 
     /**
@@ -58,12 +56,10 @@ public interface FileDownloader {
      * @param password
      *            password, {@code null} accepted
      * @param progressListener
-     *            a progres listener or {@code null} if no progress listener is
-     *            needed
+     *            a progres listener or {@code null} if no progress listener is needed
      * @throws DownloadException
      *             exception thrown when download fails
      */
-    void download(URI downloadTarget, File destination, String userName,
-            String password, ProgressListener progressListener)
-            throws DownloadException;
+    void download(URI downloadTarget, File destination, String userName, String password,
+            ProgressListener progressListener) throws DownloadException;
 }

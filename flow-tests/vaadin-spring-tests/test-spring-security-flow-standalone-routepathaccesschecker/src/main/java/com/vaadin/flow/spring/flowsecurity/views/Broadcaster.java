@@ -38,8 +38,7 @@ public class Broadcaster {
         instance.router.fireEvent(new RefreshEvent());
     }
 
-    public static synchronized Registration addMessageListener(
-            ComponentEventListener<RefreshEvent> listener) {
+    public static synchronized Registration addMessageListener(ComponentEventListener<RefreshEvent> listener) {
         return instance.router.addListener(RefreshEvent.class, listener);
     }
 

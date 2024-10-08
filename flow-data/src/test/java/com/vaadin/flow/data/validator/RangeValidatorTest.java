@@ -23,20 +23,17 @@ public class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testIntegerRangeValidIntPasses() {
-        assertPasses(10,
-                RangeValidator.of("Must be between -123 and 42", -123, 42));
+        assertPasses(10, RangeValidator.of("Must be between -123 and 42", -123, 42));
     }
 
     @Test
     public void testIntegerRangeInvalidIntFails() {
-        assertFails(123,
-                RangeValidator.of("Must be between -123 and 42", -123, 42));
+        assertFails(123, RangeValidator.of("Must be between -123 and 42", -123, 42));
     }
 
     @Test
     public void testRangeWithoutUpperBoundLargeIntegerPasses() {
-        assertPasses(Integer.MAX_VALUE,
-                RangeValidator.of("Must be at least 18", 18, null));
+        assertPasses(Integer.MAX_VALUE, RangeValidator.of("Must be at least 18", 18, null));
     }
 
     @Test
@@ -46,8 +43,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testRangeWithoutLowerBoundSmallIntegerPasses() {
-        assertPasses(Integer.MIN_VALUE,
-                RangeValidator.of("Must be at most 0", null, 0));
+        assertPasses(Integer.MIN_VALUE, RangeValidator.of("Must be at most 0", null, 0));
     }
 
     @Test
@@ -57,8 +53,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testUnboundedRangePassesEverything() {
-        RangeValidator<Integer> v = RangeValidator.of("This should not happen!",
-                null, null);
+        RangeValidator<Integer> v = RangeValidator.of("This should not happen!", null, null);
 
         assertPasses(Integer.MIN_VALUE, v);
         assertPasses(0, v);
@@ -68,8 +63,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testBoundsInclusiveByDefault() {
-        RangeValidator<Integer> v = RangeValidator
-                .of("Must be between -10 and 10", -10, 10);
+        RangeValidator<Integer> v = RangeValidator.of("Must be between -10 and 10", -10, 10);
 
         assertPasses(-10, v);
         assertPasses(10, v);
@@ -77,8 +71,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testUpperBoundExclusive() {
-        RangeValidator<Integer> v = RangeValidator
-                .of("Must be between -10 and 10", -10, 10);
+        RangeValidator<Integer> v = RangeValidator.of("Must be between -10 and 10", -10, 10);
         v.setMaxValueIncluded(false);
 
         assertPasses(-10, v);
@@ -88,8 +81,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testLowerBoundExclusive() {
-        RangeValidator<Integer> v = RangeValidator
-                .of("Must be between -10 and 10", -10, 10);
+        RangeValidator<Integer> v = RangeValidator.of("Must be between -10 and 10", -10, 10);
         v.setMinValueIncluded(false);
 
         assertFails(-10, v);
@@ -99,8 +91,7 @@ public class RangeValidatorTest extends ValidatorTestBase {
 
     @Test
     public void testNullLessThanEverything() {
-        RangeValidator<Integer> v = RangeValidator.of("Must be any integer",
-                Integer.MIN_VALUE, Integer.MAX_VALUE);
+        RangeValidator<Integer> v = RangeValidator.of("Must be any integer", Integer.MIN_VALUE, Integer.MAX_VALUE);
         assertPasses(null, v);
 
         v = RangeValidator.of("Must be very small", null, Integer.MIN_VALUE);

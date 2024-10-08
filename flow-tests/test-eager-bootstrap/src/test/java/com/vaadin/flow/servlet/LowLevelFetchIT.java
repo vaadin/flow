@@ -47,8 +47,7 @@ public class LowLevelFetchIT extends ChromeBrowserTest {
     public void rootViewContainsRootUIDL() throws Exception {
         open(); // This is only to wait for the dev server...
         String source = getUrl(getRootURL() + "/");
-        Assert.assertTrue(source.contains(
-                "\"key\":\"text\",\"feat\":7,\"value\":\"This is the root view\""));
+        Assert.assertTrue(source.contains("\"key\":\"text\",\"feat\":7,\"value\":\"This is the root view\""));
     }
 
     private String getUrl(String urlString) throws IOException {
@@ -67,8 +66,7 @@ public class LowLevelFetchIT extends ChromeBrowserTest {
     public void helloViewContainsHelloViewUidl() throws Exception {
         open(); // This is only to wait for the dev server...
         String source = getUrl(getRootURL() + "/hello");
-        Assert.assertTrue(source.contains(
-                "\"key\":\"text\",\"feat\":7,\"value\":\"This is the Hello view\""));
+        Assert.assertTrue(source.contains("\"key\":\"text\",\"feat\":7,\"value\":\"This is the Hello view\""));
     }
 
     @Test

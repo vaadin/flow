@@ -31,8 +31,7 @@ public class MainView extends Div {
     public static final String OUTSIDE_RESULT = "outsideResult";
 
     public MainView() {
-        Image img = new Image("themes/vite-basics/images/plant.png",
-                "placeholder plant");
+        Image img = new Image("themes/vite-basics/images/plant.png", "placeholder plant");
         img.setId(PLANT);
         img.setWidth("200px");
         add(img);
@@ -47,22 +46,18 @@ public class MainView extends Div {
 
         Div jsonContainer = new Div();
         jsonContainer.setId(JSON_CONTAINER);
-        NativeButton loadAndShowJson = new NativeButton("Load and show JSON",
-                e -> {
-                    getElement().executeJs(
-                            "const json = window.loadJson(json => $0.innerText=json);",
-                            jsonContainer);
-                });
+        NativeButton loadAndShowJson = new NativeButton("Load and show JSON", e -> {
+            getElement().executeJs("const json = window.loadJson(json => $0.innerText=json);", jsonContainer);
+        });
         loadAndShowJson.setId(LOAD_AND_SHOW_JSON);
         add(button, loadAndShowJson, jsonContainer);
         setSizeFull();
         getStyle().set("text-align", "center");
 
-        NativeButton checkOutsideJs = new NativeButton("Check outside JS",
-                e -> {
-                    getElement().executeJs(OUTSIDE_RESULT
-                            + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();");
-                });
+        NativeButton checkOutsideJs = new NativeButton("Check outside JS", e -> {
+            getElement().executeJs(
+                    OUTSIDE_RESULT + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();");
+        });
         checkOutsideJs.setId(OUTSIDE);
         add(checkOutsideJs);
         Paragraph outsideStatus = new Paragraph();

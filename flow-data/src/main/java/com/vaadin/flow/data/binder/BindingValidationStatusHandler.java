@@ -21,9 +21,8 @@ import com.vaadin.flow.function.SerializableEventListener;
 /**
  * Handler for {@link BindingValidationStatus} changes.
  * <p>
- * {@link BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)}
- * Register} an instance of this class to be able to override the default
- * handling.
+ * {@link BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)} Register} an instance of this
+ * class to be able to override the default handling.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -34,8 +33,7 @@ import com.vaadin.flow.function.SerializableEventListener;
  *
  */
 @FunctionalInterface
-public interface BindingValidationStatusHandler
-        extends SerializableEventListener {
+public interface BindingValidationStatusHandler extends SerializableEventListener {
 
     /**
      * Invoked when the validation status has changed in a binding.

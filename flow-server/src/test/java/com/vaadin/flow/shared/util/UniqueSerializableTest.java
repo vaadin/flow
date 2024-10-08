@@ -37,8 +37,7 @@ public class UniqueSerializableTest implements Serializable {
     public void testSerialization() {
         UniqueSerializable o1 = new UniqueSerializable() {
         };
-        UniqueSerializable d1 = (UniqueSerializable) SerializationUtils
-                .deserialize(SerializationUtils.serialize(o1));
+        UniqueSerializable d1 = (UniqueSerializable) SerializationUtils.deserialize(SerializationUtils.serialize(o1));
         Assert.assertTrue(d1.equals(o1));
     }
 

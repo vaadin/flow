@@ -52,8 +52,7 @@ public class RouterTestServlet extends VaadinServlet {
     }
 
     @Route("greeting")
-    public static class GreetingNavigationTarget extends Div
-            implements HasUrlParameter<String> {
+    public static class GreetingNavigationTarget extends Div implements HasUrlParameter<String> {
         public GreetingNavigationTarget() {
             setId("greeting-div");
         }
@@ -111,14 +110,12 @@ public class RouterTestServlet extends VaadinServlet {
 
     }
 
-    public static class Layout extends Div
-            implements RouterLayout, BeforeEnterObserver {
+    public static class Layout extends Div implements RouterLayout, BeforeEnterObserver {
 
         private Element sessionId;
 
         public Layout() {
-            sessionId = ElementFactory.createDiv().setAttribute("id",
-                    "sessionId");
+            sessionId = ElementFactory.createDiv().setAttribute("id", "sessionId");
             getElement().appendChild(sessionId);
             getElement().appendChild(ElementFactory.createDiv());
             getElement().appendChild(ElementFactory.createHr());
@@ -137,8 +134,7 @@ public class RouterTestServlet extends VaadinServlet {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static Stream<Class<? extends Component>> getViewClasses() {
-        return (Stream) Stream.of(NormalView.class, AnotherNormalView.class,
-                ViewWhichCausesInternalException.class,
+        return (Stream) Stream.of(NormalView.class, AnotherNormalView.class, ViewWhichCausesInternalException.class,
                 ViewWhichInvalidatesSession.class);
     }
 
@@ -152,8 +148,7 @@ public class RouterTestServlet extends VaadinServlet {
                 if (getClass() == c) {
                     div.appendChild(ElementFactory.createStrong(viewName));
                 } else {
-                    div.appendChild(ElementFactory.createRouterLink(viewName,
-                            viewName));
+                    div.appendChild(ElementFactory.createRouterLink(viewName, viewName));
                 }
                 div.appendChild(ElementFactory.createHr());
             });
@@ -170,24 +165,20 @@ public class RouterTestServlet extends VaadinServlet {
     }
 
     @Route(value = "ViewWhichCausesInternalException", layout = Layout.class)
-    public static class ViewWhichCausesInternalException extends MyAbstractView
-            implements BeforeEnterObserver {
+    public static class ViewWhichCausesInternalException extends MyAbstractView implements BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            throw new RuntimeException(
-                    "Intentionally caused by " + getClass().getSimpleName());
+            throw new RuntimeException("Intentionally caused by " + getClass().getSimpleName());
         }
     }
 
     @Route(value = "ViewWhichInvalidatesSession", layout = Layout.class)
-    public static class ViewWhichInvalidatesSession extends MyAbstractView
-            implements BeforeEnterObserver {
+    public static class ViewWhichInvalidatesSession extends MyAbstractView implements BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            Location location = event.getUI().getInternals()
-                    .getActiveViewLocation();
+            Location location = event.getUI().getInternals().getActiveViewLocation();
             if (!location.getPath().isEmpty()) {
                 VaadinSession.getCurrent().getSession().invalidate();
             }

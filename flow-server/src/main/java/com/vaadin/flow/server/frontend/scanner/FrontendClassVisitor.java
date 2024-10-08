@@ -43,8 +43,8 @@ import com.vaadin.flow.theme.Theme;
  */
 final class FrontendClassVisitor extends ClassVisitor {
 
-    private static final Pattern SIGNATURE_PATTERN = Pattern.compile(
-            "(^\\([\\[ZBFDJICL]*|^[\\[ZBFDJICL]+|;?\\)[\\[ZBFDJICLV]*|;[\\[ZBFDJICL]*)");
+    private static final Pattern SIGNATURE_PATTERN = Pattern
+            .compile("(^\\([\\[ZBFDJICL]*|^[\\[ZBFDJICL]+|;?\\)[\\[ZBFDJICLV]*|;[\\[ZBFDJICL]*)");
     private static final String VARIANT = "variant";
     private static final String LAYOUT = "layout";
     static final String VALUE = "value";
@@ -63,8 +63,7 @@ final class FrontendClassVisitor extends ClassVisitor {
     private final AnnotationVisitor jScriptVisitor;
     private ClassInfo classInfo;
 
-    private static final class JSAnnotationVisitor
-            extends RepeatedAnnotationVisitor {
+    private static final class JSAnnotationVisitor extends RepeatedAnnotationVisitor {
 
         boolean currentDevOnly = false;
         private String currentModule;
@@ -72,8 +71,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         private LinkedHashSet<String> target;
         private LinkedHashSet<String> targetDevelopmentOnly;
 
-        public JSAnnotationVisitor(LinkedHashSet<String> target,
-                LinkedHashSet<String> targetDevelopmentOnly) {
+        public JSAnnotationVisitor(LinkedHashSet<String> target, LinkedHashSet<String> targetDevelopmentOnly) {
             this.target = target;
             this.targetDevelopmentOnly = targetDevelopmentOnly;
         }
@@ -113,8 +111,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         }
 
         @Override
-        public AnnotationVisitor visitAnnotation(String descriptor,
-                boolean visible) {
+        public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
             addSignatureToClasses(classInfo.children, descriptor);
             return annotationVisitor;
         }
@@ -128,8 +125,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         // We are interested in method instructions like
         // Notification.show('bla')
         @Override
-        public void visitMethodInsn(int opcode, String owner, String name,
-                String descriptor, boolean isInterface) {
+        public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
             addSignatureToClasses(classInfo.children, owner);
             addSignatureToClasses(classInfo.children, descriptor);
         }
@@ -137,8 +133,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         // Visit instructions that stores something in a field inside the
         // method
         @Override
-        public void visitFieldInsn(int opcode, String owner, String name,
-                String descriptor) {
+        public void visitFieldInsn(int opcode, String owner, String name, String descriptor) {
             addSignatureToClasses(classInfo.children, owner);
             addSignatureToClasses(classInfo.children, descriptor);
         }
@@ -156,21 +151,17 @@ final class FrontendClassVisitor extends ClassVisitor {
         // are interested in the case Supplier<Component> s = MyComponent::new;
         // flow #6524
         @Override
-        public void visitInvokeDynamicInsn(String name, String descriptor,
-                Handle bootstrapMethodHandle,
+        public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle,
                 Object... bootstrapMethodArguments) {
             addSignatureToClasses(classInfo.children, descriptor);
-            addSignatureToClasses(classInfo.children,
-                    bootstrapMethodHandle.getOwner());
-            addSignatureToClasses(classInfo.children,
-                    bootstrapMethodHandle.getDesc());
+            addSignatureToClasses(classInfo.children, bootstrapMethodHandle.getOwner());
+            addSignatureToClasses(classInfo.children, bootstrapMethodHandle.getDesc());
             for (Object obj : bootstrapMethodArguments) {
                 if (obj instanceof Type) {
                     addSignatureToClasses(classInfo.children, obj.toString());
                 } else if (obj instanceof Handle) {
                     // The owner of the Handle is the reference information
-                    addSignatureToClasses(classInfo.children,
-                            ((Handle) obj).getOwner());
+                    addSignatureToClasses(classInfo.children, ((Handle) obj).getOwner());
                     // the descriptor for the Handle won't be scanned, as it
                     // adds from +10% to 40% to the execution time and does not
                     // affect the fix in itself
@@ -183,8 +174,7 @@ final class FrontendClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Create a new {@link ClassVisitor} that will be used for visiting a
-     * specific class.
+     * Create a new {@link ClassVisitor} that will be used for visiting a specific class.
      *
      * @param className
      *            the class to visit
@@ -224,17 +214,14 @@ final class FrontendClassVisitor extends ClassVisitor {
             }
         };
         // Visitor for @JsModule annotations
-        jsModuleVisitor = new JSAnnotationVisitor(classInfo.modules,
-                classInfo.modulesDevelopmentOnly);
+        jsModuleVisitor = new JSAnnotationVisitor(classInfo.modules, classInfo.modulesDevelopmentOnly);
         // Visitor for @JavaScript annotations
-        jScriptVisitor = new JSAnnotationVisitor(classInfo.scripts,
-                classInfo.scriptsDevelopmentOnly);
+        jScriptVisitor = new JSAnnotationVisitor(classInfo.scripts, classInfo.scriptsDevelopmentOnly);
         // Visitor all other annotations
         annotationVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if (value != null && !value.getClass().isPrimitive()
-                        && !value.getClass().equals(String.class)) {
+                if (value != null && !value.getClass().isPrimitive() && !value.getClass().equals(String.class)) {
                     addSignatureToClasses(classInfo.children, value.toString());
                 }
             }
@@ -243,8 +230,7 @@ final class FrontendClassVisitor extends ClassVisitor {
 
     // Executed for the class definition info.
     @Override
-    public void visit(int version, int access, String name, String signature,
-            String superName, String[] interfaces) {
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         addSignatureToClasses(classInfo.children, superName);
 
         for (String implementedInterface : interfaces) {
@@ -254,16 +240,15 @@ final class FrontendClassVisitor extends ClassVisitor {
 
     // Executed for each method defined in the class.
     @Override
-    public MethodVisitor visitMethod(int access, String name, String descriptor,
-            String signature, String[] exceptions) {
+    public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
+            String[] exceptions) {
         addSignatureToClasses(classInfo.children, descriptor);
         return methodVisitor;
     }
 
     // Executed for each annotation in the class.
     @Override
-    public AnnotationVisitor visitAnnotation(String descriptor,
-            boolean visible) {
+    public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
         addSignatureToClasses(classInfo.children, descriptor);
 
         // We return different visitor implementations depending on the
@@ -294,19 +279,16 @@ final class FrontendClassVisitor extends ClassVisitor {
 
     // Executed for each field defined in the class.
     @Override
-    public FieldVisitor visitField(int access, String name, String descriptor,
-            String signature, Object value) {
+    public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
         addSignatureToClasses(classInfo.children, descriptor);
         return null;
     }
 
     /**
-     * Inspects the type description of a java field or a method type visited by
-     * the class visitor. It extracts all class names referenced in the
-     * signature and add updates the class collection passed as argument.
+     * Inspects the type description of a java field or a method type visited by the class visitor. It extracts all
+     * class names referenced in the signature and add updates the class collection passed as argument.
      *
-     * Typical description formats are:
-     * <code>([Lcom/vaadin/flow/component/Component;)V</code>
+     * Typical description formats are: <code>([Lcom/vaadin/flow/component/Component;)V</code>
      *
      * For more info about the format visit the {@link Type} class or the test.
      *

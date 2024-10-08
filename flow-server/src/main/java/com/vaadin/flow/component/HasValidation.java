@@ -21,8 +21,7 @@ import java.io.Serializable;
 /**
  * A component that supports input validation.
  * <p>
- * {@link HasValidation} is implemented by component when used with a Binder and
- * input is validated with a Binder.
+ * {@link HasValidation} is implemented by component when used with a Binder and input is validated with a Binder.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -31,12 +30,10 @@ public interface HasValidation extends Serializable {
     /**
      * Sets whether manual validation mode is enabled for the component.
      * <p>
-     * When enabled, the component doesn't perform its built-in constraint
-     * validation on value change, blur, and other events. This allows manually
-     * controlling the invalid state and error messages using the
-     * {@link #setInvalid(boolean)} and {@link #setErrorMessage(String)}
-     * methods. Manual mode is helpful when there is a need for a totally custom
-     * validation logic that cannot be achieved with Binder.
+     * When enabled, the component doesn't perform its built-in constraint validation on value change, blur, and other
+     * events. This allows manually controlling the invalid state and error messages using the
+     * {@link #setInvalid(boolean)} and {@link #setErrorMessage(String)} methods. Manual mode is helpful when there is a
+     * need for a totally custom validation logic that cannot be achieved with Binder.
      * <p>
      * Example:
      *
@@ -54,8 +51,7 @@ public interface HasValidation extends Serializable {
      * </pre>
      *
      * <p>
-     * For components that don't have built-in validation, the method has no
-     * effect.
+     * For components that don't have built-in validation, the method has no effect.
      *
      * @param enabled
      *            whether to enable manual validation mode.
@@ -66,11 +62,9 @@ public interface HasValidation extends Serializable {
     /**
      * Sets an error message to the component.
      * <p>
-     * The Web Component is responsible for deciding when to show the error
-     * message to the user, and this is usually triggered by triggering the
-     * invalid state for the Web Component. Which means that there is no need to
-     * clean up the message when component becomes valid (otherwise it may lead
-     * to undesired visual effects).
+     * The Web Component is responsible for deciding when to show the error message to the user, and this is usually
+     * triggered by triggering the invalid state for the Web Component. Which means that there is no need to clean up
+     * the message when component becomes valid (otherwise it may lead to undesired visual effects).
      *
      * @param errorMessage
      *            a new error message
@@ -87,14 +81,12 @@ public interface HasValidation extends Serializable {
     /**
      * Sets the validity of the component input.
      * <p>
-     * When component becomes valid it hides the error message by itself, so
-     * there is no need to clean up the error message via the
-     * {@link #setErrorMessage(String)} call.
+     * When component becomes valid it hides the error message by itself, so there is no need to clean up the error
+     * message via the {@link #setErrorMessage(String)} call.
      * <p>
-     * NOTE: If you need to manually control the invalid state, consider
-     * enabling manual validation mode with
-     * {@link #setManualValidation(boolean)} to avoid potential conflicts
-     * between your custom validation and the component's built-in validation.
+     * NOTE: If you need to manually control the invalid state, consider enabling manual validation mode with
+     * {@link #setManualValidation(boolean)} to avoid potential conflicts between your custom validation and the
+     * component's built-in validation.
      *
      * @param invalid
      *            new value for component input validity
@@ -102,8 +94,7 @@ public interface HasValidation extends Serializable {
     void setInvalid(boolean invalid);
 
     /**
-     * Returns {@code true} if component input is invalid, {@code false}
-     * otherwise.
+     * Returns {@code true} if component input is invalid, {@code false} otherwise.
      *
      * @return whether the component input is valid
      */

@@ -45,8 +45,7 @@ public class NpmTemplateParserTest {
     public void init() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(), Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(configuration.getBuildFolder()).thenReturn("target");
 
@@ -54,49 +53,38 @@ public class NpmTemplateParserTest {
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getServiceInitListeners())
-                .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getDependencyFilters(Mockito.any()))
-                .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any()))
-                .thenReturn(Stream.empty());
+        Mockito.when(instantiator.getServiceInitListeners()).thenReturn(Stream.empty());
+        Mockito.when(instantiator.getDependencyFilters(Mockito.any())).thenReturn(Stream.empty());
+        Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any())).thenReturn(Stream.empty());
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);
 
-        resourceProvider = service.getContext().getAttribute(Lookup.class)
-                .lookup(ResourceProvider.class);
-        Mockito.when(
-                resourceProvider.getApplicationResource(Mockito.anyString()))
-                .thenAnswer(invocation -> NpmTemplateParserTest.class
-                        .getResource("/" + invocation.getArgument(0)));
+        resourceProvider = service.getContext().getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        Mockito.when(resourceProvider.getApplicationResource(Mockito.anyString()))
+                .thenAnswer(invocation -> NpmTemplateParserTest.class.getResource("/" + invocation.getArgument(0)));
     }
 
     @Test
     public void should_FindCorrectDataInTemplate() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateParser.TemplateData templateContent = instance
-                .getTemplateContent(Likeable.class, "likeable-element",
-                        service);
+        TemplateParser.TemplateData templateContent = instance.getTemplateContent(Likeable.class, "likeable-element",
+                service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "likeable-element",
+        Assert.assertEquals("Parent element ID not the expected one.", "likeable-element",
                 templateContent.getTemplateElement().parent().id());
 
         Assert.assertEquals("Expected template element to have 3 children", 3,
                 templateContent.getTemplateElement().childNodeSize());
 
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'test'",
-                "div", templateContent.getTemplateElement()
-                        .getElementById("test").tag().toString());
+        Assert.assertEquals("Template element should have contained a div element with the id 'test'", "div",
+                templateContent.getTemplateElement().getElementById("test").tag().toString());
     }
 
     @Test
     public void getTemplateContent_polymer2TemplateStyleInsertion_contentParsedCorrectly() {
         TemplateParser parser = NpmTemplateParser.getInstance();
-        TemplateData data = parser.getTemplateContent(
-                NoHtmlTemplateContent.class, "no-html-template", service);
+        TemplateData data = parser.getTemplateContent(NoHtmlTemplateContent.class, "no-html-template", service);
         Element templateElement = data.getTemplateElement();
         Assert.assertNotNull(templateElement);
         Elements divs = templateElement.getElementsByTag("div");
@@ -107,8 +95,7 @@ public class NpmTemplateParserTest {
     @Test
     public void getTemplateContent_polymer2TemplateStyleInsertion_severalDomModules_correctTemplateContentIsChosen() {
         TemplateParser parser = NpmTemplateParser.getInstance();
-        TemplateData data = parser.getTemplateContent(
-                SeveralDomModulesTemplateContent.class,
+        TemplateData data = parser.getTemplateContent(SeveralDomModulesTemplateContent.class,
                 "several-dom-modules-template", service);
         Element templateElement = data.getTemplateElement();
         Assert.assertNotNull(templateElement);
@@ -120,39 +107,32 @@ public class NpmTemplateParserTest {
     @Test
     public void should_use_LocalFileTemplate() {
         TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateParser.TemplateData templateContent = instance
-                .getTemplateContent(LikeableView.class, "likeable-element-view",
-                        service);
+        TemplateParser.TemplateData templateContent = instance.getTemplateContent(LikeableView.class,
+                "likeable-element-view", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "likeable-element-view",
+        Assert.assertEquals("Parent element ID not the expected one.", "likeable-element-view",
                 templateContent.getTemplateElement().parent().id());
 
         Assert.assertEquals("Expected template element to have 2 children", 2,
                 templateContent.getTemplateElement().childNodeSize());
 
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'test'",
-                "div", templateContent.getTemplateElement()
-                        .getElementById("test").tag().toString());
+        Assert.assertEquals("Template element should have contained a div element with the id 'test'", "div",
+                templateContent.getTemplateElement().getElementById("test").tag().toString());
     }
 
     @Test
     public void getTypescriptTemplateContent_templateExists_getTemplateContent() {
         TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateData templateContent = instance.getTemplateContent(MyForm.class,
-                "my-form", service);
+        TemplateData templateContent = instance.getTemplateContent(MyForm.class, "my-form", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "my-form", templateContent.getTemplateElement().parent().id());
+        Assert.assertEquals("Parent element ID not the expected one.", "my-form",
+                templateContent.getTemplateElement().parent().id());
 
         Assert.assertEquals("Expected template element to have 2 children", 2,
                 templateContent.getTemplateElement().childNodeSize());
 
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'label'",
-                "vaadin-text-field", templateContent.getTemplateElement()
-                        .getElementById("nameField").tag().toString());
+        Assert.assertEquals("Template element should have contained a div element with the id 'label'",
+                "vaadin-text-field", templateContent.getTemplateElement().getElementById("nameField").tag().toString());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -165,12 +145,11 @@ public class NpmTemplateParserTest {
     public void sourceFileWithFaultyTemplateGetter_shouldJustReturnEmptyTemplateElement() {
         // If the template getter can not be found it should result in no
         // template element children
-        TemplateParser.TemplateData templateContent = NpmTemplateParser
-                .getInstance().getTemplateContent(LikeableFaulty.class,
-                        "likeable-element", service);
+        TemplateParser.TemplateData templateContent = NpmTemplateParser.getInstance()
+                .getTemplateContent(LikeableFaulty.class, "likeable-element", service);
 
-        Assert.assertEquals("Faulty template getter should not find elements",
-                0, templateContent.getTemplateElement().childNodeSize());
+        Assert.assertEquals("Faulty template getter should not find elements", 0,
+                templateContent.getTemplateElement().childNodeSize());
     }
 
     @Test
@@ -178,9 +157,8 @@ public class NpmTemplateParserTest {
         // Template with no closing style tag should parse as one big style tag
         // and thus
         // the document body should have no elements.
-        TemplateParser.TemplateData templateContent = NpmTemplateParser
-                .getInstance().getTemplateContent(LikeableBroken.class,
-                        "likeable-element", service);
+        TemplateParser.TemplateData templateContent = NpmTemplateParser.getInstance()
+                .getTemplateContent(LikeableBroken.class, "likeable-element", service);
 
         Assert.assertEquals("Faulty html should not find elements", 0,
                 templateContent.getTemplateElement().childNodeSize());
@@ -188,45 +166,37 @@ public class NpmTemplateParserTest {
 
     @Test
     public void nonLocalTemplate_shouldParseCorrectly() {
-        TemplateParser.TemplateData templateContent = NpmTemplateParser
-                .getInstance().getTemplateContent(HelloWorld.class,
-                        HelloWorld.class.getAnnotation(Tag.class).value(),
-                        service);
+        TemplateParser.TemplateData templateContent = NpmTemplateParser.getInstance()
+                .getTemplateContent(HelloWorld.class, HelloWorld.class.getAnnotation(Tag.class).value(), service);
 
         Assert.assertEquals("Template should contain one child", 1,
                 templateContent.getTemplateElement().childNodeSize());
 
-        Assert.assertEquals("Template should have 2 divs", 2, templateContent
-                .getTemplateElement().getElementsByTag("div").size());
+        Assert.assertEquals("Template should have 2 divs", 2,
+                templateContent.getTemplateElement().getElementsByTag("div").size());
         Assert.assertEquals("Template should have a paper-input", 1,
-                templateContent.getTemplateElement()
-                        .getElementsByTag("paper-input").size());
-        Assert.assertEquals("Template should have a button", 1, templateContent
-                .getTemplateElement().getElementsByTag("button").size());
+                templateContent.getTemplateElement().getElementsByTag("paper-input").size());
+        Assert.assertEquals("Template should have a button", 1,
+                templateContent.getTemplateElement().getElementsByTag("button").size());
     }
 
     @Test
     public void shouldParseTemplateCorrectly() {
         TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateParser.TemplateData templateContent = instance
-                .getTemplateContent(MyComponent.class, "my-component", service);
+        TemplateParser.TemplateData templateContent = instance.getTemplateContent(MyComponent.class, "my-component",
+                service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "my-component",
+        Assert.assertEquals("Parent element ID not the expected one.", "my-component",
                 templateContent.getTemplateElement().parent().id());
 
         Assert.assertEquals("Expected template element to have 2 children", 2,
                 templateContent.getTemplateElement().childNodeSize());
 
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'button'",
-                "button", templateContent.getTemplateElement()
-                        .getElementById("button").tag().toString());
+        Assert.assertEquals("Template element should have contained a div element with the id 'button'", "button",
+                templateContent.getTemplateElement().getElementById("button").tag().toString());
 
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'content'",
-                "div", templateContent.getTemplateElement()
-                        .getElementById("content").tag().toString());
+        Assert.assertEquals("Template element should have contained a div element with the id 'content'", "div",
+                templateContent.getTemplateElement().getElementById("content").tag().toString());
     }
 
     /*
@@ -260,44 +230,36 @@ public class NpmTemplateParserTest {
     @Test
     public void hierarchicalTemplate_templateHasChild_childHasCorrectPosition() {
         TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateParser.TemplateData templateContent = instance
-                .getTemplateContent(ParentTemplate.class, "parent-template",
-                        service);
+        TemplateParser.TemplateData templateContent = instance.getTemplateContent(ParentTemplate.class,
+                "parent-template", service);
 
         Element templateElement = templateContent.getTemplateElement();
         Assert.assertEquals(3, templateElement.children().size());
         Element parentDiv = templateElement.child(1);
-        Assert.assertEquals("div",
-                parentDiv.tag().getName().toLowerCase(Locale.ENGLISH));
+        Assert.assertEquals("div", parentDiv.tag().getName().toLowerCase(Locale.ENGLISH));
         Elements children = parentDiv.children();
         Assert.assertEquals(2, children.size());
-        Assert.assertEquals("div",
-                parentDiv.child(0).tag().getName().toLowerCase(Locale.ENGLISH));
-        Assert.assertEquals("child-template",
-                parentDiv.child(1).tag().getName().toLowerCase(Locale.ENGLISH));
+        Assert.assertEquals("div", parentDiv.child(0).tag().getName().toLowerCase(Locale.ENGLISH));
+        Assert.assertEquals("child-template", parentDiv.child(1).tag().getName().toLowerCase(Locale.ENGLISH));
     }
 
     @Test
     public void severalJsModuleAnnotations_theFirstFileDoesNotExist_fileWithContentIsChosen() {
         TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateParser.TemplateData templateContent = instance
-                .getTemplateContent(BrokenJsModuleAnnotation.class,
-                        "likeable-element-view", service);
+        TemplateParser.TemplateData templateContent = instance.getTemplateContent(BrokenJsModuleAnnotation.class,
+                "likeable-element-view", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "likeable-element-view",
+        Assert.assertEquals("Parent element ID not the expected one.", "likeable-element-view",
                 templateContent.getTemplateElement().parent().id());
     }
 
     @Test
     public void severalJsModuleAnnotations_parserSelectsByName() {
         TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateParser.TemplateData templateContent = instance
-                .getTemplateContent(SeveralJsModuleAnnotations.class,
-                        "likeable-element-view", service);
+        TemplateParser.TemplateData templateContent = instance.getTemplateContent(SeveralJsModuleAnnotations.class,
+                "likeable-element-view", service);
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "likeable-element-view",
+        Assert.assertEquals("Parent element ID not the expected one.", "likeable-element-view",
                 templateContent.getTemplateElement().parent().id());
 
         // Two JS module annotations with almost the same content.
@@ -306,8 +268,7 @@ public class NpmTemplateParserTest {
         // The second module should be chosen since its name matches the tag
         // name
         Assert.assertThat(templateContent.getTemplateElement().html(),
-                CoreMatchers.not(CoreMatchers.containsString(
-                        "Tag name doesn't match the JS module name")));
+                CoreMatchers.not(CoreMatchers.containsString("Tag name doesn't match the JS module name")));
     }
 
     @Tag("likeable-element")
@@ -338,15 +299,13 @@ public class NpmTemplateParserTest {
     @Tag("likeable-element-view")
     @JsModule("./frontend/LikeableElement.js")
     @JsModule("./frontend/likeable-element-view.js")
-    public class SeveralJsModuleAnnotations
-            extends PolymerTemplate<TemplateModel> {
+    public class SeveralJsModuleAnnotations extends PolymerTemplate<TemplateModel> {
     }
 
     @Tag("likeable-element-view")
     @JsModule("./frontend/non-existant.js")
     @JsModule("./frontend/likeable-element-view.js")
-    public class BrokenJsModuleAnnotation
-            extends PolymerTemplate<TemplateModel> {
+    public class BrokenJsModuleAnnotation extends PolymerTemplate<TemplateModel> {
     }
 
     @Tag("review-list")
@@ -385,8 +344,7 @@ public class NpmTemplateParserTest {
 
     @JsModule("./several-dom-modules-template.js")
     @Tag("several-dom-modules-template")
-    public class SeveralDomModulesTemplateContent
-            extends PolymerTemplate<TemplateModel> {
+    public class SeveralDomModulesTemplateContent extends PolymerTemplate<TemplateModel> {
 
     }
 

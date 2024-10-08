@@ -21,8 +21,7 @@ import java.io.Serializable;
 /**
  * Allows to resolve navigation target title dynamically at runtime.
  * <p>
- * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
- * and have a {@link PageTitle} annotation.
+ * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle} and have a {@link PageTitle} annotation.
  *
  * @author Vaadin Ltd
  * @since 1.0.

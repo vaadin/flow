@@ -22,14 +22,12 @@ import com.vaadin.flow.hotswap.VaadinHotswapper;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * Clears all mappings from all reflection caches and related resources when one
- * or more classes has been changed.
+ * Clears all mappings from all reflection caches and related resources when one or more classes has been changed.
  */
 public class ReflectionCacheHotswapper implements VaadinHotswapper {
 
     @Override
-    public boolean onClassLoadEvent(VaadinService vaadinService,
-            Set<Class<?>> classes, boolean redefined) {
+    public boolean onClassLoadEvent(VaadinService vaadinService, Set<Class<?>> classes, boolean redefined) {
         ReflectionCache.clearAll();
         return false;
     }

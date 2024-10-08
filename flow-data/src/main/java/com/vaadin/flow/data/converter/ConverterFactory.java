@@ -19,8 +19,7 @@ import java.io.Serializable;
 import java.util.Optional;
 
 /**
- * Creates {@link Converter} instances capable to handle conversion between a
- * model and a presentation type.
+ * Creates {@link Converter} instances capable to handle conversion between a model and a presentation type.
  *
  * @author Vaadin Ltd
  * @since
@@ -28,11 +27,10 @@ import java.util.Optional;
 public interface ConverterFactory extends Serializable {
 
     /**
-     * Attempts to create a {@link Converter} instance, capable to handle
-     * conversion between the given presentation and model types.
+     * Attempts to create a {@link Converter} instance, capable to handle conversion between the given presentation and
+     * model types.
      *
-     * An empty {@link Optional} is returned if a conversion cannot be
-     * performed.
+     * An empty {@link Optional} is returned if a conversion cannot be performed.
      *
      * @param presentationType
      *            presentation type, not {@literal null}.
@@ -42,9 +40,8 @@ public interface ConverterFactory extends Serializable {
      *            The presentation type.
      * @param <M>
      *            The model type.
-     * @return a {@link Converter} instance wrapped into an {@link Optional}, or
-     *         an empty {@link Optional} if no suitable converter is available.
+     * @return a {@link Converter} instance wrapped into an {@link Optional}, or an empty {@link Optional} if no
+     *         suitable converter is available.
      */
-    <P, M> Optional<Converter<P, M>> newInstance(Class<P> presentationType,
-            Class<M> modelType);
+    <P, M> Optional<Converter<P, M>> newInstance(Class<P> presentationType, Class<M> modelType);
 }

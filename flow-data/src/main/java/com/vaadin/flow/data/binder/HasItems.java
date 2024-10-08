@@ -24,10 +24,9 @@ import java.util.stream.Stream;
 /**
  * Mixin interface for components that displays a collection of items.
  * <p>
- * <em>Note:</em> this is gradually replaced by
- * {@link com.vaadin.flow.data.provider.HasListDataView},
- * {@link com.vaadin.flow.data.provider.HasLazyDataView} and
- * {@link com.vaadin.flow.data.provider.HasDataView} in the components.
+ * <em>Note:</em> this is gradually replaced by {@link com.vaadin.flow.data.provider.HasListDataView},
+ * {@link com.vaadin.flow.data.provider.HasLazyDataView} and {@link com.vaadin.flow.data.provider.HasDataView} in the
+ * components.
  *
  * @param <T>
  *            the type of the displayed item
@@ -38,10 +37,8 @@ public interface HasItems<T> extends Serializable {
     /**
      * Sets the data items of this component provided as a collection.
      * <p>
-     * The provided collection instance may be used as-is. Subsequent
-     * modification of the collection might cause inconsistent data to be shown
-     * in the component unless it is explicitly instructed to read the data
-     * again.
+     * The provided collection instance may be used as-is. Subsequent modification of the collection might cause
+     * inconsistent data to be shown in the component unless it is explicitly instructed to read the data again.
      *
      * @param items
      *            the data items to display, not {@code null}
@@ -64,9 +61,8 @@ public interface HasItems<T> extends Serializable {
     /**
      * Sets the data items of this listing provided as a stream.
      * <p>
-     * This is just a shorthand for {@link #setItems(Collection)}, that
-     * <b>collects objects in the stream to a list</b>. Thus, using this method,
-     * instead of its array and Collection variations, doesn't save any memory.
+     * This is just a shorthand for {@link #setItems(Collection)}, that <b>collects objects in the stream to a list</b>.
+     * Thus, using this method, instead of its array and Collection variations, doesn't save any memory.
      *
      * @see #setItems(Collection)
      *

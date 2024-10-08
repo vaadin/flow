@@ -18,8 +18,7 @@ package com.vaadin.flow.component.template.internal;
 import com.vaadin.flow.dom.Element;
 
 /**
- * Defines the strategy to set the template attribute value to the server side
- * element.
+ * Defines the strategy to set the template attribute value to the server side element.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -31,8 +30,7 @@ import com.vaadin.flow.dom.Element;
 interface ElementInitializationStrategy {
 
     /**
-     * Initializes the {@code element} with template attribute {@code name} and
-     * its {@code value}.
+     * Initializes the {@code element} with template attribute {@code name} and its {@code value}.
      *
      * @param element
      *            the element to initialize

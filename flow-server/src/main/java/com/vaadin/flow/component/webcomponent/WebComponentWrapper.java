@@ -31,8 +31,8 @@ import com.vaadin.flow.shared.Registration;
 import elemental.json.JsonValue;
 
 /**
- * Wrapper component for a web component that exposes {@link ClientCallable}
- * methods that the client-side components expect to be available.
+ * Wrapper component for a web component that exposes {@link ClientCallable} methods that the client-side components
+ * expect to be available.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -51,51 +51,41 @@ public class WebComponentWrapper extends Component {
      * Wrapper class for the server side WebComponent.
      *
      * @param rootElement
-     *            {@link Element} to which the {@code WebComponentWrapper} is
-     *            bound to.
+     *            {@link Element} to which the {@code WebComponentWrapper} is bound to.
      * @param binding
-     *            binding that offers methods for delivering property updates to
-     *            the {@code component} being wrapped by
+     *            binding that offers methods for delivering property updates to the {@code component} being wrapped by
      *            {@code WebComponentWrapper}
      */
-    public WebComponentWrapper(Element rootElement,
-            WebComponentBinding<?> binding) {
+    public WebComponentWrapper(Element rootElement, WebComponentBinding<?> binding) {
         super(rootElement);
-        Objects.requireNonNull(binding,
-                "Parameter 'binding' must not be null!");
+        Objects.requireNonNull(binding, "Parameter 'binding' must not be null!");
 
         webComponentBinding = binding;
-        getElement().attachShadow()
-                .appendChild(webComponentBinding.getComponent().getElement());
+        getElement().attachShadow().appendChild(webComponentBinding.getComponent().getElement());
     }
 
     /**
      * Wrapper class for the server side WebComponent.
      *
      * @param rootElement
-     *            {@link Element} to which the {@code WebComponentWrapper} is
-     *            bound to.
+     *            {@link Element} to which the {@code WebComponentWrapper} is bound to.
      * @param binding
-     *            binding that offers methods for delivering property updates to
-     *            the {@code component} being wrapped by
+     *            binding that offers methods for delivering property updates to the {@code component} being wrapped by
      *            {@code WebComponentWrapper}
      * @param bootstrapElements
-     *            elements that should be added to the shadow dom of the
-     *            {@code rootElement}. These are copies of the original elements
-     *            and the copies are created by
+     *            elements that should be added to the shadow dom of the {@code rootElement}. These are copies of the
+     *            original elements and the copies are created by
      *            {@link com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry}
      */
-    protected WebComponentWrapper(Element rootElement,
-            WebComponentBinding<?> binding, List<Element> bootstrapElements) {
+    protected WebComponentWrapper(Element rootElement, WebComponentBinding<?> binding,
+            List<Element> bootstrapElements) {
         this(rootElement, binding);
         // shadow root is attached in this(...)
-        getElement().getShadowRoot().ifPresent(shadow -> shadow
-                .appendChild(bootstrapElements.toArray(new Element[0])));
+        getElement().getShadowRoot().ifPresent(shadow -> shadow.appendChild(bootstrapElements.toArray(new Element[0])));
     }
 
     /**
-     * Synchronize method for client side to send property value updates to the
-     * server.
+     * Synchronize method for client side to send property value updates to the server.
      *
      * @param property
      *            property name to update
@@ -107,8 +97,7 @@ public class WebComponentWrapper extends Component {
         try {
             webComponentBinding.updateProperty(property, newValue);
         } catch (IllegalArgumentException e) {
-            LoggerFactory
-                    .getLogger(webComponentBinding.getComponent().getClass())
+            LoggerFactory.getLogger(webComponentBinding.getComponent().getClass())
                     .error("Failed to synchronise property '{}'", property, e);
         }
     }
@@ -128,8 +117,8 @@ public class WebComponentWrapper extends Component {
     }
 
     /**
-     * A WebComponent disconnected from the dom will be scheduled for cleaning
-     * if it doesn't get reconnected before times up.
+     * A WebComponent disconnected from the dom will be scheduled for cleaning if it doesn't get reconnected before
+     * times up.
      */
     @ClientCallable
     public void disconnected() {
@@ -137,21 +126,17 @@ public class WebComponentWrapper extends Component {
 
         if (uiOptional.isPresent() && disconnectRegistration == null) {
             disconnect = System.currentTimeMillis();
-            disconnectRegistration = uiOptional.get().getInternals()
-                    .addHeartbeatListener(event -> {
-                        int disconnectTimeout = event.getSource().getSession()
-                                .getConfiguration().getWebComponentDisconnect();
+            disconnectRegistration = uiOptional.get().getInternals().addHeartbeatListener(event -> {
+                int disconnectTimeout = event.getSource().getSession().getConfiguration().getWebComponentDisconnect();
 
-                        int timeout = 1000 * disconnectTimeout;
+                int timeout = 1000 * disconnectTimeout;
 
-                        if (event.getSource().getInternals()
-                                .getLastHeartbeatTimestamp()
-                                - disconnect > timeout) {
-                            Element element = getElement();
-                            element.getParent().removeVirtualChild(element);
-                            disconnectRegistration.remove();
-                        }
-                    });
+                if (event.getSource().getInternals().getLastHeartbeatTimestamp() - disconnect > timeout) {
+                    Element element = getElement();
+                    element.getParent().removeVirtualChild(element);
+                    disconnectRegistration.remove();
+                }
+            });
         }
     }
 }

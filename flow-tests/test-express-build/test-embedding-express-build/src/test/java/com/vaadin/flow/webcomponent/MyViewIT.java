@@ -37,8 +37,7 @@ public class MyViewIT extends ChromeBrowserTest {
         $(SpanElement.class).waitForFirst();
         SpanElement spanWithText = $(SpanElement.class).id(APP_TEXT_ID);
 
-        Assert.assertTrue(
-                spanWithText.getText().equals("This is the application view"));
+        Assert.assertTrue(spanWithText.getText().equals("This is the application view"));
 
         checkLogsForErrors();
     }

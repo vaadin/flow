@@ -36,8 +36,7 @@ public class MockVaadinServletService extends VaadinServletService {
 
     private Router router;
 
-    private ResourceProvider resourceProvider = Mockito
-            .mock(ResourceProvider.class);
+    private ResourceProvider resourceProvider = Mockito.mock(ResourceProvider.class);
 
     private Lookup lookup = Mockito.mock(Lookup.class);
 
@@ -52,24 +51,20 @@ public class MockVaadinServletService extends VaadinServletService {
         }
 
         @Override
-        protected DeploymentConfiguration createDeploymentConfiguration()
-                throws ServletException {
+        protected DeploymentConfiguration createDeploymentConfiguration() throws ServletException {
             return configuration;
         }
 
         @Override
-        protected VaadinServletService createServletService(
-                DeploymentConfiguration deploymentConfiguration)
+        protected VaadinServletService createServletService(DeploymentConfiguration deploymentConfiguration)
                 throws ServiceException {
             return service;
         }
 
     }
 
-    public MockVaadinServletService(
-            DeploymentConfiguration deploymentConfiguration) {
-        super(new MockVaadinServlet(deploymentConfiguration),
-                deploymentConfiguration);
+    public MockVaadinServletService(DeploymentConfiguration deploymentConfiguration) {
+        super(new MockVaadinServlet(deploymentConfiguration), deploymentConfiguration);
         init();
     }
 
@@ -88,8 +83,7 @@ public class MockVaadinServletService extends VaadinServletService {
     }
 
     @Override
-    protected List<RequestHandler> createRequestHandlers()
-            throws ServiceException {
+    protected List<RequestHandler> createRequestHandlers() throws ServiceException {
         return Collections.emptyList();
     }
 
@@ -125,15 +119,11 @@ public class MockVaadinServletService extends VaadinServletService {
                 ServletContext context = Mockito.mock(ServletContext.class);
                 Mockito.when(config.getServletContext()).thenReturn(context);
 
-                Mockito.when(lookup.lookup(ResourceProvider.class))
-                        .thenReturn(resourceProvider);
-                StaticFileHandlerFactory factory = Mockito
-                        .mock(StaticFileHandlerFactory.class);
-                Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
-                        .thenReturn(factory);
+                Mockito.when(lookup.lookup(ResourceProvider.class)).thenReturn(resourceProvider);
+                StaticFileHandlerFactory factory = Mockito.mock(StaticFileHandlerFactory.class);
+                Mockito.when(lookup.lookup(StaticFileHandlerFactory.class)).thenReturn(factory);
 
-                Mockito.when(context.getAttribute(Lookup.class.getName()))
-                        .thenReturn(lookup);
+                Mockito.when(context.getAttribute(Lookup.class.getName())).thenReturn(lookup);
                 getServlet().init(config);
             }
             super.init();

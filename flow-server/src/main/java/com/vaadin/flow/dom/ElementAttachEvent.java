@@ -20,8 +20,7 @@ import java.util.EventObject;
 /**
  * Event fired after an Element has been attached to the UI.
  * <p>
- * When a hierarchy of elements is being attached, this event is fired
- * child-first.
+ * When a hierarchy of elements is being attached, this event is fired child-first.
  *
  * @since 1.0
  */

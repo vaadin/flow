@@ -16,8 +16,7 @@ public class PushRouteWildcardParameterIT extends ChromeBrowserTest {
         waitForDevServer();
 
         waitForElementPresent(By.id(PushRouteWildcardParameterView.LABEL_ID));
-        WebElement label = findElement(
-                By.id(PushRouteWildcardParameterView.LABEL_ID));
+        WebElement label = findElement(By.id(PushRouteWildcardParameterView.LABEL_ID));
         Assert.assertEquals("a/b/c", label.getText());
     }
 }

@@ -44,8 +44,7 @@ public final class ParameterDeserializer {
      * Types supported by {@link #deserializeParameter(Class, String, String)}.
      */
     public static final Set<Class<?>> supportedTypes = Collections
-            .unmodifiableSet(new HashSet<>(Arrays.asList(Long.class,
-                    Integer.class, String.class, Boolean.class)));
+            .unmodifiableSet(new HashSet<>(Arrays.asList(Long.class, Integer.class, String.class, Boolean.class)));
 
     private ParameterDeserializer() {
     }
@@ -63,8 +62,7 @@ public final class ParameterDeserializer {
      *            the type to deserialize into
      * @return converted parameter as class if parameterType of supported type
      */
-    public static <T> T deserializeParameter(Class<T> parameterType,
-            String parameter, String targetClass) {
+    public static <T> T deserializeParameter(Class<T> parameterType, String parameter, String targetClass) {
         if (parameterType.isAssignableFrom(String.class)) {
             return (T) parameter;
         } else if (parameterType.isAssignableFrom(Integer.class)) {
@@ -75,26 +73,22 @@ public final class ParameterDeserializer {
             } catch (NumberFormatException nfe) {
                 // RouteParameterRegex.LONG accepts value outside Long.MAX and
                 // Long.MIN so inform this clearly in the exception.
-                final String error = String.format(
-                        "Received faulty Long value '%s' for class %s.",
-                        parameter, targetClass);
-                LoggerFactory.getLogger(ParameterDeserializer.class)
-                        .error(error);
+                final String error = String.format("Received faulty Long value '%s' for class %s.", parameter,
+                        targetClass);
+                LoggerFactory.getLogger(ParameterDeserializer.class).error(error);
                 throw new IllegalArgumentException(error);
             }
         } else if (parameterType.isAssignableFrom(Boolean.class)) {
             return (T) Boolean.valueOf(parameter);
         } else {
-            throw new IllegalArgumentException(String.format(
-                    "Unsupported parameter type '%s' for class %s.",
-                    parameterType, targetClass));
+            throw new IllegalArgumentException(
+                    String.format("Unsupported parameter type '%s' for class %s.", parameterType, targetClass));
         }
     }
 
     /**
-     * Deserializes the list of url segments to an instance of the parameter
-     * type. Attempts to cast the first parameter segment to the parameter type
-     * and returns null if the parameter list is empty.
+     * Deserializes the list of url segments to an instance of the parameter type. Attempts to cast the first parameter
+     * segment to the parameter type and returns null if the parameter list is empty.
      *
      * @param navigationTarget
      *            navigation target for which to deserialize parameters
@@ -102,11 +96,9 @@ public final class ParameterDeserializer {
      *            the list of route parameters to deserialize
      * @return the deserialized url parameter, can be {@code null}
      */
-    public static Object deserializeRouteParameters(Class<?> navigationTarget,
-            List<String> parameters) {
+    public static Object deserializeRouteParameters(Class<?> navigationTarget, List<String> parameters) {
         if (parameters.isEmpty()) {
-            return isAnnotatedParameter(navigationTarget,
-                    WildcardParameter.class) ? "" : null;
+            return isAnnotatedParameter(navigationTarget, WildcardParameter.class) ? "" : null;
         }
         Class<?> parameterType = getClassType(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, WildcardParameter.class)) {
@@ -114,8 +106,7 @@ public final class ParameterDeserializer {
             return parameters.stream().collect(Collectors.joining("/"));
         }
         String parameter = parameters.get(0);
-        return ParameterDeserializer.deserializeParameter(parameterType,
-                parameter, navigationTarget.getName());
+        return ParameterDeserializer.deserializeParameter(parameterType, parameter, navigationTarget.getName());
     }
 
     /**
@@ -126,19 +117,15 @@ public final class ParameterDeserializer {
      * @param parameterType
      *            parameter type to check validity for usage with wildcard
      */
-    public static void validateWildcardType(Class<?> navigationTarget,
-            Class<?> parameterType) {
+    public static void validateWildcardType(Class<?> navigationTarget, Class<?> parameterType) {
         if (!parameterType.isAssignableFrom(String.class)) {
-            throw new UnsupportedOperationException(
-                    "Invalid wildcard parameter in class "
-                            + navigationTarget.getName()
-                            + ". Only String is supported for wildcard parameters.");
+            throw new UnsupportedOperationException("Invalid wildcard parameter in class " + navigationTarget.getName()
+                    + ". Only String is supported for wildcard parameters.");
         }
     }
 
     /**
-     * Verifies that the list of route parameters is valid for the given
-     * navigation target.
+     * Verifies that the list of route parameters is valid for the given navigation target.
      *
      * @param navigationTarget
      *            the navigation target to verify against
@@ -146,30 +133,25 @@ public final class ParameterDeserializer {
      *            the list of route parameters to verify
      * @return {@code true} if the parameters are valid, otherwise {@code false}
      */
-    public static boolean verifyParameters(Class<?> navigationTarget,
-            List<String> parameters) {
+    public static boolean verifyParameters(Class<?> navigationTarget, List<String> parameters) {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             throw new IllegalArgumentException(String.format(
-                    "Given navigationTarget '%s' does not implement HasUrlParameter.",
-                    navigationTarget.getName()));
+                    "Given navigationTarget '%s' does not implement HasUrlParameter.", navigationTarget.getName()));
         }
 
         Class<?> parameterType = getClassType(navigationTarget);
 
         if (supportedTypes.contains(parameterType)) {
-            if (isAnnotatedParameter(navigationTarget,
-                    WildcardParameter.class)) {
+            if (isAnnotatedParameter(navigationTarget, WildcardParameter.class)) {
                 return true;
-            } else if (isAnnotatedParameter(navigationTarget,
-                    OptionalParameter.class)) {
+            } else if (isAnnotatedParameter(navigationTarget, OptionalParameter.class)) {
                 return parameters.size() <= 1;
             }
             return parameters.size() == 1;
         }
-        throw new UnsupportedOperationException(String.format(
-                "Currently HasUrlParameter only supports the following parameter types: %s.",
-                supportedTypes.stream().map(Class::getName)
-                        .collect(Collectors.joining(", "))));
+        throw new UnsupportedOperationException(
+                String.format("Currently HasUrlParameter only supports the following parameter types: %s.",
+                        supportedTypes.stream().map(Class::getName).collect(Collectors.joining(", "))));
     }
 
     /**
@@ -183,9 +165,9 @@ public final class ParameterDeserializer {
         Type type = GenericTypeReflector.getTypeParameter(navigationTarget,
                 HasUrlParameter.class.getTypeParameters()[0]);
         if (!(type instanceof Class<?>)) {
-            throw new IllegalArgumentException(String.format(
-                    "Parameter type of the given navigationTarget '%s' could not be resolved.",
-                    navigationTarget.getName()));
+            throw new IllegalArgumentException(
+                    String.format("Parameter type of the given navigationTarget '%s' could not be resolved.",
+                            navigationTarget.getName()));
         }
         return GenericTypeReflector.erase(type);
     }
@@ -205,15 +187,13 @@ public final class ParameterDeserializer {
             return false;
         }
         String methodName = "setParameter";
-        assert methodName.equals(ReflectTools
-                .getFunctionalMethod(HasUrlParameter.class).getName());
+        assert methodName.equals(ReflectTools.getFunctionalMethod(HasUrlParameter.class).getName());
 
         // Raw method has no parameter annotations if compiled by Eclipse
-        Type parameterType = GenericTypeReflector.getTypeParameter(
-                navigationTarget, HasUrlParameter.class.getTypeParameters()[0]);
+        Type parameterType = GenericTypeReflector.getTypeParameter(navigationTarget,
+                HasUrlParameter.class.getTypeParameters()[0]);
         if (parameterType == null) {
-            parameterType = GenericTypeReflector.getTypeParameter(
-                    navigationTarget.getGenericSuperclass(),
+            parameterType = GenericTypeReflector.getTypeParameter(navigationTarget.getGenericSuperclass(),
                     HasUrlParameter.class.getTypeParameters()[0]);
         }
         if (parameterType == null) {
@@ -227,19 +207,13 @@ public final class ParameterDeserializer {
         }
         Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
 
-        return Stream.of(navigationTarget.getMethods())
-                .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> hasValidParameterTypes(method,
-                        parameterClass))
-                .anyMatch(method -> method.getParameters()[1]
-                        .isAnnotationPresent(parameterAnnotation));
+        return Stream.of(navigationTarget.getMethods()).filter(method -> methodName.equals(method.getName()))
+                .filter(method -> hasValidParameterTypes(method, parameterClass))
+                .anyMatch(method -> method.getParameters()[1].isAnnotationPresent(parameterAnnotation));
     }
 
-    private static boolean hasValidParameterTypes(Method method,
-            Class<?> parameterClass) {
-        return method.getParameterCount() == 2
-                && method.getParameterTypes()[0] == BeforeEvent.class
-                && method.getParameterTypes()[1]
-                        .isAssignableFrom(parameterClass);
+    private static boolean hasValidParameterTypes(Method method, Class<?> parameterClass) {
+        return method.getParameterCount() == 2 && method.getParameterTypes()[0] == BeforeEvent.class
+                && method.getParameterTypes()[1].isAssignableFrom(parameterClass);
     }
 }

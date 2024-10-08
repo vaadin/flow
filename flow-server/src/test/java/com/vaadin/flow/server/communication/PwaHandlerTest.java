@@ -49,8 +49,7 @@ public class PwaHandlerTest {
     }
 
     @Test
-    public void handleRequest_pwaRegistryConfigIsDisabled_returnsFalse()
-            throws IOException {
+    public void handleRequest_pwaRegistryConfigIsDisabled_returnsFalse() throws IOException {
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
         PwaConfiguration configuration = Mockito.mock(PwaConfiguration.class);
         Mockito.when(registry.getPwaConfiguration()).thenReturn(configuration);
@@ -60,26 +59,22 @@ public class PwaHandlerTest {
     }
 
     @Test
-    public void handleRequest_pwaRegistryConfigIsEnabled_pathIsPwaResource_returnsTrue()
-            throws IOException {
+    public void handleRequest_pwaRegistryConfigIsEnabled_pathIsPwaResource_returnsTrue() throws IOException {
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
         PwaConfiguration configuration = Mockito.mock(PwaConfiguration.class);
         Mockito.when(registry.getPwaConfiguration()).thenReturn(configuration);
         Mockito.when(configuration.isEnabled()).thenReturn(true);
         PwaHandler handler = new PwaHandler(() -> registry);
 
-        Mockito.when(response.getWriter())
-                .thenReturn(new PrintWriter(new StringWriter()));
+        Mockito.when(response.getWriter()).thenReturn(new PrintWriter(new StringWriter()));
         Mockito.when(registry.getRuntimeServiceWorkerJs()).thenReturn("");
 
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/sw-runtime-resources-precache.js");
+        Mockito.when(request.getPathInfo()).thenReturn("/sw-runtime-resources-precache.js");
         Assert.assertTrue(handler.handleRequest(session, request, response));
     }
 
     @Test
-    public void handleRequest_pwaRegistryConfigIsEnabled_handlerIsInitializedOnce()
-            throws IOException {
+    public void handleRequest_pwaRegistryConfigIsEnabled_handlerIsInitializedOnce() throws IOException {
 
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
         PwaConfiguration configuration = Mockito.mock(PwaConfiguration.class);
@@ -87,11 +82,9 @@ public class PwaHandlerTest {
         Mockito.when(configuration.isEnabled()).thenReturn(true);
         PwaHandler handler = new PwaHandler(() -> registry);
 
-        Mockito.when(response.getWriter())
-                .thenReturn(new PrintWriter(new StringWriter()));
+        Mockito.when(response.getWriter()).thenReturn(new PrintWriter(new StringWriter()));
         Mockito.when(registry.getRuntimeServiceWorkerJs()).thenReturn("");
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/sw-runtime-resources-precache.js");
+        Mockito.when(request.getPathInfo()).thenReturn("/sw-runtime-resources-precache.js");
 
         Assert.assertTrue(handler.handleRequest(session, request, response));
         Assert.assertTrue(handler.handleRequest(session, request, response));
@@ -100,8 +93,7 @@ public class PwaHandlerTest {
     }
 
     @Test
-    public void handleRequest_writeIconOnResponseFailure_doesNotThrow()
-            throws Exception {
+    public void handleRequest_writeIconOnResponseFailure_doesNotThrow() throws Exception {
 
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
         PwaConfiguration configuration = Mockito.mock(PwaConfiguration.class);
@@ -114,23 +106,18 @@ public class PwaHandlerTest {
         Mockito.when(configuration.isEnabled()).thenReturn(true);
 
         Mockito.doAnswer(i -> {
-            throw new UncheckedIOException(
-                    "Failed to store the icon image into the stream provided",
+            throw new UncheckedIOException("Failed to store the icon image into the stream provided",
                     new IOException("Broken pipe"));
         }).when(icon).write(ArgumentMatchers.any());
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/icons/icon-100x100.png");
+        Mockito.when(request.getPathInfo()).thenReturn("/icons/icon-100x100.png");
 
         Assert.assertTrue(handler.handleRequest(session, request, response));
     }
 
-    private PwaIcon createIcon(PwaRegistry registry, int size)
-            throws Exception {
-        Constructor<PwaIcon> ctor = PwaIcon.class
-                .getDeclaredConstructor(int.class, int.class, String.class);
+    private PwaIcon createIcon(PwaRegistry registry, int size) throws Exception {
+        Constructor<PwaIcon> ctor = PwaIcon.class.getDeclaredConstructor(int.class, int.class, String.class);
         ctor.setAccessible(true);
-        PwaIcon icon = ctor.newInstance(size, size,
-                PwaConfiguration.DEFAULT_ICON);
+        PwaIcon icon = ctor.newInstance(size, size, PwaConfiguration.DEFAULT_ICON);
         icon.setRegistry(registry);
         return icon;
     }

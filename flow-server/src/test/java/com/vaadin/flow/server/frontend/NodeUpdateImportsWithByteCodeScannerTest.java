@@ -18,12 +18,10 @@ package com.vaadin.flow.server.frontend;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
-public class NodeUpdateImportsWithByteCodeScannerTest
-        extends AbstractNodeUpdateImportsTest {
+public class NodeUpdateImportsWithByteCodeScannerTest extends AbstractNodeUpdateImportsTest {
 
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
-        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, true);
+        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory().createScanner(false, finder, true);
     }
 }

@@ -32,8 +32,7 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
     public void servletPageGetsWebComponent_attributeIsReflectedToServer() {
         open();
 
-        TestBenchElement webComponent = $("themed-variant-web-component")
-                .first();
+        TestBenchElement webComponent = $("themed-variant-web-component").first();
         Assert.assertEquals("dark", webComponent.getAttribute("theme"));
     }
 }

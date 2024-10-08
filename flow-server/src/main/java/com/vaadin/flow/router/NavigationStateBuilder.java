@@ -42,8 +42,7 @@ public class NavigationStateBuilder {
     }
 
     /**
-     * Assigns the given navigation target with the given url parameter to the
-     * navigation state being built.
+     * Assigns the given navigation target with the given url parameter to the navigation state being built.
      *
      * @param navigationTarget
      *            the navigation target
@@ -51,17 +50,14 @@ public class NavigationStateBuilder {
      *            the route parameters of the navigation target
      * @return this builder, for chaining
      */
-    public NavigationStateBuilder withTarget(
-            Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
+    public NavigationStateBuilder withTarget(Class<? extends Component> navigationTarget, RouteParameters parameters) {
         currentState.setNavigationTarget(navigationTarget);
         currentState.setRouteParameters(parameters);
         return this;
     }
 
     /**
-     * Assigns the given route target with the given route parameters to the
-     * navigation state being built.
+     * Assigns the given route target with the given route parameters to the navigation state being built.
      *
      * @param routeTarget
      *            the route target
@@ -69,8 +65,7 @@ public class NavigationStateBuilder {
      *            the route parameters of the navigation target
      * @return this builder, for chaining
      */
-    public NavigationStateBuilder withTarget(RouteTarget routeTarget,
-            RouteParameters parameters) {
+    public NavigationStateBuilder withTarget(RouteTarget routeTarget, RouteParameters parameters) {
         currentState.setRouteTarget(routeTarget);
         currentState.setRouteParameters(parameters);
         return this;
@@ -83,8 +78,7 @@ public class NavigationStateBuilder {
      *            the navigation target
      * @return this builder, for chaining
      */
-    public NavigationStateBuilder withTarget(
-            Class<? extends Component> navigationTarget) {
+    public NavigationStateBuilder withTarget(Class<? extends Component> navigationTarget) {
         currentState.setNavigationTarget(navigationTarget);
         return this;
     }
@@ -102,8 +96,7 @@ public class NavigationStateBuilder {
     }
 
     /**
-     * Returns the NavigationState instance that has been built so far and
-     * resets the internal state of this builder.
+     * Returns the NavigationState instance that has been built so far and resets the internal state of this builder.
      *
      * @return the built NavigationState instance
      */

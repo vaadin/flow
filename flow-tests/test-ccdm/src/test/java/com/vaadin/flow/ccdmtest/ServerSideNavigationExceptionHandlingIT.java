@@ -30,9 +30,7 @@ public class ServerSideNavigationExceptionHandlingIT extends CCDMTest {
         // Navigate to a server-side view that throws exception.
         findElement(By.id("serverViewThrowsExcpetionButton")).click();
 
-        assertView("errorView",
-                "Tried to navigate to a view without being authenticated",
-                "view-throws-exception");
+        assertView("errorView", "Tried to navigate to a view without being authenticated", "view-throws-exception");
     }
 
 }

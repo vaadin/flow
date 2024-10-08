@@ -26,26 +26,20 @@ import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.util.UniqueSerializable;
 
 /**
- * Server-side feature defining whether a node is inert, and if it should ignore
- * inheriting inert state from parent. By default, a node is not inert, and it
- * will inherit the inert state from the parent. If the node lacks the inert
+ * Server-side feature defining whether a node is inert, and if it should ignore inheriting inert state from parent. By
+ * default, a node is not inert, and it will inherit the inert state from the parent. If the node lacks the inert
  * feature, then it will be just inheriting the state from parent.
  * <p>
- * The inert status is only updated when the changes are written to the client
- * side because the inert state changes are applied for upcoming requests from
- * the client side. Thus when an RPC call (like any DOM event) causes a node to
- * become inert, the inert state does not block any pending executions until
- * changes are written to the client side.
+ * The inert status is only updated when the changes are written to the client side because the inert state changes are
+ * applied for upcoming requests from the client side. Thus when an RPC call (like any DOM event) causes a node to
+ * become inert, the inert state does not block any pending executions until changes are written to the client side.
  * <p>
- * Implementation notes: The inert state changes are collected like with client
- * side changes (markAsDirty), but nothing is actually sent to the client side.
- * This is just to make sure the changes are applied when needed, when writing
- * changes to client side, instead of applying them immediately. By default the
- * elements only have the inert data feature but as "not initialized" state
- * which means that the node is not inert unless parent is inert, and thus it
- * does not ignore parent inert by default. The inert data feature is
- * initialized when the node will be made explicitly inert or to explicitly
- * ignore parent inert data.
+ * Implementation notes: The inert state changes are collected like with client side changes (markAsDirty), but nothing
+ * is actually sent to the client side. This is just to make sure the changes are applied when needed, when writing
+ * changes to client side, instead of applying them immediately. By default the elements only have the inert data
+ * feature but as "not initialized" state which means that the node is not inert unless parent is inert, and thus it
+ * does not ignore parent inert by default. The inert data feature is initialized when the node will be made explicitly
+ * inert or to explicitly ignore parent inert data.
  */
 public class InertData extends ServerSideFeature {
     // Null is ignored by Map.computeIfAbsent -> using a marker value instead
@@ -57,10 +51,9 @@ public class InertData extends ServerSideFeature {
     private boolean inertSelf;
 
     /*
-     * This value stores the latest inert status that the node had before the
-     * latest response was sent to the client side. Otherwise any RPC handler
-     * code that changes the inert state for a node in a request could cause
-     * unwanted RPC handler executions to occur.
+     * This value stores the latest inert status that the node had before the latest response was sent to the client
+     * side. Otherwise any RPC handler code that changes the inert state for a node in a request could cause unwanted
+     * RPC handler executions to occur.
      */
     private Boolean cachedInert;
 
@@ -75,8 +68,8 @@ public class InertData extends ServerSideFeature {
     }
 
     /**
-     * Sets whether or not the node should ignore parent's inert state or not.
-     * By default the parent state is inherited {@code false}.
+     * Sets whether or not the node should ignore parent's inert state or not. By default the parent state is inherited
+     * {@code false}.
      *
      * @param ignoreParentInert
      *            {@code true} for ignoring {@code false} for not
@@ -89,12 +82,11 @@ public class InertData extends ServerSideFeature {
     }
 
     /**
-     * Sets whether the node itself is inert. By default the node is not inert,
-     * unless parent is inert and inhering parent inert is not blocked.
+     * Sets whether the node itself is inert. By default the node is not inert, unless parent is inert and inhering
+     * parent inert is not blocked.
      *
      * @param inertSelf
-     *            {@code} true for setting the node explicitly inert,
-     *            {@code false} for not
+     *            {@code} true for setting the node explicitly inert, {@code false} for not
      */
     public void setInertSelf(boolean inertSelf) {
         if (this.inertSelf != inertSelf) {
@@ -104,8 +96,7 @@ public class InertData extends ServerSideFeature {
     }
 
     /**
-     * Gets whether the node itself has been set to be inert (regardless of its
-     * ancestors' inert setting).
+     * Gets whether the node itself has been set to be inert (regardless of its ancestors' inert setting).
      *
      * @return whether this node has been set inert
      */
@@ -134,18 +125,16 @@ public class InertData extends ServerSideFeature {
 
     private void markAsDirty() {
         /*
-         * Even though not sending any changes to client, making sure the inert
-         * status is updated for the node before writing the response by using
-         * the same mechanism as collecting changes to the client.
+         * Even though not sending any changes to client, making sure the inert status is updated for the node before
+         * writing the response by using the same mechanism as collecting changes to the client.
          */
         getNode().markAsDirty();
         getNode().getChangeTracker(this, () -> NULL_MARKER);
     }
 
     /**
-     * Returns whether this node is explicitly inert and if not, then checks
-     * parents for the same. The returned value has been updated when the most
-     * recent changes have been written to the client side.
+     * Returns whether this node is explicitly inert and if not, then checks parents for the same. The returned value
+     * has been updated when the most recent changes have been written to the client side.
      *
      * @return {@code true} for inert, {@code false} for not
      */
@@ -173,11 +162,9 @@ public class InertData extends ServerSideFeature {
             StateNode node = stack.pop();
 
             if (node.hasFeature(InertData.class)) {
-                final Optional<InertData> featureIfInitialized = node
-                        .getFeatureIfInitialized(InertData.class);
+                final Optional<InertData> featureIfInitialized = node.getFeatureIfInitialized(InertData.class);
                 if (featureIfInitialized.isPresent()) {
-                    featureIfInitialized.get()
-                            .updateInertAndCascadeToChildren(newInert);
+                    featureIfInitialized.get().updateInertAndCascadeToChildren(newInert);
                 } else {
                     node.forEachChild(stack::push);
                 }
@@ -197,10 +184,9 @@ public class InertData extends ServerSideFeature {
             return resolvedParentInert;
         }
         do {
-            final Optional<InertData> optionalInertData = parent
-                    .hasFeature(InertData.class)
-                            ? parent.getFeatureIfInitialized(InertData.class)
-                            : Optional.empty();
+            final Optional<InertData> optionalInertData = parent.hasFeature(InertData.class)
+                    ? parent.getFeatureIfInitialized(InertData.class)
+                    : Optional.empty();
             if (optionalInertData.isPresent()) {
                 // Most state nodes will not have inert data so using recursion
                 // is safe. Need to use resolveInert() as the execution order of
@@ -213,7 +199,7 @@ public class InertData extends ServerSideFeature {
         return false;
     }
     /*
-     * Not overriding allowChanges() since that is tied to isInactive() in state
-     * node, which is always inherited from parent (this is maybe inherited).
+     * Not overriding allowChanges() since that is tied to isInactive() in state node, which is always inherited from
+     * parent (this is maybe inherited).
      */
 }

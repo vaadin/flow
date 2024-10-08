@@ -30,8 +30,7 @@ import com.vaadin.flow.router.RouterLayout;
 /**
  * Link a {@link RouteScope @RouteScope} bean to its owner.
  * <p>
- * Owner is a router component. A {@link Route @Route}, or a
- * {@link RouterLayout}, or a {@link HasErrorParameter}.
+ * Owner is a router component. A {@link Route @Route}, or a {@link RouterLayout}, or a {@link HasErrorParameter}.
  *
  * @author Vaadin Ltd
  * @since
@@ -39,15 +38,13 @@ import com.vaadin.flow.router.RouterLayout;
  */
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD,
-        ElementType.PARAMETER })
+@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER })
 public @interface RouteScopeOwner {
 
     /**
      * Owner class of the qualified {@link RouteScope @RouteScope} bean.
      * <p>
-     * A {@link Route @Route}, or a {@link RouterLayout}, or a
-     * {@link HasErrorParameter}
+     * A {@link Route @Route}, or a {@link RouterLayout}, or a {@link HasErrorParameter}
      *
      * @return owner class
      */

@@ -34,23 +34,17 @@ public class ServerConverterTest {
         convertFile_outputFileMatchesExpectedOne("BasicGettersSetters.java");
     }
 
-    private void convertFile_outputFileMatchesExpectedOne(String fileName)
-            throws IOException {
-        InputStream inputFileStream = getClass().getClassLoader()
-                .getResourceAsStream("server/in/" + fileName);
-        InputStream expectedFileStream = getClass().getClassLoader()
-                .getResourceAsStream("server/expected/" + fileName);
+    private void convertFile_outputFileMatchesExpectedOne(String fileName) throws IOException {
+        InputStream inputFileStream = getClass().getClassLoader().getResourceAsStream("server/in/" + fileName);
+        InputStream expectedFileStream = getClass().getClassLoader().getResourceAsStream("server/expected/" + fileName);
 
         Path tmpInputFilePath = tmpDir.newFile().toPath();
-        Files.copy(inputFileStream, tmpInputFilePath,
-                StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(inputFileStream, tmpInputFilePath, StandardCopyOption.REPLACE_EXISTING);
 
         serverConverter.convertFile(tmpInputFilePath);
 
-        String expectedContent = new String(expectedFileStream.readAllBytes(),
-                StandardCharsets.UTF_8);
-        String actualContent = Files.readString(tmpInputFilePath,
-                StandardCharsets.UTF_8);
+        String expectedContent = new String(expectedFileStream.readAllBytes(), StandardCharsets.UTF_8);
+        String actualContent = Files.readString(tmpInputFilePath, StandardCharsets.UTF_8);
 
         // TIP: Uncomment if you would like to update snapshots.
         // @formatter:off
@@ -59,9 +53,7 @@ public class ServerConverterTest {
         //         actualContent, StandardCharsets.UTF_8);
         // @formatter:on
 
-        Assert.assertEquals(
-                "The output " + fileName
-                        + " file does not match the expected one.",
-                expectedContent, actualContent);
+        Assert.assertEquals("The output " + fileName + " file does not match the expected one.", expectedContent,
+                actualContent);
     }
 }

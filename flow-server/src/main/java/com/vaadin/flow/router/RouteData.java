@@ -34,16 +34,16 @@ public class RouteData extends RouteBaseData<RouteData> {
     private final MenuData menuData;
 
     /**
-     * RouteData constructor. This constructor doesn't support parameters. When
-     * a non empty List is provided {@link IllegalArgumentException} is raised.
+     * RouteData constructor. This constructor doesn't support parameters. When a non empty List is provided
+     * {@link IllegalArgumentException} is raised.
      *
      * @param parentLayouts
      *            route parent layout class chain
      * @param template
      *            full route template
      * @param parameters
-     *            supports only null or empty list. If a non empty list is
-     *            passed and {@link IllegalArgumentException} is raised.
+     *            supports only null or empty list. If a non empty list is passed and {@link IllegalArgumentException}
+     *            is raised.
      * @param navigationTarget
      *            route navigation target
      * @param routeAliases
@@ -51,10 +51,8 @@ public class RouteData extends RouteBaseData<RouteData> {
      * @throws IllegalArgumentException
      *             if parameters is not empty.
      */
-    public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String template, List<Class<?>> parameters,
-            Class<? extends Component> navigationTarget,
-            List<RouteAliasData> routeAliases) {
+    public RouteData(List<Class<? extends RouterLayout>> parentLayouts, String template, List<Class<?>> parameters,
+            Class<? extends Component> navigationTarget, List<RouteAliasData> routeAliases) {
         super(parentLayouts, template, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
@@ -76,12 +74,10 @@ public class RouteData extends RouteBaseData<RouteData> {
      * @param routeAliases
      *            list of aliases for this route
      */
-    public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String template, Map<String, RouteParameterData> parameters,
-            Class<? extends Component> navigationTarget,
+    public RouteData(List<Class<? extends RouterLayout>> parentLayouts, String template,
+            Map<String, RouteParameterData> parameters, Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
-        this(parentLayouts, template, parameters, navigationTarget,
-                routeAliases, null);
+        this(parentLayouts, template, parameters, navigationTarget, routeAliases, null);
     }
 
     /**
@@ -100,9 +96,8 @@ public class RouteData extends RouteBaseData<RouteData> {
      * @param menuData
      *            menu data for this route
      */
-    public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String template, Map<String, RouteParameterData> parameters,
-            Class<? extends Component> navigationTarget,
+    public RouteData(List<Class<? extends RouterLayout>> parentLayouts, String template,
+            Map<String, RouteParameterData> parameters, Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases, MenuData menuData) {
         super(parentLayouts, template, parameters, navigationTarget);
 
@@ -131,11 +126,9 @@ public class RouteData extends RouteBaseData<RouteData> {
 
     @Override
     public String toString() {
-        return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
-                + getTemplate() + '\'' + ", parameters=" + getRouteParameters()
-                + ", navigationTarget=" + getNavigationTarget()
-                + ", routeAliases=" + routeAliases + ", menuData=" + menuData
-                + "}'";
+        return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='" + getTemplate() + '\'' + ", parameters="
+                + getRouteParameters() + ", navigationTarget=" + getNavigationTarget() + ", routeAliases="
+                + routeAliases + ", menuData=" + menuData + "}'";
     }
 
     @Override
@@ -145,15 +138,13 @@ public class RouteData extends RouteBaseData<RouteData> {
             return other.getParentLayouts().equals(this.getParentLayouts())
                     && other.getTemplate().equals(this.getTemplate())
                     && other.getNavigationTarget().equals(getNavigationTarget())
-                    && routeAliases.containsAll(other.routeAliases)
-                    && Objects.equals(menuData, other.getMenuData());
+                    && routeAliases.containsAll(other.routeAliases) && Objects.equals(menuData, other.getMenuData());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getParentLayouts(), getTemplate(),
-                getNavigationTarget(), routeAliases, menuData);
+        return Objects.hash(getParentLayouts(), getTemplate(), getNavigationTarget(), routeAliases, menuData);
     }
 }

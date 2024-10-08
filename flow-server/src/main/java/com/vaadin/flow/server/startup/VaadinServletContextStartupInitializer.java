@@ -22,9 +22,8 @@ import jakarta.servlet.ServletException;
 import java.util.Set;
 
 /**
- * Allows a library/runtime to be notified of a web application's startup phase
- * and perform any required programmatic registration of servlets, filters, and
- * listeners in response to it.
+ * Allows a library/runtime to be notified of a web application's startup phase and perform any required programmatic
+ * registration of servlets, filters, and listeners in response to it.
  *
  * @since
  *
@@ -32,12 +31,10 @@ import java.util.Set;
  */
 @FunctionalInterface
 public interface VaadinServletContextStartupInitializer
-        extends ClassLoaderAwareServletContainerInitializer,
-        VaadinContextStartupInitializer {
+        extends ClassLoaderAwareServletContainerInitializer, VaadinContextStartupInitializer {
 
     @Override
-    default void process(Set<Class<?>> classSet, ServletContext context)
-            throws ServletException {
+    default void process(Set<Class<?>> classSet, ServletContext context) throws ServletException {
         try {
             initialize(classSet, new VaadinServletContext(context));
         } catch (VaadinInitializerException e) {

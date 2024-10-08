@@ -34,31 +34,26 @@ public class SerializeShortcutView extends AbstractDivView {
         label.setId("message");
 
         Input input = new Input();
-        Shortcuts.addShortcutListener(input, event -> input.focus(), Key.KEY_F,
-                KeyModifier.META);
+        Shortcuts.addShortcutListener(input, event -> input.focus(), Key.KEY_F, KeyModifier.META);
 
-        NativeButton button1 = createButton("Add Shortcut Owner",
-                "add-serialize", event -> {
-                    UI ui = UI.getCurrent();
-                    add(input);
-                    serializedAndDeserialize(label, ui);
-                });
-        NativeButton button2 = createButton("Add Remove Shortcut Owner",
-                "add-remove-serialize", event -> {
-                    UI ui = UI.getCurrent();
-                    add(input);
-                    remove(input);
-                    serializedAndDeserialize(label, ui);
-                });
+        NativeButton button1 = createButton("Add Shortcut Owner", "add-serialize", event -> {
+            UI ui = UI.getCurrent();
+            add(input);
+            serializedAndDeserialize(label, ui);
+        });
+        NativeButton button2 = createButton("Add Remove Shortcut Owner", "add-remove-serialize", event -> {
+            UI ui = UI.getCurrent();
+            add(input);
+            remove(input);
+            serializedAndDeserialize(label, ui);
+        });
         add(label, button1, button2);
     }
 
     private static void serializedAndDeserialize(Div label, UI ui) {
         try {
-            UI newUI = SerializationUtils
-                    .deserialize(SerializationUtils.serialize(ui));
-            String result = newUI != null ? "Successfully serialized ui"
-                    : "Serialization failed";
+            UI newUI = SerializationUtils.deserialize(SerializationUtils.serialize(ui));
+            String result = newUI != null ? "Successfully serialized ui" : "Serialization failed";
             label.setText(result);
         } catch (Exception se) {
             label.setText(se.getMessage());

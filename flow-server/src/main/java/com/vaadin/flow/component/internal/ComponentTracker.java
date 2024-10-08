@@ -43,31 +43,25 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  **/
 public class ComponentTracker {
 
-    private static Map<Component, Location> createLocation = Collections
-            .synchronizedMap(new WeakHashMap<>());
-    private static Map<Component, Location> attachLocation = Collections
-            .synchronizedMap(new WeakHashMap<>());
+    private static Map<Component, Location> createLocation = Collections.synchronizedMap(new WeakHashMap<>());
+    private static Map<Component, Location> attachLocation = Collections.synchronizedMap(new WeakHashMap<>());
 
     private static Boolean disabled = null;
-    private static String[] prefixesToSkip = new String[] {
-            "com.vaadin.flow.component.", "com.vaadin.flow.di.",
-            "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
-            "com.vaadin.flow.spring.", "java.", "jdk.",
+    private static String[] prefixesToSkip = new String[] { "com.vaadin.flow.component.", "com.vaadin.flow.di.",
+            "com.vaadin.flow.dom.", "com.vaadin.flow.internal.", "com.vaadin.flow.spring.", "java.", "jdk.",
             "org.springframework.beans.", };
 
     /**
      * Represents a location in the source code.
      */
     public static class Location implements Serializable {
-        private static final Pattern MAYBE_INNER_CLASS = Pattern
-                .compile("(.*\\.[^$.]+)\\$[^.]+$");
+        private static final Pattern MAYBE_INNER_CLASS = Pattern.compile("(.*\\.[^$.]+)\\$[^.]+$");
         private final String className;
         private final String filename;
         private final String methodName;
         private final int lineNumber;
 
-        public Location(String className, String filename, String methodName,
-                int lineNumber) {
+        public Location(String className, String filename, String methodName, int lineNumber) {
             this.className = className;
             this.filename = filename;
             this.methodName = methodName;
@@ -112,8 +106,7 @@ public class ComponentTracker {
         public int hashCode() {
             int result = className != null ? className.hashCode() : 0;
             result = 31 * result + (filename != null ? filename.hashCode() : 0);
-            result = 31 * result
-                    + (methodName != null ? methodName.hashCode() : 0);
+            result = 31 * result + (methodName != null ? methodName.hashCode() : 0);
             result = 31 * result + lineNumber;
             return result;
         }
@@ -148,11 +141,9 @@ public class ComponentTracker {
 
             File src = configuration.getJavaSourceFolder();
             if (ext.equals(".kt") && src.getPath().endsWith("/java")) {
-                src = new File(src.getPath().substring(0,
-                        src.getPath().lastIndexOf("/java")) + "/kotlin");
+                src = new File(src.getPath().substring(0, src.getPath().lastIndexOf("/java")) + "/kotlin");
             }
-            File javaFile = new File(src,
-                    cls.replace(".", File.separator) + ext);
+            File javaFile = new File(src, cls.replace(".", File.separator) + ext);
             return javaFile;
         }
 
@@ -171,8 +162,7 @@ public class ComponentTracker {
 
         @Override
         public String toString() {
-            return "Component '" + className + "' at '" + filename + "' ("
-                    + methodName + " LINE " + lineNumber + ")";
+            return "Component '" + className + "' at '" + filename + "' (" + methodName + " LINE " + lineNumber + ")";
         }
     }
 
@@ -188,9 +178,8 @@ public class ComponentTracker {
     }
 
     /**
-     * Tracks the location where the component was created. This should be
-     * called from the Component constructor so that the creation location can
-     * be found from the current stacktrace.
+     * Tracks the location where the component was created. This should be called from the Component constructor so that
+     * the creation location can be found from the current stacktrace.
      *
      * @param component
      *            the component to track
@@ -200,8 +189,7 @@ public class ComponentTracker {
             return;
         }
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        Location location = findRelevantLocation(component.getClass(), stack,
-                null);
+        Location location = findRelevantLocation(component.getClass(), stack, null);
         if (isNavigatorCreate(location)) {
             location = findRelevantLocation(null, stack, null);
         }
@@ -209,8 +197,7 @@ public class ComponentTracker {
     }
 
     /**
-     * Finds the location where the given component instance was attached to a
-     * parent.
+     * Finds the location where the given component instance was attached to a parent.
      *
      * @param component
      *            the component to find
@@ -221,9 +208,8 @@ public class ComponentTracker {
     }
 
     /**
-     * Tracks the location where the component was attached. This should be
-     * called from the Component attach logic so that the creation location can
-     * be found from the current stacktrace.
+     * Tracks the location where the component was attached. This should be called from the Component attach logic so
+     * that the creation location can be found from the current stacktrace.
      *
      * @param component
      *            the component to track
@@ -236,8 +222,7 @@ public class ComponentTracker {
 
         // In most cases the interesting attach call is found in the same class
         // where the component was created and not in a generic layout class
-        Location location = findRelevantLocation(component.getClass(), stack,
-                findCreate(component));
+        Location location = findRelevantLocation(component.getClass(), stack, findCreate(component));
         if (isNavigatorCreate(location)) {
             // For routes, we can just show the init location as we have nothing
             // better
@@ -247,9 +232,8 @@ public class ComponentTracker {
     }
 
     /**
-     * Refreshes location of all components that had create or attach location
-     * below given reference component by given offset value. Location may
-     * change due to dynamic code updates conducted by Vaadin developer tools.
+     * Refreshes location of all components that had create or attach location below given reference component by given
+     * offset value. Location may change due to dynamic code updates conducted by Vaadin developer tools.
      *
      * @param location
      *            reference component location
@@ -261,32 +245,25 @@ public class ComponentTracker {
         refreshLocation(attachLocation, location, offset);
     }
 
-    private static void refreshLocation(Map<Component, Location> targetRef,
-            Location location, int offset) {
+    private static void refreshLocation(Map<Component, Location> targetRef, Location location, int offset) {
         Map<Component, Location> updatedLocations = new HashMap<>();
-        targetRef.entrySet().stream().filter(
-                e -> Objects.equals(e.getValue().className, location.className))
-                .filter(e -> e.getValue().lineNumber > location.lineNumber)
-                .forEach(e -> {
+        targetRef.entrySet().stream().filter(e -> Objects.equals(e.getValue().className, location.className))
+                .filter(e -> e.getValue().lineNumber > location.lineNumber).forEach(e -> {
                     Location l = e.getValue();
-                    updatedLocations.put(e.getKey(), new Location(l.className,
-                            l.filename, l.methodName, l.lineNumber + offset));
+                    updatedLocations.put(e.getKey(),
+                            new Location(l.className, l.filename, l.methodName, l.lineNumber + offset));
                 });
         targetRef.putAll(updatedLocations);
     }
 
     private static boolean isNavigatorCreate(Location location) {
-        return location.className()
-                .equals(AbstractNavigationStateRenderer.class.getName());
+        return location.className().equals(AbstractNavigationStateRenderer.class.getName());
     }
 
-    private static Location findRelevantLocation(
-            Class<? extends Component> excludeClass, StackTraceElement[] stack,
+    private static Location findRelevantLocation(Class<? extends Component> excludeClass, StackTraceElement[] stack,
             Location preferredClass) {
         List<StackTraceElement> candidates = Stream.of(stack)
-                .filter(e -> excludeClass == null
-                        || !e.getClassName().equals(excludeClass.getName()))
-                .filter(e -> {
+                .filter(e -> excludeClass == null || !e.getClassName().equals(excludeClass.getName())).filter(e -> {
                     for (String prefixToSkip : prefixesToSkip) {
                         if (e.getClassName().startsWith(prefixToSkip)) {
                             return false;
@@ -296,9 +273,7 @@ public class ComponentTracker {
                 }).collect(Collectors.toList());
         if (preferredClass != null) {
             Optional<StackTraceElement> preferredCandidate = candidates.stream()
-                    .filter(e -> e.getClassName()
-                            .equals(preferredClass.className()))
-                    .findFirst();
+                    .filter(e -> e.getClassName().equals(preferredClass.className())).findFirst();
             if (preferredCandidate.isPresent()) {
                 return toLocation(preferredCandidate.get());
             }
@@ -309,16 +284,12 @@ public class ComponentTracker {
     /**
      * Checks if the component tracking is disabled.
      *
-     * Tracking is disabled when application is running in production mode or if
-     * the configuration property
-     * {@literal vaadin.devmode.componentTracker.enabled} is set to
-     * {@literal false}.
+     * Tracking is disabled when application is running in production mode or if the configuration property
+     * {@literal vaadin.devmode.componentTracker.enabled} is set to {@literal false}.
      *
-     * When unsure, reports that production mode is true so tracking does not
-     * take place in production.
+     * When unsure, reports that production mode is true so tracking does not take place in production.
      *
-     * @return true if in production mode or the mode is unclear, false if in
-     *         development mode
+     * @return true if in production mode or the mode is unclear, false if in development mode
      **/
     private static boolean isDisabled() {
         if (disabled != null) {
@@ -336,16 +307,13 @@ public class ComponentTracker {
         if (context == null) {
             return true;
         }
-        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration
-                .get(context);
+        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration.get(context);
         if (applicationConfiguration == null) {
             return true;
         }
 
-        disabled = applicationConfiguration.isProductionMode()
-                || !applicationConfiguration.getBooleanProperty(
-                        InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER,
-                        true);
+        disabled = applicationConfiguration.isProductionMode() || !applicationConfiguration
+                .getBooleanProperty(InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER, true);
         return disabled;
     }
 

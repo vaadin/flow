@@ -21,8 +21,7 @@ import java.net.URI;
 /**
  * Stream registration result.
  * <p>
- * Use {@link #getResourceUri()} to get URI after {@link StreamResource} /
- * {@link StreamReceiver} is registered.
+ * Use {@link #getResourceUri()} to get URI after {@link StreamResource} / {@link StreamReceiver} is registered.
  * <p>
  * Also allows resource unregistering.
  *
@@ -44,18 +43,16 @@ public interface StreamRegistration extends Serializable {
     /**
      * Unregister {@link StreamResource}.
      * <p>
-     * The resource will be removed from the session and its URI won't be served
-     * by the application anymore so that the resource becomes available for GC.
+     * The resource will be removed from the session and its URI won't be served by the application anymore so that the
+     * resource becomes available for GC.
      * <p>
-     * It's the developer's responsibility to call this method at the
-     * appropriate time. Otherwise the resource instance will stay in memory
-     * until the session expires.
+     * It's the developer's responsibility to call this method at the appropriate time. Otherwise the resource instance
+     * will stay in memory until the session expires.
      */
     void unregister();
 
     /**
-     * Get the stream resource whose registration result is represented by this
-     * {@link StreamRegistration} instance.
+     * Get the stream resource whose registration result is represented by this {@link StreamRegistration} instance.
      *
      * @return resource, or null if resource has been already unregistered
      */

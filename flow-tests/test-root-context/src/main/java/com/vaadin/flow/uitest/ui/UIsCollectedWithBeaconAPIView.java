@@ -31,8 +31,7 @@ public class UIsCollectedWithBeaconAPIView extends Div {
         viewcount++;
         add(count);
         count.setId("uis");
-        NativeButton showUisNumber = new NativeButton("Update",
-                event -> updateCount());
+        NativeButton showUisNumber = new NativeButton("Update", event -> updateCount());
         add(showUisNumber);
         updateCount();
     }

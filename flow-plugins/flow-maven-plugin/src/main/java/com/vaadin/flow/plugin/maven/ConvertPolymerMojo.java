@@ -28,10 +28,8 @@ import com.vaadin.flow.plugin.base.ConvertPolymerCommand;
 public class ConvertPolymerMojo extends FlowModeAbstractMojo {
 
     /**
-     * A path to a specific file or directory that needs to be converted. By
-     * default, the goal scans and tries to convert all {@code *.js} and
-     * {@code *.java} files in the project except for the {@code node_modules}
-     * folder.
+     * A path to a specific file or directory that needs to be converted. By default, the goal scans and tries to
+     * convert all {@code *.js} and {@code *.java} files in the project except for the {@code node_modules} folder.
      */
     @Parameter(property = "vaadin.path")
     private String path;
@@ -43,8 +41,7 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
     private boolean useLit1;
 
     /**
-     * Whether to disable the usage of the JavaScript optional chaining operator
-     * (?.) in the output.
+     * Whether to disable the usage of the JavaScript optional chaining operator (?.) in the output.
      */
     @Parameter(property = "vaadin.disableOptionalChaining", defaultValue = "${false}")
     private boolean disableOptionalChaining;
@@ -58,12 +55,10 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
                             """
                             .stripIndent());
         }
-        try (ConvertPolymerCommand command = new ConvertPolymerCommand(this,
-                path, useLit1, disableOptionalChaining)) {
+        try (ConvertPolymerCommand command = new ConvertPolymerCommand(this, path, useLit1, disableOptionalChaining)) {
             command.execute();
         } catch (Exception e) {
-            throw new MojoFailureException(
-                    "Could not execute convert-polymer goal.", e);
+            throw new MojoFailureException("Could not execute convert-polymer goal.", e);
         }
     }
 }

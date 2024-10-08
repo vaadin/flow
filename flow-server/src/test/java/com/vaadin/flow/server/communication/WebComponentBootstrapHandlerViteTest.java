@@ -79,27 +79,23 @@ public class WebComponentBootstrapHandlerViteTest {
         TestUtil.createWebComponentHtmlStub(projectRootFolder);
         TestUtil.createStatsJsonStub(projectRootFolder);
         deploymentConfiguration = Mockito.mock();
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(true);
+        Mockito.when(deploymentConfiguration.isProductionMode()).thenReturn(true);
     }
 
-    private static class TestWebComponentBootstrapHandler
-            extends WebComponentBootstrapHandler {
+    private static class TestWebComponentBootstrapHandler extends WebComponentBootstrapHandler {
         @Override
         protected boolean canHandleRequest(VaadinRequest request) {
             return true;
         }
 
         @Override
-        protected String getServiceUrl(VaadinRequest request,
-                VaadinResponse response) {
+        protected String getServiceUrl(VaadinRequest request, VaadinResponse response) {
             return "/";
         }
     }
 
     @Test
-    public void writeBootstrapPage_skipMetaAndStyleHeaderElements()
-            throws IOException {
+    public void writeBootstrapPage_skipMetaAndStyleHeaderElements() throws IOException {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -123,17 +119,14 @@ public class WebComponentBootstrapHandlerViteTest {
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
 
+        MatcherAssert.assertThat(resultingScript, CoreMatchers.containsString("var i=1;"));
         MatcherAssert.assertThat(resultingScript,
-                CoreMatchers.containsString("var i=1;"));
-        MatcherAssert.assertThat(resultingScript, CoreMatchers.not(CoreMatchers
-                .containsString("body {height:100vh;width:100vw;margin:0;}")));
-        MatcherAssert.assertThat(resultingScript,
-                CoreMatchers.not(CoreMatchers.containsString("http-equiv")));
+                CoreMatchers.not(CoreMatchers.containsString("body {height:100vh;width:100vw;margin:0;}")));
+        MatcherAssert.assertThat(resultingScript, CoreMatchers.not(CoreMatchers.containsString("http-equiv")));
     }
 
     @Test
-    public void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred()
-            throws IOException {
+    public void writeBootstrapPage_scriptSrcHasNoDoubleQuotes_attributeIsTransferred() throws IOException {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -148,13 +141,11 @@ public class WebComponentBootstrapHandlerViteTest {
         handler.writeBootstrapPage("", response, head, "");
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
-        MatcherAssert.assertThat(resultingScript,
-                CoreMatchers.containsString("foo'bar%20%27?baz%22"));
+        MatcherAssert.assertThat(resultingScript, CoreMatchers.containsString("foo'bar%20%27?baz%22"));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws()
-            throws IOException {
+    public void writeBootstrapPage_scriptSrcHasDoubleQuotes_throws() throws IOException {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -170,8 +161,7 @@ public class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    public void writeBootstrapPage_noPWA()
-            throws IOException, ServiceException {
+    public void writeBootstrapPage_noPWA() throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
 
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
@@ -187,8 +177,7 @@ public class WebComponentBootstrapHandlerViteTest {
         PwaIcon icon = Mockito.mock(PwaIcon.class);
         Mockito.when(icon.asElement()).thenReturn(new Element("h1"));
 
-        Mockito.when(registry.getHeaderIcons())
-                .thenReturn(Collections.singletonList(icon));
+        Mockito.when(registry.getHeaderIcons()).thenReturn(Collections.singletonList(icon));
 
         VaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -202,8 +191,7 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(service.getDeploymentConfiguration());
-        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
-                .getDeploymentConfiguration();
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service.getDeploymentConfiguration();
         config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
@@ -219,17 +207,13 @@ public class WebComponentBootstrapHandlerViteTest {
         handler.synchronizedHandleRequest(session, request, response);
 
         String result = stream.toString(StandardCharsets.UTF_8.name());
-        MatcherAssert.assertThat(result,
-                CoreMatchers.not(CoreMatchers.containsString("bar")));
-        MatcherAssert.assertThat(result,
-                CoreMatchers.not(CoreMatchers.containsString("h1")));
-        MatcherAssert.assertThat(result,
-                CoreMatchers.not(CoreMatchers.containsString("baz")));
+        MatcherAssert.assertThat(result, CoreMatchers.not(CoreMatchers.containsString("bar")));
+        MatcherAssert.assertThat(result, CoreMatchers.not(CoreMatchers.containsString("h1")));
+        MatcherAssert.assertThat(result, CoreMatchers.not(CoreMatchers.containsString("baz")));
     }
 
     @Test
-    public void writeBootstrapPage_devToolsDisabled()
-            throws IOException, ServiceException {
+    public void writeBootstrapPage_devToolsDisabled() throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
         initLookup(service);
@@ -237,8 +221,7 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(service.getDeploymentConfiguration());
-        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
-                .getDeploymentConfiguration();
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service.getDeploymentConfiguration();
         config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
@@ -293,8 +276,7 @@ public class WebComponentBootstrapHandlerViteTest {
 
     @Ignore
     @Test
-    public void writeBootstrapPage_withExportChunk()
-            throws IOException, ServiceException {
+    public void writeBootstrapPage_withExportChunk() throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
 
@@ -303,8 +285,7 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(service.getDeploymentConfiguration());
-        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
-                .getDeploymentConfiguration();
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service.getDeploymentConfiguration();
         config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
@@ -319,16 +300,13 @@ public class WebComponentBootstrapHandlerViteTest {
         handler.synchronizedHandleRequest(session, request, response);
 
         String result = stream.toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(
-                result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
-        Assert.assertFalse(
-                result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
+        Assert.assertTrue(result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
+        Assert.assertFalse(result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
     @Ignore
     @Test
-    public void writeBootstrapPage_noExportChunk()
-            throws IOException, ServiceException {
+    public void writeBootstrapPage_noExportChunk() throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
 
@@ -337,8 +315,7 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(service.getDeploymentConfiguration());
-        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
-                .getDeploymentConfiguration();
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service.getDeploymentConfiguration();
         config.setApplicationOrSystemProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                 VAADIN_SERVLET_RESOURCES + "config/stats_no_export.json");
         config.setFrontendHotdeploy(false);
@@ -356,8 +333,7 @@ public class WebComponentBootstrapHandlerViteTest {
 
         // no "export" chunk, expect "bundle" in result instead
         String result = stream.toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(
-                result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
+        Assert.assertTrue(result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
     @Test
@@ -367,8 +343,7 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(service.getDeploymentConfiguration());
-        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
-                .getDeploymentConfiguration();
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service.getDeploymentConfiguration();
         config.setFrontendHotdeploy(false);
         config.setProjectFolder(projectRootFolder);
 
@@ -385,8 +360,8 @@ public class WebComponentBootstrapHandlerViteTest {
 
         handler.synchronizedHandleRequest(session, request, response);
 
-        Assert.assertTrue(UsageStatistics.getEntries().anyMatch(entry -> entry
-                .getName().equals(Constants.STATISTICS_EXPORTED_WC)));
+        Assert.assertTrue(UsageStatistics.getEntries()
+                .anyMatch(entry -> entry.getName().equals(Constants.STATISTICS_EXPORTED_WC)));
     }
 
     private VaadinRequest mockRequest(boolean hasConfig) {
@@ -396,15 +371,12 @@ public class WebComponentBootstrapHandlerViteTest {
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(service.getContext()).thenReturn(context);
 
-        WebComponentConfigurationRegistry registry = Mockito
-                .mock(WebComponentConfigurationRegistry.class);
-        Mockito.when(context.getAttribute(
-                Mockito.eq(WebComponentConfigurationRegistry.class),
-                Mockito.any())).thenReturn(registry);
+        WebComponentConfigurationRegistry registry = Mockito.mock(WebComponentConfigurationRegistry.class);
+        Mockito.when(context.getAttribute(Mockito.eq(WebComponentConfigurationRegistry.class), Mockito.any()))
+                .thenReturn(registry);
         Mockito.when(registry.hasConfigurations()).thenReturn(hasConfig);
 
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/web-component-ui.js");
+        Mockito.when(request.getPathInfo()).thenReturn("/web-component/web-component-ui.js");
 
         return request;
     }
@@ -416,33 +388,27 @@ public class WebComponentBootstrapHandlerViteTest {
 
         ResourceProvider provider = Mockito.mock(ResourceProvider.class);
 
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
+        Mockito.when(lookup.lookup(ResourceProvider.class)).thenReturn(provider);
 
         Mockito.when(provider.getApplicationResource(Mockito.anyString()))
-                .thenAnswer(answer -> WebComponentBootstrapHandlerViteTest.class
-                        .getClassLoader().getResource(answer.getArgument(0)));
+                .thenAnswer(answer -> WebComponentBootstrapHandlerViteTest.class.getClassLoader()
+                        .getResource(answer.getArgument(0)));
 
         Mockito.when(provider.getClientResourceAsStream(
-                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                        + "/compile.properties"))
-                .thenAnswer(invocation -> new ByteArrayInputStream(
-                        "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
+                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH + "/compile.properties"))
+                .thenAnswer(invocation -> new ByteArrayInputStream("jsFile=foo".getBytes(StandardCharsets.UTF_8)));
     }
 
-    private VaadinResponse getMockResponse(ByteArrayOutputStream stream)
-            throws IOException {
+    private VaadinResponse getMockResponse(ByteArrayOutputStream stream) throws IOException {
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(response.getOutputStream()).thenReturn(stream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(deploymentConfiguration);
-        Mockito.when(context.getAttribute(
-                eq(WebComponentConfigurationRegistry.class), any())).thenReturn(
-                        Mockito.mock(WebComponentConfigurationRegistry.class));
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(deploymentConfiguration);
+        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), any()))
+                .thenReturn(Mockito.mock(WebComponentConfigurationRegistry.class));
         return response;
     }
 

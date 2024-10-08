@@ -36,11 +36,7 @@ public final class StringUtil {
      * Comment parser state enumeration.
      */
     private enum State {
-        NORMAL,
-        IN_LINE_COMMENT,
-        IN_BLOCK_COMMENT,
-        IN_STRING,
-        IN_STRING_APOSTROPHE
+        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING, IN_STRING_APOSTROPHE
     }
 
     /**
@@ -60,12 +56,10 @@ public final class StringUtil {
      * @param code
      *            code to clean comments from
      * @param useStringApostrophe
-     *            if {@code true} then ' is also considered a string and
-     *            comments will not be considered inside it
+     *            if {@code true} then ' is also considered a string and comments will not be considered inside it
      * @return the code with removed comments
      */
-    public static String removeComments(String code,
-            boolean useStringApostrophe) {
+    public static String removeComments(String code, boolean useStringApostrophe) {
         State state = State.NORMAL;
         StringBuilder result = new StringBuilder();
         Map<String, Character> replacements = new HashMap<>();
@@ -126,19 +120,16 @@ public final class StringUtil {
         scanner.close();
         String handled = result.toString();
         for (Entry<String, Character> entry : replacements.entrySet()) {
-            handled = handled.replace(entry.getKey(),
-                    String.valueOf(entry.getValue()));
+            handled = handled.replace(entry.getKey(), String.valueOf(entry.getValue()));
         }
         return handled;
     }
 
-    private static String normalize(String str,
-            Map<String, Character> replacements) {
+    private static String normalize(String str, Map<String, Character> replacements) {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
-            if (!Character.isHighSurrogate(ch)
-                    && !Character.isLowSurrogate(ch)) {
+            if (!Character.isHighSurrogate(ch) && !Character.isLowSurrogate(ch)) {
                 builder.append(str.charAt(i));
             } else {
                 String replacement = generateReplacement(str);
@@ -158,15 +149,13 @@ public final class StringUtil {
     }
 
     /**
-     * Strips the given suffix from the given string, if the strings end with
-     * the suffix.
+     * Strips the given suffix from the given string, if the strings end with the suffix.
      *
      * @param string
      *            the string to scan
      * @param suffix
      *            the suffix
-     * @return the string without the suffix at the end or the same string if
-     *         the suffix was not found
+     * @return the string without the suffix at the end or the same string if the suffix was not found
      */
     public static String stripSuffix(String string, String suffix) {
         if (string.endsWith(suffix)) {
@@ -181,8 +170,7 @@ public final class StringUtil {
      *
      * @param content
      *            content to generate hash for
-     * @return hash String for given content. In case content is null or empty
-     *         returns empty String.
+     * @return hash String for given content. In case content is null or empty returns empty String.
      */
     public static String getHash(String content) {
         return getHash(content, StandardCharsets.UTF_16);
@@ -195,16 +183,14 @@ public final class StringUtil {
      *            content to hash
      * @param charset
      *            charset for encoding
-     * @return hash String for given content. In case content is null or empty *
-     *         returns empty String.
+     * @return hash String for given content. In case content is null or empty * returns empty String.
      */
     public static String getHash(String content, Charset charset) {
         return getHash(content, null, charset);
     }
 
     /**
-     * Generate hash for content using a given salt bytes and a given charset
-     * for string byte encoding.
+     * Generate hash for content using a given salt bytes and a given charset for string byte encoding.
      *
      * @param content
      *            content to hash
@@ -212,8 +198,7 @@ public final class StringUtil {
      *            salt to be added into hash calculation
      * @param charset
      *            charset for encoding
-     * @return hash String for given content. In case content is null or empty *
-     *         returns empty String.
+     * @return hash String for given content. In case content is null or empty * returns empty String.
      */
     public static String getHash(String content, byte[] salt, Charset charset) {
         if (content == null || content.isEmpty()) {

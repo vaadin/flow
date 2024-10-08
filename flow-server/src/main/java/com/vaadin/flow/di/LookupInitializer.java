@@ -81,22 +81,18 @@ public class LookupInitializer implements AbstractLookupInitializer {
         protected final Map<Class<?>, Collection<Object>> serviceMap;
 
         /**
-         * Creates a new instance of {@link Lookup} with services found in the
-         * application classpath.
+         * Creates a new instance of {@link Lookup} with services found in the application classpath.
          *
          * @param initialServices
          *            map of initial services with their implementations
          * @param factory
          *            a factory to create a service object instance
          */
-        protected LookupImpl(
-                Map<Class<?>, Collection<Class<?>>> initialServices,
+        protected LookupImpl(Map<Class<?>, Collection<Class<?>>> initialServices,
                 BiFunction<Class<?>, Class<?>, Object> factory) {
             serviceMap = new HashMap<>();
-            initialServices.forEach((serviceClass,
-                    impls) -> serviceMap.put(serviceClass, impls.stream()
-                            .map(impl -> factory.apply(serviceClass, impl))
-                            .filter(Objects::nonNull)
+            initialServices.forEach((serviceClass, impls) -> serviceMap.put(serviceClass,
+                    impls.stream().map(impl -> factory.apply(serviceClass, impl)).filter(Objects::nonNull)
                             .collect(Collectors.toList())));
         }
 
@@ -106,20 +102,17 @@ public class LookupInitializer implements AbstractLookupInitializer {
             if (registered == null || registered.isEmpty()) {
                 ServiceLoader<T> loader = ServiceLoader.load(serviceClass);
                 List<T> services = new ArrayList<>();
-                for (Iterator<T> iterator = loader.iterator(); iterator
-                        .hasNext();) {
+                for (Iterator<T> iterator = loader.iterator(); iterator.hasNext();) {
                     services.add(iterator.next());
                 }
                 if (services.size() > 1) {
-                    throw new IllegalStateException(SEVERAL_IMPLS + serviceClass
-                            + SPI + services + ONE_IMPL_REQUIRED);
+                    throw new IllegalStateException(SEVERAL_IMPLS + serviceClass + SPI + services + ONE_IMPL_REQUIRED);
                 } else if (services.size() == 1) {
                     return services.get(0);
                 }
                 return null;
             } else if (registered.size() > 1) {
-                throw new IllegalStateException(SEVERAL_IMPLS + serviceClass
-                        + SPI + registered + ONE_IMPL_REQUIRED);
+                throw new IllegalStateException(SEVERAL_IMPLS + serviceClass + SPI + registered + ONE_IMPL_REQUIRED);
             } else {
                 return serviceClass.cast(registered.iterator().next());
             }
@@ -130,17 +123,13 @@ public class LookupInitializer implements AbstractLookupInitializer {
             List<T> result = new ArrayList<>();
             Collection<Object> registered = serviceMap.get(serviceClass);
 
-            Set<?> registeredClasses = registered == null
-                    ? Collections.emptySet()
-                    : registered.stream().map(Object::getClass)
-                            .collect(Collectors.toSet());
+            Set<?> registeredClasses = registered == null ? Collections.emptySet()
+                    : registered.stream().map(Object::getClass).collect(Collectors.toSet());
             if (registered != null) {
-                registered.forEach(
-                        service -> result.add(serviceClass.cast(service)));
+                registered.forEach(service -> result.add(serviceClass.cast(service)));
             }
             ServiceLoader<T> loader = ServiceLoader.load(serviceClass);
-            for (Iterator<T> iterator = loader.iterator(); iterator
-                    .hasNext();) {
+            for (Iterator<T> iterator = loader.iterator(); iterator.hasNext();) {
                 T next = iterator.next();
                 if (!registeredClasses.contains(next.getClass())) {
                     result.add(next);
@@ -170,15 +159,12 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
         @Override
         public URL getApplicationResource(String path) {
-            return ResourceProviderImpl.class.getClassLoader()
-                    .getResource(path);
+            return ResourceProviderImpl.class.getClassLoader().getResource(path);
         }
 
         @Override
-        public List<URL> getApplicationResources(String path)
-                throws IOException {
-            return Collections.list(ResourceProviderImpl.class.getClassLoader()
-                    .getResources(path));
+        public List<URL> getApplicationResources(String path) throws IOException {
+            return Collections.list(ResourceProviderImpl.class.getClassLoader().getResources(path));
         }
 
         @Override
@@ -187,8 +173,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
         }
 
         @Override
-        public InputStream getClientResourceAsStream(String path)
-                throws IOException {
+        public InputStream getClientResourceAsStream(String path) throws IOException {
             // the client resource should be available in the classpath, so
             // its content is cached once. If an exception is thrown then
             // something is broken and it's also cached and will be rethrown on
@@ -213,8 +198,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
     }
 
-    private static class RegularOneTimeInitializerPredicate
-            implements OneTimeInitializerPredicate {
+    private static class RegularOneTimeInitializerPredicate implements OneTimeInitializerPredicate {
 
         @Override
         public boolean runOnce() {
@@ -223,8 +207,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
 
     }
 
-    private static class StaticFileHandlerFactoryImpl
-            implements StaticFileHandlerFactory {
+    private static class StaticFileHandlerFactoryImpl implements StaticFileHandlerFactory {
         @Override
         public StaticFileHandler createHandler(VaadinService service) {
             return new StaticFileServer(service);
@@ -264,22 +247,15 @@ public class LookupInitializer implements AbstractLookupInitializer {
     }
 
     @Override
-    public void initialize(VaadinContext context,
-            Map<Class<?>, Collection<Class<?>>> services,
-            VaadinApplicationInitializationBootstrap bootstrap)
-            throws ServletException {
-        services.put(OneTimeInitializerPredicate.class, Collections
-                .singleton(RegularOneTimeInitializerPredicate.class));
-        ensureService(services, ResourceProvider.class,
-                ResourceProviderImpl.class);
-        ensureService(services, AppShellPredicate.class,
-                AppShellPredicateImpl.class);
-        ensureService(services, ApplicationConfigurationFactory.class,
-                DefaultApplicationConfigurationFactory.class);
-        ensureService(services, StaticFileHandlerFactory.class,
-                StaticFileHandlerFactoryImpl.class);
-        ensureService(services, RoutePathProvider.class,
-                DefaultRoutePathProvider.class);
+    public void initialize(VaadinContext context, Map<Class<?>, Collection<Class<?>>> services,
+            VaadinApplicationInitializationBootstrap bootstrap) throws ServletException {
+        services.put(OneTimeInitializerPredicate.class,
+                Collections.singleton(RegularOneTimeInitializerPredicate.class));
+        ensureService(services, ResourceProvider.class, ResourceProviderImpl.class);
+        ensureService(services, AppShellPredicate.class, AppShellPredicateImpl.class);
+        ensureService(services, ApplicationConfigurationFactory.class, DefaultApplicationConfigurationFactory.class);
+        ensureService(services, StaticFileHandlerFactory.class, StaticFileHandlerFactoryImpl.class);
+        ensureService(services, RoutePathProvider.class, DefaultRoutePathProvider.class);
         bootstrap.bootstrap(createLookup(context, services));
     }
 
@@ -290,21 +266,18 @@ public class LookupInitializer implements AbstractLookupInitializer {
      *            a Vaadin context to create a lookup for
      *
      * @param services
-     *            the service objects mapped to the service type to create a
-     *            lookup
+     *            the service objects mapped to the service type to create a lookup
      * @return the lookup instance created with provided services
      */
-    protected Lookup createLookup(VaadinContext context,
-            Map<Class<?>, Collection<Class<?>>> services) {
+    protected Lookup createLookup(VaadinContext context, Map<Class<?>, Collection<Class<?>>> services) {
         return new LookupImpl(services, this::instantiate);
     }
 
     /**
-     * Ensures that provided {@code services} contain implementation for
-     * {@code serviceType} SPI.
+     * Ensures that provided {@code services} contain implementation for {@code serviceType} SPI.
      * <p>
-     * The default {@code  serviceImpl} implementation will be set as the
-     * service into {@code services} if there is no other services available.
+     * The default {@code  serviceImpl} implementation will be set as the service into {@code services} if there is no
+     * other services available.
      *
      * @param services
      *            map of internal services
@@ -313,29 +286,25 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * @param serviceImpl
      *            the default SPI implementation
      */
-    protected <T> void ensureService(
-            Map<Class<?>, Collection<Class<?>>> services, Class<T> serviceType,
+    protected <T> void ensureService(Map<Class<?>, Collection<Class<?>>> services, Class<T> serviceType,
             Class<? extends T> serviceImpl) {
         Collection<Class<?>> impls = services.get(serviceType);
         if (impls == null) {
             impls = Collections.emptyList();
         }
-        impls = impls.stream().filter(clazz -> !clazz.equals(serviceImpl))
-                .collect(Collectors.toList());
+        impls = impls.stream().filter(clazz -> !clazz.equals(serviceImpl)).collect(Collectors.toList());
         if (impls.isEmpty()) {
             services.put(serviceType, Collections.singletonList(serviceImpl));
         } else if (impls.size() > 1) {
             throw new IllegalStateException(
-                    SEVERAL_IMPLS + serviceType.getSimpleName() + SPI + impls
-                            + ONE_IMPL_REQUIRED);
+                    SEVERAL_IMPLS + serviceType.getSimpleName() + SPI + impls + ONE_IMPL_REQUIRED);
         } else {
             services.put(serviceType, impls);
         }
     }
 
     /**
-     * Instantiates service {@code implementation} type with the given
-     * {@code serviceClass} .
+     * Instantiates service {@code implementation} type with the given {@code serviceClass} .
      *
      * @param <T>
      *            service type
@@ -345,8 +314,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
      *            service implementation class
      * @return an instantiated service implementation object
      */
-    protected <T> T instantiate(Class<T> serviceClass,
-            Class<?> implementation) {
+    protected <T> T instantiate(Class<T> serviceClass, Class<?> implementation) {
         if (RegularOneTimeInitializerPredicate.class.equals(implementation)) {
             return serviceClass.cast(new RegularOneTimeInitializerPredicate());
         } else if (StaticFileHandlerFactoryImpl.class.equals(implementation)) {
@@ -363,10 +331,8 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * @return a set of classes
      */
     public static Set<Class<?>> getDefaultImplementations() {
-        return Set.of(RegularOneTimeInitializerPredicate.class,
-                StaticFileHandlerFactoryImpl.class, LookupImpl.class,
-                ResourceProviderImpl.class, AppShellPredicateImpl.class,
-                DefaultRoutePathProvider.class,
+        return Set.of(RegularOneTimeInitializerPredicate.class, StaticFileHandlerFactoryImpl.class, LookupImpl.class,
+                ResourceProviderImpl.class, AppShellPredicateImpl.class, DefaultRoutePathProvider.class,
                 DefaultApplicationConfigurationFactory.class);
     }
 }

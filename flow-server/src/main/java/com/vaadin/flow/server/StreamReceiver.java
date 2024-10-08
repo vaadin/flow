@@ -20,8 +20,7 @@ import com.vaadin.flow.internal.StateNode;
 /**
  * Represents a receiver for data upload from the client.
  * <p>
- * The instance should be registered via
- * {@link StreamResourceRegistry#registerResource(AbstractStreamResource)}. This
+ * The instance should be registered via {@link StreamResourceRegistry#registerResource(AbstractStreamResource)}. This
  * method returns an object which may be used to get resource URI.
  *
  * @author Vaadin Ltd
@@ -37,12 +36,10 @@ public class StreamReceiver extends AbstractStreamResource {
     private final StreamVariable streamVariable;
 
     /**
-     * Creates {@link StreamReceiver} instance for {@code streamVariable} as a
-     * data receiver.
+     * Creates {@link StreamReceiver} instance for {@code streamVariable} as a data receiver.
      * <p>
-     * {@code resourceName} parameter value will be used in URI (generated when
-     * resource is registered) in a way that the {@code resourceName} is the
-     * last segment of the path. So this is synthetic file name (not real one).
+     * {@code resourceName} parameter value will be used in URI (generated when resource is registered) in a way that
+     * the {@code resourceName} is the last segment of the path. So this is synthetic file name (not real one).
      *
      * @param node
      *            receiver node
@@ -51,8 +48,7 @@ public class StreamReceiver extends AbstractStreamResource {
      * @param streamVariable
      *            stream variable for controlling the upload stream
      */
-    public StreamReceiver(StateNode node, String resourceName,
-            StreamVariable streamVariable) {
+    public StreamReceiver(StateNode node, String resourceName, StreamVariable streamVariable) {
         assert node != null;
         assert resourceName != null;
         assert streamVariable != null;

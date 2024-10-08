@@ -47,11 +47,9 @@ public class DevBundleUtils {
      *            the project build folder name
      * @param filename
      *            the file name inside the bundle
-     * @return a URL referring to the file inside the bundle or {@code null} if
-     *         the file was not found
+     * @return a URL referring to the file inside the bundle or {@code null} if the file was not found
      */
-    public static URL findBundleFile(File projectDir, String buildFolder,
-            String filename) throws IOException {
+    public static URL findBundleFile(File projectDir, String buildFolder, String filename) throws IOException {
         File devBundleFolder = getDevBundleFolder(projectDir, buildFolder);
         if (devBundleFolder.exists()) {
             // Has an application bundle
@@ -60,8 +58,7 @@ public class DevBundleUtils {
                 return bundleFile.toURI().toURL();
             }
         }
-        return TaskRunDevBundleBuild.class.getClassLoader()
-                .getResource(Constants.DEV_BUNDLE_JAR_PATH + filename);
+        return TaskRunDevBundleBuild.class.getClassLoader().getResource(Constants.DEV_BUNDLE_JAR_PATH + filename);
     }
 
     /**
@@ -74,8 +71,7 @@ public class DevBundleUtils {
      * @return the bundle directory
      */
     public static File getDevBundleFolder(File projectDir, String buildFolder) {
-        return new File(new File(projectDir, buildFolder),
-                Constants.DEV_BUNDLE_LOCATION);
+        return new File(new File(projectDir, buildFolder), Constants.DEV_BUNDLE_LOCATION);
     }
 
     /**
@@ -89,10 +85,8 @@ public class DevBundleUtils {
      * @throws IOException
      *             if an I/O exception occurs.
      */
-    public static String findBundleStatsJson(File projectDir,
-            String buildFolder) throws IOException {
-        URL statsJson = findBundleFile(projectDir, buildFolder,
-                "config/stats.json");
+    public static String findBundleStatsJson(File projectDir, String buildFolder) throws IOException {
+        URL statsJson = findBundleFile(projectDir, buildFolder, "config/stats.json");
         if (statsJson == null) {
             getLogger().warn(
                     "There is no dev-bundle in the project or on the classpath nor is there a default bundle included.");
@@ -115,8 +109,7 @@ public class DevBundleUtils {
      *            dev bundle location
      */
     public static void compressBundle(File projectDir, File devBundleFolder) {
-        File bundleFile = new File(projectDir,
-                Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
+        File bundleFile = new File(projectDir, Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
         if (bundleFile.exists()) {
             bundleFile.delete();
         } else {
@@ -126,8 +119,7 @@ public class DevBundleUtils {
     }
 
     /**
-     * Unpack the compressed dev bundle from src/main/bundles if it exists into
-     * the given location.
+     * Unpack the compressed dev bundle from src/main/bundles if it exists into the given location.
      *
      * @param projectDir
      *            current project root directory
@@ -135,8 +127,7 @@ public class DevBundleUtils {
      *            unpacked dev bundle location
      */
     public static void unpackBundle(File projectDir, File devBundleFolder) {
-        File bundleFile = new File(projectDir,
-                Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
+        File bundleFile = new File(projectDir, Constants.DEV_BUNDLE_COMPRESSED_FILE_LOCATION);
         CompressUtil.uncompressFile(bundleFile, devBundleFolder);
     }
 }

@@ -52,28 +52,24 @@ public class HtmlObjectTest extends ComponentTest {
         UI ui = new UI();
         UI.setCurrent(ui);
         HtmlObject object = new HtmlObject();
-        StreamResource resource = new StreamResource("foo",
-                Mockito.mock(StreamResourceWriter.class));
+        StreamResource resource = new StreamResource("foo", Mockito.mock(StreamResourceWriter.class));
         object.setData(resource);
 
         URI uri = StreamResourceRegistry.getURI(resource);
 
-        Assert.assertEquals(uri.toASCIIString(),
-                object.getElement().getAttribute("data"));
+        Assert.assertEquals(uri.toASCIIString(), object.getElement().getAttribute("data"));
     }
 
     @Test
     public void setData_dataAsAResourceinCTOR() {
         UI ui = new UI();
         UI.setCurrent(ui);
-        StreamResource resource = new StreamResource("foo",
-                Mockito.mock(StreamResourceWriter.class));
+        StreamResource resource = new StreamResource("foo", Mockito.mock(StreamResourceWriter.class));
 
         HtmlObject object = new HtmlObject(resource);
 
         URI uri = StreamResourceRegistry.getURI(resource);
 
-        Assert.assertEquals(uri.toASCIIString(),
-                object.getElement().getAttribute("data"));
+        Assert.assertEquals(uri.toASCIIString(), object.getElement().getAttribute("data"));
     }
 }

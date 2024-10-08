@@ -29,8 +29,7 @@ public class AssertionTest {
         // *assigns* true if assertions are on.
         assert assertOn = true;
 
-        Assert.assertTrue("Assertions are turned off for the server package",
-                assertOn);
+        Assert.assertTrue("Assertions are turned off for the server package", assertOn);
     }
 
 }

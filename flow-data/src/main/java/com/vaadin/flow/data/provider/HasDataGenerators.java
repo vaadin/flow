@@ -20,8 +20,7 @@ import java.io.Serializable;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Defines the contract of adding and removing multiple {@link DataGenerator}s
- * to a given object.
+ * Defines the contract of adding and removing multiple {@link DataGenerator}s to a given object.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -32,8 +31,7 @@ import com.vaadin.flow.shared.Registration;
 public interface HasDataGenerators<T> extends Serializable {
 
     /**
-     * Adds the given data generator. If the generator was already added, does
-     * nothing.
+     * Adds the given data generator. If the generator was already added, does nothing.
      *
      * @param generator
      *            the data generator to add

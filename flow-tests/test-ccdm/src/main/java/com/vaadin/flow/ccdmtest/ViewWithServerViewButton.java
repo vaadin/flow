@@ -24,15 +24,12 @@ import com.vaadin.flow.router.Route;
 public class ViewWithServerViewButton extends Div {
     public ViewWithServerViewButton() {
         setId("viewWithServerViewButton");
-        NativeButton serverViewButton = new NativeButton("Server view",
-                e -> UI.getCurrent().navigate("serverview"));
+        NativeButton serverViewButton = new NativeButton("Server view", e -> UI.getCurrent().navigate("serverview"));
         serverViewButton.setId("serverViewButton");
 
-        NativeButton serverViewThrowsExcpetionButton = new NativeButton(
-                "Go to a server view that thorws exception",
+        NativeButton serverViewThrowsExcpetionButton = new NativeButton("Go to a server view that thorws exception",
                 e -> UI.getCurrent().navigate(ViewThrowsException.class));
-        serverViewThrowsExcpetionButton
-                .setId("serverViewThrowsExcpetionButton");
+        serverViewThrowsExcpetionButton.setId("serverViewThrowsExcpetionButton");
 
         add(serverViewButton, serverViewThrowsExcpetionButton);
     }

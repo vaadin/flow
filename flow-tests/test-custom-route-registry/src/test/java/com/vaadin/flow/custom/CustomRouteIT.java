@@ -29,16 +29,13 @@ public class CustomRouteIT extends ChromeBrowserTest {
     public void CustomRegistry_hasExpectedErrorHandlers() {
         getDriver().get(getRootURL());
 
-        final SpanElement notFoundException = $(SpanElement.class)
-                .id("NotFoundException");
-        Assert.assertEquals("Wrong error handler registered",
-                "NotFoundException :: CustomNotFoundView",
+        final SpanElement notFoundException = $(SpanElement.class).id("NotFoundException");
+        Assert.assertEquals("Wrong error handler registered", "NotFoundException :: CustomNotFoundView",
                 notFoundException.getText());
 
         try {
             $(SpanElement.class).id("IllegalAccessException");
-            Assert.fail(
-                    "Found IllegalAccessException error handler even though it should not be registered");
+            Assert.fail("Found IllegalAccessException error handler even though it should not be registered");
         } catch (NoSuchElementException nsee) {
             // NO-OP as this should throw element not found
         }
@@ -48,7 +45,6 @@ public class CustomRouteIT extends ChromeBrowserTest {
     public void testCustomErrorView() {
         getDriver().get(getRootURL() + "/none");
         final SpanElement error = $(SpanElement.class).id("error");
-        Assert.assertEquals("Requested route was simply not found!",
-                error.getText());
+        Assert.assertEquals("Requested route was simply not found!", error.getText());
     }
 }

@@ -41,8 +41,7 @@ public class ComponentEventBusUtil {
 
     // Package private to enable testing only
 
-    static ReflectionCache<ComponentEvent<?>, EventTypeInfo> cache = new ReflectionCache<>(
-            EventTypeInfo::new);
+    static ReflectionCache<ComponentEvent<?>, EventTypeInfo> cache = new ReflectionCache<>(EventTypeInfo::new);
 
     private static class EventTypeInfo {
         private final LinkedHashMap<String, Class<?>> dataExpressions;
@@ -59,17 +58,15 @@ public class ComponentEventBusUtil {
     }
 
     /**
-     * Gets a map of event data expression (for
-     * {@link com.vaadin.flow.dom.DomListenerRegistration#addEventData(String)}
-     * ) to Java type, with the same order as the parameters for the event
-     * constructor (as returned by {@link #getEventConstructor(Class)}).
+     * Gets a map of event data expression (for {@link com.vaadin.flow.dom.DomListenerRegistration#addEventData(String)}
+     * ) to Java type, with the same order as the parameters for the event constructor (as returned by
+     * {@link #getEventConstructor(Class)}).
      * <p>
      * Caches values and automatically uses the cached values when available.
      *
      * @param eventType
      *            the component event type
-     * @return a map of event expressions, ordered in constructor parameter
-     *         order
+     * @return a map of event expressions, ordered in constructor parameter order
      */
     public static LinkedHashMap<String, Class<?>> getEventDataExpressions(
             Class<? extends ComponentEvent<?>> eventType) {
@@ -78,12 +75,10 @@ public class ComponentEventBusUtil {
 
     /**
      * Scans the event type and forms a map of event data expression (for
-     * {@link com.vaadin.flow.dom.DomListenerRegistration#addEventData(String)}
-     * ) to Java type, with the same order as the parameters for the event
-     * constructor (as returned by {@link #getEventConstructor(Class)}).
+     * {@link com.vaadin.flow.dom.DomListenerRegistration#addEventData(String)} ) to Java type, with the same order as
+     * the parameters for the event constructor (as returned by {@link #getEventConstructor(Class)}).
      *
-     * @return a map of event data expressions, in the order defined by the
-     *         component event constructor parameters
+     * @return a map of event data expressions, in the order defined by the component event constructor parameters
      */
     private static LinkedHashMap<String, Class<?>> findEventDataExpressions(
             Constructor<? extends ComponentEvent<?>> eventConstructor) {
@@ -98,8 +93,7 @@ public class ComponentEventBusUtil {
                 // @DomEvent, or its value is empty."
                 throw new IllegalArgumentException(String.format(
                         "The parameter %s of the constructor %s has no @%s, or the annotation value is empty",
-                        p.getName(), eventConstructor.toString(),
-                        EventData.class.getSimpleName()));
+                        p.getName(), eventConstructor.toString(), EventData.class.getSimpleName()));
             }
             eventDataExpressions.put(eventData.value(), p.getType());
         }
@@ -107,8 +101,7 @@ public class ComponentEventBusUtil {
     }
 
     /**
-     * Gets the constructor to use for firing a component event, of the given
-     * type, based on a DOM event.
+     * Gets the constructor to use for firing a component event, of the given type, based on a DOM event.
      * <p>
      *
      * @param <T>
@@ -120,21 +113,16 @@ public class ComponentEventBusUtil {
      *             if no suitable constructor was found
      */
     @SuppressWarnings("unchecked")
-    public static <T extends ComponentEvent<?>> Constructor<T> getEventConstructor(
-            Class<T> eventType) {
+    public static <T extends ComponentEvent<?>> Constructor<T> getEventConstructor(Class<T> eventType) {
         return (Constructor<T>) cache.get(eventType).eventConstructor;
     }
 
     /**
-     * Scans through the given event type class and tries to find a suitable
-     * constructor to use for firing DOM Events.
+     * Scans through the given event type class and tries to find a suitable constructor to use for firing DOM Events.
      * <ul>
-     * <li>The constructor must take Component, boolean as the two first
-     * parameters
-     * <li>If there is only one constructor with @{@link EventData} annotations,
-     * use that
-     * <li>If there is no constructor with @{@link EventData} annotations, use
-     * the one which takes (Component, boolean)
+     * <li>The constructor must take Component, boolean as the two first parameters
+     * <li>If there is only one constructor with @{@link EventData} annotations, use that
+     * <li>If there is no constructor with @{@link EventData} annotations, use the one which takes (Component, boolean)
      * </ul>
      *
      * @param eventType
@@ -144,8 +132,7 @@ public class ComponentEventBusUtil {
      *             if no suitable constructor was found
      */
     @SuppressWarnings("unchecked")
-    private static <T extends ComponentEvent<?>> Constructor<T> findEventConstructor(
-            Class<T> eventType) {
+    private static <T extends ComponentEvent<?>> Constructor<T> findEventConstructor(Class<T> eventType) {
         ReflectTools.checkClassAccessibility(eventType);
         List<Constructor<T>> constructors = new ArrayList<>();
         for (Constructor<?> c : eventType.getConstructors()) {
@@ -155,8 +142,7 @@ public class ComponentEventBusUtil {
         }
 
         if (constructors.isEmpty()) {
-            throw new IllegalArgumentException(String
-                    .format(NO_SUITABLE_CONSTRUCTOR, eventType.getName()));
+            throw new IllegalArgumentException(String.format(NO_SUITABLE_CONSTRUCTOR, eventType.getName()));
         } else if (constructors.size() == 1) {
             // One expected, one found, all is well
             return constructors.get(0);
@@ -170,12 +156,9 @@ public class ComponentEventBusUtil {
                     eventDataConstructor = c;
                 } else {
                     throw new IllegalArgumentException(
-                            "More than one DOM event constructors annotated with @"
-                                    + EventData.class.getSimpleName()
-                                    + " found for " + eventType.getName()
-                                    + ". There can be only one constructor with @"
-                                    + EventData.class.getSimpleName()
-                                    + " annotations present.");
+                            "More than one DOM event constructors annotated with @" + EventData.class.getSimpleName()
+                                    + " found for " + eventType.getName() + ". There can be only one constructor with @"
+                                    + EventData.class.getSimpleName() + " annotations present.");
                 }
             }
         }
@@ -184,26 +167,22 @@ public class ComponentEventBusUtil {
         } else {
             // This should not be possible (there are multiple constructors so
             // one of them must have @EventData)
-            throw new IllegalArgumentException(String
-                    .format(NO_SUITABLE_CONSTRUCTOR, eventType.getName()));
+            throw new IllegalArgumentException(String.format(NO_SUITABLE_CONSTRUCTOR, eventType.getName()));
         }
     }
 
     /**
-     * Checks if the given constructor can be used when firing a
-     * {@link ComponentEvent} based on a {@link DomEvent}.
+     * Checks if the given constructor can be used when firing a {@link ComponentEvent} based on a {@link DomEvent}.
      *
      * @param constructor
      *            the constructor to check
-     * @return <code>true</code> if the constructor can be used,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the constructor can be used, <code>false</code> otherwise
      */
     public static boolean isDomEventConstructor(Constructor<?> constructor) {
         if (constructor.getParameterCount() < 2) {
             return false;
         }
-        if (!Component.class
-                .isAssignableFrom(constructor.getParameterTypes()[0])) {
+        if (!Component.class.isAssignableFrom(constructor.getParameterTypes()[0])) {
             return false;
         }
         if (constructor.getParameterTypes()[1] != boolean.class) {

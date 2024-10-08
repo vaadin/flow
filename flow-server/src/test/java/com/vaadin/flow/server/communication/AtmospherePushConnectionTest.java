@@ -67,8 +67,7 @@ public class AtmospherePushConnectionTest {
             // Introduce a small delay to hold the lock during message push
             Thread.sleep(30);
             return CompletableFuture.completedFuture(null);
-        }).when(broadcaster).broadcast(ArgumentMatchers.any(),
-                ArgumentMatchers.any(AtmosphereResource.class));
+        }).when(broadcaster).broadcast(ArgumentMatchers.any(), ArgumentMatchers.any(AtmosphereResource.class));
 
         connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
@@ -89,15 +88,14 @@ public class AtmospherePushConnectionTest {
 
         new ObjectOutputStream(baos).writeObject(connection);
 
-        connection = (AtmospherePushConnection) new ObjectInputStream(
-                new ByteArrayInputStream(baos.toByteArray())).readObject();
+        connection = (AtmospherePushConnection) new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))
+                .readObject();
 
         Assert.assertEquals(State.DISCONNECTED, connection.getState());
     }
 
     @Test
-    public void pushWhileDisconnect_disconnectedWithoutSendingMessage()
-            throws Exception {
+    public void pushWhileDisconnect_disconnectedWithoutSendingMessage() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         CompletableFuture.runAsync(() -> {
             try {
@@ -109,21 +107,18 @@ public class AtmospherePushConnectionTest {
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
-        }, CompletableFuture.delayedExecutor(5, TimeUnit.MILLISECONDS))
-                .exceptionally(error -> {
-                    error.printStackTrace();
-                    return null;
-                });
+        }, CompletableFuture.delayedExecutor(5, TimeUnit.MILLISECONDS)).exceptionally(error -> {
+            error.printStackTrace();
+            return null;
+        });
         connection.disconnect();
-        Assert.assertTrue("AtmospherePushConnection not disconnected",
-                latch.await(2, TimeUnit.SECONDS));
+        Assert.assertTrue("AtmospherePushConnection not disconnected", latch.await(2, TimeUnit.SECONDS));
         Assert.assertEquals(State.PUSH_PENDING, connection.getState());
         Mockito.verifyNoInteractions(broadcaster);
     }
 
     @Test
-    public void disconnectWhilePush_messageSentAndThenDisconnected()
-            throws Exception {
+    public void disconnectWhilePush_messageSentAndThenDisconnected() throws Exception {
         CountDownLatch latch = new CountDownLatch(2);
         CompletableFuture.runAsync(() -> {
             try {
@@ -131,11 +126,10 @@ public class AtmospherePushConnectionTest {
                     CompletableFuture.runAsync(() -> {
                         connection.disconnect();
                         latch.countDown();
-                    }, CompletableFuture.delayedExecutor(5,
-                            TimeUnit.MILLISECONDS)).exceptionally(error -> {
-                                error.printStackTrace();
-                                return null;
-                            });
+                    }, CompletableFuture.delayedExecutor(5, TimeUnit.MILLISECONDS)).exceptionally(error -> {
+                        error.printStackTrace();
+                        return null;
+                    });
                     connection.push();
                     return null;
                 });
@@ -148,15 +142,12 @@ public class AtmospherePushConnectionTest {
             return null;
         });
 
-        Assert.assertTrue("Push not completed",
-                latch.await(3, TimeUnit.SECONDS));
-        Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
-                ArgumentMatchers.eq(resource));
+        Assert.assertTrue("Push not completed", latch.await(3, TimeUnit.SECONDS));
+        Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(), ArgumentMatchers.eq(resource));
     }
 
     @Test
-    public void disconnect_concurrentRequests_preventDeadlocks()
-            throws Exception {
+    public void disconnect_concurrentRequests_preventDeadlocks() throws Exception {
         // A deadlock may happen when an HTTP session is invalidated in a
         // thread, causing VaadinSession and UIs to be closed and push
         // connections to be disconnected, but a push disconnection is
@@ -188,8 +179,7 @@ public class AtmospherePushConnectionTest {
             if (sessionLock.tryLock(2, TimeUnit.SECONDS)) {
                 sessionLock.unlock();
             } else {
-                throw new AssertionError(
-                        "Deadlock on AtmosphereResource.close");
+                throw new AssertionError("Deadlock on AtmosphereResource.close");
             }
             return null;
         }).when(resource).close();
@@ -199,17 +189,16 @@ public class AtmospherePushConnectionTest {
         CompletableFuture<Throwable> threadErrorFuture;
         try {
             // Simulate PUSH disconnection from a separate thread
-            threadErrorFuture = CompletableFuture
-                    .<Throwable> supplyAsync(() -> {
-                        connection.disconnect();
-                        latch.countDown();
-                        return null;
-                    }).exceptionally(t -> {
-                        if (t instanceof CompletionException) {
-                            return t.getCause();
-                        }
-                        return t;
-                    });
+            threadErrorFuture = CompletableFuture.<Throwable> supplyAsync(() -> {
+                connection.disconnect();
+                latch.countDown();
+                return null;
+            }).exceptionally(t -> {
+                if (t instanceof CompletionException) {
+                    return t.getCause();
+                }
+                return t;
+            });
             // Simulate main thread PUSH disconnection because of session
             // invalidation, delayed a bit to allow the other thread to start
             // disconnection
@@ -226,8 +215,8 @@ public class AtmospherePushConnectionTest {
             threadError.printStackTrace(new PrintWriter(sw));
             Assert.fail("Disconnection on spawned thread failed: " + sw);
         }
-        Assert.assertTrue("Disconnect calls not completed, missing "
-                + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));
+        Assert.assertTrue("Disconnect calls not completed, missing " + latch.getCount() + " call",
+                latch.await(3, TimeUnit.SECONDS));
         Mockito.verify(resource, Mockito.times(1)).close();
     }
 
@@ -246,8 +235,7 @@ public class AtmospherePushConnectionTest {
             if (httpSessionLock.tryLock(2, TimeUnit.SECONDS)) {
                 httpSessionLock.unlock();
             } else {
-                throw new AssertionError(
-                        "Deadlock on AtmosphereResource.close");
+                throw new AssertionError("Deadlock on AtmosphereResource.close");
             }
             return null;
         }).when(resource).close();
@@ -257,17 +245,16 @@ public class AtmospherePushConnectionTest {
         CompletableFuture<Throwable> threadErrorFuture;
         try {
             // Simulate PUSH disconnection from a separate thread
-            threadErrorFuture = CompletableFuture
-                    .<Throwable> supplyAsync(() -> {
-                        connection.disconnect();
-                        latch.countDown();
-                        return null;
-                    }).exceptionally(t -> {
-                        if (t instanceof CompletionException) {
-                            return t.getCause();
-                        }
-                        return t;
-                    });
+            threadErrorFuture = CompletableFuture.<Throwable> supplyAsync(() -> {
+                connection.disconnect();
+                latch.countDown();
+                return null;
+            }).exceptionally(t -> {
+                if (t instanceof CompletionException) {
+                    return t.getCause();
+                }
+                return t;
+            });
             // Simulate main thread PUSH disconnection because of session
             // invalidation, delayed a bit to allow the other thread to start
             // disconnection
@@ -282,11 +269,10 @@ public class AtmospherePushConnectionTest {
 
         Throwable threadError = threadErrorFuture.get(2, TimeUnit.SECONDS);
         if (threadError != null) {
-            Assert.fail("Disconnection on spawned thread failed: "
-                    + threadError.getMessage());
+            Assert.fail("Disconnection on spawned thread failed: " + threadError.getMessage());
         }
-        Assert.assertTrue("Disconnect calls not completed, missing "
-                + latch.getCount() + " call", latch.await(3, TimeUnit.SECONDS));
+        Assert.assertTrue("Disconnect calls not completed, missing " + latch.getCount() + " call",
+                latch.await(3, TimeUnit.SECONDS));
         Mockito.verify(resource, Mockito.times(1)).close();
     }
 

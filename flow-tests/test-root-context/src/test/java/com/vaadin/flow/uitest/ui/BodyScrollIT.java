@@ -27,10 +27,8 @@ public class BodyScrollIT extends ChromeBrowserTest {
     public void noScrollAttributeForBody() {
         open();
 
-        String scrollAttribute = findElement(By.tagName("body"))
-                .getAttribute("scroll");
+        String scrollAttribute = findElement(By.tagName("body")).getAttribute("scroll");
 
-        Assert.assertNull("Body should not have 'scroll' attribute",
-                scrollAttribute);
+        Assert.assertNull("Body should not have 'scroll' attribute", scrollAttribute);
     }
 }

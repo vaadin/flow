@@ -25,8 +25,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 /**
  * Interface for providing client side routes.
  *
- * @deprecated Provider is deprecated, use
- *             {@link FrontendUtils#getClientRoutes()} instead.
+ * @deprecated Provider is deprecated, use {@link FrontendUtils#getClientRoutes()} instead.
  */
 @Deprecated(forRemoval = true)
 public interface ClientRoutesProvider extends Serializable {

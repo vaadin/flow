@@ -20,8 +20,7 @@ import java.io.Serializable;
 /**
  * Constants used by the server side framework.
  * <p>
- * Not available on the client side, for that use
- * {@link com.vaadin.flow.shared.ApplicationConstants}.
+ * Not available on the client side, for that use {@link com.vaadin.flow.shared.ApplicationConstants}.
  *
  * @since 1.0
  */
@@ -51,18 +50,16 @@ public final class Constants implements Serializable {
     public static final String POLYFILLS_DEFAULT_VALUE = "";
 
     /**
-     * Default path for the frontend statistics json file. It can be modified by
-     * setting the system property "statistics.file.path".
+     * Default path for the frontend statistics json file. It can be modified by setting the system property
+     * "statistics.file.path".
      */
-    public static final String STATISTICS_JSON_DEFAULT = Constants.VAADIN_CONFIGURATION
-            + "stats.json";
+    public static final String STATISTICS_JSON_DEFAULT = Constants.VAADIN_CONFIGURATION + "stats.json";
 
     /**
-     * Default resource directory to place template sources in. This is used
-     * used for Vite production mode instead of a stats.json file.
+     * Default resource directory to place template sources in. This is used used for Vite production mode instead of a
+     * stats.json file.
      */
-    public static final String TEMPLATE_DIRECTORY = Constants.VAADIN_CONFIGURATION
-            + "templates/";
+    public static final String TEMPLATE_DIRECTORY = Constants.VAADIN_CONFIGURATION + "templates/";
 
     /**
      * Name of the <code>npm</code> main file.
@@ -90,8 +87,8 @@ public final class Constants implements Serializable {
     public static final String TARGET = "target";
 
     /**
-     * Location for the frontend resources in jar files for compatibility mode
-     * (also obsolete but supported for npm mode).
+     * Location for the frontend resources in jar files for compatibility mode (also obsolete but supported for npm
+     * mode).
      */
     public static final String COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
 
@@ -113,8 +110,7 @@ public final class Constants implements Serializable {
     /**
      * Location for the theme resources in jar files.
      */
-    public static final String RESOURCES_THEME_JAR_DEFAULT = RESOURCES_JAR_DEFAULT
-            + APPLICATION_THEME_ROOT + "/";
+    public static final String RESOURCES_THEME_JAR_DEFAULT = RESOURCES_JAR_DEFAULT + APPLICATION_THEME_ROOT + "/";
 
     /**
      * Constant for whether pnpm is default or not.
@@ -127,8 +123,7 @@ public final class Constants implements Serializable {
     public static final boolean ENABLE_BUN_DEFAULT = false;
 
     /**
-     * Constant for setting the pinned supported version of pnpm to be used by
-     * default (see
+     * Constant for setting the pinned supported version of pnpm to be used by default (see
      * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
      */
     public static final boolean GLOBAL_PNPM_DEFAULT = false;
@@ -139,8 +134,7 @@ public final class Constants implements Serializable {
     public static final boolean DEFAULT_NODE_AUTO_UPDATE = true;
 
     /**
-     * The default value for
-     * {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}.
+     * The default value for {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}.
      */
     public static final boolean DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = false;
 
@@ -150,8 +144,7 @@ public final class Constants implements Serializable {
     public static final boolean DEFAULT_DEVMODE_STATS = true;
 
     /**
-     * Internal parameter which prevent validation for annotations which are
-     * allowed on an AppShell class
+     * Internal parameter which prevent validation for annotations which are allowed on an AppShell class
      */
     public static final String ALLOW_APPSHELL_ANNOTATIONS = "allow.appshell.annotations";
 
@@ -186,23 +179,19 @@ public final class Constants implements Serializable {
     public static final String VAADIN_WEBAPP = "webapp/";
 
     /**
-     * The path to meta-inf/VAADIN/ where static resources are put on the
-     * servlet.
+     * The path to meta-inf/VAADIN/ where static resources are put on the servlet.
      */
-    public static final String VAADIN_SERVLET_RESOURCES = META_INF
-            + VAADIN_MAPPING;
+    public static final String VAADIN_SERVLET_RESOURCES = META_INF + VAADIN_MAPPING;
 
     /**
      * The path to webapp/ public resources root.
      */
-    public static final String VAADIN_WEBAPP_RESOURCES = VAADIN_SERVLET_RESOURCES
-            + VAADIN_WEBAPP;
+    public static final String VAADIN_WEBAPP_RESOURCES = VAADIN_SERVLET_RESOURCES + VAADIN_WEBAPP;
 
     /**
      * The prefix used for all internal static files, relative to context root.
      */
-    public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING
-            + VAADIN_BUILD;
+    public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING + VAADIN_BUILD;
 
     /**
      * Default path for local frontend resources packaged for jar add-ons.
@@ -210,8 +199,7 @@ public final class Constants implements Serializable {
     public static final String LOCAL_FRONTEND_RESOURCES_PATH = "src/main/resources/META-INF/resources/frontend";
 
     /**
-     * Property boolean for marking stats.json to be fetched from external
-     * location.
+     * Property boolean for marking stats.json to be fetched from external location.
      */
     public static final String EXTERNAL_STATS_FILE = "external.stats.file";
     /**
@@ -224,17 +212,14 @@ public final class Constants implements Serializable {
     public static final String DEFAULT_EXTERNAL_STATS_URL = "/vaadin-static/VAADIN/config/stats.json";
 
     /**
-     * A request parameter that can be given in browser to force the Vaadin
-     * application to create a new UI and session instance, thus overriding
-     * {@code @PreserveOnRefresh} annotation.
+     * A request parameter that can be given in browser to force the Vaadin application to create a new UI and session
+     * instance, thus overriding {@code @PreserveOnRefresh} annotation.
      */
     public static final String URL_PARAMETER_RESTART_APPLICATION = "restartApplication";
 
     /**
-     * A request parameter that can be given in browser to force the Vaadin
-     * application to close an existing UI and session. Unlike
-     * {@link #URL_PARAMETER_RESTART_APPLICATION}, this will not create a new
-     * session.
+     * A request parameter that can be given in browser to force the Vaadin application to close an existing UI and
+     * session. Unlike {@link #URL_PARAMETER_RESTART_APPLICATION}, this will not create a new session.
      */
     public static final String URL_PARAMETER_CLOSE_APPLICATION = "closeApplication";
 
@@ -259,26 +244,25 @@ public final class Constants implements Serializable {
     public static final String STATISTIC_ROUTING_HYBRID = "routing/hybrid";
 
     /**
-     * UsageEntry name for Flow routes definitions. Marked used, if
-     * RouteRegistry is not empty.
+     * UsageEntry name for Flow routes definitions. Marked used, if RouteRegistry is not empty.
      */
     public static final String STATISTIC_HAS_FLOW_ROUTE = "has-flow-route";
 
     /**
-     * UsageEntry name for exported web components. Marked used, if either
-     * WebComponentExporter or WebComponentExporterFactory is found in a project
+     * UsageEntry name for exported web components. Marked used, if either WebComponentExporter or
+     * WebComponentExporterFactory is found in a project
      */
     public static final String STATISTIC_HAS_EXPORTED_WC = "has-exported-wc";
 
     /**
-     * UsageEntry for rendering a Flow route. Marked as used, if a user
-     * navigates to a Flow route and navigation doesn't end up with an error.
+     * UsageEntry for rendering a Flow route. Marked as used, if a user navigates to a Flow route and navigation doesn't
+     * end up with an error.
      */
     public static final String STATISTICS_FLOW_ROUTER = "flow-router";
 
     /**
-     * UsageEntry for rendering an exported web component. Marked as used, if an
-     * exported web component is instantiated on the server.
+     * UsageEntry for rendering an exported web component. Marked as used, if an exported web component is instantiated
+     * on the server.
      */
     public static final String STATISTICS_EXPORTED_WC = "exported-wc";
 
@@ -308,8 +292,7 @@ public final class Constants implements Serializable {
     public static final String PROD_BUNDLE_NAME = "vaadin-prod-bundle";
 
     /**
-     * The folder in the project where Flow generates Express Build mode
-     * application dev bundle.
+     * The folder in the project where Flow generates Express Build mode application dev bundle.
      */
     public static final String DEV_BUNDLE_LOCATION = "dev-bundle";
 
@@ -326,8 +309,7 @@ public final class Constants implements Serializable {
     /**
      * Location of the compressed development bundle file.
      */
-    public static final String DEV_BUNDLE_COMPRESSED_FILE_LOCATION = BUNDLE_LOCATION
-            + DEV_BUNDLE_COMPRESSED_FILE;
+    public static final String DEV_BUNDLE_COMPRESSED_FILE_LOCATION = BUNDLE_LOCATION + DEV_BUNDLE_COMPRESSED_FILE;
 
     /**
      * The path part where dev-bundle is located inside the jar.
@@ -347,8 +329,7 @@ public final class Constants implements Serializable {
     /**
      * Location of the compressed production bundle file.
      */
-    public static final String PROD_BUNDLE_COMPRESSED_FILE_LOCATION = BUNDLE_LOCATION
-            + PROD_BUNDLE_COMPRESSED_FILE;
+    public static final String PROD_BUNDLE_COMPRESSED_FILE_LOCATION = BUNDLE_LOCATION + PROD_BUNDLE_COMPRESSED_FILE;
 
     /**
      * The directory name inside dev bundle for the frontend assets.
@@ -356,15 +337,13 @@ public final class Constants implements Serializable {
     public static final String ASSETS = "assets";
 
     /**
-     * Name of the temporary file storing internal flag showing that Flow needs
-     * to re-build the production bundle or not.
+     * Name of the temporary file storing internal flag showing that Flow needs to re-build the production bundle or
+     * not.
      */
-    public static final String NEEDS_BUNDLE_BUILD_FILE = Constants.VAADIN_CONFIGURATION
-            + "needs-build";
+    public static final String NEEDS_BUNDLE_BUILD_FILE = Constants.VAADIN_CONFIGURATION + "needs-build";
 
     /**
-     * Key for storing the value of `alwaysExecutePrepareFrontend` flag of
-     * Gradle builds in a build info (token) file.
+     * Key for storing the value of `alwaysExecutePrepareFrontend` flag of Gradle builds in a build info (token) file.
      */
     public static final String DISABLE_PREPARE_FRONTEND_CACHE = "disable.prepare.frontend.cache";
 

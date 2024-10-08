@@ -39,15 +39,13 @@ public final class Binder {
     private static final BinderContext CONTEXT = new BinderContextImpl();
 
     /**
-     * This is the implementation of {@link BinderContext} which is passed to
-     * the {@link BindingStrategy} instances to be able to delegate creation of
-     * subnodes with the type that they are not aware of.
+     * This is the implementation of {@link BinderContext} which is passed to the {@link BindingStrategy} instances to
+     * be able to delegate creation of subnodes with the type that they are not aware of.
      * <p>
-     * This is the only factory/binder that may be used inside
-     * {@link BindingStrategy} implementation. So that implementation should not
-     * know anything about external classes/API. Everything that is required by
-     * the {@link BindingStrategy} must be here to avoid uncertainty which
-     * methods are allowed/correct to use in the implementation.
+     * This is the only factory/binder that may be used inside {@link BindingStrategy} implementation. So that
+     * implementation should not know anything about external classes/API. Everything that is required by the
+     * {@link BindingStrategy} must be here to avoid uncertainty which methods are allowed/correct to use in the
+     * implementation.
      *
      * @see BinderContext
      */
@@ -74,8 +72,7 @@ public final class Binder {
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
-        public <T extends BindingStrategy<?>> JsArray<T> getStrategies(
-                Predicate<BindingStrategy<?>> predicate) {
+        public <T extends BindingStrategy<?>> JsArray<T> getStrategies(Predicate<BindingStrategy<?>> predicate) {
             JsArray<T> array = JsCollections.array();
             Predicate testFunction = predicate;
             for (int i = 0; i < STRATEGIES.length(); i++) {
@@ -102,8 +99,7 @@ public final class Binder {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static void bind(StateNode stateNode, Node domNode) {
-        assert !stateNode.getTree().isUpdateInProgress()
-                : "Binding state node while processing state tree changes";
+        assert !stateNode.getTree().isUpdateInProgress() : "Binding state node while processing state tree changes";
 
         BindingStrategy applicable = getApplicableStrategy(stateNode);
         applicable.bind(stateNode, domNode, CONTEXT);
@@ -115,15 +111,12 @@ public final class Binder {
             BindingStrategy<?> strategy = STRATEGIES.get(i);
             if (strategy.isApplicable(node)) {
                 assert applicable == null
-                        : "Found two strategies for the node : "
-                                + applicable.getClass() + ", "
-                                + strategy.getClass();
+                        : "Found two strategies for the node : " + applicable.getClass() + ", " + strategy.getClass();
                 applicable = strategy;
             }
         }
         if (applicable == null) {
-            throw new IllegalArgumentException(
-                    "State node has no suitable binder strategy");
+            throw new IllegalArgumentException("State node has no suitable binder strategy");
         }
         return applicable;
     }

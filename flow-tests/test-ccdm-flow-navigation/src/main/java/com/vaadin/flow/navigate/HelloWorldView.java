@@ -44,8 +44,7 @@ public class HelloWorldView extends Span implements BeforeEnterObserver {
 
     public HelloWorldView() {
         setId("hello-world-view");
-        NativeButton toAbout = new NativeButton("Say hello",
-                e -> getUI().get().navigate("about"));
+        NativeButton toAbout = new NativeButton("Say hello", e -> getUI().get().navigate("about"));
         toAbout.setId(NAVIGATE_ABOUT);
         add(toAbout);
 
@@ -54,13 +53,10 @@ public class HelloWorldView extends Span implements BeforeEnterObserver {
         add(new Paragraph(new Text("Connected on init: "), isConnectedOnInit));
 
         isConnectedOnAttach.setId(IS_CONNECTED_ON_ATTACH);
-        isConnectedOnAttach.addAttachListener(
-                event -> updateIsConnected(isConnectedOnAttach));
-        add(new Paragraph(new Text("Connected on attach: "),
-                isConnectedOnAttach));
+        isConnectedOnAttach.addAttachListener(event -> updateIsConnected(isConnectedOnAttach));
+        add(new Paragraph(new Text("Connected on attach: "), isConnectedOnAttach));
 
-        RouterLink specialLink = new RouterLink("Special char view",
-                SpecialCharactersView.class);
+        RouterLink specialLink = new RouterLink("Special char view", SpecialCharactersView.class);
         specialLink.setId("navigate-special");
         add(specialLink);
 
@@ -70,14 +66,12 @@ public class HelloWorldView extends Span implements BeforeEnterObserver {
     }
 
     private void updateIsConnected(Span output) {
-        output.getElement()
-                .executeJs("this.textContent=String(this.isConnected)");
+        output.getElement().executeJs("this.textContent=String(this.isConnected)");
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Map<String, List<String>> params = event.getLocation()
-                .getQueryParameters().getParameters();
+        Map<String, List<String>> params = event.getLocation().getQueryParameters().getParameters();
         String paramInfo = "";
         for (Entry<String, List<String>> param : params.entrySet()) {
             paramInfo += param.getKey() + ": " + param.getValue().get(0);

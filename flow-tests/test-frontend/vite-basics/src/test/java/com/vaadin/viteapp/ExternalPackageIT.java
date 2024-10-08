@@ -12,7 +12,6 @@ public class ExternalPackageIT extends ViteDevModeIT {
     @Test
     public void packageOutsideNpmWorks() {
         $(NativeButtonElement.class).id(MainView.OUTSIDE).click();
-        Assert.assertEquals("It works - It works", $(ParagraphElement.class)
-                .id(MainView.OUTSIDE_RESULT).getText());
+        Assert.assertEquals("It works - It works", $(ParagraphElement.class).id(MainView.OUTSIDE_RESULT).getText());
     }
 }

@@ -16,8 +16,7 @@ import org.junit.Before;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * Helper for test classes that need to have {@code VaadinService.getCurrent()}
- * populated.
+ * Helper for test classes that need to have {@code VaadinService.getCurrent()} populated.
  *
  * @author Vaadin Ltd
  * @since 1.0

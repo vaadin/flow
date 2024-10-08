@@ -30,39 +30,27 @@ public class PathUtilTest {
         final List<String> segments = Arrays.asList("path", "to", "foo");
         final String path = "path/to/foo";
 
-        Assert.assertEquals("Unexpected result", path,
-                PathUtil.getPath(segments));
+        Assert.assertEquals("Unexpected result", path, PathUtil.getPath(segments));
         Assert.assertEquals("Unexpected result", "", PathUtil.getPath(null));
-        Assert.assertEquals("Unexpected result", "",
-                PathUtil.getPath(Collections.emptyList()));
+        Assert.assertEquals("Unexpected result", "", PathUtil.getPath(Collections.emptyList()));
 
-        Assert.assertEquals("Unexpected result", "prefix/" + path,
-                PathUtil.getPath("prefix", segments));
-        Assert.assertEquals("Unexpected result", path,
-                PathUtil.getPath("", segments));
-        Assert.assertEquals("Unexpected result", path,
-                PathUtil.getPath(null, segments));
+        Assert.assertEquals("Unexpected result", "prefix/" + path, PathUtil.getPath("prefix", segments));
+        Assert.assertEquals("Unexpected result", path, PathUtil.getPath("", segments));
+        Assert.assertEquals("Unexpected result", path, PathUtil.getPath(null, segments));
 
-        Assert.assertEquals("Unexpected result", segments,
-                PathUtil.getSegmentsList(path));
-        Assert.assertEquals("Unexpected result", segments,
-                PathUtil.getSegmentsList(path + "/"));
+        Assert.assertEquals("Unexpected result", segments, PathUtil.getSegmentsList(path));
+        Assert.assertEquals("Unexpected result", segments, PathUtil.getSegmentsList(path + "/"));
 
         List<String> emptyStartSegment = new ArrayList<>();
         emptyStartSegment.add("");
         emptyStartSegment.addAll(segments);
-        Assert.assertEquals("Unexpected result", emptyStartSegment,
-                PathUtil.getSegmentsList("/" + path));
-        Assert.assertEquals("Unexpected result", emptyStartSegment,
-                PathUtil.getSegmentsList("/" + path + "/"));
+        Assert.assertEquals("Unexpected result", emptyStartSegment, PathUtil.getSegmentsList("/" + path));
+        Assert.assertEquals("Unexpected result", emptyStartSegment, PathUtil.getSegmentsList("/" + path + "/"));
 
         Assert.assertEquals("Unexpected result", path, PathUtil.trimPath(path));
-        Assert.assertEquals("Unexpected result", path,
-                PathUtil.trimPath("/" + path));
-        Assert.assertEquals("Unexpected result", path,
-                PathUtil.trimPath(path + "/"));
-        Assert.assertEquals("Unexpected result", path,
-                PathUtil.trimPath("/" + path + "/"));
+        Assert.assertEquals("Unexpected result", path, PathUtil.trimPath("/" + path));
+        Assert.assertEquals("Unexpected result", path, PathUtil.trimPath(path + "/"));
+        Assert.assertEquals("Unexpected result", path, PathUtil.trimPath("/" + path + "/"));
 
     }
 

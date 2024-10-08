@@ -11,8 +11,7 @@ import com.vaadin.flow.server.AbstractDeploymentConfiguration;
 import com.vaadin.flow.server.SessionLockCheckStrategy;
 import com.vaadin.flow.shared.communication.PushMode;
 
-public class MockDeploymentConfiguration
-        extends AbstractDeploymentConfiguration {
+public class MockDeploymentConfiguration extends AbstractDeploymentConfiguration {
 
     private boolean productionMode = false;
     private boolean frontendHotdeploy = false;
@@ -156,11 +155,9 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public <T> T getApplicationOrSystemProperty(String propertyName,
-            T defaultValue, Function<String, T> converter) {
+    public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue, Function<String, T> converter) {
         if (applicationOrSystemProperty.containsKey(propertyName)) {
-            return converter
-                    .apply(applicationOrSystemProperty.get(propertyName));
+            return converter.apply(applicationOrSystemProperty.get(propertyName));
         } else {
             return defaultValue;
         }
@@ -216,8 +213,7 @@ public class MockDeploymentConfiguration
         return sessionLockCheckStrategy;
     }
 
-    public void setLockCheckStrategy(
-            SessionLockCheckStrategy sessionLockCheckStrategy) {
+    public void setLockCheckStrategy(SessionLockCheckStrategy sessionLockCheckStrategy) {
         this.sessionLockCheckStrategy = sessionLockCheckStrategy;
     }
 

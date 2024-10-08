@@ -20,22 +20,16 @@ public class ScannerCssTest {
 
     @Test
     public void should_visitCssImports() throws Exception {
-        FrontendDependencies deps = getFrontendDependencies(CssClass1.class,
-                CssClass2.class);
+        FrontendDependencies deps = getFrontendDependencies(CssClass1.class, CssClass2.class);
         assertEquals(3, deps.getEntryPoints().size());
         for (EntryPointData entryPoint : deps.getEntryPoints()) {
             if (entryPoint.getName().equals(UI.class.getName())) {
                 continue;
             }
-            assertEquals("Wrong amount of css in " + entryPoint.getName(), 4,
-                    entryPoint.getCss().size());
+            assertEquals("Wrong amount of css in " + entryPoint.getName(), 4, entryPoint.getCss().size());
 
-            assertThat(
-                    entryPoint.getCss().stream().map(CssData::toString)
-                            .collect(Collectors.toList()),
-                    containsInAnyOrder("value: ./foo.css",
-                            "value: ./foo.css include:bar",
-                            "value: ./foo.css id:bar",
+            assertThat(entryPoint.getCss().stream().map(CssData::toString).collect(Collectors.toList()),
+                    containsInAnyOrder("value: ./foo.css", "value: ./foo.css include:bar", "value: ./foo.css id:bar",
                             "value: ./foo.css themefor:bar"));
         }
         ;
@@ -49,23 +43,18 @@ public class ScannerCssTest {
             if (entryPoint.getName().equals(UI.class.getName())) {
                 continue;
             }
-            assertEquals("Wrong amount of css in " + entryPoint.getName(), 4,
-                    entryPoint.getCss().size());
+            assertEquals("Wrong amount of css in " + entryPoint.getName(), 4, entryPoint.getCss().size());
 
             // verifies #6523 as sufficiently complex names can get mixed up
-            assertThat(
-                    entryPoint.getCss().stream().map(CssData::toString)
-                            .collect(Collectors.toList()),
-                    contains("value: ./foo.css", "value: ./bar.css",
-                            "value: ./foofoo.css", "value: ./foobar.css"));
+            assertThat(entryPoint.getCss().stream().map(CssData::toString).collect(Collectors.toList()),
+                    contains("value: ./foo.css", "value: ./bar.css", "value: ./foofoo.css", "value: ./foobar.css"));
         }
         ;
     }
 
     @Test
     public void should_sumarizeCssImports() throws Exception {
-        FrontendDependencies deps = getFrontendDependencies(CssClass1.class,
-                CssClass2.class);
+        FrontendDependencies deps = getFrontendDependencies(CssClass1.class, CssClass2.class);
         DepsTests.assertImportCount(4, deps.getCss());
     }
 

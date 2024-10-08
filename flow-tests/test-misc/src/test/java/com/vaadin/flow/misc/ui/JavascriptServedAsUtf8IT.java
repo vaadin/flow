@@ -11,9 +11,7 @@ public class JavascriptServedAsUtf8IT extends ChromeBrowserTest {
     public void loadJavascriptWithUtf8() {
         getDriver().get(getRootURL() + "/frontend/test-files/js/unicode.js");
         String source = getDriver().getPageSource();
-        Assert.assertTrue(
-                "Page should have contained umlaut characters but contained: "
-                        + source,
+        Assert.assertTrue("Page should have contained umlaut characters but contained: " + source,
                 source.contains("åäöü°"));
     }
 }

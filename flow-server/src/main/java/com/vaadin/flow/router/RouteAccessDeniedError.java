@@ -30,14 +30,11 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 @Tag(Tag.DIV)
 @AnonymousAllowed
 @DefaultErrorHandler
-public class RouteAccessDeniedError extends Component
-        implements HasErrorParameter<AccessDeniedException> {
+public class RouteAccessDeniedError extends Component implements HasErrorParameter<AccessDeniedException> {
 
     @Override
-    public int setErrorParameter(BeforeEnterEvent event,
-            ErrorParameter<AccessDeniedException> parameter) {
-        event.rerouteToError(NotFoundException.class,
-                parameter.getCustomMessage());
+    public int setErrorParameter(BeforeEnterEvent event, ErrorParameter<AccessDeniedException> parameter) {
+        event.rerouteToError(NotFoundException.class, parameter.getCustomMessage());
         return HttpStatusCode.NOT_FOUND.getCode();
     }
 }

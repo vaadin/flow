@@ -23,9 +23,8 @@ import org.springframework.web.util.UrlPathHelper;
 import com.vaadin.flow.server.VaadinServlet;
 
 /**
- * Creates an {@link HttpServletRequestWrapper} instance which returns
- * appropriate {@code servletPath} and {@code pathInfo} (which are expected by
- * {@link VaadinServlet}) in case forwarding is enforced.
+ * Creates an {@link HttpServletRequestWrapper} instance which returns appropriate {@code servletPath} and
+ * {@code pathInfo} (which are expected by {@link VaadinServlet}) in case forwarding is enforced.
  *
  * @see <a href="https://jira.spring.io/browse/SPR-17457">Spring issue</a>
  *

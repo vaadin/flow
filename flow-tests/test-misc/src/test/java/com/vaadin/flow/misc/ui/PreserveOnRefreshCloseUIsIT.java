@@ -48,20 +48,17 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
 
         driver.switchTo().window(activeUIsHandle);
         List<Integer> activeUIs = getActivePreserveUIs();
-        Assert.assertTrue("PreserveOnRefresh UI is not listed as active",
-                activeUIs.contains(preserveUIid));
+        Assert.assertTrue("PreserveOnRefresh UI is not listed as active", activeUIs.contains(preserveUIid));
 
         driver.switchTo().window(preserverHandle);
         $(NativeButtonElement.class).id("reload").click();
         int preserveUIidAfterReload = getPreserveUIId();
-        Assert.assertEquals("Initial UI ID should not change on reload",
-                initialUIid, getInitialUIId());
+        Assert.assertEquals("Initial UI ID should not change on reload", initialUIid, getInitialUIId());
 
         driver.switchTo().window(activeUIsHandle);
         activeUIs = getActivePreserveUIs();
 
-        Assert.assertFalse("Previous PreserveOnRefresh UI has not been closed",
-                activeUIs.contains(preserveUIid));
+        Assert.assertFalse("Previous PreserveOnRefresh UI has not been closed", activeUIs.contains(preserveUIid));
         Assert.assertTrue("New PreserveOnRefresh UI is not listed as active",
                 activeUIs.contains(preserveUIidAfterReload));
     }
@@ -75,8 +72,7 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
 
         driver.switchTo().window(activeUIsHandle);
         List<Integer> activeUIs = getActivePreserveUIs();
-        Assert.assertTrue("PreserveOnRefresh UI is not listed as active",
-                activeUIs.contains(preserveUIid));
+        Assert.assertTrue("PreserveOnRefresh UI is not listed as active", activeUIs.contains(preserveUIid));
 
         driver.switchTo().window(preserverHandle);
         driver.close();
@@ -84,8 +80,7 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
         driver.switchTo().window(activeUIsHandle);
         // Verify that the closed tab UI is closed after three heartbeat
         // intervals have elapsed
-        waitUntil(d -> !getActivePreserveUIs().contains(preserveUIid),
-                CustomServlet.HEARTBEAT_INTERVAL * 4);
+        waitUntil(d -> !getActivePreserveUIs().contains(preserveUIid), CustomServlet.HEARTBEAT_INTERVAL * 4);
     }
 
     @Test
@@ -97,8 +92,7 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
 
         driver.switchTo().window(activeUIsHandle);
         List<Integer> activeUIs = getActivePreserveUIs();
-        Assert.assertTrue("PreserveOnRefresh UI is not listed as active",
-                activeUIs.contains(preserveUIid));
+        Assert.assertTrue("PreserveOnRefresh UI is not listed as active", activeUIs.contains(preserveUIid));
 
         driver.switchTo().window(preserverHandle);
         driver.close();
@@ -106,8 +100,7 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
         driver.switchTo().window(activeUIsHandle);
         // Verify that the closed tab UI is closed after three heartbeat
         // intervals have elapsed
-        waitUntil(d -> !getActivePreserveUIs().contains(preserveUIid),
-                CustomServlet.HEARTBEAT_INTERVAL * 4);
+        waitUntil(d -> !getActivePreserveUIs().contains(preserveUIid), CustomServlet.HEARTBEAT_INTERVAL * 4);
     }
 
     @Test
@@ -121,9 +114,7 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
 
         driver.switchTo().window(activeUIsHandle);
         List<Integer> uiIdList = getGCCollectedUIs();
-        Assert.assertFalse(
-                "PreserveOnRefresh UI has been already collected by GC",
-                uiIdList.contains(preserveUIid));
+        Assert.assertFalse("PreserveOnRefresh UI has been already collected by GC", uiIdList.contains(preserveUIid));
 
         driver.switchTo().window(preserverHandle);
         for (int i = 0; i < 5; i++) {
@@ -131,8 +122,7 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
             expectedGCIds.add(currentUIid);
             $(NativeButtonElement.class).id("reload").click();
             waitUntil(d -> getPreserveUIId() != currentUIid);
-            Assert.assertEquals("Initial UI ID should not change on reload",
-                    initialUIid, getInitialUIId());
+            Assert.assertEquals("Initial UI ID should not change on reload", initialUIid, getInitialUIId());
         }
 
         driver.switchTo().window(activeUIsHandle);
@@ -144,9 +134,9 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
             List<Integer> gcCollectedUIs = getGCCollectedUIs();
             boolean cleaned = gcCollectedUIs.containsAll(expectedGCIds);
             if (!cleaned) {
-                LoggerFactory.getLogger(PreserveOnRefreshCloseUIsIT.class)
-                        .debug("Not all expected UI have been GC collect yet. Expecting {} UIs to be collected but was {}.",
-                                expectedGCIds, gcCollectedUIs);
+                LoggerFactory.getLogger(PreserveOnRefreshCloseUIsIT.class).debug(
+                        "Not all expected UI have been GC collect yet. Expecting {} UIs to be collected but was {}.",
+                        expectedGCIds, gcCollectedUIs);
             }
             return cleaned;
         }, 3);
@@ -156,8 +146,7 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
         int lastPreserveUIid = getPreserveUIId();
         driver.close();
         driver.switchTo().window(activeUIsHandle);
-        waitUntil(d -> !getActivePreserveUIs().contains(lastPreserveUIid),
-                CustomServlet.HEARTBEAT_INTERVAL * 4);
+        waitUntil(d -> !getActivePreserveUIs().contains(lastPreserveUIid), CustomServlet.HEARTBEAT_INTERVAL * 4);
 
         expectedGCIds.add(lastPreserveUIid);
         $(NativeButtonElement.class).id("gc-hint").click();
@@ -172,33 +161,25 @@ public class PreserveOnRefreshCloseUIsIT extends ChromeBrowserTest {
     }
 
     private int getInitialUIId() {
-        return Integer.parseInt(waitUntil(d -> $(H3Element.class).single())
-                .getText().replace("Initial UI: ", ""));
+        return Integer.parseInt(waitUntil(d -> $(H3Element.class).single()).getText().replace("Initial UI: ", ""));
     }
 
     private int getPreserveUIId() {
         waitForElementPresent(By.id("uiId"));
-        return Integer.parseInt(
-                $(DivElement.class).id("uiId").getText().replace("UI: ", ""));
+        return Integer.parseInt($(DivElement.class).id("uiId").getText().replace("UI: ", ""));
     }
 
     private List<Integer> getActivePreserveUIs() {
         $(NativeButtonElement.class).id("list-uis").click();
-        return $(DivElement.class).id("uis").$(DivElement.class).all().stream()
-                .map(TestBenchElement::getText)
+        return $(DivElement.class).id("uis").$(DivElement.class).all().stream().map(TestBenchElement::getText)
                 .filter(text -> text.endsWith("Path: preserve"))
-                .map(text -> Integer
-                        .parseInt(text.replaceFirst("^UI: (\\d+), .*$", "$1")))
-                .toList();
+                .map(text -> Integer.parseInt(text.replaceFirst("^UI: (\\d+), .*$", "$1"))).toList();
     }
 
     private List<Integer> getGCCollectedUIs() {
         $(NativeButtonElement.class).id("list-gc-collected-uis").click();
-        return $(DivElement.class).id("gcuis").$(DivElement.class).all()
-                .stream().map(TestBenchElement::getText)
-                .map(text -> Integer.parseInt(
-                        text.replaceFirst("^GC Collected UI: (\\d+)$", "$1")))
-                .toList();
+        return $(DivElement.class).id("gcuis").$(DivElement.class).all().stream().map(TestBenchElement::getText)
+                .map(text -> Integer.parseInt(text.replaceFirst("^GC Collected UI: (\\d+)$", "$1"))).toList();
     }
 
 }

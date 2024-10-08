@@ -35,10 +35,8 @@ public class TemplateMappingDetectorIT extends ChromeBrowserTest {
     public void templateInTemplate_mappedComponentsAreMarkedAsSuch() {
         open();
 
-        TestBenchElement parentTemplate = $("template-mapping-detector-parent")
-                .first();
-        TestBenchElement container = parentTemplate.$(TestBenchElement.class)
-                .id("detector");
+        TestBenchElement parentTemplate = $("template-mapping-detector-parent").first();
+        TestBenchElement container = parentTemplate.$(TestBenchElement.class).id("detector");
 
         assertMappedComponentsAreMarkedProperly(container, true);
     }
@@ -51,30 +49,21 @@ public class TemplateMappingDetectorIT extends ChromeBrowserTest {
         assertMappedComponentsAreMarkedProperly(container, false);
     }
 
-    private void assertMappedComponentsAreMarkedProperly(
-            TestBenchElement container, boolean templateInTemplate) {
-        TestBenchElement mappedComponent = container.$(TestBenchElement.class)
-                .id("detector1");
+    private void assertMappedComponentsAreMarkedProperly(TestBenchElement container, boolean templateInTemplate) {
+        TestBenchElement mappedComponent = container.$(TestBenchElement.class).id("detector1");
         Assert.assertEquals("Template mapped: true", mappedComponent.getText());
 
-        TestBenchElement standaloneComponent = container
-                .$(TestBenchElement.class).id("detector2");
+        TestBenchElement standaloneComponent = container.$(TestBenchElement.class).id("detector2");
 
-        Assert.assertEquals("Template mapped: false",
-                standaloneComponent.getText());
+        Assert.assertEquals("Template mapped: false", standaloneComponent.getText());
 
-        TestBenchElement standaloneComposite = container
-                .$(TestBenchElement.class).id("detector3");
+        TestBenchElement standaloneComposite = container.$(TestBenchElement.class).id("detector3");
 
-        Assert.assertEquals(
-                "Composite template mapped: false Template mapped: false",
-                standaloneComposite.getText());
+        Assert.assertEquals("Composite template mapped: false Template mapped: false", standaloneComposite.getText());
 
-        TestBenchElement theTemplateItself = container.$(TestBenchElement.class)
-                .id("detector4");
+        TestBenchElement theTemplateItself = container.$(TestBenchElement.class).id("detector4");
 
-        Assert.assertEquals("The template itself: " + templateInTemplate,
-                theTemplateItself.getText());
+        Assert.assertEquals("The template itself: " + templateInTemplate, theTemplateItself.getText());
     }
 
 }

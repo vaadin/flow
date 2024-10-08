@@ -25,8 +25,8 @@ import elemental.json.JsonValue;
 /**
  * Polymer utilitiy class for handling polymer rpc events for @EventHandler.
  *
- * Registers {@link PolymerPublishedEventRpcHandler} as a service to make it
- * available in {@link Lookup} in an OSGi container.
+ * Registers {@link PolymerPublishedEventRpcHandler} as a service to make it available in {@link Lookup} in an OSGi
+ * container.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -36,12 +36,10 @@ import elemental.json.JsonValue;
 // OSGi. But RetentionPolicy.CLASS used for the annotation makes it safe to use
 // in runtime because JVM doesn't see it.
 @org.osgi.service.component.annotations.Component(immediate = true)
-public class PolymerPublishedEventRpcHandler
-        implements DeprecatedPolymerPublishedEventHandler {
+public class PolymerPublishedEventRpcHandler implements DeprecatedPolymerPublishedEventHandler {
 
     /**
-     * Validate that the given Component instance is a PolymerTemplate and that
-     * the value can be converted.
+     * Validate that the given Component instance is a PolymerTemplate and that the value can be converted.
      *
      * @param instance
      *            Component to be validated
@@ -52,12 +50,9 @@ public class PolymerPublishedEventRpcHandler
      * @return true if valid template model value
      */
     @Override
-    public boolean isTemplateModelValue(Component instance, JsonValue argValue,
-            Class<?> convertedType) {
-        return instance instanceof PolymerTemplate
-                && argValue instanceof JsonObject
-                && ((PolymerTemplate<?>) instance)
-                        .isSupportedClass(convertedType)
+    public boolean isTemplateModelValue(Component instance, JsonValue argValue, Class<?> convertedType) {
+        return instance instanceof PolymerTemplate && argValue instanceof JsonObject
+                && ((PolymerTemplate<?>) instance).isSupportedClass(convertedType)
                 && ((JsonObject) argValue).hasKey("nodeId");
     }
 
@@ -75,20 +70,16 @@ public class PolymerPublishedEventRpcHandler
      *             if the component is not attached to the UI
      */
     @Override
-    public Object getTemplateItem(Component template, JsonObject argValue,
-            Type convertedType) {
+    public Object getTemplateItem(Component template, JsonObject argValue, Type convertedType) {
         final Optional<UI> ui = template.getUI();
         if (ui.isPresent()) {
-            StateNode node = ui.get().getInternals().getStateTree()
-                    .getNodeById((int) argValue.getNumber("nodeId"));
+            StateNode node = ui.get().getInternals().getStateTree().getNodeById((int) argValue.getNumber("nodeId"));
 
-            ModelType propertyType = ((PolymerTemplate<?>) template)
-                    .getModelType(convertedType);
+            ModelType propertyType = ((PolymerTemplate<?>) template).getModelType(convertedType);
 
             return propertyType.modelToApplication(node);
         }
-        throw new IllegalArgumentException(
-                "Event sent for a non attached template component");
+        throw new IllegalArgumentException("Event sent for a non attached template component");
     }
 
 }

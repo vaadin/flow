@@ -25,12 +25,11 @@ import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializableSupplier;
 
 /**
- * Represents the result of an operation that might fail, such as type
- * conversion. A result may contain either a value, signifying a successful
- * operation, or an error message in case of a failure.
+ * Represents the result of an operation that might fail, such as type conversion. A result may contain either a value,
+ * signifying a successful operation, or an error message in case of a failure.
  * <p>
- * Result instances are created using the factory methods {@link #ok(Object)}
- * and {@link #error(String)}, denoting success and failure respectively.
+ * Result instances are created using the factory methods {@link #ok(Object)} and {@link #error(String)}, denoting
+ * success and failure respectively.
  * <p>
  * Unless otherwise specified, {@code Result} method arguments cannot be null.
  *
@@ -68,10 +67,8 @@ public interface Result<R> extends Serializable {
     }
 
     /**
-     * Returns a Result representing the result of invoking the given supplier.
-     * If the supplier returns a value, returns a {@code Result.ok} of the
-     * value; if an exception is thrown, returns the message in a
-     * {@code Result.error}.
+     * Returns a Result representing the result of invoking the given supplier. If the supplier returns a value, returns
+     * a {@code Result.ok} of the value; if an exception is thrown, returns the message in a {@code Result.error}.
      *
      * @param <R>
      *            the result value type
@@ -81,8 +78,7 @@ public interface Result<R> extends Serializable {
      *            the function to provide the error message
      * @return the result of invoking the supplier
      */
-    static <R> Result<R> of(SerializableSupplier<R> supplier,
-            SerializableFunction<Exception, String> onError) {
+    static <R> Result<R> of(SerializableSupplier<R> supplier, SerializableFunction<Exception, String> onError) {
         Objects.requireNonNull(supplier, "supplier cannot be null");
         Objects.requireNonNull(onError, "onError cannot be null");
 
@@ -94,10 +90,9 @@ public interface Result<R> extends Serializable {
     }
 
     /**
-     * If this Result has a value, returns a Result of applying the given
-     * function to the value. Otherwise, returns a Result bearing the same error
-     * as this one. Note that any exceptions thrown by the mapping function are
-     * not wrapped but allowed to propagate.
+     * If this Result has a value, returns a Result of applying the given function to the value. Otherwise, returns a
+     * Result bearing the same error as this one. Note that any exceptions thrown by the mapping function are not
+     * wrapped but allowed to propagate.
      *
      * @param <S>
      *            the type of the mapped value
@@ -110,10 +105,9 @@ public interface Result<R> extends Serializable {
     }
 
     /**
-     * If this Result has a value, applies the given Result-returning function
-     * to the value. Otherwise, returns a Result bearing the same error as this
-     * one. Note that any exceptions thrown by the mapping function are not
-     * wrapped but allowed to propagate.
+     * If this Result has a value, applies the given Result-returning function to the value. Otherwise, returns a Result
+     * bearing the same error as this one. Note that any exceptions thrown by the mapping function are not wrapped but
+     * allowed to propagate.
      *
      * @param <S>
      *            the type of the mapped value
@@ -124,16 +118,15 @@ public interface Result<R> extends Serializable {
     <S> Result<S> flatMap(SerializableFunction<R, Result<S>> mapper);
 
     /**
-     * Invokes either the first callback or the second one, depending on whether
-     * this Result denotes a success or a failure, respectively.
+     * Invokes either the first callback or the second one, depending on whether this Result denotes a success or a
+     * failure, respectively.
      *
      * @param ifOk
      *            the function to call if success
      * @param ifError
      *            the function to call if failure
      */
-    void handle(SerializableConsumer<R> ifOk,
-            SerializableConsumer<String> ifError);
+    void handle(SerializableConsumer<R> ifOk, SerializableConsumer<String> ifError);
 
     /**
      * Applies the {@code consumer} if result is not an error.
@@ -160,8 +153,7 @@ public interface Result<R> extends Serializable {
     /**
      * Checks if the result denotes an error.
      *
-     * @return <code>true</code> if the result denotes an error,
-     *         <code>false</code> otherwise
+     * @return <code>true</code> if the result denotes an error, <code>false</code> otherwise
      */
     boolean isError();
 
@@ -173,19 +165,16 @@ public interface Result<R> extends Serializable {
     Optional<String> getMessage();
 
     /**
-     * Return the value, if the result denotes success, otherwise throw an
-     * exception to be created by the provided supplier.
+     * Return the value, if the result denotes success, otherwise throw an exception to be created by the provided
+     * supplier.
      *
      * @param <X>
      *            Type of the exception to be thrown
      * @param exceptionProvider
-     *            The provider which will return the exception to be thrown
-     *            based on the given error message
+     *            The provider which will return the exception to be thrown based on the given error message
      * @return the value
      * @throws X
      *             if this result denotes an error
      */
-    <X extends Throwable> R getOrThrow(
-            SerializableFunction<String, ? extends X> exceptionProvider)
-            throws X;
+    <X extends Throwable> R getOrThrow(SerializableFunction<String, ? extends X> exceptionProvider) throws X;
 }

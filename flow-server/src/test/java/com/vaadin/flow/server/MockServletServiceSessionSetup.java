@@ -67,8 +67,7 @@ public class MockServletServiceSessionSetup {
             return super.getDependencyFilters();
         }
 
-        public void setDependencyFilters(
-                List<DependencyFilter> dependencyFilters) {
+        public void setDependencyFilters(List<DependencyFilter> dependencyFilters) {
             dependencyFilterOverride = dependencyFilters;
         }
 
@@ -77,8 +76,7 @@ public class MockServletServiceSessionSetup {
         }
 
         @Override
-        protected List<RequestHandler> createRequestHandlers()
-                throws ServiceException {
+        protected List<RequestHandler> createRequestHandlers() throws ServiceException {
             List<RequestHandler> requestHandlers = super.createRequestHandlers();
             handlers = requestHandlers;
             return requestHandlers;
@@ -108,15 +106,13 @@ public class MockServletServiceSessionSetup {
             this.router = router;
         }
 
-        public void addIndexHtmlRequestListener(
-                IndexHtmlRequestListener listener) {
+        public void addIndexHtmlRequestListener(IndexHtmlRequestListener listener) {
             indexHtmlRequestListeners.add(listener);
         }
 
         @Override
         public void modifyIndexHtmlResponse(IndexHtmlResponse response) {
-            indexHtmlRequestListeners.forEach(
-                    listener -> listener.modifyIndexHtmlResponse(response));
+            indexHtmlRequestListeners.forEach(listener -> listener.modifyIndexHtmlResponse(response));
 
             super.modifyIndexHtmlResponse(response);
         }
@@ -154,8 +150,7 @@ public class MockServletServiceSessionSetup {
     public class TestVaadinServlet extends VaadinServlet {
 
         @Override
-        protected VaadinServletService createServletService()
-                throws ServletException, ServiceException {
+        protected VaadinServletService createServletService() throws ServletException, ServiceException {
             service = createTestVaadinServletService();
             service.init();
             return service;
@@ -179,32 +174,26 @@ public class MockServletServiceSessionSetup {
                 Supplier<InputStream> streamSupplier = new Supplier<InputStream>() {
                     @Override
                     public InputStream get() {
-                        return new ByteArrayInputStream(
-                                contents.getBytes(StandardCharsets.UTF_8));
+                        return new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
                     }
                 };
-                URL url = new URL(null, "file://" + path,
-                        new URLStreamHandler() {
+                URL url = new URL(null, "file://" + path, new URLStreamHandler() {
+                    @Override
+                    protected URLConnection openConnection(URL u) throws IOException {
+                        return new URLConnection(u) {
                             @Override
-                            protected URLConnection openConnection(URL u)
-                                    throws IOException {
-                                return new URLConnection(u) {
-                                    @Override
-                                    public void connect() throws IOException {
-                                    }
-
-                                    @Override
-                                    public InputStream getInputStream()
-                                            throws IOException {
-                                        return streamSupplier.get();
-                                    }
-                                };
+                            public void connect() throws IOException {
                             }
-                        });
-                Mockito.when(getServletContext().getResource(path))
-                        .thenReturn(url);
-                Mockito.when(getServletContext().getResourceAsStream(path))
-                        .thenAnswer(i -> streamSupplier.get());
+
+                            @Override
+                            public InputStream getInputStream() throws IOException {
+                                return streamSupplier.get();
+                            }
+                        };
+                    }
+                });
+                Mockito.when(getServletContext().getResource(path)).thenReturn(url);
+                Mockito.when(getServletContext().getResourceAsStream(path)).thenAnswer(i -> streamSupplier.get());
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -217,19 +206,16 @@ public class MockServletServiceSessionSetup {
         }
 
         public void verifyServletContextResourceLoadedOnce(String resource) {
-            Mockito.verify(servlet.getServletContext())
-                    .getResourceAsStream(resource);
+            Mockito.verify(servlet.getServletContext()).getResourceAsStream(resource);
 
         }
 
         public void verifyServletContextResourceNotLoaded(String resource) {
-            Mockito.verify(servlet.getServletContext(), Mockito.never())
-                    .getResourceAsStream(resource);
+            Mockito.verify(servlet.getServletContext(), Mockito.never()).getResourceAsStream(resource);
         }
     }
 
-    public static class TestVaadinServletResponse
-            extends VaadinServletResponse {
+    public static class TestVaadinServletResponse extends VaadinServletResponse {
         private int errorCode;
         private String errorMessage;
 
@@ -237,14 +223,12 @@ public class MockServletServiceSessionSetup {
 
         private String type;
 
-        private TestVaadinServletResponse(HttpServletResponse response,
-                VaadinServletService vaadinService) {
+        private TestVaadinServletResponse(HttpServletResponse response, VaadinServletService vaadinService) {
             super(response, vaadinService);
         }
 
         @Override
-        public void sendError(int errorCode, String message)
-                throws java.io.IOException {
+        public void sendError(int errorCode, String message) throws java.io.IOException {
             this.errorCode = errorCode;
             errorMessage = message;
         }
@@ -315,46 +299,33 @@ public class MockServletServiceSessionSetup {
         this(true);
     }
 
-    public MockServletServiceSessionSetup(boolean sessionAvailable)
-            throws RuntimeException {
+    public MockServletServiceSessionSetup(boolean sessionAvailable) throws RuntimeException {
         MockitoAnnotations.initMocks(this);
         servlet = createVaadinServlet();
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
-        Mockito.doAnswer(
-                invocation -> servletContext.getClass().getClassLoader())
-                .when(servletContext).getClassLoader();
-        Mockito.when(servletConfig.getServletContext())
-                .thenReturn(servletContext);
+        Mockito.doAnswer(invocation -> servletContext.getClass().getClassLoader()).when(servletContext)
+                .getClassLoader();
+        Mockito.when(servletConfig.getServletContext()).thenReturn(servletContext);
         deploymentConfiguration.setFrontendHotdeploy(false);
 
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
-                .thenReturn(lookup);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(resourceProvider);
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName())).thenReturn(lookup);
+        Mockito.when(lookup.lookup(ResourceProvider.class)).thenReturn(resourceProvider);
         DefaultRoutePathProvider routePathProvider = new DefaultRoutePathProvider();
-        Mockito.when(lookup.lookup(RoutePathProvider.class))
-                .thenReturn(routePathProvider);
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
-                .thenReturn(staticFileHandlerFactory);
+        Mockito.when(lookup.lookup(RoutePathProvider.class)).thenReturn(routePathProvider);
+        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class)).thenReturn(staticFileHandlerFactory);
 
         try {
-            Mockito.when(resourceProvider
-                    .getClientResourceAsStream("META-INF/resources/"
-                            + ApplicationConstants.CLIENT_ENGINE_PATH
-                            + "/compile.properties"))
-                    .thenAnswer(invocation -> new ByteArrayInputStream(
-                            "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
+            Mockito.when(resourceProvider.getClientResourceAsStream(
+                    "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH + "/compile.properties"))
+                    .thenAnswer(invocation -> new ByteArrayInputStream("jsFile=foo".getBytes(StandardCharsets.UTF_8)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        Mockito.when(
-                resourceProvider.getApplicationResource(Mockito.anyString()))
-                .thenAnswer(invocation -> {
-                    return MockServletServiceSessionSetup.class
-                            .getResource("/" + invocation.getArgument(0));
-                });
+        Mockito.when(resourceProvider.getApplicationResource(Mockito.anyString())).thenAnswer(invocation -> {
+            return MockServletServiceSessionSetup.class.getResource("/" + invocation.getArgument(0));
+        });
 
         configureLookup(lookup);
 
@@ -365,28 +336,22 @@ public class MockServletServiceSessionSetup {
         }
 
         if (sessionAvailable) {
-            Mockito.when(session.getConfiguration())
-                    .thenReturn(deploymentConfiguration);
+            Mockito.when(session.getConfiguration()).thenReturn(deploymentConfiguration);
 
             Mockito.when(session.getBrowser()).thenReturn(browser);
             Mockito.when(session.getPushId()).thenReturn("fake push id");
             Mockito.when(session.getLocale()).thenReturn(Locale.ENGLISH);
 
-            Mockito.when(wrappedSession.getHttpSession())
-                    .thenReturn(httpSession);
-            Mockito.when(session.getState())
-                    .thenReturn(VaadinSessionState.OPEN);
+            Mockito.when(wrappedSession.getHttpSession()).thenReturn(httpSession);
+            Mockito.when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
             Mockito.when(session.getService()).thenAnswer(i -> service);
             Mockito.when(session.hasLock()).thenReturn(true);
-            Mockito.when(session.getPendingAccessQueue())
-                    .thenReturn(new LinkedBlockingDeque<>());
-            Mockito.when(request.getWrappedSession())
-                    .thenReturn(wrappedSession);
+            Mockito.when(session.getPendingAccessQueue()).thenReturn(new LinkedBlockingDeque<>());
+            Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
             SessionRouteRegistry sessionRegistry = (SessionRouteRegistry) SessionRouteRegistry
                     .getSessionRegistry(session);
-            Mockito.when(session.getAttribute(SessionRouteRegistry.class))
-                    .thenReturn(sessionRegistry);
+            Mockito.when(session.getAttribute(SessionRouteRegistry.class)).thenReturn(sessionRegistry);
         } else {
             session = null;
         }
@@ -453,34 +418,29 @@ public class MockServletServiceSessionSetup {
     }
 
     public void setAppShellRegistry(AppShellRegistry appShellRegistry) {
-        Mockito.when(servletContext
-                .getAttribute(AppShellRegistryWrapper.class.getName()))
+        Mockito.when(servletContext.getAttribute(AppShellRegistryWrapper.class.getName()))
                 .thenReturn(new AppShellRegistryWrapper(appShellRegistry));
     }
 
     public TestVaadinServletResponse createResponse() throws IOException {
-        HttpServletResponse httpServletResponse = Mockito
-                .mock(HttpServletResponse.class);
+        HttpServletResponse httpServletResponse = Mockito.mock(HttpServletResponse.class);
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(httpServletResponse.getOutputStream()).thenReturn(out);
         return new TestVaadinServletResponse(httpServletResponse, getService());
 
     }
 
-    public VaadinRequest createRequest(MockServletServiceSessionSetup mocks,
-            String path, String queryString) {
+    public VaadinRequest createRequest(MockServletServiceSessionSetup mocks, String path, String queryString) {
         return createRequest(mocks, path, "", queryString);
     }
 
-    public VaadinRequest createRequest(MockServletServiceSessionSetup mocks,
-            String path, String servletPath, String queryString) {
+    public VaadinRequest createRequest(MockServletServiceSessionSetup mocks, String path, String servletPath,
+            String queryString) {
 
         QueryParameters queryParams = QueryParameters.fromString(queryString);
         Map<String, List<String>> params = queryParams.getParameters();
-        HttpServletRequest httpServletRequest = Mockito
-                .mock(HttpServletRequest.class);
-        return new VaadinServletRequest(httpServletRequest,
-                mocks.getService()) {
+        HttpServletRequest httpServletRequest = Mockito.mock(HttpServletRequest.class);
+        return new VaadinServletRequest(httpServletRequest, mocks.getService()) {
             @Override
             public String getPathInfo() {
                 return path;
@@ -506,8 +466,7 @@ public class MockServletServiceSessionSetup {
 
             @Override
             public StringBuffer getRequestURL() {
-                return new StringBuffer(
-                        "http://localhost:8888" + servletPath + getPathInfo());
+                return new StringBuffer("http://localhost:8888" + servletPath + getPathInfo());
             }
         };
     }

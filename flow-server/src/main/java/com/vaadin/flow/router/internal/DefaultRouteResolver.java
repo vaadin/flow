@@ -43,27 +43,20 @@ public class DefaultRouteResolver implements RouteResolver {
         RouteRegistry registry = request.getRouter().getRegistry();
 
         final String path = request.getLocation().getPath();
-        NavigationRouteTarget navigationResult = registry
-                .getNavigationRouteTarget(path);
+        NavigationRouteTarget navigationResult = registry.getNavigationRouteTarget(path);
 
         if (!navigationResult.hasTarget()) {
             if (MenuRegistry.hasClientRoute(path)) {
                 AvailableViewInfo viewInfo = MenuRegistry.getClientRoutes(false)
-                        .get(path.isEmpty() ? path
-                                : path.startsWith("/") ? path : "/" + path);
+                        .get(path.isEmpty() ? path : path.startsWith("/") ? path : "/" + path);
                 if (viewInfo != null && viewInfo.flowLayout()) {
 
-                    Class<? extends Component> layout = (Class<? extends Component>) registry
-                            .getLayout(path);
+                    Class<? extends Component> layout = (Class<? extends Component>) registry.getLayout(path);
                     if (layout == null) {
-                        throw new NotFoundException(
-                                "No layout for client path '%s'"
-                                        .formatted(path));
+                        throw new NotFoundException("No layout for client path '%s'".formatted(path));
                     }
-                    RouteTarget target = new RouteTarget(layout,
-                            Collections.emptyList());
-                    navigationResult = new NavigationRouteTarget(
-                            navigationResult.getPath(), target,
+                    RouteTarget target = new RouteTarget(layout, Collections.emptyList());
+                    navigationResult = new NavigationRouteTarget(navigationResult.getPath(), target,
                             Collections.emptyMap());
                 } else {
                     return null;
@@ -73,16 +66,13 @@ public class DefaultRouteResolver implements RouteResolver {
             }
         }
 
-        NavigationStateBuilder builder = new NavigationStateBuilder(
-                request.getRouter());
+        NavigationStateBuilder builder = new NavigationStateBuilder(request.getRouter());
         try {
-            builder.withTarget(navigationResult.getRouteTarget(),
-                    navigationResult.getRouteParameters());
+            builder.withTarget(navigationResult.getRouteTarget(), navigationResult.getRouteParameters());
             builder.withPath(navigationResult.getPath());
         } catch (NotFoundException nfe) {
             String message = "Exception while navigation to path " + path;
-            LoggerFactory.getLogger(this.getClass().getName()).warn(message,
-                    nfe);
+            LoggerFactory.getLogger(this.getClass().getName()).warn(message, nfe);
             throw nfe;
         }
 

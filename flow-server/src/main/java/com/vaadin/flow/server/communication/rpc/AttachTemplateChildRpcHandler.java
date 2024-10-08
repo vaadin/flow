@@ -30,8 +30,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * RPC handler for a client-side response on attach existing element by id
- * request.
+ * RPC handler for a client-side response on attach existing element by id request.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -43,8 +42,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class AttachTemplateChildRpcHandler
-        extends AbstractRpcInvocationHandler {
+public class AttachTemplateChildRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override
     public String getRpcType() {
@@ -52,16 +50,13 @@ public class AttachTemplateChildRpcHandler
     }
 
     @Override
-    protected Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
+    protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
         assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ID);
 
-        int requestedId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_REQUESTED_ID);
-        int assignedId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
+        int requestedId = (int) invocationJson.getNumber(JsonConstants.RPC_ATTACH_REQUESTED_ID);
+        int assignedId = (int) invocationJson.getNumber(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
 
         StateTree tree = (StateTree) node.getOwner();
         StateNode requestedNode = tree.getNodeById(requestedId);
@@ -70,21 +65,17 @@ public class AttachTemplateChildRpcHandler
         JsonValue id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
         String tag = requestedNode.getFeature(ElementData.class).getTag();
 
-        Logger logger = LoggerFactory
-                .getLogger(AttachTemplateChildRpcHandler.class.getName());
+        Logger logger = LoggerFactory.getLogger(AttachTemplateChildRpcHandler.class.getName());
 
         if (assignedId == -1) {
-            logger.error("Attach existing element has failed because "
-                    + "the client-side element is not found");
+            logger.error("Attach existing element has failed because " + "the client-side element is not found");
             if (id instanceof JsonNull) {
                 throw new IllegalStateException(String.format(
-                        "The element with the tag name '%s' was "
-                                + "not found in the parent with id='%d'",
-                        tag, parent.getId()));
+                        "The element with the tag name '%s' was " + "not found in the parent with id='%d'", tag,
+                        parent.getId()));
             } else {
                 throw new IllegalStateException(String.format(
-                        "The element with the tag name '%s' and id '%s' was "
-                                + "not found in the parent with id='%d'",
+                        "The element with the tag name '%s' and id '%s' was " + "not found in the parent with id='%d'",
                         tag, id.asString(), parent.getId()));
             }
         } else if (requestedId != assignedId) {
@@ -92,24 +83,19 @@ public class AttachTemplateChildRpcHandler
                     + "the element has been already attached from the server side");
             if (id instanceof JsonNull) {
                 throw new IllegalStateException(String.format(
-                        "The element with the tag name '%s' is already "
-                                + "attached to the parent with id='%d'",
-                        tag, parent.getId()));
+                        "The element with the tag name '%s' is already " + "attached to the parent with id='%d'", tag,
+                        parent.getId()));
             } else {
-                throw new IllegalStateException(String.format(
-                        "The element with the tag name '%s' and id '%s' is "
-                                + "already attached to the parent with id='%d'",
-                        tag, id.asString(), parent.getId()));
+                throw new IllegalStateException(String.format("The element with the tag name '%s' and id '%s' is "
+                        + "already attached to the parent with id='%d'", tag, id.asString(), parent.getId()));
             }
         } else {
-            logger.error("Attach existing element request succeeded. "
-                    + "But the response about this is unexpected");
+            logger.error("Attach existing element request succeeded. " + "But the response about this is unexpected");
 
             // This should not happen. In case of successful request the client
             // side should not respond
             throw new IllegalArgumentException(
-                    "Unexpected successful attachment "
-                            + "response is received from the client-side. "
+                    "Unexpected successful attachment " + "response is received from the client-side. "
                             + "Client side should not respond if everything is fine");
         }
     }

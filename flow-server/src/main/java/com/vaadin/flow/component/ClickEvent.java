@@ -46,49 +46,37 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
      * @param source
      *            the component that fired the event
      * @param fromClient
-     *            <code>true</code> if the event was originally fired on the
-     *            client, <code>false</code> if the event originates from
-     *            server-side logic
+     *            <code>true</code> if the event was originally fired on the client, <code>false</code> if the event
+     *            originates from server-side logic
      * @param screenX
-     *            the x coordinate of the click event, relative to the upper
-     *            left corner of the screen, -1 if unknown
+     *            the x coordinate of the click event, relative to the upper left corner of the screen, -1 if unknown
      * @param screenY
-     *            the y coordinate of the click event, relative to the upper
-     *            left corner of the screen, -i if unknown
+     *            the y coordinate of the click event, relative to the upper left corner of the screen, -i if unknown
      * @param clientX
-     *            the x coordinate of the click event, relative to the upper
-     *            left corner of the browser viewport, -1 if unknown
+     *            the x coordinate of the click event, relative to the upper left corner of the browser viewport, -1 if
+     *            unknown
      * @param clientY
-     *            the y coordinate of the click event, relative to the upper
-     *            left corner of the browser viewport, -1 if unknown
+     *            the y coordinate of the click event, relative to the upper left corner of the browser viewport, -1 if
+     *            unknown
      * @param clickCount
      *            the number of consecutive clicks recently recorded
      * @param button
      *            the id of the pressed mouse button
      * @param ctrlKey
-     *            <code>true</code> if the control key was down when the event
-     *            was fired, <code>false</code> otherwise
+     *            <code>true</code> if the control key was down when the event was fired, <code>false</code> otherwise
      * @param shiftKey
-     *            <code>true</code> if the shift key was down when the event was
-     *            fired, <code>false</code> otherwise
+     *            <code>true</code> if the shift key was down when the event was fired, <code>false</code> otherwise
      * @param altKey
-     *            <code>true</code> if the alt key was down when the event was
-     *            fired, <code>false</code> otherwise
+     *            <code>true</code> if the alt key was down when the event was fired, <code>false</code> otherwise
      * @param metaKey
-     *            <code>true</code> if the meta key was down when the event was
-     *            fired, <code>false</code> otherwise
+     *            <code>true</code> if the meta key was down when the event was fired, <code>false</code> otherwise
      *
      */
-    public ClickEvent(Component source, boolean fromClient,
-            @EventData("event.screenX") int screenX,
-            @EventData("event.screenY") int screenY,
-            @EventData("event.clientX") int clientX,
-            @EventData("event.clientY") int clientY,
-            @EventData("event.detail") int clickCount,
-            @EventData("event.button") int button,
-            @EventData("event.ctrlKey") boolean ctrlKey,
-            @EventData("event.shiftKey") boolean shiftKey,
-            @EventData("event.altKey") boolean altKey,
+    public ClickEvent(Component source, boolean fromClient, @EventData("event.screenX") int screenX,
+            @EventData("event.screenY") int screenY, @EventData("event.clientX") int clientX,
+            @EventData("event.clientY") int clientY, @EventData("event.detail") int clickCount,
+            @EventData("event.button") int button, @EventData("event.ctrlKey") boolean ctrlKey,
+            @EventData("event.shiftKey") boolean shiftKey, @EventData("event.altKey") boolean altKey,
             @EventData("event.metaKey") boolean metaKey) {
         super((C) source, fromClient);
         this.screenX = screenX;
@@ -115,8 +103,7 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     }
 
     /**
-     * Gets the x coordinate of the click event, relative to the upper left
-     * corner of the browser viewport.
+     * Gets the x coordinate of the click event, relative to the upper left corner of the browser viewport.
      *
      * @return the x coordinate, -1 if unknown
      */
@@ -125,8 +112,7 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     }
 
     /**
-     * Gets the y coordinate of the click event, relative to the upper left
-     * corner of the browser viewport.
+     * Gets the y coordinate of the click event, relative to the upper left corner of the browser viewport.
      *
      * @return the y coordinate, -1 if unknown
      */
@@ -135,8 +121,7 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     }
 
     /**
-     * Gets the x coordinate of the click event, relative to the upper left
-     * corner of the screen.
+     * Gets the x coordinate of the click event, relative to the upper left corner of the screen.
      *
      * @return the x coordinate, -1 if unknown
      */
@@ -145,8 +130,7 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     }
 
     /**
-     * Gets the y coordinate of the click event, relative to the upper left
-     * corner of the screen.
+     * Gets the y coordinate of the click event, relative to the upper left corner of the screen.
      *
      * @return the y coordinate, -1 if unknown
      */
@@ -184,8 +168,7 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     /**
      * Checks whether the ctrl key was was down when the event was fired.
      *
-     * @return <code>true</code> if the ctrl key was down when the event was
-     *         fired, <code>false</code> otherwise
+     * @return <code>true</code> if the ctrl key was down when the event was fired, <code>false</code> otherwise
      */
     public boolean isCtrlKey() {
         return ctrlKey;
@@ -194,8 +177,7 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     /**
      * Checks whether the alt key was was down when the event was fired.
      *
-     * @return <code>true</code> if the alt key was down when the event was
-     *         fired, <code>false</code> otherwise
+     * @return <code>true</code> if the alt key was down when the event was fired, <code>false</code> otherwise
      */
     public boolean isAltKey() {
         return altKey;
@@ -204,8 +186,7 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     /**
      * Checks whether the meta key was was down when the event was fired.
      *
-     * @return <code>true</code> if the meta key was down when the event was
-     *         fired, <code>false</code> otherwise
+     * @return <code>true</code> if the meta key was down when the event was fired, <code>false</code> otherwise
      */
     public boolean isMetaKey() {
         return metaKey;
@@ -214,8 +195,7 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     /**
      * Checks whether the shift key was was down when the event was fired.
      *
-     * @return <code>true</code> if the shift key was down when the event was
-     *         fired, <code>false</code> otherwise
+     * @return <code>true</code> if the shift key was down when the event was fired, <code>false</code> otherwise
      */
     public boolean isShiftKey() {
         return shiftKey;

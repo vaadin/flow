@@ -38,8 +38,7 @@ public class SharedUtil implements Serializable {
     }
 
     /**
-     * Splits a camelCaseString into an array of words with the casing
-     * preserved.
+     * Splits a camelCaseString into an array of words with the casing preserved.
      *
      * @param camelCaseString
      *            The input string in camelCase format
@@ -49,8 +48,7 @@ public class SharedUtil implements Serializable {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < camelCaseString.length(); i++) {
             char c = camelCaseString.charAt(i);
-            if (Character.isUpperCase(c)
-                    && isWordComplete(camelCaseString, i)) {
+            if (Character.isUpperCase(c) && isWordComplete(camelCaseString, i)) {
                 sb.append(' ');
             }
             sb.append(c);
@@ -65,8 +63,7 @@ public class SharedUtil implements Serializable {
         } else if (!Character.isUpperCase(camelCaseString.charAt(i - 1))) {
             // Word ends if previous char wasn't upper case
             return true;
-        } else if (i + 1 < camelCaseString.length()
-                && !Character.isUpperCase(camelCaseString.charAt(i + 1))) {
+        } else if (i + 1 < camelCaseString.length() && !Character.isUpperCase(camelCaseString.charAt(i + 1))) {
             // Word ends if next char isn't upper case
             return true;
         } else {
@@ -75,15 +72,13 @@ public class SharedUtil implements Serializable {
     }
 
     /**
-     * Converts a camelCaseString to a human friendly format (Camel case
-     * string).
+     * Converts a camelCaseString to a human friendly format (Camel case string).
      * <p>
-     * In general splits words when the casing changes but also handles special
-     * cases such as consecutive upper case characters. Examples:
+     * In general splits words when the casing changes but also handles special cases such as consecutive upper case
+     * characters. Examples:
      * <p>
-     * {@literal MyBeanContainer} becomes {@literal My Bean Container}
-     * {@literal AwesomeURLFactory} becomes {@literal Awesome URL Factory}
-     * {@literal SomeUriAction} becomes {@literal Some Uri Action}
+     * {@literal MyBeanContainer} becomes {@literal My Bean Container} {@literal AwesomeURLFactory} becomes
+     * {@literal Awesome URL Factory} {@literal SomeUriAction} becomes {@literal Some Uri Action}
      *
      * @param camelCaseString
      *            The input string in camelCase format
@@ -98,8 +93,8 @@ public class SharedUtil implements Serializable {
     }
 
     /**
-     * Joins the words in the input array together into a single string by
-     * inserting the separator string between each word.
+     * Joins the words in the input array together into a single string by inserting the separator string between each
+     * word.
      *
      * @param parts
      *            The array of words
@@ -117,8 +112,7 @@ public class SharedUtil implements Serializable {
     }
 
     /**
-     * Capitalizes the first character in the given string in a way suitable for
-     * use in code (methods, properties etc).
+     * Capitalizes the first character in the given string in a way suitable for use in code (methods, properties etc).
      *
      * @param string
      *            The string to capitalize
@@ -133,13 +127,12 @@ public class SharedUtil implements Serializable {
             return string.toUpperCase(Locale.ENGLISH);
         }
 
-        return string.substring(0, 1).toUpperCase(Locale.ENGLISH)
-                + string.substring(1);
+        return string.substring(0, 1).toUpperCase(Locale.ENGLISH) + string.substring(1);
     }
 
     /**
-     * Changes the first character in the given string to lower case in a way
-     * suitable for use in code (methods, properties etc).
+     * Changes the first character in the given string to lower case in a way suitable for use in code (methods,
+     * properties etc).
      *
      * @param string
      *            The string to change
@@ -154,14 +147,12 @@ public class SharedUtil implements Serializable {
             return string.toLowerCase(Locale.ENGLISH);
         }
 
-        return string.substring(0, 1).toLowerCase(Locale.ENGLISH)
-                + string.substring(1);
+        return string.substring(0, 1).toLowerCase(Locale.ENGLISH) + string.substring(1);
     }
 
     /**
-     * Converts a property id to a human friendly format. Handles nested
-     * properties by only considering the last part, e.g. "address.streetName"
-     * is equal to "streetName" for this method.
+     * Converts a property id to a human friendly format. Handles nested properties by only considering the last part,
+     * e.g. "address.streetName" is equal to "streetName" for this method.
      *
      * @param propertyId
      *            The propertyId to format
@@ -193,8 +184,7 @@ public class SharedUtil implements Serializable {
      *            the value of the parameter
      * @return The modified URI with the parameter added
      */
-    public static String addGetParameter(String uri, String parameter,
-            String value) {
+    public static String addGetParameter(String uri, String parameter, String value) {
         return addGetParameters(uri, parameter + "=" + value);
     }
 
@@ -209,20 +199,18 @@ public class SharedUtil implements Serializable {
      *            the value of the parameter
      * @return The modified URI with the parameter added
      */
-    public static String addGetParameter(String uri, String parameter,
-            int value) {
+    public static String addGetParameter(String uri, String parameter, int value) {
         return addGetParameter(uri, parameter, Integer.toString(value));
     }
 
     /**
-     * Adds the get parameters to the uri and returns the new uri that contains
-     * the parameters.
+     * Adds the get parameters to the uri and returns the new uri that contains the parameters.
      *
      * @param uri
      *            The uri to which the parameters should be added.
      * @param extraParams
-     *            One or more parameters in the format "a=b" or "c=d&amp;e=f".
-     *            An empty string is allowed but will not modify the url.
+     *            One or more parameters in the format "a=b" or "c=d&amp;e=f". An empty string is allowed but will not
+     *            modify the url.
      * @return The modified URI with the get parameters in extraParams added.
      */
     public static String addGetParameters(String uri, String extraParams) {
@@ -260,8 +248,8 @@ public class SharedUtil implements Serializable {
      * <p>
      * Examples:
      * <p>
-     * {@literal foo} becomes {@literal foo} {@literal foo-bar} becomes
-     * {@literal fooBar} {@literal foo--bar} becomes {@literal fooBar}
+     * {@literal foo} becomes {@literal foo} {@literal foo-bar} becomes {@literal fooBar} {@literal foo--bar} becomes
+     * {@literal fooBar}
      *
      * @param dashSeparated
      *            The dash separated string to convert
@@ -284,11 +272,9 @@ public class SharedUtil implements Serializable {
      * <p>
      * Examples:
      * <p>
-     * {@literal foo} becomes {@literal foo} {@literal fooBar} becomes
-     * {@literal foo-bar} {@literal MyBeanContainer} becomes
-     * {@literal -my-bean-container} {@literal AwesomeURLFactory} becomes
-     * {@literal -awesome-uRL-factory} {@literal someUriAction} becomes
-     * {@literal some-uri-action}
+     * {@literal foo} becomes {@literal foo} {@literal fooBar} becomes {@literal foo-bar} {@literal MyBeanContainer}
+     * becomes {@literal -my-bean-container} {@literal AwesomeURLFactory} becomes {@literal -awesome-uRL-factory}
+     * {@literal someUriAction} becomes {@literal some-uri-action}
      *
      * @param camelCaseString
      *            The input string in camelCase format
@@ -299,8 +285,7 @@ public class SharedUtil implements Serializable {
             return null;
         }
         String[] parts = splitCamelCase(camelCaseString);
-        if (parts[0].length() >= 1
-                && Character.isUpperCase(parts[0].charAt(0))) {
+        if (parts[0].length() >= 1 && Character.isUpperCase(parts[0].charAt(0))) {
             // starts with upper case
             parts[0] = "-" + firstToLower(parts[0]);
         }
@@ -315,28 +300,23 @@ public class SharedUtil implements Serializable {
      * <p>
      * Examples:
      * <p>
-     * {@literal foo} becomes {@literal foo} {@literal fooBar} becomes
-     * {@literal foo-bar} {@literal MyBeanContainer} becomes
-     * {@literal my-bean-container} {@literal AwesomeURLFactory} becomes
-     * {@literal awesome-url-factory} {@literal someUriAction} becomes
-     * {@literal some-uri-action}
+     * {@literal foo} becomes {@literal foo} {@literal fooBar} becomes {@literal foo-bar} {@literal MyBeanContainer}
+     * becomes {@literal my-bean-container} {@literal AwesomeURLFactory} becomes {@literal awesome-url-factory}
+     * {@literal someUriAction} becomes {@literal some-uri-action}
      *
      * @param upperCamelCaseString
      *            The input string in UpperCamelCase format
      * @return A dash separated lowercase version of the input
      */
-    public static String upperCamelCaseToDashSeparatedLowerCase(
-            String upperCamelCaseString) {
+    public static String upperCamelCaseToDashSeparatedLowerCase(String upperCamelCaseString) {
         if (upperCamelCaseString == null) {
             return null;
         }
-        return camelCaseToDashSeparated(firstToLower(upperCamelCaseString))
-                .toLowerCase();
+        return camelCaseToDashSeparated(firstToLower(upperCamelCaseString)).toLowerCase();
     }
 
     /**
-     * Prepend the given url with the prefix if it is not absolute and doesn't
-     * have a protocol.
+     * Prepend the given url with the prefix if it is not absolute and doesn't have a protocol.
      *
      * @param url
      *            url to check

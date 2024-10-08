@@ -33,8 +33,7 @@ import com.vaadin.flow.function.ValueProvider;
  */
 public interface PropertyDefinition<T, V> extends Serializable {
     /**
-     * Gets the value provider that is used for finding the value of this
-     * property for a bean.
+     * Gets the value provider that is used for finding the value of this property for a bean.
      *
      * @return the getter, not <code>null</code>
      */
@@ -55,11 +54,10 @@ public interface PropertyDefinition<T, V> extends Serializable {
     Class<V> getType();
 
     /**
-     * Gets whether the type of this property references a generic type (thus
-     * {@link #getType()} will return {@link Object}) or a concrete type.
+     * Gets whether the type of this property references a generic type (thus {@link #getType()} will return
+     * {@link Object}) or a concrete type.
      *
-     * @return {@code true} if the type of this property references a generic
-     *         type, {@code false} otherwise
+     * @return {@code true} if the type of this property references a generic type, {@code false} otherwise
      */
     boolean isGenericType();
 
@@ -101,20 +99,18 @@ public interface PropertyDefinition<T, V> extends Serializable {
     PropertySet<T> getPropertySet();
 
     /**
-     * Gets the parent property of this property if this is a sub-property of
-     * the property set. If this property belongs directly to the property set,
-     * it doesn't have a parent and this method returns {@code null}.
+     * Gets the parent property of this property if this is a sub-property of the property set. If this property belongs
+     * directly to the property set, it doesn't have a parent and this method returns {@code null}.
      *
      * @return the parent property, may be {@code null}
      */
     PropertyDefinition<T, ?> getParent();
 
     /**
-     * Gets whether this property belongs to some other property in the property
-     * set, or directly to the property set.
+     * Gets whether this property belongs to some other property in the property set, or directly to the property set.
      *
-     * @return {@code true} if this property is a sub-property of the property
-     *         set it belongs to, {@code false} otherwise
+     * @return {@code true} if this property is a sub-property of the property set it belongs to, {@code false}
+     *         otherwise
      */
     default boolean isSubProperty() {
         return getParent() != null;

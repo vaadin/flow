@@ -17,8 +17,7 @@
 package com.vaadin.flow.server;
 
 /**
- * System messages provider using the built-in default system messages. This
- * singleton is accessed using {@link #get()}.
+ * System messages provider using the built-in default system messages. This singleton is accessed using {@link #get()}.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -32,8 +31,7 @@ public class DefaultSystemMessagesProvider implements SystemMessagesProvider {
     }
 
     @Override
-    public SystemMessages getSystemMessages(
-            SystemMessagesInfo systemMessagesInfo) {
+    public SystemMessages getSystemMessages(SystemMessagesInfo systemMessagesInfo) {
         return HandlerHelper.DEFAULT_SYSTEM_MESSAGES;
     }
 

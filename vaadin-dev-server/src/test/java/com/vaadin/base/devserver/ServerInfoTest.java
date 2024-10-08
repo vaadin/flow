@@ -57,8 +57,7 @@ public class ServerInfoTest {
         }
     }
 
-    private void fakePlatform(boolean vaadin, boolean hilla)
-            throws IOException {
+    private void fakePlatform(boolean vaadin, boolean hilla) throws IOException {
         if (endpointRequestUtilMockedStatic != null) {
             endpointRequestUtilMockedStatic.close();
             endpointRequestUtilMockedStatic = null;
@@ -67,20 +66,15 @@ public class ServerInfoTest {
         final LinkedList<URL> classpath = new LinkedList<>();
         if (vaadin) {
             final Path vaadinJar = temporary.newFolder().toPath();
-            final Path pomProperties = vaadinJar.resolve(
-                    "META-INF/maven/com.vaadin/vaadin-core/pom.properties");
+            final Path pomProperties = vaadinJar.resolve("META-INF/maven/com.vaadin/vaadin-core/pom.properties");
             Files.createDirectories(pomProperties.getParent());
             Files.writeString(pomProperties, "version=24.1.0");
             classpath.add(vaadinJar.toUri().toURL());
         }
-        final ClassLoader classLoader = new URLClassLoader(
-                classpath.toArray(new URL[0]), null);
+        final ClassLoader classLoader = new URLClassLoader(classpath.toArray(new URL[0]), null);
         if (hilla) {
-            endpointRequestUtilMockedStatic = Mockito
-                    .mockStatic(EndpointRequestUtil.class);
-            endpointRequestUtilMockedStatic
-                    .when(EndpointRequestUtil::isHillaAvailable)
-                    .thenReturn(true);
+            endpointRequestUtilMockedStatic = Mockito.mockStatic(EndpointRequestUtil.class);
+            endpointRequestUtilMockedStatic.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
         }
         Thread.currentThread().setContextClassLoader(classLoader);
     }

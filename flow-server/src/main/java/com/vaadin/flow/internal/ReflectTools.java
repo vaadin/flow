@@ -43,9 +43,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
- * An util class with helpers for reflection operations. Used internally by
- * Vaadin and should not be used by application developers. Subject to change at
- * any time.
+ * An util class with helpers for reflection operations. Used internally by Vaadin and should not be used by application
+ * developers. Subject to change at any time.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -53,12 +52,10 @@ import com.vaadin.flow.shared.util.SharedUtil;
  */
 public class ReflectTools implements Serializable {
 
-    private static final Pattern GETTER_STARTS = Pattern
-            .compile("^(get)\\p{Lu}");
+    private static final Pattern GETTER_STARTS = Pattern.compile("^(get)\\p{Lu}");
     private static final Pattern IS_STARTS = Pattern.compile("^(is)\\p{Lu}");
     private static final Pattern SETTER_STARTS = Pattern.compile("^set\\p{Lu}");
-    private static final Pattern SETTER_GETTER_STARTS = Pattern
-            .compile("^(set|get|is)");
+    private static final Pattern SETTER_GETTER_STARTS = Pattern.compile("^(set|get|is)");
     static final String CREATE_INSTANCE_FAILED = "Unable to create an instance of '%s'. Make sure it has a no-arg constructor";
     static final String CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS = "Cannot instantiate '%s'. Make sure the class is static if it is an inner class.";
     static final String CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION = "Unable to create an instance of '%s'. Make sure the class is public and that is has a public no-arg constructor.";
@@ -69,9 +66,9 @@ public class ReflectTools implements Serializable {
     private static final Predicate<Method> IS_SYNTHETIC = Method::isSynthetic;
 
     /**
-     * Locates the method in the given class. Returns null if the method is not
-     * found. Throws an ExceptionInInitializerError if there is a problem
-     * locating the method as this is mainly called from static blocks.
+     * Locates the method in the given class. Returns null if the method is not found. Throws an
+     * ExceptionInInitializerError if there is a problem locating the method as this is mainly called from static
+     * blocks.
      *
      * @param cls
      *            Class that contains the method
@@ -81,11 +78,11 @@ public class ReflectTools implements Serializable {
      *            The parameter types for the method.
      * @return A reference to the method
      * @throws ExceptionInInitializerError
-     *             Wraps any exception in an {@link ExceptionInInitializerError}
-     *             so this method can be called from a static initializer.
+     *             Wraps any exception in an {@link ExceptionInInitializerError} so this method can be called from a
+     *             static initializer.
      */
-    public static Method findMethod(Class<?> cls, String methodName,
-            Class<?>... parameterTypes) throws ExceptionInInitializerError {
+    public static Method findMethod(Class<?> cls, String methodName, Class<?>... parameterTypes)
+            throws ExceptionInInitializerError {
         try {
             return cls.getDeclaredMethod(methodName, parameterTypes);
         } catch (Exception e) {
@@ -96,8 +93,7 @@ public class ReflectTools implements Serializable {
     /**
      * Returns the value of the java field.
      * <p>
-     * Uses getter if present, otherwise tries to access even private fields
-     * directly.
+     * Uses getter if present, otherwise tries to access even private fields directly.
      *
      * @param object
      *            The object containing the field
@@ -111,9 +107,8 @@ public class ReflectTools implements Serializable {
      * @throws IllegalArgumentException
      *             If the value could not be retrieved
      */
-    public static Object getJavaFieldValue(Object object,
-            java.lang.reflect.Field field) throws IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException {
+    public static Object getJavaFieldValue(Object object, java.lang.reflect.Field field)
+            throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());
@@ -134,12 +129,10 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Returns the value of the java field that is assignable to the property
-     * type.
+     * Returns the value of the java field that is assignable to the property type.
      * <p>
-     * Uses getter if a getter for the correct return type is present, otherwise
-     * tries to access even private fields directly. If the java field is not
-     * assignable to the property type throws an IllegalArgumentException.
+     * Uses getter if a getter for the correct return type is present, otherwise tries to access even private fields
+     * directly. If the java field is not assignable to the property type throws an IllegalArgumentException.
      *
      * @param object
      *            The object containing the field
@@ -155,10 +148,8 @@ public class ReflectTools implements Serializable {
      * @throws IllegalArgumentException
      *             If the value could not be retrieved
      */
-    public static Object getJavaFieldValue(Object object,
-            java.lang.reflect.Field field, Class<?> propertyType)
-            throws IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException {
+    public static Object getJavaFieldValue(Object object, java.lang.reflect.Field field, Class<?> propertyType)
+            throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());
@@ -195,8 +186,7 @@ public class ReflectTools implements Serializable {
      * @throws IllegalArgumentException
      *             If the value could not be assigned to the field
      */
-    public static void setJavaFieldValue(Object object,
-            java.lang.reflect.Field field, Object value)
+    public static void setJavaFieldValue(Object object, java.lang.reflect.Field field, Object value)
             throws IllegalArgumentException {
         // Try to set the value directly to the field or throw an exception
         if (!field.isAccessible()) {
@@ -207,18 +197,12 @@ public class ReflectTools implements Serializable {
             field.set(object, value);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    "Unable to assign the new value to the field "
-                            + field.getName() + " in "
-                            + object.getClass().getName()
-                            + ". Make sure the field type and value type are compatible.",
+                    "Unable to assign the new value to the field " + field.getName() + " in "
+                            + object.getClass().getName() + ". Make sure the field type and value type are compatible.",
                     e);
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(
-                    "Unable to assign the new value to the field "
-                            + field.getName() + " in "
-                            + object.getClass().getName()
-                            + ". Make sure the field is not final.",
-                    e);
+            throw new IllegalArgumentException("Unable to assign the new value to the field " + field.getName() + " in "
+                    + object.getClass().getName() + ". Make sure the field is not final.", e);
         }
     }
 
@@ -260,8 +244,7 @@ public class ReflectTools implements Serializable {
      *            the primitive type
      * @return the corresponding default value
      */
-    public static Serializable getPrimitiveDefaultValue(
-            Class<?> primitiveType) {
+    public static Serializable getPrimitiveDefaultValue(Class<?> primitiveType) {
         if (primitiveType.equals(int.class)) {
             return 0;
         } else if (primitiveType.equals(double.class)) {
@@ -279,68 +262,56 @@ public class ReflectTools implements Serializable {
         } else if (primitiveType.equals(long.class)) {
             return 0L;
         } else if (!primitiveType.isPrimitive()) {
-            throw new IllegalArgumentException(
-                    "Provided type " + primitiveType + " is not primitive");
+            throw new IllegalArgumentException("Provided type " + primitiveType + " is not primitive");
         }
-        throw new IllegalStateException(
-                "Unexpected primitive type: " + primitiveType);
+        throw new IllegalStateException("Unexpected primitive type: " + primitiveType);
     }
 
     /**
-     * Checks whether the given method is a valid setter according to the
-     * JavaBeans Specification.
+     * Checks whether the given method is a valid setter according to the JavaBeans Specification.
      *
      * @param method
      *            the method to check
-     * @return <code>true</code> if the method is a setter, <code>false</code>
-     *         if not
+     * @return <code>true</code> if the method is a setter, <code>false</code> if not
      */
     public static boolean isSetter(Method method) {
         final String methodName = method.getName();
         final Class<?> returnType = method.getReturnType();
         final Type[] argTypes = method.getParameterTypes();
 
-        return returnType == void.class && argTypes.length == 1
-                && isSetterName(methodName);
+        return returnType == void.class && argTypes.length == 1 && isSetterName(methodName);
     }
 
     /**
-     * Checks whether the given method name is a valid setter name according to
-     * the JavaBeans Specification.
+     * Checks whether the given method name is a valid setter name according to the JavaBeans Specification.
      *
      * @param methodName
      *            the method name to check
-     * @return <code>true</code> if the method name is a setter name,
-     *         <code>false</code> if not
+     * @return <code>true</code> if the method name is a setter name, <code>false</code> if not
      */
     public static boolean isSetterName(String methodName) {
         return SETTER_STARTS.matcher(methodName).find();
     }
 
     /**
-     * Checks whether the given method name is a valid getter name according to
-     * the JavaBeans Specification.
+     * Checks whether the given method name is a valid getter name according to the JavaBeans Specification.
      *
      * @param methodName
      *            the method name to check
      * @param isBoolean
      *            whether the method is getter for boolean type
-     * @return <code>true</code> if the method name is a getter name,
-     *         <code>false</code> if not
+     * @return <code>true</code> if the method name is a getter name, <code>false</code> if not
      */
     public static boolean isGetterName(String methodName, boolean isBoolean) {
-        return GETTER_STARTS.matcher(methodName).find()
-                || (IS_STARTS.matcher(methodName).find() && isBoolean);
+        return GETTER_STARTS.matcher(methodName).find() || (IS_STARTS.matcher(methodName).find() && isBoolean);
     }
 
     /**
-     * Checks whether the given method is a valid getter according to JavaBeans
-     * Specification.
+     * Checks whether the given method is a valid getter according to JavaBeans Specification.
      *
      * @param method
      *            the method to check
-     * @return <code>true</code> if the method is a getter, <code>false</code>
-     *         if not
+     * @return <code>true</code> if the method is a getter, <code>false</code> if not
      */
     public static boolean isGetter(Method method) {
         final String methodName = method.getName();
@@ -361,8 +332,7 @@ public class ReflectTools implements Serializable {
      * @return a stream of getter methods
      */
     public static Stream<Method> getGetterMethods(Class<?> type) {
-        return Stream.of(type.getMethods()).filter(IS_SYNTHETIC.negate())
-                .filter(ReflectTools::isGetter)
+        return Stream.of(type.getMethods()).filter(IS_SYNTHETIC.negate()).filter(ReflectTools::isGetter)
                 .filter(ReflectTools::isNotObjectMethod);
     }
 
@@ -374,18 +344,15 @@ public class ReflectTools implements Serializable {
      * @return a stream of setter methods
      */
     public static Stream<Method> getSetterMethods(Class<?> type) {
-        return Stream.of(type.getMethods()).filter(IS_SYNTHETIC.negate())
-                .filter(ReflectTools::isSetter);
+        return Stream.of(type.getMethods()).filter(IS_SYNTHETIC.negate()).filter(ReflectTools::isSetter);
     }
 
     /**
-     * Returns whether the given method is <b>NOT</b> declared in {@link Object}
-     * .
+     * Returns whether the given method is <b>NOT</b> declared in {@link Object} .
      *
      * @param method
      *            the method to check
-     * @return <code>true</code> if method is NOT declared in Object,
-     *         <code>false</code> if it is
+     * @return <code>true</code> if method is NOT declared in Object, <code>false</code> if it is
      */
     public static boolean isNotObjectMethod(Method method) {
         Class<?> declaringClass = method.getDeclaringClass();
@@ -395,8 +362,7 @@ public class ReflectTools implements Serializable {
     /**
      * Parses the property name from the given getter or setter method.
      * <p>
-     * If the given method does not have a valid setter or getter name, this
-     * method may produce unexpected results.
+     * If the given method does not have a valid setter or getter name, this method may produce unexpected results.
      *
      * @see #isSetter(Method)
      * @see #isGetter(Method)
@@ -406,11 +372,9 @@ public class ReflectTools implements Serializable {
      */
     public static String getPropertyName(Method method) {
         String methodName = method.getName();
-        assert isGetter(method) || isSetter(method)
-                : "Method is not a valid getter or setter: " + methodName;
+        assert isGetter(method) || isSetter(method) : "Method is not a valid getter or setter: " + methodName;
 
-        String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
-                .replaceFirst("");
+        String propertyName = SETTER_GETTER_STARTS.matcher(methodName).replaceFirst("");
         return SharedUtil.firstToLower(propertyName);
     }
 
@@ -425,8 +389,7 @@ public class ReflectTools implements Serializable {
      */
     public static Type getPropertyType(Method method) {
         if (!isGetter(method) && !isSetter(method)) {
-            throw new IllegalArgumentException(
-                    "Method is not a valid getter or setter: " + method);
+            throw new IllegalArgumentException("Method is not a valid getter or setter: " + method);
         }
         if (isGetter(method)) {
             return method.getGenericReturnType();
@@ -438,9 +401,8 @@ public class ReflectTools implements Serializable {
     /**
      * Creates an instance of the given class with a no-arg constructor.
      * <p>
-     * Catches all exceptions which might occur and wraps them in a
-     * {@link IllegalArgumentException} with a descriptive error message hinting
-     * of what might be wrong with the class that could not be instantiated.
+     * Catches all exceptions which might occur and wraps them in a {@link IllegalArgumentException} with a descriptive
+     * error message hinting of what might be wrong with the class that could not be instantiated.
      *
      * @param <T>
      *            the instance type
@@ -453,60 +415,50 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Creates an instance of the given {@code proxyClass} with no-arg
-     * constructor.
+     * Creates an instance of the given {@code proxyClass} with no-arg constructor.
      * <p>
-     * Catches all exceptions which might occur and wraps them in a
-     * {@link IllegalArgumentException} with a descriptive error message hinting
-     * of what might be wrong with the class that could not be instantiated.
-     * Descriptive message is derived based on the information about the
-     * {@code originalClass}.
+     * Catches all exceptions which might occur and wraps them in a {@link IllegalArgumentException} with a descriptive
+     * error message hinting of what might be wrong with the class that could not be instantiated. Descriptive message
+     * is derived based on the information about the {@code originalClass}.
      *
      * @param proxyClass
      *            the proxy class to instantiate
      * @param originalClass
-     *            the class that is used to determine exception description, if
-     *            creation fails
+     *            the class that is used to determine exception description, if creation fails
      * @param <T>
      *            type of a proxy class
      * @return instance of a proxyClass
      * @throws IllegalArgumentException
      *             if class instance creation fails
      */
-    public static <T> T createProxyInstance(Class<T> proxyClass,
-            Class<?> originalClass) {
+    public static <T> T createProxyInstance(Class<T> proxyClass, Class<?> originalClass) {
         checkClassAccessibility(originalClass);
         try {
-            Optional<Constructor<?>> constructor = Stream
-                    .of(proxyClass.getConstructors())
+            Optional<Constructor<?>> constructor = Stream.of(proxyClass.getConstructors())
                     .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
             if (constructor.isPresent()) {
                 return proxyClass.cast(constructor.get().newInstance());
             }
 
-            constructor = Stream.of(proxyClass.getConstructors())
-                    .filter(ctor -> ctor.getParameterCount() == 1)
+            constructor = Stream.of(proxyClass.getConstructors()).filter(ctor -> ctor.getParameterCount() == 1)
                     .filter(ctor -> ctor.isVarArgs()).findFirst();
             if (constructor.isPresent()) {
                 Class<?> paramType = constructor.get().getParameterTypes()[0];
 
-                return proxyClass.cast(constructor.get().newInstance(
-                        Array.newInstance(paramType.getComponentType(), 0)));
+                return proxyClass
+                        .cast(constructor.get().newInstance(Array.newInstance(paramType.getComponentType(), 0)));
             }
         } catch (Exception e) {
             throw convertInstantiationException(e, originalClass);
         }
-        throw new IllegalArgumentException(String.format(
-                CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
-                originalClass.getName()));
+        throw new IllegalArgumentException(
+                String.format(CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR, originalClass.getName()));
     }
 
     /**
-     * Helper to handle all exceptions which might occur during class
-     * instantiation and returns an {@link IllegalArgumentException} with a
-     * descriptive error message hinting of what might be wrong with the class
-     * that could not be instantiated. Descriptive message is derived based on
-     * the information about the {@code clazz}.
+     * Helper to handle all exceptions which might occur during class instantiation and returns an
+     * {@link IllegalArgumentException} with a descriptive error message hinting of what might be wrong with the class
+     * that could not be instantiated. Descriptive message is derived based on the information about the {@code clazz}.
      *
      * @param exception
      *            original exception
@@ -514,55 +466,41 @@ public class ReflectTools implements Serializable {
      *            instantiation target class
      * @return an IllegalArgumentException with descriptive message
      */
-    public static IllegalArgumentException convertInstantiationException(
-            Exception exception, Class<?> clazz) {
+    public static IllegalArgumentException convertInstantiationException(Exception exception, Class<?> clazz) {
         if (exception instanceof InstantiationException) {
-            if (clazz.isMemberClass()
-                    && !Modifier.isStatic(clazz.getModifiers())) {
-                return new IllegalArgumentException(String.format(
-                        CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
-                        clazz.getName()), exception);
-            } else {
+            if (clazz.isMemberClass() && !Modifier.isStatic(clazz.getModifiers())) {
                 return new IllegalArgumentException(
-                        String.format(CREATE_INSTANCE_FAILED, clazz.getName()),
-                        exception);
+                        String.format(CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS, clazz.getName()), exception);
+            } else {
+                return new IllegalArgumentException(String.format(CREATE_INSTANCE_FAILED, clazz.getName()), exception);
             }
         } else if (exception instanceof IllegalAccessException) {
-            return new IllegalArgumentException(
-                    String.format(CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION,
-                            clazz.getName()),
+            return new IllegalArgumentException(String.format(CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION, clazz.getName()),
                     exception);
         } else if (exception instanceof IllegalArgumentException) {
-            return new IllegalArgumentException(
-                    String.format(CREATE_INSTANCE_FAILED, clazz.getName()),
-                    exception);
+            return new IllegalArgumentException(String.format(CREATE_INSTANCE_FAILED, clazz.getName()), exception);
         } else if (exception instanceof InvocationTargetException) {
-            return new IllegalArgumentException(String.format(
-                    CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
-                    clazz.getName()), exception);
+            return new IllegalArgumentException(
+                    String.format(CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION, clazz.getName()), exception);
         }
 
-        return new IllegalArgumentException(String.format(
-                CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
-                clazz.getName()));
+        return new IllegalArgumentException(
+                String.format(CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR, clazz.getName()));
     }
 
     /**
-     * Makes a check whether the {@code clazz} is externally accessible for
-     * instantiation (e.g. it's not inner class (nested and not static) and is
-     * not a local class).
+     * Makes a check whether the {@code clazz} is externally accessible for instantiation (e.g. it's not inner class
+     * (nested and not static) and is not a local class).
      *
      * @param clazz
      *            type to check
      */
     public static void checkClassAccessibility(Class<?> clazz) {
         if (clazz.isMemberClass() && !Modifier.isStatic(clazz.getModifiers())) {
-            throw new IllegalArgumentException(String.format(
-                    CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
-                    clazz.getName()));
+            throw new IllegalArgumentException(
+                    String.format(CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS, clazz.getName()));
         } else if (clazz.isLocalClass()) {
-            throw new IllegalArgumentException(String.format(
-                    CREATE_INSTANCE_FAILED_LOCAL_CLASS, clazz.getName()));
+            throw new IllegalArgumentException(String.format(CREATE_INSTANCE_FAILED_LOCAL_CLASS, clazz.getName()));
         }
     }
 
@@ -596,8 +534,7 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Finds the Class type for the generic interface class extended by given
-     * class if exists.
+     * Finds the Class type for the generic interface class extended by given class if exists.
      *
      * @param clazz
      *            class that should extend interface
@@ -605,10 +542,8 @@ public class ReflectTools implements Serializable {
      *            class type of interface to get generic for
      * @return Class if found else {@code null}
      */
-    public static Class<?> getGenericInterfaceType(Class<?> clazz,
-            Class<?> interfaceType) {
-        Type type = GenericTypeReflector.getTypeParameter(clazz,
-                interfaceType.getTypeParameters()[0]);
+    public static Class<?> getGenericInterfaceType(Class<?> clazz, Class<?> interfaceType) {
+        Type type = GenericTypeReflector.getTypeParameter(clazz, interfaceType.getTypeParameters()[0]);
 
         if (type instanceof Class || type instanceof ParameterizedType) {
             return GenericTypeReflector.erase(type);
@@ -617,8 +552,7 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Finds the Class type for all parameters defined by the generic interface
-     * class extended by given class if exists.
+     * Finds the Class type for all parameters defined by the generic interface class extended by given class if exists.
      *
      * @param clazz
      *            class that should extend interface
@@ -626,14 +560,10 @@ public class ReflectTools implements Serializable {
      *            class type of interface to get generic for
      * @return List of Class if found else empty List, never {@literal null}
      */
-    public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
-            Class<?> interfaceType) {
+    public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz, Class<?> interfaceType) {
         return Stream.of(interfaceType.getTypeParameters())
-                .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz,
-                        typeParam))
-                .map(type -> {
-                    if (type instanceof Class
-                            || type instanceof ParameterizedType) {
+                .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz, typeParam)).map(type -> {
+                    if (type instanceof Class || type instanceof ParameterizedType) {
                         return GenericTypeReflector.erase(type);
                     }
                     return null;
@@ -647,19 +577,14 @@ public class ReflectTools implements Serializable {
      *            the bean type, not <code>null</code>
      * @param propertyName
      *            the property name, not <code>null</code>
-     * @return a getter method, or an empty optional if the bean type has no
-     *         readable property with the provided name
+     * @return a getter method, or an empty optional if the bean type has no readable property with the provided name
      */
-    public static Optional<Method> getGetter(Class<? extends Object> beanClass,
-            String propertyName) {
+    public static Optional<Method> getGetter(Class<? extends Object> beanClass, String propertyName) {
         /*
-         * Iterating all methods is no worse than what Class.getMethod
-         * internally does, but in this way we don't have to deal with any
-         * exceptions.
+         * Iterating all methods is no worse than what Class.getMethod internally does, but in this way we don't have to
+         * deal with any exceptions.
          */
-        return getGetterMethods(beanClass)
-                .filter(method -> propertyName.equals(getPropertyName(method)))
-                .findFirst();
+        return getGetterMethods(beanClass).filter(method -> propertyName.equals(getPropertyName(method))).findFirst();
     }
 
     /**
@@ -667,8 +592,7 @@ public class ReflectTools implements Serializable {
      *
      * @param exceptionClass
      *            the class to check
-     * @return <code>true</code> if the class represents a checked exception,
-     *         false otherwise
+     * @return <code>true</code> if the class represents a checked exception, false otherwise
      */
     public static boolean isCheckedException(Class<?> exceptionClass) {
         return !RuntimeException.class.isAssignableFrom(exceptionClass)
@@ -676,8 +600,7 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Get the functional interface method name defined for given interface
-     * class.
+     * Get the functional interface method name defined for given interface class.
      *
      * @param functionalClass
      *            interface class to get the functional method for
@@ -691,16 +614,14 @@ public class ReflectTools implements Serializable {
             return methods[0];
         }
         List<Method> filteredMethods = Stream.of(methods)
-                .filter(method -> !Modifier.isStatic(method.getModifiers())
-                        && !method.isDefault())
+                .filter(method -> !Modifier.isStatic(method.getModifiers()) && !method.isDefault())
                 .collect(Collectors.toList());
         assert filteredMethods.size() == 1;
         return filteredMethods.get(0);
     }
 
     /**
-     * Collect all the integer values for public static final constants found
-     * for the given class.
+     * Collect all the integer values for public static final constants found for the given class.
      *
      * @param clazz
      *            class to collect constants from
@@ -716,12 +637,10 @@ public class ReflectTools implements Serializable {
                 } catch (IllegalAccessException e) {
                     // Ignore this exception. Public fields should always be
                     // accessible.
-                    String msg = String.format(
-                            "Received access exception for public field '%s' in class '%s'",
+                    String msg = String.format("Received access exception for public field '%s' in class '%s'",
                             field.getName(), clazz.getSimpleName());
                     assert false : msg;
-                    LoggerFactory.getLogger(ReflectTools.class.getName())
-                            .warn(msg, e);
+                    LoggerFactory.getLogger(ReflectTools.class.getName()).warn(msg, e);
                 }
             }
         }
@@ -770,24 +689,21 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Finds the common ancestor of the two {@code ClassLoaders}. The class
-     * loaders themselves are acceptable ancestors; If they are equal, {@code
-     * classLoaderA} is returned. An empty optional is returned if the two class
-     * loaders aren't equal, no shared ancestor is found, or the implementation
-     * of the class loader treats bootstrap class loader as {@code null} when it
-     * is the parent of a class loaders (see {@link ClassLoader#getParent()}.
+     * Finds the common ancestor of the two {@code ClassLoaders}. The class loaders themselves are acceptable ancestors;
+     * If they are equal, {@code
+     * classLoaderA} is returned. An empty optional is returned if the two class loaders aren't equal, no shared
+     * ancestor is found, or the implementation of the class loader treats bootstrap class loader as {@code null} when
+     * it is the parent of a class loaders (see {@link ClassLoader#getParent()}.
      *
      * @param classLoaderA
      *            class loader A
      * @param classLoaderB
      *            class loader B
-     * @return a common ancestor both class loaders share, or an empty optional
-     *         if there is no shared ancestor. Or if the implementation treats
-     *         bootstrap loaders as {@code null} (as per
-     *         {@link ClassLoader#getParent()}).
+     * @return a common ancestor both class loaders share, or an empty optional if there is no shared ancestor. Or if
+     *         the implementation treats bootstrap loaders as {@code null} (as per {@link ClassLoader#getParent()}).
      */
-    public static Optional<ClassLoader> findClosestCommonClassLoaderAncestor(
-            ClassLoader classLoaderA, ClassLoader classLoaderB) {
+    public static Optional<ClassLoader> findClosestCommonClassLoaderAncestor(ClassLoader classLoaderA,
+            ClassLoader classLoaderB) {
         if (classLoaderA == null || classLoaderB == null) {
             return Optional.empty();
         }
@@ -815,36 +731,32 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Checks whether the {@code element} has annotation whose FQN is
-     * {@code annotationFqn}.
+     * Checks whether the {@code element} has annotation whose FQN is {@code annotationFqn}.
      *
      * @param element
      *            annotated element (field, method, etc.)
      * @param annotationFqn
      *            annotation FQN
-     * @return {@code true} is {@code element} has annotation whose FQN is
-     *         {@code annotationFqn}, {@code false} otherwise
+     * @return {@code true} is {@code element} has annotation whose FQN is {@code annotationFqn}, {@code false}
+     *         otherwise
      */
-    public static boolean hasAnnotation(AnnotatedElement element,
-            String annotationFqn) {
+    public static boolean hasAnnotation(AnnotatedElement element, String annotationFqn) {
         return getAnnotation(element, annotationFqn).isPresent();
     }
 
     /**
-     * Checks whether the {@code element} has annotation whose simple name is
-     * {@code simpleName}.
+     * Checks whether the {@code element} has annotation whose simple name is {@code simpleName}.
      *
      * @param element
      *            annotated element (field, method, etc.)
      * @param simpleName
      *            annotation simple name
-     * @return {@code true} is {@code element} has annotation whose simple name
-     *         is {@code simpleName}, {@code false} otherwise
+     * @return {@code true} is {@code element} has annotation whose simple name is {@code simpleName}, {@code false}
+     *         otherwise
      */
-    public static boolean hasAnnotationWithSimpleName(AnnotatedElement element,
-            String simpleName) {
-        return Stream.of(element.getAnnotations()).anyMatch(anno -> simpleName
-                .equals(anno.annotationType().getSimpleName()));
+    public static boolean hasAnnotationWithSimpleName(AnnotatedElement element, String simpleName) {
+        return Stream.of(element.getAnnotations())
+                .anyMatch(anno -> simpleName.equals(anno.annotationType().getSimpleName()));
     }
 
     /**
@@ -854,21 +766,17 @@ public class ReflectTools implements Serializable {
      *            the annotation
      * @param methodName
      *            the method name
-     * @return an optional value, or an empty optional if element has no
-     *         annotation with required {@code annotationFqn}
+     * @return an optional value, or an empty optional if element has no annotation with required {@code annotationFqn}
      */
-    public static Object getAnnotationMethodValue(Annotation annotation,
-            String methodName) {
+    public static Object getAnnotationMethodValue(Annotation annotation, String methodName) {
         try {
-            Method method = annotation.annotationType()
-                    .getDeclaredMethod(methodName);
+            Method method = annotation.annotationType().getDeclaredMethod(methodName);
             return method.invoke(annotation);
-        } catch (NoSuchMethodException | SecurityException
-                | IllegalAccessException | IllegalArgumentException
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
-            throw new IllegalArgumentException("Couldn't invoke the method "
-                    + methodName + " on the annotation "
-                    + annotation.annotationType(), e);
+            throw new IllegalArgumentException(
+                    "Couldn't invoke the method " + methodName + " on the annotation " + annotation.annotationType(),
+                    e);
         }
     }
 
@@ -879,11 +787,10 @@ public class ReflectTools implements Serializable {
      *            annotated element (field, method, etc.)
      * @param annotationFqn
      *            annotation FQN
-     * @return an optional annotation, or an empty optional if element has no
-     *         annotation with required {@code annotationFqn}
+     * @return an optional annotation, or an empty optional if element has no annotation with required
+     *         {@code annotationFqn}
      */
-    public static Optional<Annotation> getAnnotation(AnnotatedElement element,
-            String annotationFqn) {
+    public static Optional<Annotation> getAnnotation(AnnotatedElement element, String annotationFqn) {
         for (Annotation annotation : element.getAnnotations()) {
             if (annotation.annotationType().getName().equals(annotationFqn)) {
                 return Optional.of(annotation);
@@ -893,8 +800,7 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Check if a class can be instantiated via its default constructor via
-     * reflection.
+     * Check if a class can be instantiated via its default constructor via reflection.
      *
      * @param clazz
      *            the class to check
@@ -913,15 +819,12 @@ public class ReflectTools implements Serializable {
         if (!Modifier.isPublic(clazz.getModifiers())) {
             return false;
         }
-        Optional<Constructor<?>> constructor = Stream
-                .of(clazz.getConstructors())
+        Optional<Constructor<?>> constructor = Stream.of(clazz.getConstructors())
                 .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
-        if (!constructor.isPresent()
-                || !Modifier.isPublic(constructor.get().getModifiers())) {
+        if (!constructor.isPresent() || !Modifier.isPublic(constructor.get().getModifiers())) {
             return false;
         }
-        if (clazz.getEnclosingClass() != null
-                && !Modifier.isStatic(clazz.getModifiers())) {
+        if (clazz.getEnclosingClass() != null && !Modifier.isStatic(clazz.getModifiers())) {
             return false;
         }
         return true;
@@ -931,8 +834,7 @@ public class ReflectTools implements Serializable {
         List<Field> staticFinalFields = new ArrayList<>();
         Field[] declaredFields = staticFields.getDeclaredFields();
         for (Field field : declaredFields) {
-            if (Modifier.isStatic(field.getModifiers())
-                    && Modifier.isFinal(field.getModifiers())
+            if (Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers())
                     && Modifier.isPublic(field.getModifiers())) {
                 staticFinalFields.add(field);
             }

@@ -30,11 +30,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Abstract test class that contains the common tests for all generic data view
- * component's implementations, i.e. which extends {@link AbstractDataView} and
- * doesn't contain an in-memory or lazy specific API. Concrete implementations
- * of this class should provide a particular component to be tested as a
- * {@link HasDataView} implementation.
+ * Abstract test class that contains the common tests for all generic data view component's implementations, i.e. which
+ * extends {@link AbstractDataView} and doesn't contain an in-memory or lazy specific API. Concrete implementations of
+ * this class should provide a particular component to be tested as a {@link HasDataView} implementation.
  */
 public abstract class AbstractComponentDataViewTest {
 
@@ -54,33 +52,29 @@ public abstract class AbstractComponentDataViewTest {
     @Test
     public void getItems_noFiltersSet_allItemsObtained() {
         Stream<String> allItems = dataView.getItems();
-        Assert.assertArrayEquals("Unexpected data set", items.toArray(),
-                allItems.toArray());
+        Assert.assertArrayEquals("Unexpected data set", items.toArray(), allItems.toArray());
     }
 
     @Test
     public void getItems_filtersSet_filteredItemsObtained() {
         dataProvider.setFilter(item -> item.equals("first"));
-        Assert.assertArrayEquals("Unexpected data set after filtering",
-                new String[] { "first" }, dataView.getItems().toArray());
+        Assert.assertArrayEquals("Unexpected data set after filtering", new String[] { "first" },
+                dataView.getItems().toArray());
     }
 
     @Test
     public void getItems_sortingSet_sortedItemsObtained() {
         dataProvider.setSortComparator(String::compareToIgnoreCase);
-        Assert.assertArrayEquals("Unexpected items sorting",
-                new String[] { "first", "last", "middle" },
+        Assert.assertArrayEquals("Unexpected items sorting", new String[] { "first", "last", "middle" },
                 dataView.getItems().toArray());
     }
 
     @Test
     public void addItemCountChangeListener_fireEvent_listenerNotified() {
         AtomicInteger fired = new AtomicInteger(0);
-        dataView.addItemCountChangeListener(
-                event -> fired.compareAndSet(0, event.getItemCount()));
+        dataView.addItemCountChangeListener(event -> fired.compareAndSet(0, event.getItemCount()));
 
-        ComponentUtil.fireEvent((Component) component,
-                new ItemCountChangeEvent<>((Component) component, 10, false));
+        ComponentUtil.fireEvent((Component) component, new ItemCountChangeEvent<>((Component) component, 10, false));
 
         Assert.assertEquals(10, fired.get());
     }
@@ -92,8 +86,7 @@ public abstract class AbstractComponentDataViewTest {
         if (component instanceof Component) {
             return component;
         }
-        throw new IllegalArgumentException(String.format(
-                "Component subclass is expected, but was given a '%s'",
+        throw new IllegalArgumentException(String.format("Component subclass is expected, but was given a '%s'",
                 component.getClass().getSimpleName()));
     }
 

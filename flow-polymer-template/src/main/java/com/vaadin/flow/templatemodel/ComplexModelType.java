@@ -20,24 +20,19 @@ import com.vaadin.flow.internal.StateNode;
  *
  * @param <T>
  *            the proxy type used by this type
- * @deprecated Template model and model types are not supported for lit
- *             template, but you can use {@code @Id} mapping and the component
- *             API or the element API with property synchronization instead.
- *             Polymer template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Template model and model types are not supported for lit template, but you can use {@code @Id} mapping
+ *             and the component API or the element API with property synchronization instead. Polymer template support
+ *             is deprecated - we recommend you to use {@code LitTemplate} instead. Read more details from
+ *             <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  */
 @Deprecated
 public interface ComplexModelType<T> extends ModelType {
 
     @Override
-    StateNode applicationToModel(Object applicationValue,
-            PropertyFilter filter);
+    StateNode applicationToModel(Object applicationValue, PropertyFilter filter);
 
     /**
-     * Checks that this type uses the provided proxy type and returns this type
-     * as a model type with that proxy type.
+     * Checks that this type uses the provided proxy type and returns this type as a model type with that proxy type.
      *
      * @param <C>
      *            the proxy type

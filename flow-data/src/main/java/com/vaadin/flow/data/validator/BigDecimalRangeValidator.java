@@ -28,12 +28,10 @@ import java.util.Comparator;
 public class BigDecimalRangeValidator extends RangeValidator<BigDecimal> {
 
     /**
-     * Creates a validator for checking that an BigDecimal is within a given
-     * range.
+     * Creates a validator for checking that an BigDecimal is within a given range.
      *
-     * By default the range is inclusive i.e. both minValue and maxValue are
-     * valid values. Use {@link #setMinValueIncluded(boolean)} or
-     * {@link #setMaxValueIncluded(boolean)} to change it.
+     * By default the range is inclusive i.e. both minValue and maxValue are valid values. Use
+     * {@link #setMinValueIncluded(boolean)} or {@link #setMaxValueIncluded(boolean)} to change it.
      *
      *
      * @param errorMessage
@@ -43,8 +41,7 @@ public class BigDecimalRangeValidator extends RangeValidator<BigDecimal> {
      * @param maxValue
      *            The maximum value to accept or null for no limit
      */
-    public BigDecimalRangeValidator(String errorMessage, BigDecimal minValue,
-            BigDecimal maxValue) {
+    public BigDecimalRangeValidator(String errorMessage, BigDecimal minValue, BigDecimal maxValue) {
         super(errorMessage, Comparator.naturalOrder(), minValue, maxValue);
     }
 

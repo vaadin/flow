@@ -71,18 +71,13 @@ public class TemplateModelListProxyTest {
         assertListClearedNormally(list);
     }
 
-    private static void assertListClearedNormally(
-            TemplateModelListProxy<?> list) {
+    private static void assertListClearedNormally(TemplateModelListProxy<?> list) {
         list.clear();
-        Assert.assertThat(
-                "List should be of size 0, since we've called clear()",
-                list.size(), is(0));
+        Assert.assertThat("List should be of size 0, since we've called clear()", list.size(), is(0));
     }
 
-    private static <T> TemplateModelListProxy<T> createModelListProxy(
-            Class<T> proxyClass) {
+    private static <T> TemplateModelListProxy<T> createModelListProxy(Class<T> proxyClass) {
         return new TemplateModelListProxy<>(new StateNode(ModelList.class),
-                new BeanModelType<>(proxyClass, PropertyFilter.ACCEPT_ALL,
-                        false));
+                new BeanModelType<>(proxyClass, PropertyFilter.ACCEPT_ALL, false));
     }
 }

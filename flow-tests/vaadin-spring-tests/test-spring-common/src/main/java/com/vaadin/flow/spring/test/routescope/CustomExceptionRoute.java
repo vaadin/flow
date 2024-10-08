@@ -24,8 +24,7 @@ import com.vaadin.flow.spring.annotation.RouteScopeOwner;
 @Route("throw-exception")
 public class CustomExceptionRoute extends Div {
 
-    public CustomExceptionRoute(
-            @Autowired @RouteScopeOwner(CustomExceptionRoute.class) CustomExceptionBean bean) {
+    public CustomExceptionRoute(@Autowired @RouteScopeOwner(CustomExceptionRoute.class) CustomExceptionBean bean) {
         throw new CustomException();
     }
 

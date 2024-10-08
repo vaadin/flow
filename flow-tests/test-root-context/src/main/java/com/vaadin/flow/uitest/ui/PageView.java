@@ -48,11 +48,9 @@ public class PageView extends AbstractDivView {
             getPage().reload();
         });
 
-        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest
-                .getCurrent();
+        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest.getCurrent();
         HttpServletRequest httpServletRequest = request.getHttpServletRequest();
-        String url = httpServletRequest.getRequestURI().replace(
-                PageView.class.getName(), BaseHrefView.class.getName());
+        String url = httpServletRequest.getRequestURI().replace(PageView.class.getName(), BaseHrefView.class.getName());
 
         Div setLocationButton = new Div();
         setLocationButton.setId("setLocation");
@@ -72,12 +70,10 @@ public class PageView extends AbstractDivView {
         openButton2.setText("Open url in an IFrame");
         openButton2.addClickListener(e -> getPage().open(url, "newWindow"));
 
-        add(input, updateButton, overrideButton, reloadButton,
-                setLocationButton, openButton, openButton2, frame);
+        add(input, updateButton, overrideButton, reloadButton, setLocationButton, openButton, openButton2, frame);
         add(new NativeButton("page.fetchURL", onClickEvent -> {
             getUI().ifPresent(ui -> ui.getPage().fetchCurrentURL(currentUrl -> {
-                LoggerFactory.getLogger(PageView.class.getName())
-                        .info(currentUrl.toString());
+                LoggerFactory.getLogger(PageView.class.getName()).info(currentUrl.toString());
             }));
         }));
 
@@ -88,23 +84,20 @@ public class PageView extends AbstractDivView {
         Div fetchDirectionButton = new Div();
         fetchDirectionButton.setId("fetch-direction");
         fetchDirectionButton.setText("Fetch Page Direction");
-        fetchDirectionButton.addClickListener(
-                e -> getUI().ifPresent(ui -> ui.getPage().fetchPageDirection(
-                        direction -> directionLbl.setText(direction.name()))));
+        fetchDirectionButton.addClickListener(e -> getUI()
+                .ifPresent(ui -> ui.getPage().fetchPageDirection(direction -> directionLbl.setText(direction.name()))));
         add(fetchDirectionButton);
 
         Div setRTLDirectionButton = new Div();
         setRTLDirectionButton.setId("set-RTL-direction");
         setRTLDirectionButton.setText("Set RTL Direction");
-        setRTLDirectionButton.addClickListener(e -> getUI()
-                .ifPresent(ui -> ui.setDirection(Direction.RIGHT_TO_LEFT)));
+        setRTLDirectionButton.addClickListener(e -> getUI().ifPresent(ui -> ui.setDirection(Direction.RIGHT_TO_LEFT)));
         add(setRTLDirectionButton);
 
         Div setLTRDirectionButton = new Div();
         setLTRDirectionButton.setId("set-LTR-direction");
         setLTRDirectionButton.setText("Set LTR Direction");
-        setLTRDirectionButton.addClickListener(e -> getUI()
-                .ifPresent(ui -> ui.setDirection(Direction.LEFT_TO_RIGHT)));
+        setLTRDirectionButton.addClickListener(e -> getUI().ifPresent(ui -> ui.setDirection(Direction.LEFT_TO_RIGHT)));
         add(setLTRDirectionButton);
     }
 

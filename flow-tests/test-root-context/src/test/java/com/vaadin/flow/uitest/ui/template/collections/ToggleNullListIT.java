@@ -14,13 +14,12 @@ public class ToggleNullListIT extends ChromeBrowserTest {
     public void shouldBeToggledWithNoClientErrors() {
         open();
 
-        WebElement toggleButton = findElement(
-                By.id(ToggleNullListView.TOGGLE_BUTTON_ID));
+        WebElement toggleButton = findElement(By.id(ToggleNullListView.TOGGLE_BUTTON_ID));
 
         for (int i = 0; i < 100; i++) {
-            assertFalse(String.format(
-                    "Failed %s the template with null list in the model after '%s' button click(s)",
-                    i % 2 == 0 ? "attaching" : "reattaching", i),
+            assertFalse(
+                    String.format("Failed %s the template with null list in the model after '%s' button click(s)",
+                            i % 2 == 0 ? "attaching" : "reattaching", i),
                     isElementPresent(By.className("v-system-error")));
             toggleButton.click();
         }

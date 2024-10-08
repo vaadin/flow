@@ -29,9 +29,7 @@ public class BasicComponent extends Div {
         }
 
         @Override
-        protected void configureInstance(
-                WebComponent<BasicComponent> webComponent,
-                BasicComponent component) {
+        protected void configureInstance(WebComponent<BasicComponent> webComponent, BasicComponent component) {
         }
     }
 

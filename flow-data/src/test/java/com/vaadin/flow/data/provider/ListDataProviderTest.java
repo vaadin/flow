@@ -26,8 +26,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.function.SerializableComparator;
 
-public class ListDataProviderTest
-        extends DataProviderTestBase<ListDataProvider<StrBean>> {
+public class ListDataProviderTest extends DataProviderTestBase<ListDataProvider<StrBean>> {
 
     @Override
     protected ListDataProvider<StrBean> createDataProvider() {
@@ -40,8 +39,7 @@ public class ListDataProviderTest
 
         dataProvider.setSortOrder(StrBean::getId, SortDirection.ASCENDING);
 
-        int[] threeFirstIds = dataProvider.fetch(new Query<>())
-                .mapToInt(StrBean::getId).limit(3).toArray();
+        int[] threeFirstIds = dataProvider.fetch(new Query<>()).mapToInt(StrBean::getId).limit(3).toArray();
 
         Assert.assertArrayEquals(new int[] { 0, 1, 2 }, threeFirstIds);
     }
@@ -52,8 +50,7 @@ public class ListDataProviderTest
 
         dataProvider.setSortOrder(StrBean::getId, SortDirection.DESCENDING);
 
-        int[] threeFirstIds = dataProvider.fetch(new Query<>())
-                .mapToInt(StrBean::getId).limit(3).toArray();
+        int[] threeFirstIds = dataProvider.fetch(new Query<>()).mapToInt(StrBean::getId).limit(3).toArray();
 
         Assert.assertArrayEquals(new int[] { 98, 97, 96 }, threeFirstIds);
     }
@@ -65,12 +62,10 @@ public class ListDataProviderTest
         dataProvider.addSortOrder(StrBean::getValue, SortDirection.DESCENDING);
         dataProvider.addSortOrder(StrBean::getId, SortDirection.DESCENDING);
 
-        List<StrBean> threeFirstItems = dataProvider.fetch(new Query<>())
-                .limit(3).collect(Collectors.toList());
+        List<StrBean> threeFirstItems = dataProvider.fetch(new Query<>()).limit(3).collect(Collectors.toList());
 
         // First one is Xyz
-        Assert.assertEquals(new StrBean("Xyz", 10, 100),
-                threeFirstItems.get(0));
+        Assert.assertEquals(new StrBean("Xyz", 10, 100), threeFirstItems.get(0));
         // The following are Foos ordered by id
         Assert.assertEquals(new StrBean("Foo", 93, 2), threeFirstItems.get(1));
         Assert.assertEquals(new StrBean("Foo", 91, 2), threeFirstItems.get(2));
@@ -84,14 +79,11 @@ public class ListDataProviderTest
 
         dataProvider.setFilter(item -> !item.getValue().equals("Foo"));
 
-        Assert.assertEquals(
-                "Previous filter should be reset when setting a new one", 64,
-                sizeWithUnfilteredQuery());
+        Assert.assertEquals("Previous filter should be reset when setting a new one", 64, sizeWithUnfilteredQuery());
 
         dataProvider.setFilter(null);
 
-        Assert.assertEquals("Setting filter to null should remove all filters",
-                100, sizeWithUnfilteredQuery());
+        Assert.assertEquals("Setting filter to null should remove all filters", 100, sizeWithUnfilteredQuery());
     }
 
     @Test
@@ -100,12 +92,9 @@ public class ListDataProviderTest
 
         Assert.assertEquals(36, sizeWithUnfilteredQuery());
 
-        dataProvider.setFilter(StrBean::getValue,
-                value -> !value.equals("Foo"));
+        dataProvider.setFilter(StrBean::getValue, value -> !value.equals("Foo"));
 
-        Assert.assertEquals(
-                "Previous filter should be reset when setting a new one", 64,
-                sizeWithUnfilteredQuery());
+        Assert.assertEquals("Previous filter should be reset when setting a new one", 64, sizeWithUnfilteredQuery());
     }
 
     @Test
@@ -125,8 +114,7 @@ public class ListDataProviderTest
 
         dataProvider.addFilter(item -> item.getId() > 50);
 
-        Assert.assertEquals("Both filters should be used", 17,
-                sizeWithUnfilteredQuery());
+        Assert.assertEquals("Both filters should be used", 17, sizeWithUnfilteredQuery());
     }
 
     @Test
@@ -142,8 +130,7 @@ public class ListDataProviderTest
 
         dataProvider.addFilter(StrBean::getValue, "Foo"::equals);
 
-        Assert.assertEquals("Both filters should be used", 17,
-                sizeWithUnfilteredQuery());
+        Assert.assertEquals("Both filters should be used", 17, sizeWithUnfilteredQuery());
     }
 
     @Test
@@ -152,8 +139,7 @@ public class ListDataProviderTest
 
         dataProvider.addFilterByValue(StrBean::getValue, "Foo");
 
-        Assert.assertEquals("Both filters should be used", 17,
-                sizeWithUnfilteredQuery());
+        Assert.assertEquals("Both filters should be used", 17, sizeWithUnfilteredQuery());
     }
 
     @Test
@@ -190,24 +176,22 @@ public class ListDataProviderTest
 
     @Test
     public void filteringBy_itemPredicate() {
-        DataProvider<StrBean, String> filteringBy = dataProvider.filteringBy(
-                (item, filterValue) -> item.getValue().equals(filterValue));
+        DataProvider<StrBean, String> filteringBy = dataProvider
+                .filteringBy((item, filterValue) -> item.getValue().equals(filterValue));
 
         assertSizeWithFilter(36, filteringBy, "Foo");
     }
 
     @Test
     public void filteringBy_equals() {
-        DataProvider<StrBean, String> filteringBy = dataProvider
-                .filteringByEquals(StrBean::getValue);
+        DataProvider<StrBean, String> filteringBy = dataProvider.filteringByEquals(StrBean::getValue);
 
         assertSizeWithFilter(36, filteringBy, "Foo");
     }
 
     @Test
     public void filteringBy_propertyValuePredicate() {
-        DataProvider<StrBean, Integer> filteringBy = dataProvider.filteringBy(
-                StrBean::getId,
+        DataProvider<StrBean, Integer> filteringBy = dataProvider.filteringBy(StrBean::getId,
                 (propertyValue, filterValue) -> propertyValue >= filterValue);
 
         assertSizeWithFilter(90, filteringBy, 10);
@@ -215,8 +199,8 @@ public class ListDataProviderTest
 
     @Test
     public void filteringBy_caseInsensitiveSubstring() {
-        DataProvider<StrBean, String> filteringBy = dataProvider
-                .filteringBySubstring(StrBean::getValue, Locale.ENGLISH);
+        DataProvider<StrBean, String> filteringBy = dataProvider.filteringBySubstring(StrBean::getValue,
+                Locale.ENGLISH);
 
         assertSizeWithFilter(36, filteringBy, "oo");
         assertSizeWithFilter(36, filteringBy, "Oo");
@@ -224,8 +208,7 @@ public class ListDataProviderTest
 
     @Test
     public void filterBy_caseInsensitivePrefix() {
-        DataProvider<StrBean, String> filteringBy = dataProvider
-                .filteringByPrefix(StrBean::getValue, Locale.ENGLISH);
+        DataProvider<StrBean, String> filteringBy = dataProvider.filteringByPrefix(StrBean::getValue, Locale.ENGLISH);
 
         assertSizeWithFilter(36, filteringBy, "Fo");
         assertSizeWithFilter(36, filteringBy, "fo");
@@ -233,8 +216,7 @@ public class ListDataProviderTest
     }
 
     @Override
-    protected void setSortOrder(List<QuerySortOrder> sortOrder,
-            Comparator<StrBean> comp) {
+    protected void setSortOrder(List<QuerySortOrder> sortOrder, Comparator<StrBean> comp) {
         SerializableComparator<StrBean> serializableComp = comp::compare;
         getDataProvider().setSortComparator(serializableComp);
     }

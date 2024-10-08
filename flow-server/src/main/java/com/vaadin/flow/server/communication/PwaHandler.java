@@ -53,8 +53,7 @@ public class PwaHandler implements RequestHandler {
     public static final String SW_RUNTIME_PRECACHE_PATH = "/sw-runtime-resources-precache.js";
     public static final String DEFAULT_OFFLINE_STUB_PATH = "offline-stub.html";
 
-    private final Map<String, RequestHandler> requestHandlerMap = Collections
-            .synchronizedMap(new HashMap<>());
+    private final Map<String, RequestHandler> requestHandlerMap = Collections.synchronizedMap(new HashMap<>());
     private final SerializableSupplier<PwaRegistry> pwaRegistryGetter;
 
     private boolean isInitialized;
@@ -73,31 +72,27 @@ public class PwaHandler implements RequestHandler {
     private void init(PwaRegistry pwaRegistry) {
         // Icon handling
         for (PwaIcon icon : pwaRegistry.getIcons()) {
-            requestHandlerMap.put(icon.getRelHref(),
-                    (session, request, response) -> {
-                        response.setContentType(icon.getType());
-                        // Icon is cached with service worker, deny browser
-                        // caching
-                        if (icon.shouldBeCached()) {
-                            response.setHeader("Cache-Control",
-                                    "no-cache, must-revalidate");
-                        }
-                        try (OutputStream out = response.getOutputStream()) {
-                            icon.write(out);
-                        } catch (UncheckedIOException ex) {
-                            LoggerFactory.getLogger(PwaHandler.class)
-                                    .debug("Error serving PWA icon", ex);
-                        }
-                        return true;
-                    });
+            requestHandlerMap.put(icon.getRelHref(), (session, request, response) -> {
+                response.setContentType(icon.getType());
+                // Icon is cached with service worker, deny browser
+                // caching
+                if (icon.shouldBeCached()) {
+                    response.setHeader("Cache-Control", "no-cache, must-revalidate");
+                }
+                try (OutputStream out = response.getOutputStream()) {
+                    icon.write(out);
+                } catch (UncheckedIOException ex) {
+                    LoggerFactory.getLogger(PwaHandler.class).debug("Error serving PWA icon", ex);
+                }
+                return true;
+            });
         }
 
         // Assume that offline page and offline stub (for display within app)
         // are the same. This may change in the future.
         List<String> offlinePaths = new ArrayList<>();
         if (pwaRegistry.getPwaConfiguration().isOfflinePathEnabled()) {
-            offlinePaths
-                    .add(pwaRegistry.getPwaConfiguration().relOfflinePath());
+            offlinePaths.add(pwaRegistry.getPwaConfiguration().relOfflinePath());
         }
         offlinePaths.add("/" + DEFAULT_OFFLINE_STUB_PATH);
         for (String offlinePath : offlinePaths) {
@@ -111,35 +106,30 @@ public class PwaHandler implements RequestHandler {
         }
 
         // manifest.webmanifest handling
-        requestHandlerMap.put(
-                pwaRegistry.getPwaConfiguration().relManifestPath(),
-                (session, request, response) -> {
-                    response.setContentType(
-                            "application/manifest+json;charset=utf-8");
-                    try (PrintWriter writer = response.getWriter()) {
-                        writer.write(pwaRegistry.getManifestJson());
-                    }
-                    return true;
-                });
+        requestHandlerMap.put(pwaRegistry.getPwaConfiguration().relManifestPath(), (session, request, response) -> {
+            response.setContentType("application/manifest+json;charset=utf-8");
+            try (PrintWriter writer = response.getWriter()) {
+                writer.write(pwaRegistry.getManifestJson());
+            }
+            return true;
+        });
 
         // sw-runtime.js handling (service worker import for precaching runtime
         // generated assets)
-        requestHandlerMap.put(SW_RUNTIME_PRECACHE_PATH,
-                (session, request, response) -> {
-                    response.setContentType("application/javascript");
-                    try (PrintWriter writer = response.getWriter()) {
-                        writer.write(pwaRegistry.getRuntimeServiceWorkerJs());
-                    }
-                    return true;
-                });
+        requestHandlerMap.put(SW_RUNTIME_PRECACHE_PATH, (session, request, response) -> {
+            response.setContentType("application/javascript");
+            try (PrintWriter writer = response.getWriter()) {
+                writer.write(pwaRegistry.getRuntimeServiceWorkerJs());
+            }
+            return true;
+        });
     }
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinSession session, VaadinRequest request, VaadinResponse response)
+            throws IOException {
         PwaRegistry pwaRegistry = pwaRegistryGetter.get();
-        boolean hasPwa = pwaRegistry != null
-                && pwaRegistry.getPwaConfiguration().isEnabled();
+        boolean hasPwa = pwaRegistry != null && pwaRegistry.getPwaConfiguration().isEnabled();
         RequestHandler handler = null;
         synchronized (requestHandlerMap) {
             if (hasPwa) {

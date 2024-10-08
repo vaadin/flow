@@ -25,8 +25,8 @@ import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
 /**
- * An in-memory data provider for listing components that display hierarchical
- * data. Uses an instance of {@link TreeData} as its source of data.
+ * An in-memory data provider for listing components that display hierarchical data. Uses an instance of
+ * {@link TreeData} as its source of data.
  *
  * @author Vaadin Ltd
  * @since 1.2
@@ -34,8 +34,7 @@ import com.vaadin.flow.function.SerializablePredicate;
  * @param <T>
  *            data type
  */
-public class TreeDataProvider<T>
-        extends AbstractHierarchicalDataProvider<T, SerializablePredicate<T>>
+public class TreeDataProvider<T> extends AbstractHierarchicalDataProvider<T, SerializablePredicate<T>>
         implements InMemoryDataProvider<T> {
 
     private final TreeData<T> treeData;
@@ -47,12 +46,10 @@ public class TreeDataProvider<T>
     /**
      * Constructs a new TreeDataProvider.
      * <p>
-     * This data provider should be refreshed after making changes to the
-     * underlying {@link TreeData} instance.
+     * This data provider should be refreshed after making changes to the underlying {@link TreeData} instance.
      *
      * @param treeData
-     *            the backing {@link TreeData} for this provider, not
-     *            {@code null}
+     *            the backing {@link TreeData} for this provider, not {@code null}
      */
     public TreeDataProvider(TreeData<T> treeData) {
         Objects.requireNonNull(treeData, "treeData cannot be null");
@@ -78,8 +75,7 @@ public class TreeDataProvider<T>
     }
 
     @Override
-    public int getChildCount(
-            HierarchicalQuery<T, SerializablePredicate<T>> query) {
+    public int getChildCount(HierarchicalQuery<T, SerializablePredicate<T>> query) {
         Stream<T> items;
 
         if (query.getParent() != null) {
@@ -88,27 +84,21 @@ public class TreeDataProvider<T>
             items = treeData.getRootItems().stream();
         }
 
-        return (int) getFilteredStream(items, query.getFilter())
-                .skip(query.getOffset()).limit(query.getLimit()).count();
+        return (int) getFilteredStream(items, query.getFilter()).skip(query.getOffset()).limit(query.getLimit())
+                .count();
     }
 
     @Override
-    public Stream<T> fetchChildren(
-            HierarchicalQuery<T, SerializablePredicate<T>> query) {
+    public Stream<T> fetchChildren(HierarchicalQuery<T, SerializablePredicate<T>> query) {
         if (!treeData.contains(query.getParent())) {
-            throw new IllegalArgumentException("The queried item "
-                    + query.getParent()
-                    + " could not be found in the backing TreeData. "
-                    + "Did you forget to refresh this data provider after item removal?");
+            throw new IllegalArgumentException(
+                    "The queried item " + query.getParent() + " could not be found in the backing TreeData. "
+                            + "Did you forget to refresh this data provider after item removal?");
         }
 
-        Stream<T> childStream = getFilteredStream(
-                treeData.getChildren(query.getParent()).stream(),
-                query.getFilter());
+        Stream<T> childStream = getFilteredStream(treeData.getChildren(query.getParent()).stream(), query.getFilter());
 
-        Optional<Comparator<T>> comparing = Stream
-                .of(query.getInMemorySorting(), sortOrder)
-                .filter(Objects::nonNull)
+        Optional<Comparator<T>> comparing = Stream.of(query.getInMemorySorting(), sortOrder).filter(Objects::nonNull)
                 .reduce((c1, c2) -> c1.thenComparing(c2));
 
         if (comparing.isPresent()) {
@@ -140,18 +130,14 @@ public class TreeDataProvider<T>
         refreshAll();
     }
 
-    private Stream<T> getFilteredStream(Stream<T> stream,
-            Optional<SerializablePredicate<T>> queryFilter) {
+    private Stream<T> getFilteredStream(Stream<T> stream, Optional<SerializablePredicate<T>> queryFilter) {
         final Optional<SerializablePredicate<T>> combinedFilter = filter != null
                 ? Optional.of(queryFilter.map(filter::and).orElse(filter))
                 : queryFilter;
-        return combinedFilter.map(
-                f -> stream.filter(element -> flatten(element).anyMatch(f)))
-                .orElse(stream);
+        return combinedFilter.map(f -> stream.filter(element -> flatten(element).anyMatch(f))).orElse(stream);
     }
 
     private Stream<T> flatten(T element) {
-        return Stream.concat(Stream.of(element), getTreeData()
-                .getChildren(element).stream().flatMap(this::flatten));
+        return Stream.concat(Stream.of(element), getTreeData().getChildren(element).stream().flatMap(this::flatten));
     }
 }

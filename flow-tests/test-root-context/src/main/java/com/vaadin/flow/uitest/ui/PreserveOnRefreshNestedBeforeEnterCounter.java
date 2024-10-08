@@ -5,8 +5,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 
-public class PreserveOnRefreshNestedBeforeEnterCounter extends Div
-        implements BeforeEnterObserver {
+public class PreserveOnRefreshNestedBeforeEnterCounter extends Div implements BeforeEnterObserver {
     private int beforeEnterCount = 0;
     private final Span count = new Span();
 

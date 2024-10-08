@@ -10,7 +10,6 @@ import com.vaadin.flow.router.Route;
 @JsModule("@testscope/all")
 public class MainView extends Div {
     public MainView() {
-        add(new H2("Hello world!"), new HtmlComponent("testscope-button"),
-                new HtmlComponent("testscope-map"));
+        add(new H2("Hello world!"), new HtmlComponent("testscope-button"), new HtmlComponent("testscope-map"));
     }
 }

@@ -12,8 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public interface FileRouterRequestUtil {
     /**
-     * Checks if the request corresponds to a Hilla route and, if so, applies
-     * the corresponding access control.
+     * Checks if the request corresponds to a Hilla route and, if so, applies the corresponding access control.
      *
      * @param request
      *            the HTTP request to check

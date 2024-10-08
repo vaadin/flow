@@ -29,19 +29,16 @@ import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Marks that an annotated component implicitly uses another component. This
- * will ensure that any dependencies of the used component are also loaded.
+ * Marks that an annotated component implicitly uses another component. This will ensure that any dependencies of the
+ * used component are also loaded.
  * <p>
- * Marking class A with <code>@Uses(B.class)</code> will ensure all
- * {@link StyleSheet}, {@link JavaScript} dependencies for class <code>B</code>
- * are loaded when class <code>A</code> is used.
+ * Marking class A with <code>@Uses(B.class)</code> will ensure all {@link StyleSheet}, {@link JavaScript} dependencies
+ * for class <code>B</code> are loaded when class <code>A</code> is used.
  * <p>
- * For {@code PolymerTemplate} implementations, used components will also be
- * instantiated if an element with the corresponding {@link Tag @Tag} value is
- * defined in the template. Note that Polymer template support is deprecated -
+ * For {@code PolymerTemplate} implementations, used components will also be instantiated if an element with the
+ * corresponding {@link Tag @Tag} value is defined in the template. Note that Polymer template support is deprecated -
  * we recommend you to use {@code LitTemplate} instead. Read more details from
- * <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- * Vaadin blog.</a>
+ * <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  *
  *
  * @author Vaadin Ltd

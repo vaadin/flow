@@ -38,15 +38,12 @@ import com.vaadin.flow.internal.StateNode;
  * @author Vaadin Ltd
  * @since 1.0
  *
- * @deprecated Polymer template support is deprecated - we recommend you to use
- *             {@code LitTemplate} instead. Read more details from <a href=
- *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
- *             Vaadin blog.</a>
+ * @deprecated Polymer template support is deprecated - we recommend you to use {@code LitTemplate} instead. Read more
+ *             details from <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the Vaadin blog.</a>
  *
  */
 @Deprecated
-public class PolymerServerEventHandlers
-        extends AbstractServerHandlers<DeprecatedPolymerTemplate> {
+public class PolymerServerEventHandlers extends AbstractServerHandlers<DeprecatedPolymerTemplate> {
     private static final String VALUE = "value";
 
     private static final String REPEAT_INDEX_VALUE = "event.model.index";
@@ -73,9 +70,7 @@ public class PolymerServerEventHandlers
 
     @Override
     protected void ensureSupportedParameterTypes(Method method) {
-        Stream.of(method.getParameters())
-                .forEach(parameter -> checkParameterTypeAndAnnotation(method,
-                        parameter));
+        Stream.of(method.getParameters()).forEach(parameter -> checkParameterTypeAndAnnotation(method, parameter));
     }
 
     @Override
@@ -85,36 +80,28 @@ public class PolymerServerEventHandlers
 
     @Override
     protected DisabledUpdateMode getUpdateMode(Method method) {
-        Optional<Annotation> annotation = ReflectTools.getAnnotation(method,
-                getHandlerAnnotationFqn());
+        Optional<Annotation> annotation = ReflectTools.getAnnotation(method, getHandlerAnnotationFqn());
         assert annotation.isPresent();
-        Object value = ReflectTools.getAnnotationMethodValue(annotation.get(),
-                VALUE);
+        Object value = ReflectTools.getAnnotationMethodValue(annotation.get(), VALUE);
         return DisabledUpdateMode.valueOf(value.toString());
     }
 
-    private void checkParameterTypeAndAnnotation(Method method,
-            Parameter parameter) {
-        boolean hasEventDataAnnotation = parameter
-                .isAnnotationPresent(EventData.class)
+    private void checkParameterTypeAndAnnotation(Method method, Parameter parameter) {
+        boolean hasEventDataAnnotation = parameter.isAnnotationPresent(EventData.class)
                 || ReflectTools.hasAnnotation(parameter, MODEL_ITEM_FQN);
-        boolean hasRepeatIndexAnnotation = ReflectTools.hasAnnotation(parameter,
-                REPEAT_INDEX_FQN);
+        boolean hasRepeatIndexAnnotation = ReflectTools.hasAnnotation(parameter, REPEAT_INDEX_FQN);
 
-        if (!Boolean.logicalXor(hasEventDataAnnotation,
-                hasRepeatIndexAnnotation)) {
+        if (!Boolean.logicalXor(hasEventDataAnnotation, hasRepeatIndexAnnotation)) {
             throw new IllegalStateException(String.format(
                     "EventHandler method '%s' should have the parameter with index %s annotated either with @EventData annotation (to get any particular data from the event)"
                             + " or have 'int' or 'Integer' type and be annotated with @RepeatIndex annotation (to get element index in dom-repeat)",
                     method.getName(), getParameterIndex(parameter)));
         } else if (!hasEventDataAnnotation) {
             Class<?> parameterType = parameter.getType();
-            if (!parameterType.equals(int.class)
-                    && !parameterType.equals(Integer.class)) {
+            if (!parameterType.equals(int.class) && !parameterType.equals(Integer.class)) {
                 throw new IllegalStateException(String.format(
                         "EventHandler method '%s' has parameter with index %s, annotated with @RepeatIndex that has incorrect type '%s', should be 'int' or 'Integer'",
-                        method.getName(), getParameterIndex(parameter),
-                        parameterType));
+                        method.getName(), getParameterIndex(parameter), parameterType));
             }
         }
     }
@@ -124,8 +111,7 @@ public class PolymerServerEventHandlers
     }
 
     private void addMethodParameters(Method method) {
-        getNode().getFeature(PolymerEventListenerMap.class)
-                .add(method.getName(), getParameters(method));
+        getNode().getFeature(PolymerEventListenerMap.class).add(method.getName(), getParameters(method));
     }
 
     private String[] getParameters(Method method) {
@@ -138,12 +124,9 @@ public class PolymerServerEventHandlers
             if (ReflectTools.hasAnnotation(parameter, REPEAT_INDEX_FQN)) {
                 result.add(REPEAT_INDEX_VALUE);
             }
-            Optional<Annotation> annotation = ReflectTools
-                    .getAnnotation(parameter, MODEL_ITEM_FQN);
+            Optional<Annotation> annotation = ReflectTools.getAnnotation(parameter, MODEL_ITEM_FQN);
             if (annotation.isPresent()) {
-                result.add(ReflectTools
-                        .getAnnotationMethodValue(annotation.get(), VALUE)
-                        .toString());
+                result.add(ReflectTools.getAnnotationMethodValue(annotation.get(), VALUE).toString());
             }
         }
         return result.toArray(new String[result.size()]);

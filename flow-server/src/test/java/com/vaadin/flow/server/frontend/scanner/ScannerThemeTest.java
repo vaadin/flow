@@ -40,8 +40,7 @@ public class ScannerThemeTest {
 
     @Test
     public void should_takeThemeFromTheView() {
-        FrontendDependencies deps = getFrontendDependencies(
-                RootViewWithTheme.class);
+        FrontendDependencies deps = getFrontendDependencies(RootViewWithTheme.class);
 
         assertEquals(Theme4.class, deps.getThemeDefinition().getTheme());
 
@@ -54,8 +53,7 @@ public class ScannerThemeTest {
 
     @Test
     public void should_takeThemeFromLayout() {
-        FrontendDependencies deps = getFrontendDependencies(
-                RootViewWithLayoutTheme.class);
+        FrontendDependencies deps = getFrontendDependencies(RootViewWithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
         assertEquals(Theme1.DARK, deps.getThemeDefinition().getVariant());
 
@@ -81,8 +79,7 @@ public class ScannerThemeTest {
     @Test
     public void should_throw_when_MultipleThemes() {
         exception.expect(IllegalStateException.class);
-        getFrontendDependencies(RootViewWithMultipleTheme.class,
-                FirstView.class);
+        getFrontendDependencies(RootViewWithMultipleTheme.class, FirstView.class);
     }
 
     @Test
@@ -92,11 +89,10 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_visitDefaultTheme_when_noThemeAnnotationIsGiven()
-            throws Exception {
+    public void should_visitDefaultTheme_when_noThemeAnnotationIsGiven() throws Exception {
 
-        DefaultClassFinder finder = spy(new DefaultClassFinder(
-                Collections.singleton(RootViewWithoutThemeAnnotation.class)));
+        DefaultClassFinder finder = spy(
+                new DefaultClassFinder(Collections.singleton(RootViewWithoutThemeAnnotation.class)));
 
         // we'll do a partial mock here since we want to keep the other
         // behavior of the DefaultClassFinder. Theme4 is used as a fake Lumo
@@ -105,50 +101,41 @@ public class ScannerThemeTest {
 
         FrontendDependencies deps = new FrontendDependencies(finder) {
             @Override
-            Class<? extends AbstractTheme> getDefaultTheme()
-                    throws IOException {
+            Class<? extends AbstractTheme> getDefaultTheme() throws IOException {
                 return Theme4.class;
             }
         };
 
-        assertEquals(
-                "Theme4 should have been returned when default theme was selected",
-                Theme4.class, deps.getThemeDefinition().getTheme());
+        assertEquals("Theme4 should have been returned when default theme was selected", Theme4.class,
+                deps.getThemeDefinition().getTheme());
         DepsTests.assertImportsExcludingUI(deps.getModules(), "./theme-4.js");
     }
 
     @Test
     public void should_takeThemeFromExporter_when_exporterFound() {
-        FrontendDependencies deps = getFrontendDependencies(
-                ThemeExporter.class);
+        FrontendDependencies deps = getFrontendDependencies(ThemeExporter.class);
 
         assertEquals(Theme2.class, deps.getThemeDefinition().getTheme());
     }
 
     @Test
-    public void should_defaultToLumoTheme_when_noThemeDefinedByExporter()
-            throws Exception {
+    public void should_defaultToLumoTheme_when_noThemeDefinedByExporter() throws Exception {
         // RootViewWithTheme is added to the list just to make sure exporter
         // handles theming default, not the other crawlers
-        DefaultClassFinder finder = spy(new DefaultClassFinder(
-                new HashSet<>(Arrays.asList(NoThemeExporter.class,
-                        RootViewWithTheme.class))));
+        DefaultClassFinder finder = spy(
+                new DefaultClassFinder(new HashSet<>(Arrays.asList(NoThemeExporter.class, RootViewWithTheme.class))));
 
-        Mockito.doReturn(Theme4.class).when(finder)
-                .loadClass(FrontendDependencies.LUMO);
+        Mockito.doReturn(Theme4.class).when(finder).loadClass(FrontendDependencies.LUMO);
 
         FrontendDependencies deps = new FrontendDependencies(finder);
-        assertEquals(
-                "Theme4 should have been returned when default theme was selected",
-                Theme4.class, deps.getThemeDefinition().getTheme());
+        assertEquals("Theme4 should have been returned when default theme was selected", Theme4.class,
+                deps.getThemeDefinition().getTheme());
         DepsTests.assertImportsExcludingUI(deps.getModules(), "./theme-4.js");
     }
 
     @Test // flow#5715
-    public void should_notAttemptToOverrideTheme_when_noExportersFound()
-            throws ClassNotFoundException {
-        DefaultClassFinder finder = spy(new DefaultClassFinder(
-                Collections.singleton(RootViewWithTheme.class)));
+    public void should_notAttemptToOverrideTheme_when_noExportersFound() throws ClassNotFoundException {
+        DefaultClassFinder finder = spy(new DefaultClassFinder(Collections.singleton(RootViewWithTheme.class)));
 
         new FrontendDependencies(finder);
         verify(finder, times(0)).loadClass(FrontendDependencies.LUMO);
@@ -158,8 +145,8 @@ public class ScannerThemeTest {
     public void should_takeThemeFromLayout_ifLayoutAlreadyVisited() {
         // Make sure that all entry-points sharing layouts are correctly
         // theming-configured
-        FrontendDependencies deps = getFrontendDependencies(
-                RootViewWithLayoutTheme.class, RootView2WithLayoutTheme.class);
+        FrontendDependencies deps = getFrontendDependencies(RootViewWithLayoutTheme.class,
+                RootView2WithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
     }
 }

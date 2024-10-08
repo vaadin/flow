@@ -48,29 +48,22 @@ public class OneWayPolymerBindingIT extends ChromeBrowserTest {
     }
 
     private void checkInitialState(TestBenchElement template) {
-        String messageDivText = template.$(TestBenchElement.class)
-                .id("messageDiv").getText();
-        String titleDivText = template.$(TestBenchElement.class).id("titleDiv")
-                .getText();
+        String messageDivText = template.$(TestBenchElement.class).id("messageDiv").getText();
+        String titleDivText = template.$(TestBenchElement.class).id("titleDiv").getText();
         Assert.assertEquals(OneWayPolymerBindingView.MESSAGE, messageDivText);
         Assert.assertEquals("", titleDivText);
     }
 
     private void checkTemplateModel(TestBenchElement template) {
-        assertTrue(template.$(TestBenchElement.class)
-                .attribute("id", "titleDivConditional").all().size() > 0);
-        Assert.assertEquals(0, template.$(TestBenchElement.class)
-                .attribute("id", "nonExistingProperty").all().size());
+        assertTrue(template.$(TestBenchElement.class).attribute("id", "titleDivConditional").all().size() > 0);
+        Assert.assertEquals(0, template.$(TestBenchElement.class).attribute("id", "nonExistingProperty").all().size());
     }
 
     private void checkStateAfterClick(TestBenchElement template) {
-        String changedMessageDivText = template.$(TestBenchElement.class)
-                .id("messageDiv").getText();
-        String titleDivText = template.$(TestBenchElement.class).id("titleDiv")
-                .getText();
+        String changedMessageDivText = template.$(TestBenchElement.class).id("messageDiv").getText();
+        String titleDivText = template.$(TestBenchElement.class).id("titleDiv").getText();
 
-        Assert.assertEquals(OneWayPolymerBindingView.NEW_MESSAGE,
-                changedMessageDivText);
+        Assert.assertEquals(OneWayPolymerBindingView.NEW_MESSAGE, changedMessageDivText);
         Assert.assertEquals("", titleDivText);
     }
 }

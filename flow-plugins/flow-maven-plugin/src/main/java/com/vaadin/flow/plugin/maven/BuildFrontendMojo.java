@@ -49,22 +49,18 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
  *
  * It performs the following actions when creating a package:
  * <ul>
- * <li>Update {@link Constants#PACKAGE_JSON} file with the {@link NpmPackage}
- * annotations defined in the classpath,</li>
- * <li>Copy resource files used by flow from `.jar` files to the `node_modules`
- * folder</li>
+ * <li>Update {@link Constants#PACKAGE_JSON} file with the {@link NpmPackage} annotations defined in the classpath,</li>
+ * <li>Copy resource files used by flow from `.jar` files to the `node_modules` folder</li>
  * <li>Install dependencies by running <code>npm install</code></li>
- * <li>Update the {@link FrontendUtils#IMPORTS_NAME} file imports with the
- * {@link JsModule} {@link Theme} and {@link JavaScript} annotations defined in
- * the classpath,</li>
+ * <li>Update the {@link FrontendUtils#IMPORTS_NAME} file imports with the {@link JsModule} {@link Theme} and
+ * {@link JavaScript} annotations defined in the classpath,</li>
  * <li>Update {@link FrontendUtils#VITE_CONFIG} file.</li>
  * </ul>
  *
  * @since 2.0
  */
 @Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
-public class BuildFrontendMojo extends FlowModeAbstractMojo
-        implements PluginAdapterBuild {
+public class BuildFrontendMojo extends FlowModeAbstractMojo implements PluginAdapterBuild {
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
@@ -79,53 +75,46 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     private boolean runNpmInstall;
 
     /**
-     * Whether to generate embeddable web components from WebComponentExporter
-     * inheritors.
+     * Whether to generate embeddable web components from WebComponentExporter inheritors.
      */
     @Parameter(defaultValue = "true")
     private boolean generateEmbeddableWebComponents;
 
     /**
-     * Defines the project frontend directory from where resources should be
-     * copied from for use with the frontend build tool.
+     * Defines the project frontend directory from where resources should be copied from for use with the frontend build
+     * tool.
      */
-    @Parameter(defaultValue = "${project.basedir}/"
-            + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
+    @Parameter(defaultValue = "${project.basedir}/" + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     private File frontendResourcesDirectory;
 
     /**
-     * Whether to use byte code scanner strategy to discover frontend
-     * components.
+     * Whether to use byte code scanner strategy to discover frontend components.
      */
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
     /**
-     * Setting this to true will run {@code npm ci} instead of
-     * {@code npm install} when using npm.
+     * Setting this to true will run {@code npm ci} instead of {@code npm install} when using npm.
      *
-     * If using pnpm, the install will be run with {@code --frozen-lockfile}
-     * parameter.
+     * If using pnpm, the install will be run with {@code --frozen-lockfile} parameter.
      *
-     * This makes sure that the versions in package lock file will not be
-     * overwritten and production builds are reproducible.
+     * This makes sure that the versions in package lock file will not be overwritten and production builds are
+     * reproducible.
      */
     @Parameter(property = InitParameters.CI_BUILD, defaultValue = "false")
     private boolean ciBuild;
 
     /**
-     * Setting this to {@code true} will force a build of the production build
-     * even if there is a default production bundle that could be used.
+     * Setting this to {@code true} will force a build of the production build even if there is a default production
+     * bundle that could be used.
      *
-     * Created production bundle optimization is defined by
-     * {@link #optimizeBundle} parameter.
+     * Created production bundle optimization is defined by {@link #optimizeBundle} parameter.
      */
     @Parameter(property = InitParameters.FORCE_PRODUCTION_BUILD, defaultValue = "false")
     private boolean forceProductionBuild;
 
     /**
-     * Control cleaning of generated frontend files when executing
-     * 'build-frontend'.
+     * Control cleaning of generated frontend files when executing 'build-frontend'.
      *
      * Mainly this is wanted to be true which it is by default.
      */
@@ -136,26 +125,22 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
-        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(
-                npmFolder(), frontendDirectory(), getClassFinder());
+        TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(npmFolder(), frontendDirectory(),
+                getClassFinder());
         try {
             BuildFrontendUtil.runNodeUpdater(this);
         } catch (ExecutionFailedException | URISyntaxException exception) {
-            throw new MojoFailureException(
-                    "Could not execute build-frontend goal", exception);
+            throw new MojoFailureException("Could not execute build-frontend goal", exception);
         }
 
-        if (generateBundle() && BundleValidationUtil
-                .needsBundleBuild(servletResourceOutputDirectory())) {
+        if (generateBundle() && BundleValidationUtil.needsBundleBuild(servletResourceOutputDirectory())) {
             try {
                 BuildFrontendUtil.runFrontendBuild(this);
                 if (cleanFrontendFiles()) {
                     cleanTask.execute();
                 }
-            } catch (URISyntaxException | TimeoutException
-                    | ExecutionFailedException exception) {
-                throw new MojoExecutionException(exception.getMessage(),
-                        exception);
+            } catch (URISyntaxException | TimeoutException | ExecutionFailedException exception) {
+                throw new MojoExecutionException(exception.getMessage(), exception);
             }
         }
         LicenseChecker.setStrictOffline(true);
@@ -168,24 +153,21 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     }
 
     /**
-     * Define if frontend files generated by bundle build should be cleaned or
-     * not.
+     * Define if frontend files generated by bundle build should be cleaned or not.
      * <p>
-     * The targeted frontend files are files that do not exist when
-     * build-frontend target is executed.
+     * The targeted frontend files are files that do not exist when build-frontend target is executed.
      * <p>
-     * Extending mojo can override this method to return false so that any
-     * frontend files created for the bundle build are not removed.
+     * Extending mojo can override this method to return false so that any frontend files created for the bundle build
+     * are not removed.
      *
      * @return {@code true} to remove created files, {@code false} to keep files
      */
     protected boolean cleanFrontendFiles() {
         if (isHillaUsed(frontendDirectory())) {
             /*
-             * Override this to not clean generated frontend files after the
-             * build. For Hilla, the generated files can still be useful for
-             * developers after the build. For example, a developer can use
-             * {@code vite.generated.ts} to run tests with vitest in CI.
+             * Override this to not clean generated frontend files after the build. For Hilla, the generated files can
+             * still be useful for developers after the build. For example, a developer can use {@code
+             * vite.generated.ts} to run tests with vitest in CI.
              */
             return false;
         }
@@ -247,38 +229,32 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             };
         }
 
-        List<Artifact> deps = project.getArtifacts().stream()
-                .filter(artifact -> groupId.equals(artifact.getGroupId())
-                        && artifactId.equals(artifact.getArtifactId()))
+        List<Artifact> deps = project.getArtifacts().stream().filter(
+                artifact -> groupId.equals(artifact.getGroupId()) && artifactId.equals(artifact.getArtifactId()))
                 .toList();
         if (deps.isEmpty()) {
-            missingDependencyMessage.accept(String.format(
-                    """
-                            The dependency %1$s:%2$s has not been found in the project configuration.
-                            Please add the following dependency to your POM file:
+            missingDependencyMessage.accept(String.format("""
+                    The dependency %1$s:%2$s has not been found in the project configuration.
+                    Please add the following dependency to your POM file:
 
-                            <dependency>
-                                <groupId>%1$s</groupId>
-                                <artifactId>%2$s</artifactId>
-                                <scope>runtime</scope>
-                            </dependency>
-                            """,
-                    groupId, artifactId));
+                    <dependency>
+                        <groupId>%1$s</groupId>
+                        <artifactId>%2$s</artifactId>
+                        <scope>runtime</scope>
+                    </dependency>
+                    """, groupId, artifactId));
             return false;
-        } else if (deps.stream().noneMatch(artifact -> !artifact.isOptional()
-                && artifact.getArtifactHandler().isAddedToClasspath()
-                && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
-                        || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
-                        || Artifact.SCOPE_RUNTIME
-                                .equals(artifact.getScope())))) {
-            missingDependencyMessage.accept(String.format(
-                    """
-                            The dependency %1$s:%2$s has been found in the project configuration,
-                            but with a scope that does not guarantee its presence at runtime.
-                            Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
-                            To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
-                            """,
-                    groupId, artifactId));
+        } else if (deps.stream()
+                .noneMatch(artifact -> !artifact.isOptional() && artifact.getArtifactHandler().isAddedToClasspath()
+                        && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
+                                || Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+                                || Artifact.SCOPE_RUNTIME.equals(artifact.getScope())))) {
+            missingDependencyMessage.accept(String.format("""
+                    The dependency %1$s:%2$s has been found in the project configuration,
+                    but with a scope that does not guarantee its presence at runtime.
+                    Please check that the dependency has 'compile', 'provided' or 'runtime' scope.
+                    To check the current dependency scope, you can run 'mvn dependency:tree -Dincludes=%1$s:%2$s'
+                    """, groupId, artifactId));
             return false;
         }
         return true;

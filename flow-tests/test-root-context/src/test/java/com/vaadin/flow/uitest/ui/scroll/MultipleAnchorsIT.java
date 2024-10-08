@@ -35,8 +35,7 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
 
         int anchorIndex = 0;
         while (anchorIndex < MultipleAnchorsView.NUMBER_OF_ANCHORS) {
-            clickElementWithJs(
-                    MultipleAnchorsView.ANCHOR_URL_ID_BASE + anchorIndex);
+            clickElementWithJs(MultipleAnchorsView.ANCHOR_URL_ID_BASE + anchorIndex);
             verifyAnchor(anchorIndex);
             anchorIndex++;
         }
@@ -44,8 +43,7 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
         assertThat(
                 "Browser history length should be increased by number of anchor urls="
                         + MultipleAnchorsView.NUMBER_OF_ANCHORS,
-                getBrowserHistoryLength(), is(initialHistoryLength
-                        + MultipleAnchorsView.NUMBER_OF_ANCHORS));
+                getBrowserHistoryLength(), is(initialHistoryLength + MultipleAnchorsView.NUMBER_OF_ANCHORS));
 
         anchorIndex--;
 
@@ -66,30 +64,24 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
         final int indexToClick = 2;
 
         for (int i = 0; i < 10; i++) {
-            clickElementWithJs(
-                    MultipleAnchorsView.ANCHOR_URL_ID_BASE + indexToClick);
+            clickElementWithJs(MultipleAnchorsView.ANCHOR_URL_ID_BASE + indexToClick);
             verifyAnchor(indexToClick);
         }
 
-        assertThat(
-                "Browser history length should be increased by 1 (number of different anchor urls used)",
+        assertThat("Browser history length should be increased by 1 (number of different anchor urls used)",
                 getBrowserHistoryLength(), is(initialHistoryLength + 1));
 
         driver.navigate().back();
-        assertThat("Expected to have initialUrl", driver.getCurrentUrl(),
-                is(initialUrl));
+        assertThat("Expected to have initialUrl", driver.getCurrentUrl(), is(initialUrl));
         ensureThatNewPageIsNotScrolled();
     }
 
     private void verifyAnchor(int idNumber) {
-        Point anchorElementLocation = findElement(
-                By.id(MultipleAnchorsView.ANCHOR_DIV_ID_BASE + idNumber))
+        Point anchorElementLocation = findElement(By.id(MultipleAnchorsView.ANCHOR_DIV_ID_BASE + idNumber))
                 .getLocation();
-        assertThat("Expected url to change to anchor one",
-                driver.getCurrentUrl(),
+        assertThat("Expected url to change to anchor one", driver.getCurrentUrl(),
                 endsWith(MultipleAnchorsView.ANCHOR_URL_BASE + idNumber));
-        checkPageScroll(anchorElementLocation.getX(),
-                anchorElementLocation.getY());
+        checkPageScroll(anchorElementLocation.getX(), anchorElementLocation.getY());
     }
 
     private Long getBrowserHistoryLength() {

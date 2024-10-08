@@ -34,8 +34,7 @@ import elemental.json.JsonObject;
  * @param <T>
  *            the type of the items in the node list
  */
-public class ListClearChange<T extends Serializable>
-        extends AbstractListChange<T> {
+public class ListClearChange<T extends Serializable> extends AbstractListChange<T> {
 
     /**
      * Creates a new list clear change.

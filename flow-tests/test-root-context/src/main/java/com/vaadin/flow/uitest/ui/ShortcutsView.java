@@ -68,10 +68,7 @@ public class ShortcutsView extends Div {
             actual.setValue("toggled!");
         }, Key.KEY_I, KeyModifier.ALT);
 
-        Shortcuts
-                .addShortcutListener(invisibleP,
-                        () -> actual.setValue("invisibleP"), Key.KEY_V)
-                .withAlt();
+        Shortcuts.addShortcutListener(invisibleP, () -> actual.setValue("invisibleP"), Key.KEY_V).withAlt();
 
         add(button, input, invisibleP);
 
@@ -81,8 +78,7 @@ public class ShortcutsView extends Div {
             actual.setValue("DISABLED CLICKED");
             disabledButton.setEnabled(false);
         });
-        disabledButton.addClickShortcut(Key.KEY_U, KeyModifier.SHIFT,
-                KeyModifier.CONTROL);
+        disabledButton.addClickShortcut(Key.KEY_U, KeyModifier.SHIFT, KeyModifier.CONTROL);
 
         add(disabledButton);
 
@@ -96,8 +92,8 @@ public class ShortcutsView extends Div {
 
         subview.add(focusTarget);
 
-        Shortcuts.addShortcutListener(subview, () -> actual.setValue("subview"),
-                Key.KEY_S, KeyModifier.ALT).listenOn(subview);
+        Shortcuts.addShortcutListener(subview, () -> actual.setValue("subview"), Key.KEY_S, KeyModifier.ALT)
+                .listenOn(subview);
 
         add(subview);
 
@@ -111,12 +107,8 @@ public class ShortcutsView extends Div {
         Input listenOn3 = new Input();
         listenOn3.setId("listenOn3");
 
-        Shortcuts
-                .addShortcutListener(subview,
-                        () -> actual.setValue(
-                                "Alt+H triggered on one of the listenOns"),
-                        Key.KEY_H, KeyModifier.ALT)
-                .listenOn(listenOn1, listenOn2, listenOn3);
+        Shortcuts.addShortcutListener(subview, () -> actual.setValue("Alt+H triggered on one of the listenOns"),
+                Key.KEY_H, KeyModifier.ALT).listenOn(listenOn1, listenOn2, listenOn3);
 
         add(listenOn1, listenOn2, listenOn3);
 
@@ -124,10 +116,7 @@ public class ShortcutsView extends Div {
         Paragraph attachable = new Paragraph("attachable");
         attachable.setId("attachable");
 
-        Shortcuts
-                .addShortcutListener(attachable,
-                        () -> actual.setValue("attachable"), Key.KEY_A)
-                .withAlt();
+        Shortcuts.addShortcutListener(attachable, () -> actual.setValue("attachable"), Key.KEY_A).withAlt();
 
         UI.getCurrent().addShortcutListener(() -> {
             attached = !attached;
@@ -140,21 +129,18 @@ public class ShortcutsView extends Div {
         }, Key.KEY_Y, KeyModifier.ALT);
 
         // modifyingShortcutShouldChangeShortcutEvent
-        flipFloppingRegistration = UI.getCurrent()
-                .addShortcutListener(event -> {
-                    if (event.getKeyModifiers().contains(KeyModifier.ALT)) {
-                        actual.setValue("Alt");
-                        flipFloppingRegistration
-                                .withModifiers(KeyModifier.SHIFT);
-                    } else if (event.getKeyModifiers()
-                            .contains(KeyModifier.SHIFT)) {
-                        actual.setValue("Shift");
-                        flipFloppingRegistration.withModifiers(KeyModifier.ALT);
-                    } else {
-                        actual.setValue("Failed");
-                    }
+        flipFloppingRegistration = UI.getCurrent().addShortcutListener(event -> {
+            if (event.getKeyModifiers().contains(KeyModifier.ALT)) {
+                actual.setValue("Alt");
+                flipFloppingRegistration.withModifiers(KeyModifier.SHIFT);
+            } else if (event.getKeyModifiers().contains(KeyModifier.SHIFT)) {
+                actual.setValue("Shift");
+                flipFloppingRegistration.withModifiers(KeyModifier.ALT);
+            } else {
+                actual.setValue("Failed");
+            }
 
-                }, Key.KEY_G, KeyModifier.ALT);
+        }, Key.KEY_G, KeyModifier.ALT);
 
         // clickShortcutAllowsKeyDefaults
         Div wrapper1 = new Div();
@@ -173,8 +159,7 @@ public class ShortcutsView extends Div {
 
         NativeButton clickButton2 = new NativeButton("CB2",
                 event -> actual.setValue("click: " + clickInput2.getValue()));
-        ShortcutRegistration reg = clickButton2.addClickShortcut(Key.ENTER)
-                .listenOn(wrapper2);
+        ShortcutRegistration reg = clickButton2.addClickShortcut(Key.ENTER).listenOn(wrapper2);
         // this matches the default of other shortcuts but changes
         // the default of the click shortcut
         reg.setBrowserDefaultAllowed(false);
@@ -194,10 +179,8 @@ public class ShortcutsView extends Div {
         clickInput4.setId("click-input-4");
 
         NativeButton clickButton3 = new NativeButton("CB3",
-                event -> actual.setValue("click3: " + clickInput3.getValue()
-                        + "," + clickInput4.getValue()));
-        clickButton3.addClickShortcut(Key.ENTER).listenOn(clickInput3,
-                clickInput4);
+                event -> actual.setValue("click3: " + clickInput3.getValue() + "," + clickInput4.getValue()));
+        clickButton3.addClickShortcut(Key.ENTER).listenOn(clickInput3, clickInput4);
 
         wrapper3.add(clickInput3, clickInput4, clickButton3);
         add(wrapper3);
@@ -216,10 +199,8 @@ public class ShortcutsView extends Div {
         clickInput7.setId("click-input-7");
 
         NativeButton clickButton4 = new NativeButton("CB4",
-                event -> actual.setValue("click4: " + clickInput5.getValue()
-                        + "," + clickInput6.getValue()));
-        clickButton4.addClickShortcut(Key.ENTER)
-                .listenOn(clickInput5, clickInput6)
+                event -> actual.setValue("click4: " + clickInput5.getValue() + "," + clickInput6.getValue()));
+        clickButton4.addClickShortcut(Key.ENTER).listenOn(clickInput5, clickInput6)
                 // sets setResetFocusOnActiveElement
                 // to true and this will cause input value change being
                 // triggered no matter what
@@ -233,20 +214,17 @@ public class ShortcutsView extends Div {
         // the default of the click shortcut
         reg.setBrowserDefaultAllowed(false);
 
-        wrapper4.add(clickInput5, clickInput6, clickInput7, clickButton4,
-                clickButton5);
+        wrapper4.add(clickInput5, clickInput6, clickInput7, clickButton4, clickButton5);
         add(wrapper4);
 
         // removingShortcutCleansJavascriptEventSettingsItUsed
         AtomicReference<ShortcutRegistration> removalAtomicReference = new AtomicReference<>();
         final Input removalInput = new Input(ValueChangeMode.EAGER);
         removalInput.setId("removal-input");
-        ShortcutRegistration removalRegistration = Shortcuts
-                .addShortcutListener(removalInput, () -> {
-                    removalInput
-                            .setValue(removalInput.getValue().toUpperCase());
-                    removalAtomicReference.get().remove();
-                }, Key.KEY_D);
+        ShortcutRegistration removalRegistration = Shortcuts.addShortcutListener(removalInput, () -> {
+            removalInput.setValue(removalInput.getValue().toUpperCase());
+            removalAtomicReference.get().remove();
+        }, Key.KEY_D);
         removalAtomicReference.set(removalRegistration);
         add(removalInput);
 
@@ -254,18 +232,14 @@ public class ShortcutsView extends Div {
         AtomicInteger oCounter = new AtomicInteger(0);
         AtomicInteger oShiftCounter = new AtomicInteger(0);
         AtomicInteger oAltCounter = new AtomicInteger(0);
-        UI.getCurrent()
-                .addShortcutListener(
-                        () -> actual.setValue("" + oCounter.incrementAndGet()
-                                + oShiftCounter.get() + oAltCounter.get()),
-                        Key.KEY_O);
-        UI.getCurrent()
-                .addShortcutListener(() -> actual.setValue("" + oCounter.get()
-                        + oShiftCounter.incrementAndGet() + oAltCounter.get()),
-                        Key.KEY_O, KeyModifier.SHIFT);
         UI.getCurrent().addShortcutListener(
-                () -> actual.setValue("" + oCounter.get() + oShiftCounter.get()
-                        + oAltCounter.incrementAndGet()),
+                () -> actual.setValue("" + oCounter.incrementAndGet() + oShiftCounter.get() + oAltCounter.get()),
+                Key.KEY_O);
+        UI.getCurrent().addShortcutListener(
+                () -> actual.setValue("" + oCounter.get() + oShiftCounter.incrementAndGet() + oAltCounter.get()),
+                Key.KEY_O, KeyModifier.SHIFT);
+        UI.getCurrent().addShortcutListener(
+                () -> actual.setValue("" + oCounter.get() + oShiftCounter.get() + oAltCounter.incrementAndGet()),
                 Key.KEY_O, KeyModifier.ALT);
     }
 }

@@ -30,8 +30,7 @@ public class InjectingTemplateIT extends ChromeBrowserTest {
         TestBenchElement template = $(TestBenchElement.class).id("injecting");
         template.$(TestBenchElement.class).id("show-type").click();
 
-        TestBenchElement container = template.$(TestBenchElement.class)
-                .id("container");
+        TestBenchElement container = template.$(TestBenchElement.class).id("container");
         Assert.assertEquals("number", container.getText());
     }
 }

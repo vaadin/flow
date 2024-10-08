@@ -61,30 +61,24 @@ public class StreamResourceRegistryTest {
     public void registerResource_registrationResultCanBeFound() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
-        StreamResource resource = new StreamResource("name",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource("name", () -> makeEmptyStream());
         StreamRegistration registration = registry.registerResource(resource);
         Assert.assertNotNull(registration);
 
         URI uri = registration.getResourceUri();
 
-        Optional<StreamResource> stored = registry
-                .getResource(StreamResource.class, uri);
-        Assert.assertSame(
-                "Unexpected stored resource is returned for registered URI",
-                resource, stored.get());
+        Optional<StreamResource> stored = registry.getResource(StreamResource.class, uri);
+        Assert.assertSame("Unexpected stored resource is returned for registered URI", resource, stored.get());
 
-        Assert.assertSame(
-                "Unexpected resource is returned by the registration instance",
-                resource, registration.getResource());
+        Assert.assertSame("Unexpected resource is returned by the registration instance", resource,
+                registration.getResource());
     }
 
     @Test
     public void unregisterResource_resourceIsRemoved() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
-        StreamResource resource = new StreamResource("name",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource("name", () -> makeEmptyStream());
         StreamRegistration registration = registry.registerResource(resource);
         Assert.assertNotNull(registration);
 
@@ -92,13 +86,9 @@ public class StreamResourceRegistryTest {
 
         registration.unregister();
 
-        Optional<StreamResource> stored = registry
-                .getResource(StreamResource.class, uri);
-        Assert.assertFalse(
-                "Unexpected stored resource is found after unregister()",
-                stored.isPresent());
-        Assert.assertFalse(
-                "Unexpected resource is returned by the registration instance",
+        Optional<StreamResource> stored = registry.getResource(StreamResource.class, uri);
+        Assert.assertFalse("Unexpected stored resource is found after unregister()", stored.isPresent());
+        Assert.assertFalse("Unexpected resource is returned by the registration instance",
                 registration.getResource() != null);
     }
 
@@ -106,24 +96,19 @@ public class StreamResourceRegistryTest {
     public void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
-        StreamResource resource1 = new StreamResource("name",
-                () -> makeEmptyStream());
+        StreamResource resource1 = new StreamResource("name", () -> makeEmptyStream());
         StreamRegistration registration1 = registry.registerResource(resource1);
 
-        StreamResource resource2 = new StreamResource("name",
-                () -> makeEmptyStream());
+        StreamResource resource2 = new StreamResource("name", () -> makeEmptyStream());
         StreamRegistration registration2 = registry.registerResource(resource2);
 
-        Assert.assertNotEquals(
-                "Two different resource are registered to the same URI",
-                registration1.getResourceUri(), registration2.getResourceUri());
+        Assert.assertNotEquals("Two different resource are registered to the same URI", registration1.getResourceUri(),
+                registration2.getResourceUri());
 
         registration1.unregister();
 
-        Assert.assertTrue(
-                "Second resource is not found after first resource has been unregistered",
-                registry.getResource(registration2.getResourceUri())
-                        .isPresent());
+        Assert.assertTrue("Second resource is not found after first resource has been unregistered",
+                registry.getResource(registration2.getResourceUri()).isPresent());
     }
 
     @Test
@@ -141,17 +126,14 @@ public class StreamResourceRegistryTest {
         assertResourceUriIsEncoded("my file.png", "my%20file.png");
     }
 
-    private void assertResourceUriIsEncoded(String resourceName,
-            String suffix) {
+    private void assertResourceUriIsEncoded(String resourceName, String suffix) {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
-        StreamResource resource = new StreamResource(resourceName,
-                this::makeEmptyStream);
+        StreamResource resource = new StreamResource(resourceName, this::makeEmptyStream);
         StreamRegistration registration = registry.registerResource(resource);
 
         URI uri = registration.getResourceUri();
-        Assert.assertTrue("Resource URI is not properly encoded",
-                uri.toString().endsWith(suffix));
+        Assert.assertTrue("Resource URI is not properly encoded", uri.toString().endsWith(suffix));
     }
 
     private InputStream makeEmptyStream() {

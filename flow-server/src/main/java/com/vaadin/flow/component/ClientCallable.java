@@ -24,10 +24,9 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 
 /**
- * Publishes the annotated method so it can be invoked from the client side
- * using the notation <code>this.$server.method()</code>. The method will return
- * a Promise which will be resolved with either the return value from the server
- * or a generic rejection if the server-side method throws an exception.
+ * Publishes the annotated method so it can be invoked from the client side using the notation
+ * <code>this.$server.method()</code>. The method will return a Promise which will be resolved with either the return
+ * value from the server or a generic rejection if the server-side method throws an exception.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -39,8 +38,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 public @interface ClientCallable {
 
     /**
-     * Controls RPC for the method from the client side to the server side when
-     * the element is disabled.
+     * Controls RPC for the method from the client side to the server side when the element is disabled.
      *
      * @return the property update mode for disabled element
      */

@@ -23,27 +23,25 @@ import java.util.Locale;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 
 /**
- * Menu configuration helper class to retrieve available menu entries for
- * application main menu.
+ * Menu configuration helper class to retrieve available menu entries for application main menu.
  *
  * @since 24.5
  */
 public final class MenuConfiguration {
 
     /**
-     * Collect ordered list of menu entries for menu population. All client
-     * views are collected and any accessible server views.
+     * Collect ordered list of menu entries for menu population. All client views are collected and any accessible
+     * server views.
      *
      * @return ordered list of {@link MenuEntry} instances
      */
     public static List<MenuEntry> getMenuEntries() {
-        return MenuRegistry.collectMenuItemsList().stream()
-                .map(MenuConfiguration::createMenuEntry).toList();
+        return MenuRegistry.collectMenuItemsList().stream().map(MenuConfiguration::createMenuEntry).toList();
     }
 
     /**
-     * Collect ordered list of menu entries for menu population. All client
-     * views are collected and any accessible server views.
+     * Collect ordered list of menu entries for menu population. All client views are collected and any accessible
+     * server views.
      *
      * @param locale
      *            locale to use for ordering. null for default locale.
@@ -51,21 +49,16 @@ public final class MenuConfiguration {
      * @return ordered list of {@link MenuEntry} instances
      */
     public static List<MenuEntry> getMenuEntries(Locale locale) {
-        return MenuRegistry.collectMenuItemsList(locale).stream()
-                .map(MenuConfiguration::createMenuEntry).toList();
+        return MenuRegistry.collectMenuItemsList(locale).stream().map(MenuConfiguration::createMenuEntry).toList();
     }
 
     private static MenuEntry createMenuEntry(AvailableViewInfo viewInfo) {
         if (viewInfo.menu() == null) {
-            return new MenuEntry(viewInfo.route(), viewInfo.title(), null, null,
-                    null);
+            return new MenuEntry(viewInfo.route(), viewInfo.title(), null, null, null);
         }
         return new MenuEntry(viewInfo.route(),
-                (viewInfo.menu().title() != null
-                        && !viewInfo.menu().title().isBlank()
-                                ? viewInfo.menu().title()
-                                : viewInfo.title()),
-                viewInfo.menu().order(), viewInfo.menu().icon(),
-                viewInfo.menu().menuClass());
+                (viewInfo.menu().title() != null && !viewInfo.menu().title().isBlank() ? viewInfo.menu().title()
+                        : viewInfo.title()),
+                viewInfo.menu().order(), viewInfo.menu().icon(), viewInfo.menu().menuClass());
     }
 }

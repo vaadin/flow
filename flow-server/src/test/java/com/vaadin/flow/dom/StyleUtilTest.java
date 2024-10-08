@@ -25,8 +25,7 @@ public class StyleUtilTest {
     static {
         stylepPropertyToAttribute.put("width", "width");
         stylepPropertyToAttribute.put("borderRadius", "border-radius");
-        stylepPropertyToAttribute.put("webkitBorderRadius",
-                "-webkit-border-radius");
+        stylepPropertyToAttribute.put("webkitBorderRadius", "-webkit-border-radius");
         stylepPropertyToAttribute.put("mozBorderRadius", "-moz-border-radius");
         stylepPropertyToAttribute.put("msUserSelect", "-ms-user-select");
         stylepPropertyToAttribute.put("oUserSelect", "-o-user-select");
@@ -37,8 +36,7 @@ public class StyleUtilTest {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();
-            Assert.assertEquals(property,
-                    StyleUtil.styleAttributeToProperty(attribute));
+            Assert.assertEquals(property, StyleUtil.styleAttributeToProperty(attribute));
 
         });
     }
@@ -48,8 +46,7 @@ public class StyleUtilTest {
         stylepPropertyToAttribute.entrySet().forEach((entry) -> {
             String property = entry.getKey();
             String attribute = entry.getValue();
-            Assert.assertEquals(attribute,
-                    StyleUtil.stylePropertyToAttribute(property));
+            Assert.assertEquals(attribute, StyleUtil.stylePropertyToAttribute(property));
 
         });
     }

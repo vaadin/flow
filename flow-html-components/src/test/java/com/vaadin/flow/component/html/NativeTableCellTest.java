@@ -39,8 +39,7 @@ public class NativeTableCellTest extends ComponentTest {
     public void setColspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.setColspan(2);
-        assertEquals("Colspan should be 2", "2",
-                cell.getElement().getAttribute("colspan"));
+        assertEquals("Colspan should be 2", "2", cell.getElement().getAttribute("colspan"));
     }
 
     @Test
@@ -62,8 +61,7 @@ public class NativeTableCellTest extends ComponentTest {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.getElement().setAttribute("colspan", "2");
         cell.resetColspan();
-        assertNull("Element should not have colspan attribute",
-                cell.getElement().getAttribute("colspan"));
+        assertNull("Element should not have colspan attribute", cell.getElement().getAttribute("colspan"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -76,8 +74,7 @@ public class NativeTableCellTest extends ComponentTest {
     public void setRowspan() {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.setRowspan(2);
-        assertEquals("Rowspan should be 2", "2",
-                cell.getElement().getAttribute("rowspan"));
+        assertEquals("Rowspan should be 2", "2", cell.getElement().getAttribute("rowspan"));
     }
 
     @Test
@@ -99,8 +96,7 @@ public class NativeTableCellTest extends ComponentTest {
         NativeTableCell cell = (NativeTableCell) getComponent();
         cell.setRowspan(2);
         cell.resetRowspan();
-        assertNull("Element should not have rowspan attribute",
-                cell.getElement().getAttribute("rowspan"));
+        assertNull("Element should not have rowspan attribute", cell.getElement().getAttribute("rowspan"));
     }
 
 }

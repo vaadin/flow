@@ -22,19 +22,17 @@ import java.util.Objects;
 /**
  * Identifier for a chunk or part of the JS bundle.
  * <p>
- * Each chunk can be loaded at a separate time. Chunks marked as eager are
- * loaded immediately when the JS bundle is loaded while chunks marked as not
- * eager (i.e. lazy) are loaded on demand later.
+ * Each chunk can be loaded at a separate time. Chunks marked as eager are loaded immediately when the JS bundle is
+ * loaded while chunks marked as not eager (i.e. lazy) are loaded on demand later.
  * <p>
- * There is one special, global chunk, defined as {@link #GLOBAL} in this class,
- * which is used for gathering all data that relates to internal entry points.
+ * There is one special, global chunk, defined as {@link #GLOBAL} in this class, which is used for gathering all data
+ * that relates to internal entry points.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  **/
 public class ChunkInfo {
 
-    public static final ChunkInfo GLOBAL = new ChunkInfo(
-            EntryPointType.INTERNAL, null, null, false);
+    public static final ChunkInfo GLOBAL = new ChunkInfo(EntryPointType.INTERNAL, null, null, false);
 
     private final EntryPointType type;
     private final String name;
@@ -43,8 +41,7 @@ public class ChunkInfo {
 
     private final boolean eager;
 
-    public ChunkInfo(EntryPointType type, String name,
-            List<String> dependencyTriggers, boolean eager) {
+    public ChunkInfo(EntryPointType type, String name, List<String> dependencyTriggers, boolean eager) {
         this.type = type;
         this.eager = eager;
 
@@ -68,9 +65,7 @@ public class ChunkInfo {
     public int hashCode() {
         int result = type != null ? type.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result
-                + (dependencyTriggers != null ? dependencyTriggers.hashCode()
-                        : 0);
+        result = 31 * result + (dependencyTriggers != null ? dependencyTriggers.hashCode() : 0);
         result = 31 * result + (eager ? 1 : 0);
         return result;
     }

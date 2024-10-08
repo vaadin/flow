@@ -41,8 +41,8 @@ public final class PropertyConfigurationImpl<C extends Component, P extends Seri
     private SerializableBiConsumer<C, Serializable> onChangeHandler = null;
 
     /**
-     * Constructs a new {@code PropertyConfigurationImpl} tied to the exported
-     * {@link Component} type given by {@code componentType}.
+     * Constructs a new {@code PropertyConfigurationImpl} tied to the exported {@link Component} type given by
+     * {@code componentType}.
      *
      * @param componentType
      *            type of the exported {@code component}
@@ -51,28 +51,24 @@ public final class PropertyConfigurationImpl<C extends Component, P extends Seri
      * @param propertyType
      *            type of the property
      * @param defaultValue
-     *            default value of the property. If the property type has a
-     *            primitive version, this value is used when ever the property
-     *            is being set to a {@code null}.
+     *            default value of the property. If the property type has a primitive version, this value is used when
+     *            ever the property is being set to a {@code null}.
      */
-    public PropertyConfigurationImpl(Class<C> componentType,
-            String propertyName, Class<P> propertyType, P defaultValue) {
+    public PropertyConfigurationImpl(Class<C> componentType, String propertyName, Class<P> propertyType,
+            P defaultValue) {
 
-        data = new PropertyData<>(propertyName, propertyType, false,
-                defaultValue);
+        data = new PropertyData<>(propertyName, propertyType, false, defaultValue);
         this.componentClass = componentType;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public PropertyConfiguration<C, P> onChange(
-            SerializableBiConsumer<C, P> onChangeHandler) {
-        Objects.requireNonNull(onChangeHandler,
-                "Parameter 'onChangeHandler' " + "cannot be null!");
+    public PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler) {
+        Objects.requireNonNull(onChangeHandler, "Parameter 'onChangeHandler' " + "cannot be null!");
         if (this.onChangeHandler != null) {
-            throw new IllegalStateException(String.format("onChangeHandler "
-                    + "for property %s has already been set and cannot be "
-                    + "overwritten!", data.getName()));
+            throw new IllegalStateException(String.format(
+                    "onChangeHandler " + "for property %s has already been set and cannot be " + "overwritten!",
+                    data.getName()));
         }
         this.onChangeHandler = (c, o) -> onChangeHandler.accept(c, (P) o);
         return this;
@@ -88,8 +84,7 @@ public final class PropertyConfigurationImpl<C extends Component, P extends Seri
     public boolean equals(Object obj) {
         if (obj instanceof PropertyConfigurationImpl) {
             PropertyConfigurationImpl other = (PropertyConfigurationImpl) obj;
-            return data.equals(other.data)
-                    && componentClass.equals(other.componentClass);
+            return data.equals(other.data) && componentClass.equals(other.componentClass);
         }
         return false;
     }
@@ -100,8 +95,7 @@ public final class PropertyConfigurationImpl<C extends Component, P extends Seri
     }
 
     /**
-     * Retrieves the {@code onChangeHandler} tied to this property, if one
-     * exists.
+     * Retrieves the {@code onChangeHandler} tied to this property, if one exists.
      *
      * @return handler or {@code null}
      */

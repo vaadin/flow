@@ -16,8 +16,7 @@
 package com.vaadin.flow.internal.nodefeature;
 
 /**
- * The exception is thrown when a property change from client is disallowed on
- * the server side.
+ * The exception is thrown when a property change from client is disallowed on the server side.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

@@ -77,8 +77,7 @@ public class ComponentMetaData {
         }
 
         public boolean isEmpty() {
-            return javaScripts.isEmpty() && jsModules.isEmpty()
-                    && styleSheets.isEmpty() && cssImports.isEmpty();
+            return javaScripts.isEmpty() && jsModules.isEmpty() && styleSheets.isEmpty() && cssImports.isEmpty();
         }
     }
 
@@ -92,8 +91,7 @@ public class ComponentMetaData {
         private final DisabledUpdateMode mode;
         private final String[] eventNames;
 
-        SynchronizedPropertyInfo(String property, String[] eventNames,
-                DisabledUpdateMode mode) {
+        SynchronizedPropertyInfo(String property, String[] eventNames, DisabledUpdateMode mode) {
             this.property = property;
             this.eventNames = eventNames;
             this.mode = mode;
@@ -117,8 +115,7 @@ public class ComponentMetaData {
     private final Class<? extends Component> componentClass;
 
     /**
-     * Scans the given component class and creates a new instance based on found
-     * annotations.
+     * Scans the given component class and creates a new instance based on found annotations.
      *
      * @param componentClass
      *            the component class to scan
@@ -129,69 +126,56 @@ public class ComponentMetaData {
     }
 
     /**
-     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet,
-     * CssImport) for the class. Includes dependencies for all classes referred
-     * by a {@link Uses} annotation.
+     * Finds all dependencies (JsModule, HTML, JavaScript, StyleSheet, CssImport) for the class. Includes dependencies
+     * for all classes referred by a {@link Uses} annotation.
      *
      * @return an information object containing all the dependencies
      */
-    private static DependencyInfo findDependencies(VaadinService service,
-            Class<? extends Component> componentClass) {
+    private static DependencyInfo findDependencies(VaadinService service, Class<? extends Component> componentClass) {
         DependencyInfo dependencyInfo = new DependencyInfo();
 
-        findDependencies(service, componentClass, dependencyInfo,
-                new HashSet<>());
+        findDependencies(service, componentClass, dependencyInfo, new HashSet<>());
         return dependencyInfo;
     }
 
-    private static DependencyInfo findDependencies(VaadinService service,
-            Class<? extends Component> componentClass,
-            DependencyInfo dependencyInfo,
-            Set<Class<? extends Component>> scannedClasses) {
+    private static DependencyInfo findDependencies(VaadinService service, Class<? extends Component> componentClass,
+            DependencyInfo dependencyInfo, Set<Class<? extends Component>> scannedClasses) {
         assert !scannedClasses.contains(componentClass);
 
         scannedClasses.add(componentClass);
 
-        List<JsModule> jsModules = AnnotationReader
-                .getJsModuleAnnotations(componentClass);
+        List<JsModule> jsModules = AnnotationReader.getJsModuleAnnotations(componentClass);
 
         dependencyInfo.jsModules.addAll(jsModules);
 
-        dependencyInfo.javaScripts.addAll(
-                AnnotationReader.getJavaScriptAnnotations(componentClass));
-        dependencyInfo.styleSheets.addAll(
-                AnnotationReader.getStyleSheetAnnotations(componentClass));
-        dependencyInfo.cssImports.addAll(
-                AnnotationReader.getCssImportAnnotations(componentClass));
+        dependencyInfo.javaScripts.addAll(AnnotationReader.getJavaScriptAnnotations(componentClass));
+        dependencyInfo.styleSheets.addAll(AnnotationReader.getStyleSheetAnnotations(componentClass));
+        dependencyInfo.cssImports.addAll(AnnotationReader.getCssImportAnnotations(componentClass));
 
-        List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass,
-                Uses.class);
+        List<Uses> usesList = AnnotationReader.getAnnotationsFor(componentClass, Uses.class);
         for (Uses uses : usesList) {
             Class<? extends Component> otherClass = uses.value();
             if (!scannedClasses.contains(otherClass)) {
-                findDependencies(service, otherClass, dependencyInfo,
-                        scannedClasses);
+                findDependencies(service, otherClass, dependencyInfo, scannedClasses);
             }
         }
         return dependencyInfo;
     }
 
     /**
-     * Gets the properties that are marked to be synchronized and corresponding
-     * events.
+     * Gets the properties that are marked to be synchronized and corresponding events.
      * <p>
      * Framework internal data, thus package-private.
      *
-     * @return a collection of information objects about properties to be
-     *         synchronized
+     * @return a collection of information objects about properties to be synchronized
      */
     public Collection<SynchronizedPropertyInfo> getSynchronizedProperties() {
         return Collections.unmodifiableCollection(synchronizedProperties);
     }
 
     /**
-     * Gets the dependencies, defined using annotations ({@link JsModule},
-     * {@link JavaScript}, {@link StyleSheet} and {@link Uses}).
+     * Gets the dependencies, defined using annotations ({@link JsModule}, {@link JavaScript}, {@link StyleSheet} and
+     * {@link Uses}).
      * <p>
      * Framework internal data, thus package-private.
      *
@@ -202,8 +186,7 @@ public class ComponentMetaData {
      */
     public DependencyInfo getDependencyInfo(VaadinService service) {
         return dependencyInfo.computeIfAbsent(service, ignore -> {
-            service.addServiceDestroyListener(
-                    event -> dependencyInfo.remove(service));
+            service.addServiceDestroyListener(event -> dependencyInfo.remove(service));
             return findDependencies(service, componentClass);
         });
     }
@@ -222,8 +205,7 @@ public class ComponentMetaData {
         return infos.values();
     }
 
-    private static void collectSynchronizedProperties(Class<?> clazz,
-            Map<String, SynchronizedPropertyInfo> infos) {
+    private static void collectSynchronizedProperties(Class<?> clazz, Map<String, SynchronizedPropertyInfo> infos) {
         if (clazz == null || clazz.equals(Object.class)) {
             return;
         }
@@ -232,12 +214,10 @@ public class ComponentMetaData {
         Class<?> superclass = clazz.getSuperclass();
         collectSynchronizedProperties(superclass, infos);
 
-        Stream.of(clazz.getInterfaces())
-                .forEach(iface -> collectSynchronizedProperties(iface, infos));
+        Stream.of(clazz.getInterfaces()).forEach(iface -> collectSynchronizedProperties(iface, infos));
     }
 
-    private static void doCollectSynchronizedProperties(Class<?> clazz,
-            Map<String, SynchronizedPropertyInfo> infos) {
+    private static void doCollectSynchronizedProperties(Class<?> clazz, Map<String, SynchronizedPropertyInfo> infos) {
         for (Method method : clazz.getDeclaredMethods()) {
             Synchronize annotation = method.getAnnotation(Synchronize.class);
             if (annotation == null) {
@@ -245,8 +225,7 @@ public class ComponentMetaData {
             }
 
             if (!ReflectTools.isGetter(method)) {
-                throw new IllegalStateException(method + " is annotated with @"
-                        + Synchronize.class.getSimpleName()
+                throw new IllegalStateException(method + " is annotated with @" + Synchronize.class.getSimpleName()
                         + " even though it's not a getter.");
             }
 
@@ -262,8 +241,8 @@ public class ComponentMetaData {
             }
 
             String[] eventNames = annotation.value();
-            infos.put(method.getName(), new SynchronizedPropertyInfo(
-                    propertyName, eventNames, annotation.allowUpdates()));
+            infos.put(method.getName(),
+                    new SynchronizedPropertyInfo(propertyName, eventNames, annotation.allowUpdates()));
         }
     }
 }

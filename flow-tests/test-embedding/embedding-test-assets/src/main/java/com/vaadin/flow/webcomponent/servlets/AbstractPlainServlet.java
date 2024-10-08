@@ -27,15 +27,13 @@ import java.util.function.Consumer;
 // @WebServlet(urlPatterns = { "/items/*"}, asyncSupported = true)
 public abstract class AbstractPlainServlet extends HttpServlet {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
 
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
             out.println("<html><head>");
-            out.println(
-                    "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
+            out.println("<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
             getImportsWriter().accept(out);
             out.println("<title>Embedded web component</title></head>");
             out.println("<body>");
@@ -50,17 +48,14 @@ public abstract class AbstractPlainServlet extends HttpServlet {
     public final void writeCompatibilityImportsDev(PrintWriter writer) {
         writer.println(
                 "<script type='text/javascript' src='./frontend/bower_components/webcomponentsjs/webcomponents-loader.js'></script>");
-        writer.println(
-                "<link rel='import' href='/vaadin/web-component/client-select.html'>");
+        writer.println("<link rel='import' href='/vaadin/web-component/client-select.html'>");
     }
 
     public final void writeCompatibilityImportsProd(PrintWriter writer) {
-        writer.println(
-                "<script type='text/javascript' src='/vaadin/web-component/client-select.html'></script>");
+        writer.println("<script type='text/javascript' src='/vaadin/web-component/client-select.html'></script>");
     }
 
     public final void writeNpmImports(PrintWriter writer) {
-        writer.println(
-                "<script type='module' src='/vaadin/web-component/client-select.js'></script>");
+        writer.println("<script type='module' src='/vaadin/web-component/client-select.js'></script>");
     }
 }

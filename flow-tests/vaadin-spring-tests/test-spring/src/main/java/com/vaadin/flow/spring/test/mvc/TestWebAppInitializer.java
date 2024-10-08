@@ -42,8 +42,7 @@ public class TestWebAppInitializer extends VaadinMVCWebAppInitializer {
     }
 
     @Override
-    protected void registerConfiguration(
-            AnnotationConfigWebApplicationContext context) {
+    protected void registerConfiguration(AnnotationConfigWebApplicationContext context) {
         context.getEnvironment().setActiveProfiles("enabled");
         super.registerConfiguration(context);
     }

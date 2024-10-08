@@ -59,8 +59,7 @@ public class FireEventComponent extends Div {
         NativeButton button2 = new NativeButton("Button 2",
                 event -> buttonConsumer.accept(OptionsType.Bubble_NoCancel));
         button2.setId("b2");
-        NativeButton button3 = new NativeButton("Button 3",
-                event -> buttonConsumer.accept(OptionsType.Bubble_Cancel));
+        NativeButton button3 = new NativeButton("Button 3", event -> buttonConsumer.accept(OptionsType.Bubble_Cancel));
         button3.setId("b3");
         div.add(button1, button2, button3);
         add(div);

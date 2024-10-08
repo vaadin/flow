@@ -24,8 +24,7 @@ import com.vaadin.flow.router.Route;
 public class ViewThrowsException extends Div implements HasDynamicTitle {
 
     public ViewThrowsException() {
-        Span textField = new Span(
-                "You should not see this page, you cannot go back to the main page");
+        Span textField = new Span("You should not see this page, you cannot go back to the main page");
 
         add(textField);
     }

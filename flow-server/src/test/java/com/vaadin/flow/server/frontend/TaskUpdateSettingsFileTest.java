@@ -50,65 +50,49 @@ public class TaskUpdateSettingsFileTest {
 
     private File buildDirectory;
 
-    private static final Set<String> ABSOLUTE_PATH_ENTRIES = Set.of(
-            "frontendFolder", "themeResourceFolder", "staticOutput",
-            "statsOutput", "frontendBundleOutput", "devBundleOutput",
-            "devBundleStatsOutput", "jarResourcesFolder",
-            "clientServiceWorkerSource");
+    private static final Set<String> ABSOLUTE_PATH_ENTRIES = Set.of("frontendFolder", "themeResourceFolder",
+            "staticOutput", "statsOutput", "frontendBundleOutput", "devBundleOutput", "devBundleStatsOutput",
+            "jarResourcesFolder", "clientServiceWorkerSource");
 
     @Before
     public void setUp() throws IOException {
-        ClassFinder finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
-                this.getClass().getClassLoader()));
+        ClassFinder finder = Mockito.spy(new ClassFinder.DefaultClassFinder(this.getClass().getClassLoader()));
         buildDirectory = temporaryFolder.newFolder("target");
-        options = new MockOptions(finder, temporaryFolder.getRoot())
-                .withBuildDirectory("target").withJarFrontendResourcesFolder(
-                        temporaryFolder.newFolder("resources"));
+        options = new MockOptions(finder, temporaryFolder.getRoot()).withBuildDirectory("target")
+                .withJarFrontendResourcesFolder(temporaryFolder.newFolder("resources"));
     }
 
     @Test
-    public void execute_withWebappResourcesDirectory_useAbsolutePaths()
-            throws IOException {
+    public void execute_withWebappResourcesDirectory_useAbsolutePaths() throws IOException {
 
-        options.withWebpack(
-                Paths.get(buildDirectory.getPath(), "classes",
-                        VAADIN_WEBAPP_RESOURCES).toFile(),
-                Paths.get(buildDirectory.getPath(), "classes",
-                        VAADIN_SERVLET_RESOURCES).toFile());
-        TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
-                options, "theme", new PwaConfiguration());
+        options.withWebpack(Paths.get(buildDirectory.getPath(), "classes", VAADIN_WEBAPP_RESOURCES).toFile(),
+                Paths.get(buildDirectory.getPath(), "classes", VAADIN_SERVLET_RESOURCES).toFile());
+        TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(options, "theme", new PwaConfiguration());
         updateSettings.execute();
         JsonObject settingsJson = readSettingsFile();
         assertPathsMatchProjectFolder(settingsJson);
     }
 
     @Test
-    public void execute_withoutWebappResourcesDirectory_useAbsolutePaths()
-            throws IOException {
-        TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
-                options, "theme", new PwaConfiguration());
+    public void execute_withoutWebappResourcesDirectory_useAbsolutePaths() throws IOException {
+        TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(options, "theme", new PwaConfiguration());
         updateSettings.execute();
         JsonObject settingsJson = readSettingsFile();
         assertPathsMatchProjectFolder(settingsJson);
     }
 
     private JsonObject readSettingsFile() throws IOException {
-        File settings = new File(temporaryFolder.getRoot(),
-                "target/" + DEV_SETTINGS_FILE);
-        JsonObject settingsJson = Json.parse(
-                IOUtils.toString(settings.toURI(), StandardCharsets.UTF_8));
+        File settings = new File(temporaryFolder.getRoot(), "target/" + DEV_SETTINGS_FILE);
+        JsonObject settingsJson = Json.parse(IOUtils.toString(settings.toURI(), StandardCharsets.UTF_8));
         return settingsJson;
     }
 
     private void assertPathsMatchProjectFolder(JsonObject json) {
         ABSOLUTE_PATH_ENTRIES.forEach(key -> {
             String path = json.getString(key);
-            Assert.assertTrue(
-                    "Expected '" + key + "' to have an absolute path matching "
-                            + temporaryFolder.getRoot().getPath() + ", but was "
-                            + path,
-                    Paths.get(path)
-                            .startsWith(temporaryFolder.getRoot().getPath()));
+            Assert.assertTrue("Expected '" + key + "' to have an absolute path matching "
+                    + temporaryFolder.getRoot().getPath() + ", but was " + path,
+                    Paths.get(path).startsWith(temporaryFolder.getRoot().getPath()));
         });
     }
 

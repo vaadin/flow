@@ -57,26 +57,21 @@ public class AbstractConfigurationTest {
     }
 
     @Test
-    public void getProjectFolder_gradleKotlinProject_detected()
-            throws IOException {
+    public void getProjectFolder_gradleKotlinProject_detected() throws IOException {
         assertProjectFolderDetected("build.gradle.kts");
     }
 
     @Test
     public void getProjectFolder_unknownProject_throws() throws IOException {
         withTemporaryUserDir(() -> {
-            IllegalStateException exception = Assert.assertThrows(
-                    IllegalStateException.class,
+            IllegalStateException exception = Assert.assertThrows(IllegalStateException.class,
                     configuration::getProjectFolder);
-            Assert.assertTrue(exception.getMessage().contains(
-                    "Failed to determine project directory for dev mode"));
-            Assert.assertTrue(exception.getMessage()
-                    .contains(temporaryFolder.getRoot().getAbsolutePath()));
+            Assert.assertTrue(exception.getMessage().contains("Failed to determine project directory for dev mode"));
+            Assert.assertTrue(exception.getMessage().contains(temporaryFolder.getRoot().getAbsolutePath()));
         });
     }
 
-    private void assertProjectFolderDetected(String projectFile)
-            throws IOException {
+    private void assertProjectFolderDetected(String projectFile) throws IOException {
         temporaryFolder.newFile(projectFile);
         withTemporaryUserDir(() -> {
             File projectFolder = configuration.getProjectFolder();
@@ -87,8 +82,7 @@ public class AbstractConfigurationTest {
     private void withTemporaryUserDir(Runnable test) throws IOException {
         String userDir = System.getProperty("user.dir");
         try {
-            System.setProperty("user.dir",
-                    temporaryFolder.getRoot().getAbsolutePath());
+            System.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
             test.run();
         } finally {
             if (userDir != null) {

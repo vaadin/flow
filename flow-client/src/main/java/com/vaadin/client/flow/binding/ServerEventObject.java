@@ -49,16 +49,14 @@ public final class ServerEventObject extends JavaScriptObject {
     private static final String PROMISE_CALLBACK_NAME = JsonConstants.RPC_PROMISE_CALLBACK_NAME;
 
     /**
-     * Callback interface for an event data expression parsed using new
-     * Function() in JavaScript.
+     * Callback interface for an event data expression parsed using new Function() in JavaScript.
      */
     @FunctionalInterface
     @JsFunction
     @SuppressWarnings("unusable-by-js")
     private interface ServerEventDataExpression {
         /**
-         * Callback interface for an event data expression parsed using new
-         * Function() in JavaScript.
+         * Callback interface for an event data expression parsed using new Function() in JavaScript.
          *
          * @param event
          *            Event to expand
@@ -69,8 +67,7 @@ public final class ServerEventObject extends JavaScriptObject {
         JsonObject evaluate(Event event, ServerEventObject serverEventObject);
     }
 
-    private static final JsMap<String, ServerEventDataExpression> expressionCache = JsCollections
-            .map();
+    private static final JsMap<String, ServerEventDataExpression> expressionCache = JsCollections.map();
 
     /**
      * JSO constructor.
@@ -104,24 +101,20 @@ public final class ServerEventObject extends JavaScriptObject {
     }-*/;
 
     /**
-     * Defines a method with the given name to be a callback to the server for
-     * the given state node.
+     * Defines a method with the given name to be a callback to the server for the given state node.
      * <p>
-     * Note! If the Polymer.Element contains an implementation for
-     * {@code methodName} it will be run before the server-side method.
+     * Note! If the Polymer.Element contains an implementation for {@code methodName} it will be run before the
+     * server-side method.
      *
      * @param methodName
      *            the name of the method to add
      * @param node
-     *            the node to use as an identifier when sending an event to the
-     *            server
+     *            the node to use as an identifier when sending an event to the server
      * @param returnPromise
-     *            <code>true</code> if the handler should return a promise that
-     *            will reflect the server-side result; <code>false</code> to not
-     *            return any value
+     *            <code>true</code> if the handler should return a promise that will reflect the server-side result;
+     *            <code>false</code> to not return any value
      */
-    public native void defineMethod(String methodName, StateNode node,
-            boolean returnPromise)
+    public native void defineMethod(String methodName, StateNode node, boolean returnPromise)
     /*-{
         this[methodName] = $entry(function(eventParameter) {
             var prototype = Object.getPrototypeOf(this);
@@ -156,9 +149,8 @@ public final class ServerEventObject extends JavaScriptObject {
     }-*/;
 
     /**
-     * Collect extra data for element event if any has been sent from the
-     * server. Note! Data is sent in the array in the same order as defined on
-     * the server side.
+     * Collect extra data for element event if any has been sent from the server. Note! Data is sent in the array in the
+     * same order as defined on the server side.
      *
      * @param event
      *            The fired Event
@@ -168,20 +160,15 @@ public final class ServerEventObject extends JavaScriptObject {
      *            Target node
      * @return Array of extra event data
      */
-    private JsonArray getEventData(Event event, String methodName,
-            StateNode node) {
+    private JsonArray getEventData(Event event, String methodName, StateNode node) {
 
-        if (node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
-                .hasPropertyValue(methodName)) {
+        if (node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS).hasPropertyValue(methodName)) {
             JsonArray dataArray = Json.createArray();
-            ConstantPool constantPool = node.getTree().getRegistry()
-                    .getConstantPool();
-            String expressionConstantKey = (String) node
-                    .getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+            ConstantPool constantPool = node.getTree().getRegistry().getConstantPool();
+            String expressionConstantKey = (String) node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
                     .getProperty(methodName).getValue();
 
-            JsArray<String> dataExpressions = constantPool
-                    .get(expressionConstantKey);
+            JsArray<String> dataExpressions = constantPool.get(expressionConstantKey);
 
             for (int i = 0; i < dataExpressions.length(); i++) {
                 String expression = dataExpressions.get(i);
@@ -194,28 +181,24 @@ public final class ServerEventObject extends JavaScriptObject {
         return null;
     }
 
-    private JsonObject getExpressionValue(Event event, StateNode node,
-            String expression) {
+    private JsonObject getExpressionValue(Event event, StateNode node, String expression) {
         JsonObject expressionValue;
 
         if (serverExpectsNodeId(expression)) {
             return getPolymerPropertyObject(event, node, expression);
         }
 
-        ServerEventDataExpression dataExpression = getOrCreateExpression(
-                expression);
+        ServerEventDataExpression dataExpression = getOrCreateExpression(expression);
         expressionValue = dataExpression.evaluate(event, this);
 
         return expressionValue;
     }
 
     private boolean serverExpectsNodeId(String expression) {
-        return !expression.startsWith(EVENT_PREFIX)
-                || "event.model.item".equals(expression);
+        return !expression.startsWith(EVENT_PREFIX) || "event.model.item".equals(expression);
     }
 
-    private JsonObject getPolymerPropertyObject(Event event, StateNode node,
-            String expression) {
+    private JsonObject getPolymerPropertyObject(Event event, StateNode node, String expression) {
         if (expression.startsWith(EVENT_PREFIX)) {
             return createPolymerPropertyObject(event, expression);
         } else {
@@ -223,18 +206,15 @@ public final class ServerEventObject extends JavaScriptObject {
         }
     }
 
-    private JsonObject createPolymerPropertyObject(Event event,
-            String expression) {
-        ServerEventDataExpression dataExpression = getOrCreateExpression(
-                expression);
+    private JsonObject createPolymerPropertyObject(Event event, String expression) {
+        ServerEventDataExpression dataExpression = getOrCreateExpression(expression);
         JsonObject expressionValue = dataExpression.evaluate(event, this);
         JsonObject object = Json.createObject();
         object.put(NODE_ID, expressionValue.getNumber(NODE_ID));
         return object;
     }
 
-    private native JsonObject getPolymerPropertyObject(Node node,
-            String propertyName)
+    private native JsonObject getPolymerPropertyObject(Node node, String propertyName)
     /*-{
         if (typeof(node.get) === 'function') {
             var polymerProperty = node.get(propertyName);
@@ -285,27 +265,21 @@ public final class ServerEventObject extends JavaScriptObject {
     }
 
     /**
-     * Gets or creates <code>element.$server</code> for the given element, if
-     * present.
+     * Gets or creates <code>element.$server</code> for the given element, if present.
      *
      * @param node
      *            the element to use
-     * @return a reference to the <code>$server</code> object in the element, or
-     *         <code>null</code> if note present.
+     * @return a reference to the <code>$server</code> object in the element, or <code>null</code> if note present.
      */
     public static ServerEventObject getIfPresent(Node node) {
-        return WidgetUtil
-                .crazyJsoCast(WidgetUtil.getJsProperty(node, "$server"));
+        return WidgetUtil.crazyJsoCast(WidgetUtil.getJsProperty(node, "$server"));
     }
 
-    protected static ServerEventDataExpression getOrCreateExpression(
-            String expressionString) {
-        ServerEventDataExpression expression = expressionCache
-                .get(expressionString);
+    protected static ServerEventDataExpression getOrCreateExpression(String expressionString) {
+        ServerEventDataExpression expression = expressionCache.get(expressionString);
 
         if (expression == null) {
-            expression = NativeFunction.create(EVENT_PREFIX, "element",
-                    "return (" + expressionString + ")");
+            expression = NativeFunction.create(EVENT_PREFIX, "element", "return (" + expressionString + ")");
             expressionCache.set(expressionString, expression);
         }
 
@@ -313,9 +287,8 @@ public final class ServerEventObject extends JavaScriptObject {
     }
 
     /**
-     * Reject all promises pending on this server object. Called during client
-     * resynchronization to free consumers of promises that are never delivered
-     * by the server.
+     * Reject all promises pending on this server object. Called during client resynchronization to free consumers of
+     * promises that are never delivered by the server.
      */
     public native void rejectPromises()
     /*-{

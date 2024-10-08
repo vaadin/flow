@@ -23,32 +23,28 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines the theme to use for the application. Should be present only once for
- * an app, in the `AppShellConfiguration` class.
+ * Defines the theme to use for the application. Should be present only once for an app, in the `AppShellConfiguration`
+ * class.
  * <p>
- * The {@code value} property defines the name of the application theme. When
- * the theme is present inside the project, it maps to the {@code
- * frontend/themes/&#60application-theme-name&#62}/ folder or alternatively to a
- * folder inside the static resources of a jar file, like {@code
- * src/main/resources/META-INF/resources/themes/&#60application-theme-name&#62/}
- * . The application theme is always based on Lumo theme and this is the
- * recommended way to theme applications starting from Flow 6.0 and Vaadin 19.
+ * The {@code value} property defines the name of the application theme. When the theme is present inside the project,
+ * it maps to the {@code
+ * frontend/themes/&#60application-theme-name&#62}/ folder or alternatively to a folder inside the static resources of a
+ * jar file, like {@code
+ * src/main/resources/META-INF/resources/themes/&#60application-theme-name&#62/} . The application theme is always based
+ * on Lumo theme and this is the recommended way to theme applications starting from Flow 6.0 and Vaadin 19.
  * <p>
- * Alternatively , if instead of Lumo theme the Material theme or another "old
- * style custom theme" is to be used, that can be specified with the {@code
- * themeClass} property. This allows defining a way to translate base component
- * url to the themed component url (@see {@link AbstractTheme}), which specifies
- * components styles.
+ * Alternatively , if instead of Lumo theme the Material theme or another "old style custom theme" is to be used, that
+ * can be specified with the {@code
+ * themeClass} property. This allows defining a way to translate base component url to the themed component url (@see
+ * {@link AbstractTheme}), which specifies components styles.
  * <p>
- * By default {@code com.vaadin.flow.theme.lumo.Lumo} theme is used if it's in
- * the classpath. You may disable theming with {@link NoTheme} annotation.
+ * By default {@code com.vaadin.flow.theme.lumo.Lumo} theme is used if it's in the classpath. You may disable theming
+ * with {@link NoTheme} annotation.
  * <p>
- * {@link Theme} annotation should be added to the AppShellConfigurator
- * implementation.
+ * {@link Theme} annotation should be added to the AppShellConfigurator implementation.
  *
  * <p>
- * Only a single theme can be defined and having multiple instances will throw
- * an exception.
+ * Only a single theme can be defined and having multiple instances will throw an exception.
  *
  * <p>
  * Here is some examples:

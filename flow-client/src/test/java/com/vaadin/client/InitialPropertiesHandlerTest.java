@@ -35,8 +35,7 @@ public class InitialPropertiesHandlerTest {
     private Registry registry = Mockito.mock(Registry.class);
     private StateTree tree = Mockito.mock(StateTree.class);
 
-    private InitialPropertiesHandler handler = new InitialPropertiesHandler(
-            registry);
+    private InitialPropertiesHandler handler = new InitialPropertiesHandler(registry);
 
     @Before
     public void setUp() {
@@ -61,8 +60,7 @@ public class InitialPropertiesHandlerTest {
         StateNode node = new StateNode(1, tree);
 
         NodeMap properties = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-        MapProperty serverSidePropertyUpdatedByClient = properties
-                .getProperty("foo");
+        MapProperty serverSidePropertyUpdatedByClient = properties.getProperty("foo");
         serverSidePropertyUpdatedByClient.setValue("bar");
 
         MapProperty serverSideProperty = properties.getProperty("other");
@@ -84,14 +82,11 @@ public class InitialPropertiesHandlerTest {
         Reactive.flush();
 
         Assert.assertEquals("bar", properties.getProperty("foo").getValue());
-        Assert.assertEquals("value",
-                properties.getProperty("other").getValue());
+        Assert.assertEquals("value", properties.getProperty("other").getValue());
         Assert.assertEquals("baz", properties.getProperty("client").getValue());
 
-        Mockito.verify(tree, Mockito.times(0)).sendNodePropertySyncToServer(
-                serverSidePropertyUpdatedByClient);
-        Mockito.verify(tree, Mockito.times(0))
-                .sendNodePropertySyncToServer(serverSideProperty);
+        Mockito.verify(tree, Mockito.times(0)).sendNodePropertySyncToServer(serverSidePropertyUpdatedByClient);
+        Mockito.verify(tree, Mockito.times(0)).sendNodePropertySyncToServer(serverSideProperty);
         Mockito.verify(tree).sendNodePropertySyncToServer(clientSideProperty);
     }
 
@@ -121,10 +116,8 @@ public class InitialPropertiesHandlerTest {
 
         AtomicInteger count = new AtomicInteger();
         FlushListener listener = () -> count.incrementAndGet();
-        property1.addChangeListener(
-                event -> Reactive.addFlushListener(listener));
-        property2.addChangeListener(
-                event -> Reactive.addFlushListener(listener));
+        property1.addChangeListener(event -> Reactive.addFlushListener(listener));
+        property2.addChangeListener(event -> Reactive.addFlushListener(listener));
 
         Reactive.flush();
 

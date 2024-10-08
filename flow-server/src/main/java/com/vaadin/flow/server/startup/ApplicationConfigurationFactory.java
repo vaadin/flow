@@ -27,8 +27,7 @@ import com.vaadin.flow.server.VaadinContext;
 public interface ApplicationConfigurationFactory {
 
     /**
-     * Creates a new instance of {@link ApplicationConfiguration} for the given
-     * {@code context}.
+     * Creates a new instance of {@link ApplicationConfiguration} for the given {@code context}.
      *
      * @param context
      *            the context to create a configuration for

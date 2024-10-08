@@ -26,8 +26,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
 /**
- * Provides API to access to the {@link DevModeHandler} instance by a
- * {@link VaadinService}.
+ * Provides API to access to the {@link DevModeHandler} instance by a {@link VaadinService}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -38,8 +37,7 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
 public interface DevModeHandlerManager {
 
     /**
-     * The annotations the dev mode handler is interested in having scanned from
-     * the class path.
+     * The annotations the dev mode handler is interested in having scanned from the class path.
      *
      * @return an array of types the dev mode handler is interested in
      */
@@ -56,8 +54,7 @@ public interface DevModeHandlerManager {
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
      */
-    void initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
-            throws VaadinInitializerException;
+    void initDevModeHandler(Set<Class<?>> classes, VaadinContext context) throws VaadinInitializerException;
 
     /**
      * Stops a running {@link DevModeHandler}.
@@ -81,8 +78,7 @@ public interface DevModeHandlerManager {
     DevModeHandler getDevModeHandler();
 
     /**
-     * Opens the given application URL in a browser if the application is
-     * running in development mode.
+     * Opens the given application URL in a browser if the application is running in development mode.
      *
      * @param url
      *            the url to open
@@ -112,8 +108,7 @@ public interface DevModeHandlerManager {
      *
      * @param service
      *            a Vaadin service
-     * @return an {@link Optional} containing a {@link DevModeHandler} instance
-     *         or <code>EMPTY</code> if disabled
+     * @return an {@link Optional} containing a {@link DevModeHandler} instance or <code>EMPTY</code> if disabled
      */
     static Optional<DevModeHandler> getDevModeHandler(VaadinService service) {
         return getDevModeHandler(service.getContext());
@@ -124,12 +119,10 @@ public interface DevModeHandlerManager {
      *
      * @param context
      *            the Vaadin context
-     * @return an {@link Optional} containing a {@link DevModeHandler} instance
-     *         or <code>EMPTY</code> if disabled
+     * @return an {@link Optional} containing a {@link DevModeHandler} instance or <code>EMPTY</code> if disabled
      */
     static Optional<DevModeHandler> getDevModeHandler(VaadinContext context) {
-        return Optional.ofNullable(context)
-                .map(ctx -> ctx.getAttribute(Lookup.class))
+        return Optional.ofNullable(context).map(ctx -> ctx.getAttribute(Lookup.class))
                 .map(lu -> lu.lookup(DevModeHandlerManager.class))
                 .flatMap(dmha -> Optional.ofNullable(dmha.getDevModeHandler()));
     }

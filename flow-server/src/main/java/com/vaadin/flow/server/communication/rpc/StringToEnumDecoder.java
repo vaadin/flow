@@ -20,11 +20,9 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
- * Decodes a {@link JsonValue} with {@link JsonType#STRING} type to {@link Enum}
- * subclass type.
+ * Decodes a {@link JsonValue} with {@link JsonType#STRING} type to {@link Enum} subclass type.
  * <p>
- * This decoder is applicable to any {@link JsonValue} which is
- * {@link JsonString} and any {@link Enum} sublcass
+ * This decoder is applicable to any {@link JsonValue} which is {@link JsonString} and any {@link Enum} sublcass
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -41,11 +39,9 @@ public class StringToEnumDecoder implements RpcDecoder {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public <T> T decode(JsonValue value, Class<T> type)
-            throws RpcDecodeException {
+    public <T> T decode(JsonValue value, Class<T> type) throws RpcDecodeException {
         String stringValue = value.asString();
-        Enum<?> result = Enum.valueOf((Class<? extends Enum>) type,
-                stringValue);
+        Enum<?> result = Enum.valueOf((Class<? extends Enum>) type, stringValue);
         return type.cast(result);
     }
 

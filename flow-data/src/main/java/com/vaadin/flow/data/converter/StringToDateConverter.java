@@ -25,8 +25,8 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts from {@link Date} to {@link String} and back. Uses
- * the given locale and {@link DateFormat} for formatting and parsing.
+ * A converter that converts from {@link Date} to {@link String} and back. Uses the given locale and {@link DateFormat}
+ * for formatting and parsing.
  * <p>
  * Leading and trailing white spaces are ignored when converting from a String.
  * </p>
@@ -40,8 +40,7 @@ import com.vaadin.flow.data.binder.ValueContext;
 public class StringToDateConverter implements Converter<String, Date> {
 
     /**
-     * Returns the format used by
-     * {@link #convertToPresentation(Date, ValueContext)} and
+     * Returns the format used by {@link #convertToPresentation(Date, ValueContext)} and
      * {@link #convertToModel(String, ValueContext)}.
      *
      * @param locale
@@ -53,8 +52,7 @@ public class StringToDateConverter implements Converter<String, Date> {
             locale = Locale.getDefault();
         }
 
-        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-                DateFormat.MEDIUM, locale);
+        DateFormat format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale);
         format.setLenient(false);
         return format;
     }
@@ -69,8 +67,7 @@ public class StringToDateConverter implements Converter<String, Date> {
         value = value.trim();
 
         ParsePosition parsePosition = new ParsePosition(0);
-        Date parsedValue = getFormat(context.getLocale().orElse(null))
-                .parse(value, parsePosition);
+        Date parsedValue = getFormat(context.getLocale().orElse(null)).parse(value, parsePosition);
         if (parsePosition.getIndex() != value.length()) {
             return Result.error("Could not convert '" + value);
         }

@@ -52,9 +52,8 @@ public class HasHierarchicalDataProviderTest {
     }
 
     // This is just to verify that the hierarchy is possible for tree grid
-    public static class TestHierarchicalComponent implements TestLazyDataView,
-            TestListDataView, HasHierarchicalDataProvider<String>,
-            HasDataView<String, Void, TestDataView> {
+    public static class TestHierarchicalComponent implements TestLazyDataView, TestListDataView,
+            HasHierarchicalDataProvider<String>, HasDataView<String, Void, TestDataView> {
 
         @Override
         public void setItemCountFromDataProvider() {
@@ -72,8 +71,7 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public void setItemCountEstimateIncrease(
-                int itemCountEstimateIncrease) {
+        public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
 
         }
 
@@ -88,8 +86,7 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public void setItemIndexProvider(
-                ItemIndexProvider<String, ?> itemIndexProvider) {
+        public void setItemIndexProvider(ItemIndexProvider<String, ?> itemIndexProvider) {
 
         }
 
@@ -138,14 +135,12 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public TestListDataView addItemsAfter(Collection<String> items,
-                String after) {
+        public TestListDataView addItemsAfter(Collection<String> items, String after) {
             return null;
         }
 
         @Override
-        public TestListDataView addItemsBefore(Collection<String> items,
-                String before) {
+        public TestListDataView addItemsBefore(Collection<String> items, String before) {
             return null;
         }
 
@@ -160,14 +155,12 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public TestListDataView setFilter(
-                SerializablePredicate<String> filter) {
+        public TestListDataView setFilter(SerializablePredicate<String> filter) {
             return null;
         }
 
         @Override
-        public TestListDataView addFilter(
-                SerializablePredicate<String> filter) {
+        public TestListDataView addFilter(SerializablePredicate<String> filter) {
             return null;
         }
 
@@ -177,14 +170,12 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public TestListDataView setSortComparator(
-                SerializableComparator<String> sortComparator) {
+        public TestListDataView setSortComparator(SerializableComparator<String> sortComparator) {
             return null;
         }
 
         @Override
-        public TestListDataView addSortComparator(
-                SerializableComparator<String> sortComparator) {
+        public TestListDataView addSortComparator(SerializableComparator<String> sortComparator) {
             return null;
         }
 
@@ -195,15 +186,13 @@ public class HasHierarchicalDataProviderTest {
 
         @Override
         public <V1 extends Comparable<? super V1>> TestListDataView setSortOrder(
-                ValueProvider<String, V1> valueProvider,
-                SortDirection sortDirection) {
+                ValueProvider<String, V1> valueProvider, SortDirection sortDirection) {
             return null;
         }
 
         @Override
         public <V1 extends Comparable<? super V1>> TestListDataView addSortOrder(
-                ValueProvider<String, V1> valueProvider,
-                SortDirection sortDirection) {
+                ValueProvider<String, V1> valueProvider, SortDirection sortDirection) {
             return null;
         }
 
@@ -228,14 +217,12 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public Registration addItemCountChangeListener(
-                ComponentEventListener<ItemCountChangeEvent<?>> listener) {
+        public Registration addItemCountChangeListener(ComponentEventListener<ItemCountChangeEvent<?>> listener) {
             return null;
         }
 
         @Override
-        public void setIdentifierProvider(
-                IdentifierProvider<String> identifierProvider) {
+        public void setIdentifierProvider(IdentifierProvider<String> identifierProvider) {
 
         }
 
@@ -245,8 +232,7 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public void setDataProvider(
-                HierarchicalDataProvider<String, ?> hierarchicalDataProvider) {
+        public void setDataProvider(HierarchicalDataProvider<String, ?> hierarchicalDataProvider) {
 
         }
 
@@ -256,8 +242,7 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public TestDataView setItems(
-                InMemoryDataProvider<String> dataProvider) {
+        public TestDataView setItems(InMemoryDataProvider<String> dataProvider) {
             return null;
         }
 

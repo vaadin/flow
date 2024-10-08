@@ -41,17 +41,15 @@ public class FeatureView extends Div {
         h2.setId("value");
         readFeatureFile();
 
-        NativeButton checkFeatureFile = new NativeButton("Check feature file",
-                click -> {
-                    readFeatureFile();
-                });
+        NativeButton checkFeatureFile = new NativeButton("Check feature file", click -> {
+            readFeatureFile();
+        });
         checkFeatureFile.setId("check");
 
-        NativeButton removeFeatures = new NativeButton("Remove feature file",
-                click -> {
-                    deleteFeatureFile();
-                    readFeatureFile();
-                });
+        NativeButton removeFeatures = new NativeButton("Remove feature file", click -> {
+            deleteFeatureFile();
+            readFeatureFile();
+        });
         removeFeatures.setId("remove");
 
         add(h2, checkFeatureFile, removeFeatures);
@@ -70,11 +68,9 @@ public class FeatureView extends Div {
                 if (propertiesStream != null) {
                     props.load(propertiesStream);
                 }
-                props.stringPropertyNames().forEach(
-                        property -> status.append(" ").append(property));
+                props.stringPropertyNames().forEach(property -> status.append(" ").append(property));
             } catch (IOException e) {
-                throw new UncheckedIOException(
-                        "Failed to read properties file from filesystem", e);
+                throw new UncheckedIOException("Failed to read properties file from filesystem", e);
             }
         } else {
             status.append(" missing");
@@ -87,12 +83,9 @@ public class FeatureView extends Div {
     }
 
     private File getFeatureFile() {
-        final VaadinContext context = VaadinSession.getCurrent().getService()
-                .getContext();
-        final ApplicationConfiguration configuration = ApplicationConfiguration
-                .get(context);
-        final File file = new File(configuration.getJavaResourceFolder(),
-                FeatureFlags.PROPERTIES_FILENAME);
+        final VaadinContext context = VaadinSession.getCurrent().getService().getContext();
+        final ApplicationConfiguration configuration = ApplicationConfiguration.get(context);
+        final File file = new File(configuration.getJavaResourceFolder(), FeatureFlags.PROPERTIES_FILENAME);
         return file;
     }
 }

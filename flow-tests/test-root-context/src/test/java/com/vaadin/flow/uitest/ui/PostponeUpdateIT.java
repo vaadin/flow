@@ -39,17 +39,13 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
 
         waitUntil(driver -> isElementPresent(By.id("proceedButton")));
 
-        Assert.assertTrue(String.format(
-                "Before proceed, the URL in the address bar should stay as %s. But, it was %s",
-                updatedUrl, getDriver().getCurrentUrl()),
-                getDriver().getCurrentUrl().equals(updatedUrl));
+        Assert.assertTrue(String.format("Before proceed, the URL in the address bar should stay as %s. But, it was %s",
+                updatedUrl, getDriver().getCurrentUrl()), getDriver().getCurrentUrl().equals(updatedUrl));
         String currentTarget = findElement(By.id("link")).getText();
 
         $(NativeButtonElement.class).id("proceedButton").click();
 
-        Assert.assertFalse(
-                "Proceeding should have updated parameter from "
-                        + currentTarget,
+        Assert.assertFalse("Proceeding should have updated parameter from " + currentTarget,
                 getDriver().getCurrentUrl().endsWith(currentTarget));
     }
 
@@ -68,8 +64,7 @@ public class PostponeUpdateIT extends ChromeBrowserTest {
 
         $(NativeButtonElement.class).id("cancelButton").click();
 
-        Assert.assertTrue("Canceling should revert to " + updatedUrl,
-                getDriver().getCurrentUrl().equals(updatedUrl));
+        Assert.assertTrue("Canceling should revert to " + updatedUrl, getDriver().getCurrentUrl().equals(updatedUrl));
     }
 
 }

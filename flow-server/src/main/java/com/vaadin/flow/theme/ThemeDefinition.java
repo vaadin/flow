@@ -42,8 +42,7 @@ public class ThemeDefinition implements Serializable {
      * @param name
      *            name of the theme, not <code>null</code>
      */
-    public ThemeDefinition(Class<? extends AbstractTheme> theme, String variant,
-            String name) {
+    public ThemeDefinition(Class<? extends AbstractTheme> theme, String variant, String name) {
 
         Objects.requireNonNull(theme);
         Objects.requireNonNull(variant);
@@ -55,15 +54,13 @@ public class ThemeDefinition implements Serializable {
     }
 
     /**
-     * Helper constructor that extracts the needed information from a Theme
-     * annotation.
+     * Helper constructor that extracts the needed information from a Theme annotation.
      *
      * @param themeAnnotation
      *            the annotation to get the definition from
      */
     public ThemeDefinition(Theme themeAnnotation) {
-        this(themeAnnotation.themeClass(), themeAnnotation.variant(),
-                themeAnnotation.value());
+        this(themeAnnotation.themeClass(), themeAnnotation.variant(), themeAnnotation.value());
     }
 
     /**

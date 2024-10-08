@@ -13,8 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 @Service
 public class AccountService {
 
-    private static final ConcurrentMap<String, Account> ACCOUNT_CACHE = new ConcurrentHashMap<>(
-            2);
+    private static final ConcurrentMap<String, Account> ACCOUNT_CACHE = new ConcurrentHashMap<>(2);
 
     public AccountService(UserInfoService userInfoService) {
         UserInfo user = userInfoService.findByUsername("john");

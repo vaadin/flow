@@ -34,15 +34,12 @@ public class SplitPackagesTest {
     /*
      * Modules that contain known split packages that we don't care about
      */
-    private static final Set<String> ignoredModules = new HashSet<>(
-            Arrays.asList("demo-flow-components", "flow-tests",
-                    "flow-test-generic", "flow-code-generator",
-                    "flow-generated-components", "flow-dev-bundle-plugin"));
+    private static final Set<String> ignoredModules = new HashSet<>(Arrays.asList("demo-flow-components", "flow-tests",
+            "flow-test-generic", "flow-code-generator", "flow-generated-components", "flow-dev-bundle-plugin"));
 
     /*
-     * Scans through all Maven modules to collect for which Java packages that
-     * module declares at least one Java class. The test fails if any Java
-     * package contains classes from multiple modules.
+     * Scans through all Maven modules to collect for which Java packages that module declares at least one Java class.
+     * The test fails if any Java package contains classes from multiple modules.
      */
     @Test
     public void findSplitPackages() throws IOException {
@@ -56,22 +53,19 @@ public class SplitPackagesTest {
     }
 
     private String collectErrors(Map<String, Set<File>> packages) {
-        return packages.entrySet().stream()
-                .flatMap(entry -> getErrors(entry.getKey(), entry.getValue()))
+        return packages.entrySet().stream().flatMap(entry -> getErrors(entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining("\n"));
     }
 
     private Stream<? extends String> getErrors(String pck, Set<File> modules) {
         if (modules.size() != 1) {
-            return Stream.of(pck + " contains classes from multiple modules: "
-                    + modules);
+            return Stream.of(pck + " contains classes from multiple modules: " + modules);
         } else {
             return Stream.empty();
         }
     }
 
-    private Map<String, Set<File>> mapPackagesToModules(
-            Collection<File> modules) {
+    private Map<String, Set<File>> mapPackagesToModules(Collection<File> modules) {
         Map<String, Set<File>> packageToModules = new HashMap<>();
 
         for (File module : modules) {
@@ -86,15 +80,13 @@ public class SplitPackagesTest {
             collectPackages("", srcDir, packages);
 
             for (String pck : packages) {
-                packageToModules.computeIfAbsent(pck, key -> new HashSet<>())
-                        .add(module);
+                packageToModules.computeIfAbsent(pck, key -> new HashSet<>()).add(module);
             }
         }
         return packageToModules;
     }
 
-    private void collectPackages(String packageName, File dir,
-            Set<String> packages) {
+    private void collectPackages(String packageName, File dir, Set<String> packages) {
         boolean containsJavaFile = false;
 
         for (File child : dir.listFiles()) {

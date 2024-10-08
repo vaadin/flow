@@ -50,8 +50,7 @@ public class AbstractSinglePropertyFieldTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Tag("tag")
-    public static class StringField
-            extends AbstractSinglePropertyField<StringField, String> {
+    public static class StringField extends AbstractSinglePropertyField<StringField, String> {
 
         public StringField(String synchronizedPropertyName) {
             super(synchronizedPropertyName, "", false);
@@ -120,22 +119,18 @@ public class AbstractSinglePropertyFieldTest {
     public void synchronizedEvent_default() {
         StringField stringField = new StringField();
 
-        Assert.assertEquals("property-changed",
-                stringField.getSynchronizationRegistration().getEventType());
+        Assert.assertEquals("property-changed", stringField.getSynchronizationRegistration().getEventType());
     }
 
     @Test
     public void synchronizedEvent_redefined() {
         StringField stringField = new StringField();
-        DomListenerRegistration origReg = stringField
-                .getSynchronizationRegistration();
-        SerializableRunnable unregisterListener = Mockito
-                .mock(SerializableRunnable.class);
+        DomListenerRegistration origReg = stringField.getSynchronizationRegistration();
+        SerializableRunnable unregisterListener = Mockito.mock(SerializableRunnable.class);
         origReg.onUnregister(unregisterListener);
 
         stringField.setSynchronizedEvent("blur");
-        DomListenerRegistration recentReg = stringField
-                .getSynchronizationRegistration();
+        DomListenerRegistration recentReg = stringField.getSynchronizationRegistration();
         Mockito.verify(unregisterListener).run();
         Assert.assertNotSame(origReg, recentReg);
         Assert.assertEquals("blur", recentReg.getEventType());
@@ -144,10 +139,8 @@ public class AbstractSinglePropertyFieldTest {
     @Test
     public void synchronizedEvent_null_noSynchronization() {
         StringField stringField = new StringField();
-        SerializableRunnable unregisterListener = Mockito
-                .mock(SerializableRunnable.class);
-        stringField.getSynchronizationRegistration()
-                .onUnregister(unregisterListener);
+        SerializableRunnable unregisterListener = Mockito.mock(SerializableRunnable.class);
+        stringField.getSynchronizationRegistration().onUnregister(unregisterListener);
 
         stringField.setSynchronizedEvent(null);
         Assert.assertNull(stringField.getSynchronizationRegistration());
@@ -158,13 +151,11 @@ public class AbstractSinglePropertyFieldTest {
     public void synchronizedEvent_camelCaseProperty_dashCaseEvent() {
         StringField stringField = new StringField("immediateValue");
 
-        Assert.assertEquals("immediate-value-changed",
-                stringField.getSynchronizationRegistration().getEventType());
+        Assert.assertEquals("immediate-value-changed", stringField.getSynchronizationRegistration().getEventType());
     }
 
     @Tag("tag")
-    private static class StringNullField
-            extends AbstractSinglePropertyField<StringNullField, String> {
+    private static class StringNullField extends AbstractSinglePropertyField<StringNullField, String> {
         public StringNullField() {
             super("property", null, true);
         }
@@ -189,8 +180,7 @@ public class AbstractSinglePropertyFieldTest {
     }
 
     @Tag("tag")
-    private static class DoubleField
-            extends AbstractSinglePropertyField<DoubleField, Double> {
+    private static class DoubleField extends AbstractSinglePropertyField<DoubleField, Double> {
         public DoubleField() {
             super("property", Double.valueOf(0), false);
         }
@@ -206,8 +196,7 @@ public class AbstractSinglePropertyFieldTest {
         monitor.assertNoEvent();
 
         field.setValue(10.1);
-        Assert.assertEquals(10.1,
-                field.getElement().getProperty("property", 0.0), 0);
+        Assert.assertEquals(10.1, field.getElement().getProperty("property", 0.0), 0);
         monitor.assertEvent(false, 0.0, 10.1);
 
         field.getElement().setProperty("property", 1.1);
@@ -222,8 +211,7 @@ public class AbstractSinglePropertyFieldTest {
     }
 
     @Tag("tag")
-    private static class IntegerField
-            extends AbstractSinglePropertyField<IntegerField, Integer> {
+    private static class IntegerField extends AbstractSinglePropertyField<IntegerField, Integer> {
         public IntegerField() {
             super("property", Integer.valueOf(42), false);
         }
@@ -254,8 +242,7 @@ public class AbstractSinglePropertyFieldTest {
     }
 
     @Tag("tag")
-    private static class BooleanField
-            extends AbstractSinglePropertyField<BooleanField, Boolean> {
+    private static class BooleanField extends AbstractSinglePropertyField<BooleanField, Boolean> {
         public BooleanField() {
             super("property", Boolean.FALSE, false);
         }
@@ -292,8 +279,7 @@ public class AbstractSinglePropertyFieldTest {
     @Tag("tag")
     // Broken since AbstractSinglePropertyField cannot know how to store
     // LocalDate instances in an element property
-    private static class SimpleDateField
-            extends AbstractSinglePropertyField<SimpleDateField, LocalDate> {
+    private static class SimpleDateField extends AbstractSinglePropertyField<SimpleDateField, LocalDate> {
         public SimpleDateField() {
             super("property", null, true);
         }
@@ -305,11 +291,9 @@ public class AbstractSinglePropertyFieldTest {
     }
 
     @Tag("tag")
-    private static class DateField
-            extends AbstractSinglePropertyField<DateField, LocalDate> {
+    private static class DateField extends AbstractSinglePropertyField<DateField, LocalDate> {
         public DateField() {
-            super("property", null, String.class, LocalDate::parse,
-                    LocalDate::toString);
+            super("property", null, String.class, LocalDate::parse, LocalDate::toString);
         }
     }
 
@@ -323,14 +307,12 @@ public class AbstractSinglePropertyFieldTest {
         monitor.assertNoEvent();
 
         field.setValue(LocalDate.of(2018, 4, 25));
-        Assert.assertEquals("2018-04-25",
-                field.getElement().getProperty("property"));
+        Assert.assertEquals("2018-04-25", field.getElement().getProperty("property"));
         monitor.assertEvent(false, null, LocalDate.of(2018, 4, 25));
 
         field.getElement().setProperty("property", "2017-03-24");
         Assert.assertEquals(LocalDate.of(2017, 3, 24), field.getValue());
-        monitor.assertEvent(false, LocalDate.of(2018, 4, 25),
-                LocalDate.of(2017, 3, 24));
+        monitor.assertEvent(false, LocalDate.of(2018, 4, 25), LocalDate.of(2017, 3, 24));
 
         // Cannot do removeProperty because
         // https://github.com/vaadin/flow/issues/3994
@@ -340,11 +322,9 @@ public class AbstractSinglePropertyFieldTest {
     }
 
     @Tag("tag")
-    private static class IntegerToStringField
-            extends AbstractSinglePropertyField<IntegerToStringField, Integer> {
+    private static class IntegerToStringField extends AbstractSinglePropertyField<IntegerToStringField, Integer> {
         public IntegerToStringField() {
-            super("property", null, String.class, Integer::new,
-                    String::valueOf);
+            super("property", null, String.class, Integer::new, String::valueOf);
         }
 
         @Override
@@ -382,18 +362,17 @@ public class AbstractSinglePropertyFieldTest {
         field.getElement().setProperty("property", "Not a number");
         monitor.assertNoEvent();
         Assert.assertNull(field.getValue());
-        Assert.assertEquals("Unparseable should not affect property",
-                "Not a number", field.getElement().getProperty("property"));
+        Assert.assertEquals("Unparseable should not affect property", "Not a number",
+                field.getElement().getProperty("property"));
 
         field.setValue(10);
         monitor.assertEvent(false, null, 10);
-        Assert.assertEquals("setValue should override unparseable property",
-                "10", field.getElement().getProperty("property"));
+        Assert.assertEquals("setValue should override unparseable property", "10",
+                field.getElement().getProperty("property"));
     }
 
     @Tag("tag")
-    private static class RadixField
-            extends AbstractSinglePropertyField<RadixField, Integer> {
+    private static class RadixField extends AbstractSinglePropertyField<RadixField, Integer> {
 
         private int radix = 10;
 
@@ -421,8 +400,7 @@ public class AbstractSinglePropertyFieldTest {
     @Test
     public void radixField() {
         RadixField field = new RadixField();
-        ValueChangeMonitor<Integer> changeMonitor = new ValueChangeMonitor<>(
-                field);
+        ValueChangeMonitor<Integer> changeMonitor = new ValueChangeMonitor<>(field);
 
         field.setValue(20);
         changeMonitor.discard();
@@ -438,16 +416,14 @@ public class AbstractSinglePropertyFieldTest {
     }
 
     @Tag("tag")
-    private static class JsonField
-            extends AbstractSinglePropertyField<JsonField, JsonValue> {
+    private static class JsonField extends AbstractSinglePropertyField<JsonField, JsonValue> {
         public JsonField() {
             super("property", Json.createNull(), false);
         }
     }
 
     @Tag("tag")
-    private static class JsonArrayField
-            extends AbstractSinglePropertyField<JsonArrayField, JsonArray> {
+    private static class JsonArrayField extends AbstractSinglePropertyField<JsonArrayField, JsonArray> {
         public JsonArrayField() {
             super("property", Json.createArray(), false);
         }
@@ -461,12 +437,9 @@ public class AbstractSinglePropertyFieldTest {
         Assert.assertEquals(JsonType.NULL, field.getValue().getType());
         monitor.assertNoEvent();
 
-        field.setValue(
-                JsonUtils.createArray(Json.create("foo"), Json.create(42)));
+        field.setValue(JsonUtils.createArray(Json.create("foo"), Json.create(42)));
         monitor.discard();
-        Assert.assertEquals("[\"foo\",42]",
-                ((JsonArray) field.getElement().getPropertyRaw("property"))
-                        .toJson());
+        Assert.assertEquals("[\"foo\",42]", ((JsonArray) field.getElement().getPropertyRaw("property")).toJson());
 
         field.getElement().setPropertyJson("property", Json.createObject());
         monitor.discard();
@@ -486,23 +459,18 @@ public class AbstractSinglePropertyFieldTest {
         Assert.assertEquals(0, field.getValue().length());
         monitor.assertNoEvent();
 
-        field.setValue(
-                JsonUtils.createArray(Json.create("foo"), Json.create(42)));
+        field.setValue(JsonUtils.createArray(Json.create("foo"), Json.create(42)));
         monitor.discard();
-        Assert.assertEquals("[\"foo\",42]",
-                ((JsonArray) field.getElement().getPropertyRaw("property"))
-                        .toJson());
+        Assert.assertEquals("[\"foo\",42]", ((JsonArray) field.getElement().getPropertyRaw("property")).toJson());
 
-        field.getElement().setPropertyJson("property",
-                JsonUtils.createArray(Json.create(37), Json.create("bar")));
+        field.getElement().setPropertyJson("property", JsonUtils.createArray(Json.create(37), Json.create("bar")));
         monitor.discard();
         Assert.assertEquals("[37,\"bar\"]", field.getValue().toJson());
     }
 
     @Test
     public void noOwnPublicApi() {
-        List<Method> newPublicMethods = PublicApiAnalyzer
-                .findNewPublicMethods(AbstractSinglePropertyField.class)
+        List<Method> newPublicMethods = PublicApiAnalyzer.findNewPublicMethods(AbstractSinglePropertyField.class)
                 .collect(Collectors.toList());
         Assert.assertEquals(Collections.emptyList(), newPublicMethods);
     }
@@ -527,12 +495,10 @@ public class AbstractSinglePropertyFieldTest {
         UI.setCurrent(ui);
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
-        TestVaadinServletService service = (TestVaadinServletService) ui
-                .getSession().getService();
+        TestVaadinServletService service = (TestVaadinServletService) ui.getSession().getService();
         service.setInstantiator(instantiator);
 
-        Mockito.when(instantiator.createComponent(StringField.class))
-                .thenAnswer(a -> new StringField());
+        Mockito.when(instantiator.createComponent(StringField.class)).thenAnswer(a -> new StringField());
 
         StringField field = Component.from(element, StringField.class);
         Assert.assertEquals("foo", field.getValue());

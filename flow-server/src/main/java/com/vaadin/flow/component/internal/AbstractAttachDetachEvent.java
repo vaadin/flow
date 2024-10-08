@@ -28,8 +28,7 @@ import com.vaadin.flow.server.VaadinSession;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public abstract class AbstractAttachDetachEvent
-        extends ComponentEvent<Component> {
+public abstract class AbstractAttachDetachEvent extends ComponentEvent<Component> {
 
     /**
      * Creates a new event with the given component as source.

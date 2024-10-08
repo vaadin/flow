@@ -40,48 +40,40 @@ public class InternalErrorView extends AbstractDivView {
         Div message = new Div();
         message.setId("message");
 
-        NativeButton updateMessageButton = createButton("Update", "update",
-                event -> message.setText("Updated"));
+        NativeButton updateMessageButton = createButton("Update", "update", event -> message.setText("Updated"));
 
-        NativeButton closeSessionButton = createButton("Close session",
-                "close-session", event -> VaadinSession.getCurrent().close());
+        NativeButton closeSessionButton = createButton("Close session", "close-session",
+                event -> VaadinSession.getCurrent().close());
 
-        NativeButton enableNotificationButton = createButton(
-                "Enable session expired notification", "enable-notification",
-                event -> enableSessionExpiredNotification());
+        NativeButton enableNotificationButton = createButton("Enable session expired notification",
+                "enable-notification", event -> enableSessionExpiredNotification());
 
-        NativeButton causeExceptionButton = createButton("Cause exception",
-                "cause-exception", event -> showInternalError());
+        NativeButton causeExceptionButton = createButton("Cause exception", "cause-exception",
+                event -> showInternalError());
 
-        NativeButton resetSystemMessagesButton = createButton(
-                "Reset system messages", "reset-system-messages",
+        NativeButton resetSystemMessagesButton = createButton("Reset system messages", "reset-system-messages",
                 event -> resetSystemMessages());
 
-        add(message, updateMessageButton, closeSessionButton,
-                enableNotificationButton, causeExceptionButton,
+        add(message, updateMessageButton, closeSessionButton, enableNotificationButton, causeExceptionButton,
                 resetSystemMessagesButton);
     }
 
     private void showInternalError() {
-        SystemMessages systemMessages = VaadinService.getCurrent()
-                .getSystemMessages(getLocale(), VaadinRequest.getCurrent());
+        SystemMessages systemMessages = VaadinService.getCurrent().getSystemMessages(getLocale(),
+                VaadinRequest.getCurrent());
 
-        showCriticalNotification(systemMessages.getInternalErrorCaption(),
-                systemMessages.getInternalErrorMessage(), "",
+        showCriticalNotification(systemMessages.getInternalErrorCaption(), systemMessages.getInternalErrorMessage(), "",
                 systemMessages.getInternalErrorURL());
 
     }
 
-    protected void showCriticalNotification(String caption, String message,
-            String details, String url) {
+    protected void showCriticalNotification(String caption, String message, String details, String url) {
         VaadinService service = VaadinService.getCurrent();
         VaadinResponse response = VaadinService.getCurrentResponse();
 
         try {
-            service.writeUncachedStringResponse(response,
-                    JsonConstants.JSON_CONTENT_TYPE,
-                    VaadinService.createCriticalNotificationJSON(caption,
-                            message, details, url));
+            service.writeUncachedStringResponse(response, JsonConstants.JSON_CONTENT_TYPE,
+                    VaadinService.createCriticalNotificationJSON(caption, message, details, url));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -91,12 +83,10 @@ public class InternalErrorView extends AbstractDivView {
         CustomizedSystemMessages sysMessages = new CustomizedSystemMessages();
         sysMessages.setSessionExpiredNotificationEnabled(true);
 
-        VaadinService.getCurrent()
-                .setSystemMessagesProvider(systemMessagesInfo -> sysMessages);
+        VaadinService.getCurrent().setSystemMessagesProvider(systemMessagesInfo -> sysMessages);
     }
 
     private void resetSystemMessages() {
-        VaadinService.getCurrent()
-                .setSystemMessagesProvider(DefaultSystemMessagesProvider.get());
+        VaadinService.getCurrent().setSystemMessagesProvider(DefaultSystemMessagesProvider.get());
     }
 }

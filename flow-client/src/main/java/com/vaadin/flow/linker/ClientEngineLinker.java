@@ -39,11 +39,9 @@ import com.google.gwt.dev.util.DefaultTextOutput;
 import com.google.gwt.util.tools.Utility;
 
 /**
- * Customized version of {@link SingleScriptLinker} which uses a modified
- * version of the single script template ({@value #SINGLE_SCRIPT_TEMPLATE_JS}).
- * This is because the template from {@link SingleScriptLinker} uses a
- * computeScriptBase function which does a <code>document.write</code> and thus
- * cannot be called deferredly.
+ * Customized version of {@link SingleScriptLinker} which uses a modified version of the single script template
+ * ({@value #SINGLE_SCRIPT_TEMPLATE_JS}). This is because the template from {@link SingleScriptLinker} uses a
+ * computeScriptBase function which does a <code>document.write</code> and thus cannot be called deferredly.
  *
  * @see SingleScriptLinker
  * @since 1.0
@@ -57,8 +55,8 @@ public class ClientEngineLinker extends SingleScriptLinker {
      */
     private static final String SINGLE_SCRIPT_TEMPLATE_JS = "com/vaadin/flow/linker/ClientEngineSingleScriptTemplate.js";
     /**
-     * The computeScriptBase implementation which doesn't use document.write. It
-     * is taken from {@link CrossSiteIframeLinker}.
+     * The computeScriptBase implementation which doesn't use document.write. It is taken from
+     * {@link CrossSiteIframeLinker}.
      */
     private static final String COMPUTE_SCRIPT_BASE_DOT_JS = "com/google/gwt/core/ext/linker/impl/computeScriptBase.js";
 
@@ -117,47 +115,40 @@ public class ClientEngineLinker extends SingleScriptLinker {
     /*
      * (non-Javadoc)
      *
-     * @see com.google.gwt.core.linker.SingleScriptLinker#doEmitCompilation(com.
-     * google.gwt.core.ext.TreeLogger, com.google.gwt.core.ext.LinkerContext,
-     * com.google.gwt.core.ext.linker.CompilationResult,
+     * @see com.google.gwt.core.linker.SingleScriptLinker#doEmitCompilation(com. google.gwt.core.ext.TreeLogger,
+     * com.google.gwt.core.ext.LinkerContext, com.google.gwt.core.ext.linker.CompilationResult,
      * com.google.gwt.core.ext.linker.ArtifactSet)
      *
      * Overridden to avoid exception during compilation from SingleScriptLinker.
      */
     @Override
-    protected Collection<Artifact<?>> doEmitCompilation(TreeLogger logger,
-            LinkerContext context, CompilationResult result,
-            ArtifactSet artifacts) throws UnableToCompleteException {
+    protected Collection<Artifact<?>> doEmitCompilation(TreeLogger logger, LinkerContext context,
+            CompilationResult result, ArtifactSet artifacts) throws UnableToCompleteException {
 
         String[] js = result.getJavaScript();
         if (js.length != 1) {
             logger.branch(TreeLogger.ERROR,
-                    "The module must not have multiple fragments when using the "
-                            + getDescription() + " Linker.",
+                    "The module must not have multiple fragments when using the " + getDescription() + " Linker.",
                     null);
             throw new UnableToCompleteException();
         }
 
         ArrayList<Artifact<?>> toReturn = new ArrayList<>();
         toReturn.add(new Script(result.getStrongName(), js[0]));
-        toReturn.addAll(
-                emitSelectionInformation(result.getStrongName(), result));
+        toReturn.addAll(emitSelectionInformation(result.getStrongName(), result));
         return toReturn;
     }
 
     /*
      * (non-Javadoc)
      *
-     * @see
-     * com.google.gwt.core.linker.SingleScriptLinker#emitSelectionScript(com.
-     * google.gwt.core.ext.TreeLogger, com.google.gwt.core.ext.LinkerContext,
-     * com.google.gwt.core.ext.linker.ArtifactSet)
+     * @see com.google.gwt.core.linker.SingleScriptLinker#emitSelectionScript(com. google.gwt.core.ext.TreeLogger,
+     * com.google.gwt.core.ext.LinkerContext, com.google.gwt.core.ext.linker.ArtifactSet)
      *
      * Overridden because of customized client engine file name.
      */
     @Override
-    protected EmittedArtifact emitSelectionScript(TreeLogger logger,
-            LinkerContext context, ArtifactSet artifacts)
+    protected EmittedArtifact emitSelectionScript(TreeLogger logger, LinkerContext context, ArtifactSet artifacts)
             throws UnableToCompleteException {
 
         // Find the single Script result
@@ -182,8 +173,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
         out.newlineOpt();
         out.print("var $moduleName, $moduleBase;");
         out.newlineOpt();
-        out.print(
-                "var $stats = $wnd.__gwtStatsEvent ? function(a) {$wnd.__gwtStatsEvent(a)} : null;");
+        out.print("var $stats = $wnd.__gwtStatsEvent ? function(a) {$wnd.__gwtStatsEvent(a)} : null;");
         out.newlineOpt();
 
         out.print("var $strongName = '" + result.getStrongName() + "';");
@@ -193,56 +183,46 @@ public class ClientEngineLinker extends SingleScriptLinker {
 
         // Generate the call to tell the bootstrap code that we're ready to go.
         out.newlineOpt();
-        out.print("if (" + context.getModuleFunctionName() + ") "
-                + context.getModuleFunctionName()
+        out.print("if (" + context.getModuleFunctionName() + ") " + context.getModuleFunctionName()
                 + ".onScriptLoad(gwtOnLoad);");
         out.newlineOpt();
         out.print("})();");
         out.newlineOpt();
 
-        return emitString(logger, out.toString(),
-                getJsFilename(context, result));
+        return emitString(logger, out.toString(), getJsFilename(context, result));
     }
 
     /*
      * (non-Javadoc)
      *
      * @see com.google.gwt.core.ext.linker.impl.SelectionScriptLinker#
-     * fillSelectionScriptTemplate(java.lang.StringBuffer,
-     * com.google.gwt.core.ext.TreeLogger,
-     * com.google.gwt.core.ext.LinkerContext,
-     * com.google.gwt.core.ext.linker.ArtifactSet,
+     * fillSelectionScriptTemplate(java.lang.StringBuffer, com.google.gwt.core.ext.TreeLogger,
+     * com.google.gwt.core.ext.LinkerContext, com.google.gwt.core.ext.linker.ArtifactSet,
      * com.google.gwt.core.ext.linker.CompilationResult)
      *
-     * Overridden because need to use same compute base script as in
-     * CrossSiteIframeLinker, ClientEngineLinker.COMPUTE_SCRIPT_BASE_DOT_JS. It
-     * doesn't use document.write.
+     * Overridden because need to use same compute base script as in CrossSiteIframeLinker,
+     * ClientEngineLinker.COMPUTE_SCRIPT_BASE_DOT_JS. It doesn't use document.write.
      */
     @Override
-    protected String fillSelectionScriptTemplate(StringBuffer selectionScript,
-            TreeLogger logger, LinkerContext context, ArtifactSet artifacts,
-            CompilationResult result) throws UnableToCompleteException {
+    protected String fillSelectionScriptTemplate(StringBuffer selectionScript, TreeLogger logger, LinkerContext context,
+            ArtifactSet artifacts, CompilationResult result) throws UnableToCompleteException {
         String computeScriptBase;
         String processMetas;
         try {
-            computeScriptBase = Utility
-                    .getFileFromClassPath(COMPUTE_SCRIPT_BASE_DOT_JS);
+            computeScriptBase = Utility.getFileFromClassPath(COMPUTE_SCRIPT_BASE_DOT_JS);
             processMetas = Utility.getFileFromClassPath(PROCESS_METAS_JS);
         } catch (IOException e) {
-            logger.log(TreeLogger.ERROR,
-                    "Unable to read selection script template", e);
+            logger.log(TreeLogger.ERROR, "Unable to read selection script template", e);
             throw new UnableToCompleteException();
         }
-        replaceAll(selectionScript, "__COMPUTE_SCRIPT_BASE__",
-                computeScriptBase);
+        replaceAll(selectionScript, "__COMPUTE_SCRIPT_BASE__", computeScriptBase);
 
         replaceAll(selectionScript, "__PROCESS_METAS__", processMetas);
 
         ResourceInjectionUtil.injectResources(selectionScript, artifacts);
         permutationsUtil.addPermutationsJs(selectionScript, logger, context);
 
-        replaceAll(selectionScript, "__MODULE_FUNC__",
-                context.getModuleFunctionName());
+        replaceAll(selectionScript, "__MODULE_FUNC__", context.getModuleFunctionName());
         replaceAll(selectionScript, "__MODULE_NAME__", context.getModuleName());
         replaceAll(selectionScript, "__HOSTED_FILENAME__", getHostedFilename());
 
@@ -250,19 +230,14 @@ public class ClientEngineLinker extends SingleScriptLinker {
     }
 
     private String getJsFilename(LinkerContext context, Script result) {
-        return context.getModuleName() + "-" + result.getStrongName()
-                + ".cache.js";
+        return context.getModuleName() + "-" + result.getStrongName() + ".cache.js";
     }
 
-    private Script getScript(TreeLogger logger, ArtifactSet artifacts)
-            throws UnableToCompleteException {
+    private Script getScript(TreeLogger logger, ArtifactSet artifacts) throws UnableToCompleteException {
         Set<Script> results = artifacts.find(Script.class);
         if (results.size() != 1) {
-            logger.log(TreeLogger.ERROR,
-                    "The module must have exactly one distinct"
-                            + " permutation when using the " + getDescription()
-                            + " Linker; found " + results.size(),
-                    null);
+            logger.log(TreeLogger.ERROR, "The module must have exactly one distinct" + " permutation when using the "
+                    + getDescription() + " Linker; found " + results.size(), null);
             throw new UnableToCompleteException();
         }
         return results.iterator().next();
@@ -271,36 +246,30 @@ public class ClientEngineLinker extends SingleScriptLinker {
     /*
      * (non-Javadoc)
      *
-     * @see
-     * com.google.gwt.core.linker.SingleScriptLinker#getSelectionScriptTemplate(
-     * com.google.gwt.core.ext.TreeLogger,
-     * com.google.gwt.core.ext.LinkerContext)
+     * @see com.google.gwt.core.linker.SingleScriptLinker#getSelectionScriptTemplate(
+     * com.google.gwt.core.ext.TreeLogger, com.google.gwt.core.ext.LinkerContext)
      *
      * Overridden because we use a customized single script template.
      */
     @Override
-    protected String getSelectionScriptTemplate(TreeLogger logger,
-            LinkerContext context) throws UnableToCompleteException {
+    protected String getSelectionScriptTemplate(TreeLogger logger, LinkerContext context)
+            throws UnableToCompleteException {
         return SINGLE_SCRIPT_TEMPLATE_JS;
     }
 
     /*
      * (non-Javadoc)
      *
-     * @see
-     * com.google.gwt.core.ext.linker.impl.SelectionScriptLinker#link(com.google
-     * .gwt.core.ext.TreeLogger, com.google.gwt.core.ext.LinkerContext,
-     * com.google.gwt.core.ext.linker.ArtifactSet, boolean)
+     * @see com.google.gwt.core.ext.linker.impl.SelectionScriptLinker#link(com.google .gwt.core.ext.TreeLogger,
+     * com.google.gwt.core.ext.LinkerContext, com.google.gwt.core.ext.linker.ArtifactSet, boolean)
      *
-     * Overridden so that we can provide compule.properties with a property
-     * mapping to the client engine javascript file name.
+     * Overridden so that we can provide compule.properties with a property mapping to the client engine javascript file
+     * name.
      */
     @Override
-    public ArtifactSet link(TreeLogger logger, LinkerContext context,
-            ArtifactSet artifacts, boolean onePermutation)
+    public ArtifactSet link(TreeLogger logger, LinkerContext context, ArtifactSet artifacts, boolean onePermutation)
             throws UnableToCompleteException {
-        ArtifactSet result = super.link(logger, context, artifacts,
-                onePermutation);
+        ArtifactSet result = super.link(logger, context, artifacts, onePermutation);
         if (!onePermutation) {
             result.add(emitStrongNamePropertyFile(logger, context, artifacts));
         }
@@ -310,8 +279,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
     /*
      * Provides the property file that maps the client engine javascript file.
      */
-    private Artifact<?> emitStrongNamePropertyFile(TreeLogger logger,
-            LinkerContext context, ArtifactSet artifacts)
+    private Artifact<?> emitStrongNamePropertyFile(TreeLogger logger, LinkerContext context, ArtifactSet artifacts)
             throws UnableToCompleteException {
         Script result = getScript(logger, artifacts);
 

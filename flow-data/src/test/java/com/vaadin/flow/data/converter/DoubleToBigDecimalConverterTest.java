@@ -46,8 +46,7 @@ public class DoubleToBigDecimalConverterTest {
 
     @Test
     public void testConvertToPresentation() {
-        Double value = converter.convertToPresentation(new BigDecimal("42.42"),
-                null);
+        Double value = converter.convertToPresentation(new BigDecimal("42.42"), null);
         assertEquals(Double.valueOf(42.42), value);
     }
 
@@ -59,8 +58,7 @@ public class DoubleToBigDecimalConverterTest {
 
     @Test
     public void testConvertToPresentationWithDifferentScales() {
-        Double value = converter.convertToPresentation(new BigDecimal("42.420"),
-                null);
+        Double value = converter.convertToPresentation(new BigDecimal("42.420"), null);
         assertEquals(Double.valueOf(42.42), value);
     }
 }

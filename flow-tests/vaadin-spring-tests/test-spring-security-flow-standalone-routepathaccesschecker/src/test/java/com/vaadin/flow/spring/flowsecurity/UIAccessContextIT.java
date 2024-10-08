@@ -45,18 +45,15 @@ public class UIAccessContextIT extends AbstractIT {
             open("private", adminBrowser);
             HasElementQuery adminContext = () -> adminBrowser;
             loginAdmin(adminContext);
-            TestBenchElement adminBalance = adminContext.$("span")
-                    .id("balanceText");
+            TestBenchElement adminBalance = adminContext.$("span").id("balanceText");
             Assert.assertEquals(expectedAdminBalance, adminBalance.getText());
 
-            ButtonElement sendRefresh = $(ButtonElement.class)
-                    .id("sendRefresh");
+            ButtonElement sendRefresh = $(ButtonElement.class).id("sendRefresh");
             sendRefresh.click();
             Assert.assertEquals(expectedUserBalance, balance.getText());
             Assert.assertEquals(expectedAdminBalance, adminBalance.getText());
 
-            ButtonElement adminSendRefresh = adminContext.$(ButtonElement.class)
-                    .id("sendRefresh");
+            ButtonElement adminSendRefresh = adminContext.$(ButtonElement.class).id("sendRefresh");
             adminSendRefresh.click();
             Assert.assertEquals(expectedUserBalance, balance.getText());
             Assert.assertEquals(expectedAdminBalance, adminBalance.getText());
@@ -66,8 +63,7 @@ public class UIAccessContextIT extends AbstractIT {
     }
 
     private void loginAdmin(HasElementQuery adminContext) {
-        LoginFormElement form = adminContext.$(LoginOverlayElement.class)
-                .first().getLoginForm();
+        LoginFormElement form = adminContext.$(LoginOverlayElement.class).first().getLoginForm();
         form.getUsernameField().setValue("emma");
         form.getPasswordField().setValue("emma");
         form.submit();

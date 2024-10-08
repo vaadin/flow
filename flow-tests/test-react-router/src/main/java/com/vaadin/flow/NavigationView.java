@@ -39,44 +39,37 @@ public class NavigationView extends Div {
     public static final String SET_PARAMETER_COUNTER_ID = "set-parameter-counter";
 
     public NavigationView() {
-        Anchor anchorNavigation = new Anchor("com.vaadin.flow.AnchorView",
-                "Navigate to AnchorView");
+        Anchor anchorNavigation = new Anchor("com.vaadin.flow.AnchorView", "Navigate to AnchorView");
         anchorNavigation.setId(ANCHOR_ID);
-        NativeButton serverNavigation = new NativeButton(
-                "Navigate through Server", event -> {
-                    event.getSource().getUI().get().navigate(ServerView.class);
-                });
+        NativeButton serverNavigation = new NativeButton("Navigate through Server", event -> {
+            event.getSource().getUI().get().navigate(ServerView.class);
+        });
         serverNavigation.setId(SERVER_ID);
         RouterLink link = new RouterLink("RouterView", RouterView.class);
         link.setId(ROUTER_LINK_ID);
 
-        RouterLink postponeView = new RouterLink("PostponeView",
-                PostponeView.class);
+        RouterLink postponeView = new RouterLink("PostponeView", PostponeView.class);
         postponeView.setId(POSTPONE_ID);
 
-        add(new Span("NavigationView"), new Div(), anchorNavigation, new Div(),
-                serverNavigation, new Div(), link, new Div(), postponeView);
+        add(new Span("NavigationView"), new Div(), anchorNavigation, new Div(), serverNavigation, new Div(), link,
+                new Div(), postponeView);
 
         // React navigation
-        Anchor reactAnchorNavigation = new Anchor("react",
-                "Navigate to react with Anchor");
+        Anchor reactAnchorNavigation = new Anchor("react", "Navigate to react with Anchor");
         reactAnchorNavigation.setId(REACT_ANCHOR_ID);
-        NativeButton reactServerNavigation = new NativeButton(
-                "Navigate to react through Server", event -> {
-                    event.getSource().getUI().get().navigate("react");
-                });
+        NativeButton reactServerNavigation = new NativeButton("Navigate to react through Server", event -> {
+            event.getSource().getUI().get().navigate("react");
+        });
         reactServerNavigation.setId(REACT_ID);
 
         add(new Div(), reactAnchorNavigation, new Div(), reactServerNavigation);
 
-        RouterLink rlViewQuery = new RouterLink("AnchorQuery",
-                AnchorView.class);
+        RouterLink rlViewQuery = new RouterLink("AnchorQuery", AnchorView.class);
         rlViewQuery.setQueryParameters(QueryParameters.of("test", "value"));
         rlViewQuery.setId(ROUTER_LINK_QUERY_ID);
         add(new Div(), rlViewQuery);
 
-        Anchor anchorViewQuery = new Anchor(
-                "com.vaadin.flow.AnchorView?test=anchor", "AnchorQuery");
+        Anchor anchorViewQuery = new Anchor("com.vaadin.flow.AnchorView?test=anchor", "AnchorQuery");
         anchorViewQuery.setId(ANCHOR_QUERY_ID);
         add(new Div(), anchorViewQuery);
 

@@ -25,8 +25,7 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts between <code>LocalDate</code> and
- * <code>Date</code>.
+ * A converter that converts between <code>LocalDate</code> and <code>Date</code>.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -55,8 +54,7 @@ public class LocalDateToDateConverter implements Converter<LocalDate, Date> {
     }
 
     @Override
-    public Result<Date> convertToModel(LocalDate localDate,
-            ValueContext context) {
+    public Result<Date> convertToModel(LocalDate localDate, ValueContext context) {
         if (localDate == null) {
             return Result.ok(null);
         }
@@ -70,8 +68,7 @@ public class LocalDateToDateConverter implements Converter<LocalDate, Date> {
             return null;
         }
 
-        return Instant.ofEpochMilli(date.getTime()).atZone(zoneId)
-                .toLocalDate();
+        return Instant.ofEpochMilli(date.getTime()).atZone(zoneId).toLocalDate();
     }
 
 }

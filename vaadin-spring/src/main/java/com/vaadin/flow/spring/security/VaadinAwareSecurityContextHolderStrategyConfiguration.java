@@ -31,8 +31,8 @@ public class VaadinAwareSecurityContextHolderStrategyConfiguration {
      * Registers {@link SecurityContextHolderStrategy} bean.
      * <p>
      * Beans of this type will automatically be used by
-     * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration}
-     * to configure the current {@link SecurityContextHolderStrategy}.
+     * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration} to
+     * configure the current {@link SecurityContextHolderStrategy}.
      */
     @Bean(name = "VaadinSecurityContextHolderStrategy")
     @ConditionalOnMissingBean
@@ -40,8 +40,7 @@ public class VaadinAwareSecurityContextHolderStrategyConfiguration {
         VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
         // Use a security context holder that can find the context from Vaadin
         // specific classes
-        SecurityContextHolder.setContextHolderStrategy(
-                vaadinAwareSecurityContextHolderStrategy);
+        SecurityContextHolder.setContextHolderStrategy(vaadinAwareSecurityContextHolderStrategy);
         return vaadinAwareSecurityContextHolderStrategy;
     }
 

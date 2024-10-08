@@ -74,19 +74,16 @@ public class TextTest {
     public void setFooProperty_throwsWithMeaningfulMessage() {
         assertExceptionOnSetProperty("foo");
 
-        new Text("").set(PropertyDescriptors.propertyWithDefault("foo", true),
-                false);
+        new Text("").set(PropertyDescriptors.propertyWithDefault("foo", true), false);
     }
 
     @Test
     public void setVisibility_throwsWithMeaningfulMessage() {
         exception.expect(UnsupportedOperationException.class);
 
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "Cannot change Text component visibility"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
+        exception.expectMessage(
+                CoreMatchers.allOf(CoreMatchers.containsString("Cannot change Text component visibility"),
+                        CoreMatchers.containsString("because it doesn't represent an HTML Element")));
 
         new Text("").setVisible(false);
     }
@@ -95,10 +92,8 @@ public class TextTest {
     public void addClassName_throwsWithMeaningfulMessage() {
         exception.expect(UnsupportedOperationException.class);
 
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString("Cannot add a class to the Text"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString("Cannot add a class to the Text"),
+                CoreMatchers.containsString("because it doesn't represent an HTML Element")));
 
         new Text("").addClassName("foo");
     }
@@ -107,10 +102,8 @@ public class TextTest {
     public void addClassNames_throwsWithMeaningfulMessage() {
         exception.expect(UnsupportedOperationException.class);
 
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString("Cannot add classes to the Text"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString("Cannot add classes to the Text"),
+                CoreMatchers.containsString("because it doesn't represent an HTML Element")));
 
         new Text("").addClassNames("foor", "bar");
     }
@@ -119,11 +112,8 @@ public class TextTest {
     public void removeClassName_throwsWithMeaningfulMessage() {
         exception.expect(UnsupportedOperationException.class);
 
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString("Cannot remove a class from the Text"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString("Cannot remove a class from the Text"),
+                CoreMatchers.containsString("because it doesn't represent an HTML Element")));
 
         new Text("").removeClassName("foo");
     }
@@ -132,11 +122,8 @@ public class TextTest {
     public void removeClassNames_throwsWithMeaningfulMessage() {
         exception.expect(UnsupportedOperationException.class);
 
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString("Cannot remove classes from the Text"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString("Cannot remove classes from the Text"),
+                CoreMatchers.containsString("because it doesn't represent an HTML Element")));
 
         new Text("").removeClassNames("foo", "bar");
     }
@@ -145,11 +132,8 @@ public class TextTest {
     public void setClassName_throwsWithMeaningfulMessage() {
         exception.expect(UnsupportedOperationException.class);
 
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString("Cannot set the Text component class"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString("Cannot set the Text component class"),
+                CoreMatchers.containsString("because it doesn't represent an HTML Element")));
 
         new Text("").setClassName("foo");
     }
@@ -158,11 +142,8 @@ public class TextTest {
     public void setClassName_withBooleanParameter_throwsWithMeaningfulMessage() {
         exception.expect(UnsupportedOperationException.class);
 
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers
-                        .containsString("Cannot set the Text component class"),
-                CoreMatchers.containsString(
-                        "because it doesn't represent an HTML Element")));
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString("Cannot set the Text component class"),
+                CoreMatchers.containsString("because it doesn't represent an HTML Element")));
 
         new Text("").setClassName("foo", true);
     }
@@ -170,9 +151,7 @@ public class TextTest {
     private void assertExceptionOnSetProperty(String property) {
         exception.expect(UnsupportedOperationException.class);
 
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString("Cannot set '" + property + "' "),
-                CoreMatchers.containsString(
-                        "component because it doesn't represent an HTML Element")));
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString("Cannot set '" + property + "' "),
+                CoreMatchers.containsString("component because it doesn't represent an HTML Element")));
     }
 }

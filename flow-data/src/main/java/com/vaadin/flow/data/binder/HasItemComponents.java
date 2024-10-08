@@ -26,9 +26,8 @@ import com.vaadin.flow.component.HasElement;
 /**
  * Represents a component that can have additional components between the items.
  * <p>
- * The items should be represented by components that implement
- * {@link ItemComponent}. Additionally any type of components can be added at
- * any position with {@link #addComponents(Object, Component...)} or
+ * The items should be represented by components that implement {@link ItemComponent}. Additionally any type of
+ * components can be added at any position with {@link #addComponents(Object, Component...)} or
  * {@link #prependComponents(Object, Component...)}.
  *
  * @author Vaadin Ltd
@@ -40,8 +39,7 @@ import com.vaadin.flow.component.HasElement;
 public interface HasItemComponents<T> extends HasComponents {
 
     /**
-     * Represents a single item component that is used inside a
-     * {@link HasItemComponents}.
+     * Represents a single item component that is used inside a {@link HasItemComponents}.
      *
      * @author Vaadin Ltd
      * @since 1.0.
@@ -66,8 +64,7 @@ public interface HasItemComponents<T> extends HasComponents {
     default void addComponents(T afterItem, Component... components) {
         int insertPosition = getItemPosition(afterItem);
         if (insertPosition == -1) {
-            throw new IllegalArgumentException(
-                    "Could not locate the item after which to insert components.");
+            throw new IllegalArgumentException("Could not locate the item after which to insert components.");
         }
         for (Component component : components) {
             insertPosition++;
@@ -88,8 +85,7 @@ public interface HasItemComponents<T> extends HasComponents {
     default void prependComponents(T beforeItem, Component... components) {
         int insertPosition = getItemPosition(beforeItem);
         if (insertPosition == -1) {
-            throw new IllegalArgumentException(
-                    "Could not locate the item before which to insert components.");
+            throw new IllegalArgumentException("Could not locate the item before which to insert components.");
         }
         for (Component component : components) {
             getElement().insertChild(insertPosition, component.getElement());
@@ -102,8 +98,7 @@ public interface HasItemComponents<T> extends HasComponents {
      *
      * @param item
      *            the item to look for
-     * @return the index of the child element that represents the item, or -1 if
-     *         the item is not found
+     * @return the index of the child element that represents the item, or -1 if the item is not found
      */
     default int getItemPosition(T item) {
         if (item == null) {

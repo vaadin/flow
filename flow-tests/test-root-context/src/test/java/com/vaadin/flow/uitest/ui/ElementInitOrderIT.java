@@ -39,11 +39,9 @@ public class ElementInitOrderIT extends ChromeBrowserTest {
     }
 
     private void assertInitOrder() {
-        for (String name : Arrays.asList("init-order-polymer",
-                "init-order-nopolymer")) {
+        for (String name : Arrays.asList("init-order-polymer", "init-order-nopolymer")) {
             TestBenchElement element = $(name).first();
-            String status = element.$(TestBenchElement.class).id("status")
-                    .getText();
+            String status = element.$(TestBenchElement.class).id("status").getText();
             Assert.assertEquals(
                     "property = property, attribute = attribute, child count = 1, style = style, class = class",
                     status);

@@ -27,41 +27,32 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.NavigationTriggerView", layout = ViewTestLayout.class)
-public class NavigationTriggerView extends AbstractDivView
-        implements HasUrlParameter<String>, BeforeLeaveObserver {
-    private static final String CLASS_NAME = NavigationTriggerView.class
-            .getName();
+public class NavigationTriggerView extends AbstractDivView implements HasUrlParameter<String>, BeforeLeaveObserver {
+    private static final String CLASS_NAME = NavigationTriggerView.class.getName();
 
     public NavigationTriggerView() {
         // Cannot use the RouterLink component since these views are not
         // registered as regular views.
-        Element routerLink = ElementFactory
-                .createRouterLink(CLASS_NAME + "/routerlink/", "Router link");
+        Element routerLink = ElementFactory.createRouterLink(CLASS_NAME + "/routerlink/", "Router link");
         routerLink.setAttribute("id", "routerlink");
 
         Element navigateButton = ElementFactory.createButton("UI.navigate");
-        navigateButton.addEventListener("click",
-                e -> getUI().get().navigate(CLASS_NAME + "/navigate"));
+        navigateButton.addEventListener("click", e -> getUI().get().navigate(CLASS_NAME + "/navigate"));
         navigateButton.setAttribute("id", "navigate");
 
         Element forwardButton = ElementFactory.createButton("forward");
-        forwardButton.addEventListener("click", e -> getUI().get()
-                .navigate(NavigationTriggerView.class, "forward"));
+        forwardButton.addEventListener("click", e -> getUI().get().navigate(NavigationTriggerView.class, "forward"));
         forwardButton.setAttribute("id", "forwardButton");
 
         Element rerouteButton = ElementFactory.createButton("reroute");
-        rerouteButton.addEventListener("click", e -> getUI().get()
-                .navigate(NavigationTriggerView.class, "reroute"));
+        rerouteButton.addEventListener("click", e -> getUI().get().navigate(NavigationTriggerView.class, "reroute"));
         rerouteButton.setAttribute("id", "rerouteButton");
 
-        getElement().appendChild(routerLink, navigateButton, forwardButton,
-                rerouteButton);
+        getElement().appendChild(routerLink, navigateButton, forwardButton, rerouteButton);
     }
 
-    public static String buildMessage(String path, NavigationTrigger trigger,
-            String parameter) {
-        return "Navigated to " + path + " with trigger " + trigger.name()
-                + " and parameter " + parameter;
+    public static String buildMessage(String path, NavigationTrigger trigger, String parameter) {
+        return "Navigated to " + path + " with trigger " + trigger.name() + " and parameter " + parameter;
     }
 
     private void addMessage(String message) {
@@ -71,8 +62,7 @@ public class NavigationTriggerView extends AbstractDivView
     }
 
     @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
         String location = event.getLocation().getPathWithQueryParameters();
         assert location.startsWith(CLASS_NAME);
 

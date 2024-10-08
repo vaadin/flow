@@ -54,22 +54,19 @@ public class BrowserLauncher {
     }
 
     private boolean isProductionMode() {
-        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration
-                .get(context);
+        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration.get(context);
         return applicationConfiguration.isProductionMode();
     }
 
     private boolean isLaunched() {
         File launchFile = getLaunchFile();
-        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration
-                .get(context);
-        int lastModifiedDelay = Integer.parseInt(applicationConfiguration
-                .getStringProperty(LAUNCH_BROWSER_DELAY, "30"));
+        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration.get(context);
+        int lastModifiedDelay = Integer
+                .parseInt(applicationConfiguration.getStringProperty(LAUNCH_BROWSER_DELAY, "30"));
         // If launch file exists and is younger than time update file content
         // and modified stamp
-        if (launchFile.exists()
-                && TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()
-                        - launchFile.lastModified()) < lastModifiedDelay) {
+        if (launchFile.exists() && TimeUnit.MILLISECONDS
+                .toMinutes(System.currentTimeMillis() - launchFile.lastModified()) < lastModifiedDelay) {
             writeLaunchFile(launchFile);
             return true;
         }
@@ -78,16 +75,14 @@ public class BrowserLauncher {
 
     private void writeLaunchFile(File launchFile) {
         try {
-            Files.writeString(launchFile.toPath(),
-                    Long.toString(System.currentTimeMillis()));
+            Files.writeString(launchFile.toPath(), Long.toString(System.currentTimeMillis()));
         } catch (IOException e) {
             getLogger().debug("Failed to write browser launched file.", e);
         }
     }
 
     private File getLaunchFile() {
-        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration
-                .get(context);
+        ApplicationConfiguration applicationConfiguration = ApplicationConfiguration.get(context);
         File buildFolder = new File(applicationConfiguration.getProjectFolder(),
                 applicationConfiguration.getBuildFolder());
         return new File(buildFolder, "tab.launch");

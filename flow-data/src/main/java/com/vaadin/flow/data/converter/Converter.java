@@ -27,8 +27,7 @@ import com.vaadin.flow.function.SerializableFunction;
 /**
  * Defines conversion between a model and a presentation type.
  * <p>
- * Converters must not have any side effects (never update UI from inside a
- * converter).
+ * Converters must not have any side effects (never update UI from inside a converter).
  *
  * @param <PRESENTATION>
  *            The presentation type.
@@ -77,10 +76,8 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
     }
 
     /**
-     * Constructs a converter from two functions. Any {@code Exception}
-     * instances thrown from the {@code toModel} function are converted into
-     * error-bearing {@code Result} objects using the given {@code onError}
-     * function.
+     * Constructs a converter from two functions. Any {@code Exception} instances thrown from the {@code toModel}
+     * function are converted into error-bearing {@code Result} objects using the given {@code onError} function.
      *
      * @param <P>
      *            the presentation type
@@ -97,12 +94,10 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * @see Result
      * @see Function
      */
-    static <P, M> Converter<P, M> from(SerializableFunction<P, M> toModel,
-            SerializableFunction<M, P> toPresentation,
+    static <P, M> Converter<P, M> from(SerializableFunction<P, M> toModel, SerializableFunction<M, P> toPresentation,
             SerializableFunction<Exception, String> onError) {
 
-        return from(val -> Result.of(() -> toModel.apply(val), onError),
-                toPresentation);
+        return from(val -> Result.of(() -> toModel.apply(val), onError), toPresentation);
     }
 
     /**
@@ -120,8 +115,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *
      * @see Function
      */
-    static <P, M> Converter<P, M> from(
-            SerializableFunction<P, Result<M>> toModel,
+    static <P, M> Converter<P, M> from(SerializableFunction<P, Result<M>> toModel,
             SerializableFunction<M, P> toPresentation) {
         return new Converter<P, M>() {
 
@@ -138,16 +132,13 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
     }
 
     /**
-     * Returns a converter that chains together this converter with the given
-     * type-compatible converter.
+     * Returns a converter that chains together this converter with the given type-compatible converter.
      * <p>
-     * The chained converters will form a new converter capable of converting
-     * from the presentation type of this converter to the model type of the
-     * other converter.
+     * The chained converters will form a new converter capable of converting from the presentation type of this
+     * converter to the model type of the other converter.
      * <p>
-     * In most typical cases you should not need this method but instead only
-     * need to define one converter for a binding using
-     * {@link BindingBuilder#withConverter(Converter)}.
+     * In most typical cases you should not need this method but instead only need to define one converter for a binding
+     * using {@link BindingBuilder#withConverter(Converter)}.
      *
      * @param <T>
      *            the model type of the resulting converter
@@ -158,16 +149,13 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
     default <T> Converter<PRESENTATION, T> chain(Converter<MODEL, T> other) {
         return new Converter<PRESENTATION, T>() {
             @Override
-            public Result<T> convertToModel(PRESENTATION value,
-                    ValueContext context) {
-                Result<MODEL> model = Converter.this.convertToModel(value,
-                        context);
+            public Result<T> convertToModel(PRESENTATION value, ValueContext context) {
+                Result<MODEL> model = Converter.this.convertToModel(value, context);
                 return model.flatMap(v -> other.convertToModel(v, context));
             }
 
             @Override
-            public PRESENTATION convertToPresentation(T value,
-                    ValueContext context) {
+            public PRESENTATION convertToPresentation(T value, ValueContext context) {
                 MODEL model = other.convertToPresentation(value, context);
                 return Converter.this.convertToPresentation(model, context);
             }

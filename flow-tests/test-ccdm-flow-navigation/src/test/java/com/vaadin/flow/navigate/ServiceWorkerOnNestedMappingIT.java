@@ -14,8 +14,7 @@ public class ServiceWorkerOnNestedMappingIT extends ServiceWorkerIT {
     @After
     public void tearDown() {
         if (getDriver() != null) {
-            checkLogsForErrors(message -> !message.toLowerCase()
-                    .contains("failed to register a serviceworker"));
+            checkLogsForErrors(message -> !message.toLowerCase().contains("failed to register a serviceworker"));
         }
     }
 

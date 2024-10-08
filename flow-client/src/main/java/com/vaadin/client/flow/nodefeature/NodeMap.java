@@ -36,12 +36,10 @@ import elemental.json.JsonValue;
 /**
  * A state node feature that structures data as a map.
  * <p>
- * The feature works as a reactive value with regards to the set of available
- * properties. A {@link Computation} will get a dependency on this feature by
- * iterating the properties. Accessing a property by name does not create a
- * dependency. The <code>Computation</code> is invalidated when a property is
- * added (properties are never removed). It is not invalidated when the value of
- * a property changes since the property is a reactive values of its own.
+ * The feature works as a reactive value with regards to the set of available properties. A {@link Computation} will get
+ * a dependency on this feature by iterating the properties. Accessing a property by name does not create a dependency.
+ * The <code>Computation</code> is invalidated when a property is added (properties are never removed). It is not
+ * invalidated when the value of a property changes since the property is a reactive values of its own.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -52,14 +50,12 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
     private final ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent> eventRouter = new ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent>(
             this) {
         @Override
-        protected MapPropertyAddListener wrap(
-                ReactiveValueChangeListener reactiveValueChangeListener) {
+        protected MapPropertyAddListener wrap(ReactiveValueChangeListener reactiveValueChangeListener) {
             return reactiveValueChangeListener::onValueChange;
         }
 
         @Override
-        protected void dispatchEvent(MapPropertyAddListener listener,
-                MapPropertyAddEvent event) {
+        protected void dispatchEvent(MapPropertyAddListener listener, MapPropertyAddEvent event) {
             listener.onPropertyAdd(event);
         }
     };
@@ -79,8 +75,7 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
     /**
      * Gets the property with a given name, creating it if necessary.
      * <p>
-     * A {@link MapPropertyAddEvent} is fired if a new property instance is
-     * created.
+     * A {@link MapPropertyAddEvent} is fired if a new property instance is created.
      *
      * @param name
      *            the name of the property
@@ -89,8 +84,8 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
     public MapProperty getProperty(String name) {
         MapProperty property = properties.get(name);
         if (property == null) {
-            property = new MapProperty(name, this, "innerHTML".equals(name)
-                    && getId() == NodeFeatures.ELEMENT_PROPERTIES);
+            property = new MapProperty(name, this,
+                    "innerHTML".equals(name) && getId() == NodeFeatures.ELEMENT_PROPERTIES);
             properties.set(name, property);
 
             eventRouter.fireEvent(new MapPropertyAddEvent(this, property));
@@ -161,8 +156,7 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
             if (property.hasValue()) {
                 // Crazy cast since otherwise SDM fails for string values since
                 // String is not a JSO
-                JsonValue jsonValue = WidgetUtil
-                        .crazyJsoCast(converter.apply(property.getValue()));
+                JsonValue jsonValue = WidgetUtil.crazyJsoCast(converter.apply(property.getValue()));
                 json.put(name, jsonValue);
             }
         });
@@ -171,21 +165,18 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
     }
 
     @Override
-    public EventRemover addReactiveValueChangeListener(
-            ReactiveValueChangeListener reactiveValueChangeListener) {
+    public EventRemover addReactiveValueChangeListener(ReactiveValueChangeListener reactiveValueChangeListener) {
         return eventRouter.addReactiveListener(reactiveValueChangeListener);
     }
 
     /**
-     * Adds a listener that is informed whenever a new property is added to this
-     * map.
+     * Adds a listener that is informed whenever a new property is added to this map.
      *
      * @param listener
      *            the property add listener
      * @return an event remover that can be used for removing the added listener
      */
-    public EventRemover addPropertyAddListener(
-            MapPropertyAddListener listener) {
+    public EventRemover addPropertyAddListener(MapPropertyAddListener listener) {
         return eventRouter.addListener(listener);
     }
 }

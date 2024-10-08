@@ -22,12 +22,10 @@ import java.util.Locale;
 import com.vaadin.flow.shared.BrowserDetails;
 
 /**
- * Provides information about the web browser the user is using that is directly
- * available in the request, for instance browser name and version and IP
- * address.
+ * Provides information about the web browser the user is using that is directly available in the request, for instance
+ * browser name and version and IP address.
  *
- * Note! browser details rely on the user agent from the browser and thus the
- * details are not always correct.
+ * Note! browser details rely on the user agent from the browser and thus the details are not always correct.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -42,15 +40,13 @@ public class WebBrowser implements Serializable {
     private BrowserDetails browserDetails = null;
 
     /**
-     * For internal use only. Configures all properties for the initial empty
-     * state.
+     * For internal use only. Configures all properties for the initial empty state.
      */
     WebBrowser() {
     }
 
     /**
-     * For internal use only. Configures all properties in the class according
-     * to the given information.
+     * For internal use only. Configures all properties in the class according to the given information.
      *
      * @param request
      *            the Vaadin request to read the information from
@@ -81,8 +77,7 @@ public class WebBrowser implements Serializable {
     /**
      * Gets the IP-address of the web browser, if available.
      *
-     * @return IP-address in 1.12.123.123 -format or null if the address is not
-     *         available
+     * @return IP-address in 1.12.123.123 -format or null if the address is not available
      */
     public String getAddress() {
         return address;
@@ -109,8 +104,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Firefox.
      *
-     * @return true if the user is using Firefox, false if the user is not using
-     *         Firefox or if no information on the browser is present
+     * @return true if the user is using Firefox, false if the user is not using Firefox or if no information on the
+     *         browser is present
      */
     public boolean isFirefox() {
         if (browserDetails == null) {
@@ -123,9 +118,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Internet Explorer.
      *
-     * @return true if the user is using Internet Explorer, false if the user is
-     *         not using Internet Explorer or if no information on the browser
-     *         is present
+     * @return true if the user is using Internet Explorer, false if the user is not using Internet Explorer or if no
+     *         information on the browser is present
      */
     public boolean isIE() {
         if (browserDetails == null) {
@@ -138,8 +132,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Edge.
      *
-     * @return true if the user is using Edge, false if the user is not using
-     *         Edge or if no information on the browser is present
+     * @return true if the user is using Edge, false if the user is not using Edge or if no information on the browser
+     *         is present
      */
     public boolean isEdge() {
         if (browserDetails == null) {
@@ -150,12 +144,11 @@ public class WebBrowser implements Serializable {
     }
 
     /**
-     * Tests whether the user is using Safari. Note that Chrome on iOS is not
-     * detected as Safari but as Chrome although the underlying browser engine
-     * is the same.
+     * Tests whether the user is using Safari. Note that Chrome on iOS is not detected as Safari but as Chrome although
+     * the underlying browser engine is the same.
      *
-     * @return true if the user is using Safari, false if the user is not using
-     *         Safari or if no information on the browser is present
+     * @return true if the user is using Safari, false if the user is not using Safari or if no information on the
+     *         browser is present
      */
     public boolean isSafari() {
         if (browserDetails == null) {
@@ -168,8 +161,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Opera.
      *
-     * @return true if the user is using Opera, false if the user is not using
-     *         Opera or if no information on the browser is present
+     * @return true if the user is using Opera, false if the user is not using Opera or if no information on the browser
+     *         is present
      */
     public boolean isOpera() {
         if (browserDetails == null) {
@@ -182,8 +175,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Chrome.
      *
-     * @return true if the user is using Chrome, false if the user is not using
-     *         Chrome or if no information on the browser is present
+     * @return true if the user is using Chrome, false if the user is not using Chrome or if no information on the
+     *         browser is present
      */
     public boolean isChrome() {
         if (browserDetails == null) {
@@ -197,8 +190,8 @@ public class WebBrowser implements Serializable {
      * Gets the major version of the browser the user is using.
      *
      * <p>
-     * Note that Internet Explorer in IE7 compatibility mode might return 8 in
-     * some cases even though it should return 7.
+     * Note that Internet Explorer in IE7 compatibility mode might return 8 in some cases even though it should return
+     * 7.
      * </p>
      *
      * @return The major version of the browser or -1 if not known.
@@ -229,8 +222,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Linux.
      *
-     * @return true if the user is using Linux, false if the user is not using
-     *         Linux or if no information on the browser is present
+     * @return true if the user is using Linux, false if the user is not using Linux or if no information on the browser
+     *         is present
      */
     public boolean isLinux() {
         if (browserDetails == null) {
@@ -242,8 +235,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Mac OS X.
      *
-     * @return true if the user is using Mac OS X, false if the user is not
-     *         using Mac OS X or if no information on the browser is present
+     * @return true if the user is using Mac OS X, false if the user is not using Mac OS X or if no information on the
+     *         browser is present
      */
     public boolean isMacOSX() {
         if (browserDetails == null) {
@@ -255,8 +248,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Windows.
      *
-     * @return true if the user is using Windows, false if the user is not using
-     *         Windows or if no information on the browser is present
+     * @return true if the user is using Windows, false if the user is not using Windows or if no information on the
+     *         browser is present
      */
     public boolean isWindows() {
         if (browserDetails == null) {
@@ -268,9 +261,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using Windows Phone.
      *
-     * @return true if the user is using Windows Phone, false if the user is not
-     *         using Windows Phone or if no information on the browser is
-     *         present
+     * @return true if the user is using Windows Phone, false if the user is not using Windows Phone or if no
+     *         information on the browser is present
      */
     public boolean isWindowsPhone() {
         if (browserDetails == null) {
@@ -282,8 +274,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests if the browser is run on Android.
      *
-     * @return true if run on Android false if the user is not using Android or
-     *         if no information on the browser is present
+     * @return true if run on Android false if the user is not using Android or if no information on the browser is
+     *         present
      */
     public boolean isAndroid() {
         if (browserDetails == null) {
@@ -295,8 +287,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests if the browser is run on IPhone.
      *
-     * @return true if run on IPhone false if the user is not using IPhone or if
-     *         no information on the browser is present
+     * @return true if run on IPhone false if the user is not using IPhone or if no information on the browser is
+     *         present
      */
     public boolean isIPhone() {
         if (browserDetails == null) {
@@ -308,8 +300,8 @@ public class WebBrowser implements Serializable {
     /**
      * Tests if the browser is run on ChromeOS (e.g. a Chromebook).
      *
-     * @return true if run on ChromeOS false if the user is not using ChromeOS
-     *         or if no information on the browser is present
+     * @return true if run on ChromeOS false if the user is not using ChromeOS or if no information on the browser is
+     *         present
      */
     public boolean isChromeOS() {
         if (browserDetails == null) {

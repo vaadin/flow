@@ -33,13 +33,11 @@ import java.util.Objects;
  * Creates a new input element with type "range".
  * <p>
  * </p>
- * Note: Slider doesn't support the read-only mode and will disable itself
- * instead.
+ * Note: Slider doesn't support the read-only mode and will disable itself instead.
  */
 @Tag(Tag.INPUT)
 public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
-        implements Focusable<RangeInput>, HasSize, HasStyle, HasValueChangeMode,
-        HasAriaLabel {
+        implements Focusable<RangeInput>, HasSize, HasStyle, HasValueChangeMode, HasAriaLabel {
     private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
             .attributeWithDefault("type", "text");
     private static final PropertyDescriptor<String, String> minDescriptor = PropertyDescriptors
@@ -73,8 +71,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     private ValueChangeMode currentMode;
 
     /**
-     * Creates a new slider, with {@link ValueChangeMode#ON_CHANGE ON_CHANGE}
-     * value change mode.
+     * Creates a new slider, with {@link ValueChangeMode#ON_CHANGE ON_CHANGE} value change mode.
      */
     public RangeInput() {
         this(ValueChangeMode.ON_CHANGE);
@@ -84,8 +81,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * Creates a new slider.
      *
      * @param valueChangeMode
-     *            initial value change mode, or <code>null</code> to disable the
-     *            value synchronization
+     *            initial value change mode, or <code>null</code> to disable the value synchronization
      */
     public RangeInput(ValueChangeMode valueChangeMode) {
         super("value", 0.0, false);
@@ -101,8 +97,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     @Override
     public void setValueChangeMode(ValueChangeMode valueChangeMode) {
         currentMode = valueChangeMode;
-        setSynchronizedEvent(
-                ValueChangeMode.eventForMode(valueChangeMode, "input"));
+        setSynchronizedEvent(ValueChangeMode.eventForMode(valueChangeMode, "input"));
         applyChangeTimeout();
     }
 
@@ -123,8 +118,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     private void applyChangeTimeout() {
-        ValueChangeMode.applyChangeTimeout(currentMode, valueChangeTimeout,
-                getSynchronizationRegistration());
+        ValueChangeMode.applyChangeTimeout(currentMode, valueChangeTimeout, getSynchronizationRegistration());
     }
 
     /**
@@ -166,20 +160,16 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     /**
-     * The step attribute is a number that specifies the granularity that the
-     * value must adhere to.
+     * The step attribute is a number that specifies the granularity that the value must adhere to.
      * <p>
      * </p>
-     * The step attribute can also be set to null. This step value means that no
-     * stepping interval is implied and any value is allowed in the specified
-     * range
+     * The step attribute can also be set to null. This step value means that no stepping interval is implied and any
+     * value is allowed in the specified range
      * <p>
      * </p>
-     * The default stepping value for range inputs is 1, allowing only integers
-     * to be entered, unless the stepping base is not an integer; for example,
-     * if you set min to -10 and value to 1.5, then a step of 1 will allow only
-     * values such as 1.5, 2.5, 3.5,… in the positive direction and -0.5, -1.5,
-     * -2.5,… in the negative direction.
+     * The default stepping value for range inputs is 1, allowing only integers to be entered, unless the stepping base
+     * is not an integer; for example, if you set min to -10 and value to 1.5, then a step of 1 will allow only values
+     * such as 1.5, 2.5, 3.5,… in the positive direction and -0.5, -1.5, -2.5,… in the negative direction.
      *
      * @return the current step value, defaults to 1.
      */
@@ -189,20 +179,16 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     /**
-     * The step attribute is a number that specifies the granularity that the
-     * value must adhere to.
+     * The step attribute is a number that specifies the granularity that the value must adhere to.
      * <p>
      * </p>
-     * The step attribute can also be set to null. This step value means that no
-     * stepping interval is implied and any value is allowed in the specified
-     * range
+     * The step attribute can also be set to null. This step value means that no stepping interval is implied and any
+     * value is allowed in the specified range
      * <p>
      * </p>
-     * The default stepping value for range inputs is 1, allowing only integers
-     * to be entered, unless the stepping base is not an integer; for example,
-     * if you set min to -10 and value to 1.5, then a step of 1 will allow only
-     * values such as 1.5, 2.5, 3.5,… in the positive direction and -0.5, -1.5,
-     * -2.5,… in the negative direction.
+     * The default stepping value for range inputs is 1, allowing only integers to be entered, unless the stepping base
+     * is not an integer; for example, if you set min to -10 and value to 1.5, then a step of 1 will allow only values
+     * such as 1.5, 2.5, 3.5,… in the positive direction and -0.5, -1.5, -2.5,… in the negative direction.
      *
      * @param step
      *            the new step value, may be null.
@@ -217,19 +203,15 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * </p>
      * <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#non-standard_attributes">Non-standard
-     * Attribute</a>. Since the vertical orientation is not standardized yet,
-     * this feature is not guaranteed to work on every browser. We found this
-     * feature to work on Firefox 120+, Chromium 119+, Edge 119+ and Safari
-     * 17.1+.
+     * Attribute</a>. Since the vertical orientation is not standardized yet, this feature is not guaranteed to work on
+     * every browser. We found this feature to work on Firefox 120+, Chromium 119+, Edge 119+ and Safari 17.1+.
      * <p>
      * </p>
-     * The orient attribute defines the orientation of the range slider. Values
-     * include horizontal, meaning the range is rendered horizontally, and
-     * vertical, where the range is rendered vertically.
+     * The orient attribute defines the orientation of the range slider. Values include horizontal, meaning the range is
+     * rendered horizontally, and vertical, where the range is rendered vertically.
      *
      * @param orientation
-     *            the orientation, not null. Defaults to
-     *            {@link Orientation#HORIZONTAL}.
+     *            the orientation, not null. Defaults to {@link Orientation#HORIZONTAL}.
      */
     public void setOrientation(Orientation orientation) {
         Objects.requireNonNull(orientation);
@@ -262,22 +244,19 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * Attribute</a>.
      * <p>
      * </p>
-     * The orient attribute defines the orientation of the range slider. Values
-     * include horizontal, meaning the range is rendered horizontally, and
-     * vertical, where the range is rendered vertically.
+     * The orient attribute defines the orientation of the range slider. Values include horizontal, meaning the range is
+     * rendered horizontally, and vertical, where the range is rendered vertically.
      *
      * @return the current orientation, never null.
      */
     public Orientation getOrientation() {
         final String orientation = get(orientDescriptor);
-        return Arrays.stream(Orientation.values())
-                .filter(it -> it.getValue().equals(orientation)).findAny()
+        return Arrays.stream(Orientation.values()).filter(it -> it.getValue().equals(orientation)).findAny()
                 .orElse(Orientation.HORIZONTAL);
     }
 
     /**
-     * Range input element doesn't support the "read-only" attribute or
-     * property. We'll disable the component instead.
+     * Range input element doesn't support the "read-only" attribute or property. We'll disable the component instead.
      */
     private boolean readOnly = false;
     private boolean enabled = true;

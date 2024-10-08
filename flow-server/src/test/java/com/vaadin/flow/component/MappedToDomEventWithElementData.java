@@ -24,8 +24,8 @@ public class MappedToDomEventWithElementData extends ComponentEvent<Component> {
     private final Element element;
 
     /**
-     * Creates a new event using the given source and indicator whether the
-     * event originated from the client side or the server side.
+     * Creates a new event using the given source and indicator whether the event originated from the client side or the
+     * server side.
      *
      * @param source
      *            the source component

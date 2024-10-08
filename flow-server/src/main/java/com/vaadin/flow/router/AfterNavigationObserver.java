@@ -18,8 +18,7 @@ package com.vaadin.flow.router;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 
 /**
- * Any attached component implementing this interface will receive an event
- * after all navigation tasks have resolved.
+ * Any attached component implementing this interface will receive an event after all navigation tasks have resolved.
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -53,35 +53,30 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     /** System property key for the test server port. */
     public static final String SERVER_PORT_PROPERTY_KEY = "serverPort";
     /**
-     * Server port resolved by system property
-     * {@value #SERVER_PORT_PROPERTY_KEY} or the default
+     * Server port resolved by system property {@value #SERVER_PORT_PROPERTY_KEY} or the default
      * {@value #DEFAULT_SERVER_PORT}.
      */
-    public static final int SERVER_PORT = Integer.parseInt(
-            System.getProperty(SERVER_PORT_PROPERTY_KEY, DEFAULT_SERVER_PORT));
+    public static final int SERVER_PORT = Integer
+            .parseInt(System.getProperty(SERVER_PORT_PROPERTY_KEY, DEFAULT_SERVER_PORT));
 
     public static final String USE_HUB_PROPERTY = "test.use.hub";
 
-    public static final boolean USE_HUB = Boolean.TRUE.toString()
-            .equals(System.getProperty(USE_HUB_PROPERTY, "false"));
+    public static final boolean USE_HUB = Boolean.TRUE.toString().equals(System.getProperty(USE_HUB_PROPERTY, "false"));
 
     @Before
     @Override
     public void setup() throws Exception {
         if (USE_HUB) {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
-        } else if (Browser.CHROME == getRunLocallyBrowser()
-                && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver(
-                    this::updateHeadlessChromeOptions));
+        } else if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
+            setDriver(createHeadlessChromeDriver(this::updateHeadlessChromeOptions));
             return;
         }
         super.setup();
     }
 
     /**
-     * Allows modifying the chrome options to be used when running on a local
-     * Chrome.
+     * Allows modifying the chrome options to be used when running on a local Chrome.
      *
      * @param chromeOptions
      *            chrome options to use when running on a local Chrome
@@ -101,8 +96,7 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     /**
      * Used to determine what port the test is running on.
      *
-     * @return The port the test is running on, by default
-     *         AbstractTestBenchTest.DEFAULT_SERVER_PORT
+     * @return The port the test is running on, by default AbstractTestBenchTest.DEFAULT_SERVER_PORT
      */
     protected int getDeploymentPort() {
         return SERVER_PORT;
@@ -111,22 +105,18 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     /**
      * Gets local execution ({@link LocalExecution}) configuration for the test.
      * <p>
-     * If this method return an empty optional then test with be run on the test
-     * Hub
+     * If this method return an empty optional then test with be run on the test Hub
      *
      * @see LocalExecution
      *
-     * @return an optional configuration, or an empty optional if configuration
-     *         is disabled or not available
+     * @return an optional configuration, or an empty optional if configuration is disabled or not available
      *
      */
     protected Optional<LocalExecution> getLocalExecution() {
         if (USE_HUB) {
             return Optional.empty();
         }
-        return Optional
-                .ofNullable(getClass().getAnnotation(LocalExecution.class))
-                .filter(LocalExecution::active);
+        return Optional.ofNullable(getClass().getAnnotation(LocalExecution.class)).filter(LocalExecution::active);
     }
 
     @Override
@@ -150,12 +140,10 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Produces a collection of browsers to run the test on. This method is
-     * executed by the test runner when determining how many test methods to
-     * invoke and with what parameters. For each returned value a test method is
-     * ran and before running that,
-     * {@link #setDesiredCapabilities(DesiredCapabilities)} is invoked with the
-     * value returned by this method.
+     * Produces a collection of browsers to run the test on. This method is executed by the test runner when determining
+     * how many test methods to invoke and with what parameters. For each returned value a test method is ran and before
+     * running that, {@link #setDesiredCapabilities(DesiredCapabilities)} is invoked with the value returned by this
+     * method.
      *
      * @return The browsers to run the test on
      */
@@ -170,12 +158,11 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     /**
      * Gets the browsers capabilities list to execute test on the tests Hub.
      * <p>
-     * This list will be used only for the tests Hub. Local test execution is
-     * managed by {@link LocalExecution} annotation.
+     * This list will be used only for the tests Hub. Local test execution is managed by {@link LocalExecution}
+     * annotation.
      * <p>
-     * The method {@link #getBrowsersToTest()} delegates the logic to this
-     * method in case {@link #getLocalExecution()} return value is an empty
-     * optional (i.e. the tests Hub is used).
+     * The method {@link #getBrowsersToTest()} delegates the logic to this method in case {@link #getLocalExecution()}
+     * return value is an empty optional (i.e. the tests Hub is used).
      *
      * @return the browsers capabilities list to execute test on the tests Hub
      */
@@ -190,8 +177,7 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
      *            a browsers list
      * @return the capabilities for the given <code>browsers</code>
      */
-    protected List<DesiredCapabilities> getBrowserCapabilities(
-            Browser... browsers) {
+    protected List<DesiredCapabilities> getBrowserCapabilities(Browser... browsers) {
         List<DesiredCapabilities> capabilities = new ArrayList<>();
         for (Browser browser : browsers) {
             capabilities.add(browser.getDesiredCapabilities());

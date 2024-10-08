@@ -68,8 +68,7 @@ public class SpringLookupInitializer extends LookupInitializer {
 
         private final Map<Class<?>, Boolean> cacheableServices;
 
-        private SpringLookup(WebApplicationContext context,
-                BiFunction<Class<?>, Class<?>, Object> factory,
+        private SpringLookup(WebApplicationContext context, BiFunction<Class<?>, Class<?>, Object> factory,
                 Map<Class<?>, Collection<Class<?>>> services) {
             super(services, factory);
             this.context = context;
@@ -78,9 +77,8 @@ public class SpringLookupInitializer extends LookupInitializer {
         }
 
         private <T> boolean isCacheableService(Class<T> serviceClass) {
-            return cacheableServices.computeIfAbsent(serviceClass,
-                    key -> LookupInitializer.getDefaultImplementations()
-                            .stream().anyMatch(serviceClass::isAssignableFrom));
+            return cacheableServices.computeIfAbsent(serviceClass, key -> LookupInitializer.getDefaultImplementations()
+                    .stream().anyMatch(serviceClass::isAssignableFrom));
         }
 
         private <T> T getCachedService(Class<T> serviceClass) {
@@ -108,8 +106,8 @@ public class SpringLookupInitializer extends LookupInitializer {
             T service = super.lookup(serviceClass);
 
             Collection<T> allFound;
-            if (service == null || (beans.size() > 0 && service.getClass()
-                    .getPackage().getName().startsWith("com.vaadin.flow"))) {
+            if (service == null
+                    || (beans.size() > 0 && service.getClass().getPackage().getName().startsWith("com.vaadin.flow"))) {
                 // Ignore service impl class (from the super lookup) if it's
                 // absent or it's a default implementation and there are Spring
                 // beans
@@ -125,8 +123,7 @@ public class SpringLookupInitializer extends LookupInitializer {
             } else if (allFound.size() == 1) {
                 lookupResult = allFound.iterator().next();
             } else {
-                throw new IllegalStateException(SEVERAL_IMPLS + serviceClass
-                        + SPI + allFound + ONE_IMPL_REQUIRED);
+                throw new IllegalStateException(SEVERAL_IMPLS + serviceClass + SPI + allFound + ONE_IMPL_REQUIRED);
             }
             if (cacheableService) {
                 setCachedService(serviceClass, lookupResult);
@@ -136,31 +133,23 @@ public class SpringLookupInitializer extends LookupInitializer {
 
         @Override
         public <T> Collection<T> lookupAll(Class<T> serviceClass) {
-            return Stream
-                    .concat(context.getBeansOfType(serviceClass).values()
-                            .stream(), super.lookupAll(serviceClass).stream())
-                    .collect(Collectors.toList());
+            return Stream.concat(context.getBeansOfType(serviceClass).values().stream(),
+                    super.lookupAll(serviceClass).stream()).collect(Collectors.toList());
         }
 
     }
 
-    static class SpringApplicationContextInit
-            implements ApplicationContextAware {
+    static class SpringApplicationContextInit implements ApplicationContextAware {
 
         @Override
-        public void setApplicationContext(ApplicationContext applicationContext)
-                throws BeansException {
+        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
             BootstrapCallable callable = null;
             if (applicationContext instanceof WebApplicationContext) {
                 synchronized (LOCK) {
-                    ServletContext servletContext = ((WebApplicationContext) applicationContext)
-                            .getServletContext();
-                    VaadinServletContext vaadinServletContext = new VaadinServletContext(
-                            servletContext);
-                    callable = vaadinServletContext
-                            .getAttribute(BootstrapCallable.class);
-                    vaadinServletContext
-                            .removeAttribute(BootstrapCallable.class);
+                    ServletContext servletContext = ((WebApplicationContext) applicationContext).getServletContext();
+                    VaadinServletContext vaadinServletContext = new VaadinServletContext(servletContext);
+                    callable = vaadinServletContext.getAttribute(BootstrapCallable.class);
+                    vaadinServletContext.removeAttribute(BootstrapCallable.class);
                     ApplicationContextWrapper wrapper = new ApplicationContextWrapper();
                     wrapper.appContext = (WebApplicationContext) applicationContext;
                     vaadinServletContext.setAttribute(wrapper);
@@ -178,19 +167,15 @@ public class SpringLookupInitializer extends LookupInitializer {
     }
 
     @Override
-    public void initialize(VaadinContext context,
-            Map<Class<?>, Collection<Class<?>>> services,
-            VaadinApplicationInitializationBootstrap bootstrap)
-            throws ServletException {
+    public void initialize(VaadinContext context, Map<Class<?>, Collection<Class<?>>> services,
+            VaadinApplicationInitializationBootstrap bootstrap) throws ServletException {
         VaadinServletContext servletContext = (VaadinServletContext) context;
         boolean isContextAvailable = false;
         synchronized (LOCK) {
             ApplicationContext appContext = getApplicationContext(context);
             isContextAvailable = appContext != null;
             if (!isContextAvailable) {
-                context.setAttribute(BootstrapCallable.class,
-                        () -> doInitialize(servletContext, services,
-                                bootstrap));
+                context.setAttribute(BootstrapCallable.class, () -> doInitialize(servletContext, services, bootstrap));
             }
         }
         if (isContextAvailable) {
@@ -199,17 +184,13 @@ public class SpringLookupInitializer extends LookupInitializer {
     }
 
     @Override
-    protected Lookup createLookup(VaadinContext context,
-            Map<Class<?>, Collection<Class<?>>> services) {
+    protected Lookup createLookup(VaadinContext context, Map<Class<?>, Collection<Class<?>>> services) {
         WebApplicationContext appContext = getApplicationContext(context);
-        return new SpringLookup(appContext,
-                (spi, impl) -> instantiate(appContext, spi, impl), services);
+        return new SpringLookup(appContext, (spi, impl) -> instantiate(appContext, spi, impl), services);
     }
 
-    private void doInitialize(VaadinContext context,
-            Map<Class<?>, Collection<Class<?>>> services,
-            VaadinApplicationInitializationBootstrap bootstrap)
-            throws ServletException {
+    private void doInitialize(VaadinContext context, Map<Class<?>, Collection<Class<?>>> services,
+            VaadinApplicationInitializationBootstrap bootstrap) throws ServletException {
         super.initialize(context, services, bootstrap);
     }
 
@@ -228,15 +209,13 @@ public class SpringLookupInitializer extends LookupInitializer {
             // Spring behavior is always unbelievably surprising: under some
             // circumstances {@code appContext} may be null even though the app
             // context has been set via ApplicationContextAware: no idea WHY
-            ApplicationContextWrapper wrapper = context
-                    .getAttribute(ApplicationContextWrapper.class);
+            ApplicationContextWrapper wrapper = context.getAttribute(ApplicationContextWrapper.class);
             appContext = wrapper == null ? null : wrapper.appContext;
         }
         return appContext;
     }
 
-    private <T> T instantiate(WebApplicationContext context,
-            Class<T> serviceClass, Class<?> impl) {
+    private <T> T instantiate(WebApplicationContext context, Class<T> serviceClass, Class<?> impl) {
         Collection<T> beans = context.getBeansOfType(serviceClass).values();
         if (beans.stream().anyMatch(bean -> impl.isInstance(bean))) {
             // implementation classes found in classpath are ignored if there

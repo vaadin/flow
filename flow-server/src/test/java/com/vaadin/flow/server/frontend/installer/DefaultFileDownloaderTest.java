@@ -32,19 +32,15 @@ public class DefaultFileDownloaderTest {
     @Before
     public void setup() {
         baseDir = tmpDir.getRoot().getAbsolutePath();
-        downloader = new DefaultFileDownloader(
-                new ProxyConfig(Collections.emptyList()));
+        downloader = new DefaultFileDownloader(new ProxyConfig(Collections.emptyList()));
 
     }
 
     @Test
-    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
-            throws IOException, DownloadException {
+    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory() throws IOException, DownloadException {
         File targetDir = new File(baseDir + "/installation");
 
-        Assert.assertFalse(
-                "Clean test should not contain a installation folder",
-                targetDir.exists());
+        Assert.assertFalse("Clean test should not contain a installation folder", targetDir.exists());
         File downloadDir = tmpDir.newFolder(FrontendTools.DEFAULT_NODE_VERSION);
         String downloadFileName = "MyDownload.zip";
 
@@ -52,13 +48,11 @@ public class DefaultFileDownloaderTest {
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 
-        downloader.download(tempArchive.toUri(),
-                new File(targetDir, downloadFileName), null, null, null);
+        downloader.download(tempArchive.toUri(), new File(targetDir, downloadFileName), null, null, null);
 
         Assert.assertTrue("File was not 'downloaded' to target directory",
                 new File(targetDir, downloadFileName).exists());
-        Assert.assertFalse(
-                "File 'downloaded' was a directory event though file expected",
+        Assert.assertFalse("File 'downloaded' was a directory event though file expected",
                 new File(targetDir, downloadFileName).isDirectory());
     }
 
@@ -74,17 +68,12 @@ public class DefaultFileDownloaderTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] data = createData(8192 * 4);
         List<String> reportedProgress = new ArrayList<>();
-        ProgressListener progressListener = (bytesTransferred, totalBytes,
-                progress) -> {
-            reportedProgress
-                    .add(bytesTransferred + "," + totalBytes + "," + progress);
+        ProgressListener progressListener = (bytesTransferred, totalBytes, progress) -> {
+            reportedProgress.add(bytesTransferred + "," + totalBytes + "," + progress);
         };
-        downloader.copy(new ByteArrayInputStream(data), out, data.length,
-                progressListener);
+        downloader.copy(new ByteArrayInputStream(data), out, data.length, progressListener);
 
-        Assert.assertEquals(
-                List.of("8192,32768,0.25", "16384,32768,0.5",
-                        "24576,32768,0.75", "32768,32768,1.0"),
+        Assert.assertEquals(List.of("8192,32768,0.25", "16384,32768,0.5", "24576,32768,0.75", "32768,32768,1.0"),
                 reportedProgress);
     }
 
@@ -93,13 +82,10 @@ public class DefaultFileDownloaderTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] data = createData(2202009);
         List<String> reportedProgress = new ArrayList<>();
-        ProgressListener progressListener = (bytesTransferred, totalBytes,
-                progress) -> {
-            reportedProgress
-                    .add(bytesTransferred + "," + totalBytes + "," + progress);
+        ProgressListener progressListener = (bytesTransferred, totalBytes, progress) -> {
+            reportedProgress.add(bytesTransferred + "," + totalBytes + "," + progress);
         };
-        downloader.copy(new ByteArrayInputStream(data), out, -1,
-                progressListener);
+        downloader.copy(new ByteArrayInputStream(data), out, -1, progressListener);
         Assert.assertEquals("1048576,-1,-1.0", reportedProgress.get(0));
         Assert.assertEquals("2097152,-1,-1.0", reportedProgress.get(1));
         Assert.assertEquals("2202009,-1,-1.0", reportedProgress.get(2));

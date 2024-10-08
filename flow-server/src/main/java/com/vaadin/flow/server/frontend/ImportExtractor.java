@@ -52,8 +52,7 @@ class ImportExtractor implements Serializable {
             if (index < 0) {
                 break;
             }
-            String betweenImports = strippedContent.substring(indexFrom, index)
-                    .trim();
+            String betweenImports = strippedContent.substring(indexFrom, index).trim();
             if (!betweenImports.isEmpty() && !betweenImports.equals(";")) {
                 break;
             }
@@ -66,14 +65,12 @@ class ImportExtractor implements Serializable {
             if (index < 0) {
                 index = strippedContent.length();
             }
-            String importStatement = strippedContent.substring(indexFrom, index)
-                    .trim();
+            String importStatement = strippedContent.substring(indexFrom, index).trim();
 
             int fromIndex = importStatement.indexOf(FROM);
             String path = importStatement;
             if (fromIndex >= 0) {
-                path = importStatement.substring(fromIndex + FROM.length(),
-                        importStatement.length()).trim();
+                path = importStatement.substring(fromIndex + FROM.length(), importStatement.length()).trim();
             }
             imports.add(strip(path));
         }
@@ -98,11 +95,9 @@ class ImportExtractor implements Serializable {
      */
     private String strip(String jsString) {
         if (jsString.startsWith("'")) {
-            return jsString.substring(1, jsString.length() - 1).replace("\\'",
-                    "'");
+            return jsString.substring(1, jsString.length() - 1).replace("\\'", "'");
         } else if (jsString.startsWith("\"") && jsString.length() > 2) {
-            return jsString.substring(1, jsString.length() - 1).replace("\\\"",
-                    "\"");
+            return jsString.substring(1, jsString.length() - 1).replace("\\\"", "\"");
         }
         return jsString;
     }

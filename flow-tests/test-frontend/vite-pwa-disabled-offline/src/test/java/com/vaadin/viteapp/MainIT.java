@@ -37,22 +37,19 @@ public class MainIT extends ChromeDeviceTest {
     public void tryToRegisterServiceWorker_serviceWorkerIsNotAvailable() {
         Assert.assertFalse("The service worker should not be available",
                 (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
-                        "const done = arguments[arguments.length - 1];"
-                                + "navigator.serviceWorker.register('sw.js')"
-                                + "   .then(() => done(true))"
-                                + "   .catch(() => done(false))"));
+                        "const done = arguments[arguments.length - 1];" + "navigator.serviceWorker.register('sw.js')"
+                                + "   .then(() => done(true))" + "   .catch(() => done(false))"));
     }
 
     @Test
     public void registerFakeServiceWorker_reload_serviceWorkerIsUnregistered() {
-        ((JavascriptExecutor) getDriver()).executeAsyncScript(
-                "const done = arguments[arguments.length - 1];"
-                        + "navigator.serviceWorker.register('fake-sw.js').then(done);");
+        ((JavascriptExecutor) getDriver()).executeAsyncScript("const done = arguments[arguments.length - 1];"
+                + "navigator.serviceWorker.register('fake-sw.js').then(done);");
         reload();
 
         Assert.assertFalse("The service worker should be unregistered",
-                (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
-                        "const done = arguments[arguments.length - 1];"
+                (Boolean) ((JavascriptExecutor) getDriver())
+                        .executeAsyncScript("const done = arguments[arguments.length - 1];"
                                 + "navigator.serviceWorker.getRegistration('fake-sw.js').then((registration) => {"
                                 + "  done(!!registration);" + "});"));
     }
@@ -64,8 +61,7 @@ public class MainIT extends ChromeDeviceTest {
 
     private void reload() {
         executeScript("window.location.reload();");
-        waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                .executeScript("return document.readyState")
+        waitUntil(webDriver -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                 .equals("complete"));
     }
 }

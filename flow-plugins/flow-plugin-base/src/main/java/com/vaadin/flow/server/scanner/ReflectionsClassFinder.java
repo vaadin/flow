@@ -43,8 +43,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * @since 2.0
  */
 public class ReflectionsClassFinder implements ClassFinder {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(ReflectionsClassFinder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionsClassFinder.class);
     private final transient ClassLoader classLoader;
 
     private final transient Reflections reflections;
@@ -56,15 +55,12 @@ public class ReflectionsClassFinder implements ClassFinder {
      *            the list of urls for finding classes.
      */
     public ReflectionsClassFinder(URL... urls) {
-        classLoader = new URLClassLoader(urls,
-                Thread.currentThread().getContextClassLoader());
-        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
-                .addClassLoaders(classLoader).setExpandSuperTypes(false)
-                .addUrls(urls);
+        classLoader = new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
+        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder().addClassLoaders(classLoader)
+                .setExpandSuperTypes(false).addUrls(urls);
 
-        configurationBuilder
-                .setInputsFilter(resourceName -> resourceName.endsWith(".class")
-                        && !resourceName.endsWith("module-info.class"));
+        configurationBuilder.setInputsFilter(
+                resourceName -> resourceName.endsWith(".class") && !resourceName.endsWith("module-info.class"));
 
         // Adding the custom URL type handler at the end, as a last resort to
         // prevent warning messages on server logs
@@ -81,8 +77,7 @@ public class ReflectionsClassFinder implements ClassFinder {
     }
 
     @Override
-    public Set<Class<?>> getAnnotatedClasses(
-            Class<? extends Annotation> clazz) {
+    public Set<Class<?>> getAnnotatedClasses(Class<? extends Annotation> clazz) {
         Set<Class<?>> classes = new LinkedHashSet<>();
         classes.addAll(reflections.getTypesAnnotatedWith(clazz, true));
         classes.addAll(getAnnotatedByRepeatedAnnotation(clazz));
@@ -90,13 +85,10 @@ public class ReflectionsClassFinder implements ClassFinder {
 
     }
 
-    private Set<Class<?>> getAnnotatedByRepeatedAnnotation(
-            AnnotatedElement annotationClass) {
-        Repeatable repeatableAnnotation = annotationClass
-                .getAnnotation(Repeatable.class);
+    private Set<Class<?>> getAnnotatedByRepeatedAnnotation(AnnotatedElement annotationClass) {
+        Repeatable repeatableAnnotation = annotationClass.getAnnotation(Repeatable.class);
         if (repeatableAnnotation != null) {
-            return reflections
-                    .getTypesAnnotatedWith(repeatableAnnotation.value(), true);
+            return reflections.getTypesAnnotatedWith(repeatableAnnotation.value(), true);
         }
         return Collections.emptySet();
     }
@@ -122,8 +114,7 @@ public class ReflectionsClassFinder implements ClassFinder {
         return classLoader;
     }
 
-    private <T> Set<Class<? extends T>> sortedByClassName(
-            Set<Class<? extends T>> source) {
+    private <T> Set<Class<? extends T>> sortedByClassName(Set<Class<? extends T>> source) {
         return source.stream().sorted(Comparator.comparing(Class::getName))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -149,8 +140,7 @@ public class ReflectionsClassFinder implements ClassFinder {
                     type = typeName.substring(0, i);
                     String array = typeName.substring(i).replace("]", "");
                     if (primitiveNames.contains(type)) {
-                        type = primitiveDescriptors
-                                .get(primitiveNames.indexOf(type));
+                        type = primitiveDescriptors.get(primitiveNames.indexOf(type));
                     } else {
                         type = "L" + type + ";";
                     }
@@ -159,8 +149,7 @@ public class ReflectionsClassFinder implements ClassFinder {
                     type = typeName;
                 }
 
-                for (ClassLoader classLoader : ClasspathHelper
-                        .classLoaders(loaders)) {
+                for (ClassLoader classLoader : ClasspathHelper.classLoaders(loaders)) {
                     if (type.contains("[")) {
                         try {
                             return Class.forName(type, false, classLoader);
@@ -189,9 +178,7 @@ public class ReflectionsClassFinder implements ClassFinder {
         }
 
         public Vfs.Dir createDir(final URL url) {
-            LOGGER.debug(
-                    "Class finder cannot scan {} URL. Probably pointing to a not existing folder.",
-                    url);
+            LOGGER.debug("Class finder cannot scan {} URL. Probably pointing to a not existing folder.", url);
             return new Vfs.Dir() {
                 @Override
                 public String getPath() {

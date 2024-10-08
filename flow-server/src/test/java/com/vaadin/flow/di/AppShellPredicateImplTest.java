@@ -28,8 +28,7 @@ public class AppShellPredicateImplTest {
 
     private AppShellPredicate predicate = new AppShellPredicateImpl();
 
-    private static class TestAppShellPredicateConfig
-            implements AppShellConfigurator {
+    private static class TestAppShellPredicateConfig implements AppShellConfigurator {
 
     }
 

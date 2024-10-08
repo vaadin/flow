@@ -32,10 +32,8 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
         final String newNotificationId = getString(NOTIFICATION_ID);
         final int attachCount = getInt(ATTACHCOUNTER_ID);
 
-        Assert.assertEquals("Component contents expected identical",
-                componentId, newComponentId);
-        Assert.assertEquals("Notification contents expected identical",
-                notificationId, newNotificationId);
+        Assert.assertEquals("Component contents expected identical", componentId, newComponentId);
+        Assert.assertEquals("Notification contents expected identical", notificationId, newNotificationId);
         Assert.assertEquals("Expected two attaches", 2, attachCount);
 
         assertDownloadedContent();
@@ -49,10 +47,8 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
         final String notificationId = getString(NOTIFICATION_ID);
 
         // navigate to some other page in between
-        getDriver()
-                .get(getRootURL() + "/view/com.vaadin.flow.uitest.ui.PageView");
-        WebElement loadingIndicator = findElement(
-                By.className("v-loading-indicator"));
+        getDriver().get(getRootURL() + "/view/com.vaadin.flow.uitest.ui.PageView");
+        WebElement loadingIndicator = findElement(By.className("v-loading-indicator"));
         waitUntil(driver -> loadingIndicator.isDisplayed());
         waitUntil(driver -> !loadingIndicator.isDisplayed());
 
@@ -62,38 +58,31 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
         final String newNotificationId = getString(NOTIFICATION_ID);
         final int attachCount = getInt(ATTACHCOUNTER_ID);
 
-        Assert.assertNotEquals("Component contents expected different",
-                componentId, newComponentId);
-        Assert.assertNotEquals("Notification contents expected different",
-                notificationId, newNotificationId);
+        Assert.assertNotEquals("Component contents expected different", componentId, newComponentId);
+        Assert.assertNotEquals("Notification contents expected different", notificationId, newNotificationId);
         Assert.assertEquals("Expected one attach", 1, attachCount);
     }
 
     @Test
-    public void refreshInDifferentWindow_componentIsRecreated()
-            throws IOException {
+    public void refreshInDifferentWindow_componentIsRecreated() throws IOException {
         open();
         final String firstWin = getDriver().getWindowHandle();
 
         final String componentId = getString(COMPONENT_ID);
         final String notificationId = getString(NOTIFICATION_ID);
 
-        ((JavascriptExecutor) getDriver())
-                .executeScript("window.open('" + getTestURL() + "','_blank');");
+        ((JavascriptExecutor) getDriver()).executeScript("window.open('" + getTestURL() + "','_blank');");
 
-        final String secondWin = getDriver().getWindowHandles().stream()
-                .filter(windowId -> !windowId.equals(firstWin)).findFirst()
-                .get();
+        final String secondWin = getDriver().getWindowHandles().stream().filter(windowId -> !windowId.equals(firstWin))
+                .findFirst().get();
         driver.switchTo().window(secondWin);
 
         final String newComponentId = getString(COMPONENT_ID);
         final String newNotificationId = getString(NOTIFICATION_ID);
         final int attachCount = getInt(ATTACHCOUNTER_ID);
 
-        Assert.assertNotEquals("Component contents expected different",
-                componentId, newComponentId);
-        Assert.assertNotEquals("Notification contents expected different",
-                notificationId, newNotificationId);
+        Assert.assertNotEquals("Component contents expected different", componentId, newComponentId);
+        Assert.assertNotEquals("Notification contents expected different", notificationId, newNotificationId);
         Assert.assertEquals("Expected one attach", 1, attachCount);
 
         assertDownloadedContent();
@@ -116,8 +105,7 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
         getDriver().manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS);
 
         try (InputStream stream = download(url)) {
-            List<String> lines = IOUtils.readLines(stream,
-                    StandardCharsets.UTF_8);
+            List<String> lines = IOUtils.readLines(stream, StandardCharsets.UTF_8);
             String text = lines.stream().collect(Collectors.joining());
             Assert.assertEquals("foo", text);
         }

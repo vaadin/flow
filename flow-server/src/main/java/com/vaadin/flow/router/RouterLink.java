@@ -32,27 +32,24 @@ import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
- * A link that handles navigation internally using {@link Router} instead of
- * loading a new page in the browser.
+ * A link that handles navigation internally using {@link Router} instead of loading a new page in the browser.
  * <p>
- * The <code>href</code> attribute of {@link #getElement()} will only be
- * up-to-date when the component is attached to a UI.
+ * The <code>href</code> attribute of {@link #getElement()} will only be up-to-date when the component is attached to a
+ * UI.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
 @Tag(Tag.A)
-public class RouterLink extends Component implements HasText, HasComponents,
-        HasStyle, AfterNavigationObserver, Focusable<RouterLink> {
+public class RouterLink extends Component
+        implements HasText, HasComponents, HasStyle, AfterNavigationObserver, Focusable<RouterLink> {
 
-    private static final PropertyDescriptor<String, String> HREF = PropertyDescriptors
-            .attributeWithDefault("href", "", false);
+    private static final PropertyDescriptor<String, String> HREF = PropertyDescriptors.attributeWithDefault("href", "",
+            false);
 
-    private HighlightCondition<RouterLink> highlightCondition = HighlightConditions
-            .locationPrefix();
+    private HighlightCondition<RouterLink> highlightCondition = HighlightConditions.locationPrefix();
 
-    private HighlightAction<RouterLink> highlightAction = HighlightActions
-            .toggleAttribute("highlight");
+    private HighlightAction<RouterLink> highlightAction = HighlightActions.toggleAttribute("highlight");
 
     private QueryParameters queryParameters;
 
@@ -60,8 +57,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * Creates a new empty router link.
      */
     public RouterLink() {
-        getElement().setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE,
-                "");
+        getElement().setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE, "");
     }
 
     /**
@@ -75,22 +71,19 @@ public class RouterLink extends Component implements HasText, HasComponents,
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * text.
+     * Creates a new router link for the given navigation target using the given text.
      *
      * @param text
      *            link text
      * @param navigationTarget
      *            navigation target
      */
-    public RouterLink(String text,
-            Class<? extends Component> navigationTarget) {
+    public RouterLink(String text, Class<? extends Component> navigationTarget) {
         this(text, navigationTarget, RouteParameters.empty());
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * parameter.
+     * Creates a new router link for the given navigation target using the given parameter.
      *
      * @param navigationTarget
      *            navigation target
@@ -101,14 +94,12 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> RouterLink(
-            Class<? extends C> navigationTarget, T parameter) {
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(Class<? extends C> navigationTarget, T parameter) {
         this(navigationTarget, HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * text and parameter.
+     * Creates a new router link for the given navigation target using the given text and parameter.
      *
      * @param text
      *            link text
@@ -121,30 +112,26 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> RouterLink(String text,
-            Class<? extends C> navigationTarget, T parameter) {
-        this(text, navigationTarget,
-                HasUrlParameterFormat.getParameters(parameter));
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(String text, Class<? extends C> navigationTarget,
+            T parameter) {
+        this(text, navigationTarget, HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * parameters.
+     * Creates a new router link for the given navigation target using the given parameters.
      *
      * @param navigationTarget
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
      */
-    public RouterLink(Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
+    public RouterLink(Class<? extends Component> navigationTarget, RouteParameters parameters) {
         this();
         setRoute(getRouter(), navigationTarget, parameters);
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * text and parameters.
+     * Creates a new router link for the given navigation target using the given text and parameters.
      *
      * @param text
      *            link text
@@ -153,8 +140,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param parameters
      *            route parameters for navigation target
      */
-    public RouterLink(String text, Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
+    public RouterLink(String text, Class<? extends Component> navigationTarget, RouteParameters parameters) {
         this();
         setText(text);
         setRoute(getRouter(), navigationTarget, parameters);
@@ -170,15 +156,12 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @throws IllegalArgumentException
      *             if navigation target requires parameters
      */
-    public RouterLink(Router router,
-            Class<? extends Component> navigationTarget)
-            throws IllegalArgumentException {
+    public RouterLink(Router router, Class<? extends Component> navigationTarget) throws IllegalArgumentException {
         this(router, navigationTarget, RouteParameters.empty());
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * text.
+     * Creates a new router link for the given navigation target using the given text.
      *
      * @param router
      *            router used for navigation
@@ -189,15 +172,13 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @throws IllegalArgumentException
      *             if navigation target requires parameters
      */
-    public RouterLink(Router router, String text,
-            Class<? extends Component> navigationTarget)
+    public RouterLink(Router router, String text, Class<? extends Component> navigationTarget)
             throws IllegalArgumentException {
         this(router, text, navigationTarget, RouteParameters.empty());
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * parameter.
+     * Creates a new router link for the given navigation target using the given parameter.
      *
      * @param router
      *            router used for navigation
@@ -210,15 +191,13 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> RouterLink(
-            Router router, Class<? extends C> navigationTarget, T parameter) {
-        this(router, navigationTarget,
-                HasUrlParameterFormat.getParameters(parameter));
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(Router router, Class<? extends C> navigationTarget,
+            T parameter) {
+        this(router, navigationTarget, HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * text and parameter.
+     * Creates a new router link for the given navigation target using the given text and parameter.
      *
      * @param router
      *            router used for navigation
@@ -233,16 +212,13 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> RouterLink(
-            Router router, String text, Class<? extends C> navigationTarget,
-            T parameter) {
-        this(router, text, navigationTarget,
-                HasUrlParameterFormat.getParameters(parameter));
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(Router router, String text,
+            Class<? extends C> navigationTarget, T parameter) {
+        this(router, text, navigationTarget, HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * parameters.
+     * Creates a new router link for the given navigation target using the given parameters.
      *
      * @param router
      *            router used for navigation
@@ -251,16 +227,13 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param parameters
      *            route parameters for navigation target
      */
-    public RouterLink(Router router,
-            Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
+    public RouterLink(Router router, Class<? extends Component> navigationTarget, RouteParameters parameters) {
         this();
         setRoute(router, navigationTarget, parameters);
     }
 
     /**
-     * Creates a new router link for the given navigation target using the given
-     * text and parameters.
+     * Creates a new router link for the given navigation target using the given text and parameters.
      *
      * @param router
      *            router used for navigation
@@ -271,8 +244,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param parameters
      *            route parameters for navigation target
      */
-    public RouterLink(Router router, String text,
-            Class<? extends Component> navigationTarget,
+    public RouterLink(Router router, String text, Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         this();
         setText(text);
@@ -289,8 +261,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @throws IllegalArgumentException
      *             if navigation target requires parameters
      */
-    public void setRoute(Router router,
-            Class<? extends Component> navigationTarget) {
+    public void setRoute(Router router, Class<? extends Component> navigationTarget) {
         setRoute(router, navigationTarget, RouteParameters.empty());
     }
 
@@ -308,10 +279,9 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> void setRoute(
-            Router router, Class<? extends C> navigationTarget, T parameter) {
-        setRoute(router, navigationTarget,
-                HasUrlParameterFormat.getParameters(parameter));
+    public <T, C extends Component & HasUrlParameter<T>> void setRoute(Router router,
+            Class<? extends C> navigationTarget, T parameter) {
+        setRoute(router, navigationTarget, HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
@@ -324,18 +294,13 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param parameters
      *            route parameters for navigation target
      */
-    public void setRoute(Router router,
-            Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
+    public void setRoute(Router router, Class<? extends Component> navigationTarget, RouteParameters parameters) {
         validateRouter(router);
         try {
-            String url = RouteConfiguration.forRegistry(router.getRegistry())
-                    .getUrl(navigationTarget, parameters);
+            String url = RouteConfiguration.forRegistry(router.getRegistry()).getUrl(navigationTarget, parameters);
             updateHref(url);
         } catch (NotFoundException exception) {
-            throw new IllegalArgumentException(
-                    "Cannot set route for non registered " + navigationTarget,
-                    exception);
+            throw new IllegalArgumentException("Cannot set route for non registered " + navigationTarget, exception);
         }
     }
 
@@ -363,8 +328,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> void setRoute(
-            Class<? extends C> navigationTarget, T parameter) {
+    public <T, C extends Component & HasUrlParameter<T>> void setRoute(Class<? extends C> navigationTarget,
+            T parameter) {
         setRoute(getRouter(), navigationTarget, parameter);
     }
 
@@ -376,8 +341,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param parameters
      *            route parameters for navigation target
      */
-    public void setRoute(Class<? extends Component> navigationTarget,
-            RouteParameters parameters) {
+    public void setRoute(Class<? extends Component> navigationTarget, RouteParameters parameters) {
         setRoute(getRouter(), navigationTarget, parameters);
     }
 
@@ -399,8 +363,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
     /**
      * Gets the {@link QueryParameters} of this link.
      *
-     * @return an optional of {@link QueryParameters}, or an empty optional if
-     *         there are no query parameters set
+     * @return an optional of {@link QueryParameters}, or an empty optional if there are no query parameters set
      * @see #setQueryParameters(QueryParameters)
      */
     public Optional<QueryParameters> getQueryParameters() {
@@ -410,13 +373,11 @@ public class RouterLink extends Component implements HasText, HasComponents,
     /**
      * Sets the {@link QueryParameters} of this link.
      * <p>
-     * The query string will be generated from
-     * {@link QueryParameters#getQueryString()} and will be appended to the
+     * The query string will be generated from {@link QueryParameters#getQueryString()} and will be appended to the
      * {@code href} attribute of this link.
      *
      * @param queryParameters
-     *            the query parameters object, or {@code null} to remove
-     *            existing query parameters
+     *            the query parameters object, or {@code null} to remove existing query parameters
      */
     public void setQueryParameters(QueryParameters queryParameters) {
         this.queryParameters = queryParameters;
@@ -429,8 +390,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
             url = url.substring(0, startOfQuery);
         }
         url = UrlUtil.encodeURI(url);
-        if (queryParameters != null
-                && !queryParameters.getParameters().isEmpty()) {
+        if (queryParameters != null && !queryParameters.getParameters().isEmpty()) {
             url += '?' + queryParameters.getQueryString();
         }
         HREF.set(this, url);
@@ -443,9 +403,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
     /**
      * Gets the {@link HighlightCondition} of this link.
      * <p>
-     * The default condition is to checked whether the current location starts
-     * with this link's {@link #getHref()} value, as defined in
-     * {@link HighlightConditions#locationPrefix()}.
+     * The default condition is to checked whether the current location starts with this link's {@link #getHref()}
+     * value, as defined in {@link HighlightConditions#locationPrefix()}.
      *
      * @return the highlight condition, never {@code null}
      * @see #setHighlightCondition(HighlightCondition)
@@ -455,21 +414,18 @@ public class RouterLink extends Component implements HasText, HasComponents,
     }
 
     /**
-     * Sets the {@link HighlightCondition} of this link, which determines if the
-     * link should be highlighted when a {@link AfterNavigationEvent} occurs.
+     * Sets the {@link HighlightCondition} of this link, which determines if the link should be highlighted when a
+     * {@link AfterNavigationEvent} occurs.
      * <p>
-     * The evaluation of this condition will be processed by this link's
-     * {@link HighlightAction}.
+     * The evaluation of this condition will be processed by this link's {@link HighlightAction}.
      *
      * @param highlightCondition
      *            the highlight condition, not {@code null}
      * @see #setHighlightAction(HighlightAction)
      * @see HighlightConditions
      */
-    public void setHighlightCondition(
-            HighlightCondition<RouterLink> highlightCondition) {
-        Objects.requireNonNull(highlightCondition,
-                "HighlightCondition may not be null");
+    public void setHighlightCondition(HighlightCondition<RouterLink> highlightCondition) {
+        Objects.requireNonNull(highlightCondition, "HighlightCondition may not be null");
 
         this.highlightCondition = highlightCondition;
     }
@@ -477,8 +433,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
     /**
      * Gets the {@link HighlightAction} of this link.
      * <p>
-     * The default action is to toggle the {@code highlight} attribute of the
-     * element, as defined in {@link HighlightActions#toggleAttribute(String)}.
+     * The default action is to toggle the {@code highlight} attribute of the element, as defined in
+     * {@link HighlightActions#toggleAttribute(String)}.
      *
      * @return the highlight action, never {@code null}
      * @see #setHighlightAction(HighlightAction)
@@ -488,22 +444,19 @@ public class RouterLink extends Component implements HasText, HasComponents,
     }
 
     /**
-     * Sets the {@link HighlightAction} of this link, which will be performed
-     * with the evaluation of this link's {@link HighlightCondition}.
+     * Sets the {@link HighlightAction} of this link, which will be performed with the evaluation of this link's
+     * {@link HighlightCondition}.
      * <p>
-     * The old action will be executed passing {@code false} to
-     * {@link HighlightAction#highlight(Object, boolean)} to clear any previous
-     * highlight state.
+     * The old action will be executed passing {@code false} to {@link HighlightAction#highlight(Object, boolean)} to
+     * clear any previous highlight state.
      *
      * @param highlightAction
      *            the highlight action, not {@code null}
      * @see #setHighlightCondition(HighlightCondition)
      * @see HighlightActions
      */
-    public void setHighlightAction(
-            HighlightAction<RouterLink> highlightAction) {
-        Objects.requireNonNull(highlightCondition,
-                "HighlightAction may not be null");
+    public void setHighlightAction(HighlightAction<RouterLink> highlightAction) {
+        Objects.requireNonNull(highlightCondition, "HighlightAction may not be null");
 
         this.highlightAction.highlight(this, false);
         this.highlightAction = highlightAction;
@@ -511,7 +464,6 @@ public class RouterLink extends Component implements HasText, HasComponents,
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        getHighlightAction().highlight(this,
-                getHighlightCondition().shouldHighlight(this, event));
+        getHighlightAction().highlight(this, getHighlightCondition().shouldHighlight(this, event));
     }
 }

@@ -33,8 +33,8 @@ import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.PathUtil;
 
 /**
- * Abstract before event class that has the common functionalities for
- * {@link BeforeLeaveEvent} and {@link BeforeEnterEvent}.
+ * Abstract before event class that has the common functionalities for {@link BeforeLeaveEvent} and
+ * {@link BeforeEnterEvent}.
  *
  * @since 1.0
  */
@@ -70,10 +70,8 @@ public abstract class BeforeEvent extends EventObject {
      * @param layouts
      *            Navigation layout chain, not <code>null</code>
      */
-    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
-            List<Class<? extends RouterLayout>> layouts) {
-        this(event.getSource(), event.getTrigger(), event.getLocation(),
-                navigationTarget, event.getUI(), layouts);
+    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget, List<Class<? extends RouterLayout>> layouts) {
+        this(event.getSource(), event.getTrigger(), event.getLocation(), navigationTarget, event.getUI(), layouts);
     }
 
     /**
@@ -88,11 +86,10 @@ public abstract class BeforeEvent extends EventObject {
      * @param layouts
      *            Navigation layout chain, not <code>null</code>
      */
-    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
-            RouteParameters parameters,
+    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget, RouteParameters parameters,
             List<Class<? extends RouterLayout>> layouts) {
-        this(event.getSource(), event.getTrigger(), event.getLocation(),
-                navigationTarget, parameters, event.getUI(), layouts);
+        this(event.getSource(), event.getTrigger(), event.getLocation(), navigationTarget, parameters, event.getUI(),
+                layouts);
 
     }
 
@@ -102,8 +99,7 @@ public abstract class BeforeEvent extends EventObject {
      * @param router
      *            the router that triggered the change, not <code>null</code>
      * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
+     *            the type of user action that triggered this location change, not <code>null</code>
      * @param location
      *            the new location, not <code>null</code>
      * @param navigationTarget
@@ -111,14 +107,11 @@ public abstract class BeforeEvent extends EventObject {
      * @param ui
      *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target, not
-     *            <code>null</code>
+     *            the layout chain for the navigation target, not <code>null</code>
      */
-    public BeforeEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui,
+    public BeforeEvent(Router router, NavigationTrigger trigger, Location location, Class<?> navigationTarget, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
-        this(router, trigger, location, navigationTarget,
-                RouteParameters.empty(), ui, layouts);
+        this(router, trigger, location, navigationTarget, RouteParameters.empty(), ui, layouts);
     }
 
     /**
@@ -127,8 +120,7 @@ public abstract class BeforeEvent extends EventObject {
      * @param router
      *            the router that triggered the change, not <code>null</code>
      * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
+     *            the type of user action that triggered this location change, not <code>null</code>
      * @param location
      *            the new location, not <code>null</code>
      * @param navigationTarget
@@ -138,13 +130,10 @@ public abstract class BeforeEvent extends EventObject {
      * @param ui
      *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target, not
-     *            <code>null</code>
+     *            the layout chain for the navigation target, not <code>null</code>
      */
-    public BeforeEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget,
-            RouteParameters parameters, UI ui,
-            List<Class<? extends RouterLayout>> layouts) {
+    public BeforeEvent(Router router, NavigationTrigger trigger, Location location, Class<?> navigationTarget,
+            RouteParameters parameters, UI ui, List<Class<? extends RouterLayout>> layouts) {
         super(router);
 
         assert trigger != null;
@@ -163,9 +152,8 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets if forward route is unknown. This is true only when a forward route
-     * is not found using {@link #forwardTo(String)} and
-     * {@link #forwardTo(String, QueryParameters)} methods.
+     * Gets if forward route is unknown. This is true only when a forward route is not found using
+     * {@link #forwardTo(String)} and {@link #forwardTo(String, QueryParameters)} methods.
      *
      * @return forward route is not found in the route registry.
      */
@@ -174,9 +162,8 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets if reroute route is unknown. This is true only when a reroute route
-     * is not found using {@link #rerouteTo(String)} and
-     * {@link #rerouteTo(String, QueryParameters)} method.
+     * Gets if reroute route is unknown. This is true only when a reroute route is not found using
+     * {@link #rerouteTo(String)} and {@link #rerouteTo(String, QueryParameters)} method.
      *
      * @return reroute is not found in the route registry.
      */
@@ -223,8 +210,7 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Gets the type of user action that triggered this location change.
      *
-     * @return the type of user action that triggered this location change, not
-     *         <code>null</code>
+     * @return the type of user action that triggered this location change, not <code>null</code>
      */
     public NavigationTrigger getTrigger() {
         return trigger;
@@ -263,8 +249,7 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets the forward target handler to use if the user should be forwarded to
-     * some other view.
+     * Gets the forward target handler to use if the user should be forwarded to some other view.
      *
      * @return navigation handler
      */
@@ -273,8 +258,7 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets the reroute target handler to use if the user should be rerouted to
-     * some other view.
+     * Gets the reroute target handler to use if the user should be rerouted to some other view.
      *
      * @return an navigation handler
      */
@@ -283,23 +267,18 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Forward the navigation to use the provided navigation handler instead of
-     * the currently used handler.
+     * Forward the navigation to use the provided navigation handler instead of the currently used handler.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param forwardTarget
-     *            the navigation handler to use, or {@code null} to clear a
-     *            previously set forward target
+     *            the navigation handler to use, or {@code null} to clear a previously set forward target
      * @param targetState
      *            the target navigation state of the rerouting
      */
-    public void forwardTo(NavigationHandler forwardTarget,
-            NavigationState targetState) {
+    public void forwardTo(NavigationHandler forwardTarget, NavigationState targetState) {
         this.forwardTargetState = targetState;
         this.forwardTarget = forwardTarget;
     }
@@ -307,11 +286,9 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward the navigation to the given navigation state.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param targetState
      *            the target navigation state, not {@code null}
@@ -322,59 +299,47 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Forward the navigation to show the given component instead of the
-     * component that is currently about to be displayed.
+     * Forward the navigation to show the given component instead of the component that is currently about to be
+     * displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
      */
     public void forwardTo(Class<? extends Component> forwardTargetComponent) {
-        Objects.requireNonNull(forwardTargetComponent,
-                "forwardTargetComponent cannot be null");
-        forwardTo(getNavigationState(forwardTargetComponent,
-                RouteParameters.empty(), null));
+        Objects.requireNonNull(forwardTargetComponent, "forwardTargetComponent cannot be null");
+        forwardTo(getNavigationState(forwardTargetComponent, RouteParameters.empty(), null));
     }
 
     /**
-     * Forward the navigation to show the given component instead of the
-     * component that is currently about to be displayed.
+     * Forward the navigation to show the given component instead of the component that is currently about to be
+     * displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
      * @param useForwardCallback
      *            {@literal true} to request navigation callback from client
      */
-    public void forwardTo(Class<? extends Component> forwardTargetComponent,
-            boolean useForwardCallback) {
-        Objects.requireNonNull(forwardTargetComponent,
-                "forwardTargetComponent cannot be null");
+    public void forwardTo(Class<? extends Component> forwardTargetComponent, boolean useForwardCallback) {
+        Objects.requireNonNull(forwardTargetComponent, "forwardTargetComponent cannot be null");
         this.useForwardCallback = useForwardCallback;
-        forwardTo(getNavigationState(forwardTargetComponent,
-                RouteParameters.empty(), null));
+        forwardTo(getNavigationState(forwardTargetComponent, RouteParameters.empty(), null));
     }
 
     /**
-     * Forward the navigation to show the given component with given route
-     * parameter instead of the component that is currently about to be
-     * displayed.
+     * Forward the navigation to show the given component with given route parameter instead of the component that is
+     * currently about to be displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -385,22 +350,18 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> void forwardTo(
-            Class<? extends C> forwardTargetComponent, T routeParameter) {
-        forwardTo(forwardTargetComponent,
-                Collections.singletonList(routeParameter));
+    public <T, C extends Component & HasUrlParameter<T>> void forwardTo(Class<? extends C> forwardTargetComponent,
+            T routeParameter) {
+        forwardTo(forwardTargetComponent, Collections.singletonList(routeParameter));
     }
 
     /**
-     * Forward the navigation to show the given component with given route
-     * parameters instead of the component that is currently about to be
-     * displayed.
+     * Forward the navigation to show the given component with given route parameters instead of the component that is
+     * currently about to be displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -411,43 +372,35 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> void forwardTo(
-            Class<? extends C> forwardTargetComponent,
+    public <T, C extends Component & HasUrlParameter<T>> void forwardTo(Class<? extends C> forwardTargetComponent,
             List<T> routeParameters) {
-        forwardTo(getNavigationState(forwardTargetComponent,
-                HasUrlParameterFormat.getParameters(routeParameters), null));
+        forwardTo(
+                getNavigationState(forwardTargetComponent, HasUrlParameterFormat.getParameters(routeParameters), null));
     }
 
     /**
-     * Forward the navigation to show the given component with given route
-     * parameters instead of the component that is currently about to be
-     * displayed.
+     * Forward the navigation to show the given component with given route parameters instead of the component that is
+     * currently about to be displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
      * @param parameters
      *            route parameters for the target
      */
-    public void forwardTo(Class<? extends Component> forwardTargetComponent,
-            RouteParameters parameters) {
-        Objects.requireNonNull(forwardTargetComponent,
-                "forwardTargetComponent cannot be null");
+    public void forwardTo(Class<? extends Component> forwardTargetComponent, RouteParameters parameters) {
+        Objects.requireNonNull(forwardTargetComponent, "forwardTargetComponent cannot be null");
         forwardTo(getNavigationState(forwardTargetComponent, parameters, null));
     }
 
     /**
-     * Forward the navigation to show the given component with given route
-     * parameter and query parameters instead of the component that is currently
-     * about to be displayed.
+     * Forward the navigation to show the given component with given route parameter and query parameters instead of the
+     * component that is currently about to be displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -460,23 +413,19 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> void forwardTo(
-            Class<? extends C> forwardTargetComponent, T routeParameter,
-            QueryParameters queryParameters) {
-        Objects.requireNonNull(forwardTargetComponent,
-                "forwardTargetComponent cannot be null");
+    public <T, C extends Component & HasUrlParameter<T>> void forwardTo(Class<? extends C> forwardTargetComponent,
+            T routeParameter, QueryParameters queryParameters) {
+        Objects.requireNonNull(forwardTargetComponent, "forwardTargetComponent cannot be null");
         this.redirectQueryParameters = queryParameters;
-        forwardTo(getNavigationState(forwardTargetComponent,
-                HasUrlParameterFormat.getParameters(routeParameter), null));
+        forwardTo(
+                getNavigationState(forwardTargetComponent, HasUrlParameterFormat.getParameters(routeParameter), null));
     }
 
     /**
-     * Forward the navigation to show the given component with given route
-     * parameters and query parameters instead of the component that is
-     * currently about to be displayed.
+     * Forward the navigation to show the given component with given route parameters and query parameters instead of
+     * the component that is currently about to be displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -487,23 +436,18 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <C extends Component> void forwardTo(
-            Class<? extends C> forwardTargetComponent,
+    public <C extends Component> void forwardTo(Class<? extends C> forwardTargetComponent,
             RouteParameters routeParameters, QueryParameters queryParameters) {
-        Objects.requireNonNull(forwardTargetComponent,
-                "forwardTargetComponent cannot be null");
+        Objects.requireNonNull(forwardTargetComponent, "forwardTargetComponent cannot be null");
         this.redirectQueryParameters = queryParameters;
-        forwardTo(getNavigationState(forwardTargetComponent, routeParameters,
-                null));
+        forwardTo(getNavigationState(forwardTargetComponent, routeParameters, null));
     }
 
     /**
-     * Forward the navigation to show the given component with given query
-     * parameters instead of the component that is currently about to be
-     * displayed.
+     * Forward the navigation to show the given component with given query parameters instead of the component that is
+     * currently about to be displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -512,32 +456,26 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <C extends Component> void forwardTo(
-            Class<? extends C> forwardTargetComponent,
+    public <C extends Component> void forwardTo(Class<? extends C> forwardTargetComponent,
             QueryParameters queryParameters) {
-        Objects.requireNonNull(forwardTargetComponent,
-                "forwardTargetComponent cannot be null");
+        Objects.requireNonNull(forwardTargetComponent, "forwardTargetComponent cannot be null");
         this.redirectQueryParameters = queryParameters;
-        forwardTo(getNavigationState(forwardTargetComponent,
-                RouteParameters.empty(), null));
+        forwardTo(getNavigationState(forwardTargetComponent, RouteParameters.empty(), null));
     }
 
     /**
-     * Forward to navigation component registered for given location string
-     * instead of the component about to be displayed.
+     * Forward to navigation component registered for given location string instead of the component about to be
+     * displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param location
      *            forward target location string
      */
     public void forwardTo(String location) {
-        final Optional<NavigationState> navigationState = getSource()
-                .resolveNavigationTarget(new Location(location));
+        final Optional<NavigationState> navigationState = getSource().resolveNavigationTarget(new Location(location));
 
         if (navigationState.isPresent()) {
             forwardTo(navigationState.get());
@@ -560,14 +498,12 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Forward to navigation component registered for given location string with
-     * given location parameter instead of the component about to be displayed.
+     * Forward to navigation component registered for given location string with given location parameter instead of the
+     * component about to be displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param location
      *            forward target location string
@@ -581,14 +517,12 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Forward to navigation component registered for given location string with
-     * given location parameters instead of the component about to be displayed.
+     * Forward to navigation component registered for given location string with given location parameters instead of
+     * the component about to be displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      * <p>
-     * Note that query parameters of the event are preserved in the forwarded
-     * URL.
+     * Note that query parameters of the event are preserved in the forwarded URL.
      *
      * @param location
      *            forward target location string
@@ -602,21 +536,19 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Forward to navigation component registered for given location string with
-     * given query parameters instead of the component about to be displayed.
+     * Forward to navigation component registered for given location string with given query parameters instead of the
+     * component about to be displayed.
      * <p>
-     * This function changes the browser URL as opposed to
-     * <code>rerouteTo()</code>.
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param locationString
      *            forward target location string
      * @param queryParameters
      *            query parameters for the target
      */
-    public void forwardTo(String locationString,
-            QueryParameters queryParameters) {
-        final Optional<Class<? extends Component>> target = getSource()
-                .getRegistry().getNavigationTarget(locationString);
+    public void forwardTo(String locationString, QueryParameters queryParameters) {
+        final Optional<Class<? extends Component>> target = getSource().getRegistry()
+                .getNavigationTarget(locationString);
         this.redirectQueryParameters = queryParameters;
         if (target.isPresent()) {
             forwardTo(getNavigationState(locationString, List.of()));
@@ -627,22 +559,18 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Reroutes the navigation to use the provided navigation handler instead of
-     * the currently used handler.
+     * Reroutes the navigation to use the provided navigation handler instead of the currently used handler.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      * <p>
      * Note that rerouting preserves the query parameters of the event.
      *
      * @param rerouteTarget
-     *            the navigation handler to use, or {@code null} to clear a
-     *            previously set reroute target
+     *            the navigation handler to use, or {@code null} to clear a previously set reroute target
      * @param targetState
      *            the target navigation state of the rerouting
      */
-    public void rerouteTo(NavigationHandler rerouteTarget,
-            NavigationState targetState) {
+    public void rerouteTo(NavigationHandler rerouteTarget, NavigationState targetState) {
         rerouteTargetState = targetState;
         this.rerouteTarget = rerouteTarget;
     }
@@ -650,8 +578,7 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroutes the navigation to the given navigation state.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      * <p>
      * Note that rerouting preserves the query parameters of the event.
      *
@@ -664,11 +591,10 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Reroutes the navigation to show the given component instead of the
-     * component that is currently about to be displayed.
+     * Reroutes the navigation to show the given component instead of the component that is currently about to be
+     * displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      * <p>
      * Note that rerouting preserves the query parameters of the event.
      *
@@ -676,19 +602,15 @@ public abstract class BeforeEvent extends EventObject {
      *            the component type to display, not {@code null}
      */
     public void rerouteTo(Class<? extends Component> routeTargetType) {
-        Objects.requireNonNull(routeTargetType,
-                "routeTargetType cannot be null");
-        rerouteTo(getNavigationState(routeTargetType, RouteParameters.empty(),
-                null));
+        Objects.requireNonNull(routeTargetType, "routeTargetType cannot be null");
+        rerouteTo(getNavigationState(routeTargetType, RouteParameters.empty(), null));
     }
 
     /**
-     * Reroutes the navigation to show the given component with given route
-     * parameter instead of the component that is currently about to be
-     * displayed.
+     * Reroutes the navigation to show the given component with given route parameter instead of the component that is
+     * currently about to be displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      * <p>
      * Note that rerouting preserves the query parameters of the event.
      *
@@ -701,18 +623,16 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> void rerouteTo(
-            Class<? extends C> routeTargetType, T routeParameter) {
+    public <T, C extends Component & HasUrlParameter<T>> void rerouteTo(Class<? extends C> routeTargetType,
+            T routeParameter) {
         rerouteTo(routeTargetType, Collections.singletonList(routeParameter));
     }
 
     /**
-     * Reroutes the navigation to show the given component with given route
-     * parameters instead of the component that is currently about to be
-     * displayed.
+     * Reroutes the navigation to show the given component with given route parameters instead of the component that is
+     * currently about to be displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      * <p>
      * Note that rerouting preserves the query parameters of the event.
      *
@@ -725,19 +645,16 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> void rerouteTo(
-            Class<? extends C> routeTargetType, List<T> routeParameters) {
-        rerouteTo(getNavigationState(routeTargetType,
-                HasUrlParameterFormat.getParameters(routeParameters), null));
+    public <T, C extends Component & HasUrlParameter<T>> void rerouteTo(Class<? extends C> routeTargetType,
+            List<T> routeParameters) {
+        rerouteTo(getNavigationState(routeTargetType, HasUrlParameterFormat.getParameters(routeParameters), null));
     }
 
     /**
-     * Reroutes the navigation to show the given component with given route
-     * parameters instead of the component that is currently about to be
-     * displayed.
+     * Reroutes the navigation to show the given component with given route parameters instead of the component that is
+     * currently about to be displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      * <p>
      * Note that rerouting preserves the query parameters of the event.
      *
@@ -746,20 +663,16 @@ public abstract class BeforeEvent extends EventObject {
      * @param parameters
      *            parameters for the target url.
      */
-    public void rerouteTo(Class<? extends Component> routeTargetType,
-            RouteParameters parameters) {
-        Objects.requireNonNull(routeTargetType,
-                "routeTargetType cannot be null");
+    public void rerouteTo(Class<? extends Component> routeTargetType, RouteParameters parameters) {
+        Objects.requireNonNull(routeTargetType, "routeTargetType cannot be null");
         rerouteTo(getNavigationState(routeTargetType, parameters, null));
     }
 
     /**
-     * Reroutes the navigation to show the given component with given route
-     * parameter and query parameters instead of the component that is currently
-     * about to be displayed.
+     * Reroutes the navigation to show the given component with given route parameter and query parameters instead of
+     * the component that is currently about to be displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param routeTargetType
      *            the component type to display, not {@code null}
@@ -772,23 +685,18 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> void rerouteTo(
-            Class<? extends C> routeTargetType, T routeParameter,
-            QueryParameters queryParameters) {
-        Objects.requireNonNull(routeTargetType,
-                "routeTargetType cannot be null");
+    public <T, C extends Component & HasUrlParameter<T>> void rerouteTo(Class<? extends C> routeTargetType,
+            T routeParameter, QueryParameters queryParameters) {
+        Objects.requireNonNull(routeTargetType, "routeTargetType cannot be null");
         this.redirectQueryParameters = queryParameters;
-        rerouteTo(getNavigationState(routeTargetType,
-                HasUrlParameterFormat.getParameters(routeParameter), null));
+        rerouteTo(getNavigationState(routeTargetType, HasUrlParameterFormat.getParameters(routeParameter), null));
     }
 
     /**
-     * Reroutes the navigation to show the given component with given route
-     * parameters and query parameters instead of the component that is
-     * currently about to be displayed.
+     * Reroutes the navigation to show the given component with given route parameters and query parameters instead of
+     * the component that is currently about to be displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param routeTargetType
      *            the component type to display, not {@code null}
@@ -799,22 +707,18 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <C extends Component> void rerouteTo(
-            Class<? extends C> routeTargetType, RouteParameters routeParameters,
+    public <C extends Component> void rerouteTo(Class<? extends C> routeTargetType, RouteParameters routeParameters,
             QueryParameters queryParameters) {
-        Objects.requireNonNull(routeTargetType,
-                "routeTargetComponent cannot be null");
+        Objects.requireNonNull(routeTargetType, "routeTargetComponent cannot be null");
         this.redirectQueryParameters = queryParameters;
         rerouteTo(getNavigationState(routeTargetType, routeParameters, null));
     }
 
     /**
-     * Reroutes the navigation to show the given component with given query
-     * parameters instead of the component that is currently about to be
-     * displayed.
+     * Reroutes the navigation to show the given component with given query parameters instead of the component that is
+     * currently about to be displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param routeTargetType
      *            the component type to display, not {@code null}
@@ -823,22 +727,17 @@ public abstract class BeforeEvent extends EventObject {
      * @param <C>
      *            navigation target type
      */
-    public <C extends Component> void rerouteTo(
-            Class<? extends C> routeTargetType,
-            QueryParameters queryParameters) {
-        Objects.requireNonNull(routeTargetType,
-                "routeTargetComponent cannot be null");
+    public <C extends Component> void rerouteTo(Class<? extends C> routeTargetType, QueryParameters queryParameters) {
+        Objects.requireNonNull(routeTargetType, "routeTargetComponent cannot be null");
         this.redirectQueryParameters = queryParameters;
-        rerouteTo(getNavigationState(routeTargetType, RouteParameters.empty(),
-                null));
+        rerouteTo(getNavigationState(routeTargetType, RouteParameters.empty(), null));
     }
 
     /**
-     * Reroute to navigation component registered for given location string
-     * instead of the component about to be displayed.
+     * Reroute to navigation component registered for given location string instead of the component about to be
+     * displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      * <p>
      * Note that rerouting preserves the query parameters of the event.
      *
@@ -846,8 +745,7 @@ public abstract class BeforeEvent extends EventObject {
      *            reroute target location string
      */
     public void rerouteTo(String route) {
-        final Optional<NavigationState> navigationState = getSource()
-                .resolveNavigationTarget(new Location(route));
+        final Optional<NavigationState> navigationState = getSource().resolveNavigationTarget(new Location(route));
 
         if (navigationState.isPresent()) {
             rerouteTo(navigationState.get());
@@ -858,11 +756,10 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Reroute to navigation component registered for given location string with
-     * given route parameter instead of the component about to be displayed.
+     * Reroute to navigation component registered for given location string with given route parameter instead of the
+     * component about to be displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      * <p>
      * Note that rerouting preserves the query parameters of the event.
      *
@@ -878,11 +775,10 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Reroute to navigation component registered for given location string with
-     * given route parameters instead of the component about to be displayed.
+     * Reroute to navigation component registered for given location string with given route parameters instead of the
+     * component about to be displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      * <p>
      * Note that rerouting preserves the query parameters of the event.
      *
@@ -898,11 +794,10 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Reroute to navigation component registered for given location string with
-     * given query parameters instead of the component about to be displayed.
+     * Reroute to navigation component registered for given location string with given query parameters instead of the
+     * component about to be displayed.
      * <p>
-     * This function doesn't change the browser URL as opposed to
-     * <code>forwardTo()</code>.
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param route
      *            reroute target location string
@@ -910,8 +805,7 @@ public abstract class BeforeEvent extends EventObject {
      *            query parameters for the target
      */
     public void rerouteTo(String route, QueryParameters queryParameters) {
-        final Optional<Class<? extends Component>> target = getSource()
-                .getRegistry().getNavigationTarget(route);
+        final Optional<Class<? extends Component>> target = getSource().getRegistry().getNavigationTarget(route);
 
         this.redirectQueryParameters = queryParameters;
         if (target.isPresent()) {
@@ -922,50 +816,41 @@ public abstract class BeforeEvent extends EventObject {
         }
     }
 
-    private Class<? extends Component> getTargetOrThrow(String route,
-            List<String> segments) {
-        Optional<Class<? extends Component>> target = getSource().getRegistry()
-                .getNavigationTarget(route, segments);
+    private Class<? extends Component> getTargetOrThrow(String route, List<String> segments) {
+        Optional<Class<? extends Component>> target = getSource().getRegistry().getNavigationTarget(route, segments);
 
         if (!target.isPresent()) {
-            throw new IllegalArgumentException(String.format(
-                    "No route '%s' accepting the parameters %s was found.",
-                    route, segments));
+            throw new IllegalArgumentException(
+                    String.format("No route '%s' accepting the parameters %s was found.", route, segments));
         }
         return target.get();
     }
 
-    private <T> void checkUrlParameterType(T routeParam,
-            Class<? extends Component> target) {
-        Class<?> genericInterfaceType = ReflectTools
-                .getGenericInterfaceType(target, HasUrlParameter.class);
+    private <T> void checkUrlParameterType(T routeParam, Class<? extends Component> target) {
+        Class<?> genericInterfaceType = ReflectTools.getGenericInterfaceType(target, HasUrlParameter.class);
         if (!genericInterfaceType.isAssignableFrom(routeParam.getClass())) {
-            throw new IllegalArgumentException(String.format(
-                    "Given route parameter '%s' is of the wrong type. Required '%s'.",
-                    routeParam.getClass(), genericInterfaceType));
+            throw new IllegalArgumentException(
+                    String.format("Given route parameter '%s' is of the wrong type. Required '%s'.",
+                            routeParam.getClass(), genericInterfaceType));
         }
     }
 
-    private <T> NavigationState getNavigationState(String url,
-            List<T> routeParams) {
-        List<String> segments = routeParams.stream().map(Object::toString)
-                .collect(Collectors.toList());
+    private <T> NavigationState getNavigationState(String url, List<T> routeParams) {
+        List<String> segments = routeParams.stream().map(Object::toString).collect(Collectors.toList());
         Class<? extends Component> target = getTargetOrThrow(url, segments);
 
         if (!routeParams.isEmpty()) {
             checkUrlParameterType(routeParams.get(0), target);
         }
 
-        return getNavigationState(target,
-                HasUrlParameterFormat.getParameters(segments),
+        return getNavigationState(target, HasUrlParameterFormat.getParameters(segments),
                 HasUrlParameterFormat.getUrl(url, routeParams));
     }
 
-    private NavigationState getNavigationState(
-            Class<? extends Component> target, RouteParameters parameters,
+    private NavigationState getNavigationState(Class<? extends Component> target, RouteParameters parameters,
             String resolvedUrl) {
-        return new NavigationStateBuilder(ui.getInternals().getRouter())
-                .withTarget(target, parameters).withPath(resolvedUrl).build();
+        return new NavigationStateBuilder(ui.getInternals().getRouter()).withTarget(target, parameters)
+                .withPath(resolvedUrl).build();
     }
 
     /**
@@ -973,8 +858,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return forward target type
      * @throws NullPointerException
-     *             if no forward target is set. Check
-     *             {@link #hasForwardTarget()} before accessing this method.
+     *             if no forward target is set. Check {@link #hasForwardTarget()} before accessing this method.
      */
     public Class<? extends Component> getForwardTargetType() {
         return forwardTargetState.getNavigationTarget();
@@ -985,8 +869,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return URL parameters of forward target
      * @throws NullPointerException
-     *             if no forward target is set. Check
-     *             {@link #hasForwardTarget()} before accessing this method.
+     *             if no forward target is set. Check {@link #hasForwardTarget()} before accessing this method.
      */
     public RouteParameters getForwardTargetRouteParameters() {
         return forwardTargetState.getRouteParameters();
@@ -997,8 +880,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return the reroute url.
      * @throws NullPointerException
-     *             if no forward target is set. Check
-     *             {@link #hasForwardTarget()} before accessing this method.
+     *             if no forward target is set. Check {@link #hasForwardTarget()} before accessing this method.
      */
     public String getForwardUrl() {
         return forwardTargetState.getResolvedPath();
@@ -1009,8 +891,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return route target type
      * @throws NullPointerException
-     *             if no reroute target is set. Check
-     *             {@link #hasRerouteTarget()} before accessing this method.
+     *             if no reroute target is set. Check {@link #hasRerouteTarget()} before accessing this method.
      */
     public Class<? extends Component> getRerouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
@@ -1021,8 +902,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return URL parameters of reroute target
      * @throws NullPointerException
-     *             if no reroute target is set. Check
-     *             {@link #hasRerouteTarget()} before accessing this method.
+     *             if no reroute target is set. Check {@link #hasRerouteTarget()} before accessing this method.
      */
     public RouteParameters getRerouteTargetRouteParameters() {
         return rerouteTargetState.getRouteParameters();
@@ -1033,8 +913,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return the reroute url.
      * @throws NullPointerException
-     *             if no reroute target is set. Check
-     *             {@link #hasRerouteTarget()} before accessing this method.
+     *             if no reroute target is set. Check {@link #hasRerouteTarget()} before accessing this method.
      */
     public String getRerouteUrl() {
         return rerouteTargetState.getResolvedPath();
@@ -1068,9 +947,8 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets the query parameters for forwarded and rerouted URL. {@code null}
-     * means that query parameters of the event are preserved in the forwarded
-     * and rerouted URL.
+     * Gets the query parameters for forwarded and rerouted URL. {@code null} means that query parameters of the event
+     * are preserved in the forwarded and rerouted URL.
      *
      * @return query parameters for forwarding and rerouting
      */
@@ -1079,8 +957,7 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Get the layout chain for the {@link #getNavigationState(String, List)
-     * navigation target}.
+     * Get the layout chain for the {@link #getNavigationState(String, List) navigation target}.
      *
      * @return layout chain
      */
@@ -1112,8 +989,7 @@ public abstract class BeforeEvent extends EventObject {
      *            custom message to send to error target
      * @see BeforeLeaveEvent#rerouteToError(Exception, String)
      */
-    public void rerouteToError(Class<? extends Exception> exception,
-            String customMessage) {
+    public void rerouteToError(Class<? extends Exception> exception, String customMessage) {
         Exception instance = ReflectTools.createInstance(exception);
         rerouteToError(instance, customMessage);
     }
@@ -1127,20 +1003,16 @@ public abstract class BeforeEvent extends EventObject {
      *            custom message to send to error target
      */
     public void rerouteToError(Exception exception, String customMessage) {
-        Optional<ErrorTargetEntry> maybeLookupResult = getSource()
-                .getErrorNavigationTarget(exception);
+        Optional<ErrorTargetEntry> maybeLookupResult = getSource().getErrorNavigationTarget(exception);
 
         if (maybeLookupResult.isPresent()) {
             ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
-            rerouteTargetState = new NavigationStateBuilder(
-                    ui.getInternals().getRouter())
+            rerouteTargetState = new NavigationStateBuilder(ui.getInternals().getRouter())
                     .withTarget(lookupResult.getNavigationTarget()).build();
             rerouteTarget = new ErrorStateRenderer(rerouteTargetState);
 
-            errorParameter = new ErrorParameter<>(
-                    lookupResult.getHandledExceptionType(), exception,
-                    customMessage);
+            errorParameter = new ErrorParameter<>(lookupResult.getHandledExceptionType(), exception, customMessage);
         } else {
             throw new RuntimeException(customMessage, exception);
         }
@@ -1165,11 +1037,9 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Determines is client side callback should be requested when executing
-     * pending forward operation.
+     * Determines is client side callback should be requested when executing pending forward operation.
      *
-     * @return {@literal true} if callback should be used,
-     *         {@literal false otherwise}
+     * @return {@literal true} if callback should be used, {@literal false otherwise}
      */
     public boolean isUseForwardCallback() {
         return useForwardCallback;

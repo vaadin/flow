@@ -37,17 +37,13 @@ public class IdTestIT extends ChromeBrowserTest {
     public void testIds() {
         open();
 
-        checkLogsForErrors(
-                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
-        waitUntilWithMessage(
-                ExpectedConditions
-                        .presenceOfElementLocated(By.tagName("my-component")),
+        checkLogsForErrors(msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
+        waitUntilWithMessage(ExpectedConditions.presenceOfElementLocated(By.tagName("my-component")),
                 "Failed to load my-component", 25);
 
         TestBenchElement myComponent = $("my-component").first();
 
-        WebElement content = myComponent.$(TestBenchElement.class)
-                .id("content");
+        WebElement content = myComponent.$(TestBenchElement.class).id("content");
         Assert.assertEquals("", content.getText());
 
         WebElement button = myComponent.$(TestBenchElement.class).id("button");
@@ -58,8 +54,7 @@ public class IdTestIT extends ChromeBrowserTest {
         Assert.assertEquals("2", content.getText());
     }
 
-    private void waitUntilWithMessage(ExpectedCondition<?> condition,
-            String message, long time) {
+    private void waitUntilWithMessage(ExpectedCondition<?> condition, String message, long time) {
         try {
             waitUntil(condition, time);
         } catch (TimeoutException te) {

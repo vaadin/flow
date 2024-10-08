@@ -29,11 +29,9 @@ import com.vaadin.flow.component.UI;
  */
 public interface SystemMessagesProvider extends Serializable {
     /**
-     * Gets the system messages to use in the given context. The
-     * {@link SystemMessagesInfo} object contains available information but in
-     * most cases some or both of {@link VaadinSession#getCurrent()} and
-     * {@link UI#getCurrent()} can also be used to find more information to help
-     * the decision.
+     * Gets the system messages to use in the given context. The {@link SystemMessagesInfo} object contains available
+     * information but in most cases some or both of {@link VaadinSession#getCurrent()} and {@link UI#getCurrent()} can
+     * also be used to find more information to help the decision.
      *
      * @param systemMessagesInfo
      *            Locale, current request and other information available.

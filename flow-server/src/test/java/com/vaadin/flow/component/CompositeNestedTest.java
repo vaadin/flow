@@ -32,8 +32,7 @@ public class CompositeNestedTest {
     Composite<?> compositeOuter;
     Composite<?> compositeInner;
 
-    public static class TestComposite extends Composite<Component>
-            implements TracksAttachDetach {
+    public static class TestComposite extends Composite<Component> implements TracksAttachDetach {
 
         private Component content;
 
@@ -78,8 +77,7 @@ public class CompositeNestedTest {
     @Before
     public void setup() {
         layout = new TestLayout();
-        componentInComposite = new TestComponent(
-                ElementFactory.createDiv("Inside composite"));
+        componentInComposite = new TestComponent(ElementFactory.createDiv("Inside composite"));
         compositeInner = new TestComposite(componentInComposite) {
             @Override
             public String toString() {
@@ -97,32 +95,27 @@ public class CompositeNestedTest {
 
     @Test
     public void compositeOuterElement() {
-        Assert.assertEquals(componentInComposite.getElement(),
-                compositeOuter.getElement());
+        Assert.assertEquals(componentInComposite.getElement(), compositeOuter.getElement());
     }
 
     @Test
     public void compositeInnerElement() {
-        Assert.assertEquals(componentInComposite.getElement(),
-                compositeInner.getElement());
+        Assert.assertEquals(componentInComposite.getElement(), compositeInner.getElement());
     }
 
     @Test
     public void getParentElement_compositeOuter() {
-        Assert.assertEquals(layout.getElement(),
-                compositeOuter.getElement().getParent());
+        Assert.assertEquals(layout.getElement(), compositeOuter.getElement().getParent());
     }
 
     @Test
     public void getParentElement_compositeInner() {
-        Assert.assertEquals(layout.getElement(),
-                compositeInner.getElement().getParent());
+        Assert.assertEquals(layout.getElement(), compositeInner.getElement().getParent());
     }
 
     @Test
     public void layoutChildElements() {
-        CompositeTest.assertElementChildren(layout.getElement(),
-                componentInComposite.getElement());
+        CompositeTest.assertElementChildren(layout.getElement(), componentInComposite.getElement());
     }
 
     @Test
@@ -137,8 +130,7 @@ public class CompositeNestedTest {
 
     @Test
     public void getParent_componentInComposite() {
-        Assert.assertEquals(compositeInner,
-                componentInComposite.getParent().get());
+        Assert.assertEquals(compositeInner, componentInComposite.getParent().get());
     }
 
     @Test

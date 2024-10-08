@@ -38,10 +38,9 @@ public class ServerEventHandlerBinder {
     }
 
     /**
-     * Registers all the server event handler names found in the
-     * {@link NodeFeatures#CLIENT_DELEGATE_HANDLERS} feature in the state node
-     * as <code>serverObject.&lt;methodName&gt;</code>. Additionally listens to
-     * changes in the feature and updates <code>$server</code> accordingly.
+     * Registers all the server event handler names found in the {@link NodeFeatures#CLIENT_DELEGATE_HANDLERS} feature
+     * in the state node as <code>serverObject.&lt;methodName&gt;</code>. Additionally listens to changes in the feature
+     * and updates <code>$server</code> accordingly.
      *
      * @param element
      *            the element to update
@@ -49,16 +48,14 @@ public class ServerEventHandlerBinder {
      *            the state node containing the feature
      * @return a handle which can be used to remove the listener for the feature
      */
-    public static EventRemover bindServerEventHandlerNames(Element element,
-            StateNode node) {
-        return bindServerEventHandlerNames(() -> ServerEventObject.get(element),
-                node, NodeFeatures.CLIENT_DELEGATE_HANDLERS, true);
+    public static EventRemover bindServerEventHandlerNames(Element element, StateNode node) {
+        return bindServerEventHandlerNames(() -> ServerEventObject.get(element), node,
+                NodeFeatures.CLIENT_DELEGATE_HANDLERS, true);
     }
 
     /**
-     * Registers all the server event handler names found in the feature with
-     * the {@code featureId} in the {@link ServerEventObject} {@code object}.
-     * Additionally listens to changes in the feature and updates server event
+     * Registers all the server event handler names found in the feature with the {@code featureId} in the
+     * {@link ServerEventObject} {@code object}. Additionally listens to changes in the feature and updates server event
      * object accordingly.
      *
      * @param objectProvider
@@ -68,13 +65,11 @@ public class ServerEventHandlerBinder {
      * @param featureId
      *            the feature id which contains event handler methods
      * @param returnValue
-     *            <code>true</code> if the handler should return a promise that
-     *            will reflect the server-side result; <code>false</code> to not
-     *            return any value
+     *            <code>true</code> if the handler should return a promise that will reflect the server-side result;
+     *            <code>false</code> to not return any value
      * @return a handle which can be used to remove the listener for the feature
      */
-    public static EventRemover bindServerEventHandlerNames(
-            Supplier<ServerEventObject> objectProvider, StateNode node,
+    public static EventRemover bindServerEventHandlerNames(Supplier<ServerEventObject> objectProvider, StateNode node,
             int featureId, boolean returnValue) {
         NodeList serverEventHandlerNamesList = node.getList(featureId);
 
@@ -82,8 +77,7 @@ public class ServerEventHandlerBinder {
             ServerEventObject object = objectProvider.get();
 
             for (int i = 0; i < serverEventHandlerNamesList.length(); i++) {
-                String serverEventHandlerName = (String) serverEventHandlerNamesList
-                        .get(i);
+                String serverEventHandlerName = (String) serverEventHandlerNamesList.get(i);
                 object.defineMethod(serverEventHandlerName, node, returnValue);
             }
         }
@@ -98,8 +92,7 @@ public class ServerEventHandlerBinder {
 
             JsArray<?> add = e.getAdd();
             for (int i = 0; i < add.length(); i++) {
-                serverObject.defineMethod((String) add.get(i), node,
-                        returnValue);
+                serverObject.defineMethod((String) add.get(i), node, returnValue);
             }
         });
     }

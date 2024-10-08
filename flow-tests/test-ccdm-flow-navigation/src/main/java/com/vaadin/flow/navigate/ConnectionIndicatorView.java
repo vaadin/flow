@@ -32,19 +32,15 @@ public class ConnectionIndicatorView extends Div {
     public static final String CUSTOM_OFFLINE_MESSAGE = "custom offline from Java";
 
     public ConnectionIndicatorView() {
-        NativeButton ping = new NativeButton("Ping server",
-                e -> add(new Span("Server reached")));
+        NativeButton ping = new NativeButton("Ping server", e -> add(new Span("Server reached")));
         ping.setId(CONNECT_SERVER);
         add(ping);
 
-        NativeButton setCustomReconnecting = new NativeButton(
-                "Set custom reconnecting message", e -> {
-                    UI ui = getUI().get();
-                    ui.getReconnectDialogConfiguration()
-                            .setDialogText(CUSTOM_RECONNECTING_MESSAGE);
-                    ui.getReconnectDialogConfiguration()
-                            .setDialogTextGaveUp(CUSTOM_OFFLINE_MESSAGE);
-                });
+        NativeButton setCustomReconnecting = new NativeButton("Set custom reconnecting message", e -> {
+            UI ui = getUI().get();
+            ui.getReconnectDialogConfiguration().setDialogText(CUSTOM_RECONNECTING_MESSAGE);
+            ui.getReconnectDialogConfiguration().setDialogTextGaveUp(CUSTOM_OFFLINE_MESSAGE);
+        });
         setCustomReconnecting.setId(SET_CUSTOM_MESSAGES);
         add(setCustomReconnecting);
     }

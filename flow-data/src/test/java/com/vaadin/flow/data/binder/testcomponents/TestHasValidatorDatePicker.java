@@ -11,14 +11,12 @@ public class TestHasValidatorDatePicker {
 
     public static final String INVALID_DATE_FORMAT = "Invalid date format";
 
-    public static class DatePickerHasValidatorDefaults extends TestDatePicker
-            implements HasValidator<LocalDate> {
+    public static class DatePickerHasValidatorDefaults extends TestDatePicker implements HasValidator<LocalDate> {
 
         protected boolean validationStatus = true;
     }
 
-    public static class DataPickerHasValidatorGetDefaultValidatorOverridden
-            extends DatePickerHasValidatorDefaults {
+    public static class DataPickerHasValidatorGetDefaultValidatorOverridden extends DatePickerHasValidatorDefaults {
 
         @Override
         public Validator<LocalDate> getDefaultValidator() {
@@ -27,38 +25,30 @@ public class TestHasValidatorDatePicker {
         }
     }
 
-    public static class DataPickerHasValidatorAddListenerOverridden
-            extends DatePickerHasValidatorDefaults {
+    public static class DataPickerHasValidatorAddListenerOverridden extends DatePickerHasValidatorDefaults {
 
         private final Collection<ValidationStatusChangeListener<LocalDate>> validationStatusListeners = new ArrayList<>();
 
         @Override
-        public Registration addValidationStatusChangeListener(
-                ValidationStatusChangeListener<LocalDate> listener) {
+        public Registration addValidationStatusChangeListener(ValidationStatusChangeListener<LocalDate> listener) {
             validationStatusListeners.add(listener);
             return () -> validationStatusListeners.remove(listener);
         }
 
-        public void fireValidationStatusChangeEvent(
-                boolean newValidationStatus) {
+        public void fireValidationStatusChangeEvent(boolean newValidationStatus) {
             if (validationStatus != newValidationStatus) {
                 validationStatus = newValidationStatus;
-                var event = new ValidationStatusChangeEvent<>(this,
-                        newValidationStatus);
-                validationStatusListeners.forEach(
-                        listener -> listener.validationStatusChanged(event));
+                var event = new ValidationStatusChangeEvent<>(this, newValidationStatus);
+                validationStatusListeners.forEach(listener -> listener.validationStatusChanged(event));
             }
         }
 
-        public ValidationResult customValidation(LocalDate value,
-                ValueContext context) {
-            return validationStatus ? ValidationResult.ok()
-                    : ValidationResult.error(INVALID_DATE_FORMAT);
+        public ValidationResult customValidation(LocalDate value, ValueContext context) {
+            return validationStatus ? ValidationResult.ok() : ValidationResult.error(INVALID_DATE_FORMAT);
         }
     }
 
-    public static class DataPickerHasValidatorOverridden
-            extends DataPickerHasValidatorAddListenerOverridden {
+    public static class DataPickerHasValidatorOverridden extends DataPickerHasValidatorAddListenerOverridden {
 
         @Override
         public Validator<LocalDate> getDefaultValidator() {

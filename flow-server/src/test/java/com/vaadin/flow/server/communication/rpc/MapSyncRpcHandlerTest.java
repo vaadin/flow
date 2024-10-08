@@ -73,8 +73,7 @@ public class MapSyncRpcHandlerTest {
     public void testSynchronizeProperty() throws Exception {
         TestComponent c = new TestComponent();
         Element element = c.getElement();
-        ElementPropertyMap.getModel(element.getNode())
-                .setUpdateFromClientFilter(name -> true);
+        ElementPropertyMap.getModel(element.getNode()).setUpdateFromClientFilter(name -> true);
 
         UI ui = new UI();
         ui.add(c);
@@ -86,8 +85,7 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void syncJSON_jsonIsForStateNodeInList_propertySetToStateNodeCopy()
-            throws Exception {
+    public void syncJSON_jsonIsForStateNodeInList_propertySetToStateNodeCopy() throws Exception {
         // Let's use element's ElementPropertyMap for testing.
         TestComponent component = new TestComponent();
         Element element = component.getElement();
@@ -97,8 +95,7 @@ public class MapSyncRpcHandlerTest {
         StateNode node = element.getNode();
 
         // Set model value directly via ElementPropertyMap
-        ElementPropertyMap propertyMap = node
-                .getFeature(ElementPropertyMap.class);
+        ElementPropertyMap propertyMap = node.getFeature(ElementPropertyMap.class);
         propertyMap.setUpdateFromClientFilter(name -> true);
         ModelList modelList = propertyMap.resolveModelList("foo");
         // fake StateNode has been created for the model
@@ -123,13 +120,11 @@ public class MapSyncRpcHandlerTest {
         StateNode newNode = (StateNode) testPropertyValue;
         Assert.assertNotEquals(item.getId(), newNode.getId());
 
-        Assert.assertEquals("baz", newNode.getFeature(ElementPropertyMap.class)
-                .getProperty("bar"));
+        Assert.assertEquals("baz", newNode.getFeature(ElementPropertyMap.class).getProperty("bar"));
     }
 
     @Test
-    public void syncJSON_jsonIsPropertyValueOfStateNode_propertySetToNode()
-            throws Exception {
+    public void syncJSON_jsonIsPropertyValueOfStateNode_propertySetToNode() throws Exception {
         // Let's use element's ElementPropertyMap for testing.
         TestComponent component = new TestComponent();
         Element element = component.getElement();
@@ -139,8 +134,7 @@ public class MapSyncRpcHandlerTest {
         StateNode node = element.getNode();
 
         // Set model value directly via ElementPropertyMap
-        ElementPropertyMap propertyMap = node
-                .getFeature(ElementPropertyMap.class);
+        ElementPropertyMap propertyMap = node.getFeature(ElementPropertyMap.class);
         propertyMap.setUpdateFromClientFilter(name -> true);
 
         ElementPropertyMap modelMap = propertyMap.resolveModelMap("foo");
@@ -165,8 +159,7 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void syncJSON_jsonIsNotListItemAndNotPropertyValue_propertySetToJSON()
-            throws Exception {
+    public void syncJSON_jsonIsNotListItemAndNotPropertyValue_propertySetToJSON() throws Exception {
         // Let's use element's ElementPropertyMap for testing.
         TestComponent component = new TestComponent();
         Element element = component.getElement();
@@ -178,8 +171,7 @@ public class MapSyncRpcHandlerTest {
         TestComponent anotherComonent = new TestComponent();
         StateNode anotherNode = anotherComonent.getElement().getNode();
 
-        ElementPropertyMap.getModel(node)
-                .setUpdateFromClientFilter(name -> true);
+        ElementPropertyMap.getModel(node).setUpdateFromClientFilter(name -> true);
 
         // Use the model node id for JSON object which represents a value to
         // update
@@ -189,16 +181,14 @@ public class MapSyncRpcHandlerTest {
         // send sync request
         sendSynchronizePropertyEvent(element, ui, "foo", json);
 
-        Serializable testPropertyValue = node
-                .getFeature(ElementPropertyMap.class).getProperty("foo");
+        Serializable testPropertyValue = node.getFeature(ElementPropertyMap.class).getProperty("foo");
 
         Assert.assertNotSame(anotherNode, testPropertyValue);
         Assert.assertTrue(testPropertyValue instanceof JsonValue);
     }
 
     @Test
-    public void disabledElement_updateDisallowed_updateIsNotDone()
-            throws Exception {
+    public void disabledElement_updateDisallowed_updateIsNotDone() throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
         ui.getElement().appendChild(element);
@@ -209,13 +199,11 @@ public class MapSyncRpcHandlerTest {
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
-        Assert.assertNotEquals(NEW_VALUE,
-                element.getPropertyRaw(TEST_PROPERTY));
+        Assert.assertNotEquals(NEW_VALUE, element.getPropertyRaw(TEST_PROPERTY));
     }
 
     @Test
-    public void disabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone()
-            throws Exception {
+    public void disabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone() throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
         ui.getElement().appendChild(element);
@@ -230,16 +218,14 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void disabledElement_updateIsAllowedByEventListener_updateIsDone()
-            throws Exception {
+    public void disabledElement_updateIsAllowedByEventListener_updateIsDone() throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
         ui.getElement().appendChild(element);
 
         element.setEnabled(false);
         element.addEventListener(DUMMY_EVENT, event -> {
-        }).synchronizeProperty(TEST_PROPERTY)
-                .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+        }).synchronizeProperty(TEST_PROPERTY).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -247,8 +233,7 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void implicitlyDisabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone()
-            throws Exception {
+    public void implicitlyDisabledElement_updateIsAllowedBySynchronizeProperty_updateIsDone() throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
         ui.getElement().appendChild(element);
@@ -263,16 +248,14 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void implicitlyDisabledElement_updateIsAllowedByEventListener_updateIsDone()
-            throws Exception {
+    public void implicitlyDisabledElement_updateIsAllowedByEventListener_updateIsDone() throws Exception {
         Element element = ElementFactory.createDiv();
         UI ui = new UI();
         ui.getElement().appendChild(element);
 
         ui.setEnabled(false);
         element.addEventListener(DUMMY_EVENT, event -> {
-        }).synchronizeProperty(TEST_PROPERTY)
-                .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+        }).synchronizeProperty(TEST_PROPERTY).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -283,12 +266,10 @@ public class MapSyncRpcHandlerTest {
     public void noSyncPropertiesFeature_noExplicitAllow_throws() {
         StateNode noSyncProperties = new StateNode(ElementPropertyMap.class);
 
-        ElementPropertyMap map = noSyncProperties
-                .getFeature(ElementPropertyMap.class);
+        ElementPropertyMap map = noSyncProperties.getFeature(ElementPropertyMap.class);
 
         new MapSyncRpcHandler().handleNode(noSyncProperties,
-                createSyncPropertyInvocation(noSyncProperties, TEST_PROPERTY,
-                        NEW_VALUE));
+                createSyncPropertyInvocation(noSyncProperties, TEST_PROPERTY, NEW_VALUE));
 
         Assert.assertEquals(NEW_VALUE, map.getProperty(TEST_PROPERTY));
     }
@@ -296,49 +277,41 @@ public class MapSyncRpcHandlerTest {
     @Test
     public void propertyIsNotExplicitlyAllowed_throwsWithElementTagInfo() {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString("Element with tag 'foo'"),
+        exception.expectMessage(CoreMatchers.allOf(CoreMatchers.containsString("Element with tag 'foo'"),
                 CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
         Element element = new Element("foo");
 
         new MapSyncRpcHandler().handleNode(element.getNode(),
-                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
-                        NEW_VALUE));
+                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY, NEW_VALUE));
     }
 
     @Test
     public void propertyIsNotExplicitlyAllowed_throwsWithComponentInfo() {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "Component " + TestComponent.class.getName()),
-                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
+        exception.expectMessage(
+                CoreMatchers.allOf(CoreMatchers.containsString("Component " + TestComponent.class.getName()),
+                        CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
         TestComponent component = new TestComponent();
         Element element = component.getElement();
 
         new MapSyncRpcHandler().handleNode(element.getNode(),
-                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
-                        NEW_VALUE));
+                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY, NEW_VALUE));
     }
 
     @Test
     public void propertyIsNotExplicitlyAllowed_subproperty_throwsWithComponentInfo() {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "Component " + TestComponent.class.getName()),
-                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
+        exception.expectMessage(
+                CoreMatchers.allOf(CoreMatchers.containsString("Component " + TestComponent.class.getName()),
+                        CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
         TestComponent component = new TestComponent();
         Element element = component.getElement();
 
         StateNode node = element.getNode();
-        ElementPropertyMap propertyMap = node
-                .getFeature(ElementPropertyMap.class)
-                .resolveModelMap("foo.bar");
+        ElementPropertyMap propertyMap = node.getFeature(ElementPropertyMap.class).resolveModelMap("foo.bar");
 
         new MapSyncRpcHandler().handleNode(propertyMap.getNode(),
-                createSyncPropertyInvocation(propertyMap.getNode(),
-                        TEST_PROPERTY, NEW_VALUE));
+                createSyncPropertyInvocation(propertyMap.getNode(), TEST_PROPERTY, NEW_VALUE));
     }
 
     @Test
@@ -349,8 +322,7 @@ public class MapSyncRpcHandlerTest {
 
             private ElementPropertyMap map = new ElementPropertyMap(this) {
                 @Override
-                public Runnable deferredUpdateFromClient(String key,
-                        Serializable value) {
+                public Runnable deferredUpdateFromClient(String key, Serializable value) {
                     deferredUpdateInvocations.incrementAndGet();
                     deferredKey.set(key);
                     return () -> {
@@ -368,8 +340,7 @@ public class MapSyncRpcHandlerTest {
 
         };
 
-        new MapSyncRpcHandler().handleNode(node,
-                createSyncPropertyInvocation(node, TEST_PROPERTY, NEW_VALUE));
+        new MapSyncRpcHandler().handleNode(node, createSyncPropertyInvocation(node, TEST_PROPERTY, NEW_VALUE));
 
         Assert.assertEquals(1, deferredUpdateInvocations.get());
         Assert.assertEquals(TEST_PROPERTY, deferredKey.get());
@@ -381,20 +352,15 @@ public class MapSyncRpcHandlerTest {
         ElementPropertyMap map = mock(ElementPropertyMap.class);
         when(map.getProperty(anyString())).thenReturn(null);
         StateNode disabledNode = mock(StateNode.class);
-        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class))
-                .thenReturn(Optional.of(map));
+        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class)).thenReturn(Optional.of(map));
         when(disabledNode.isEnabled()).thenReturn(false);
 
         Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
-                LoggerFactory.class)) {
-            mockedLoggerFactory.when(
-                    () -> LoggerFactory.getLogger(MapSyncRpcHandler.class))
-                    .thenReturn(logger);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(LoggerFactory.class)) {
+            mockedLoggerFactory.when(() -> LoggerFactory.getLogger(MapSyncRpcHandler.class)).thenReturn(logger);
 
             new MapSyncRpcHandler().handleNode(disabledNode,
-                    createSyncPropertyInvocation(disabledNode, TEST_PROPERTY,
-                            NEW_VALUE));
+                    createSyncPropertyInvocation(disabledNode, TEST_PROPERTY, NEW_VALUE));
 
             verify(logger, times(0)).warn(anyString(), anyString());
             verify(logger, times(1)).debug(anyString(), anyString());
@@ -407,47 +373,37 @@ public class MapSyncRpcHandlerTest {
         ElementPropertyMap map = mock(ElementPropertyMap.class);
         when(map.getProperty(anyString())).thenReturn(NEW_VALUE);
         StateNode disabledNode = mock(StateNode.class);
-        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class))
-                .thenReturn(Optional.of(map));
+        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class)).thenReturn(Optional.of(map));
         when(disabledNode.isEnabled()).thenReturn(false);
 
         Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
-                LoggerFactory.class)) {
-            mockedLoggerFactory.when(
-                    () -> LoggerFactory.getLogger(MapSyncRpcHandler.class))
-                    .thenReturn(logger);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(LoggerFactory.class)) {
+            mockedLoggerFactory.when(() -> LoggerFactory.getLogger(MapSyncRpcHandler.class)).thenReturn(logger);
 
             new MapSyncRpcHandler().handleNode(disabledNode,
-                    createSyncPropertyInvocation(disabledNode, TEST_PROPERTY,
-                            NEW_VALUE));
+                    createSyncPropertyInvocation(disabledNode, TEST_PROPERTY, NEW_VALUE));
 
             verify(logger, times(1)).warn(anyString(), anyString());
             verify(logger, times(0)).debug(anyString(), anyString());
         }
     }
 
-    private static void sendSynchronizePropertyEvent(Element element, UI ui,
-            String eventType, Serializable value) throws Exception {
-        new MapSyncRpcHandler().handle(ui,
-                createSyncPropertyInvocation(element, eventType, value));
+    private static void sendSynchronizePropertyEvent(Element element, UI ui, String eventType, Serializable value)
+            throws Exception {
+        new MapSyncRpcHandler().handle(ui, createSyncPropertyInvocation(element, eventType, value));
     }
 
-    private static JsonObject createSyncPropertyInvocation(Element element,
-            String property, Serializable value) {
+    private static JsonObject createSyncPropertyInvocation(Element element, String property, Serializable value) {
         return createSyncPropertyInvocation(element.getNode(), property, value);
     }
 
-    private static JsonObject createSyncPropertyInvocation(StateNode node,
-            String property, Serializable value) {
+    private static JsonObject createSyncPropertyInvocation(StateNode node, String property, Serializable value) {
         // Copied from ServerConnector
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_NODE, node.getId());
-        message.put(JsonConstants.RPC_FEATURE,
-                NodeFeatureRegistry.getId(ElementPropertyMap.class));
+        message.put(JsonConstants.RPC_FEATURE, NodeFeatureRegistry.getId(ElementPropertyMap.class));
         message.put(JsonConstants.RPC_PROPERTY, property);
-        message.put(JsonConstants.RPC_PROPERTY_VALUE,
-                JsonCodec.encodeWithoutTypeInfo(value));
+        message.put(JsonConstants.RPC_PROPERTY_VALUE, JsonCodec.encodeWithoutTypeInfo(value));
 
         return message;
     }

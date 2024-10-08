@@ -46,8 +46,7 @@ public class ValueContextTest extends UI {
         ValueContext fromComponent = new ValueContext(textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
-        Assert.assertEquals("Unexpected locale from component",
-                COMPONENT_LOCALE, locale);
+        Assert.assertEquals("Unexpected locale from component", COMPONENT_LOCALE, locale);
     }
 
     @Test
@@ -55,8 +54,7 @@ public class ValueContextTest extends UI {
         ValueContext fromComponent = new ValueContext(textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
-        Assert.assertEquals("Unexpected locale from component", UI_LOCALE,
-                locale);
+        Assert.assertEquals("Unexpected locale from component", UI_LOCALE, locale);
     }
 
     @Test
@@ -65,8 +63,7 @@ public class ValueContextTest extends UI {
         ValueContext fromComponent = new ValueContext(textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
-        Assert.assertEquals("Unexpected locale from component",
-                Locale.getDefault(), locale);
+        Assert.assertEquals("Unexpected locale from component", Locale.getDefault(), locale);
     }
 
     @Test
@@ -79,16 +76,14 @@ public class ValueContextTest extends UI {
     @Test
     public void testHasValue2() {
         setLocale(Locale.getDefault());
-        ValueContext fromComponent = new ValueContext(new TestDatePicker(),
-                textField);
+        ValueContext fromComponent = new ValueContext(new TestDatePicker(), textField);
         Assert.assertEquals(textField, fromComponent.getHasValue().get());
     }
 
     @Test
     public void testHasValue3() {
         setLocale(Locale.getDefault());
-        ValueContext fromComponent = new ValueContext(new TestDatePicker(),
-                textField, Locale.CANADA);
+        ValueContext fromComponent = new ValueContext(new TestDatePicker(), textField, Locale.CANADA);
         Assert.assertEquals(textField, fromComponent.getHasValue().get());
         Assert.assertEquals(Locale.CANADA, fromComponent.getLocale().get());
     }
@@ -117,8 +112,8 @@ public class ValueContextTest extends UI {
         confirmPasswordField.setValue("def456");
         BinderValidationStatus<PasswordBean> status = binder.validate();
         Assert.assertEquals(1, status.getFieldValidationErrors().size());
-        Assert.assertEquals(status.getFieldValidationErrors().iterator().next()
-                .getMessage().get(), "Passwords must match");
+        Assert.assertEquals(status.getFieldValidationErrors().iterator().next().getMessage().get(),
+                "Passwords must match");
 
         // Test password match
         confirmPasswordField.setValue("abc123");
@@ -137,18 +132,14 @@ public class ValueContextTest extends UI {
         passwordField = new TestTextField();
         confirmPasswordField = new TestTextField();
         binder.forField(passwordField).bind("password");
-        binder.forField(confirmPasswordField)
-                .withValidator((confirmValue, valueContext) -> {
-                    Binder<?> ctxBinder = valueContext.getBinder().get();
-                    Assert.assertSame(ctxBinder, binder);
-                    TestTextField passwordField = (TestTextField) ctxBinder
-                            .getBinding("password").get().getField();
-                    return !Objects.equals(confirmValue,
-                            passwordField.getValue())
-                                    ? ValidationResult
-                                            .error("Passwords must match")
-                                    : ValidationResult.ok();
-                }).bind("confirmPassword");
+        binder.forField(confirmPasswordField).withValidator((confirmValue, valueContext) -> {
+            Binder<?> ctxBinder = valueContext.getBinder().get();
+            Assert.assertSame(ctxBinder, binder);
+            TestTextField passwordField = (TestTextField) ctxBinder.getBinding("password").get().getField();
+            return !Objects.equals(confirmValue, passwordField.getValue())
+                    ? ValidationResult.error("Passwords must match")
+                    : ValidationResult.ok();
+        }).bind("confirmPassword");
     }
 
     @After

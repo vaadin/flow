@@ -19,18 +19,15 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
-public class DefaultValueInitializationExporter
-        extends WebComponentExporter<DefaultValueInitializationComponent> {
+public class DefaultValueInitializationExporter extends WebComponentExporter<DefaultValueInitializationComponent> {
 
     public DefaultValueInitializationExporter() {
         super("default-value-init");
-        addProperty("value", 1)
-                .onChange(DefaultValueInitializationComponent::updateValue);
+        addProperty("value", 1).onChange(DefaultValueInitializationComponent::updateValue);
     }
 
     @Override
-    protected void configureInstance(
-            WebComponent<DefaultValueInitializationComponent> webComponent,
+    protected void configureInstance(WebComponent<DefaultValueInitializationComponent> webComponent,
             DefaultValueInitializationComponent component) {
 
     }

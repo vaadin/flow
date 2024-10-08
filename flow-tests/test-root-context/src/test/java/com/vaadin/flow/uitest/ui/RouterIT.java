@@ -24,28 +24,24 @@ public class RouterIT extends ChromeBrowserTest {
     @Test
     public void rootNavigationTarget() {
         open();
-        Assert.assertEquals(
-                ViewTestLayout.BaseNavigationTarget.class.getSimpleName(),
+        Assert.assertEquals(ViewTestLayout.BaseNavigationTarget.class.getSimpleName(),
                 findElement(By.id("name-div")).getText());
     }
 
     @Test
     public void fooNavigationTarget() {
         openRouteUrl("foo");
-        Assert.assertEquals(FooNavigationTarget.class.getSimpleName(),
-                findElement(By.id("name-div")).getText());
+        Assert.assertEquals(FooNavigationTarget.class.getSimpleName(), findElement(By.id("name-div")).getText());
 
         // Test that url with trailing slash also works
         openRouteUrl("foo/");
-        Assert.assertEquals(FooNavigationTarget.class.getSimpleName(),
-                findElement(By.id("name-div")).getText());
+        Assert.assertEquals(FooNavigationTarget.class.getSimpleName(), findElement(By.id("name-div")).getText());
     }
 
     @Test
     public void fooBarNavigationTarget() {
         openRouteUrl("foo/bar");
-        Assert.assertEquals(FooBarNavigationTarget.class.getSimpleName(),
-                findElement(By.id("name-div")).getText());
+        Assert.assertEquals(FooBarNavigationTarget.class.getSimpleName(), findElement(By.id("name-div")).getText());
     }
 
     @Test
@@ -62,23 +58,19 @@ public class RouterIT extends ChromeBrowserTest {
     @Test
     public void stringRouteParameter() {
         openRouteUrl("greeting/World");
-        Assert.assertEquals("Hello, World!",
-                findElement(By.id("greeting-div")).getText());
+        Assert.assertEquals("Hello, World!", findElement(By.id("greeting-div")).getText());
     }
 
     @Test
     public void targetHasMultipleParentLayouts() {
         openRouteUrl("target");
 
-        Assert.assertTrue("Missing top most level: main layout",
-                isElementPresent(By.id("mainLayout")));
-        Assert.assertTrue("Missing center layout: middle layout",
-                isElementPresent(By.id("middleLayout")));
+        Assert.assertTrue("Missing top most level: main layout", isElementPresent(By.id("mainLayout")));
+        Assert.assertTrue("Missing center layout: middle layout", isElementPresent(By.id("middleLayout")));
 
         WebElement layout = findElement(By.id("middleLayout"));
 
-        Assert.assertEquals("Child layout is the wrong class",
-                RouterTestServlet.TargetLayout.class.getSimpleName(),
+        Assert.assertEquals("Child layout is the wrong class", RouterTestServlet.TargetLayout.class.getSimpleName(),
                 layout.findElement(By.id("name-div")).getText());
     }
 
@@ -86,46 +78,35 @@ public class RouterIT extends ChromeBrowserTest {
     public void faultyRouteShowsExpectedErrorScreen() {
         openRouteUrl("exception");
 
-        Assert.assertTrue(getDriver().getPageSource()
-                .contains("Could not navigate to 'exception'"));
+        Assert.assertTrue(getDriver().getPageSource().contains("Could not navigate to 'exception'"));
 
         Assert.assertTrue(getDriver().getPageSource()
-                .contains(RouterTestServlet.AliasLayout.class
-                        .getAnnotation(Route.class).value()));
+                .contains(RouterTestServlet.AliasLayout.class.getAnnotation(Route.class).value()));
 
         Assert.assertTrue(getDriver().getPageSource()
-                .contains(RouterTestServlet.AliasLayout.class
-                        .getAnnotation(RouteAlias.class).value()));
+                .contains(RouterTestServlet.AliasLayout.class.getAnnotation(RouteAlias.class).value()));
     }
 
     @Test
     public void routeWithRouteAliasHasNoParents() {
-        openRouteUrl(RouterTestServlet.AliasLayout.class
-                .getAnnotation(Route.class).value());
+        openRouteUrl(RouterTestServlet.AliasLayout.class.getAnnotation(Route.class).value());
 
-        Assert.assertFalse(
-                "Found parent layouts even though none should be available.",
+        Assert.assertFalse("Found parent layouts even though none should be available.",
                 isElementPresent(By.id("mainLayout")));
-        Assert.assertFalse(
-                "Found parent layouts even though none should be available.",
+        Assert.assertFalse("Found parent layouts even though none should be available.",
                 isElementPresent(By.id("middleLayout")));
-        Assert.assertEquals("Layout content has the wrong class",
-                RouterTestServlet.AliasLayout.class.getSimpleName(),
+        Assert.assertEquals("Layout content has the wrong class", RouterTestServlet.AliasLayout.class.getSimpleName(),
                 findElement(By.id("name-div")).getText());
     }
 
     @Test
     public void routeAliasHasTwoParentsWhenRouteHasNone() {
-        openRouteUrl(RouterTestServlet.AliasLayout.class
-                .getAnnotation(RouteAlias.class).value());
+        openRouteUrl(RouterTestServlet.AliasLayout.class.getAnnotation(RouteAlias.class).value());
 
-        Assert.assertTrue("Missing top most level: main layout.",
-                isElementPresent(By.id("mainLayout")));
-        Assert.assertTrue("Missing center layout: middle layout.",
-                isElementPresent(By.id("middleLayout")));
+        Assert.assertTrue("Missing top most level: main layout.", isElementPresent(By.id("mainLayout")));
+        Assert.assertTrue("Missing center layout: middle layout.", isElementPresent(By.id("middleLayout")));
 
-        Assert.assertEquals("Layout content has the wrong class",
-                RouterTestServlet.AliasLayout.class.getSimpleName(),
+        Assert.assertEquals("Layout content has the wrong class", RouterTestServlet.AliasLayout.class.getSimpleName(),
                 findElement(By.id("name-div")).getText());
     }
 

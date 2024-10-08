@@ -35,56 +35,42 @@ public class NodeInstallerTest {
     }
 
     @Test
-    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
-            throws IOException {
+    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory() throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
-        String prefix = String.format("node-%s-%s",
-                FrontendTools.DEFAULT_NODE_VERSION,
-                platform.getNodeClassifier(new FrontendVersion(
-                        FrontendTools.DEFAULT_NODE_VERSION)));
+        String prefix = String.format("node-%s-%s", FrontendTools.DEFAULT_NODE_VERSION,
+                platform.getNodeClassifier(new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)));
 
         File targetDir = new File(baseDir + "/installation");
 
-        Assert.assertFalse(
-                "Clean test should not contain a installation folder",
-                targetDir.exists());
+        Assert.assertFalse("Clean test should not contain a installation folder", targetDir.exists());
         File downloadDir = tmpDir.newFolder(FrontendTools.DEFAULT_NODE_VERSION);
-        File archiveFile = new File(downloadDir,
-                prefix + "." + platform.getArchiveExtension());
+        File archiveFile = new File(downloadDir, prefix + "." + platform.getArchiveExtension());
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 
         if (platform.getArchiveExtension().equals("zip")) {
-            try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                    Files.newOutputStream(tempArchive))) {
-                zipOutputStream
-                        .putNextEntry(new ZipEntry(prefix + "/" + nodeExec));
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(tempArchive))) {
+                zipOutputStream.putNextEntry(new ZipEntry(prefix + "/" + nodeExec));
                 zipOutputStream.closeEntry();
-                zipOutputStream.putNextEntry(
-                        new ZipEntry(prefix + "/node_modules/npm/bin/npm"));
+                zipOutputStream.putNextEntry(new ZipEntry(prefix + "/node_modules/npm/bin/npm"));
                 zipOutputStream.closeEntry();
-                zipOutputStream.putNextEntry(
-                        new ZipEntry(prefix + "/node_modules/npm/bin/npm.cmd"));
+                zipOutputStream.putNextEntry(new ZipEntry(prefix + "/node_modules/npm/bin/npm.cmd"));
                 zipOutputStream.closeEntry();
             }
         } else {
             try (OutputStream fo = Files.newOutputStream(tempArchive);
                     OutputStream gzo = new GzipCompressorOutputStream(fo);
                     ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
-                o.putArchiveEntry(o.createArchiveEntry(
-                        new File(prefix + "/bin/" + nodeExec),
-                        prefix + "/bin/" + nodeExec));
+                o.putArchiveEntry(
+                        o.createArchiveEntry(new File(prefix + "/bin/" + nodeExec), prefix + "/bin/" + nodeExec));
                 o.closeArchiveEntry();
-                o.putArchiveEntry(o.createArchiveEntry(
-                        new File(prefix + "/bin/npm"), prefix + "/bin/npm"));
+                o.putArchiveEntry(o.createArchiveEntry(new File(prefix + "/bin/npm"), prefix + "/bin/npm"));
                 o.closeArchiveEntry();
-                o.putArchiveEntry(o.createArchiveEntry(
-                        new File(prefix + "/lib/node_modules/npm/bin/npm"),
+                o.putArchiveEntry(o.createArchiveEntry(new File(prefix + "/lib/node_modules/npm/bin/npm"),
                         prefix + "/lib/node_modules/npm/bin/npm"));
                 o.closeArchiveEntry();
-                o.putArchiveEntry(o.createArchiveEntry(
-                        new File(prefix + "/lib/node_modules/npm/bin/npm.cmd"),
+                o.putArchiveEntry(o.createArchiveEntry(new File(prefix + "/lib/node_modules/npm/bin/npm.cmd"),
                         prefix + "/lib/node_modules/npm/bin/npm.cmd"));
                 o.closeArchiveEntry();
             }
@@ -92,23 +78,19 @@ public class NodeInstallerTest {
 
         // add a file to node/node_modules_npm that should be cleaned out
         File nodeDirectory = new File(targetDir, "node");
-        String nodeModulesPath = platform.isWindows() ? "node_modules"
-                : "lib/node_modules";
+        String nodeModulesPath = platform.isWindows() ? "node_modules" : "lib/node_modules";
         File nodeModulesDirectory = new File(nodeDirectory, nodeModulesPath);
         File npmDirectory = new File(nodeModulesDirectory, "npm");
         File garbage = new File(npmDirectory, "garbage");
         FileUtils.forceMkdir(npmDirectory);
-        Assert.assertTrue("garbage file should be created",
-                garbage.createNewFile());
+        Assert.assertTrue("garbage file should be created", garbage.createNewFile());
 
         File oldNpm = new File(nodeDirectory, "node_modules/npm");
         File oldGarbage = new File(oldNpm, "oldGarbage");
         FileUtils.forceMkdir(oldNpm);
-        Assert.assertTrue("oldGarbage file should be created",
-                oldGarbage.createNewFile());
+        Assert.assertTrue("oldGarbage file should be created", oldGarbage.createNewFile());
 
-        NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
-                Collections.emptyList())
+        NodeInstaller nodeInstaller = new NodeInstaller(targetDir, Collections.emptyList())
                 .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .setNodeDownloadRoot(new File(baseDir).toPath().toUri());
 
@@ -120,15 +102,10 @@ public class NodeInstallerTest {
 
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(targetDir, "node/" + nodeExec).exists());
-        String npmInstallPath = platform.isWindows()
-                ? "node/node_modules/npm/bin/npm"
+        String npmInstallPath = platform.isWindows() ? "node/node_modules/npm/bin/npm"
                 : "node/lib/node_modules/npm/bin/npm";
-        Assert.assertTrue("npm should have been copied to node_modules",
-                new File(targetDir, npmInstallPath).exists());
-        Assert.assertFalse("old npm files should have been removed",
-                garbage.exists());
-        Assert.assertFalse(
-                "old style node_modules files should have been removed",
-                oldGarbage.exists());
+        Assert.assertTrue("npm should have been copied to node_modules", new File(targetDir, npmInstallPath).exists());
+        Assert.assertFalse("old npm files should have been removed", garbage.exists());
+        Assert.assertFalse("old style node_modules files should have been removed", oldGarbage.exists());
     }
 }

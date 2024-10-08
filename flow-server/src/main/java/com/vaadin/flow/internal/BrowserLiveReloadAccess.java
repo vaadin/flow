@@ -18,11 +18,9 @@ package com.vaadin.flow.internal;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * Creates a live reload instance by delegating to
- * {@link BrowserLiveReloadAccessor#getLiveReload(VaadinService)}
+ * Creates a live reload instance by delegating to {@link BrowserLiveReloadAccessor#getLiveReload(VaadinService)}
  * <p>
- * Class exists only for backwards compatibility with JRebel and HotswapAgent
- * plugins.
+ * Class exists only for backwards compatibility with JRebel and HotswapAgent plugins.
  *
  * @deprecated Use {@link BrowserLiveReloadAccessor} instead
  */
@@ -30,8 +28,7 @@ import com.vaadin.flow.server.VaadinService;
 public class BrowserLiveReloadAccess {
 
     /**
-     * Returns a {@link BrowserLiveReload} instance for the given
-     * {@code service}.
+     * Returns a {@link BrowserLiveReload} instance for the given {@code service}.
      * <p>
      * Returns {@code null} if production mode is enabled for the service.
      *
@@ -40,7 +37,6 @@ public class BrowserLiveReloadAccess {
      * @return a BrowserLiveReload instance or null for production mode
      */
     public BrowserLiveReload getLiveReload(VaadinService service) {
-        return BrowserLiveReloadAccessor.getLiveReloadFromService(service)
-                .orElse(null);
+        return BrowserLiveReloadAccessor.getLiveReloadFromService(service).orElse(null);
     }
 }

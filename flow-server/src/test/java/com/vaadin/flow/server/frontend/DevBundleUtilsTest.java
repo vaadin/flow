@@ -35,8 +35,7 @@ public class DevBundleUtilsTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void compileDevBundle_uncompileDevBundle_filesHasSameHash()
-            throws IOException {
+    public void compileDevBundle_uncompileDevBundle_filesHasSameHash() throws IOException {
         File projectBase = temporaryFolder.getRoot();
         File devFolder = new File(projectBase, "target/dev-bundle");
         devFolder.mkdirs();
@@ -46,12 +45,10 @@ public class DevBundleUtilsTest {
         File packages = new File(devFolder, "package.json");
 
         Files.write(stats.toPath(), Collections.singleton("{ \"stats\": 1 }"));
-        Files.write(packages.toPath(),
-                Collections.singleton("{ \"packages\": [] }"));
+        Files.write(packages.toPath(), Collections.singleton("{ \"packages\": [] }"));
 
         String statsHash = StringUtil.getHash(Files.readString(stats.toPath()));
-        String packagesHash = StringUtil
-                .getHash(Files.readString(packages.toPath()));
+        String packagesHash = StringUtil.getHash(Files.readString(packages.toPath()));
 
         DevBundleUtils.compressBundle(projectBase, devFolder);
 
@@ -68,9 +65,7 @@ public class DevBundleUtilsTest {
         Assert.assertTrue("stats file not created!", stats.exists());
         Assert.assertTrue("packages file not created!", packages.exists());
 
-        Assert.assertEquals(statsHash,
-                StringUtil.getHash(Files.readString(stats.toPath())));
-        Assert.assertEquals(packagesHash,
-                StringUtil.getHash(Files.readString(packages.toPath())));
+        Assert.assertEquals(statsHash, StringUtil.getHash(Files.readString(stats.toPath())));
+        Assert.assertEquals(packagesHash, StringUtil.getHash(Files.readString(packages.toPath())));
     }
 }

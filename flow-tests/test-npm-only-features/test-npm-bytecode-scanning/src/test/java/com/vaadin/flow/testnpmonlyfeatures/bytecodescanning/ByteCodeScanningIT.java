@@ -29,13 +29,11 @@ public class ByteCodeScanningIT extends ChromeBrowserTest {
         // be removed and the chunk won't be loaded
         open();
 
-        TestBenchElement component = $(TestBenchElement.class)
-                .id(ByteCodeScanningView.COMPONENT_ID);
+        TestBenchElement component = $(TestBenchElement.class).id(ByteCodeScanningView.COMPONENT_ID);
 
         // in production mode without fallback chunk we use optimized bundle by
         // default, so component should not be initialized
-        Assert.assertTrue(
-                "component expected not initialized in production mode",
+        Assert.assertTrue("component expected not initialized in production mode",
                 component.$("button").all().isEmpty());
     }
 

@@ -24,9 +24,8 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
 /**
- * A converter that converts from {@link String} to {@link Integer} and back.
- * Uses the given locale and a {@link NumberFormat} instance for formatting and
- * parsing.
+ * A converter that converts from {@link String} to {@link Integer} and back. Uses the given locale and a
+ * {@link NumberFormat} instance for formatting and parsing.
  * <p>
  * Override and overwrite {@link #getFormat(Locale)} to use a different format.
  * </p>
@@ -34,12 +33,10 @@ import com.vaadin.flow.data.binder.ValueContext;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class StringToIntegerConverter
-        extends AbstractStringToNumberConverter<Integer> {
+public class StringToIntegerConverter extends AbstractStringToNumberConverter<Integer> {
 
     /**
-     * Creates a new converter instance with the given error message. Empty
-     * strings are converted to <code>null</code>.
+     * Creates a new converter instance with the given error message. Empty strings are converted to <code>null</code>.
      *
      * @param errorMessage
      *            the error message to use if conversion fails
@@ -49,12 +46,10 @@ public class StringToIntegerConverter
     }
 
     /**
-     * Creates a new converter instance with the given presentation value for
-     * empty string and error message.
+     * Creates a new converter instance with the given presentation value for empty string and error message.
      *
      * @param emptyValue
-     *            the presentation value to return when converting an empty
-     *            string, may be <code>null</code>
+     *            the presentation value to return when converting an empty string, may be <code>null</code>
      * @param errorMessage
      *            the error message to use if conversion fails
      */
@@ -63,8 +58,8 @@ public class StringToIntegerConverter
     }
 
     /**
-     * Creates a new converter instance with the given error message provider.
-     * Empty strings are converted to <code>null</code>.
+     * Creates a new converter instance with the given error message provider. Empty strings are converted to
+     * <code>null</code>.
      *
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
@@ -74,23 +69,19 @@ public class StringToIntegerConverter
     }
 
     /**
-     * Creates a new converter instance with the given presentation value for
-     * empty string and error message provider.
+     * Creates a new converter instance with the given presentation value for empty string and error message provider.
      *
      * @param emptyValue
-     *            the presentation value to return when converting an empty
-     *            string, may be <code>null</code>
+     *            the presentation value to return when converting an empty string, may be <code>null</code>
      * @param errorMessageProvider
      *            the error message provider to use if conversion fails
      */
-    public StringToIntegerConverter(Integer emptyValue,
-            ErrorMessageProvider errorMessageProvider) {
+    public StringToIntegerConverter(Integer emptyValue, ErrorMessageProvider errorMessageProvider) {
         super(emptyValue, errorMessageProvider);
     }
 
     /**
-     * Returns the format used by
-     * {@link #convertToPresentation(Object, ValueContext)} and
+     * Returns the format used by {@link #convertToPresentation(Object, ValueContext)} and
      * {@link #convertToModel(String, ValueContext)}.
      *
      * @param locale

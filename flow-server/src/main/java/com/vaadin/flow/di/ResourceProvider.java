@@ -23,9 +23,8 @@ import java.util.List;
 /**
  * Static "classpath" resources provider.
  * <p>
- * This is SPI to access resources available at runtime. Depending on the web
- * container this can be an application classpath only or bundles which are
- * identified by the provided context.
+ * This is SPI to access resources available at runtime. Depending on the web container this can be an application
+ * classpath only or bundles which are identified by the provided context.
  *
  * @author Vaadin Ltd
  * @since
@@ -34,12 +33,11 @@ import java.util.List;
 public interface ResourceProvider {
 
     /**
-     * Gets the resource identified by {@code path} located in the application
-     * bundle (jar) which may be found using this resource provider instance.
+     * Gets the resource identified by {@code path} located in the application bundle (jar) which may be found using
+     * this resource provider instance.
      * <p>
-     * If the provider doesn't contain any information about application bundle
-     * or there is no resource with the given path then this method returns
-     * {@code null}.
+     * If the provider doesn't contain any information about application bundle or there is no resource with the given
+     * path then this method returns {@code null}.
      *
      * @param path
      *            the resource path
@@ -48,17 +46,15 @@ public interface ResourceProvider {
     URL getApplicationResource(String path);
 
     /**
-     * Gets all the resources identified by {@code path} located in in the
-     * application bundle (jar) which may be found using this resource provider.
+     * Gets all the resources identified by {@code path} located in in the application bundle (jar) which may be found
+     * using this resource provider.
      * <p>
-     * If the provider doesn't contain any information about application bundle
-     * or there is no resource with the given path then this method returns an
-     * empty list.
+     * If the provider doesn't contain any information about application bundle or there is no resource with the given
+     * path then this method returns an empty list.
      *
      * @param path
      *            the resource path
-     * @return a list of URLs of the resources or an empty list if resources are
-     *         not found
+     * @return a list of URLs of the resources or an empty list if resources are not found
      * @throws IOException
      *             if there is an I/O error
      */
@@ -74,8 +70,7 @@ public interface ResourceProvider {
     URL getClientResource(String path);
 
     /**
-     * Gets "flow-client" bundle resource content identified by the
-     * {@code path}.
+     * Gets "flow-client" bundle resource content identified by the {@code path}.
      *
      * @param path
      *            the resource path

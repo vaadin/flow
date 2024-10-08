@@ -47,20 +47,16 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    protected Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
-        int channelId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_CHANNEL);
-        JsonArray arguments = invocationJson
-                .getArray(JsonConstants.RPC_CHANNEL_ARGUMENTS);
+    protected Optional<Runnable> handleNode(StateNode node, JsonObject invocationJson) {
+        int channelId = (int) invocationJson.getNumber(JsonConstants.RPC_CHANNEL);
+        JsonArray arguments = invocationJson.getArray(JsonConstants.RPC_CHANNEL_ARGUMENTS);
 
         if (!node.hasFeature(ReturnChannelMap.class)) {
             getLogger().warn("Node has no return channels: {}", invocationJson);
             return Optional.empty();
         }
 
-        ReturnChannelRegistration channel = node
-                .getFeatureIfInitialized(ReturnChannelMap.class)
+        ReturnChannelRegistration channel = node.getFeatureIfInitialized(ReturnChannelMap.class)
                 .map(map -> map.get(channelId)).orElse(null);
 
         if (channel == null) {
@@ -68,10 +64,8 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
             return Optional.empty();
         }
 
-        if (!node.isEnabled() && channel
-                .getDisabledUpdateMode() != DisabledUpdateMode.ALWAYS) {
-            getLogger().warn("Ignoring update for disabled return channel: {}",
-                    invocationJson);
+        if (!node.isEnabled() && channel.getDisabledUpdateMode() != DisabledUpdateMode.ALWAYS) {
+            getLogger().warn("Ignoring update for disabled return channel: {}", invocationJson);
             return Optional.empty();
         }
 
@@ -82,11 +76,9 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
 
     @Override
     protected boolean allowInert(UI ui, JsonObject invocationJson) {
-        StateNode node = ui.getInternals().getStateTree()
-                .getNodeById(getNodeId(invocationJson));
+        StateNode node = ui.getInternals().getStateTree().getNodeById(getNodeId(invocationJson));
         // Allow calls if a return channel has been registered for the node.
-        return node.getFeatureIfInitialized(ReturnChannelMap.class)
-                .map(ReturnChannelMap::hasChannels).orElse(false);
+        return node.getFeatureIfInitialized(ReturnChannelMap.class).map(ReturnChannelMap::hasChannels).orElse(false);
     }
 
     private static Logger getLogger() {

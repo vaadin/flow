@@ -29,8 +29,7 @@ public enum AccessCheckDecision {
      */
     DENY,
     /**
-     * Denies access to the target view because of a critical permission
-     * configuration mistake.
+     * Denies access to the target view because of a critical permission configuration mistake.
      */
     REJECT,
     /**

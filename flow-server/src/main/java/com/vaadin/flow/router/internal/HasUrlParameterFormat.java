@@ -32,24 +32,22 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.WildcardParameter;
 
 /**
- * Utility methods to transform urls and parameters from/into the
- * {@link HasUrlParameter} format into/from the template format.
+ * Utility methods to transform urls and parameters from/into the {@link HasUrlParameter} format into/from the template
+ * format.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public class HasUrlParameterFormat implements Serializable {
 
     /**
-     * Reserved parameter name used when setup internally route path pattern
-     * with the parameter design for backward compatibility with
-     * {@link HasUrlParameter}.
+     * Reserved parameter name used when setup internally route path pattern with the parameter design for backward
+     * compatibility with {@link HasUrlParameter}.
      */
     public static final String PARAMETER_NAME = "___url_parameter";
 
     /**
-     * Reserved parameter placeholder used when setup internally route path
-     * pattern with the parameter design for backward compatibility with
-     * {@link HasUrlParameter}.
+     * Reserved parameter placeholder used when setup internally route path pattern with the parameter design for
+     * backward compatibility with {@link HasUrlParameter}.
      */
     public static final String PARAMETER = ":" + PARAMETER_NAME;
 
@@ -57,9 +55,8 @@ public class HasUrlParameterFormat implements Serializable {
     }
 
     /**
-     * Gets the template for the given url base by appending the parameter
-     * according to the given navigationTarget if it's implementing
-     * {@link HasUrlParameter}
+     * Gets the template for the given url base by appending the parameter according to the given navigationTarget if
+     * it's implementing {@link HasUrlParameter}
      *
      * @param urlBase
      *            url base.
@@ -67,8 +64,7 @@ public class HasUrlParameterFormat implements Serializable {
      *            {@link HasUrlParameter} navigation target.
      * @return the final template.
      */
-    public static String getTemplate(String urlBase,
-            Class<? extends Component> navigationTarget) {
+    public static String getTemplate(String urlBase, Class<? extends Component> navigationTarget) {
         if (hasUrlParameter(navigationTarget)) {
 
             urlBase = PathUtil.trimPath(urlBase);
@@ -81,20 +77,18 @@ public class HasUrlParameterFormat implements Serializable {
                 urlBase += "/" + PARAMETER;
             }
 
-            final Class<?> parameterType = ParameterDeserializer
-                    .getClassType(navigationTarget);
+            final Class<?> parameterType = ParameterDeserializer.getClassType(navigationTarget);
 
             if (!String.class.equals(parameterType)) {
-                urlBase += "(" + RouteParameterRegex.getRegex(parameterType)
-                        + ")";
+                urlBase += "(" + RouteParameterRegex.getRegex(parameterType) + ")";
             }
         }
         return urlBase;
     }
 
     /**
-     * Gets the url base without the parameter for the given template and
-     * navigation target implementing * {@link HasUrlParameter}.
+     * Gets the url base without the parameter for the given template and navigation target implementing *
+     * {@link HasUrlParameter}.
      *
      * @param template
      *            the template.
@@ -102,8 +96,7 @@ public class HasUrlParameterFormat implements Serializable {
      */
     public static String getUrlBase(String template) {
         if (RouteFormat.hasParameters(template)) {
-            return PathUtil
-                    .trimPath(template.substring(0, template.indexOf(':')));
+            return PathUtil.trimPath(template.substring(0, template.indexOf(':')));
         }
         return template;
     }
@@ -120,13 +113,11 @@ public class HasUrlParameterFormat implements Serializable {
      * @return navigation url string.
      */
     public static <T> String getUrl(String url, List<T> parameters) {
-        return PathUtil.getPath(url, parameters.stream().map(T::toString)
-                .collect(Collectors.toList()));
+        return PathUtil.getPath(url, parameters.stream().map(T::toString).collect(Collectors.toList()));
     }
 
     /**
-     * Transform the {@link HasUrlParameter} value into a
-     * {@link RouteParameters} object.
+     * Transform the {@link HasUrlParameter} value into a {@link RouteParameters} object.
      *
      * @param parameter
      *            the parameter values.
@@ -139,20 +130,17 @@ public class HasUrlParameterFormat implements Serializable {
             return RouteParameters.empty();
 
         } else if (parameter instanceof String) {
-            final List<String> segments = PathUtil
-                    .getSegmentsList((String) parameter);
+            final List<String> segments = PathUtil.getSegmentsList((String) parameter);
             if (segments.size() > 1) {
                 return getParameters(segments);
             }
         }
 
-        return new RouteParameters(
-                Collections.singletonMap(PARAMETER_NAME, parameter.toString()));
+        return new RouteParameters(Collections.singletonMap(PARAMETER_NAME, parameter.toString()));
     }
 
     /**
-     * Transform the {@link HasUrlParameter} values into a
-     * {@link RouteParameters} object.
+     * Transform the {@link HasUrlParameter} values into a {@link RouteParameters} object.
      *
      * @param parametersList
      *            the list of values.
@@ -171,17 +159,15 @@ public class HasUrlParameterFormat implements Serializable {
         if (parametersList.isEmpty()) {
             result = RouteParameters.empty();
         } else {
-            result = new RouteParameters(Collections.singletonMap(
-                    PARAMETER_NAME, parametersList.stream().map(T::toString)
-                            .collect(Collectors.joining("/"))));
+            result = new RouteParameters(Collections.singletonMap(PARAMETER_NAME,
+                    parametersList.stream().map(T::toString).collect(Collectors.joining("/"))));
         }
 
         return result;
     }
 
     /**
-     * Gets the values for the {@link HasUrlParameter} from the specified route
-     * parameters.
+     * Gets the values for the {@link HasUrlParameter} from the specified route parameters.
      *
      * @param parameters
      *            route parameter.
@@ -189,12 +175,10 @@ public class HasUrlParameterFormat implements Serializable {
      */
     public static List<String> getParameterValues(RouteParameters parameters) {
 
-        List<String> wildcard = parameters
-                .getWildcard(HasUrlParameterFormat.PARAMETER_NAME);
+        List<String> wildcard = parameters.getWildcard(HasUrlParameterFormat.PARAMETER_NAME);
 
         if (wildcard.isEmpty()) {
-            final Optional<String> value = parameters
-                    .get(HasUrlParameterFormat.PARAMETER_NAME);
+            final Optional<String> value = parameters.get(HasUrlParameterFormat.PARAMETER_NAME);
 
             if (value.isPresent()) {
                 wildcard = Collections.singletonList(value.get());
@@ -212,30 +196,23 @@ public class HasUrlParameterFormat implements Serializable {
      * @return the class types of the parameters.
      */
     public static List<Class<?>> getParameterTypes(Collection<String> types) {
-        return types.stream().map(RouteParameterRegex::getType)
-                .collect(Collectors.toList());
+        return types.stream().map(RouteParameterRegex::getType).collect(Collectors.toList());
     }
 
     /**
-     * Verify whether the navigationTarget has mandatory parameter and complies
-     * with the given parameter values.
+     * Verify whether the navigationTarget has mandatory parameter and complies with the given parameter values.
      *
      * @param navigationTarget
      *            navigation target.
      * @param parameters
      *            navigation route parameters.
      */
-    public static void checkMandatoryParameter(
-            Class<? extends Component> navigationTarget,
+    public static void checkMandatoryParameter(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
-        if (hasUrlParameter(navigationTarget)
-                && hasMandatoryParameter(navigationTarget)
-                && (parameters == null
-                        || !parameters.get(HasUrlParameterFormat.PARAMETER_NAME)
-                                .isPresent())) {
-            throw new IllegalArgumentException(String.format(
-                    "Navigation target '%s' requires a parameter.",
-                    navigationTarget.getName()));
+        if (hasUrlParameter(navigationTarget) && hasMandatoryParameter(navigationTarget)
+                && (parameters == null || !parameters.get(HasUrlParameterFormat.PARAMETER_NAME).isPresent())) {
+            throw new IllegalArgumentException(
+                    String.format("Navigation target '%s' requires a parameter.", navigationTarget.getName()));
         }
     }
 
@@ -244,59 +221,49 @@ public class HasUrlParameterFormat implements Serializable {
      *
      * @param target
      *            target component class.
-     * @return true if the target component class implements
-     *         {@link HasUrlParameter}, otherwise false.
+     * @return true if the target component class implements {@link HasUrlParameter}, otherwise false.
      */
     static boolean hasUrlParameter(Class<? extends Component> target) {
         return HasUrlParameter.class.isAssignableFrom(target);
     }
 
     /**
-     * Returns whether the target class doesn't annotate the
-     * {@link HasUrlParameter#setParameter(BeforeEvent, Object)} with neither
-     * {@link OptionalParameter} nor {@link WildcardParameter}
+     * Returns whether the target class doesn't annotate the {@link HasUrlParameter#setParameter(BeforeEvent, Object)}
+     * with neither {@link OptionalParameter} nor {@link WildcardParameter}
      *
      * @param target
      *            target component class.
-     * @return true if the target class doesn't annotate the
-     *         {@link HasUrlParameter#setParameter(BeforeEvent, Object)} with
-     *         neither {@link OptionalParameter} nor {@link WildcardParameter},
-     *         otherwise false.
+     * @return true if the target class doesn't annotate the {@link HasUrlParameter#setParameter(BeforeEvent, Object)}
+     *         with neither {@link OptionalParameter} nor {@link WildcardParameter}, otherwise false.
      */
     static boolean hasMandatoryParameter(Class<? extends Component> target) {
         return !(hasOptionalParameter(target) || hasWildcardParameter(target));
     }
 
     /**
-     * Returns whether the target class annotate the
-     * {@link HasUrlParameter#setParameter(BeforeEvent, Object)} parameter with
-     * {@link OptionalParameter}
+     * Returns whether the target class annotate the {@link HasUrlParameter#setParameter(BeforeEvent, Object)} parameter
+     * with {@link OptionalParameter}
      *
      * @param target
      *            target component class.
-     * @return true if the target class annotate the
-     *         {@link HasUrlParameter#setParameter(BeforeEvent, Object)}
-     *         parameter with {@link OptionalParameter}, otherwise false.
+     * @return true if the target class annotate the {@link HasUrlParameter#setParameter(BeforeEvent, Object)} parameter
+     *         with {@link OptionalParameter}, otherwise false.
      */
     static boolean hasOptionalParameter(Class<? extends Component> target) {
-        return ParameterDeserializer.isAnnotatedParameter(target,
-                OptionalParameter.class);
+        return ParameterDeserializer.isAnnotatedParameter(target, OptionalParameter.class);
     }
 
     /**
-     * Returns whether the target class annotate the
-     * {@link HasUrlParameter#setParameter(BeforeEvent, Object)} parameter with
-     * {@link WildcardParameter}
+     * Returns whether the target class annotate the {@link HasUrlParameter#setParameter(BeforeEvent, Object)} parameter
+     * with {@link WildcardParameter}
      *
      * @param target
      *            target component class.
-     * @return true if the target class annotate the
-     *         {@link HasUrlParameter#setParameter(BeforeEvent, Object)}
-     *         parameter with {@link WildcardParameter}, otherwise false.
+     * @return true if the target class annotate the {@link HasUrlParameter#setParameter(BeforeEvent, Object)} parameter
+     *         with {@link WildcardParameter}, otherwise false.
      */
     static boolean hasWildcardParameter(Class<? extends Component> target) {
-        return ParameterDeserializer.isAnnotatedParameter(target,
-                WildcardParameter.class);
+        return ParameterDeserializer.isAnnotatedParameter(target, WildcardParameter.class);
     }
 
 }

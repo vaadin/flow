@@ -36,8 +36,7 @@ public class UrlUtil {
     }
 
     /**
-     * checks if the given url is an external URL (e.g. staring with http:// or
-     * https://) or not.
+     * checks if the given url is an external URL (e.g. staring with http:// or https://) or not.
      *
      * @param url
      *            is the url to be checked.
@@ -56,25 +55,21 @@ public class UrlUtil {
      * Corresponds to encodeURI in JavaScript
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI
      * <p>
-     * The path can contain {@code /} and other special URL characters as these
-     * will not be encoded. See {@link #encodeURIComponent(String)} if you want
-     * to encode all special characters.
+     * The path can contain {@code /} and other special URL characters as these will not be encoded. See
+     * {@link #encodeURIComponent(String)} if you want to encode all special characters.
      * <p>
-     * The following characters are not escaped:
-     * {@literal A-Za-z0-9;,/?:@&=+$-_.!~*'()#}
+     * The following characters are not escaped: {@literal A-Za-z0-9;,/?:@&=+$-_.!~*'()#}
      *
      * @param uri
      *            the uri to encode
      */
     public static String encodeURI(String uri) {
         try {
-            return URLEncoder.encode(uri, StandardCharsets.UTF_8.name())
-                    .replace("+", "%20").replace("%2F", "/").replace("%40", "@")
-                    .replace("%3B", ";").replace("%2C", ",").replace("%3F", "?")
-                    .replace("%3A", ":").replace("%26", "&").replace("%3D", "=")
-                    .replace("%2B", "+").replace("%24", "$").replace("%21", "!")
-                    .replace("%7E", "~").replace("%27", "'").replace("%28", "(")
-                    .replace("%29", ")").replace("%23", "#");
+            return URLEncoder.encode(uri, StandardCharsets.UTF_8.name()).replace("+", "%20").replace("%2F", "/")
+                    .replace("%40", "@").replace("%3B", ";").replace("%2C", ",").replace("%3F", "?").replace("%3A", ":")
+                    .replace("%26", "&").replace("%3D", "=").replace("%2B", "+").replace("%24", "$").replace("%21", "!")
+                    .replace("%7E", "~").replace("%27", "'").replace("%28", "(").replace("%29", ")")
+                    .replace("%23", "#");
         } catch (UnsupportedEncodingException e) {
             // Runtime exception as this doesn't really happen
             throw new RuntimeException("Encoding the URI failed", e); // NOSONAR
@@ -94,10 +89,8 @@ public class UrlUtil {
      */
     public static String encodeURIComponent(String path) {
         try {
-            return URLEncoder.encode(path, StandardCharsets.UTF_8.name())
-                    .replace("+", "%20").replace("%21", "!").replace("%7E", "~")
-                    .replace("%27", "'").replace("%28", "(")
-                    .replace("%29", ")");
+            return URLEncoder.encode(path, StandardCharsets.UTF_8.name()).replace("+", "%20").replace("%21", "!")
+                    .replace("%7E", "~").replace("%27", "'").replace("%28", "(").replace("%29", ")");
         } catch (UnsupportedEncodingException e) {
             // Runtime exception as this doesn't really happen
             throw new RuntimeException("Encoding the URI failed", e); // NOSONAR
@@ -111,29 +104,22 @@ public class UrlUtil {
      *            the path to make relative
      * @param request
      *            a request with information about the servlet path
-     * @return a relative path that when applied to the servlet path, refers to
-     *         the absolute path without containing the context path or servlet
-     *         path
+     * @return a relative path that when applied to the servlet path, refers to the absolute path without containing the
+     *         context path or servlet path
      */
-    public static String getServletPathRelative(String absolutePath,
-            HttpServletRequest request) {
-        String pathToServlet = request.getContextPath()
-                + request.getServletPath();
+    public static String getServletPathRelative(String absolutePath, HttpServletRequest request) {
+        String pathToServlet = request.getContextPath() + request.getServletPath();
         if (pathToServlet.startsWith("/")) {
             pathToServlet = pathToServlet.substring(1);
         }
         if (absolutePath.startsWith("/")) {
             absolutePath = absolutePath.substring(1);
         }
-        String[] servletPathSegments = pathToServlet.isEmpty() ? new String[0]
-                : pathToServlet.split("/");
-        String[] absolutePathSegments = absolutePath.isEmpty() ? new String[0]
-                : absolutePath.split("/");
+        String[] servletPathSegments = pathToServlet.isEmpty() ? new String[0] : pathToServlet.split("/");
+        String[] absolutePathSegments = absolutePath.isEmpty() ? new String[0] : absolutePath.split("/");
         int startFrom = 0;
-        while (absolutePathSegments.length > startFrom
-                && servletPathSegments.length > startFrom
-                && absolutePathSegments[startFrom]
-                        .equals(servletPathSegments[startFrom])) {
+        while (absolutePathSegments.length > startFrom && servletPathSegments.length > startFrom
+                && absolutePathSegments[startFrom].equals(servletPathSegments[startFrom])) {
             startFrom++;
         }
 

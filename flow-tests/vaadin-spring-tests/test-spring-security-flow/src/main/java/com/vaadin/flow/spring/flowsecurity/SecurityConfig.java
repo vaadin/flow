@@ -87,23 +87,18 @@ public class SecurityConfig extends VaadinWebSecurity {
             setLoginView(http, LoginView.class, getLogoutSuccessUrl());
         }
 
-        http.logout(cfg -> cfg
-                .logoutRequestMatcher(new AntPathRequestMatcher(
-                        getRootUrl(false) + "doLogout", "GET"))
+        http.logout(cfg -> cfg.logoutRequestMatcher(new AntPathRequestMatcher(getRootUrl(false) + "doLogout", "GET"))
                 .addLogoutHandler((request, response, authentication) -> {
                     if (!request.getRequestURI().endsWith("doLogout")) {
                         UI ui = UI.getCurrent();
                         ui.accessSynchronously(() -> ui.getPage()
-                                .setLocation(UrlUtil.getServletPathRelative(
-                                        getLogoutSuccessUrl(), request)));
+                                .setLocation(UrlUtil.getServletPathRelative(getLogoutSuccessUrl(), request)));
                     }
-                }).logoutSuccessHandler(this::onLogoutOnNonVaadinUrl)
-                .permitAll());
+                }).logoutSuccessHandler(this::onLogoutOnNonVaadinUrl).permitAll());
     }
 
-    public void onLogoutOnNonVaadinUrl(HttpServletRequest request,
-            HttpServletResponse response, Authentication authentication)
-            throws IOException, ServletException {
+    public void onLogoutOnNonVaadinUrl(HttpServletRequest request, HttpServletResponse response,
+            Authentication authentication) throws IOException, ServletException {
         if (!request.getRequestURI().endsWith("doLogout")) {
             return;
         }
@@ -123,19 +118,13 @@ public class SecurityConfig extends VaadinWebSecurity {
     public InMemoryUserDetailsManager userDetailsService() {
         return new InMemoryUserDetailsManager() {
             @Override
-            public UserDetails loadUserByUsername(String username)
-                    throws UsernameNotFoundException {
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
                 UserInfo userInfo = userInfoService.findByUsername(username);
                 if (userInfo == null) {
-                    throw new UsernameNotFoundException(
-                            "No user present with username: " + username);
+                    throw new UsernameNotFoundException("No user present with username: " + username);
                 } else {
-                    return new User(userInfo.getUsername(),
-                            userInfo.getEncodedPassword(),
-                            userInfo.getRoles().stream()
-                                    .map(role -> new SimpleGrantedAuthority(
-                                            "ROLE_" + role))
-                                    .collect(Collectors.toList()));
+                    return new User(userInfo.getUsername(), userInfo.getEncodedPassword(), userInfo.getRoles().stream()
+                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role)).collect(Collectors.toList()));
                 }
             }
         };

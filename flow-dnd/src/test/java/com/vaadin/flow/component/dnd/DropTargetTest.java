@@ -31,8 +31,7 @@ import org.junit.Test;
 public class DropTargetTest extends AbstractDnDUnitTest {
 
     @Tag("div")
-    class TestComponent extends Component
-            implements DropTarget<TestComponent>, HasComponents {
+    class TestComponent extends Component implements DropTarget<TestComponent>, HasComponents {
 
     }
 
@@ -47,14 +46,12 @@ public class DropTargetTest extends AbstractDnDUnitTest {
         ui.add(component);
 
         component.setActive(true);
-        Assert.assertTrue(component.getElement()
-                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
+        Assert.assertTrue(component.getElement().getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
 
         AtomicReference<DropEvent<TestComponent>> eventCapture = new AtomicReference<>();
         component.addDropListener(eventCapture::set);
 
-        DropEvent<TestComponent> dropEvent = new DropEvent<>(component, true,
-                "all");
+        DropEvent<TestComponent> dropEvent = new DropEvent<>(component, true, "all");
         ComponentUtil.fireEvent(component, dropEvent);
 
         DropEvent<TestComponent> actualEvent = eventCapture.get();
@@ -71,25 +68,20 @@ public class DropTargetTest extends AbstractDnDUnitTest {
         RouterLink component = new RouterLink();
         DropTarget<RouterLink> dropTarget = DropTarget.create(component);
 
-        Assert.assertTrue(component.getElement()
-                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
+        Assert.assertTrue(component.getElement().getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
         Assert.assertNull(dropTarget.getDropEffect());
 
         DropTarget.configure(component, false);
-        Assert.assertFalse(component.getElement()
-                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
+        Assert.assertFalse(component.getElement().getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
 
         DropTarget.configure(component);
-        Assert.assertFalse(component.getElement()
-                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
+        Assert.assertFalse(component.getElement().getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
 
         DropTarget.configure(component, true);
-        Assert.assertTrue(component.getElement()
-                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
+        Assert.assertTrue(component.getElement().getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
 
         DropTarget.configure(component);
-        Assert.assertTrue(component.getElement()
-                .getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
+        Assert.assertTrue(component.getElement().getProperty(DndUtil.DROP_TARGET_ACTIVE_PROPERTY, false));
     }
 
     @Test
@@ -101,8 +93,7 @@ public class DropTargetTest extends AbstractDnDUnitTest {
         AtomicReference<DropEvent<RouterLink>> eventCapture = new AtomicReference<>();
         dropTarget.addDropListener(eventCapture::set);
 
-        DropEvent<RouterLink> dropEvent = new DropEvent<>(component, true,
-                "all");
+        DropEvent<RouterLink> dropEvent = new DropEvent<>(component, true, "all");
         ComponentUtil.fireEvent(component, dropEvent);
 
         DropEvent<RouterLink> actualEvent = eventCapture.get();
@@ -121,8 +112,7 @@ public class DropTargetTest extends AbstractDnDUnitTest {
         Assert.assertEquals(dropEvent, actualEvent);
         Assert.assertFalse(actualEvent.isFromClient());
         Assert.assertEquals(component, actualEvent.getComponent());
-        Assert.assertEquals(EffectAllowed.COPY_MOVE,
-                actualEvent.getEffectAllowed());
+        Assert.assertEquals(EffectAllowed.COPY_MOVE, actualEvent.getEffectAllowed());
         Assert.assertEquals(DropEffect.COPY, actualEvent.getDropEffect());
         Assert.assertFalse(actualEvent.getDragData().isPresent());
         Assert.assertFalse(actualEvent.getDragSourceComponent().isPresent());
@@ -151,8 +141,7 @@ public class DropTargetTest extends AbstractDnDUnitTest {
         DropEvent<RouterLink> actualEvent = eventCapture.get();
         Assert.assertEquals(dropEvent, actualEvent);
         Assert.assertEquals("FOOBAR", actualEvent.getDragData().orElse(null));
-        Assert.assertEquals(source,
-                actualEvent.getDragSourceComponent().orElse(null));
+        Assert.assertEquals(source, actualEvent.getDragSourceComponent().orElse(null));
 
         // not firing end event for this test but it should be fine as the drag
         // data and active source is overridden
@@ -163,8 +152,7 @@ public class DropTargetTest extends AbstractDnDUnitTest {
         actualEvent = eventCapture.get();
         Assert.assertEquals(dropEvent, actualEvent);
         Assert.assertEquals("another", actualEvent.getDragData().orElse(null));
-        Assert.assertEquals(source,
-                actualEvent.getDragSourceComponent().orElse(null));
+        Assert.assertEquals(source, actualEvent.getDragSourceComponent().orElse(null));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -172,8 +160,7 @@ public class DropTargetTest extends AbstractDnDUnitTest {
         RouterLink component = new RouterLink();
         DropTarget<RouterLink> dropTarget = DropTarget.create(component);
 
-        DropEvent<RouterLink> dropEvent = new DropEvent<>(component, true,
-                "all");
+        DropEvent<RouterLink> dropEvent = new DropEvent<>(component, true, "all");
         ComponentUtil.fireEvent(component, dropEvent);
     }
 
@@ -186,8 +173,7 @@ public class DropTargetTest extends AbstractDnDUnitTest {
         DragSource<RouterLink> dragSource = DragSource.create(source);
         DropTarget<TestComponent> dropTarget = DropTarget.create(target);
 
-        DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
-                source, true);
+        DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(source, true);
         ComponentUtil.fireEvent(source, startEvent);
         Assert.assertEquals(source, ui.getActiveDragSourceComponent());
 
@@ -195,8 +181,7 @@ public class DropTargetTest extends AbstractDnDUnitTest {
             event.getDragSourceComponent().ifPresent(dragSourceComponent -> {
                 TestComponent component = event.getComponent();
 
-                Assert.assertEquals("Invalid drag source component",
-                        dragSourceComponent, source);
+                Assert.assertEquals("Invalid drag source component", dragSourceComponent, source);
                 Assert.assertEquals("Invalid event source", component, target);
 
                 target.add(dragSourceComponent);
@@ -205,15 +190,12 @@ public class DropTargetTest extends AbstractDnDUnitTest {
         };
         target.addDropListener(dropListener);
 
-        DropEvent<TestComponent> dropEvent = new DropEvent<>(target, true,
-                "all");
+        DropEvent<TestComponent> dropEvent = new DropEvent<>(target, true, "all");
         ComponentUtil.fireEvent(target, dropEvent);
 
-        Assert.assertEquals("Drag source component should have been moved",
-                source.getParent().get(), target);
+        Assert.assertEquals("Drag source component should have been moved", source.getParent().get(), target);
 
-        DragEndEvent<RouterLink> endEvent = new DragEndEvent<>(source, true,
-                "move");
+        DragEndEvent<RouterLink> endEvent = new DragEndEvent<>(source, true, "move");
         // should not throw for removing the active drag source
         ComponentUtil.fireEvent(source, endEvent);
 

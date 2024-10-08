@@ -18,9 +18,8 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 
 /**
- * Marker interface for (Lit and Polymer) templates. All frontend files linked
- * by implementors (with {@link com.vaadin.flow.component.dependency.JsModule})
- * will be copied to {@code META-INF/VAADIN/config/templates}.
+ * Marker interface for (Lit and Polymer) templates. All frontend files linked by implementors (with
+ * {@link com.vaadin.flow.component.dependency.JsModule}) will be copied to {@code META-INF/VAADIN/config/templates}.
  *
  * @author Vaadin Ltd
  */

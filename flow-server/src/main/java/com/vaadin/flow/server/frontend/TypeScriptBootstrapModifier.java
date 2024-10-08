@@ -21,8 +21,7 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      * @deprecated use {@link #modify(List, boolean, ThemeDefinition)} instead
      */
     @Deprecated
-    default void modify(List<String> bootstrapTypeScript,
-            boolean productionMode) {
+    default void modify(List<String> bootstrapTypeScript, boolean productionMode) {
 
     }
 
@@ -37,8 +36,7 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      *            the theme used by the application
      */
     @Deprecated
-    default void modify(List<String> bootstrapTypeScript,
-            boolean productionMode, ThemeDefinition themeDefinition) {
+    default void modify(List<String> bootstrapTypeScript, boolean productionMode, ThemeDefinition themeDefinition) {
         modify(bootstrapTypeScript, productionMode);
     }
 
@@ -54,8 +52,7 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      */
     default void modify(List<String> bootstrapTypeScript, Options options,
             FrontendDependenciesScanner frontendDependenciesScanner) {
-        modify(bootstrapTypeScript, options.isProductionMode(),
-                frontendDependenciesScanner.getThemeDefinition());
+        modify(bootstrapTypeScript, options.isProductionMode(), frontendDependenciesScanner.getThemeDefinition());
     }
 
 }

@@ -18,15 +18,13 @@ public class ThemeIT extends ViteDevModeIT {
                 "return Array.from(document.querySelectorAll('style')).map(style => style.textContent).filter(text => text.includes(arguments[0]))",
                 styleFromTheme);
 
-        Assert.assertEquals("Theme rule should have been added once in total",
-                1, adoptedStyleSheetsWithString.size()
-                        + styleTagsWithString.size());
+        Assert.assertEquals("Theme rule should have been added once in total", 1,
+                adoptedStyleSheetsWithString.size() + styleTagsWithString.size());
     }
 
     @Test
     public void cssImportAnnotation() {
-        String bodyBackground = (String) executeScript(
-                "return getComputedStyle(document.body).backgroundColor");
+        String bodyBackground = (String) executeScript("return getComputedStyle(document.body).backgroundColor");
         Assert.assertEquals("rgb(211, 211, 211)", bodyBackground);
     }
 

@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
  *
  * Analyzes dev server logs lines to identify restarts.
  *
- * Allows to block dev-server requests processing when a restart is happening
- * and to resume it once the restart is completed.
+ * Allows to block dev-server requests processing when a restart is happening and to resume it once the restart is
+ * completed.
  */
 class RestartMonitor {
     private final Lock lock = new ReentrantLock();
@@ -42,15 +42,13 @@ class RestartMonitor {
     private final Pattern restarted;
 
     /**
-     * Creates a new instance of RestartMonitor given the patterns to detect
-     * when server initiates a restart and when the restart is completed.
+     * Creates a new instance of RestartMonitor given the patterns to detect when server initiates a restart and when
+     * the restart is completed.
      *
      * @param restarting
-     *            a pattern to match with the output to determine that the
-     *            server is restarting.
+     *            a pattern to match with the output to determine that the server is restarting.
      * @param restarted
-     *            a pattern to match with the output to determine that the
-     *            server has been restarted.
+     *            a pattern to match with the output to determine that the server has been restarted.
      */
     RestartMonitor(Pattern restarting, Pattern restarted) {
         this.restarting = restarting;
@@ -74,13 +72,9 @@ class RestartMonitor {
             while (serverRestarting) {
                 String threadName = Thread.currentThread().getName();
                 long threadId = Thread.currentThread().getId();
-                getLogger().trace(
-                        "Thread {} ({}) waiting for dev server restart...",
-                        threadName, threadId);
+                getLogger().trace("Thread {} ({}) waiting for dev server restart...", threadName, threadId);
                 if (serverRestartedCondition.await(60, TimeUnit.SECONDS)) {
-                    getLogger().trace(
-                            "Thread {} ({}) continues execution after server restarts",
-                            threadName, threadId);
+                    getLogger().trace("Thread {} ({}) continues execution after server restarts", threadName, threadId);
                 } else {
                     getLogger().trace(
                             "Thread {} ({}) continues execution after waiting for 60 seconds for a restart to complete",

@@ -36,9 +36,8 @@ public class PaperSlider extends Component implements HasValue {
     }
 
     public PaperSlider() {
-        getElement().addPropertyChangeListener("value", "value-change",
-                event -> {
-                });
+        getElement().addPropertyChangeListener("value", "value-change", event -> {
+        });
     }
 
     public void setPin(boolean pin) {
@@ -49,8 +48,7 @@ public class PaperSlider extends Component implements HasValue {
         return getElement().getProperty("pin", false);
     }
 
-    public Registration addValueChangeListener(
-            ComponentEventListener<ValueChangeEvent> valueChangeListener) {
+    public Registration addValueChangeListener(ComponentEventListener<ValueChangeEvent> valueChangeListener) {
         return super.addListener(ValueChangeEvent.class, valueChangeListener);
     }
 }

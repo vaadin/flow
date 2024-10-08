@@ -50,9 +50,8 @@ public class ViewClassLocator {
             try {
                 testFolder = new File(url.toURI());
             } catch (URISyntaxException | IllegalArgumentException e) {
-                throw new IllegalArgumentException(String.format(
-                        "Was not able to resolve URL '%s' in local file system",
-                        url), e);
+                throw new IllegalArgumentException(
+                        String.format("Was not able to resolve URL '%s' in local file system", url), e);
             }
 
             // This scans parts of the classpath. If it becomes slow, we have to
@@ -61,13 +60,10 @@ public class ViewClassLocator {
                 findViews(testFolder);
                 getLogger().info("Found " + views.size() + " views");
             } catch (IOException exception) {
-                throw new RuntimeException(
-                        "Unable to scan classpath to find views", exception);
+                throw new RuntimeException("Unable to scan classpath to find views", exception);
             }
         } else {
-            getLogger().warn(
-                    "Could not find 'com' package using a file:// URL. Got URL: {}",
-                    url);
+            getLogger().warn("Could not find 'com' package using a file:// URL. Got URL: {}", url);
         }
     }
 
@@ -75,8 +71,7 @@ public class ViewClassLocator {
         Path root = parent.toPath();
         Files.walkFileTree(parent.toPath(), new SimpleFileVisitor<Path>() {
             @Override
-            public FileVisitResult visitFile(Path path,
-                    BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                 tryLoadClass(root, path);
                 return super.visitFile(path, attrs);
             }
@@ -87,31 +82,25 @@ public class ViewClassLocator {
     @SuppressWarnings("unchecked")
     private void tryLoadClass(Path root, Path path) {
         File file = path.toFile();
-        if (file.getName().endsWith(".class")
-                && !file.getName().contains("$")) {
+        if (file.getName().endsWith(".class") && !file.getName().contains("$")) {
             Path relative = root.relativize(path);
-            String className = relative.toString()
-                    .replace(File.separatorChar, '.').replace(".class", "");
+            String className = relative.toString().replace(File.separatorChar, '.').replace(".class", "");
             try {
                 Class<?> cls = classLoader.loadClass(className);
-                if (Component.class.isAssignableFrom(cls)
-                        && !Modifier.isAbstract(cls.getModifiers())) {
+                if (Component.class.isAssignableFrom(cls) && !Modifier.isAbstract(cls.getModifiers())) {
                     try {
                         // Only include views which have a no-arg
                         // constructor
                         Constructor<?> constructor = cls.getConstructor();
                         assert constructor != null;
-                        views.put(cls.getSimpleName(),
-                                (Class<? extends Component>) cls);
+                        views.put(cls.getSimpleName(), (Class<? extends Component>) cls);
                     } catch (Exception e) {
                         // InlineTemplate or similar
                     }
                 }
             } catch (NoClassDefFoundError error) {
-                getLogger().warn(
-                        "Unable to load class {} because of hierarchy inconsistency. "
-                                + "Probably OSGi class which is not intended to be loaded",
-                        className);
+                getLogger().warn("Unable to load class {} because of hierarchy inconsistency. "
+                        + "Probably OSGi class which is not intended to be loaded", className);
             } catch (Exception e) {
                 getLogger().warn("Unable to load class {}", className);
             }
@@ -127,15 +116,13 @@ public class ViewClassLocator {
     }
 
     @SuppressWarnings("unchecked")
-    public Class<? extends Component> findViewClass(String fullOrSimpleName)
-            throws ClassNotFoundException {
+    public Class<? extends Component> findViewClass(String fullOrSimpleName) throws ClassNotFoundException {
         if (fullOrSimpleName == null) {
             return null;
         }
         String baseName = fullOrSimpleName;
         try {
-            return (Class<? extends Component>) getClass().getClassLoader()
-                    .loadClass(baseName);
+            return (Class<? extends Component>) getClass().getClassLoader().loadClass(baseName);
         } catch (Exception e) {
         }
         if (views.containsKey(fullOrSimpleName)) {

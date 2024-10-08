@@ -49,8 +49,7 @@ public class InfoView extends Div {
     private void update(UI ui) {
         VaadinSession session = ui.getSession();
         WebBrowser webBrowser = session.getBrowser();
-        DeploymentConfiguration deploymentConfiguration = session
-                .getConfiguration();
+        DeploymentConfiguration deploymentConfiguration = session.getConfiguration();
         List<String> device = new ArrayList<>();
         List<String> os = new ArrayList<>();
         List<String> browser = new ArrayList<>();
@@ -99,16 +98,12 @@ public class InfoView extends Div {
         separator();
 
         header("Deployment configuration");
-        info("Heartbeat interval",
-                deploymentConfiguration.getHeartbeatInterval());
+        info("Heartbeat interval", deploymentConfiguration.getHeartbeatInterval());
         info("UI class", deploymentConfiguration.getUIClassName());
-        info("Close idle sessions",
-                deploymentConfiguration.isCloseIdleSessions());
-        info("Send URLs as parameters",
-                deploymentConfiguration.isSendUrlsAsParameters());
+        info("Close idle sessions", deploymentConfiguration.isCloseIdleSessions());
+        info("Send URLs as parameters", deploymentConfiguration.isSendUrlsAsParameters());
         info("Sync id enabled", deploymentConfiguration.isSyncIdCheckEnabled());
-        info("XSRF protection enabled",
-                deploymentConfiguration.isXsrfProtectionEnabled());
+        info("XSRF protection enabled", deploymentConfiguration.isXsrfProtectionEnabled());
         info("Production mode", deploymentConfiguration.isProductionMode());
 
     }

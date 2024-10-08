@@ -44,11 +44,10 @@ public final class Feature implements Serializable {
      * @param requiresServerRestart
      *            {@code true} if toggling the feature requires a server restart
      * @param componentClassName
-     *            If the feature is a component, the qualified name of the class
-     *            otherwise null
+     *            If the feature is a component, the qualified name of the class otherwise null
      */
-    public Feature(String title, String id, String moreInfoLink,
-            boolean requiresServerRestart, String componentClassName) {
+    public Feature(String title, String id, String moreInfoLink, boolean requiresServerRestart,
+            String componentClassName) {
         this.title = Objects.requireNonNull(title);
         this.id = Objects.requireNonNull(id);
         this.moreInfoLink = moreInfoLink;

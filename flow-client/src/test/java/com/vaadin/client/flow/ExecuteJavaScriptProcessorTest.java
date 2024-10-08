@@ -38,8 +38,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class ExecuteJavaScriptProcessorTest {
-    private static class CollectingExecuteJavaScriptProcessor
-            extends ExecuteJavaScriptProcessor {
+    private static class CollectingExecuteJavaScriptProcessor extends ExecuteJavaScriptProcessor {
         private final List<String[]> parameterNamesAndCodeList = new ArrayList<>();
         private final List<JsArray<Object>> parametersList = new ArrayList<>();
         private final List<JsMap<Object, StateNode>> nodeParametersList = new ArrayList<>();
@@ -66,8 +65,7 @@ public class ExecuteJavaScriptProcessorTest {
         }
 
         @Override
-        protected void invoke(String[] parameterNamesAndCode,
-                JsArray<Object> parameters,
+        protected void invoke(String[] parameterNamesAndCode, JsArray<Object> parameters,
                 JsMap<Object, StateNode> nodeParameters) {
             parameterNamesAndCodeList.add(parameterNamesAndCode);
             parametersList.add(parameters);
@@ -108,8 +106,7 @@ public class ExecuteJavaScriptProcessorTest {
         CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor();
 
         JsonArray invocation1 = JsonUtils.createArray(Json.create("script1"));
-        JsonArray invocation2 = Stream.of("param1", "param2", "script2")
-                .map(Json::create).collect(JsonUtils.asArray());
+        JsonArray invocation2 = Stream.of("param1", "param2", "script2").map(Json::create).collect(JsonUtils.asArray());
         JsonArray invocations = JsonUtils.createArray(invocation1, invocation2);
 
         processor.execute(invocations);
@@ -118,12 +115,10 @@ public class ExecuteJavaScriptProcessorTest {
         Assert.assertEquals(2, processor.parametersList.size());
         Assert.assertEquals(2, processor.nodeParametersList.size());
 
-        Assert.assertArrayEquals(new String[] { "script1" },
-                processor.parameterNamesAndCodeList.get(0));
+        Assert.assertArrayEquals(new String[] { "script1" }, processor.parameterNamesAndCodeList.get(0));
         Assert.assertEquals(0, processor.parametersList.get(0).length());
 
-        Assert.assertArrayEquals(new String[] { "$0", "$1", "script2" },
-                processor.parameterNamesAndCodeList.get(1));
+        Assert.assertArrayEquals(new String[] { "$0", "$1", "script2" }, processor.parameterNamesAndCodeList.get(1));
         Assert.assertEquals(2, processor.parametersList.get(1).length());
         Assert.assertEquals("param1", processor.parametersList.get(1).get(0));
         Assert.assertEquals("param2", processor.parametersList.get(1).get(1));
@@ -142,8 +137,7 @@ public class ExecuteJavaScriptProcessorTest {
             }
 
         };
-        CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor(
-                registry);
+        CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor(registry);
 
         StateNode node = new StateNode(10, registry.getStateTree());
         registry.getStateTree().registerNode(node);
@@ -153,11 +147,9 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE), Json.create(node.getId()));
 
-        JsonArray invocation = Stream.of(json, Json.create("$0"))
-                .collect(JsonUtils.asArray());
+        JsonArray invocation = Stream.of(json, Json.create("$0")).collect(JsonUtils.asArray());
 
         // JRE impl of the array uses
 
@@ -183,16 +175,13 @@ public class ExecuteJavaScriptProcessorTest {
 
         JsonObject object = Json.createObject();
         object.put(NodeProperties.TYPE, NodeProperties.INJECT_BY_ID);
-        node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.PAYLOAD).setValue(object);
+        node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.PAYLOAD).setValue(object);
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE), Json.create(node.getId()));
 
-        JsonArray invocation = Stream.of(json, Json.create("$0"))
-                .collect(JsonUtils.asArray());
+        JsonArray invocation = Stream.of(json, Json.create("$0")).collect(JsonUtils.asArray());
 
         processor.execute(JsonUtils.createArray(invocation));
 
@@ -228,11 +217,9 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE), Json.create(node.getId()));
 
-        JsonArray invocation = Stream.of(json, Json.create("$0"))
-                .collect(JsonUtils.asArray());
+        JsonArray invocation = Stream.of(json, Json.create("$0")).collect(JsonUtils.asArray());
 
         processor.execute(JsonUtils.createArray(invocation));
 
@@ -267,11 +254,9 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE), Json.create(node.getId()));
 
-        JsonArray invocation = Stream.of(json, Json.create("$0"))
-                .collect(JsonUtils.asArray());
+        JsonArray invocation = Stream.of(json, Json.create("$0")).collect(JsonUtils.asArray());
 
         processor.execute(JsonUtils.createArray(invocation));
 
@@ -321,9 +306,7 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
-                .setValue(true);
+        node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(true);
 
         Assert.assertTrue(processor.isBound(node));
     }
@@ -342,9 +325,7 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
-                .setValue(false);
+        node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(false);
 
         Assert.assertFalse(processor.isBound(node));
     }
@@ -401,9 +382,7 @@ public class ExecuteJavaScriptProcessorTest {
 
         StateNode node = new StateNode(37, registry.getStateTree());
 
-        node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
-                .setValue(true);
+        node.getMap(NodeFeatures.ELEMENT_DATA).getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY).setValue(true);
 
         StateNode parent = new StateNode(43, registry.getStateTree());
 

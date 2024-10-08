@@ -24,8 +24,7 @@ import com.google.web.bindery.event.shared.Event;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class ResponseHandlingStartedEvent
-        extends Event<ResponseHandlingStartedEvent.Handler> {
+public class ResponseHandlingStartedEvent extends Event<ResponseHandlingStartedEvent.Handler> {
 
     /**
      * Handler for {@link ResponseHandlingStartedEvent}s.
@@ -38,8 +37,7 @@ public class ResponseHandlingStartedEvent
          * @param responseHandlingStartedEvent
          *            the event object
          */
-        void onResponseHandlingStarted(
-                ResponseHandlingStartedEvent responseHandlingStartedEvent);
+        void onResponseHandlingStarted(ResponseHandlingStartedEvent responseHandlingStartedEvent);
     }
 
     private static Type<Handler> type = null;

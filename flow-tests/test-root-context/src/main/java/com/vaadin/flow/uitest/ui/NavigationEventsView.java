@@ -28,8 +28,7 @@ import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.NavigationEventsView", layout = ViewTestLayout.class)
-public class NavigationEventsView extends Div
-        implements BeforeEnterObserver, AfterNavigationObserver {
+public class NavigationEventsView extends Div implements BeforeEnterObserver, AfterNavigationObserver {
 
     public static final String BEFORE_ENTER = "BeforeEnterEvent";
     public static final String AFTER_NAVIGATION = "AfterNavigationEvent";
@@ -40,12 +39,9 @@ public class NavigationEventsView extends Div
         messages.setAttribute("id", "messages");
         getElement().appendChild(messages);
 
-        RouterLink routerLink = new RouterLink("RouterLink to self",
-                NavigationEventsView.class);
+        RouterLink routerLink = new RouterLink("RouterLink to self", NavigationEventsView.class);
         routerLink.setId("router-link");
-        Anchor anchor = new Anchor(
-                "/view/com.vaadin.flow.uitest.ui.NavigationEventsView",
-                "Anchor to self");
+        Anchor anchor = new Anchor("/view/com.vaadin.flow.uitest.ui.NavigationEventsView", "Anchor to self");
         anchor.setId("anchor");
 
         add(routerLink, anchor);

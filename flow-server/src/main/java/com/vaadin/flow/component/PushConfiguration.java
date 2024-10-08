@@ -44,12 +44,10 @@ public interface PushConfiguration extends Serializable {
     PushMode getPushMode();
 
     /**
-     * Sets the mode of bidirectional ("push") communication that should be
-     * used.
+     * Sets the mode of bidirectional ("push") communication that should be used.
      * <p>
-     * Add-on developers should note that this method is only meant for the
-     * application developer. An add-on should not set the push mode directly,
-     * rather instruct the user to set it.
+     * Add-on developers should note that this method is only meant for the application developer. An add-on should not
+     * set the push mode directly, rather instruct the user to set it.
      * </p>
      *
      * @param pushMode
@@ -65,8 +63,8 @@ public interface PushConfiguration extends Serializable {
     /**
      * Sets the servlet mapping to use for push requests.
      * <p>
-     * This is only used when overriding the servlet mapping to use. Setting
-     * this to null (the default) will use the default URL.
+     * This is only used when overriding the servlet mapping to use. Setting this to null (the default) will use the
+     * default URL.
      *
      * @param pushServletMapping
      *            The servlet mapping to use for push
@@ -76,20 +74,18 @@ public interface PushConfiguration extends Serializable {
     /**
      * Returns the servlet mapping to use for push requests.
      * <p>
-     * This is only used when overriding the servlet mapping to use. Returns
-     * null (the default) when the default URL is used.
+     * This is only used when overriding the servlet mapping to use. Returns null (the default) when the default URL is
+     * used.
      *
-     * @return the servlet mapping to use for push requests, or null to use to
-     *         default
+     * @return the servlet mapping to use for push requests, or null to use to default
      */
     String getPushServletMapping();
 
     /**
      * Returns the primary transport type for push.
      * <p>
-     * Note that if you set the transport type using
-     * {@link #setParameter(String, String)} to an unsupported type this method
-     * will return null. Supported types are defined by {@link Transport}.
+     * Note that if you set the transport type using {@link #setParameter(String, String)} to an unsupported type this
+     * method will return null. Supported types are defined by {@link Transport}.
      *
      * @return The primary transport type
      */
@@ -98,8 +94,8 @@ public interface PushConfiguration extends Serializable {
     /**
      * Sets the primary transport type for push.
      * <p>
-     * Note that the new transport type will not be used until the push channel
-     * is disconnected and reconnected if already active.
+     * Note that the new transport type will not be used until the push channel is disconnected and reconnected if
+     * already active.
      *
      * @param transport
      *            The primary transport type
@@ -109,9 +105,8 @@ public interface PushConfiguration extends Serializable {
     /**
      * Returns the fallback transport type for push.
      * <p>
-     * Note that if you set the transport type using
-     * {@link #setParameter(String, String)} to an unsupported type this method
-     * will return null. Supported types are defined by {@link Transport}.
+     * Note that if you set the transport type using {@link #setParameter(String, String)} to an unsupported type this
+     * method will return null. Supported types are defined by {@link Transport}.
      *
      * @return The fallback transport type
      */
@@ -120,8 +115,8 @@ public interface PushConfiguration extends Serializable {
     /**
      * Sets the fallback transport type for push.
      * <p>
-     * Note that the new transport type will not be used until the push channel
-     * is disconnected and reconnected if already active.
+     * Note that the new transport type will not be used until the push channel is disconnected and reconnected if
+     * already active.
      *
      * @param fallbackTransport
      *            The fallback transport type
@@ -131,8 +126,8 @@ public interface PushConfiguration extends Serializable {
     /**
      * Returns the given parameter, if set.
      * <p>
-     * This method provides low level access to push parameters and is typically
-     * not needed for normal application development.
+     * This method provides low level access to push parameters and is typically not needed for normal application
+     * development.
      *
      * @param parameter
      *            The parameter name
@@ -150,8 +145,8 @@ public interface PushConfiguration extends Serializable {
     /**
      * Sets the given parameter.
      * <p>
-     * This method provides low level access to push parameters and is typically
-     * not needed for normal application development.
+     * This method provides low level access to push parameters and is typically not needed for normal application
+     * development.
      *
      * @param parameter
      *            The parameter name
@@ -161,12 +156,10 @@ public interface PushConfiguration extends Serializable {
     void setParameter(String parameter, String value);
 
     /**
-     * Sets the factory that will be used to create new instances of
-     * {@link PushConnection}.
+     * Sets the factory that will be used to create new instances of {@link PushConnection}.
      *
      * @param factory
-     *            the factory that will be used to create new instances of
-     *            {@link PushConnection}
+     *            the factory that will be used to create new instances of {@link PushConnection}
      */
     void setPushConnectionFactory(PushConnectionFactory factory);
 
@@ -191,8 +184,7 @@ class PushConfigurationImpl implements PushConfiguration {
     }
 
     private PushConfigurationMap getPushConfigurationMap() {
-        return ui.getInternals().getStateTree().getRootNode()
-                .getFeature(PushConfigurationMap.class);
+        return ui.getInternals().getStateTree().getRootNode().getFeature(PushConfigurationMap.class);
     }
 
     @Override
@@ -219,16 +211,13 @@ class PushConfigurationImpl implements PushConfiguration {
         VaadinSession session = ui.getSession();
 
         if (session == null) {
-            throw new UIDetachedException(
-                    "Cannot set the push mode for a detached UI");
+            throw new UIDetachedException("Cannot set the push mode for a detached UI");
         }
 
         session.checkHasLock();
 
-        if (pushMode.isEnabled()
-                && !session.getService().ensurePushAvailable()) {
-            throw new IllegalStateException(
-                    "Push is not available. See previous log messages for more information.");
+        if (pushMode.isEnabled() && !session.getService().ensurePushAvailable()) {
+            throw new IllegalStateException("Push is not available. See previous log messages for more information.");
         }
 
         PushMode oldMode = getPushConfigurationMap().getPushMode();
@@ -238,8 +227,7 @@ class PushConfigurationImpl implements PushConfiguration {
             if (!oldMode.isEnabled() && pushMode.isEnabled()) {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
-                ui.getInternals()
-                        .setPushConnection(pushConnectionFactory.apply(ui));
+                ui.getInternals().setPushConnection(pushConnectionFactory.apply(ui));
             }
             // Nothing to do here if disabling push;
             // the client will close the connection
@@ -283,10 +271,8 @@ class PushConfigurationImpl implements PushConfiguration {
     }
 
     @Override
-    public void setPushConnectionFactory(
-            PushConnectionFactory pushConnectionFactory) {
-        this.pushConnectionFactory = Objects.requireNonNull(
-                pushConnectionFactory,
+    public void setPushConnectionFactory(PushConnectionFactory pushConnectionFactory) {
+        this.pushConnectionFactory = Objects.requireNonNull(pushConnectionFactory,
                 "Push connection factory must not be null");
     }
 }

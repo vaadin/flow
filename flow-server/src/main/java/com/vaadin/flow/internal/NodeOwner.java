@@ -19,8 +19,8 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 
 /**
- * Abstract root of a state node tree. A node always belongs to one specific
- * owner. The owner keeps track of metadata for its nodes.
+ * Abstract root of a state node tree. A node always belongs to one specific owner. The owner keeps track of metadata
+ * for its nodes.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -30,8 +30,7 @@ import java.io.Serializable;
 public interface NodeOwner extends Serializable {
 
     /**
-     * Registers a node with this node owner. The new node should already be set
-     * to be owned by this instance.
+     * Registers a node with this node owner. The new node should already be set to be owned by this instance.
      *
      * @param node
      *            the node to register
@@ -40,8 +39,7 @@ public interface NodeOwner extends Serializable {
     int register(StateNode node);
 
     /**
-     * Unregisters a node from this owner. This must be done before the node is
-     * set to not be owned by this instance.
+     * Unregisters a node from this owner. This must be done before the node is set to not be owned by this instance.
      *
      * @param node
      *            the node to unregister
@@ -49,8 +47,8 @@ public interface NodeOwner extends Serializable {
     void unregister(StateNode node);
 
     /**
-     * Marks a node owned by this instance as dirty. Dirty nodes are collected
-     * from an owner using {@link StateTree#collectDirtyNodes()}.
+     * Marks a node owned by this instance as dirty. Dirty nodes are collected from an owner using
+     * {@link StateTree#collectDirtyNodes()}.
      *
      * @param node
      *            the node to be marked as dirty

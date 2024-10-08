@@ -22,9 +22,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.*;
 
 /**
- * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is
- * used to group several UI components within a form, enhancing form
- * accessibility and organization.
+ * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is used to group several UI components
+ * within a form, enhancing form accessibility and organization.
  */
 @Tag("fieldset")
 public class FieldSet extends HtmlContainer implements HasAriaLabel {
@@ -148,8 +147,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
     /**
      * Sets the content of the fieldset and removes previously set content.
      *
-     * Note: Do not include Legend in the content components. Use other FieldSet
-     * methods for setting Legend instead.
+     * Note: Do not include Legend in the content components. Use other FieldSet methods for setting Legend instead.
      *
      * @param content
      *            the content components of the fieldset to set.
@@ -158,9 +156,8 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
         Objects.requireNonNull(content, "Content should not be null");
         for (Component c : content) {
             if (c instanceof Legend) {
-                throw new IllegalArgumentException(
-                        "Legend should not be included in the content. "
-                                + "Use constructor params or setLegend.. methods instead.");
+                throw new IllegalArgumentException("Legend should not be included in the content. "
+                        + "Use constructor params or setLegend.. methods instead.");
             }
         }
         removeAll();
@@ -172,8 +169,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
     }
 
     private Legend findLegend() {
-        Optional<Component> legend = getChildren()
-                .filter(c -> c instanceof Legend).findFirst();
+        Optional<Component> legend = getChildren().filter(c -> c instanceof Legend).findFirst();
         return (Legend) legend.orElse(null);
     }
 

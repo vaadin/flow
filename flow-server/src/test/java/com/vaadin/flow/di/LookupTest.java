@@ -44,8 +44,7 @@ public class LookupTest {
         Lookup lookup = Lookup.of(service, Collection.class);
         Assert.assertEquals(service, lookup.lookup(Collection.class));
         Assert.assertEquals(1, lookup.lookupAll(Collection.class).size());
-        Assert.assertEquals(service,
-                lookup.lookupAll(Collection.class).iterator().next());
+        Assert.assertEquals(service, lookup.lookupAll(Collection.class).iterator().next());
         Assert.assertNull(lookup.lookup(List.class));
         Assert.assertEquals(0, lookup.lookupAll(List.class).size());
     }

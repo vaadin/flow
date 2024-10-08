@@ -25,8 +25,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class DomEventStopPropagationAndPreventDefaultIT
-        extends ChromeBrowserTest {
+public class DomEventStopPropagationAndPreventDefaultIT extends ChromeBrowserTest {
 
     @Test
     public void preventDefault() throws InterruptedException {
@@ -50,39 +49,34 @@ public class DomEventStopPropagationAndPreventDefaultIT
     private void assertMessages(int skip, String... expectedTail) {
         List<WebElement> messages = getMessages();
         if (messages.size() < skip) {
-            Assert.fail("Cannot skip " + skip + " messages when there are only "
-                    + messages.size() + "messages. " + joinMessages(messages));
+            Assert.fail("Cannot skip " + skip + " messages when there are only " + messages.size() + "messages. "
+                    + joinMessages(messages));
         }
 
         messages = messages.subList(skip, messages.size());
 
         if (messages.size() < expectedTail.length) {
-            Assert.fail("Expected " + expectedTail.length
-                    + " messages, but there are only " + messages.size() + ". "
+            Assert.fail("Expected " + expectedTail.length + " messages, but there are only " + messages.size() + ". "
                     + joinMessages(messages));
         }
 
         for (int i = 0; i < expectedTail.length; i++) {
-            Assert.assertEquals("Unexpected message at index " + i,
-                    expectedTail[i], messages.get(i).getText());
+            Assert.assertEquals("Unexpected message at index " + i, expectedTail[i], messages.get(i).getText());
         }
 
         if (messages.size() > expectedTail.length) {
             Assert.fail("There are unexpected messages at the end. "
-                    + joinMessages(messages.subList(expectedTail.length,
-                            messages.size())));
+                    + joinMessages(messages.subList(expectedTail.length, messages.size())));
         }
     }
 
     private static String joinMessages(List<WebElement> messages) {
-        return messages.stream().map(WebElement::getText)
-                .collect(Collectors.joining("\n", "\n", ""));
+        return messages.stream().map(WebElement::getText).collect(Collectors.joining("\n", "\n", ""));
     }
 
     private List<WebElement> getMessages() {
         WebElement messagesHolder = findElement(By.id("messages"));
-        List<WebElement> messages = messagesHolder
-                .findElements(By.cssSelector("div"));
+        List<WebElement> messages = messagesHolder.findElements(By.cssSelector("div"));
         return messages;
     }
 }

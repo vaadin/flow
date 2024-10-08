@@ -34,8 +34,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 import elemental.json.JsonObject;
 
 /**
- * The default {@link PushConnection} implementation that uses Atmosphere for
- * handling the communication channel.
+ * The default {@link PushConnection} implementation that uses Atmosphere for handling the communication channel.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -57,9 +56,8 @@ public class AtmospherePushConnection implements PushConnection {
         CONNECTED,
 
         /**
-         * Connection was disconnected while the connection was pending. Wait
-         * for the connection to get established before closing it. No new
-         * messages are accepted, but pending messages will still be delivered.
+         * Connection was disconnected while the connection was pending. Wait for the connection to get established
+         * before closing it. No new messages are accepted, but pending messages will still be delivered.
          */
         DISCONNECT_PENDING,
 
@@ -70,8 +68,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Represents a message splitted into multiple fragments of maximum length
-     * {@link #FRAGMENT_LENGTH}.
+     * Represents a message splitted into multiple fragments of maximum length {@link #FRAGMENT_LENGTH}.
      */
     protected static class FragmentedMessage {
 
@@ -91,23 +88,21 @@ public class AtmospherePushConnection implements PushConnection {
         }
 
         /**
-         * Checks if there is another fragment which can be retrieved using
-         * {@link #getNextFragment()} or if all fragments have been retrieved.
+         * Checks if there is another fragment which can be retrieved using {@link #getNextFragment()} or if all
+         * fragments have been retrieved.
          *
-         * @return true if there is another fragment to retrieve, false
-         *         otherwise
+         * @return true if there is another fragment to retrieve, false otherwise
          */
         public boolean hasNextFragment() {
             return index < message.length();
         }
 
         /**
-         * Gets the following fragment and increments the internal fragment
-         * counter so the following call to this method will return the
-         * following fragment.
+         * Gets the following fragment and increments the internal fragment counter so the following call to this method
+         * will return the following fragment.
          * <p>
-         * This method should not be called if all fragments have been received
-         * ({@link #hasNextFragment()} returns false).
+         * This method should not be called if all fragments have been received ({@link #hasNextFragment()} returns
+         * false).
          *
          * @return the next fragment
          */
@@ -116,8 +111,7 @@ public class AtmospherePushConnection implements PushConnection {
 
             String result;
             if (index == 0) {
-                String header = "" + message.length()
-                        + PushConstants.MESSAGE_DELIMITER;
+                String header = "" + message.length() + PushConstants.MESSAGE_DELIMITER;
                 int fragmentLen = FRAGMENT_LENGTH - header.length();
                 result = header + getFragment(0, fragmentLen);
                 index += fragmentLen;
@@ -144,8 +138,8 @@ public class AtmospherePushConnection implements PushConnection {
     private String transport;
 
     /**
-     * Keeps track of the disconnect confirmation command for cases where
-     * pending messages should be pushed before actually disconnecting.
+     * Keeps track of the disconnect confirmation command for cases where pending messages should be pushed before
+     * actually disconnecting.
      */
     private Command pendingDisconnectCommand;
 
@@ -166,8 +160,7 @@ public class AtmospherePushConnection implements PushConnection {
         this.registry = registry;
         registry.getUILifecycle().addHandler(event -> {
             if (event.getUiLifecycle().isTerminated()) {
-                if (state == State.DISCONNECT_PENDING
-                        || state == State.DISCONNECTED) {
+                if (state == State.DISCONNECT_PENDING || state == State.DISCONNECTED) {
                     return;
                 }
 
@@ -180,8 +173,7 @@ public class AtmospherePushConnection implements PushConnection {
         config.setStringValue("logLevel", "debug");
 
         getPushConfiguration().getParameters().forEach((value, key) -> {
-            if (value.equalsIgnoreCase("true")
-                    || value.equalsIgnoreCase("false")) {
+            if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
                 config.setBooleanValue(key, value.equalsIgnoreCase("true"));
             } else {
                 config.setStringValue(key, value);
@@ -189,16 +181,13 @@ public class AtmospherePushConnection implements PushConnection {
 
         });
 
-        String pushServletMapping = getPushConfiguration()
-                .getPushServletMapping();
-        if (pushServletMapping == null || pushServletMapping.trim().isEmpty()
-                || "/".equals(pushServletMapping)) {
+        String pushServletMapping = getPushConfiguration().getPushServletMapping();
+        if (pushServletMapping == null || pushServletMapping.trim().isEmpty() || "/".equals(pushServletMapping)) {
             // Handle null, empty and "/" mapping using just default push
             // mapping and serviceUrl
             url = Constants.PUSH_MAPPING;
             // If a specific serviceUrl is defined, prepend pushUrl with it
-            String serviceUrl = registry.getApplicationConfiguration()
-                    .getServiceUrl();
+            String serviceUrl = registry.getApplicationConfiguration().getServiceUrl();
             if (!serviceUrl.equals(".")) {
                 if (!serviceUrl.endsWith("/")) {
                     serviceUrl += "/";
@@ -207,17 +196,14 @@ public class AtmospherePushConnection implements PushConnection {
             }
         } else {
             // Append specific mapping directly to context root URL
-            String contextRootUrl = registry.getApplicationConfiguration()
-                    .getContextRootUrl();
-            if (contextRootUrl.endsWith("/")
-                    && pushServletMapping.startsWith("/")) {
+            String contextRootUrl = registry.getApplicationConfiguration().getContextRootUrl();
+            if (contextRootUrl.endsWith("/") && pushServletMapping.startsWith("/")) {
                 pushServletMapping = pushServletMapping.substring(1);
             }
             url = contextRootUrl + pushServletMapping + Constants.PUSH_MAPPING;
         }
 
-        runWhenAtmosphereLoaded(
-                () -> Scheduler.get().scheduleDeferred(this::connect));
+        runWhenAtmosphereLoaded(() -> Scheduler.get().scheduleDeferred(this::connect));
     }
 
     private PushConfiguration getPushConfiguration() {
@@ -230,17 +216,14 @@ public class AtmospherePushConnection implements PushConnection {
 
     private void connect() {
         String pushUrl = registry.getURIResolver().resolveVaadinUri(url);
-        pushUrl = SharedUtil.addGetParameter(pushUrl,
-                ApplicationConstants.REQUEST_TYPE_PARAMETER,
+        pushUrl = SharedUtil.addGetParameter(pushUrl, ApplicationConstants.REQUEST_TYPE_PARAMETER,
                 ApplicationConstants.REQUEST_TYPE_PUSH);
-        pushUrl = SharedUtil.addGetParameter(pushUrl,
-                ApplicationConstants.UI_ID_PARAMETER,
+        pushUrl = SharedUtil.addGetParameter(pushUrl, ApplicationConstants.UI_ID_PARAMETER,
                 registry.getApplicationConfiguration().getUIId());
 
         String pushId = registry.getMessageHandler().getPushId();
         if (pushId != null) {
-            pushUrl = SharedUtil.addGetParameter(pushUrl,
-                    ApplicationConstants.PUSH_ID_PARAMETER, pushId);
+            pushUrl = SharedUtil.addGetParameter(pushUrl, ApplicationConstants.PUSH_ID_PARAMETER, pushId);
         }
 
         Console.log("Establishing push connection");
@@ -291,12 +274,10 @@ public class AtmospherePushConnection implements PushConnection {
         }
         if (state == State.CONNECTED) {
             String messageJson = WidgetUtil.stringify(message);
-            Console.log("Sending push (" + transport + ") message to server: "
-                    + messageJson);
+            Console.log("Sending push (" + transport + ") message to server: " + messageJson);
 
             if (transport.equals("websocket")) {
-                FragmentedMessage fragmented = new FragmentedMessage(
-                        messageJson);
+                FragmentedMessage fragmented = new FragmentedMessage(messageJson);
                 while (fragmented.hasNextFragment()) {
                     doPush(socket, fragmented.getNextFragment());
                 }
@@ -319,20 +300,17 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     protected void onReopen(AtmosphereResponse response) {
-        Console.log("Push connection re-established using "
-                + response.getTransport());
+        Console.log("Push connection re-established using " + response.getTransport());
         onConnect(response);
     }
 
     protected void onOpen(AtmosphereResponse response) {
-        Console.log(
-                "Push connection established using " + response.getTransport());
+        Console.log("Push connection established using " + response.getTransport());
         onConnect(response);
     }
 
     /**
-     * Called whenever a server push connection is established (or
-     * re-established).
+     * Called whenever a server push connection is established (or re-established).
      *
      * @param response
      *            the response
@@ -355,8 +333,7 @@ public class AtmospherePushConnection implements PushConnection {
             break;
         default:
             throw new IllegalStateException(
-                    "Got onOpen event when connection state is " + state
-                            + ". This should never happen.");
+                    "Got onOpen event when connection state is " + state + ". This should never happen.");
         }
     }
 
@@ -379,8 +356,7 @@ public class AtmospherePushConnection implements PushConnection {
             break;
         case DISCONNECT_PENDING:
         case DISCONNECTED:
-            throw new IllegalStateException(
-                    "Can not disconnect more than once");
+            throw new IllegalStateException("Can not disconnect more than once");
         }
     }
 
@@ -398,19 +374,16 @@ public class AtmospherePushConnection implements PushConnection {
             getConnectionStateHandler().pushInvalidContent(this, message);
             return;
         } else {
-            Console.log("Received push (" + getTransportType() + ") message: "
-                    + message);
+            Console.log("Received push (" + getTransportType() + ") message: " + message);
             registry.getMessageHandler().handleMessage(json);
         }
     }
 
     /**
-     * Called if the transport mechanism cannot be used and the fallback will be
-     * tried.
+     * Called if the transport mechanism cannot be used and the fallback will be tried.
      */
     protected void onTransportFailure() {
-        Console.warn("Push connection using primary method ("
-                + getConfig().getTransport() + ") failed. Trying with "
+        Console.warn("Push connection using primary method (" + getConfig().getTransport() + ") failed. Trying with "
                 + getConfig().getFallbackTransport());
     }
 
@@ -430,8 +403,8 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Called when the push connection has been closed.
      * <p>
-     * This does not necessarily indicate an error and Atmosphere might try to
-     * reconnect or downgrade to the fallback transport automatically.
+     * This does not necessarily indicate an error and Atmosphere might try to reconnect or downgrade to the fallback
+     * transport automatically.
      *
      * @param response
      *            the Atmosphere response which was closed
@@ -444,12 +417,10 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Called when the Atmosphere client side timeout occurs.
      * <p>
-     * The connection will be closed at this point and reconnect will not happen
-     * automatically.
+     * The connection will be closed at this point and reconnect will not happen automatically.
      *
      * @param response
-     *            the Atmosphere response which was used when the timeout
-     *            occurred
+     *            the Atmosphere response which was used when the timeout occurred
      */
     protected void onClientTimeout(AtmosphereResponse response) {
         state = State.DISCONNECTED;
@@ -457,16 +428,15 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Called when the push connection has lost the connection to the server and
-     * will proceed to try to re-establish the connection.
+     * Called when the push connection has lost the connection to the server and will proceed to try to re-establish the
+     * connection.
      *
      * @param request
      *            the Atmosphere request
      * @param response
      *            the Atmosphere response
      */
-    protected void onReconnect(JavaScriptObject request,
-            final AtmosphereResponse response) {
+    protected void onReconnect(JavaScriptObject request, final AtmosphereResponse response) {
         if (state == State.CONNECTED) {
             state = State.CONNECT_PENDING;
         }
@@ -478,8 +448,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * JavaScriptObject class with some helper methods to set and get primitive
-     * values.
+     * JavaScriptObject class with some helper methods to set and get primitive values.
      */
     public abstract static class AbstractJSO extends JavaScriptObject {
         /**
@@ -650,11 +619,9 @@ public class AtmospherePushConnection implements PushConnection {
         /**
          * Gets the Atmosphere reported state.
          * <p>
-         * The state can be at least {@literal messageReceived},
-         * {@literal error}, {@literal opening}, {@literal messagePublished},
-         * {@literal re-connecting}, {@literal closedByClient},
-         * {@literal re-opening}, {@literal fail-to-reconnect},
-         * {@literal unsubscribe}, {@literal closed}
+         * The state can be at least {@literal messageReceived}, {@literal error}, {@literal opening},
+         * {@literal messagePublished}, {@literal re-connecting}, {@literal closedByClient}, {@literal re-opening},
+         * {@literal fail-to-reconnect}, {@literal unsubscribe}, {@literal closed}
          *
          * @return the state reported by Atmosphere
          */
@@ -696,8 +663,7 @@ public class AtmospherePushConnection implements PushConnection {
         };
     }-*/;
 
-    private final native JavaScriptObject doConnect(String uri,
-            JavaScriptObject config)
+    private final native JavaScriptObject doConnect(String uri, JavaScriptObject config)
     /*-{
         var self = this;
 
@@ -758,8 +724,7 @@ public class AtmospherePushConnection implements PushConnection {
 
             Console.log("Loading " + pushJs);
             ResourceLoader loader = registry.getResourceLoader();
-            String pushScriptUrl = registry.getApplicationConfiguration()
-                    .getServiceUrl() + pushJs;
+            String pushScriptUrl = registry.getApplicationConfiguration().getServiceUrl() + pushJs;
             ResourceLoadListener loadListener = new ResourceLoadListener() {
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
@@ -776,8 +741,7 @@ public class AtmospherePushConnection implements PushConnection {
 
                 @Override
                 public void onError(ResourceLoadEvent event) {
-                    getConnectionStateHandler()
-                            .pushScriptLoadError(event.getResourceData());
+                    getConnectionStateHandler().pushScriptLoadError(event.getResourceData());
 
                 }
             };
@@ -801,8 +765,8 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * The default {@link PushConnectionFactory} implementation that provides
-     * {@link AtmospherePushConnection} instances.
+     * The default {@link PushConnectionFactory} implementation that provides {@link AtmospherePushConnection}
+     * instances.
      */
     static class Factory implements PushConnectionFactory {
 

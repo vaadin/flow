@@ -27,8 +27,7 @@ public class CustomWebSocketIT extends AbstractSpringTest {
         private String message;
 
         @OnMessage
-        public void onMessage(Session session, String message)
-                throws IOException {
+        public void onMessage(Session session, String message) throws IOException {
             this.message = message;
             session.close();
         }
@@ -46,8 +45,7 @@ public class CustomWebSocketIT extends AbstractSpringTest {
 
     @Test
     public void properWebsocketResponseIsReceived() throws Exception {
-        WebSocketContainer container = ContainerProvider
-                .getWebSocketContainer();
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 
         String testUrl = getTestURL().replace("http://", "ws://");
         URI uri = URI.create(testUrl + CustomWebSocket.WEBSOCKET_URL);
@@ -56,8 +54,7 @@ public class CustomWebSocketIT extends AbstractSpringTest {
             CustomWebSocketEndpoint clientEndpoint = new CustomWebSocketEndpoint();
             Session session = container.connectToServer(clientEndpoint, uri);
             session.getBasicRemote().sendText("Hello");
-            Assert.assertEquals(CustomWebSocket.WEBSOCKET_RESPONSE_TEXT,
-                    clientEndpoint.waitForMessage());
+            Assert.assertEquals(CustomWebSocket.WEBSOCKET_RESPONSE_TEXT, clientEndpoint.waitForMessage());
             session.close();
         } catch (Exception ex) {
             throw ex;

@@ -23,8 +23,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Keeps track of {@link ConstantPoolKey} values that have already been sent to
- * the client.
+ * Keeps track of {@link ConstantPoolKey} values that have already been sent to the client.
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -39,8 +38,8 @@ public class ConstantPool implements Serializable {
     private Set<ConstantPoolKey> newKeys = new HashSet<>();
 
     /**
-     * Gets the id of a given constant, registering the constant with this
-     * constant pool if it hasn't already been encountered.
+     * Gets the id of a given constant, registering the constant with this constant pool if it hasn't already been
+     * encountered.
      *
      * @see #dumpConstants()
      *
@@ -61,19 +60,17 @@ public class ConstantPool implements Serializable {
     }
 
     /**
-     * Checks if any new constants have been added to this constant pool since
-     * the last time {@link #dumpConstants()} was called.
+     * Checks if any new constants have been added to this constant pool since the last time {@link #dumpConstants()}
+     * was called.
      *
-     * @return <code>true</code> if there are new constants, <code>false</code>
-     *         otherwise
+     * @return <code>true</code> if there are new constants, <code>false</code> otherwise
      */
     public boolean hasNewConstants() {
         return !newKeys.isEmpty();
     }
 
     /**
-     * Encodes all new constants to a JSON object and marks those constants as
-     * non-new.
+     * Encodes all new constants to a JSON object and marks those constants as non-new.
      *
      * @return a JSON object describing all new constants
      */

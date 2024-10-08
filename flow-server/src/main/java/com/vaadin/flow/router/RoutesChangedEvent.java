@@ -24,8 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.RouteRegistry;
 
 /**
- * Result class containing the removed and added routes for the latest
- * configuration.
+ * Result class containing the removed and added routes for the latest configuration.
  *
  * @since 1.3
  */
@@ -46,8 +45,7 @@ public class RoutesChangedEvent extends EventObject {
      * @throws IllegalArgumentException
      *             if source is null.
      */
-    public RoutesChangedEvent(RouteRegistry source,
-            List<RouteBaseData<?>> added, List<RouteBaseData<?>> removed) {
+    public RoutesChangedEvent(RouteRegistry source, List<RouteBaseData<?>> added, List<RouteBaseData<?>> removed) {
         super(source);
         this.added = Collections.unmodifiableList(added);
         this.removed = Collections.unmodifiableList(removed);
@@ -88,8 +86,7 @@ public class RoutesChangedEvent extends EventObject {
     }
 
     /**
-     * Determines if a given route navigation target was removed for this
-     * change.
+     * Determines if a given route navigation target was removed for this change.
      *
      * @param clazz
      *            a route navigation target
@@ -99,8 +96,7 @@ public class RoutesChangedEvent extends EventObject {
         return checkIfRouteIsPresent(removed, clazz);
     }
 
-    private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,
-            Class<? extends Component> clazz) {
+    private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes, Class<? extends Component> clazz) {
         return routes.stream().map(RouteBaseData::getNavigationTarget)
                 .anyMatch(navigationTarget -> navigationTarget.equals(clazz));
     }
@@ -133,9 +129,8 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all added navigation targets
      */
     public List<Class<? extends Component>> getAddedNavigationTargets() {
-        return Collections.unmodifiableList(
-                added.stream().map(RouteBaseData::getNavigationTarget)
-                        .collect(Collectors.toList()));
+        return Collections
+                .unmodifiableList(added.stream().map(RouteBaseData::getNavigationTarget).collect(Collectors.toList()));
     }
 
     /**
@@ -145,8 +140,7 @@ public class RoutesChangedEvent extends EventObject {
      */
     public List<Class<? extends Component>> getRemovedNavigationTargets() {
         return Collections.unmodifiableList(
-                removed.stream().map(RouteBaseData::getNavigationTarget)
-                        .collect(Collectors.toList()));
+                removed.stream().map(RouteBaseData::getNavigationTarget).collect(Collectors.toList()));
     }
 
     /**
@@ -155,8 +149,8 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all added URLs
      */
     public List<String> getAddedURLs() {
-        return Collections.unmodifiableList(added.stream()
-                .map(RouteBaseData::getTemplate).collect(Collectors.toList()));
+        return Collections
+                .unmodifiableList(added.stream().map(RouteBaseData::getTemplate).collect(Collectors.toList()));
     }
 
     /**
@@ -165,14 +159,12 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all removed URLs
      */
     public List<String> getRemovedURLs() {
-        return Collections.unmodifiableList(removed.stream()
-                .map(RouteBaseData::getTemplate).collect(Collectors.toList()));
+        return Collections
+                .unmodifiableList(removed.stream().map(RouteBaseData::getTemplate).collect(Collectors.toList()));
     }
 
-    private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,
-            String path) {
-        return routes.stream().map(RouteBaseData::getTemplate)
-                .anyMatch(url -> url.equals(path));
+    private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes, String path) {
+        return routes.stream().map(RouteBaseData::getTemplate).anyMatch(url -> url.equals(path));
     }
 
 }

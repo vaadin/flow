@@ -25,10 +25,8 @@ import com.vaadin.flow.router.Route;
 // `src/` in component should be replaced by `legacyTheme/my-theme`
 @JsModule("./src/npm-themed-component.js")
 /*
- * Note that this is using component instead of polymer template, because
- * otherwise the themed module would have to import the original /src module,
- * and that would make testing the actual feature here (theme rewrite) more
- * complex.
+ * Note that this is using component instead of polymer template, because otherwise the themed module would have to
+ * import the original /src module, and that would make testing the actual feature here (theme rewrite) more complex.
  */
 public class NpmThemedComponentView extends Component {
 

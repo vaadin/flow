@@ -12,22 +12,16 @@ public class PreserveOnRefreshNestedBeforeEnterIT extends ChromeBrowserTest {
     public void refreshViewWithNestedLayouts_eachBeforeEnterIsCalledOnlyOnce() {
         open();
 
-        Assert.assertEquals("1", $(SpanElement.class)
-                .id("RootLayout-before-enter-count").getText());
-        Assert.assertEquals("1", $(SpanElement.class)
-                .id("NestedLayout-before-enter-count").getText());
-        Assert.assertEquals("1", $(SpanElement.class)
-                .id("PreserveOnRefreshNestedBeforeEnterView-before-enter-count")
-                .getText());
+        Assert.assertEquals("1", $(SpanElement.class).id("RootLayout-before-enter-count").getText());
+        Assert.assertEquals("1", $(SpanElement.class).id("NestedLayout-before-enter-count").getText());
+        Assert.assertEquals("1",
+                $(SpanElement.class).id("PreserveOnRefreshNestedBeforeEnterView-before-enter-count").getText());
 
         open();
 
-        Assert.assertEquals("2", $(SpanElement.class)
-                .id("RootLayout-before-enter-count").getText());
-        Assert.assertEquals("2", $(SpanElement.class)
-                .id("NestedLayout-before-enter-count").getText());
-        Assert.assertEquals("2", $(SpanElement.class)
-                .id("PreserveOnRefreshNestedBeforeEnterView-before-enter-count")
-                .getText());
+        Assert.assertEquals("2", $(SpanElement.class).id("RootLayout-before-enter-count").getText());
+        Assert.assertEquals("2", $(SpanElement.class).id("NestedLayout-before-enter-count").getText());
+        Assert.assertEquals("2",
+                $(SpanElement.class).id("PreserveOnRefreshNestedBeforeEnterView-before-enter-count").getText());
     }
 }

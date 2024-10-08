@@ -34,13 +34,11 @@ public class PaperSliderView extends AbstractDivView {
         paperSlider.setPin(true);
         paperSlider.addValueChangeListener(e -> {
             String text = "Value: " + e.getSource().getValue();
-            text += " (set on " + (e.isFromClient() ? "client" : "server")
-                    + ')';
+            text += " (set on " + (e.isFromClient() ? "client" : "server") + ')';
             valueText.setText(text);
         });
         paperSlider.setValue(INITIAL_VALUE);
-        add(paperSlider, valueText,
-                createButton("Set value to " + UPDATED_VALUE, CHANGE_VALUE_ID,
-                        e -> paperSlider.setValue(UPDATED_VALUE)));
+        add(paperSlider, valueText, createButton("Set value to " + UPDATED_VALUE, CHANGE_VALUE_ID,
+                e -> paperSlider.setValue(UPDATED_VALUE)));
     }
 }
