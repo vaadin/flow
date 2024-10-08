@@ -273,13 +273,37 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Checks if Hilla is available based on the Maven project's classpath.
      *
+     * @return true if Hilla is available, false otherwise
+     */
+    public boolean isHillaAvailable() {
+        return getClassFinder().getResource(
+                "com/vaadin/hilla/EndpointController.class") != null;
+    }
+
+    /**
+     * Checks if Hilla is available based on the Maven project's classpath.
+     *
      * @param mavenProject
      *            Target Maven project
      * @return true if Hilla is available, false otherwise
      */
-    public boolean isHillaAvailable(MavenProject mavenProject) {
-        return getOrCreateClassFinder(mavenProject).getResource(
+    public static boolean isHillaAvailable(MavenProject mavenProject) {
+        return createClassFinder(mavenProject).getResource(
                 "com/vaadin/hilla/EndpointController.class") != null;
+    }
+
+    /**
+     * Checks if Hilla is available and Hilla views are used in the Maven
+     * project based on what is in routes.ts or routes.tsx file.
+     *
+     * @param frontendDirectory
+     *            Target frontend directory.
+     * @return {@code true} if Hilla is available and Hilla views are used,
+     *         {@code false} otherwise
+     */
+    public boolean isHillaUsed(File frontendDirectory) {
+        return isHillaAvailable()
+                && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
     /**
@@ -293,7 +317,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
      */
-    public boolean isHillaUsed(MavenProject mavenProject,
+    public static boolean isHillaUsed(MavenProject mavenProject,
             File frontendDirectory) {
         return isHillaAvailable(mavenProject)
                 && FrontendUtils.isHillaViewsUsed(frontendDirectory);
@@ -326,15 +350,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public ClassFinder getClassFinder() {
-        return getOrCreateClassFinder(project);
-    }
-
-    private ClassFinder getOrCreateClassFinder(MavenProject project) {
         if (classFinder == null) {
-            List<String> classpathElements = getClasspathElements(project);
-            classFinder = BuildFrontendUtil.getClassFinder(classpathElements);
+            classFinder = createClassFinder(project);
         }
         return classFinder;
+    }
+
+    private static ClassFinder createClassFinder(MavenProject project) {
+        List<String> classpathElements = getClasspathElements(project);
+        return BuildFrontendUtil.getClassFinder(classpathElements);
     }
 
     @Override
@@ -515,7 +539,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             return frontendHotdeploy;
         }
         File frontendDirectory = BuildFrontendUtil.getFrontendDirectory(this);
-        return isHillaUsed(project, frontendDirectory);
+        return isHillaUsed(frontendDirectory);
     }
 
     @Override
