@@ -1044,17 +1044,17 @@ public class NavigationStateRendererTest {
 
     @Test
     public void handle_clientNavigationToFlowLayout_setTitleFromClientRoute() {
-        test("Client", true);
+        testClientNavigationTitle("Client", true);
     }
 
     @Test
     public void handle_clientNavigation_doNotSetTitleFromClientRoute() {
-        test(null, false);
+        testClientNavigationTitle(null, false);
     }
 
-    private void test(String expectedDocumentTitle,
+    private void testClientNavigationTitle(String expectedDocumentTitle,
             boolean clientRouteHasFlowLayout) {
-        UI ui = createTestUIForTitleTests();
+        UI ui = createTestClientNavigationTitleUIForTitleTests();
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
                 .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
 
@@ -1085,7 +1085,7 @@ public class NavigationStateRendererTest {
         }
     }
 
-    private UI createTestUIForTitleTests() {
+    private UI createTestClientNavigationTitleUIForTitleTests() {
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         MockVaadinServletService service = new MockVaadinServletService(
