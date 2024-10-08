@@ -104,10 +104,9 @@ public final class MenuConfiguration {
      * <li>from {@link PageTitle} value of the server-side route</li>
      * </ul>
      * <p>
-     * For server-side routes it falls back to route's Java class name, if a
-     * non-null {@code content} is given. For client-side views it falls back to
-     * the element's function name, if a page header couldn't be retrieved from
-     * the view configurations.
+     * For server-side routes it falls back to route's Java class name. For
+     * client-side views it falls back to the element's function name, if a page
+     * header couldn't be retrieved from the view configurations.
      * <p>
      * Note that the possible sources of page header are limited to only
      * available views in automatic menu configuration. If a route has a
