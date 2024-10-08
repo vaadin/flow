@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +38,8 @@ import com.vaadin.flow.router.internal.ResolveRequest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
+import com.vaadin.flow.server.menu.RouteParamType;
 
 public class DefaultRouteResolverTest extends RoutingTestBase {
 
@@ -133,7 +138,10 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                 .mockStatic(MenuRegistry.class)) {
             menuRegistry.when(() -> MenuRegistry.hasClientRoute(path))
                     .thenReturn(true);
-
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
+                    .thenReturn(Collections.singletonMap("/route",
+                            new AvailableViewInfo("", null, false, "/route",
+                                    false, false, null, null, null, true)));
             NavigationState greeting = resolveNavigationState(path);
             Assert.assertEquals(
                     "Layout should be returned for a non server route when matching @Layout exists",
@@ -152,7 +160,10 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                 .mockStatic(MenuRegistry.class)) {
             menuRegistry.when(() -> MenuRegistry.hasClientRoute(path))
                     .thenReturn(true);
-
+            menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
+                    .thenReturn(Collections.singletonMap("/route",
+                            new AvailableViewInfo("", null, false, "/route",
+                                    false, false, null, null, null, true)));
             NavigationState greeting = resolveNavigationState(path);
         }
     }
