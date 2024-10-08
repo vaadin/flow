@@ -26,6 +26,7 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.
@@ -47,17 +48,26 @@ public class DefaultRouteResolver implements RouteResolver {
 
         if (!navigationResult.hasTarget()) {
             if (MenuRegistry.hasClientRoute(path)) {
-                Class<? extends Component> layout = (Class<? extends Component>) registry
-                        .getLayout(path);
-                if (layout == null) {
-                    throw new NotFoundException(
-                            "No layout for client path '%s'".formatted(path));
+                AvailableViewInfo viewInfo = MenuRegistry.getClientRoutes(false)
+                        .get(path.isEmpty() ? path
+                                : path.startsWith("/") ? path : "/" + path);
+                if (viewInfo != null && viewInfo.flowLayout()) {
+
+                    Class<? extends Component> layout = (Class<? extends Component>) registry
+                            .getLayout(path);
+                    if (layout == null) {
+                        throw new NotFoundException(
+                                "No layout for client path '%s'"
+                                        .formatted(path));
+                    }
+                    RouteTarget target = new RouteTarget(layout,
+                            Collections.emptyList());
+                    navigationResult = new NavigationRouteTarget(
+                            navigationResult.getPath(), target,
+                            Collections.emptyMap());
+                } else {
+                    return null;
                 }
-                RouteTarget target = new RouteTarget(layout,
-                        Collections.emptyList());
-                navigationResult = new NavigationRouteTarget(
-                        navigationResult.getPath(), target,
-                        Collections.emptyMap());
             } else {
                 return null;
             }
