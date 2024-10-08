@@ -16,6 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.ParentLayout;
@@ -43,12 +45,16 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * Utility class with methods for route handling.
@@ -580,5 +586,45 @@ public class RouteUtil {
                 && target.getAnnotation(Route.class).autoLayout()
                 && target.getAnnotation(Route.class).layout().equals(UI.class);
 
+    }
+
+    public static void checkForClientRouteCollisions(
+            List<RouteData> flowRoutes) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null) {
+            return;
+        }
+
+        if (FrontendUtils.isHillaUsed(
+                service.getDeploymentConfiguration().getFrontendFolder())) {
+            checkForClientRouteCollisions(flowRoutes.stream()
+                    .map(RouteData::getTemplate).toArray(String[]::new));
+        }
+    }
+
+    public static void checkForClientRouteCollisions(
+            String... flowRouteTemplates) {
+        VaadinService service = VaadinService.getCurrent();
+        if (service == null) {
+            return;
+        }
+
+        List<String> collisions = MenuRegistry
+                .collectClientMenuItems(
+                        false, service.getDeploymentConfiguration())
+                .keySet().stream()
+                .map(clientRoute -> clientRoute.startsWith("/")
+                        ? clientRoute.substring(1)
+                        : clientRoute)
+                .filter(clientRoute -> Arrays.asList(flowRouteTemplates)
+                        .contains(clientRoute))
+                .toList();
+        if (!collisions.isEmpty()) {
+            String msg = String.format(
+                    "Invalid route configuration. The following Hilla "
+                            + "route(s) conflict with configured Flow routes: %s",
+                    String.join(", ", collisions));
+            throw new InvalidRouteConfigurationException(msg);
+        }
     }
 }

@@ -46,6 +46,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -145,6 +146,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public VaadinSession(VaadinService service) {
         this.service = service;
+        RouteUtil.checkForClientRouteCollisions(
+                service.getRouteRegistry().getRegisteredRoutes());
         resourceRegistry = createStreamResourceRegistry();
     }
 
