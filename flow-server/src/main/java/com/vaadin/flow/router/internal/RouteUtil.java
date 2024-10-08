@@ -230,7 +230,15 @@ public class RouteUtil {
                 .findFirst();
     }
 
-    static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
+    /**
+     * Collects all parent layouts for a given route layout class.
+     *
+     * @param layout
+     *            the layout class for which the parent layouts are collected.
+     * @return a list of all parent layout classes starting from the given
+     *         layout and including all ancestors in the hierarchy.
+     */
+    public static List<Class<? extends RouterLayout>> collectRouteParentLayouts(
             Class<? extends RouterLayout> layout) {
         List<Class<? extends RouterLayout>> layouts = new ArrayList<>();
         layouts.add(layout);

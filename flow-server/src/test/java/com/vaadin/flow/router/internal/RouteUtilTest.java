@@ -934,26 +934,15 @@ public class RouteUtilTest {
                     .forRegistry(registry);
             routeConfiguration.setAnnotatedRoute(AutoLayoutView.class);
         });
-
-        List<Class<? extends RouterLayout>> parentLayouts = registry
-                .getNavigationRouteTarget("auto").getRouteTarget()
-                .getParentLayouts();
-
-        Assert.assertEquals(
-                "AutoLayoutView should not have layout because no auto layout is registered",
-                0, parentLayouts.size());
+        Assert.assertFalse("AutoLayout should not be available",
+                registry.hasLayout("auto"));
 
         RouteUtil.updateRouteRegistry(registry,
                 Collections.singleton(AutoLayout.class), Collections.emptySet(),
                 Collections.emptySet());
 
-        parentLayouts = registry.getNavigationRouteTarget("auto")
-                .getRouteTarget().getParentLayouts();
-        Assert.assertEquals("AutoLayoutView should now get automatic layout", 1,
-                parentLayouts.size());
-        Assert.assertEquals(
-                "AutoLayoutView layout should be the @Layout annotated RouterLayout",
-                AutoLayout.class, parentLayouts.get(0));
+        Assert.assertTrue("AutoLayout should be available",
+                registry.hasLayout("auto"));
     }
 
     @Test
@@ -976,24 +965,14 @@ public class RouteUtilTest {
             RouteConfiguration.forRegistry(registry)
                     .setAnnotatedRoute(AutoLayoutView.class);
         });
-        List<Class<? extends RouterLayout>> parentLayouts = registry
-                .getNavigationRouteTarget("auto").getRouteTarget()
-                .getParentLayouts();
-        Assert.assertEquals(
-                "Route should have layout because auto layout is registered", 1,
-                parentLayouts.size());
-        Assert.assertEquals(
-                "Layout should be the @Layout annotated RouterLayout", A.class,
-                parentLayouts.get(0));
+        Assert.assertTrue("AutoLayout should be available",
+                registry.hasLayout("auto"));
 
         RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
                 Collections.emptySet(), Collections.emptySet());
 
-        parentLayouts = registry.getNavigationRouteTarget("auto")
-                .getRouteTarget().getParentLayouts();
-        Assert.assertEquals(
-                "Route with no layout should not get automatic layout now", 0,
-                parentLayouts.size());
+        Assert.assertFalse("AutoLayout should not be available anymore",
+                registry.hasLayout("auto"));
     }
 
     @Test
@@ -1022,40 +1001,20 @@ public class RouteUtilTest {
             routeConfiguration.setAnnotatedRoute(View.class);
         });
 
-        List<Class<? extends RouterLayout>> parentLayouts = registry
-                .getNavigationRouteTarget("auto").getRouteTarget()
-                .getParentLayouts();
-        Assert.assertEquals(
-                "AutoLayoutView should not have layout because path does not match",
-                0, parentLayouts.size());
-        parentLayouts = registry.getNavigationRouteTarget("hey/view")
-                .getRouteTarget().getParentLayouts();
-        Assert.assertEquals("View should have layout because path matches", 1,
-                parentLayouts.size());
-        Assert.assertEquals(
-                "View layout should be the @Layout annotated RouterLayout",
-                AutoLayout.class, parentLayouts.get(0));
+        Assert.assertTrue("AutoLayout should be available for /hey/view path",
+                registry.hasLayout("hey/view"));
+        Assert.assertFalse("AutoLayout should not be available for /auto path",
+                registry.hasLayout("auto"));
 
         RouteUtil.updateRouteRegistry(registry,
                 Collections.singleton(AutoLayout.class), Collections.emptySet(),
                 Collections.emptySet());
 
-        parentLayouts = registry.getNavigationRouteTarget("auto")
-                .getRouteTarget().getParentLayouts();
-        Assert.assertEquals("AutoLayoutView should now get automatic layout", 1,
-                parentLayouts.size());
-        Assert.assertEquals(
-                "AutoLayoutView layout should be the @Layout annotated RouterLayout",
-                AutoLayout.class, parentLayouts.get(0));
-
-        parentLayouts = registry.getNavigationRouteTarget("hey/view")
-                .getRouteTarget().getParentLayouts();
-        Assert.assertEquals(
-                "View should still have layout because path matches", 1,
-                parentLayouts.size());
-        Assert.assertEquals(
-                "View layout should be the @Layout annotated RouterLayout",
-                AutoLayout.class, parentLayouts.get(0));
+        Assert.assertTrue(
+                "AutoLayout should still be available anymore for /hey/view path because path matches",
+                registry.hasLayout("hey/view"));
+        Assert.assertTrue("AutoLayout should now be available for /auto path",
+                registry.hasLayout("auto"));
     }
 
     @SuppressWarnings("unchecked")

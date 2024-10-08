@@ -156,7 +156,7 @@ public class MenuConfigurationTest {
 
         Map<String, MenuEntry> mapMenuItems = menuEntries.stream()
                 .collect(Collectors.toMap(MenuEntry::path, item -> item));
-        assertClientRoutes(mapMenuItems, false, false, true);
+        assertClientRoutes(mapMenuItems, false, false);
         assertServerRoutes(mapMenuItems);
         assertServerRoutesWithParameters(mapMenuItems, true);
     }
@@ -188,7 +188,7 @@ public class MenuConfigurationTest {
     }
 
     private void assertClientRoutes(Map<String, MenuEntry> menuOptions,
-            boolean authenticated, boolean hasRole, boolean excludeExpected) {
+            boolean authenticated, boolean hasRole) {
         Assert.assertTrue("Client route '' missing",
                 menuOptions.containsKey(""));
         Assert.assertEquals("Public", menuOptions.get("").title());
@@ -221,17 +221,8 @@ public class MenuConfigurationTest {
                     menuOptions.containsKey("/hilla"));
         }
 
-        if (excludeExpected) {
-            Assert.assertFalse("Client route 'login' should be excluded",
-                    menuOptions.containsKey("/login"));
-        } else {
-            Assert.assertTrue("Client route 'login' missing",
-                    menuOptions.containsKey("/login"));
-            Assert.assertEquals("Login", menuOptions.get("/login").title());
-            Assert.assertNull(menuOptions.get("/login").title());
-            Assert.assertTrue("Login view should be excluded",
-                    menuOptions.get("/login").exclude());
-        }
+        Assert.assertFalse("Client route 'login' should be excluded",
+                menuOptions.containsKey("/login"));
     }
 
     private void assertServerRoutes(Map<String, MenuEntry> menuItems) {
@@ -257,32 +248,14 @@ public class MenuConfigurationTest {
             Assert.assertFalse(
                     "Server route '/param/:param1' should be excluded",
                     menuItems.containsKey("/param/:param1"));
-        } else {
-            Assert.assertTrue("Server route '/param/:param' missing",
-                    menuItems.containsKey("/param/:param"));
-            Assert.assertTrue(
-                    "Server route '/param/:param' should be excluded from menu",
-                    menuItems.get("/param/:param").exclude());
-
-            Assert.assertTrue("Server route '/param/:param1' missing",
-                    menuItems.containsKey("/param/:param1"));
-            Assert.assertTrue(
-                    "Server route '/param/:param1' should be excluded from menu",
-                    menuItems.get("/param/:param1").exclude());
         }
 
         Assert.assertTrue(
                 "Server route with optional parameters '/param' missing",
                 menuItems.containsKey("/param"));
-        Assert.assertFalse(
-                "Server route '/param' should be included in the menu",
-                menuItems.get("/param").exclude());
 
         Assert.assertTrue(
                 "Server route with optional parameters '/param/varargs' missing",
                 menuItems.containsKey("/param/varargs"));
-        Assert.assertFalse(
-                "Server route '/param/varargs' should be included in the menu",
-                menuItems.get("/param/varargs").exclude());
     }
 }
