@@ -55,7 +55,8 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * {@link NavigationAccessControlConfigurer} bean.
  *
  * <pre>
- * {@code @Bean
+ * {@code
+ * @Bean
  * NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
  *     return new NavigationAccessControlConfigurer()
  *             .withRoutePathAccessChecker().withLoginView(LoginView.class);
@@ -70,7 +71,8 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * prevent cyclic dependencies errors.
  *
  * <pre>
- * {@code @Bean
+ * {@code
+ * @Bean
  * class SecurityConfig extends VaadinWebSecurity {
  *     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
  *         return new NavigationAccessControlConfigurer()
