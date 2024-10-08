@@ -94,12 +94,9 @@ public class VaadinUIScopeTest extends AbstractUIScopedTest {
 
         doCallRealMethod().when(session)
                 .addSessionDestroyListener(Mockito.any());
-        doCallRealMethod().when(session)
-                .getLockInstance();
-        doCallRealMethod().when(session)
-                .getPendingAccessQueue();
-        doCallRealMethod().when(session)
-                .access(Mockito.any());
+        doCallRealMethod().when(session).getLockInstance();
+        doCallRealMethod().when(session).getPendingAccessQueue();
+        doCallRealMethod().when(session).access(Mockito.any());
 
         VaadinUIScope scope = new VaadinUIScope();
 

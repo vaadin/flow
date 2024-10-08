@@ -75,12 +75,9 @@ public class VaadinSessionScopeTest extends AbstractScopeTest {
 
         doCallRealMethod().when(session)
                 .addSessionDestroyListener(Mockito.any());
-        doCallRealMethod().when(session)
-                .getLockInstance();
-        doCallRealMethod().when(session)
-                .getPendingAccessQueue();
-        doCallRealMethod().when(session)
-                .access(Mockito.any());
+        doCallRealMethod().when(session).getLockInstance();
+        doCallRealMethod().when(session).getPendingAccessQueue();
+        doCallRealMethod().when(session).access(Mockito.any());
 
         VaadinSessionScope scope = new VaadinSessionScope();
 

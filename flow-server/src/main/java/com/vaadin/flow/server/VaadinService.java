@@ -628,8 +628,9 @@ public abstract class VaadinService implements Serializable {
      * the listeners are called.
      *
      * <p>
-     * This method delivers notifications for all associated sessions. To be notified
-     * for only one specific session, use {@link VaadinSession#addSessionDestroyListener}.
+     * This method delivers notifications for all associated sessions. To be
+     * notified for only one specific session, use
+     * {@link VaadinSession#addSessionDestroyListener}.
      *
      * @param listener
      *            the vaadin service session destroy listener
@@ -693,17 +694,17 @@ public abstract class VaadinService implements Serializable {
                     VaadinService.this, session);
             Stream.concat(session.destroyListeners.stream(),
                     sessionDestroyListeners.stream()).forEach(listener -> {
-                try {
-                    listener.sessionDestroy(event);
-                } catch (Exception e) {
-                    /*
-                     * for now, use the session error handler; in the future,
-                     * could have an API for using some other handler for
-                     * session init and destroy listeners
-                     */
-                    session.getErrorHandler().error(new ErrorEvent(e));
-                }
-            });
+                        try {
+                            listener.sessionDestroy(event);
+                        } catch (Exception e) {
+                            /*
+                             * for now, use the session error handler; in the
+                             * future, could have an API for using some other
+                             * handler for session init and destroy listeners
+                             */
+                            session.getErrorHandler().error(new ErrorEvent(e));
+                        }
+                    });
 
             session.setState(VaadinSessionState.CLOSED);
         });

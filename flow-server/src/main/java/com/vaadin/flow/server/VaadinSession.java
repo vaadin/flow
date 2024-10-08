@@ -505,14 +505,17 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * If this session is already closed, no notification is delivered.
      *
      * <p>
-     * This method only delivers notifications for this session. To also be notified
-     * about other sessions, use {@link VaadinService#addSessionDestroyListener}.
+     * This method only delivers notifications for this session. To also be
+     * notified about other sessions, use
+     * {@link VaadinService#addSessionDestroyListener}.
      *
-     * @param listener the session destroy listener
+     * @param listener
+     *            the session destroy listener
      * @return a handle that can be used for removing the listener
      * @see VaadinService#addSessionDestroyListener
      */
-    public Registration addSessionDestroyListener(SessionDestroyListener listener) {
+    public Registration addSessionDestroyListener(
+            SessionDestroyListener listener) {
         return Registration.addAndRemove(destroyListeners, listener);
     }
 

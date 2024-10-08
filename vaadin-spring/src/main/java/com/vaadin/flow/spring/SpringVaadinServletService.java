@@ -98,7 +98,8 @@ public class SpringVaadinServletService extends VaadinServletService {
         uiInitListeners.values().forEach(this::addUIInitListener);
     }
 
-    // This method should be removed when the deprecated class SpringVaadinSession is removed
+    // This method should be removed when the deprecated class
+    // SpringVaadinSession is removed
     @Override
     protected VaadinSession createVaadinSession(VaadinRequest request) {
         return new SpringVaadinSession(this);
