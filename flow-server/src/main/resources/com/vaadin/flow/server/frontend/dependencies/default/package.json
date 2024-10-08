@@ -9,7 +9,7 @@
   "author": "Artur Signell",
   "license": "Apache-2.0",
   "dependencies": {
-    "@polymer/polymer": "3.5.1",
+    "@polymer/polymer": "3.5.2",
     "@vaadin/common-frontend": "0.0.19",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "3.2.0"
