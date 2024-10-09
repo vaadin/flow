@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
+import com.vaadin.flow.server.SessionDestroyListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
@@ -36,4 +37,24 @@ public class SpringVaadinSession extends VaadinSession {
     public SpringVaadinSession(VaadinService service) {
         super(service);
     }
+
+    /**
+     * Adds a listener that gets notified when the Vaadin service session is
+     * destroyed.
+     * <p>
+     * No need to remove the listener since all listeners are removed
+     * automatically once session is destroyed
+     * <p>
+     * The session being destroyed is locked and its UIs have been removed when
+     * the listeners are called.
+     *
+     * @see VaadinService#addSessionInitListener(SessionInitListener)
+     *
+     * @param listener
+     *            the vaadin service session destroy listener
+     */
+    public void addDestroyListener(SessionDestroyListener listener) {
+        this.addSessionDestroyListener(listener);
+    }
+
 }
