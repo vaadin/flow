@@ -39,6 +39,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
@@ -626,5 +627,22 @@ public class RouteUtil {
                     String.join(", ", collisions));
             throw new InvalidRouteConfigurationException(msg);
         }
+    }
+      
+    /**
+     * Get optional dynamic page title from the active router targets chain of a
+     * given UI instance.
+     *
+     * @param ui
+     *            instance of UI, not {@code null}
+     * @return dynamic page title found in the routes chain, or empty optional
+     *         if no implementor of {@link HasDynamicTitle} was found
+     */
+    public static Optional<String> getDynamicTitle(UI ui) {
+        return Objects.requireNonNull(ui).getInternals()
+                .getActiveRouterTargetsChain().stream()
+                .filter(HasDynamicTitle.class::isInstance)
+                .map(element -> ((HasDynamicTitle) element).getPageTitle())
+                .filter(Objects::nonNull).findFirst();
     }
 }
