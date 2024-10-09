@@ -147,8 +147,10 @@ public class FrontendTools {
             1, 0, 6); // Bun 1.0.6 is the first version with "overrides" support
 
     private enum BuildTool {
-        NPM("npm", "npm-cli.js"), NPX("npx", "npx-cli.js"), PNPM("pnpm",
-                null), BUN("bun", null);
+        NPM("npm", "npm-cli.js"),
+        NPX("npx", "npx-cli.js"),
+        PNPM("pnpm", null),
+        BUN("bun", null);
 
         private final String name;
         private final String script;
