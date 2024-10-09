@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -37,9 +39,23 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasDynamicTitle;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.Menu;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -180,6 +196,179 @@ public class MenuConfigurationTest {
                 new String[] { "/d", "/c", "/a", "/b", "/d/a", "/d/b" });
     }
 
+    @Test
+    public void getPageHeader_serverSideRoutes_withContentComponent_pageHeadersFromAnnotationAndName() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(NormalRoute.class, NormalRouteWithPageTitle.class,
+                MandatoryParameterRouteWithPageTitle.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        UI mockUi = Mockito.mock(UI.class);
+        UIInternals uiInternals = Mockito.mock(UIInternals.class);
+        Location location = Mockito.mock(Location.class);
+        Mockito.when(mockUi.getInternals()).thenReturn(uiInternals);
+        Mockito.when(uiInternals.getActiveViewLocation()).thenReturn(location);
+        Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                .thenReturn(Collections.emptyList());
+
+        final UI currentUi = UI.getCurrent();
+
+        try {
+            UI.setCurrent(mockUi);
+
+            Mockito.when(location.getPath()).thenReturn("/normal-route");
+            Optional<String> header = MenuConfiguration
+                    .getPageHeader(new NormalRoute());
+            Assert.assertTrue(header.isPresent());
+            // directly from class name
+            Assert.assertEquals("NormalRoute", header.get());
+
+            Mockito.when(location.getPath())
+                    .thenReturn("normal-route-with-page-title");
+            header = MenuConfiguration
+                    .getPageHeader(new NormalRouteWithPageTitle());
+            Assert.assertTrue(header.isPresent());
+            // directly from @PageTitle
+            Assert.assertEquals("My Normal Route", header.get());
+
+            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                    .thenReturn(List.of(new RouteOrLayoutWithDynamicTitle()));
+            header = MenuConfiguration.getPageHeader(new NormalRoute());
+            Assert.assertTrue(header.isPresent());
+            // from HasDynamicTitle
+            Assert.assertEquals("My Route with dynamic title", header.get());
+            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                    .thenReturn(Collections.emptyList());
+
+            Mockito.when(location.getPath())
+                    .thenReturn("mandatory-parameter-route");
+            header = MenuConfiguration
+                    .getPageHeader(new MandatoryParameterRouteWithPageTitle());
+            Assert.assertTrue(header.isPresent());
+            // directly from class name
+            Assert.assertEquals("MandatoryParameterRouteWithPageTitle",
+                    header.get());
+
+        } finally {
+            UI.setCurrent(currentUi);
+        }
+    }
+
+    @Test
+    public void getPageHeader_serverSideRoutes_noContentComponent_pageHeadersOnlyForMenuEntries() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(NormalRoute.class, NormalRouteWithPageTitle.class,
+                OptionalParameterRouteWithPageTitle.class,
+                MandatoryParameterRouteWithPageTitle.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        UI mockUi = Mockito.mock(UI.class);
+        UIInternals uiInternals = Mockito.mock(UIInternals.class);
+        Location location = Mockito.mock(Location.class);
+        Mockito.when(mockUi.getInternals()).thenReturn(uiInternals);
+        Mockito.when(uiInternals.getActiveViewLocation()).thenReturn(location);
+
+        final UI currentUi = UI.getCurrent();
+
+        try {
+            UI.setCurrent(mockUi);
+
+            Mockito.when(location.getPath()).thenReturn("/normal-route");
+            Optional<String> header = MenuConfiguration.getPageHeader();
+            Assert.assertTrue(header.isPresent());
+            // from class name, from menu config
+            Assert.assertEquals("NormalRoute", header.get());
+
+            Mockito.when(location.getPath())
+                    .thenReturn("normal-route-with-page-title");
+            header = MenuConfiguration.getPageHeader();
+            // no @Menu annotation -> no available view info
+            Assert.assertFalse(header.isPresent());
+
+            Mockito.when(location.getPath())
+                    .thenReturn("mandatory-parameter-route");
+            header = MenuConfiguration.getPageHeader();
+            // mandatory route parameter -> no menu entry -> no available view
+            // info
+            Assert.assertFalse(header.isPresent());
+
+            Mockito.when(location.getPath())
+                    .thenReturn("optional-parameter-route");
+            header = MenuConfiguration.getPageHeader();
+            // optional route parameter -> menu is eligible
+            Assert.assertTrue(header.isPresent());
+            Assert.assertEquals("OptionalParameterRouteWithPageTitle",
+                    header.get());
+
+        } finally {
+            UI.setCurrent(currentUi);
+        }
+    }
+
+    @Test
+    public void testGetPageHeader_clientViews_pageHeaderFromTitle()
+            throws IOException {
+        Mockito.when(request.getUserPrincipal())
+                .thenReturn(Mockito.mock(Principal.class));
+        Mockito.when(request.isUserInRole(Mockito.anyString()))
+                .thenReturn(true);
+
+        File generated = tmpDir.newFolder(GENERATED);
+        File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
+        Files.writeString(clientFiles.toPath(),
+                MenuConfigurationTest.testPageHeaderClientRouteFile);
+
+        UI mockUi = Mockito.mock(UI.class);
+        UIInternals uiInternals = Mockito.mock(UIInternals.class);
+        Location location = Mockito.mock(Location.class);
+        Mockito.when(mockUi.getInternals()).thenReturn(uiInternals);
+        Mockito.when(uiInternals.getActiveViewLocation()).thenReturn(location);
+
+        final UI currentUi = UI.getCurrent();
+
+        try {
+            UI.setCurrent(mockUi);
+
+            Mockito.when(location.getPath()).thenReturn("/");
+            Optional<String> header = MenuConfiguration.getPageHeader();
+            Assert.assertTrue(header.isPresent());
+            // from ViewConfig.title
+            Assert.assertEquals("Public", header.get());
+
+            Mockito.when(location.getPath()).thenReturn("/about");
+            header = MenuConfiguration.getPageHeader();
+            Assert.assertTrue(header.isPresent());
+            // from ViewConfig.title, with exclude=true
+            Assert.assertEquals("About", header.get());
+
+            Mockito.when(location.getPath()).thenReturn("/other");
+            header = MenuConfiguration.getPageHeader();
+            Assert.assertTrue(header.isPresent());
+            // from ViewConfig.title, with menu config
+            Assert.assertEquals("Other", header.get());
+
+            Mockito.when(location.getPath()).thenReturn("/hilla");
+            header = MenuConfiguration.getPageHeader();
+            Assert.assertTrue(header.isPresent());
+            // from ViewConfig.title, when flow layout is false
+            Assert.assertEquals("Hilla", header.get());
+
+            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                    .thenReturn(List.of(new RouteOrLayoutWithDynamicTitle()));
+            header = MenuConfiguration.getPageHeader();
+            Assert.assertTrue(header.isPresent());
+            // from HasDynamicTitle
+            Assert.assertEquals("My Route with dynamic title", header.get());
+            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                    .thenReturn(Collections.emptyList());
+
+        } finally {
+            UI.setCurrent(currentUi);
+        }
+    }
+
     private void assertOrder(List<MenuEntry> menuEntries,
             String[] expectedOrder) {
         for (int i = 0; i < menuEntries.size(); i++) {
@@ -258,4 +447,84 @@ public class MenuConfigurationTest {
                 "Server route with optional parameters '/param/varargs' missing",
                 menuItems.containsKey("/param/varargs"));
     }
+
+    @Tag("some-tag")
+    @Route("normal-route")
+    @Menu(title = "Normal Route")
+    public static class NormalRoute extends Component {
+    }
+
+    @Tag("some-tag")
+    @PageTitle("My Normal Route")
+    @Route("normal-route-with-page-title")
+    public static class NormalRouteWithPageTitle extends Component {
+    }
+
+    public static class RouteOrLayoutWithDynamicTitle
+            implements HasDynamicTitle, HasElement {
+        @Override
+        public String getPageTitle() {
+            return "My Route with dynamic title";
+        }
+
+        @Override
+        public Element getElement() {
+            return null;
+        }
+    }
+
+    @Tag("some-tag")
+    @Route("optional-parameter-route")
+    @Menu(title = "Optional Param route")
+    public static class OptionalParameterRouteWithPageTitle extends Component
+            implements HasUrlParameter<String> {
+        @Override
+        public void setParameter(BeforeEvent event,
+                @OptionalParameter String parameter) {
+
+        }
+    }
+
+    @Tag("some-tag")
+    @Route("mandatory-parameter-route")
+    @Menu(title = "Mandatory Param route")
+    public static class MandatoryParameterRouteWithPageTitle extends Component
+            implements HasUrlParameter<String> {
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+
+        }
+    }
+
+    public static String testPageHeaderClientRouteFile = """
+            [
+              {
+                "route": "",
+                "params": {},
+                "title": "Layout",
+                "children": [
+                  {
+                    "route": "",
+                    "params": {},
+                    "title": "Public"
+                  },
+                  {
+                    "route": "about",
+                    "menu": { "exclude": true },
+                    "title": "About"
+                  },
+                  {
+                    "route": "other",
+                    "menu": { "title": "Other" },
+                    "title": "Other"
+                  },
+                  {
+                    "route": "hilla",
+                    "title": "Hilla",
+                    "flowLayout": false
+                  }
+                ]
+              }
+            ]
+            """;
 }
