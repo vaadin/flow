@@ -959,11 +959,7 @@ public abstract class AbstractNavigationStateRenderer
                 routeTarget).map(PageTitle::value).orElse("");
 
         // check for HasDynamicTitle in current router targets chain
-        String title = navigationEvent.getUI().getInternals()
-                .getActiveRouterTargetsChain().stream()
-                .filter(HasDynamicTitle.class::isInstance)
-                .map(tc -> ((HasDynamicTitle) tc).getPageTitle())
-                .filter(Objects::nonNull).findFirst()
+        String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
                 .orElseGet(lookForTitleInTarget);
 
         navigationEvent.getUI().getPage().setTitle(title);

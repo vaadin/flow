@@ -28,6 +28,7 @@ import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Menu configuration helper class to retrieve available menu entries for
@@ -90,12 +91,7 @@ public final class MenuConfiguration {
         if (isServerSideContent(content)) {
             UI ui = UI.getCurrent();
             if (ui != null) {
-                Optional<String> maybeTitle = ui.getInternals()
-                        .getActiveRouterTargetsChain().stream()
-                        .filter(HasDynamicTitle.class::isInstance)
-                        .map(element -> ((HasDynamicTitle) element)
-                                .getPageTitle())
-                        .filter(Objects::nonNull).findFirst();
+                Optional<String> maybeTitle = RouteUtil.getDynamicTitle(ui);
                 if (maybeTitle.isPresent()) {
                     return maybeTitle;
                 }
