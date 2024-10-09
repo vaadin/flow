@@ -20,7 +20,6 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 /**
  * Implementation of Spring's
@@ -40,31 +39,15 @@ public class VaadinSessionScope extends AbstractScope {
 
     private static class SessionBeanStore extends BeanStore {
 
-        private final Registration sessionDestroyListenerRegistration;
-
         private SessionBeanStore(VaadinSession session) {
             super(session);
-            if (session instanceof SpringVaadinSession) {
-                sessionDestroyListenerRegistration = null;
-                ((SpringVaadinSession) session)
-                        .addDestroyListener(event -> destroy());
-            } else {
-                sessionDestroyListenerRegistration = session.getService()
-                        .addSessionDestroyListener(event -> destroy());
-            }
+            session.addSessionDestroyListener(event -> destroy());
         }
 
         @Override
         Void doDestroy() {
-            try {
-                getVaadinSession().setAttribute(BeanStore.class, null);
-                super.doDestroy();
-            } finally {
-                if (sessionDestroyListenerRegistration != null) {
-                    sessionDestroyListenerRegistration.remove();
-                }
-            }
-            return null;
+            getVaadinSession().setAttribute(BeanStore.class, null);
+            return super.doDestroy();
         }
     }
 
