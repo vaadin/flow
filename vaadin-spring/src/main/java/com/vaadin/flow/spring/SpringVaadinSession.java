@@ -39,6 +39,13 @@ public class SpringVaadinSession extends VaadinSession {
     }
 
     /**
+     * Handles destruction of the session.
+     */
+    public void fireSessionDestroy() {
+        getService().fireSessionDestroy(this);
+    }
+
+    /**
      * Adds a listener that gets notified when the Vaadin service session is
      * destroyed.
      * <p>
