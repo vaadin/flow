@@ -18,6 +18,7 @@ package com.vaadin.flow.spring.scopes;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import org.junit.After;
@@ -35,7 +36,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.spring.SpringVaadinSession;
 
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.times;
@@ -46,12 +46,18 @@ public abstract class AbstractScopeTest {
 
     private VaadinSession session;
 
-    public static class TestSession extends SpringVaadinSession {
+    public static class TestSession extends VaadinSession {
+
+        private final ReentrantLock lock = new ReentrantLock();
 
         public TestSession() {
-            super(Mockito.mock(VaadinService.class));
+            super(Mockito.spy(VaadinService.class));
         }
 
+        @Override
+        public ReentrantLock getLockInstance() {
+            return this.lock;
+        }
     }
 
     @After
@@ -131,7 +137,7 @@ public abstract class AbstractScopeTest {
 
     @SuppressWarnings("unchecked")
     protected VaadinSession mockSession() {
-        SpringVaadinSession session = Mockito.mock(TestSession.class,
+        VaadinSession session = Mockito.mock(TestSession.class,
                 Mockito.withSettings().useConstructor());
         doCallRealMethod().when(session).setAttribute(Mockito.any(Class.class),
                 Mockito.any());
