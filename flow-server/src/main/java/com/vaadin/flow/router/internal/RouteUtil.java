@@ -628,7 +628,7 @@ public class RouteUtil {
             throw new InvalidRouteConfigurationException(msg);
         }
     }
-      
+
     /**
      * Get optional dynamic page title from the active router targets chain of a
      * given UI instance.
