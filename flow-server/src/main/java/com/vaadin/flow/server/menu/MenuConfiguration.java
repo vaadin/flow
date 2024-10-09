@@ -99,8 +99,7 @@ public final class MenuConfiguration {
 
             return Optional.of(MenuRegistry.getTitle(content.getClass()));
         }
-        return getPageHeaderFromMenuItems(
-                MenuRegistry.getMenuItems(false).values().stream().toList());
+        return getPageHeaderFromMenuItems();
     }
 
     /**
@@ -142,18 +141,26 @@ public final class MenuConfiguration {
         }
     }
 
-    private static Optional<String> getPageHeaderFromMenuItems(
-            List<AvailableViewInfo> menuItems) {
+    private static Optional<String> getPageHeaderFromMenuItems() {
         UI ui = UI.getCurrent();
         if (ui != null) {
-            String path = ui.getInternals().getActiveViewLocation().getPath();
-            path = PathUtil.trimPath(path);
-            String finalPath = path;
-            return menuItems.stream().filter(menuItem -> {
-                String route = menuItem.route();
-                route = PathUtil.trimPath(route);
-                return route.equals(finalPath);
-            }).map(AvailableViewInfo::title).findFirst();
+            // Flow main layout + client views case:
+            // layout may have dynamic title
+            Optional<String> maybeTitle = RouteUtil.getDynamicTitle(ui);
+            if (maybeTitle.isPresent()) {
+                return maybeTitle;
+            }
+
+            String activeLocation = PathUtil.trimPath(
+                    ui.getInternals().getActiveViewLocation().getPath());
+
+            List<AvailableViewInfo> menuItems = MenuRegistry.getMenuItems(false)
+                    .values().stream().toList();
+
+            return menuItems.stream()
+                    .filter(menuItem -> PathUtil.trimPath(menuItem.route())
+                            .equals(activeLocation))
+                    .map(AvailableViewInfo::title).findFirst();
         }
         return Optional.empty();
     }

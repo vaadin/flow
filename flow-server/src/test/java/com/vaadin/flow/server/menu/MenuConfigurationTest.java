@@ -233,9 +233,7 @@ public class MenuConfigurationTest {
             Assert.assertEquals("My Normal Route", header.get());
 
             Mockito.when(uiInternals.getActiveRouterTargetsChain())
-                    .thenReturn(List.of(new NormalRouteWithDynamicTitle()));
-            Mockito.when(location.getPath())
-                    .thenReturn("normal-route-with-dynamic-title");
+                    .thenReturn(List.of(new RouteOrLayoutWithDynamicTitle()));
             header = MenuConfiguration.getPageHeader(new NormalRoute());
             Assert.assertTrue(header.isPresent());
             // from HasDynamicTitle
@@ -357,6 +355,15 @@ public class MenuConfigurationTest {
             // from ViewConfig.title, when flow layout is false
             Assert.assertEquals("Hilla", header.get());
 
+            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                    .thenReturn(List.of(new RouteOrLayoutWithDynamicTitle()));
+            header = MenuConfiguration.getPageHeader();
+            Assert.assertTrue(header.isPresent());
+            // from HasDynamicTitle
+            Assert.assertEquals("My Route with dynamic title", header.get());
+            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+                    .thenReturn(Collections.emptyList());
+
         } finally {
             UI.setCurrent(currentUi);
         }
@@ -453,7 +460,7 @@ public class MenuConfigurationTest {
     public static class NormalRouteWithPageTitle extends Component {
     }
 
-    public static class NormalRouteWithDynamicTitle
+    public static class RouteOrLayoutWithDynamicTitle
             implements HasDynamicTitle, HasElement {
         @Override
         public String getPageTitle() {
